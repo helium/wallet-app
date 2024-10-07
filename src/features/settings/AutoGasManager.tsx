@@ -83,7 +83,7 @@ const AutoGasManager: FC = () => {
                 inputMint ? onMintSelect(undefined) : onMintSelect(HNT_MINT)
               }
             />
-            <Text ml="4" color="primaryText">
+            <Text variant="textSmRegular" ml="4" color="primaryText">
               {t('settings.autoGasManagement.enabled')}
             </Text>
           </Box>

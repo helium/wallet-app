@@ -8,18 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* HeliumWalletTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* HeliumWalletTests.m */; };
+		117516811AB44418A8ACF34F /* Figtree-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C11FA61F64A54BB9B8AFA5F6 /* Figtree-VariableFont_wght.ttf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.mm */; };
 		1A7DAB918483F1C2761BA7A4 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296757835722BB74360F9FEF /* ExpoModulesProvider.swift */; };
 		31B6D29CFC726A9C37946D71 /* libPods-HeliumWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B83B6ABAD63F1D810AF84CE5 /* libPods-HeliumWallet.a */; };
 		45330C4A223536223298B2A3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645194928E31AE79BE70ED88 /* ExpoModulesProvider.swift */; };
-		50D1D6AC2763AAA2009D52C0 /* DMSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A62763AAA2009D52C0 /* DMSans-Bold.ttf */; };
-		50D1D6AD2763AAA2009D52C0 /* DMSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A72763AAA2009D52C0 /* DMSans-BoldItalic.ttf */; };
-		50D1D6AE2763AAA2009D52C0 /* DMSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A82763AAA2009D52C0 /* DMSans-Medium.ttf */; };
-		50D1D6AF2763AAA2009D52C0 /* DMSans-MediumItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A92763AAA2009D52C0 /* DMSans-MediumItalic.ttf */; };
-		50D1D6B02763AAA2009D52C0 /* DMSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AA2763AAA2009D52C0 /* DMSans-Italic.ttf */; };
-		50D1D6B12763AAA2009D52C0 /* DMSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */; };
+		7AA19242A2DE47E8AFC56882 /* Figtree-Italic-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3440BC62530D461681D28DD7 /* Figtree-Italic-VariableFont_wght.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */; };
 		962862712BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
@@ -57,6 +53,10 @@
 		9DE3051C28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */; };
 		9DE3051E28510E3900E46F9B /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051D28510E3900E46F9B /* Utils.swift */; };
 		9DE305212851187D00E46F9B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DE305232851187D00E46F9B /* Localizable.strings */; };
+		9DEC730B2CAB265100DA649B /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = 5A94DB7A8D2811C850C94941 /* Mapbox */; };
+		9DEC730C2CAB265100DA649B /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = CE0525B8C0183FCA3071F4F6 /* Mapbox */; };
+		9DEC730D2CAB265100DA649B /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = 6B1147D96DED6C57572658F4 /* Mapbox */; };
+		9DEC730E2CAB265100DA649B /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = 899688236472B5978CFDB459 /* Mapbox */; };
 		9DF6297C28D159FD002601C9 /* HeliumTickerAccessoryCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF6297B28D159FD002601C9 /* HeliumTickerAccessoryCornerView.swift */; };
 		9DF6297E28D1782D002601C9 /* HeliumTickerAccessoryRectangularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF6297D28D1782D002601C9 /* HeliumTickerAccessoryRectangularView.swift */; };
 		9DF6298128D1787A002601C9 /* HeliumTickerAccessoryInlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF6298028D1787A002601C9 /* HeliumTickerAccessoryInlineView.swift */; };
@@ -128,17 +128,12 @@
 		1EFDB5FA77191A99A2371AFB /* Pods-HeliumWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.debug.xcconfig"; sourceTree = "<group>"; };
 		1F0BFD5C668192F29DFDE754 /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
 		296757835722BB74360F9FEF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		3440BC62530D461681D28DD7 /* Figtree-Italic-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Figtree-Italic-VariableFont_wght.ttf"; path = "../src/assets/fonts/Figtree-Italic-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		3B30E772B033A435C849D9CD /* Pods-HeliumWalletWidgetExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWalletWidgetExtension.release.xcconfig"; path = "Target Support Files/Pods-HeliumWalletWidgetExtension/Pods-HeliumWalletWidgetExtension.release.xcconfig"; sourceTree = "<group>"; };
 		48E9A2B05D9F581F3DF9C71D /* libPods-HeliumWallet-HeliumWalletTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet-HeliumWalletTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C49B6B232EE708CBD605BA8 /* Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests.debug.xcconfig"; sourceTree = "<group>"; };
 		508E6F6B26FA22F400774B67 /* HeliumWallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HeliumWallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		50D1D6A42763AA88009D52C0 /* fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = fonts; path = ../src/assets/fonts; sourceTree = "<group>"; };
-		50D1D6A62763AAA2009D52C0 /* DMSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Bold.ttf"; path = "../src/assets/fonts/DMSans-Bold.ttf"; sourceTree = "<group>"; };
-		50D1D6A72763AAA2009D52C0 /* DMSans-BoldItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-BoldItalic.ttf"; path = "../src/assets/fonts/DMSans-BoldItalic.ttf"; sourceTree = "<group>"; };
-		50D1D6A82763AAA2009D52C0 /* DMSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Medium.ttf"; path = "../src/assets/fonts/DMSans-Medium.ttf"; sourceTree = "<group>"; };
-		50D1D6A92763AAA2009D52C0 /* DMSans-MediumItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-MediumItalic.ttf"; path = "../src/assets/fonts/DMSans-MediumItalic.ttf"; sourceTree = "<group>"; };
-		50D1D6AA2763AAA2009D52C0 /* DMSans-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Italic.ttf"; path = "../src/assets/fonts/DMSans-Italic.ttf"; sourceTree = "<group>"; };
-		50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Regular.ttf"; path = "../src/assets/fonts/DMSans-Regular.ttf"; sourceTree = "<group>"; };
 		57910DBDCCCCDF8BFA3C6D9E /* Pods-OneSignalNotificationServiceExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		596BDD75E9EC4091C6156C0E /* libPods-HeliumWalletWidgetExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWalletWidgetExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		645194928E31AE79BE70ED88 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HeliumWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
@@ -150,7 +145,7 @@
 		96E4147227BEE4C300CE6EC1 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		96E4147427BEE4C300CE6EC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96E4147C27BEE61400CE6EC1 /* OneSignalNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OneSignalNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
-		99ED3018E9DBF6106B1DE1A7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = HeliumWallet/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		99ED3018E9DBF6106B1DE1A7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = HeliumWallet/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		9D05C88428527DF0008198FC /* HeliumWalletWidgetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetProvider.swift; sourceTree = "<group>"; };
 		9D05C88628527E1E008198FC /* HeliumWalletWidgetSmallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetSmallView.swift; sourceTree = "<group>"; };
 		9D05C88828527E40008198FC /* HeliumWalletWidgetMediumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetMediumView.swift; sourceTree = "<group>"; };
@@ -187,6 +182,7 @@
 		9DF6298028D1787A002601C9 /* HeliumTickerAccessoryInlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumTickerAccessoryInlineView.swift; sourceTree = "<group>"; };
 		A887C33D5275223BA0B76656 /* Pods-HeliumWalletWidgetExtension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWalletWidgetExtension.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWalletWidgetExtension/Pods-HeliumWalletWidgetExtension.debug.xcconfig"; sourceTree = "<group>"; };
 		B83B6ABAD63F1D810AF84CE5 /* libPods-HeliumWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C11FA61F64A54BB9B8AFA5F6 /* Figtree-VariableFont_wght.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Figtree-VariableFont_wght.ttf"; path = "../src/assets/fonts/Figtree-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		DABD45A4821A707AEDF47E54 /* Pods-HeliumWallet-HeliumWalletTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet-HeliumWalletTests.release.xcconfig"; path = "Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests.release.xcconfig"; sourceTree = "<group>"; };
 		EA3C262A651DB9218F30F0E1 /* Pods-HeliumWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.release.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -198,6 +194,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DEC730E2CAB265100DA649B /* Mapbox in Frameworks */,
 				962862742BDCCAF70073839C /* BuildFile in Frameworks */,
 				B3469F859005A4F164D08293 /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */,
 			);
@@ -207,6 +204,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DEC730B2CAB265100DA649B /* Mapbox in Frameworks */,
 				962862712BDCCAF70073839C /* BuildFile in Frameworks */,
 				31B6D29CFC726A9C37946D71 /* libPods-HeliumWallet.a in Frameworks */,
 			);
@@ -216,6 +214,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DEC730C2CAB265100DA649B /* Mapbox in Frameworks */,
 				962862722BDCCAF70073839C /* BuildFile in Frameworks */,
 				C4EB4BD0A9AAABC0002181CC /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
 			);
@@ -225,6 +224,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9DEC730D2CAB265100DA649B /* Mapbox in Frameworks */,
 				962862732BDCCAF70073839C /* BuildFile in Frameworks */,
 				9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */,
 				9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */,
@@ -281,6 +281,15 @@
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
+		1DE256FAD99A492B952D4632 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3440BC62530D461681D28DD7 /* Figtree-Italic-VariableFont_wght.ttf */,
+				C11FA61F64A54BB9B8AFA5F6 /* Figtree-VariableFont_wght.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -313,12 +322,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				50D1D6A62763AAA2009D52C0 /* DMSans-Bold.ttf */,
-				50D1D6A72763AAA2009D52C0 /* DMSans-BoldItalic.ttf */,
-				50D1D6AA2763AAA2009D52C0 /* DMSans-Italic.ttf */,
-				50D1D6A82763AAA2009D52C0 /* DMSans-Medium.ttf */,
-				50D1D6A92763AAA2009D52C0 /* DMSans-MediumItalic.ttf */,
-				50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */,
 				50D1D6A42763AA88009D52C0 /* fonts */,
 				13B07FAE1A68108700A75B9A /* HeliumWallet */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -329,6 +332,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				E233CBF5F47BEE60B243DCF8 /* Pods */,
 				1DC951AB9D06BB3015E8CAE6 /* ExpoModulesProviders */,
+				1DE256FAD99A492B952D4632 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -627,15 +631,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				50D1D6AC2763AAA2009D52C0 /* DMSans-Bold.ttf in Resources */,
-				50D1D6AD2763AAA2009D52C0 /* DMSans-BoldItalic.ttf in Resources */,
-				50D1D6AE2763AAA2009D52C0 /* DMSans-Medium.ttf in Resources */,
-				50D1D6AF2763AAA2009D52C0 /* DMSans-MediumItalic.ttf in Resources */,
-				50D1D6B02763AAA2009D52C0 /* DMSans-Italic.ttf in Resources */,
-				50D1D6B12763AAA2009D52C0 /* DMSans-Regular.ttf in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				AB02F1297F7F91A0FD2532BD /* PrivacyInfo.xcprivacy in Resources */,
+				7AA19242A2DE47E8AFC56882 /* Figtree-Italic-VariableFont_wght.ttf in Resources */,
+				117516811AB44418A8ACF34F /* Figtree-VariableFont_wght.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

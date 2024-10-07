@@ -31,6 +31,8 @@ import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { useColors } from '@theme/themeHooks'
 
 const WELL_KNOWN_CANOPY_URL =
   'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/merkles.json'
@@ -53,6 +55,7 @@ export const WalletSignBottomSheetSimulated = ({
   onCancel,
 }: IWalletSignBottomSheetSimulatedProps) => {
   const { t } = useTranslation()
+  const colors = useColors()
   const { connection, cluster } = useSolana()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
@@ -199,7 +202,7 @@ export const WalletSignBottomSheetSimulated = ({
     totalWarnings && !suppressWarnings && worstSeverity === 'critical'
 
   return (
-    <Box p="4">
+    <SafeAreaBox p="4" edges={['bottom']} marginTop={'6xl'}>
       {header || url ? (
         <Box marginBottom="2">
           {header ? (
@@ -227,21 +230,29 @@ export const WalletSignBottomSheetSimulated = ({
             padding="4"
           >
             <Box flexDirection="row" marginBottom="4">
-              <Checkmark color="primaryText" />
-              <Text variant="textMdRegular" marginStart="2">
+              <Checkmark color={colors.primaryText} />
+              <Text
+                color="primaryText"
+                variant="textMdSemibold"
+                marginStart="2"
+              >
                 {t('browserScreen.connectBullet1')}
               </Text>
             </Box>
             <Box flexDirection="row">
-              <Checkmark color="primaryText" />
-              <Text marginStart="2" variant="textMdRegular">
+              <Checkmark color={colors.primaryText} />
+              <Text
+                color="primaryText"
+                marginStart="2"
+                variant="textMdSemibold"
+              >
                 {t('browserScreen.connectBullet2')}
               </Text>
             </Box>
           </Box>
           <Box>
             <Text
-              variant="textMdRegular"
+              variant="textMdSemibold"
               color="secondaryText"
               textAlign="center"
               marginTop="4"
@@ -271,7 +282,7 @@ export const WalletSignBottomSheetSimulated = ({
           <Box flexDirection="column" maxHeight={500}>
             <ScrollView>
               <Box flexDirection="row" alignItems="center">
-                <Text variant="textLgMedium" mr="2">
+                <Text color="primaryText" variant="textLgSemibold" mr="2">
                   {t('browserScreen.estimatedChanges')}
                 </Text>
                 <TouchableOpacityBox
@@ -338,7 +349,7 @@ export const WalletSignBottomSheetSimulated = ({
                 marginTop="2"
               >
                 <Box flexGrow={1} flexDirection="row" alignItems="center">
-                  <Text variant="textMdMedium" mr="2">
+                  <Text variant="textMdSemibold" mr="2" color="primaryText">
                     {t('browserScreen.writableAccounts')}
                   </Text>
                   <TouchableOpacityBox
@@ -372,7 +383,7 @@ export const WalletSignBottomSheetSimulated = ({
                       >
                         <Text
                           variant="textMdMedium"
-                          color={loading ? 'base.white' : 'ros.500'}
+                          color={loading ? 'base.white' : 'error.500'}
                         >
                           {error.message || error.toString()}
                         </Text>
@@ -417,11 +428,11 @@ export const WalletSignBottomSheetSimulated = ({
                   flexDirection="row"
                   justifyContent="space-between"
                 >
-                  <Text variant="textMdBold">
+                  <Text variant="textMdSemibold" color="primaryText">
                     {t('browserScreen.totalNetworkFee')}
                   </Text>
                   <Box flexDirection="row">
-                    <Text variant="textMdMedium" color="blue.500">
+                    <Text variant="textMdMedium" color="blue.dark-500">
                       {`~${estimatedTotalSol} SOL`}
                     </Text>
                     <Chevron color="gray.500" />
@@ -441,7 +452,7 @@ export const WalletSignBottomSheetSimulated = ({
                         </Text>
                       </Box>
 
-                      <Text variant="textMdRegular" color="blue.500">
+                      <Text variant="textMdRegular" color="blue.dark-500">
                         {`~${estimatedTotalBaseFee} SOL`}
                       </Text>
                     </Box>
@@ -457,7 +468,7 @@ export const WalletSignBottomSheetSimulated = ({
                         </Text>
                       </Box>
 
-                      <Text variant="textMdRegular" color="blue.500">
+                      <Text variant="textMdRegular" color="blue.dark-500">
                         {`~${estimatedTotalPriorityFee} SOL`}
                       </Text>
                     </Box>
@@ -477,7 +488,7 @@ export const WalletSignBottomSheetSimulated = ({
         >
           <Box flex={1}>
             <SubmitButton
-              color="ros.500"
+              color="error.500"
               backgroundColor="base.white"
               title={
                 type === WalletStandardMessageTypes.connect
@@ -509,11 +520,11 @@ export const WalletSignBottomSheetSimulated = ({
           <ButtonPressable
             width="48%"
             borderRadius="full"
-            backgroundColor="base.white"
-            backgroundColorOpacity={0.1}
+            backgroundColor={'secondaryBackground'}
             backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
-            titleColor="base.white"
+            backgroundColorPressed={'fg.secondary-hover'}
+            titleColor="primaryText"
+            titleColorPressed="primaryText"
             title={t('browserScreen.cancel')}
             onPress={onCancel}
           />
@@ -536,6 +547,6 @@ export const WalletSignBottomSheetSimulated = ({
           />
         </Box>
       )}
-    </Box>
+    </SafeAreaBox>
   )
 }

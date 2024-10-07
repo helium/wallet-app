@@ -36,7 +36,7 @@ const TokenChange = ({
   return (
     <Box flexDirection="row" alignItems="center">
       <TokenIcon img={image} size={24} />
-      <Text ml="xs" color="primaryText">
+      <Text ml="xs" color="primaryText" variant="textSmRegular">
         {symbol}
       </Text>
     </Box>
@@ -157,6 +157,7 @@ export const CollapsibleWritableAccountPreview = ({
                 <AnchorAccount width={24} height={24} />
               )}
               <Text
+                variant="textSmRegular"
                 maxWidth={115}
                 ml="xs"
                 color="primaryText"

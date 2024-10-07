@@ -123,251 +123,232 @@ export const TransferTokensModal = ({
           padding="4"
           marginHorizontal="2"
         >
-          <HNTKeyboard
-            usePortal
-            ref={hntKeyboardRef}
-            mint={mint}
-            networkFee={SOL_TXN_FEE}
-            actionableAmount={
-              maxTransferAmount && mintAcc
-                ? toBN(maxTransferAmount, mintAcc.decimals)
-                : undefined
-            }
-            onConfirmBalance={handleAmountChange}
-          >
-            <ScrollView>
-              <Box flexGrow={1} justifyContent="center">
-                <Text
-                  textAlign="left"
-                  variant="textLgMedium"
-                  adjustsFontSizeToFit
-                >
-                  {t('gov.transactions.transferPosition')}
+          <ScrollView>
+            <Box flexGrow={1} justifyContent="center">
+              <Text
+                textAlign="left"
+                variant="textLgMedium"
+                adjustsFontSizeToFit
+              >
+                {t('gov.transactions.transferPosition')}
+              </Text>
+              <Text
+                variant="textSmMedium"
+                color="secondaryText"
+                marginBottom="4"
+              >
+                {t('gov.positions.transferBlurb')}
+              </Text>
+              <Box
+                borderRadius="2xl"
+                backgroundColor="secondaryBackground"
+                padding="4"
+                marginBottom="4"
+              >
+                <Text variant="textXsRegular">
+                  {t('gov.positions.transferWarning')}
                 </Text>
-                <Text
-                  variant="textSmMedium"
-                  color="secondaryText"
-                  marginBottom="4"
-                >
-                  {t('gov.positions.transferBlurb')}
-                </Text>
-                <Box
-                  borderRadius="2xl"
-                  backgroundColor="secondaryBackground"
-                  padding="4"
-                  marginBottom="4"
-                >
-                  <Text variant="textXsRegular">
-                    {t('gov.positions.transferWarning')}
+                {!hasTransferablePositions ? (
+                  <Text
+                    marginTop="4"
+                    variant="textXsRegular"
+                    color="orange.500"
+                  >
+                    {t('gov.positions.cantTransfer')}
                   </Text>
-                  {!hasTransferablePositions ? (
-                    <Text
-                      marginTop="4"
-                      variant="textXsRegular"
-                      color="orange.500"
+                ) : (
+                  <Text marginTop="4" variant="textXsRegular">
+                    {t('gov.positions.transferLandrushWarning')}
+                  </Text>
+                )}
+              </Box>
+              {hasTransferablePositions && (
+                <>
+                  <Box backgroundColor="secondaryBackground" borderRadius="2xl">
+                    <TouchableOpacityBox
+                      paddingHorizontal="4"
+                      paddingVertical="6"
+                      onPress={handleAmountPressed}
                     >
-                      {t('gov.positions.cantTransfer')}
-                    </Text>
-                  ) : (
-                    <Text marginTop="4" variant="textXsRegular">
-                      {t('gov.positions.transferLandrushWarning')}
-                    </Text>
-                  )}
-                </Box>
-                {hasTransferablePositions && (
-                  <>
-                    <Box
-                      backgroundColor="secondaryBackground"
-                      borderRadius="2xl"
-                    >
-                      <TouchableOpacityBox
-                        paddingHorizontal="4"
-                        paddingVertical="6"
-                        onPress={handleAmountPressed}
-                      >
-                        <Text variant="textSmMedium" color="gray.600">
-                          {t('gov.positions.amountToTransfer')}
-                        </Text>
-                        <Text
-                          variant="textMdRegular"
-                          fontWeight="400"
-                          color="gray.600"
-                        >
-                          {amount || 'Amount (tokens)'}
-                        </Text>
-                      </TouchableOpacityBox>
-                    </Box>
-                    <Box justifyContent="center" marginTop="4">
-                      <Text
-                        variant="textSmMedium"
-                        color="secondaryText"
-                        marginBottom="4"
-                      >
-                        {t('gov.positions.selectTransfer')}
+                      <Text variant="textSmMedium" color="gray.600">
+                        {t('gov.positions.amountToTransfer')}
                       </Text>
-                    </Box>
-                    {positions.map((pos, idx) => {
-                      const { lockup } = pos
-                      const lockupKind = Object.keys(lockup.kind)[0] as string
-                      const isConstant = lockupKind === 'constant'
-                      const isSelected = selectedPosPk?.equals(pos.pubkey)
+                      <Text
+                        variant="textMdRegular"
+                        fontWeight="400"
+                        color="gray.600"
+                      >
+                        {amount || 'Amount (tokens)'}
+                      </Text>
+                    </TouchableOpacityBox>
+                  </Box>
+                  <Box justifyContent="center" marginTop="4">
+                    <Text
+                      variant="textSmMedium"
+                      color="secondaryText"
+                      marginBottom="4"
+                    >
+                      {t('gov.positions.selectTransfer')}
+                    </Text>
+                  </Box>
+                  {positions.map((pos, idx) => {
+                    const { lockup } = pos
+                    const lockupKind = Object.keys(lockup.kind)[0] as string
+                    const isConstant = lockupKind === 'constant'
+                    const isSelected = selectedPosPk?.equals(pos.pubkey)
 
-                      return (
-                        <TouchableOpacityBox
-                          key={pos.pubkey.toString()}
-                          marginTop={idx > 0 ? '4' : 'none'}
+                    return (
+                      <TouchableOpacityBox
+                        key={pos.pubkey.toString()}
+                        marginTop={idx > 0 ? '4' : 'none'}
+                        flex={1}
+                        borderRadius="2xl"
+                        backgroundColor={
+                          isSelected ? 'secondaryBackground' : 'bg.tertiary'
+                        }
+                        onPress={() => setSelectedPosPk(pos.pubkey)}
+                      >
+                        <Box
                           flex={1}
-                          borderRadius="2xl"
-                          backgroundColor={
-                            isSelected ? 'secondaryBackground' : 'bg.tertiary'
-                          }
-                          onPress={() => setSelectedPosPk(pos.pubkey)}
+                          flexDirection="row"
+                          padding="4"
+                          justifyContent="space-between"
                         >
                           <Box
                             flex={1}
+                            flexShrink={0}
                             flexDirection="row"
-                            padding="4"
-                            justifyContent="space-between"
+                            justifyContent="center"
                           >
-                            <Box
-                              flex={1}
-                              flexShrink={0}
-                              flexDirection="row"
-                              justifyContent="center"
-                            >
-                              <Box flex={1}>
-                                <Text
-                                  variant="textSmRegular"
-                                  color="secondaryText"
-                                >
-                                  {t('gov.positions.lockupType')}
-                                </Text>
-                                <Text
-                                  variant="textSmRegular"
-                                  color="primaryText"
-                                >
-                                  {isConstant ? 'Constant' : 'Decaying'}
-                                </Text>
-                              </Box>
-                            </Box>
-                            <Box
-                              flex={1}
-                              flexShrink={0}
-                              flexDirection="row"
-                              justifyContent="center"
-                            >
-                              <Box flex={1}>
-                                <Text
-                                  variant="textSmRegular"
-                                  color="secondaryText"
-                                >
-                                  {t('gov.positions.voteMult')}
-                                </Text>
-                                <Text
-                                  variant="textSmRegular"
-                                  color="primaryText"
-                                >
-                                  {(
-                                    (pos.votingPower.isZero()
-                                      ? 0
-                                      : // Mul by 100 to get 2 decimal places
-                                        pos.votingPower
-                                          .mul(new BN(100))
-                                          .div(pos.amountDepositedNative)
-                                          .toNumber() / 100) /
-                                    (pos.genesisEnd.gt(new BN(unixNow))
-                                      ? pos.votingMint
-                                          .genesisVotePowerMultiplier
-                                      : 1)
-                                  ).toFixed(2)}
-                                </Text>
-                              </Box>
-                            </Box>
-                            <Box flex={1} flexShrink={0} flexDirection="row">
-                              <Box flex={1}>
-                                <Text
-                                  variant="textSmRegular"
-                                  color="secondaryText"
-                                >
-                                  {isConstant ? 'Min. Duration' : 'Time left'}
-                                </Text>
-                                <Text
-                                  variant="textSmRegular"
-                                  color="primaryText"
-                                >
-                                  {isConstant
-                                    ? getMinDurationFmt(
-                                        pos.lockup.startTs,
-                                        pos.lockup.endTs,
-                                      )
-                                    : getTimeLeftFromNowFmt(pos.lockup.endTs)}
-                                </Text>
-                              </Box>
+                            <Box flex={1}>
+                              <Text
+                                variant="textSmRegular"
+                                color="secondaryText"
+                              >
+                                {t('gov.positions.lockupType')}
+                              </Text>
+                              <Text variant="textSmRegular" color="primaryText">
+                                {isConstant ? 'Constant' : 'Decaying'}
+                              </Text>
                             </Box>
                           </Box>
                           <Box
-                            borderTopColor="gray.true-700"
-                            borderTopWidth={1}
-                            paddingVertical="2"
-                            paddingHorizontal="4"
+                            flex={1}
+                            flexShrink={0}
+                            flexDirection="row"
+                            justifyContent="center"
                           >
-                            <Text variant="textSmRegular" color="primaryText">
-                              {t('gov.positions.lockedAmount', {
-                                amount:
-                                  mintAcc &&
-                                  humanReadable(
-                                    new BN(pos.amountDepositedNative),
-                                    mintAcc.decimals,
-                                  ),
-                                symbol,
-                              })}
-                            </Text>
+                            <Box flex={1}>
+                              <Text
+                                variant="textSmRegular"
+                                color="secondaryText"
+                              >
+                                {t('gov.positions.voteMult')}
+                              </Text>
+                              <Text variant="textSmRegular" color="primaryText">
+                                {(
+                                  (pos.votingPower.isZero()
+                                    ? 0
+                                    : // Mul by 100 to get 2 decimal places
+                                      pos.votingPower
+                                        .mul(new BN(100))
+                                        .div(pos.amountDepositedNative)
+                                        .toNumber() / 100) /
+                                  (pos.genesisEnd.gt(new BN(unixNow))
+                                    ? pos.votingMint.genesisVotePowerMultiplier
+                                    : 1)
+                                ).toFixed(2)}
+                              </Text>
+                            </Box>
                           </Box>
-                        </TouchableOpacityBox>
-                      )
-                    })}
-                  </>
-                )}
-              </Box>
-              {showError && (
-                <Box
-                  flexDirection="row"
-                  justifyContent="center"
-                  alignItems="center"
-                  paddingTop="4"
-                >
-                  <Text variant="textXsMedium" color="ros.500">
-                    {showError}
-                  </Text>
-                </Box>
+                          <Box flex={1} flexShrink={0} flexDirection="row">
+                            <Box flex={1}>
+                              <Text
+                                variant="textSmRegular"
+                                color="secondaryText"
+                              >
+                                {isConstant ? 'Min. Duration' : 'Time left'}
+                              </Text>
+                              <Text variant="textSmRegular" color="primaryText">
+                                {isConstant
+                                  ? getMinDurationFmt(
+                                      pos.lockup.startTs,
+                                      pos.lockup.endTs,
+                                    )
+                                  : getTimeLeftFromNowFmt(pos.lockup.endTs)}
+                              </Text>
+                            </Box>
+                          </Box>
+                        </Box>
+                        <Box
+                          borderTopColor="gray.true-700"
+                          borderTopWidth={1}
+                          paddingVertical="2"
+                          paddingHorizontal="4"
+                        >
+                          <Text variant="textSmRegular" color="primaryText">
+                            {t('gov.positions.lockedAmount', {
+                              amount:
+                                mintAcc &&
+                                humanReadable(
+                                  new BN(pos.amountDepositedNative),
+                                  mintAcc.decimals,
+                                ),
+                              symbol,
+                            })}
+                          </Text>
+                        </Box>
+                      </TouchableOpacityBox>
+                    )
+                  })}
+                </>
               )}
-            </ScrollView>
-            <Box flexDirection="row" paddingTop="4">
-              <ButtonPressable
-                flex={1}
-                fontSize={16}
-                borderRadius="full"
-                backgroundColor="base.white"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="bg.tertiary"
-                backgroundColorDisabledOpacity={0.9}
-                titleColorDisabled="secondaryText"
-                title={
-                  isSubmitting ? '' : t('gov.transactions.transferPosition')
-                }
-                titleColor="base.black"
-                onPress={handleSubmit}
-                disabled={!amount || !selectedPosPk || isSubmitting}
-                TrailingComponent={
-                  isSubmitting ? (
-                    <CircleLoader color="primaryText" />
-                  ) : undefined
-                }
-              />
             </Box>
-          </HNTKeyboard>
+            {showError && (
+              <Box
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                paddingTop="4"
+              >
+                <Text variant="textXsMedium" color="error.500">
+                  {showError}
+                </Text>
+              </Box>
+            )}
+          </ScrollView>
+          <Box flexDirection="row" paddingTop="4">
+            <ButtonPressable
+              flex={1}
+              fontSize={16}
+              borderRadius="full"
+              backgroundColor="base.white"
+              backgroundColorOpacityPressed={0.7}
+              backgroundColorDisabled="bg.tertiary"
+              backgroundColorDisabledOpacity={0.9}
+              titleColorDisabled="secondaryText"
+              title={isSubmitting ? '' : t('gov.transactions.transferPosition')}
+              titleColor="base.black"
+              onPress={handleSubmit}
+              disabled={!amount || !selectedPosPk || isSubmitting}
+              TrailingComponent={
+                isSubmitting ? <CircleLoader color="primaryText" /> : undefined
+              }
+            />
+          </Box>
         </BackScreen>
       </ReAnimatedBlurBox>
+      <HNTKeyboard
+        ref={hntKeyboardRef}
+        mint={mint}
+        networkFee={SOL_TXN_FEE}
+        actionableAmount={
+          maxTransferAmount && mintAcc
+            ? toBN(maxTransferAmount, mintAcc.decimals)
+            : undefined
+        }
+        onConfirmBalance={handleAmountChange}
+      />
     </Portal>
   )
 }

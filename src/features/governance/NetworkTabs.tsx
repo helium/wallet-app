@@ -1,27 +1,62 @@
 import Box from '@components/Box'
-import TokenPill from '@components/TokenPill'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { GovMints } from '@utils/constants'
-import React, { useRef } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Animated } from 'react-native'
 import { GovernanceNavigationProp } from './governanceTypes'
+import SegmentedControl from '@components/SegmentedControl'
+import { Mints } from '@utils/constants'
+import IOT from '@assets/images/iot.svg'
+import MOBILE from '@assets/images/mobile.svg'
+import HNT from '@assets/images/hnt.svg'
 
 export const NetworkTabs: React.FC = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { currentAccount } = useAccountStorage()
   const { mint, proposalCountByMint } = useGovernance()
   const anim = useRef(new Animated.Value(1))
+  const [selectedIndex, setSelectedIndex] = useState(0)
+
+  const options = useMemo(
+    () => [
+      {
+        label: 'HNT',
+        value: Mints.HNT,
+        Icon: HNT,
+        iconProps: { width: 20, height: 20 },
+      },
+      {
+        label: 'MOBILE',
+        value: Mints.MOBILE,
+        Icon: MOBILE,
+        iconProps: { width: 20, height: 20 },
+      },
+      {
+        label: 'IOT',
+        value: Mints.IOT,
+        Icon: IOT,
+        iconProps: { width: 20, height: 20 },
+      },
+    ],
+    [],
+  )
+
+  const onItemSelected = useCallback((index: number) => {
+    setSelectedIndex(index)
+    const pk = new PublicKey(options[index].value)
+    navigation.setParams({ mint: pk.toBase58() })
+  }, [])
 
   return (
-    <Box
-      flexDirection="row"
-      justifyContent="space-between"
-      paddingHorizontal="4"
-    >
-      {GovMints.map((m) => {
+    <Box flexDirection="row" justifyContent="center">
+      <SegmentedControl
+        options={options}
+        selectedIndex={selectedIndex}
+        onItemSelected={onItemSelected}
+      />
+      {/* {GovMints.map((m) => {
         const pk = new PublicKey(m)
         const hasUnseenProposals =
           (proposalCountByMint?.[m] || 0) >
@@ -36,6 +71,7 @@ export const NetworkTabs: React.FC = () => {
               inactiveColor="secondaryBackground"
               activeColor="cardBackground"
             />
+
             {!mint.equals(pk) && hasUnseenProposals && (
               <Box
                 flexDirection="row"
@@ -77,7 +113,7 @@ export const NetworkTabs: React.FC = () => {
             )}
           </Box>
         )
-      })}
+      })} */}
     </Box>
   )
 }

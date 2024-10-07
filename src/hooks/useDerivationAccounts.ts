@@ -132,27 +132,27 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
 
                     if (keypair) {
                       let needsMigrated = false
-                      const [balance, tokens, nfts] = await Promise.all([
+                      const [balance] = await Promise.all([
                         retryWithBackoff(() =>
                           connection.getBalance(keypair.publicKey),
                         ),
-                        retryWithBackoff(() =>
-                          connection.getTokenAccountsByOwner(
-                            keypair.publicKey,
-                            {
-                              programId: TOKEN_PROGRAM_ID,
-                            },
-                          ),
-                        ),
-                        retryWithBackoff(() =>
-                          getAssetsByOwner(
-                            connection.rpcEndpoint,
-                            keypair.publicKey.toBase58(),
-                            {
-                              limit: 10,
-                            },
-                          ),
-                        ),
+                        // retryWithBackoff(() =>
+                        //   connection.getTokenAccountsByOwner(
+                        //     keypair.publicKey,
+                        //     {
+                        //       programId: TOKEN_PROGRAM_ID,
+                        //     },
+                        //   ),
+                        // ),
+                        // retryWithBackoff(() =>
+                        //   getAssetsByOwner(
+                        //     connection.rpcEndpoint,
+                        //     keypair.publicKey.toBase58(),
+                        //     {
+                        //       limit: 10,
+                        //     },
+                        //   ),
+                        // ),
                       ])
 
                       if (derivationPath === heliumDerivation(-1)) {
@@ -168,9 +168,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                         derivationPath,
                         keypair,
                         balance,
-                        tokens,
                         needsMigrated,
-                        nfts,
                       } as ResolvedPath
                     }
                   }),

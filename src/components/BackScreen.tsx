@@ -6,7 +6,7 @@ import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { Color, Spacing, Theme } from '@theme/theme'
-import { useHitSlop } from '@theme/themeHooks'
+import { useColors, useHitSlop } from '@theme/themeHooks'
 import BackButton from './BackButton'
 import Box from './Box'
 import CloseButton from './CloseButton'
@@ -55,6 +55,7 @@ const BackScreen = ({
 }: Props) => {
   const navigation = useNavigation()
   const hitSlop = useHitSlop('6')
+  const colors = useColors()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
 
   return (
@@ -105,7 +106,7 @@ const BackScreen = ({
               onPress={onTrailingIconPress}
               justifyContent="center"
             >
-              <TrailingIcon />
+              <TrailingIcon color={colors.primaryText} />
             </TouchableOpacityBox>
           )}
         </Box>

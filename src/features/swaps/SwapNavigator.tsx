@@ -3,18 +3,21 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
 import { JupiterProvider } from '@storage/JupiterProvider'
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import SwappingScreen from './SwappingScreen'
 import SwapScreen from './SwapScreen'
 
 const SwapStack = createNativeStackNavigator()
 
-const cardPresentation: NativeStackNavigationOptions = {
-  headerShown: false,
-  presentation: 'card',
-}
-
 const SwapStackScreen = () => {
+  const cardPresentation: NativeStackNavigationOptions = useMemo(
+    () => ({
+      headerShown: false,
+      presentation: 'card',
+    }),
+    [],
+  )
+
   return (
     <JupiterProvider>
       <SwapStack.Navigator screenOptions={cardPresentation}>

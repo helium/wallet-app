@@ -10,6 +10,8 @@ import CreateAccountNavigator from './create/CreateAccountNavigator'
 import ImportAccountNavigator from './import/ImportAccountNavigator'
 import ImportPrivateKey from './import/ImportPrivateKey'
 import { OnboardingStackParamList } from './onboardingTypes'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 
 const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
 
@@ -30,32 +32,34 @@ const OnboardingNavigator = () => {
     [],
   )
   return (
-    <OnboardingStack.Navigator screenOptions={screenOptions}>
-      <OnboardingStack.Screen
-        name="CreateImport"
-        component={CreateImportAccountScreen}
-      />
-      <OnboardingStack.Screen
-        name="CreateAccount"
-        component={CreateAccountNavigator}
-        options={subScreenOptions}
-      />
-      <OnboardingStack.Screen
-        name="ImportAccount"
-        component={ImportAccountNavigator}
-        options={subScreenOptions}
-      />
-      <OnboardingStack.Screen
-        name="LedgerNavigator"
-        component={LedgerNavigator}
-        options={subScreenOptions}
-      />
-      <OnboardingStack.Screen
-        name="ImportPrivateKey"
-        component={ImportPrivateKey}
-        options={subScreenOptions}
-      />
-    </OnboardingStack.Navigator>
+    <ThemeProvider theme={darkTheme}>
+      <OnboardingStack.Navigator screenOptions={screenOptions}>
+        <OnboardingStack.Screen
+          name="CreateImport"
+          component={CreateImportAccountScreen}
+        />
+        <OnboardingStack.Screen
+          name="CreateAccount"
+          component={CreateAccountNavigator}
+          options={subScreenOptions}
+        />
+        <OnboardingStack.Screen
+          name="ImportAccount"
+          component={ImportAccountNavigator}
+          options={subScreenOptions}
+        />
+        <OnboardingStack.Screen
+          name="LedgerNavigator"
+          component={LedgerNavigator}
+          options={subScreenOptions}
+        />
+        <OnboardingStack.Screen
+          name="ImportPrivateKey"
+          component={ImportPrivateKey}
+          options={subScreenOptions}
+        />
+      </OnboardingStack.Navigator>
+    </ThemeProvider>
   )
 }
 export default memo(OnboardingNavigator)

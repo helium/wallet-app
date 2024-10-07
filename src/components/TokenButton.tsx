@@ -6,7 +6,7 @@ import { PublicKey } from '@solana/web3.js'
 import { Color, Theme } from '@theme/theme'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
-import { Keyboard, StyleSheet } from 'react-native'
+import { Keyboard } from 'react-native'
 import Box from './Box'
 import Text from './Text'
 import TokenIcon from './TokenIcon'
@@ -14,6 +14,7 @@ import TouchableOpacityBox from './TouchableOpacityBox'
 
 const TokenItem = ({ mint }: { mint?: PublicKey }) => {
   const { json } = useMetaplexMetadata(mint)
+  console.log('image: ', json?.image)
   return (
     <Box alignItems="center">
       <TokenIcon img={json?.image} size={41} />
@@ -91,26 +92,8 @@ const TokenButton = ({
         </Box>
         <ChevronDown color={colors[textColor]} />
       </Box>
-      {showBubbleArrow && (
-        <Box height={18}>
-          <Box
-            backgroundColor={backgroundColorProps as Color}
-            alignSelf="center"
-            style={styles.rotatedBox}
-          />
-        </Box>
-      )}
     </TouchableOpacityBox>
   )
 }
-
-const styles = StyleSheet.create({
-  rotatedBox: {
-    height: 18,
-    width: 18,
-    margin: -9,
-    transform: [{ rotate: '45deg' }],
-  },
-})
 
 export default memo(TokenButton)

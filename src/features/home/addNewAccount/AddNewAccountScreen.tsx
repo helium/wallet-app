@@ -46,8 +46,8 @@ const AddNewAccountScreen = () => {
   }, [navigation])
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      <Box backgroundColor="bg.tertiary">
+    <Box flex={1} backgroundColor="primaryBackground">
+      <Box>
         <Box flexDirection="row" paddingVertical="4">
           <Box flex={1} />
           <Text variant="textXlMedium" color="primaryText">

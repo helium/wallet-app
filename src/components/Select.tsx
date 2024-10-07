@@ -36,6 +36,7 @@ export const Select: React.FC<SelectProps> = ({
         borderWidth={1}
         borderColor="border.primary"
         backgroundColor="cardBackground"
+        backgroundColorPressed={'secondaryBackground'}
         borderRadius="2xl"
         flexDirection="row"
         justifyContent="space-between"

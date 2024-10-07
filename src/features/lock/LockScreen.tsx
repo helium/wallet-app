@@ -15,6 +15,8 @@ import {
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -125,4 +127,12 @@ const LockScreen = ({ children }: Props) => {
   )
 }
 
-export default memo(LockScreen)
+const LockScreenWrapper = ({ children }: Props) => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <LockScreen>{children}</LockScreen>
+    </ThemeProvider>
+  )
+}
+
+export default memo(LockScreenWrapper)

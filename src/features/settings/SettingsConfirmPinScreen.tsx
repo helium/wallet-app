@@ -4,6 +4,8 @@ import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import ConfirmPinView from '@components/ConfirmPinView'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp, SettingsStackParamList } from './settingsTypes'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 
 type Route = RouteProp<SettingsStackParamList, 'SettingsConfirmPin'>
 
@@ -86,4 +88,12 @@ const SettingsConfirmPinScreen = () => {
   )
 }
 
-export default SettingsConfirmPinScreen
+const SettingsConfirmPinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <SettingsConfirmPinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default SettingsConfirmPinScreenWrapper

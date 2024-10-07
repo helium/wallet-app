@@ -352,7 +352,7 @@ export const ProposalScreen = () => {
                         </Text>
                       )}
                       {derivedState === 'failed' && (
-                        <Text variant="textSmRegular" color="ros.500">
+                        <Text variant="textSmRegular" color="error.500">
                           {t('gov.proposals.failed')}
                         </Text>
                       )}
@@ -530,12 +530,7 @@ export const ProposalScreen = () => {
                       title={t('gov.assignProxy.browseVoters')}
                     />
                   </Box>
-                  <Box
-                    flexGrow={1}
-                    justifyContent="center"
-                    mt="4"
-                    {...{ gap: 14 }}
-                  >
+                  <Box flexGrow={1} justifyContent="center" mt="4" gap="4">
                     {showError && (
                       <Box
                         flexDirection="row"
@@ -543,12 +538,12 @@ export const ProposalScreen = () => {
                         borderRadius="2xl"
                         padding="4"
                       >
-                        <Text variant="textXsMedium" color="ros.500">
+                        <Text variant="textXsMedium" color="error.500">
                           {showError}
                         </Text>
                       </Box>
                     )}
-                    <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
+                    <Box flex={1} flexDirection="column" gap="4">
                       {votingResults.results?.map((r, index) => (
                         <Box
                           backgroundColor="bg.tertiary"

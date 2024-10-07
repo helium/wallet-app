@@ -10,7 +10,6 @@ import { Select } from '@components/Select'
 import Text from '@components/Text'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
-import globalStyles from '@theme/globalStyles'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Animated } from 'react-native'
@@ -21,12 +20,8 @@ import {
 } from './governanceTypes'
 import { useSetTab } from './useSetTab'
 import { NetworkTabs } from './NetworkTabs'
-
-const icons: { [key: string]: React.ReactElement } = {
-  proposals: <Flag width={16} height={16} color="primaryText" />,
-  voters: <LightningBolt width={16} height={16} color="primaryText" />,
-  positions: <UserStar width={16} height={16} color="primaryText" />,
-}
+import { FadeIn } from 'react-native-reanimated'
+import { useColors } from '@theme/themeHooks'
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalsScreen'>
 export const GovernanceWrapper: React.FC<
@@ -42,6 +37,18 @@ export const GovernanceWrapper: React.FC<
   const { loading, hasUnseenProposals } = useGovernance()
   const anim = useRef(new Animated.Value(1))
   const setSelectedTab = useSetTab()
+  const colors = useColors()
+
+  const icons: { [key: string]: React.ReactElement } = useMemo(
+    () => ({
+      proposals: <Flag width={16} height={16} color={colors.primaryText} />,
+      voters: (
+        <LightningBolt width={16} height={16} color={colors.primaryText} />
+      ),
+      positions: <UserStar width={16} height={16} color={colors.primaryText} />,
+    }),
+    [colors],
+  )
 
   useEffect(() => {
     // if we have a mint and proposal, navigate to the proposal screen
@@ -86,26 +93,18 @@ export const GovernanceWrapper: React.FC<
   }, [loading, hasUnseenProposals])
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
-      <SafeAreaBox edges={safeEdges} flex={1}>
+    <ReAnimatedBox entering={FadeIn} paddingHorizontal={'5'}>
+      <Box flex={1}>
         <Box flexDirection="column" height="100%">
-          <Text
-            marginTop="4"
-            alignSelf="center"
-            variant="textXlRegular"
-            color="primaryText"
-          >
-            {t('gov.title')}
-          </Text>
-          <Box mt="8" mb="6">
+          <Box mt="6" mb="6">
             <NetworkTabs />
           </Box>
           {loading ? (
-            <Box paddingHorizontal="4" mt="12" flexDirection="column" flex={1}>
+            <Box mt="12" flexDirection="column" flex={1}>
               <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           ) : (
-            <Box paddingHorizontal="4" mt="12" flexDirection="column" flex={1}>
+            <Box mt="4" flexDirection="column" flex={1}>
               {header}
               <Select
                 mb="8"
@@ -122,7 +121,7 @@ export const GovernanceWrapper: React.FC<
             </Box>
           )}
         </Box>
-      </SafeAreaBox>
+      </Box>
     </ReAnimatedBox>
   )
 }

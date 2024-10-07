@@ -33,7 +33,6 @@ export type HomeStackParamList = {
   BurnScreen: BurnRouteParam
   PaymentQrScanner: undefined
   RequestScreen: undefined
-  OnboardData: undefined
   AddressBookNavigator: undefined
   NotificationsNavigator: undefined
   SettingsNavigator: undefined

@@ -21,8 +21,8 @@ const BrowserListItem = ({
       backgroundColor="cardBackground"
       flexDirection="row"
       padding="4"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="border.primary"
+      borderBottomWidth={hasDivider ? 2 : 0}
+      borderBottomColor="primaryBackground"
       {...rest}
     >
       <Box marginStart="2" flexGrow={1} flexBasis={0.5} justifyContent="center">

@@ -3,7 +3,7 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
-import { useCreateOpacity } from '@theme/themeHooks'
+import { useColors, useCreateOpacity } from '@theme/themeHooks'
 import React, { memo, useCallback } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
 import { Color } from '@theme/theme'
@@ -16,8 +16,9 @@ export const TokenPill = memo(
     isActive = false,
     isDisabled = false,
     onPress,
-    activeColor = 'primaryBackground',
-    inactiveColor = 'bg.tertiary',
+    activeColor = 'secondaryBackground',
+    inactiveColor = 'primaryBackground',
+    hasTicker = true,
     ...rest
   }: {
     mint: PublicKey
@@ -28,8 +29,10 @@ export const TokenPill = memo(
     style?: ViewStyle | undefined
     activeColor?: Color
     inactiveColor?: Color
+    hasTicker?: boolean
   }) => {
     const { symbol, json } = useMetaplexMetadata(mint)
+    const colors = useColors()
     const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
 
     const getBackgroundColorStylePill = useCallback(
@@ -98,17 +101,19 @@ export const TokenPill = memo(
               >
                 <TokenIcon img={json?.image} size={24} />
               </Box>
-              <Text
-                variant="textSmMedium"
-                color="primaryText"
-                flexGrow={1}
-                textAlign="center"
-              >
-                {symbol}
-              </Text>
+              {hasTicker && (
+                <Text
+                  variant="textSmSemibold"
+                  color={'primaryText'}
+                  flexGrow={1}
+                  textAlign="center"
+                >
+                  {symbol}
+                </Text>
+              )}
               {hasCarot && (
                 <Box marginStart="xs" justifyContent="center">
-                  <CarotDown color="primaryText" width={9} />
+                  <CarotDown color={colors['fg.disabled']} width={9} />
                 </Box>
               )}
             </Box>

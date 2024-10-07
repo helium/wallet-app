@@ -99,7 +99,7 @@ const NotificationsList = ({
     () => (
       <FadeInOut>
         <Box alignItems="center">
-          <Text color="primaryText" marginTop="8">
+          <Text variant="textSmRegular" color="primaryText" marginTop="8">
             {t('notifications.emptyTitle')}
           </Text>
         </Box>

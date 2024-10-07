@@ -45,7 +45,7 @@ export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
             width={70}
             height={16}
             marginTop="xs"
-            backgroundColor="cardBackground"
+            backgroundColor="fg.quinary-400"
           />
         </Box>
         <Box flex={1} alignItems="flex-end">
@@ -56,7 +56,7 @@ export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
             width={70}
             height={16}
             marginTop="xs"
-            backgroundColor="cardBackground"
+            backgroundColor="fg.quinary-400"
           />
         </Box>
       </Box>
@@ -67,7 +67,7 @@ export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
         paddingVertical="4"
         paddingHorizontal="4"
       >
-        <Box width={320} height={16} backgroundColor="cardBackground" />
+        <Box width={320} height={16} backgroundColor="fg.quinary-400" />
       </Box>
     </FadeInOut>
   )

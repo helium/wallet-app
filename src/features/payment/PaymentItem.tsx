@@ -1,20 +1,17 @@
-import ContactIcon from '@assets/images/account.svg'
+import AddressIcon from '@assets/images/addressIcon.svg'
 import Remove from '@assets/images/remove.svg'
-import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import MemoInput from '@components/MemoInput'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Address from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
-import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
@@ -66,7 +63,7 @@ type Props = {
   showAmount?: boolean
 } & Payment
 
-const ITEM_HEIGHT = 80
+const ITEM_HEIGHT = 74
 
 const PaymentItem = ({
   account,
@@ -92,7 +89,6 @@ const PaymentItem = ({
   ...boxProps
 }: Props) => {
   const decimals = useMint(mint)?.info?.decimals
-  const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
@@ -194,22 +190,9 @@ const PaymentItem = ({
     [account, address],
   )
 
-  const AddressIcon = useCallback(() => {
-    if (address && Address.isValid(address)) {
-      return <AccountIcon address={address} size={40} />
-    }
-    return <ContactIcon color={secondaryText} />
-  }, [address, secondaryText])
-
   return (
-    <Box
-      marginHorizontal="6"
-      backgroundColor="cardBackground"
-      borderRadius="4xl"
-      overflow="hidden"
-      {...boxProps}
-    >
-      {hasError && <BackgroundFill backgroundColor="ros.500" opacity={0.2} />}
+    <Box marginHorizontal="6" overflow="hidden" {...boxProps}>
+      {hasError && <BackgroundFill backgroundColor="error.500" opacity={0.2} />}
       <Box flexDirection="row">
         {isDeepLink && address ? (
           <Text
@@ -222,29 +205,35 @@ const PaymentItem = ({
             {ellipsizeAddress(address)}
           </Text>
         ) : (
-          <Box flex={1} minHeight={ITEM_HEIGHT} justifyContent="center">
+          <Box
+            marginTop={'md'}
+            flex={1}
+            minHeight={ITEM_HEIGHT}
+            justifyContent="center"
+            backgroundColor={'cardBackground'}
+            borderTopStartRadius={'2xl'}
+            borderTopEndRadius={'2xl'}
+          >
             <Box>
               <Box
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Box flex={1} marginTop="2">
-                  <Text />
-                  <Box position="absolute" top={10} left={0}>
+                <Box flex={1}>
+                  <Box position="absolute" top={0} left={0}>
                     <Text
                       marginStart="4"
-                      variant="textXsRegular"
-                      color="secondaryText"
+                      variant="textMdSemibold"
+                      color="primaryText"
                     >
-                      {account?.alias && account?.alias.split('.').length === 2
-                        ? address && shortenAddress(address, 6)
-                        : account?.alias}
+                      {t('payment.to')}
                     </Text>
                   </Box>
                   <TextInput
-                    variant="transparent"
+                    variant="transparentSmall"
                     flex={1}
+                    marginTop={'3'}
                     textInputProps={{
                       placeholder: t('payment.enterAddress'),
                       value: rawAddress || address,
@@ -259,7 +248,12 @@ const PaymentItem = ({
                     }}
                   />
                   {isProgramAccount ? (
-                    <Text ml="4" mb="2" color="orange.500">
+                    <Text
+                      variant="textMdSemibold"
+                      ml="4"
+                      mb="2"
+                      color="orange.500"
+                    >
                       {t('payment.programOwnedWarning')}
                     </Text>
                   ) : null}
@@ -285,10 +279,15 @@ const PaymentItem = ({
         )}
       </Box>
 
-      <Box height={1} backgroundColor="primaryBackground" />
-
       {showAmount && (
-        <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
+        <Box
+          flexDirection="row"
+          minHeight={ITEM_HEIGHT}
+          backgroundColor={'cardBackground'}
+          borderBottomStartRadius={'2xl'}
+          borderBottomEndRadius={'2xl'}
+          marginTop={'0.5'}
+        >
           {!amount || amount?.isZero() ? (
             <>
               <TouchableOpacityBox
@@ -298,11 +297,10 @@ const PaymentItem = ({
               >
                 {!loadingMeta && (
                   <Text
-                    color="secondaryText"
+                    color="primaryText"
+                    opacity={0.3}
                     padding="4"
-                    variant="textLgMedium"
-                    fontWeight="100"
-                    style={colorStyle}
+                    variant="textLgSemibold"
                   >
                     {t('payment.enterAmount', {
                       ticker: symbol,
@@ -325,11 +323,7 @@ const PaymentItem = ({
                 {humanReadable(amount, decimals)}
               </Text>
               {fee && (
-                <Text
-                  paddingHorizontal="4"
-                  variant="textXsRegular"
-                  style={colorStyle}
-                >
+                <Text paddingHorizontal="4" variant="textXsRegular">
                   {t('payment.fee', {
                     value: humanReadable(feeAsTokens, 8),
                   })}

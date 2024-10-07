@@ -13,15 +13,27 @@ import WifiSettings from './WifiSettings'
 import Diagnostics from './Diagnostics'
 import WifiSetup from './WifiSetup'
 import { IotBleOptionsProvider } from './optionsContext'
+import { useColors } from '@theme/themeHooks'
 
 const Stack = createNativeStackNavigator()
 
-const screenOptions = { headerShown: false } as NativeStackNavigationOptions
-
 type Route = RouteProp<OnboardingtackParamList, 'IotBle'>
 export default React.memo(function HotspotBLENav() {
+  const colors = useColors()
   const route = useRoute<Route>()
   const iotParams = route.params
+
+  const screenOptions = React.useMemo(
+    () =>
+      ({
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: colors.primaryBackground,
+        },
+      } as NativeStackNavigationOptions),
+    [colors],
+  )
+
   return (
     <IotBleOptionsProvider value={iotParams}>
       <HotspotBleProvider>

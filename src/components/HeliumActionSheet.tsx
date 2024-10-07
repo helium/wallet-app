@@ -24,7 +24,7 @@ import HeliumActionSheetItem, {
 import Text, { TextProps } from './Text'
 import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import HeliumBottomSheet from './HeliumBottomSheet'
+import HeliumBottomActionSheet from './HeliumBottomActionSheet'
 
 type Props = BoxProps<Theme> & {
   data: Array<HeliumActionSheetItemType>
@@ -159,6 +159,7 @@ const HeliumActionSheet = forwardRef(
             borderRadius="2xl"
           >
             <Text
+              variant={'textSmRegular'}
               fontWeight="500"
               fontSize={18}
               color="secondaryText"
@@ -192,6 +193,7 @@ const HeliumActionSheet = forwardRef(
           <Box flexDirection="row">
             {!!prefix && (
               <Text
+                variant="textSmRegular"
                 color="primaryText"
                 maxFontSizeMultiplier={1}
                 marginRight="xs"
@@ -204,6 +206,7 @@ const HeliumActionSheet = forwardRef(
             )}
             {!!buttonTitle && (
               <Text
+                variant="textSmRegular"
                 maxFontSizeMultiplier={1}
                 marginRight="2"
                 fontWeight="bold"
@@ -232,7 +235,7 @@ const HeliumActionSheet = forwardRef(
     return (
       <Box {...boxProps}>
         {displayText}
-        <HeliumBottomSheet
+        <HeliumBottomActionSheet
           isVisible={modalVisible}
           onClose={handleClose}
           sheetHeight={sheetHeight}
@@ -244,7 +247,7 @@ const HeliumActionSheet = forwardRef(
             renderItem={renderItem}
           />
           {footer}
-        </HeliumBottomSheet>
+        </HeliumBottomActionSheet>
       </Box>
     )
   },

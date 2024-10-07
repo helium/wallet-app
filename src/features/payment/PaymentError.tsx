@@ -58,7 +58,7 @@ const PaymentError = ({
       {!!errorMessage && (
         <Text
           variant="textMdRegular"
-          color="ros.500"
+          color="error.500"
           paddingHorizontal="6"
           paddingTop="0"
           paddingBottom="12"
@@ -90,8 +90,8 @@ const PaymentError = ({
             onPress={navigation.goBack}
             overflow="hidden"
           >
-            <BackgroundFill backgroundColor="ros.500" />
-            <Text variant="textXlMedium" textAlign="center" color="ros.500">
+            <BackgroundFill backgroundColor="error.500" />
+            <Text variant="textXlMedium" textAlign="center" color="error.500">
               {t('generic.cancel')}
             </Text>
           </TouchableOpacityBox>

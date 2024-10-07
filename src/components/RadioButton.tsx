@@ -39,7 +39,12 @@ const RadioButton: React.FC<RadioButtonProps> = ({
           backgroundColor={selected ? 'blue.light-500' : 'transparent'}
         />
       </TouchableOpacityBox>
-      <Text width="90%" onPress={() => onClick()} color="primaryText">
+      <Text
+        variant="textSmRegular"
+        width="90%"
+        onPress={() => onClick()}
+        color="primaryText"
+      >
         {label}
       </Text>
     </Box>

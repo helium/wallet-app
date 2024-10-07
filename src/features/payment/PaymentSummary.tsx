@@ -120,7 +120,7 @@ const PaymentSummary = ({
           </>
         )}
         {!!errors?.length && (
-          <Text variant="textSmRegular" color="ros.500">
+          <Text variant="textSmRegular" color="error.500">
             {errors[0]}
           </Text>
         )}

@@ -22,7 +22,7 @@ import { times } from 'lodash'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { AppState, RefreshControl } from 'react-native'
+import { AppState, FlatList, RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import { GovMints } from '../../utils/constants'
@@ -31,10 +31,6 @@ import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
-
-type Props = {
-  onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
-}
 
 const sortValues: Record<string, number> = {
   [HNT_MINT.toBase58()]: 10,
@@ -46,7 +42,7 @@ export function getSortValue(mint: string): number {
   return sortValues[mint] || 0
 }
 
-const AccountTokenList = ({ onLayout }: Props) => {
+const AccountTokenList = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { visibleTokens } = useVisibleTokens()
@@ -167,13 +163,13 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: PublicKey }) => {
-      if (GovMints.some((m) => new PublicKey(m).equals(item)))
-        return (
-          <Box>
-            <TokenListItem mint={item} />
-            <TokenListGovItem mint={item} />
-          </Box>
-        )
+      // if (GovMints.some((m) => new PublicKey(m).equals(item)))
+      //   return (
+      //     <Box>
+      //       <TokenListItem mint={item} />
+      //       <TokenListGovItem mint={item} />
+      //     </Box>
+      //   )
 
       return <TokenListItem mint={item} />
     },
@@ -213,16 +209,14 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const contentContainerStyle = useMemo(
     () => ({
-      paddingBottom: bottomSpace,
+      // paddingBottom: bottomSpace,
     }),
     [bottomSpace],
   )
 
   return (
-    <BottomSheetFlatList
-      onLayout={onLayout}
+    <FlatList
       data={mints}
-      numColumns={2}
       refreshControl={
         <RefreshControl
           enabled
@@ -234,13 +228,13 @@ const AccountTokenList = ({ onLayout }: Props) => {
       }
       refreshing={refetchingTokens}
       onRefresh={refetchTokens}
-      columnWrapperStyle={{
-        flexDirection: 'column',
-      }}
+      // columnWrapperStyle={{
+      //   flexDirection: 'column',
+      // }}
       contentContainerStyle={contentContainerStyle}
       renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      ListFooterComponent={renderFooterComponent}
+      // ListEmptyComponent={renderEmptyComponent}
+      // ListFooterComponent={renderFooterComponent}
       keyExtractor={keyExtractor}
     />
   )

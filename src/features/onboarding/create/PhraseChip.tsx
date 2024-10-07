@@ -30,7 +30,7 @@ const PhraseChip = ({
   const [underlayShowing, setUnderlayShowing] = useState(false)
 
   const getBackgroundColor = useCallback((): Color => {
-    if (fail) return 'ros.500'
+    if (fail) return 'error.500'
     if (success) return 'green.light-500'
     return 'transparent10'
   }, [fail, success])

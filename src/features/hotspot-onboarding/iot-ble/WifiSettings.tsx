@@ -159,7 +159,7 @@ const WifiSettings = () => {
   return (
     <BackScreen title={t('hotspotOnboarding.wifiSettings.title')}>
       {error && (
-        <Text variant="textMdMedium" color="ros.500">
+        <Text variant="textMdMedium" color="error.500">
           {error.message ? error.message.toString() : error.toString()}
         </Text>
       )}

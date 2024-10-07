@@ -147,7 +147,12 @@ export const ProposalCard = ({
                     backgroundColor="orange.500"
                     borderRadius="full"
                   />
-                  <Text fontSize={10} color="secondaryText" marginLeft="2">
+                  <Text
+                    variant="textSmRegular"
+                    fontSize={10}
+                    color="secondaryText"
+                    marginLeft="2"
+                  >
                     UNSEEN
                   </Text>
                 </Box>
@@ -169,7 +174,12 @@ export const ProposalCard = ({
                     backgroundColor="blue.light-500"
                     borderRadius="full"
                   />
-                  <Text fontSize={10} color="secondaryText" marginLeft="2">
+                  <Text
+                    variant="textSmRegular"
+                    fontSize={10}
+                    color="secondaryText"
+                    marginLeft="2"
+                  >
                     ACTIVE
                   </Text>
                 </Box>
@@ -242,7 +252,7 @@ export const ProposalCard = ({
                 </Text>
               )}
               {derivedState === 'failed' && (
-                <Text variant="textSmRegular" color="ros.500">
+                <Text variant="textSmRegular" color="error.500">
                   {t('gov.proposals.failed')}
                 </Text>
               )}

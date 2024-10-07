@@ -97,11 +97,16 @@ const ConfirmPinView = ({
         maxFontSizeMultiplier={1}
         numberOfLines={1}
         adjustsFontSizeToFit
+        color="primaryText"
       >
         {title}
       </Text>
 
-      <Text variant="textMdRegular" maxFontSizeMultiplier={1.2}>
+      <Text
+        color="secondaryText"
+        variant="textMdRegular"
+        maxFontSizeMultiplier={1.2}
+      >
         {subtitle}
       </Text>
       <Animated.View style={{ transform: [{ translateX: shakeAnim.current }] }}>

@@ -14,8 +14,6 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
-import BackScreen from '@components/BackScreen'
-
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -79,6 +77,7 @@ const Settings = () => {
   const contentContainer = useMemo(
     () => ({
       paddingBottom: spacing['15'],
+      marginTop: spacing['6xl'],
     }),
     [spacing],
   )
@@ -596,63 +595,49 @@ const Settings = () => {
   )
 
   const renderSectionHeader = useCallback(
-    ({ section: { title, icon } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="12"
-        paddingBottom="4"
-        paddingHorizontal="6"
-      >
-        {icon !== undefined && icon}
-        <Text variant="textSmRegular" fontWeight="bold" color="primaryText">
-          {title}
-        </Text>
-      </Box>
-    ),
-    [],
+    ({ section: { title, icon } }) => {
+      const firstSection =
+        title ===
+        t('settings.sections.account.title', {
+          alias: currentAccount?.alias,
+        })
+
+      return (
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          paddingTop={firstSection ? '4' : '12'}
+          paddingBottom="4"
+          paddingHorizontal="6"
+        >
+          {icon !== undefined && icon}
+          <Text variant="textSmRegular" fontWeight="bold" color="primaryText">
+            {title}
+          </Text>
+        </Box>
+      )
+    },
+    [currentAccount, t],
   )
 
   return (
     <ScrollView
       style={{
-        backgroundColor: colors.secondaryBackground,
+        backgroundColor: colors.primaryBackground,
       }}
     >
-      <BackScreen
-        headerBackgroundColor="secondaryBackground"
-        padding="0"
-        backgroundColor="secondaryBackground"
-        edges={['top']}
-      >
-        <Box
-          flexDirection="column"
-          justifyContent="space-between"
-          alignItems="flex-start"
-          paddingHorizontal="6"
-        >
-          <Text
-            color="primaryText"
-            variant="displayMdRegular"
-            marginVertical="4"
-          >
-            {t('settings.title')}
-          </Text>
-        </Box>
-
-        <SectionList
-          contentContainerStyle={contentContainer}
-          sections={SectionData}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          renderSectionFooter={renderSectionFooter}
-          initialNumToRender={100}
-          stickySectionHeadersEnabled={false}
-          // ^ Sometimes on initial page load there is a bug with SectionList
-          // where it won't render all items right away. This seems to fix it.
-        />
-      </BackScreen>
+      <SectionList
+        contentContainerStyle={contentContainer}
+        sections={SectionData}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        renderSectionFooter={renderSectionFooter}
+        initialNumToRender={100}
+        stickySectionHeadersEnabled={false}
+        // ^ Sometimes on initial page load there is a bug with SectionList
+        // where it won't render all items right away. This seems to fix it.
+      />
     </ScrollView>
   )
 }

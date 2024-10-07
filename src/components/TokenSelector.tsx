@@ -1,29 +1,28 @@
 import TokenIcon from '@components/TokenIcon'
-import {
+import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
-  BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
-import useBackHandler from '@hooks/useBackHandler'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { BoxProps } from '@shopify/restyle'
+import { BoxProps, ThemeProvider } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Theme } from '@theme/theme'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { Theme, lightTheme } from '@theme/theme'
+import { useSpacing } from '@theme/themeHooks'
 import React, {
-  ReactNode,
   Ref,
   forwardRef,
   memo,
   useCallback,
   useImperativeHandle,
-  useMemo,
   useRef,
 } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from './Box'
-import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
+import ListItem from './ListItem'
+import { Portal } from '@gorhom/portal'
+import HeliumBottomSheet from './HeliumBottomSheet'
+import { SafeAreaBox, Text } from '.'
+import { useTranslation } from 'react-i18next'
 
 export type TokenListItem = {
   mint: PublicKey
@@ -34,11 +33,12 @@ const ProvidedListItem = ({
   mint,
   onPress,
   selected,
+  ...rest
 }: {
   mint: PublicKey
   onPress: () => void
   selected: boolean
-}) => {
+} & BoxProps<Theme>) => {
   const { symbol, json } = useMetaplexMetadata(mint)
   return (
     <ListItem
@@ -48,6 +48,7 @@ const ProvidedListItem = ({
       selected={selected}
       paddingStart="6"
       hasDivider
+      {...rest}
     />
   )
 }
@@ -56,42 +57,47 @@ export type TokenSelectorRef = {
   showTokens: () => void
 }
 type Props = {
-  children: ReactNode
   onTokenSelected: (mint: PublicKey) => void
   tokenData: TokenListItem[]
 } & BoxProps<Theme>
 const TokenSelector = forwardRef(
-  (
-    { children, onTokenSelected, tokenData, ...boxProps }: Props,
-    ref: Ref<TokenSelectorRef>,
-  ) => {
+  ({ onTokenSelected, tokenData }: Props, ref: Ref<TokenSelectorRef>) => {
     useImperativeHandle(ref, () => ({ showTokens }))
 
-    const { bottom } = useSafeAreaInsets()
-    const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
-    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { secondaryText } = useColors()
+    const spacing = useSpacing()
+    const bottomSheetModalRef = useRef<BottomSheet>(null)
+    const { t } = useTranslation()
 
     const showTokens = useCallback(() => {
-      bottomSheetModalRef.current?.present()
-      setIsShowing(true)
-    }, [setIsShowing])
+      bottomSheetModalRef.current?.expand()
+    }, [])
 
     const renderBackdrop = useCallback(
       (props) => (
         <BottomSheetBackdrop
+          opacity={1}
           disappearsOnIndex={-1}
           appearsOnIndex={0}
           {...props}
-        />
+        >
+          <SafeAreaBox backgroundColor={'primaryText'} flex={1}>
+            <Text
+              marginTop="xl"
+              variant="displaySmSemibold"
+              color="primaryBackground"
+              textAlign={'center'}
+            >
+              {t('tokenSelector.title')}
+            </Text>
+          </SafeAreaBox>
+        </BottomSheetBackdrop>
       ),
       [],
     )
 
     const handleTokenPress = useCallback(
       (token: PublicKey) => {
-        bottomSheetModalRef.current?.dismiss()
+        bottomSheetModalRef.current?.close()
         onTokenSelected(token)
       },
       [onTokenSelected],
@@ -102,51 +108,54 @@ const TokenSelector = forwardRef(
     }, [])
 
     const renderFlatlistItem = useCallback(
-      ({ item }: { item: TokenListItem; index: number }) => {
+      ({ item, index }: { item: TokenListItem; index: number }) => {
+        const borderTopStartRadius = index === 0 ? '2xl' : 'none'
+        const borderTopEndRadius = index === 0 ? '2xl' : 'none'
+        const borderBottomStartRadius =
+          index === tokenData.length - 1 ? '2xl' : 'none'
+        const borderBottomEndRadius =
+          index === tokenData.length - 1 ? '2xl' : 'none'
+
         return (
           <ProvidedListItem
             key={item.mint.toBase58()}
             selected={item.selected}
             onPress={() => handleTokenPress(item.mint)}
             mint={item.mint}
+            borderTopStartRadius={borderTopStartRadius}
+            borderTopEndRadius={borderTopEndRadius}
+            borderBottomStartRadius={borderBottomStartRadius}
+            borderBottomEndRadius={borderBottomEndRadius}
           />
         )
       },
       [handleTokenPress],
     )
 
-    const snapPoints = useMemo(
-      () => [(tokenData.length + 2) * LIST_ITEM_HEIGHT + bottom],
-      [bottom, tokenData.length],
-    )
-
-    const handleIndicatorStyle = useMemo(() => {
-      return {
-        backgroundColor: secondaryText,
-      }
-    }, [secondaryText])
-
     return (
-      <BottomSheetModalProvider>
-        <Box flex={1} {...boxProps}>
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            index={0}
-            backgroundStyle={backgroundStyle}
-            backdropComponent={renderBackdrop}
-            snapPoints={snapPoints}
-            onDismiss={handleDismiss}
-            handleIndicatorStyle={handleIndicatorStyle}
-          >
-            <BottomSheetFlatList
-              data={tokenData}
-              renderItem={renderFlatlistItem}
-              keyExtractor={keyExtractor}
-            />
-          </BottomSheetModal>
-          {children}
-        </Box>
-      </BottomSheetModalProvider>
+      <Portal>
+        <ThemeProvider theme={lightTheme}>
+          <BottomSheetModalProvider>
+            <HeliumBottomSheet
+              ref={bottomSheetModalRef}
+              index={-1}
+              backdropComponent={renderBackdrop}
+            >
+              <Box flex={1}>
+                <BottomSheetFlatList
+                  data={tokenData}
+                  renderItem={renderFlatlistItem}
+                  keyExtractor={keyExtractor}
+                  contentContainerStyle={{
+                    padding: spacing[4],
+                    marginTop: spacing['6xl'],
+                  }}
+                />
+              </Box>
+            </HeliumBottomSheet>
+          </BottomSheetModalProvider>
+        </ThemeProvider>
+      </Portal>
     )
   },
 )

@@ -221,7 +221,7 @@ const ScanHotspots = () => {
         keyExtractor={keyExtractor}
       />
       {error && (
-        <Text variant="textMdMedium" color="ros.500">
+        <Text variant="textMdMedium" color="error.500">
           {error}
         </Text>
       )}

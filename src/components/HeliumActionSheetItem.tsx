@@ -48,6 +48,7 @@ const HeliumActionSheetItem = ({
     >
       {!!Icon && <Icon color={colors[color]} height={16} width={16} />}
       <Text
+        variant="textSmRegular"
         marginLeft={Icon ? '3' : 'none'}
         color={color}
         fontWeight={selected ? '500' : 'normal'}

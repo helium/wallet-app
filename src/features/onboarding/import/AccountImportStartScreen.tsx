@@ -79,7 +79,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       flex={1}
       flexDirection="column"
       edges={edges}
-      backgroundColor="secondaryBackground"
+      backgroundColor="primaryBackground"
     >
       {isInline ? null : (
         <CloseButton alignSelf="flex-end" padding="6" onPress={onClose} />
@@ -114,7 +114,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         textAlign="center"
         marginBottom="6"
         marginHorizontal="6"
-        color={reachedAccountLimit ? 'ros.500' : 'secondaryText'}
+        color={reachedAccountLimit ? 'error.500' : 'secondaryText'}
         fontWeight={reachedAccountLimit ? '500' : undefined}
       >
         {reachedAccountLimit

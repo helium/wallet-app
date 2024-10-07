@@ -212,6 +212,7 @@ const AccountAssignScreen = () => {
               fontSize={24}
               marginLeft="4"
               marginRight="8"
+              variant={'transparentSmall'}
               textInputProps={{
                 placeholder: t('accountAssign.AccountNamePlaceholder'),
                 autoCorrect: false,
@@ -236,11 +237,11 @@ const AccountAssignScreen = () => {
               style={{ height: 20, width: 20 }}
               tintColors={{
                 true: colors.primaryText,
-                false: colors.transparent10,
+                false: colors.secondaryText,
               }}
-              onCheckColor={colors.secondaryText}
+              onCheckColor={colors.primaryBackground}
               onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
+              tintColor={colors.secondaryText}
               onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
@@ -259,12 +260,12 @@ const AccountAssignScreen = () => {
 
           <Box flex={1} />
           {!loading && existingNames?.has(alias) ? (
-            <Text mb="4" color="ros.500">
+            <Text variant="textSmSemibold" mb="4" color="error.500">
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
           {loading ? (
-            <CircleLoader />
+            <CircleLoader color="primaryText" />
           ) : (
             <FabButton
               onPress={handlePress}

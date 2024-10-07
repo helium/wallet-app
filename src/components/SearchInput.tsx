@@ -40,29 +40,32 @@ const SearchInput = ({
 
   return (
     <Box
-      backgroundColor="secondaryBackground"
+      backgroundColor="fg.quinary-400"
       borderRadius={borderRadius as BorderRadii}
       paddingStart={padding as Spacing}
       flexDirection="row"
       alignItems="center"
       {...boxProps}
     >
-      <Search color={colors[color as Color]} />
+      <Search color={colors.primaryBackground} />
       <TextInput
         fontSize={16}
         fontWeight="normal"
+        textColor={'primaryBackground'}
         textInputProps={{
           onChangeText,
           onSubmitEditing: handleSubmitEditing,
           value,
           placeholder,
+          placeholderTextColor: colors.primaryBackground,
           autoCorrect: false,
+          selectionColor: colors.primaryBackground,
           autoComplete: 'off',
           autoFocus,
           ...textInputProps,
         }}
         variant={variant || 'transparent'}
-        backgroundColor="ros.500"
+        backgroundColor="error.500"
       />
     </Box>
   )

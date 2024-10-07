@@ -48,7 +48,7 @@ const PairStart = () => {
         variant="textMdRegular"
         textAlign="center"
         marginHorizontal="6"
-        color="ros.500"
+        color="error.500"
         fontWeight="500"
         marginBottom="6"
       >

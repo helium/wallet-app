@@ -67,7 +67,7 @@ const BrowserWebViewScreen = () => {
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
   const [isScriptInjected, setIsScriptInjected] = useState(false)
-  const { primaryText } = useColors()
+  const { primaryText, ...colors } = useColors()
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -452,14 +452,15 @@ const BrowserWebViewScreen = () => {
           <Text
             textAlign="center"
             variant="textSmMedium"
-            color="secondaryText"
+            color="base.white"
+            opacity={0.6}
             adjustsFontSizeToFit
           >
             {currentUrl}
           </Text>
         </Box>
         <TouchableOpacityBox onPress={closeModal} paddingHorizontal="4">
-          <Close color={primaryText} width={14} height={14} />
+          <Close color={colors['base.white']} width={14} height={14} />
         </TouchableOpacityBox>
       </Box>
     )
@@ -486,20 +487,24 @@ const BrowserWebViewScreen = () => {
       <Box padding="4" flexDirection="row" backgroundColor="base.black">
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onBack}>
-            <BackArrow width={20} height={20} color={primaryText} />
+            <BackArrow width={20} height={20} color={colors['base.white']} />
           </TouchableOpacityBox>
         </Box>
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox style={styles.rotatedArrow} onPress={onForward}>
-            <BackArrow width={20} height={20} color={primaryText} />
+            <BackArrow width={20} height={20} color={colors['base.white']} />
           </TouchableOpacityBox>
         </Box>
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onFavorite}>
             {isFavorite ? (
-              <BookmarkFilled color={primaryText} width={20} height={20} />
+              <BookmarkFilled
+                color={colors['base.white']}
+                width={20}
+                height={20}
+              />
             ) : (
-              <Bookmark color={primaryText} width={20} height={20} />
+              <Bookmark color={colors['base.white']} width={20} height={20} />
             )}
           </TouchableOpacityBox>
         </Box>

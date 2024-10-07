@@ -66,6 +66,7 @@ const RevealPrivateKeyScreen = () => {
             justifyContent="center"
           >
             <Text
+              variant="textSmRegular"
               fontSize={12}
               color="primaryText"
               maxFontSizeMultiplier={1}
@@ -88,6 +89,7 @@ const RevealPrivateKeyScreen = () => {
           justifyContent="center"
         >
           <Text
+            variant="textSmRegular"
             fontSize={18}
             color="primaryText"
             maxFontSizeMultiplier={1}

@@ -42,10 +42,10 @@ export const GlobalError = ({
           {t('crash.subTitle')}
         </Text>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <Text variant="textXsBold" color="ros.500">
+          <Text variant="textXsBold" color="error.500">
             {error.message}
           </Text>
-          <Text variant="textXsRegular" color="ros.500">
+          <Text variant="textXsRegular" color="error.500">
             {error.stack}
           </Text>
         </ScrollView>

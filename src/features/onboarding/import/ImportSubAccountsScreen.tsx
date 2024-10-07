@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
 import { useOnboarding } from '../OnboardingProvider'
+import { AccountsServiceNavigationProp } from '@services/AccountsService/accountServiceTypes'
 
 export default () => {
   const { t } = useTranslation()
@@ -71,6 +72,13 @@ export default () => {
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: ResolvedPath; index: number }) => {
+      const isFirst = index === 0
+      const isLast = index === derivationAccounts.length - 1
+      const borderTopStartRadius = isFirst ? 'xl' : 'none'
+      const borderTopEndRadius = isFirst ? 'xl' : 'none'
+      const borderBottomStartRadius = isLast ? 'xl' : 'none'
+      const borderBottomEndRadius = isLast ? 'xl' : 'none'
+
       const onSelect = () => {
         if (selected.has(item.derivationPath)) {
           selected.delete(item.derivationPath)
@@ -89,7 +97,11 @@ export default () => {
           paddingHorizontal="4"
           paddingVertical="4"
           borderBottomColor="primaryBackground"
-          borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 1}
+          borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 2}
+          borderTopStartRadius={borderTopStartRadius}
+          borderTopEndRadius={borderTopEndRadius}
+          borderBottomStartRadius={borderBottomStartRadius}
+          borderBottomEndRadius={borderBottomEndRadius}
         >
           <Box flex={1} paddingHorizontal="4">
             <Box flexDirection="column" justifyContent="flex-start">
@@ -151,11 +163,11 @@ export default () => {
               style={{ height: 18, width: 18 }}
               tintColors={{
                 true: colors.primaryText,
-                false: colors.transparent10,
+                false: colors.primaryText,
               }}
-              onCheckColor={colors.secondaryText}
+              onCheckColor={colors.primaryBackground}
               onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
+              tintColor={colors.primaryText}
               onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
@@ -182,13 +194,13 @@ export default () => {
   )
 
   const navigation = useNavigation<RootNavigationProp>()
+  const accountsNavigation = useNavigation<AccountsServiceNavigationProp>()
 
   const onNext = useCallback(() => {
     if (hasAccounts) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      navigation.replace('TabBarNavigator', {
-        screen: 'Home',
+      accountsNavigation.navigate('AccountAssignScreen', {
         params: {
           screen: 'AccountAssignScreen',
           params: {
@@ -213,7 +225,12 @@ export default () => {
 
   return (
     <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
-      <Box flex={1} backgroundColor="secondaryBackground" height="100%">
+      <Box
+        flex={1}
+        backgroundColor="secondaryBackground"
+        height="100%"
+        paddingHorizontal={'4'}
+      >
         <Text
           variant="displayMdRegular"
           mt="8"
@@ -227,7 +244,11 @@ export default () => {
         <Text textAlign="center" p="2" variant="textMdRegular" mb="6">
           {t('accountImport.privateKey.selectAccountsBody')}
         </Text>
-        {error && <Text color="ros.500">{error.message}</Text>}
+        {error && (
+          <Text variant="textSmRegular" color="error.500" textAlign={'center'}>
+            {error.message}
+          </Text>
+        )}
         <FlatList
           refreshControl={
             <RefreshControl
@@ -247,12 +268,12 @@ export default () => {
         <ButtonPressable
           marginTop="6"
           borderRadius="full"
-          backgroundColor="base.white"
+          backgroundColor="primaryText"
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.5}
           titleColorDisabled="gray.800"
-          titleColor="gray.800"
+          titleColor="primaryBackground"
           disabled={selected.size === 0}
           onPress={onNext}
           title={t('generic.next')}

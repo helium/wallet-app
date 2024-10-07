@@ -22,7 +22,7 @@ const ShareAddressScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { triggerNavHaptic } = useHaptic()
   const spacing = useSpacing()
-  const padding = useMemo(() => 'l' as Spacing, [])
+  const padding = useMemo(() => 'xl' as Spacing, [])
   const { t } = useTranslation()
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void

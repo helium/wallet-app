@@ -116,7 +116,7 @@ const Settings = () => {
       )
 
       if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
-        collectNav.push('CollectablesTopTab')
+        collectNav.push('HotspotList')
       }
 
       collectNav.push('HotspotMapScreen', {
@@ -190,7 +190,7 @@ const Settings = () => {
         keyExtractor={keyExtractor}
       />
       {error && (
-        <Text variant="textMdMedium" color="ros.500">
+        <Text variant="textMdMedium" color="error.500">
           {t('hotspotOnboarding.settings.hotspotError')}
           {errorMessage}
         </Text>

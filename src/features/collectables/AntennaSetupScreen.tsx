@@ -177,7 +177,7 @@ const AntennaSetupScreen = () => {
                 minHeight={40}
               >
                 {showError && (
-                  <Text variant="textXsMedium" color="ros.500">
+                  <Text variant="textXsMedium" color="error.500">
                     {showError}
                   </Text>
                 )}

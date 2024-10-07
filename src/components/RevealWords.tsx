@@ -54,12 +54,14 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
           flexDirection="row"
         >
           <Text
+            variant="textSmRegular"
             fontSize={16}
             color="primaryText"
             maxFontSizeMultiplier={1}
             adjustsFontSizeToFit
           >{`${index + 1}. `}</Text>
           <Text
+            variant="textSmRegular"
             fontSize={16}
             color="primaryText"
             maxFontSizeMultiplier={1}
