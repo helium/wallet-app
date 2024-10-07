@@ -14,7 +14,6 @@ import TouchableOpacityBox from './TouchableOpacityBox'
 
 const TokenItem = ({ mint }: { mint?: PublicKey }) => {
   const { json } = useMetaplexMetadata(mint)
-  console.log('image: ', json?.image)
   return (
     <Box alignItems="center">
       <TokenIcon img={json?.image} size={41} />
