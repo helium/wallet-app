@@ -87,7 +87,7 @@ const DAppTutorial = () => {
             width={wp(50)}
           />
           <Text
-            variant="displayMdRegular"
+            variant="displayMdSemibold"
             textAlign="center"
             marginTop={item.imageVerticalOffset}
             color="primaryText"
@@ -95,9 +95,9 @@ const DAppTutorial = () => {
             {t(item.titleKey)}
           </Text>
           <TextTransform
-            variant="textMdBold"
+            variant="textMdRegular"
             textAlign="center"
-            color="secondaryText"
+            color="text.tertiary-600"
             marginTop="4"
             i18nKey={t(item.bodyKey)}
           />
@@ -113,23 +113,14 @@ const DAppTutorial = () => {
       height: 6,
       borderRadius: 3,
       marginHorizontal: spacing['0.5'],
-      backgroundColor: colors['base.white'],
+      backgroundColor: colors.primaryText,
     }),
     [colors, spacing],
   )
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <SafeAreaBox flex={1} edges={edges}>
-        <Box
-          paddingTop="12"
-          paddingBottom="8"
-          backgroundColor="primaryBackground"
-        >
-          <Text variant="textXlRegular" textAlign="center">
-            {t('defiTutorial.title')}
-          </Text>
-        </Box>
+      <SafeAreaBox flex={1} edges={edges} backgroundColor="primaryBackground">
         <Carousel
           style={{ backgroundColor: 'blue' }}
           ref={carouselRef}
@@ -151,7 +142,6 @@ const DAppTutorial = () => {
           />
 
           <ButtonPressable
-            marginBottom="6"
             borderRadius="full"
             backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.7}
@@ -162,6 +152,9 @@ const DAppTutorial = () => {
             marginHorizontal="6"
             onPress={handleEnterDAppPressed}
             disabled={!viewedSlides}
+            style={{
+              marginBottom: spacing['6xl'],
+            }}
           />
         </Box>
       </SafeAreaBox>

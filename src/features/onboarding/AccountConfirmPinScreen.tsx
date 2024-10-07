@@ -12,6 +12,8 @@ import { useOnboarding } from './OnboardingProvider'
 import { CreateAccountStackParamList } from './create/createAccountNavTypes'
 import { ImportAccountStackParamList } from './import/importAccountNavTypes'
 import { OnboardingNavigationProp } from './onboardingTypes'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 
 type Route = RouteProp<
   CreateAccountStackParamList & ImportAccountStackParamList,
@@ -86,4 +88,12 @@ const AccountConfirmPinScreen = () => {
   )
 }
 
-export default AccountConfirmPinScreen
+const AccountConfirmPinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <AccountConfirmPinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default AccountConfirmPinScreenWrapper

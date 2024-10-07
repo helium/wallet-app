@@ -177,7 +177,7 @@ const DeviceShow = () => {
           visible={reachedAccountLimit}
           variant="textMdRegular"
           textAlign="center"
-          color="ros.500"
+          color="error.500"
           fontWeight="500"
           marginTop="4"
         >

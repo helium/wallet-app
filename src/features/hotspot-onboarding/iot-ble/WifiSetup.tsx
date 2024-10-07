@@ -80,7 +80,7 @@ const WifiSetup = () => {
         disabled={loading}
         title={t('hotspotOnboarding.wifiSettings.setup')}
       />
-      <Text>{loading ? 'loading...' : status}</Text>
+      <Text variant="textSmRegular">{loading ? 'loading...' : status}</Text>
     </BackScreen>
   )
 }

@@ -37,7 +37,7 @@ const voteAccentColors = [] as Color[]
 export default voteAccentColors
 export const VotingResultColors: Color[] = [
   'success.500',
-  'ros.500',
+  'error.500',
   'purple.500',
   'blue.light-500',
   'green.light-500',

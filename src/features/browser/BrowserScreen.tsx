@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import {
   NativeSyntheticEvent,
@@ -11,11 +10,10 @@ import CloseCircle from '@assets/images/CloseCircle.svg'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import FadeInOut from '@components/FadeInOut'
-import SafeAreaBox from '@components/SafeAreaBox'
 import TextInput from '@components/TextInput'
 import Box from '@components/Box'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
@@ -29,12 +27,11 @@ import { getRecommendedDapps } from '../../utils/walletApiV2'
 const BrowserScreen = () => {
   const DEFAULT_URL = ''
   const { cluster } = useSolana()
-  const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
   const spacing = useSpacing()
   const textInputRef = useRef<RNTextInput | null>(null)
-  const { top } = useSafeAreaInsets()
   const colors = useColors()
+  const { alphaColor } = useOpacity('primaryBackground', 0.8)
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, recents, addRecent } = useBrowser()
   const { t } = useTranslation()
@@ -51,7 +48,12 @@ const BrowserScreen = () => {
     const sections = [
       {
         title: t('browserScreen.topPicks'),
-        data: recommendedDappsData ? recommendedDappsData[cluster] : [],
+        data: recommendedDappsData
+          ? [
+              'https://anza-xyz.github.io/wallet-adapter/example/',
+              ...recommendedDappsData[cluster],
+            ]
+          : [],
       },
       {
         title: t('browserScreen.myFavorites'),
@@ -116,13 +118,12 @@ const BrowserScreen = () => {
     return (
       <Box
         backgroundColor="primaryBackground"
-        padding="2"
+        paddingHorizontal={'6'}
         flexDirection={inputFocused ? 'row' : 'column'}
       >
         <ReAnimatedBox
-          backgroundColor="cardBackground"
+          backgroundColor="fg.quinary-400"
           borderRadius="2xl"
-          marginHorizontal="2"
           style={headerStyles}
         >
           <TextInput
@@ -135,6 +136,7 @@ const BrowserScreen = () => {
             TrailingIconOptions={{
               paddingStart: '2',
             }}
+            textColor="primaryBackground"
             textInputProps={{
               placeholder: 'Search or type URL',
               autoFocus: false,
@@ -150,6 +152,7 @@ const BrowserScreen = () => {
               autoCorrect: false,
               textAlign: inputFocused ? 'left' : 'center',
               keyboardAppearance: 'dark',
+              placeholderTextColor: alphaColor,
             }}
           />
         </ReAnimatedBox>
@@ -258,7 +261,9 @@ const BrowserScreen = () => {
 
   const contentContainer = useMemo(
     () => ({
-      paddingTop: spacing[4],
+      paddingTop: spacing['6xl'],
+      backgroundColor: colors.primaryBackground,
+      flex: 1,
     }),
     [spacing],
   )
@@ -266,29 +271,17 @@ const BrowserScreen = () => {
   const keyExtractor = useCallback((item, index) => item + index, [])
 
   return (
-    <Box flex={1} backgroundColor="primaryBackground">
-      <Box
-        backgroundColor="primaryBackground"
-        height={top}
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-      />
-      <SafeAreaBox flex={1} edges={edges}>
-        <BrowserHeader />
-        <SectionList
-          contentContainerStyle={contentContainer}
-          sections={SectionData}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          onEndReachedThreshold={0.05}
-          renderSectionFooter={renderSectionFooter}
-        />
-        <Box />
-      </SafeAreaBox>
-    </Box>
+    <SectionList
+      style={{ backgroundColor: colors.primaryBackground }}
+      ListHeaderComponent={BrowserHeader}
+      contentContainerStyle={contentContainer}
+      sections={SectionData}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      renderSectionHeader={renderSectionHeader}
+      onEndReachedThreshold={0.05}
+      renderSectionFooter={renderSectionFooter}
+    />
   )
 }
 

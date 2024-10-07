@@ -5,13 +5,14 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { useBorderRadii } from '@theme/themeHooks'
 import React, {
   Ref,
   forwardRef,
   memo,
   useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -24,6 +25,10 @@ import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
+import { StyleProp, ViewStyle } from 'react-native'
+import { da } from 'date-fns/locale'
 
 const WalletSignBottomSheet = forwardRef(
   (
@@ -34,10 +39,8 @@ const WalletSignBottomSheet = forwardRef(
       ((value: boolean | PromiseLike<boolean>) => void) | null
     >(null)
     useImperativeHandle(ref, () => ({ show, hide }))
-    const { secondaryText } = useColors()
-    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const animatedContentHeight = useSharedValue(0)
-
+    const borderRadii = useBorderRadii()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [simulated, setSimulated] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
@@ -101,17 +104,41 @@ const WalletSignBottomSheet = forwardRef(
       }
     }, [hide, promiseResolve])
 
+    const handleIndicatorStyle = useMemo(() => {
+      return {
+        width: 90,
+        height: 4,
+        backgroundColor: darkTheme.colors.secondaryText,
+      }
+    }, [])
+
+    const handleStyle = useMemo(
+      () =>
+        ({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'transparent',
+        } as StyleProp<ViewStyle>),
+      [],
+    )
+
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
-            backgroundStyle={backgroundStyle}
+            backgroundStyle={{
+              backgroundColor: darkTheme.colors.primaryBackground,
+              borderRadius: borderRadii['4xl'] + borderRadii['4xl'],
+            }}
             backdropComponent={renderBackdrop}
             onDismiss={handleModalDismiss}
             enableDismissOnClose
-            handleIndicatorStyle={{ backgroundColor: secondaryText }}
+            handleStyle={handleStyle}
+            handleIndicatorStyle={handleIndicatorStyle}
             style={{
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 12 },
@@ -122,22 +149,24 @@ const WalletSignBottomSheet = forwardRef(
             enableDynamicSizing
             contentHeight={animatedContentHeight}
           >
-            <BottomSheetScrollView>
-              {hasRenderer && !simulated ? (
-                <WalletSignBottomSheetCompact
-                  {...walletSignOpts}
-                  onSimulate={() => setSimulated(true)}
-                  onAccept={onAcceptHandler}
-                  onCancel={onCancelHandler}
-                />
-              ) : (
-                <WalletSignBottomSheetSimulated
-                  {...walletSignOpts}
-                  onAccept={onAcceptHandler}
-                  onCancel={onCancelHandler}
-                />
-              )}
-            </BottomSheetScrollView>
+            <ThemeProvider theme={darkTheme}>
+              <BottomSheetScrollView>
+                {hasRenderer && !simulated ? (
+                  <WalletSignBottomSheetCompact
+                    {...walletSignOpts}
+                    onSimulate={() => setSimulated(true)}
+                    onAccept={onAcceptHandler}
+                    onCancel={onCancelHandler}
+                  />
+                ) : (
+                  <WalletSignBottomSheetSimulated
+                    {...walletSignOpts}
+                    onAccept={onAcceptHandler}
+                    onCancel={onCancelHandler}
+                  />
+                )}
+              </BottomSheetScrollView>
+            </ThemeProvider>
           </BottomSheetModal>
           {children}
         </BottomSheetModalProvider>
@@ -146,4 +175,17 @@ const WalletSignBottomSheet = forwardRef(
   },
 )
 
-export default memo(WalletSignBottomSheet)
+const WalletSignBottomSheetWrapper = forwardRef(
+  (
+    { onClose, children }: WalletSignBottomSheetProps,
+    ref: Ref<WalletSignBottomSheetRef>,
+  ) => {
+    return (
+      <WalletSignBottomSheet ref={ref} onClose={onClose}>
+        {children}
+      </WalletSignBottomSheet>
+    )
+  },
+)
+
+export default memo(WalletSignBottomSheetWrapper)

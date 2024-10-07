@@ -7,6 +7,8 @@ import Keypad from '@components/Keypad'
 import Box from '@components/Box'
 import { KeypadInput } from '@components/KeypadButton'
 import { SettingsNavigationProp } from './settingsTypes'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 
 const SettingsCreatePinScreen = () => {
   const { t } = useTranslation()
@@ -54,11 +56,16 @@ const SettingsCreatePinScreen = () => {
         maxFontSizeMultiplier={1}
         numberOfLines={1}
         adjustsFontSizeToFit
+        color="primaryText"
       >
         {t('accountSetup.createPin.title')}
       </Text>
 
-      <Text variant="textMdRegular" maxFontSizeMultiplier={1.2}>
+      <Text
+        variant="textMdRegular"
+        maxFontSizeMultiplier={1.2}
+        color="secondaryText"
+      >
         {t('accountSetup.createPin.subtitle')}
       </Text>
       <PinDisplay length={pin.length} marginVertical="8" />
@@ -68,4 +75,12 @@ const SettingsCreatePinScreen = () => {
   )
 }
 
-export default SettingsCreatePinScreen
+const SettingsCreatePinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <SettingsCreatePinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default SettingsCreatePinScreenWrapper

@@ -5,17 +5,25 @@ export type AppState = {
   showConnectedWallets: boolean
   showBanner: boolean
   cluster?: Cluster
+  currentService: 'wallet' | 'governance' | 'hotspots' | 'settings'
 }
 
 const initialState: AppState = {
   showConnectedWallets: false,
   showBanner: true,
+  currentService: 'wallet',
 }
 
 const appSlice = createSlice({
   name: 'app',
   initialState,
   reducers: {
+    setCurrentService: (
+      state,
+      action: PayloadAction<AppState['currentService']>,
+    ) => {
+      state.currentService = action.payload
+    },
     setCluster: (state, action: PayloadAction<Cluster>) => {
       state.cluster = action.payload
     },

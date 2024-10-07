@@ -34,7 +34,7 @@ import SignHotspot from '../features/txnDelegation/SignHotspot'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import TabBarNavigator from './TabBarNavigator'
+import ServiceSheetNavigator from '@services/ServiceSheetNavigator'
 import {
   RootNavigationProp,
   RootStackParamList,
@@ -148,7 +148,7 @@ const RootNavigator = () => {
       <RootStack.Navigator screenOptions={screenOptions}>
         <RootStack.Screen
           name="TabBarNavigator"
-          component={TabBarNavigator}
+          component={ServiceSheetNavigator}
           options={screenOptions}
         />
         <RootStack.Screen

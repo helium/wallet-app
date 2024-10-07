@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native'
 import { CSAccount } from '@storage/cloudStorage'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import React, {
+  FC,
   memo,
   useCallback,
   useEffect,
@@ -42,13 +43,20 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
 import { OnboardingOpt } from '../onboarding/onboardingTypes'
 import AccountActionBar from './AccountActionBar'
-import AccountBalanceChart from './AccountBalanceChart'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { withTransactionDetail } from './TransactionDetail'
+import ServiceNavBar from '@components/ServiceNavBar'
+import { SvgProps } from 'react-native-svg'
+import { Color } from '@theme/theme'
+import Wallet from '@assets/images/wallet.svg'
+import Receive from '@assets/images/receive.svg'
+import Send from '@assets/images/send.svg'
+import Swap from '@assets/images/swap.svg'
+import Store from '@assets/images/store.svg'
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -300,6 +308,42 @@ const AccountsScreen = () => {
     return !isHealthy
   }, [cluster, isHealthy])
 
+  const [selectedValue, setSelectedValue] = useState('wallet')
+
+  const tabData = useMemo((): Array<{
+    value: string
+    Icon: FC<SvgProps>
+    iconColor: Color
+  }> => {
+    return [
+      { value: 'wallet', Icon: Wallet, iconColor: 'primaryText' },
+      {
+        value: 'receive',
+        Icon: Receive,
+        iconColor: 'primaryText',
+      },
+      {
+        value: 'send',
+        Icon: Send,
+        iconColor: 'primaryText',
+      },
+      {
+        value: 'swap',
+        Icon: Swap,
+        iconColor: 'primaryText',
+      },
+      {
+        value: 'store',
+        Icon: Store,
+        iconColor: 'primaryText',
+      },
+    ]
+  }, [])
+
+  const onItemSelected = useCallback((value) => {
+    setSelectedValue(value)
+  }, [])
+
   return (
     <Box flex={1}>
       <Box onLayout={setPageHeight} flex={1}>
@@ -326,15 +370,12 @@ const AccountsScreen = () => {
               onTouchStart={onTouchStart}
               selectedBalance={selectedBalance}
             />
-            <Box>
-              {chartValues && (
-                <AccountBalanceChart
-                  chartValues={chartValues || []}
-                  onHistorySelected={handleBalanceHistorySelected}
-                  selectedBalance={selectedBalance}
-                />
-              )}
-            </Box>
+            <ServiceNavBar
+              navBarOptions={tabData}
+              selectedValue={selectedValue}
+              onItemSelected={onItemSelected}
+              onItemLongPress={() => {}}
+            />
           </ReAnimatedBox>
         )}
         <StatusBanner />

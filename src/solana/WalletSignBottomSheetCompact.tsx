@@ -98,7 +98,7 @@ export const WalletSignBottomSheetCompact = ({
           padding="4"
           marginTop="4"
         >
-          <Text variant="textMdMedium" color="ros.500">
+          <Text variant="textMdMedium" color="error.500">
             {insufficientFunds
               ? t('browserScreen.insufficientFunds')
               : t('browserScreen.insufficientRentExempt', {

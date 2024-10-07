@@ -23,7 +23,7 @@ const FinePrint = (boxProps: Props) => {
         {t('finePrint.body')}{' '}
       </Text>
       <TouchableOpacity onPress={onPressTOS}>
-        <Text color="blue.light-500">
+        <Text variant="textSmRegular" color="blue.light-500">
           {t('settings.sections.finePrint.termsOfService')}{' '}
         </Text>
       </TouchableOpacity>
@@ -31,7 +31,7 @@ const FinePrint = (boxProps: Props) => {
         {t('generic.and')}{' '}
       </Text>
       <TouchableOpacity onPress={onPressPrivacyPolicy}>
-        <Text color="blue.light-500">
+        <Text variant="textSmRegular" color="blue.light-500">
           {t('settings.sections.finePrint.privacyPolicy')}
         </Text>
       </TouchableOpacity>

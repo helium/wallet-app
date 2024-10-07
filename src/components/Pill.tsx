@@ -42,7 +42,7 @@ export const Pill = memo(
       red: {
         border: 'ros.300',
         background: 'ros.950',
-        text: 'ros.500',
+        text: 'error.500',
       },
       orange: {
         border: 'orange.300',
@@ -88,6 +88,7 @@ export const Pill = memo(
 
         {text ? (
           <Text
+            variant="textSmRegular"
             ml="2"
             mr="2"
             color={colorDefs[color].text as any}

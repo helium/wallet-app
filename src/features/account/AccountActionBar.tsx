@@ -6,8 +6,9 @@ import { PublicKey } from '@solana/web3.js'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
+import { WalletServiceNavigationProp } from '@services/WalletService'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
 
 export type Action =
   | 'send'
@@ -44,59 +45,53 @@ const AccountActionBar = ({
   hasAirdrop,
   mint,
 }: Props) => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletServiceNavigationProp>()
+  const walletPageNav = useNavigation<WalletNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment, pin } = useAppStorage()
 
   const handleAction = useCallback(
     (type: Action) => () => {
       switch (type) {
+        default:
         case 'send': {
           if (
             (pin?.status === 'on' || pin?.status === 'restored') &&
             requirePinForPayment
           ) {
-            navigation.navigate('ConfirmPin', { action: 'payment' })
+            walletPageNav.navigate('ConfirmPin', { action: 'payment' })
           } else {
-            navigation.navigate('PaymentScreen', {
+            navigation.navigate('Send', {
               mint: mint?.toBase58(),
             })
           }
           break
         }
         case 'request': {
-          navigation.navigate('RequestScreen')
+          navigation.navigate('Receive')
           break
         }
         case 'swaps': {
-          navigation.navigate('SwapNavigator')
+          navigation.navigate('Swap')
           break
         }
         case 'airdrop': {
           if (mint) {
-            navigation.navigate('AirdropScreen', { mint: mint?.toBase58() })
+            walletPageNav.navigate('AirdropScreen', { mint: mint?.toBase58() })
           }
           break
         }
-        case '5G': {
-          navigation.navigate('OnboardData')
-          break
-        }
         case 'delegate': {
-          navigation.navigate('BurnScreen', {
+          walletPageNav.navigate('BurnScreen', {
             address: '',
             amount: '',
             isDelegate: true,
           })
           break
         }
-        default: {
-          // show()
-          break
-        }
       }
     },
-    [pin?.status, requirePinForPayment, navigation, mint],
+    [pin?.status, requirePinForPayment, navigation, mint, walletPageNav],
   )
 
   const fabMargin = useMemo(() => {

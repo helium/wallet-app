@@ -14,6 +14,8 @@ import {
   ImportAccountNavigationProp,
   ImportAccountStackParamList,
 } from './import/importAccountNavTypes'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 
 type Route = RouteProp<
   CreateAccountStackParamList & ImportAccountStackParamList,
@@ -84,4 +86,12 @@ const AccountCreatePinScreen = () => {
   )
 }
 
-export default AccountCreatePinScreen
+const AccountCreatePinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <AccountCreatePinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default AccountCreatePinScreenWrapper

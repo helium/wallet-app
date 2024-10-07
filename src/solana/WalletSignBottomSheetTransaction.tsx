@@ -134,10 +134,13 @@ const WalletSignBottomSheetTransaction = ({
           alignItems="stretch"
         >
           <Box flexDirection="row" alignItems="center">
-            <Text variant="textMdBold">
+            <Text variant="textMdBold" color="primaryText">
               {uncollapsedAccounts.length + collapsedAccounts.length}
             </Text>
-            <Text variant="textMdRegular"> {t('browserScreen.accounts')}</Text>
+            <Text variant="textMdSemibold" color="primaryText">
+              {' '}
+              {t('browserScreen.accounts')}
+            </Text>
           </Box>
           {nonAccountWarnings.length > 0 ? (
             <TouchableOpacityBox
@@ -146,9 +149,9 @@ const WalletSignBottomSheetTransaction = ({
               alignItems="center"
             >
               <Box mr="2">
-                <Alert width={16} height={16} color="ros.500" />
+                <Alert width={16} height={16} color="error.500" />
               </Box>
-              <Text variant="textXsRegular" color="ros.500">
+              <Text variant="textXsRegular" color="error.500">
                 {nonAccountWarnings.length === 1
                   ? nonAccountWarnings[0].shortMessage
                   : `${nonAccountWarnings.length} Warnings`}
@@ -156,9 +159,16 @@ const WalletSignBottomSheetTransaction = ({
             </TouchableOpacityBox>
           ) : null}
           <Box flexDirection="row" alignItems="center">
-            <Text variant="textMdRegular">{transactionIdx + 1}</Text>
-            <Text variant="textMdRegular"> {t('generic.of')} </Text>
-            <Text variant="textMdRegular">{totalTransactions}</Text>
+            <Text variant="textMdRegular" color="primaryText">
+              {transactionIdx + 1}
+            </Text>
+            <Text variant="textMdRegular" color="secondaryText">
+              {' '}
+              {t('generic.of')}{' '}
+            </Text>
+            <Text variant="textMdRegular" color="primaryText">
+              {totalTransactions}
+            </Text>
 
             <TouchableOpacityBox
               alignItems="center"
@@ -254,7 +264,7 @@ const WalletSignBottomSheetTransaction = ({
                         height={24}
                       />
                     </Box>
-                    <Text ml="xs" color="primaryText">
+                    <Text variant="textSmRegular" ml="xs" color="primaryText">
                       {collapsedAccounts.length} {t('browserScreen.accounts')}
                     </Text>
                   </Box>
@@ -292,7 +302,7 @@ const WalletSignBottomSheetTransaction = ({
           {transaction.possibleCNftChanges.slice(0, 10).map((asset) => (
             <Box key={asset.id} p="2" flexDirection="row" alignItems="center">
               <AssetImage uri={asset.content.json_uri} />
-              <Text ml="xs" color="primaryText">
+              <Text variant="textSmRegular" ml="xs" color="primaryText">
                 {asset.content.metadata?.name || 'Unknown cNFT'}
               </Text>
             </Box>

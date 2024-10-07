@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { RefreshControl, SectionList } from 'react-native'
+import { Image, RefreshControl, SectionList } from 'react-native'
 import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
@@ -13,7 +13,6 @@ import CircleLoader from '@components/CircleLoader'
 import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
-import globalStyles from '@theme/globalStyles'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
@@ -29,6 +28,7 @@ const ActivityScreen = () => {
 
   const contentContainer = useMemo(
     () => ({
+      marginTop: spacing['6xl'],
       paddingBottom: spacing['15'],
     }),
     [spacing],
@@ -96,14 +96,21 @@ const ActivityScreen = () => {
 
   const renderHeader = useCallback(() => {
     return (
-      <Box
-        paddingTop="12"
-        paddingBottom="4"
-        paddingHorizontal="6"
-        backgroundColor="primaryBackground"
-      >
-        <Text variant="textXlRegular" textAlign="center" color="primaryText">
+      <Box alignItems={'center'} gap="2.5">
+        <Image source={require('@assets/images/transactionIcon.png')} />
+        <Text
+          variant="displayMdSemibold"
+          textAlign="center"
+          color="primaryText"
+        >
           {t('activityScreen.title')}
+        </Text>
+        <Text
+          variant="textLgRegular"
+          textAlign="center"
+          color="fg.quaternary-500"
+        >
+          {t('activityScreen.subtitle')}
         </Text>
       </Box>
     )
@@ -118,8 +125,6 @@ const ActivityScreen = () => {
     },
     [navigation, triggerImpact],
   )
-
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
   const renderItem = useCallback(
     ({ item, index, section }) => {
@@ -155,30 +160,30 @@ const ActivityScreen = () => {
   const keyExtractor = useCallback((item, index) => item.signature + index, [])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
-      <SafeAreaBox edges={safeEdges}>
-        <SectionList
-          contentContainerStyle={contentContainer}
-          sections={SectionData}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          ListHeaderComponent={renderHeader}
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={refresh}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
-          onEndReachedThreshold={0.05}
-          onEndReached={fetchMore}
-          ListFooterComponent={Footer}
+    <SectionList
+      style={{
+        backgroundColor: colors.primaryBackground,
+      }}
+      contentContainerStyle={contentContainer}
+      sections={SectionData}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      renderSectionHeader={renderSectionHeader}
+      ListHeaderComponent={renderHeader}
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={loading}
+          onRefresh={refresh}
+          title=""
+          tintColor={colors.primaryText}
         />
-      </SafeAreaBox>
-    </ReAnimatedBox>
+      }
+      stickySectionHeadersEnabled={false}
+      onEndReachedThreshold={0.05}
+      // onEndReached={fetchMore}
+      ListFooterComponent={Footer}
+    />
   )
 }
 

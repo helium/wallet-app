@@ -7,6 +7,8 @@ import AccountIcon from './AccountIcon'
 import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
 import { CSAccount } from '../storage/cloudStorage'
 import TouchableContainer from './TouchableContainer'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 
 type Props = {
   selected: boolean
@@ -14,7 +16,13 @@ type Props = {
   onPress?: (account: CSAccount) => void
   disabled?: boolean
 }
-const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
+const AccountListItem = ({
+  selected,
+  account,
+  onPress,
+  disabled,
+  ...rest
+}: Props & BoxProps<Theme>) => {
   const { primaryText } = useColors()
 
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
@@ -27,13 +35,14 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
     <TouchableContainer
       minHeight={52}
       paddingVertical="4"
-      paddingHorizontal="8"
+      paddingHorizontal="4"
       flexDirection="row"
       alignItems="center"
-      borderBottomWidth={1}
-      borderColor="border.primary"
+      borderBottomWidth={2}
+      borderColor="primaryBackground"
       onPress={handlePress}
       disabled={disabled}
+      {...rest}
     >
       <AccountIcon size={40} address={address} />
       <Box flexDirection="column" justifyContent="center" flex={1}>

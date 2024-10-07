@@ -20,7 +20,7 @@ const symbols: Record<string, React.JSX.Element> = {
   blue: <Text color="blue.light-500" variant="textSmRegular" />,
   green: <Text color="green.light-500" variant="textSmRegular" />,
   purple: <Text color="purple.500" variant="textSmRegular" />,
-  red: <Text color="ros.500" variant="textSmRegular" />,
+  red: <Text color="error.500" variant="textSmRegular" />,
   orange: <Text color="orange.500" variant="textSmRegular" />,
   gray: <Text color="gray.500" variant="textSmRegular" />,
   center: <Text textAlign="center" variant="textSmRegular" />,

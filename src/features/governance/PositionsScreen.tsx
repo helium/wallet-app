@@ -246,7 +246,7 @@ export const PositionsScreen = () => {
             alignItems="center"
             paddingTop="3"
           >
-            <Text variant="textXsMedium" color="ros.500">
+            <Text variant="textXsMedium" color="error.500">
               {showError}
             </Text>
           </Box>

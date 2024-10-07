@@ -556,7 +556,7 @@ const AssertLocationScreen = () => {
                   </Box>
                 )}
                 {showError && (
-                  <Text variant="textXsMedium" color="ros.500">
+                  <Text variant="textXsMedium" color="error.500">
                     {showError}
                   </Text>
                 )}

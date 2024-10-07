@@ -5,12 +5,24 @@ import {
 import * as React from 'react'
 import HotspotBLENav from './iot-ble/HotspotBLENav'
 import SelectDevice from './SelectDevice'
+import { useColors } from '@theme/themeHooks'
 
 const Stack = createNativeStackNavigator()
 
-const screenOptions = { headerShown: false } as NativeStackNavigationOptions
-
 export default React.memo(function OnboardingNav() {
+  const colors = useColors()
+
+  const screenOptions = React.useMemo(
+    () =>
+      ({
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: colors.primaryBackground,
+        },
+      } as NativeStackNavigationOptions),
+    [colors],
+  )
+
   return (
     <Stack.Navigator>
       <Stack.Screen

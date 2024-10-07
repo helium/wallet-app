@@ -17,6 +17,7 @@ export const usesMetricSystem = RNLocalize.usesMetricSystem()
 
 let phoneLang = 'en'
 let phoneLocale = 'en-US'
+
 if (Array.isArray(locales)) {
   phoneLang = locales[0].languageCode
   phoneLocale = locales[0].languageTag

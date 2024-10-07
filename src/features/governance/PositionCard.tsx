@@ -972,10 +972,10 @@ export const PositionCard = ({
                 paddingVertical="3"
                 borderBottomLeftRadius="2xl"
                 borderBottomRightRadius="2xl"
-                style={backgroundStyle('ros.500', 0.1)}
+                style={backgroundStyle('error.500', 0.1)}
               >
                 <Box flexDirection="row" alignSelf="center" marginRight="2">
-                  <Text fontSize={10} color="ros.500" marginLeft="2">
+                  <Text fontSize={10} color="error.500" marginLeft="2">
                     {showError}
                   </Text>
                 </Box>

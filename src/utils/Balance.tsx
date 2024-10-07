@@ -175,6 +175,8 @@ const useBalanceHook = () => {
       solValue + hntValue + mobileValue + iotValue,
     )
 
+    const total = solValue + hntValue + mobileValue + iotValue
+
     return {
       atas,
       formattedDcValue,
@@ -183,6 +185,7 @@ const useBalanceHook = () => {
       formattedMobileValue,
       formattedSolValue,
       formattedTotal,
+      total,
     }
   }, [
     allBalances,
@@ -238,6 +241,7 @@ const initialState = {
   formattedMobileValue: '',
   formattedSolValue: '',
   formattedTotal: undefined,
+  total: undefined,
   networkTokensToDc: () => undefined,
   oracleDateTime: undefined,
   oraclePrice: undefined,
