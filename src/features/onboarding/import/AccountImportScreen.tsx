@@ -30,13 +30,13 @@ const accentColors = [
   'green.light-500',
   'orange.500',
   'pink.500',
-  'gray.350',
+  'fuchsia.500',
   'orange.500',
-  'violet.200',
+  'violet.500',
   'green.500',
-  'cyan.500',
-  'base.white',
   'ros.500',
+  'cyan.500',
+  'error.500',
 ] as Color[]
 
 type Route = RouteProp<ImportAccountStackParamList, 'AccountImportScreen'>

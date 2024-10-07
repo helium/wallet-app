@@ -25,7 +25,7 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   return (
     <SafeAreaBox
       flex={1}
-      backgroundColor="secondaryBackground"
+      backgroundColor="primaryBackground"
       paddingHorizontal="6"
     >
       <Box width="100%" alignItems="flex-end" visible={!inline}>
@@ -64,7 +64,7 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
         visible={reachedAccountLimit}
         variant="textMdRegular"
         textAlign="center"
-        color="ros.500"
+        color="error.500"
         fontWeight="500"
         marginBottom="6"
       >

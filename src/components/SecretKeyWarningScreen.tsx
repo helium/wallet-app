@@ -89,7 +89,11 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
               height="100%"
             >
               <Box justifyContent="center" alignItems="center" marginBottom="8">
-                <InfoWarning color={colors['ros.500']} height={80} width={80} />
+                <InfoWarning
+                  color={colors['error.500']}
+                  height={80}
+                  width={80}
+                />
               </Box>
               <Text
                 variant="displayMdRegular"

@@ -32,7 +32,7 @@ const AddressActivityItem = ({
   return (
     <>
       <Box
-        backgroundColor="gray.950"
+        backgroundColor="cardBackground"
         alignItems="center"
         flexDirection="row"
         height={LIST_ITEM_HEIGHT}
@@ -47,7 +47,9 @@ const AddressActivityItem = ({
                 {t('activityScreen.myAccount')}
               </Text>
             )}
-          <Text color="secondaryText">{ellipsizeAddress(accountAddress)}</Text>
+          <Text variant="textSmRegular" color="secondaryText">
+            {ellipsizeAddress(accountAddress)}
+          </Text>
         </Box>
         <TouchableOpacityBox padding="6" onPress={onMenuPress}>
           <Menu color={colors['base.white']} width={14} />
@@ -56,7 +58,7 @@ const AddressActivityItem = ({
       {showBubbleArrow && (
         <Box height={18}>
           <Box
-            backgroundColor="gray.950"
+            backgroundColor="cardBackground"
             alignSelf="center"
             style={styles.rotatedBox}
           />

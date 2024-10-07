@@ -249,7 +249,7 @@ const ImportPrivateKey = () => {
         marginTop="4"
         marginBottom="4"
         visible={!!error}
-        color="ros.500"
+        color="error.500"
       >
         {error}
       </Text>

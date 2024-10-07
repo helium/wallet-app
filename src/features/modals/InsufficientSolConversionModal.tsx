@@ -275,7 +275,7 @@ const InsufficientSolConversionModal: FC = () => {
                   marginHorizontal="4"
                   variant="textXsMedium"
                   marginBottom="6"
-                  color="ros.500"
+                  color="error.500"
                 >
                   {showError}
                 </Text>
@@ -297,7 +297,7 @@ const InsufficientSolConversionModal: FC = () => {
             onValueChange={() => setUseAuto((ua) => !ua)}
           />
           <Box flex={1}>
-            <Text ml="4" color="primaryText">
+            <Text variant="textSmRegular" ml="4" color="primaryText">
               {t('insufficientSolConversionModal.useAuto')}
             </Text>
           </Box>

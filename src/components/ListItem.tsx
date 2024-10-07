@@ -50,7 +50,7 @@ const ListItem = ({
       flex={1}
       flexDirection="row"
       paddingVertical="4"
-      borderBottomColor="border.primary"
+      borderBottomColor="primaryBackground"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
       hasPressedState={hasPressedState}
@@ -62,7 +62,7 @@ const ListItem = ({
           {title}
         </Text>
         {subtitle && (
-          <Text marginTop="xs" color={subtitleColor}>
+          <Text variant={'textSmMedium'} marginTop="xs" color={subtitleColor}>
             {subtitle}
           </Text>
         )}
@@ -70,7 +70,7 @@ const ListItem = ({
       <Box marginEnd="6">
         {selected ? (
           <CheckMarkFill
-            color={colors['base.white']}
+            color={colors.primaryText}
             opacity={disabled ? 0.6 : 1.0}
             height={20}
             width={20}

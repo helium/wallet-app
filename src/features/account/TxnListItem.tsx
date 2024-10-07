@@ -6,6 +6,8 @@ import { PublicKey } from '@solana/web3.js'
 import React, { memo, useCallback, useMemo } from 'react'
 import { Activity } from '../../types/activity'
 import useTxn from './useTxn'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 
 type Props = {
   mint: PublicKey
@@ -14,7 +16,14 @@ type Props = {
   isLast: boolean
   onPress: (item: Activity) => void
 }
-const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
+const TxnListItem = ({
+  mint,
+  item,
+  now,
+  isLast,
+  onPress,
+  ...rest
+}: Props & BoxProps<Theme>) => {
   const { listIcon, title, color, time, getAmount } = useTxn(mint, item, {
     now,
   })
@@ -27,10 +36,14 @@ const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
   return (
     <TouchableOpacityBox
       alignItems="center"
+      backgroundColor={'cardBackground'}
       borderBottomColor="primaryBackground"
-      borderBottomWidth={isLast ? 1 : 0}
+      borderBottomWidth={isLast ? 0 : 2}
       flexDirection="row"
       onPress={handlePress}
+      paddingHorizontal={'4'}
+      paddingVertical={'3'}
+      {...rest}
     >
       <Box paddingRight="2">{listIcon}</Box>
       <Box flex={1} flexDirection="row">
@@ -46,13 +59,13 @@ const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
             <Pending />
           </Box>
         )}
-        <Box justifyContent="center" paddingVertical="4" flex={1}>
+        <Box justifyContent="center" flex={1}>
           <Text variant="textSmRegular">{title}</Text>
           <Text variant="textSmRegular" color="gray.500">
             {time}
           </Text>
         </Box>
-        <Box paddingVertical="4" maxWidth="55%">
+        <Box flex={1} justifyContent={'center'}>
           <Text variant="textSmRegular" color={color} textAlign="right">
             {amt}
           </Text>

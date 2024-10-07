@@ -12,7 +12,7 @@ import useHotspots from '@hooks/useHotspots'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useColors } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
@@ -25,6 +25,7 @@ import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const DEFAULT_PAGE_AMOUNT = 20
 
@@ -50,7 +51,7 @@ function RewardItem({
       <TokenIcon img={json?.image} size={24} />
       <Text
         marginLeft="xs"
-        color="primaryText"
+        color="primaryBackground"
         variant="textSmMedium"
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -72,6 +73,8 @@ const HotspotList = () => {
   const isFocused = useIsFocused()
   const { primaryText } = useColors()
   const { triggerImpact } = useHaptic()
+  const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
 
   const {
     hotspots,
@@ -141,7 +144,7 @@ const HotspotList = () => {
           <ButtonPressable
             height={36}
             borderRadius="full"
-            backgroundColor="bg.tertiary"
+            backgroundColor="fg.quinary-400"
             backgroundColorOpacityPressed={0.7}
             flex={1}
             LeadingComponent={
@@ -169,8 +172,10 @@ const HotspotList = () => {
         <Box flexDirection="row" alignItems="center">
           <Box backgroundColor="gray.500" height={1} flexGrow={1} />
           <Box flexDirection="row" alignItems="center" paddingHorizontal="2">
-            <Text color="gray.50">You own</Text>
-            <Text color="primaryText" ml="xs">
+            <Text variant={'textSmRegular'} color="secondaryText">
+              You own
+            </Text>
+            <Text variant={'textSmRegular'} color="primaryText" ml="xs">
               {totalHotspots} hotspots
             </Text>
           </Box>
@@ -240,6 +245,9 @@ const HotspotList = () => {
       <FlatList
         data={hotspotsWithMeta}
         numColumns={2}
+        style={{
+          marginTop: spacing['xl'],
+        }}
         columnWrapperStyle={{
           flexDirection: 'column',
         }}
@@ -261,10 +269,13 @@ const HotspotList = () => {
         ListFooterComponent={Footer}
       />
       <Box
-        backgroundColor="bg.tertiary"
-        borderTopLeftRadius="2xl"
-        borderTopRightRadius="2xl"
+        backgroundColor="fg.quinary-400"
+        borderTopLeftRadius="4xl"
+        borderTopRightRadius="4xl"
         p="4"
+        style={{
+          paddingBottom: spacing[4] + bottom,
+        }}
       >
         <Box flexDirection="row" justifyContent="space-evenly">
           <RewardItem

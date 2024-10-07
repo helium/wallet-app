@@ -1,13 +1,11 @@
 import Error from '@assets/images/error.svg'
 import Receive from '@assets/images/receive.svg'
 import Send from '@assets/images/send.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
@@ -16,7 +14,6 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHaptic from '@hooks/useHaptic'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import globalStyles from '@theme/globalStyles'
 import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -58,18 +55,18 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
           }}
         >
-          <Text textAlign="center" variant="textMdBold" color="ros.500">
+          <Text textAlign="center" variant="textMdBold" color="error.500">
             {t('activityScreen.scamWarning')}
           </Text>
           <ButtonPressable
             title={t('activityScreen.showAnyway')}
             onPress={() => setDismissed(true)}
             borderRadius="full"
-            borderColor="ros.500"
+            borderColor="error.500"
             borderWidth={1}
             px="4"
             titleColorDisabled="gray.800"
-            titleColor="ros.500"
+            titleColor="error.500"
             fontWeight="500"
             marginTop="6"
           />
@@ -128,7 +125,7 @@ const ActivityDetailsScreen = () => {
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
     if (enrichedTx.transactionError || confirmedSig.err) {
-      return <Error color={colors['ros.500']} width={150} height={150} />
+      return <Error color={colors['error.500']} width={150} height={150} />
     }
     const userSignedTransaction =
       wallet && enrichedTx.signers?.includes(wallet.toBase58())
@@ -342,71 +339,72 @@ const ActivityDetailsScreen = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-        }}
+    <ScrollView
+      style={{ backgroundColor: colors.primaryBackground }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        backgroundColor: colors.primaryBackground,
+      }}
+    >
+      <BackScreen
+        title={t('activityScreen.activityDetails')}
+        flex={1}
+        headerTopMargin="4"
       >
-        <BackScreen
-          title={t('activityScreen.activityDetails')}
-          flex={1}
-          headerTopMargin="4"
-        >
-          <Box alignItems="center" justifyContent="center" flex={1}>
-            <Box justifyContent="center" alignItems="center" marginTop="4">
-              {activityImage}
-              <Text
-                variant="displayMdMedium"
-                marginTop="4"
-                marginBottom="2"
-                textAlign="center"
-              >
-                {title}
-              </Text>
-              <Text
-                variant="textMdMedium"
-                color="primaryText"
-                marginBottom="2"
-                textAlign="center"
-              >
-                {description}
-              </Text>
-              <Text
-                variant="textXsRegular"
-                textAlign="center"
-                color="secondaryText"
-              >
-                {dateLabel}
-              </Text>
-            </Box>
-            {AccountAddressListItems}
-            <Box width="100%">
-              <ButtonPressable
-                marginTop="8"
-                marginHorizontal="4"
-                borderRadius="full"
-                backgroundColor="base.white"
-                titleColorDisabled="gray.600"
-                backgroundColorDisabled="base.white"
-                backgroundColorDisabledOpacity={0.1}
-                title={t('activityScreen.viewOnExplorer')}
-                titleColor="base.black"
-                onPress={handleOpenExplorer}
-              />
-            </Box>
+        <Box alignItems="center" justifyContent="center" flex={1}>
+          <Box justifyContent="center" alignItems="center" marginTop="4">
+            {activityImage}
+            <Text
+              variant="displayMdMedium"
+              marginTop="4"
+              marginBottom="2"
+              textAlign="center"
+            >
+              {title}
+            </Text>
+            <Text
+              variant="textMdMedium"
+              color="primaryText"
+              marginBottom="2"
+              textAlign="center"
+            >
+              {description}
+            </Text>
+            <Text
+              variant="textXsRegular"
+              textAlign="center"
+              color="secondaryText"
+            >
+              {dateLabel}
+            </Text>
           </Box>
-          <BlurActionSheet
-            title={t('collectablesScreen.transferActions')}
-            open={optionsOpen}
-            onClose={toggleActionSheet(false)}
-          >
-            {accountOptions()}
-          </BlurActionSheet>
-        </BackScreen>
-      </ScrollView>
-    </ReAnimatedBox>
+          {AccountAddressListItems}
+          <Box width="100%">
+            <ButtonPressable
+              marginTop="8"
+              marginBottom={'6xl'}
+              marginHorizontal="4"
+              borderRadius="full"
+              backgroundColor="primaryBackground"
+              titleColorDisabled="gray.600"
+              backgroundColorDisabled="base.white"
+              backgroundColorDisabledOpacity={0.1}
+              title={t('activityScreen.viewOnExplorer')}
+              titleColor="base.black"
+              onPress={handleOpenExplorer}
+            />
+          </Box>
+        </Box>
+        <BlurActionSheet
+          title={t('collectablesScreen.transferActions')}
+          open={optionsOpen}
+          onClose={toggleActionSheet(false)}
+        >
+          {accountOptions()}
+        </BlurActionSheet>
+      </BackScreen>
+    </ScrollView>
   )
 }
 

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import Arrow from '@assets/images/listItemRight.svg'
 import Lock from '@assets/images/lockClosed.svg'
-import InfoWarning from '@assets/images/warning.svg'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import Text from '@components/Text'
@@ -18,10 +17,8 @@ import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import usePrevious from '@hooks/usePrevious'
 import { useNavigation } from '@react-navigation/native'
-import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
-import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
@@ -101,15 +98,15 @@ export const TokenListItem = ({ mint }: Props) => {
         alignItems="center"
         paddingHorizontal="4"
         paddingVertical="4"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
+        backgroundColor={'primaryBackground'}
+        backgroundColorPressed={'bg.primary-hover'}
       >
         {loading ? (
           <Box
             width={40}
             height={40}
             borderRadius="full"
-            backgroundColor="cardBackground"
+            backgroundColor="fg.quinary-400"
           />
         ) : (
           <TokenIcon img={json?.image} />
@@ -118,50 +115,85 @@ export const TokenListItem = ({ mint }: Props) => {
         <Box flex={1} paddingHorizontal="4">
           {loadingOwned ? (
             <Box flex={1} paddingHorizontal="4">
-              <Box width={120} height={16} backgroundColor="cardBackground" />
+              <Box width={120} height={16} backgroundColor="fg.quinary-400" />
               <Box
                 width={70}
                 height={16}
                 marginTop="2"
-                backgroundColor="cardBackground"
+                backgroundColor="fg.quinary-400"
               />
             </Box>
           ) : (
             <Box>
-              <Box flexDirection="row" alignItems="center">
+              <Text
+                variant="textMdRegular"
+                color="text.tertiary-600"
+                maxFontSizeMultiplier={1.3}
+              >
+                {json?.name}
+              </Text>
+              <Box flexDirection="row" alignItems="flex-end" gap="1">
                 <Text
                   variant="textMdRegular"
-                  color="primaryText"
+                  color="text.tertiary-600"
                   maxFontSizeMultiplier={1.3}
                 >
-                  {`${balanceToDisplay} `}
+                  {`${balanceToDisplay}`}
                 </Text>
                 <Text
                   variant="textSmMedium"
-                  color="secondaryText"
+                  color="text.tertiary-600"
                   maxFontSizeMultiplier={1.3}
                 >
                   {symbol}
                 </Text>
               </Box>
-              {symbol && (
-                <AccountTokenCurrencyBalance
-                  variant="textSmMedium"
-                  color="secondaryText"
-                  ticker={symbol.toUpperCase()}
-                />
-              )}
             </Box>
           )}
         </Box>
-        {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
-          <Box mr="4">
-            <InfoWarning width={28} height={28} />
-          </Box>
-        )}
-        <Arrow />
+        <Box flexDirection={'column'} alignItems={'flex-end'}>
+          {symbol && (
+            <AccountTokenCurrencyBalance
+              variant="textSmMedium"
+              color="secondaryText"
+              ticker={symbol.toUpperCase()}
+            />
+          )}
+          {/* 
+          TODO: Bring this back once we are tracking balances on the wallet api 
+          <PercentChange change={120.0} type="up" /> */}
+        </Box>
       </TouchableContainer>
     </FadeInOut>
+  )
+}
+
+const PercentChange = ({
+  change,
+  type,
+}: {
+  change: number
+  type: 'up' | 'down' | 'neutral'
+}) => {
+  const color = useMemo(() => {
+    switch (type) {
+      case 'up':
+        return 'green.light-500'
+      case 'down':
+        return 'blue.dark-600'
+      case 'neutral':
+        return 'fg.quinary-400'
+    }
+  }, [type])
+
+  const prefix = useMemo(() => {
+    return change > 0 ? '+' : '-'
+  }, [change])
+
+  return (
+    <Text adjustsFontSizeToFit variant="textSmMedium" color={color}>
+      {`${prefix}${change.toFixed(2).toLocaleString()}%`}
+    </Text>
   )
 }
 
@@ -270,6 +302,8 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
         paddingVertical="4"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
+        backgroundColor={'primaryBackground'}
+        backgroundColorPressed={'bg.primary-hover'}
       >
         {loading ? (
           <Box
@@ -339,7 +373,9 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
                   {symbol} (Locked)
                 </Text>
               </Box>
-              <Text color="secondaryText">-</Text>
+              <Text variant="textSmRegular" color="secondaryText">
+                -
+              </Text>
             </Box>
           )}
         </Box>

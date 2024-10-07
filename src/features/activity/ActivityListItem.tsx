@@ -95,22 +95,22 @@ const ActivityListItem = ({
 
   return (
     <TouchableContainer
-      backgroundColor="bg.tertiary"
+      backgroundColor="cardBackground"
       flexDirection="row"
       alignItems="center"
       padding="4"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="base.black"
+      borderBottomWidth={hasDivider ? 2 : 0}
+      borderBottomColor="primaryBackground"
       {...rest}
     >
       {!transactionFailed ? (
         userSignedTransaction ? (
-          <Send width={25} height={25} color={colors['green.500']} />
+          <Send width={20} height={20} color={colors['green.500']} />
         ) : (
-          <Receive width={25} height={25} color={colors['blue.500']} />
+          <Receive width={20} height={20} color={colors['blue.500']} />
         )
       ) : (
-        <Error width={25} height={25} color={colors['ros.500']} />
+        <Error width={20} height={20} color={colors['error.500']} />
       )}
       <Box marginStart="2" flexGrow={1} flexBasis={0.5} justifyContent="center">
         <Text variant="textSmMedium">{title}</Text>

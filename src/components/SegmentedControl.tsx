@@ -1,29 +1,71 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { BoxProps } from '@shopify/restyle'
-import useLayoutWidth from '@hooks/useLayoutWidth'
-import { GestureResponderEvent } from 'react-native'
-import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
+import { GestureResponderEvent, LayoutChangeEvent } from 'react-native'
+import {
+  runOnJS,
+  useAnimatedStyle,
+  withDelay,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated'
 import { Theme } from '../theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
+import { Svg, SvgProps } from 'react-native-svg'
+import { useColors } from '@theme/themeHooks'
 
-type Option = { value: string; label: string }
+type Option = {
+  value: string
+  label: string
+  Icon?: FC<SvgProps>
+  iconProps?: SvgProps
+}
 
 const SegmentedItem = ({
   option,
   selected,
   onSelected,
+  onSetWidth,
 }: {
   option: Option
   selected: boolean
   onSelected: ((event: GestureResponderEvent) => void) | undefined
+  onSetWidth: (width: number) => void
 }) => {
+  const { primaryBackground, ...colors } = useColors()
+
+  const onLayout = useCallback((e: LayoutChangeEvent) => {
+    onSetWidth(e.nativeEvent.layout.width)
+  }, [])
+
   return (
-    <TouchableOpacityBox flex={1} onPress={onSelected}>
+    <TouchableOpacityBox
+      paddingVertical="2"
+      paddingHorizontal="3"
+      justifyContent={'center'}
+      alignItems={'center'}
+      onPress={onSelected}
+      onLayout={onLayout}
+      gap="sm"
+      flexDirection={'row'}
+    >
+      {option.Icon && (
+        <option.Icon
+          color={selected ? primaryBackground : colors['fg.quinary-400']}
+          {...option.iconProps}
+        />
+      )}
       <Text
-        paddingVertical="4"
-        variant="textLgRegular"
-        color={selected ? 'primaryBackground' : 'primaryText'}
+        variant="textLgSemibold"
+        fontSize={17}
+        color={selected ? 'primaryBackground' : 'fg.quinary-400'}
         textAlign="center"
       >
         {option.label}
@@ -43,11 +85,13 @@ const SegmentedControl = ({
   selectedIndex,
   ...boxProps
 }: Props) => {
-  const [containerWidth, setContainerWidth] = useLayoutWidth()
+  const [optionWidths, setOptionWidths] = useState(
+    Array(options.length).fill(0),
+  )
 
   const itemWidth = useMemo(
-    () => containerWidth / options.length,
-    [containerWidth, options.length],
+    () => optionWidths[selectedIndex],
+    [optionWidths, selectedIndex],
   )
 
   const handleItemSelected = useCallback(
@@ -57,29 +101,29 @@ const SegmentedControl = ({
     [onItemSelected],
   )
 
-  const selectedStyle = useAnimatedStyle(() => {
-    return {
-      left: withSpring(itemWidth * selectedIndex, {
-        stiffness: 70,
-      }),
-    }
-  }, [itemWidth, selectedIndex])
+  const leftPosition = useMemo(() => {
+    return optionWidths
+      .slice(0, selectedIndex)
+      .reduce((acc, width) => (selectedIndex === 0 ? 0 : acc + width), 0)
+  }, [optionWidths, selectedIndex])
+
+  const onSetWidth = useCallback(
+    (index: number) => (width: number) => {
+      setOptionWidths((prev) => {
+        const newOptionWidths = [...prev]
+        newOptionWidths[index] = width
+        return newOptionWidths
+      })
+    },
+    [],
+  )
 
   return (
-    <Box
-      backgroundColor="cardBackground"
-      padding="0.5"
-      paddingHorizontal="1.5"
-      borderRadius="4xl"
-      borderWidth={1}
-      borderColor="border.primary"
-    >
+    <Box borderRadius="4xl" alignItems={'center'}>
       <Box
         borderRadius="4xl"
         {...boxProps}
-        onLayout={setContainerWidth}
         flexDirection="row"
-        width="100%"
         position="relative"
       >
         <ReAnimatedBox
@@ -87,9 +131,9 @@ const SegmentedControl = ({
           backgroundColor="primaryText"
           borderRadius="4xl"
           position="absolute"
+          left={leftPosition}
           bottom={5}
           top={5}
-          style={selectedStyle}
         />
         {options.map((option, index) => (
           <SegmentedItem
@@ -97,6 +141,7 @@ const SegmentedControl = ({
             option={option}
             selected={index === selectedIndex}
             onSelected={handleItemSelected(index)}
+            onSetWidth={onSetWidth(index)}
           />
         ))}
       </Box>

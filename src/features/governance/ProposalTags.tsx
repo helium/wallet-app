@@ -21,7 +21,11 @@ export const ProposalTags: React.FC<{
                   }
                   borderRadius="2xl"
                 >
-                  <Text fontSize={10} color="secondaryText">
+                  <Text
+                    variant={'textSmRegular'}
+                    fontSize={10}
+                    color="secondaryText"
+                  >
                     {tag.toUpperCase()}
                   </Text>
                 </Box>

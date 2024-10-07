@@ -326,16 +326,16 @@ const AddGatewayBle = () => {
           })}
         </Text>
         {error && (
-          <Text variant="textMdMedium" color="ros.500">
+          <Text variant="textMdMedium" color="error.500">
             {error.message ? error.message.toString() : error.toString()}
           </Text>
         )}
         {!wrongOwner && balError && (
           <>
-            <Text variant="textMdMedium" color="ros.500">
+            <Text variant="textMdMedium" color="error.500">
               {t('hotspotOnboarding.onboarding.responsible')}
             </Text>
-            <Text mt="2" variant="textMdMedium" color="ros.500">
+            <Text mt="2" variant="textMdMedium" color="error.500">
               {t('hotspotOnboarding.onboarding.manufacturerMissing', {
                 name: maker?.name,
                 tokens: `${[
@@ -346,7 +346,7 @@ const AddGatewayBle = () => {
                   .join(' and ')}`,
               })}
             </Text>
-            <Text mt="2" variant="textMdMedium" color="ros.500">
+            <Text mt="2" variant="textMdMedium" color="error.500">
               {t('hotspotOnboarding.onboarding.twoSolutions')}
             </Text>
             <Box
@@ -393,12 +393,12 @@ const AddGatewayBle = () => {
             {selectedOption === 'pay' && (
               <>
                 {!callbackLoading && insufficientMySolBal && (
-                  <Text mt="2" variant="textMdMedium" color="ros.500">
+                  <Text mt="2" variant="textMdMedium" color="error.500">
                     {t('hotspotOnboarding.onboarding.notEnoughSol')}
                   </Text>
                 )}
                 {!callbackLoading && insufficientMyDcBal && (
-                  <Text mt="2" variant="textMdMedium" color="ros.500">
+                  <Text mt="2" variant="textMdMedium" color="error.500">
                     {t('hotspotOnboarding.onboarding.notEnoughDc')}
                   </Text>
                 )}
@@ -409,7 +409,7 @@ const AddGatewayBle = () => {
                       fontWeight="bold"
                       mt="2"
                       variant="textMdMedium"
-                      color="ros.500"
+                      color="error.500"
                     >
                       {t('hotspotOnboarding.onboarding.pay', {
                         usd,
@@ -422,7 +422,7 @@ const AddGatewayBle = () => {
                       titleColor="base.black"
                       borderColor="transparent"
                       opacity={disabled ? 0.5 : undefined}
-                      backgroundColor="ros.500"
+                      backgroundColor="error.500"
                       title={
                         loading
                           ? undefined

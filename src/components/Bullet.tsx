@@ -15,7 +15,13 @@ const Bullet = ({ children, color = 'black', style = {} }: Props) => (
     marginBottom="2"
     style={style}
   >
-    <Text style={{ color }} fontSize={24} lineHeight={22} marginRight="2">
+    <Text
+      variant="textSmRegular"
+      style={{ color }}
+      fontSize={24}
+      lineHeight={22}
+      marginRight="2"
+    >
       &bull;
     </Text>
     <Text variant="textSmRegular" color="gray.500" width="90%">

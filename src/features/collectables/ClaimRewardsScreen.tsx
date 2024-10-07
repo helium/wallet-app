@@ -155,7 +155,7 @@ const ClaimRewardsScreen = () => {
             <Box>
               <Text
                 variant="textSmRegular"
-                color="ros.500"
+                color="error.500"
                 marginTop="8"
                 numberOfLines={2}
                 textAlign="center"

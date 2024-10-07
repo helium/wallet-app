@@ -183,116 +183,57 @@ const ChangeRewardsRecipientScreen = () => {
         title={t('changeRewardsRecipientScreen.title')}
         edges={backEdges}
       >
-        <AddressBookSelector
-          ref={addressBookRef}
-          onContactSelected={handleContactSelected}
-          hideCurrentAccount
-        >
-          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-              <SafeAreaBox
-                edges={safeEdges}
-                backgroundColor="transparent"
-                flex={1}
-                padding="4"
-                marginHorizontal="2"
-                marginVertical="xs"
-              >
-                <Box flexGrow={1} justifyContent="center">
-                  <Text
-                    textAlign="left"
-                    variant="textLgMedium"
-                    adjustsFontSizeToFit
-                  >
-                    {t('changeRewardsRecipientScreen.title')}
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+            <SafeAreaBox
+              edges={safeEdges}
+              backgroundColor="transparent"
+              flex={1}
+              padding="4"
+              marginHorizontal="2"
+              marginVertical="xs"
+            >
+              <Box flexGrow={1} justifyContent="center">
+                <Text
+                  textAlign="left"
+                  variant="textLgMedium"
+                  adjustsFontSizeToFit
+                >
+                  {t('changeRewardsRecipientScreen.title')}
+                </Text>
+                <Text variant="textSmMedium" color="secondaryText">
+                  {t('changeRewardsRecipientScreen.description')}
+                </Text>
+                <Box
+                  borderRadius="2xl"
+                  backgroundColor="secondaryBackground"
+                  padding="3"
+                  marginTop="2"
+                >
+                  <Text variant="textXsRegular">
+                    {t('changeRewardsRecipientScreen.blurb')}
                   </Text>
-                  <Text variant="textSmMedium" color="secondaryText">
-                    {t('changeRewardsRecipientScreen.description')}
-                  </Text>
-                  <Box
-                    borderRadius="2xl"
-                    backgroundColor="secondaryBackground"
-                    padding="3"
-                    marginTop="2"
-                  >
-                    <Text variant="textXsRegular">
-                      {t('changeRewardsRecipientScreen.blurb')}
-                    </Text>
-                  </Box>
-                  {removed
-                    ? null
-                    : hasRecipients && (
-                        <Box
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          marginTop="2"
-                        >
-                          {!recipientsAreDifferent ? (
-                            <>
-                              {(hasIotRecipient || hasMobileRecipient) && (
+                </Box>
+                {removed
+                  ? null
+                  : hasRecipients && (
+                      <Box
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        marginTop="2"
+                      >
+                        {!recipientsAreDifferent ? (
+                          <>
+                            {(hasIotRecipient || hasMobileRecipient) && (
+                              <Box
+                                flex={1}
+                                flexDirection="row"
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                gap={4}
+                              >
                                 <Box
                                   flex={1}
-                                  flexDirection="row"
-                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                  // @ts-ignore
-                                  gap={4}
-                                >
-                                  <Box
-                                    flex={1}
-                                    flexDirection="row"
-                                    padding="2"
-                                    backgroundColor="cardBackground"
-                                    borderRadius="2xl"
-                                    justifyContent="space-between"
-                                    position="relative"
-                                  >
-                                    <Box
-                                      flexDirection="row"
-                                      alignItems="center"
-                                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                      // @ts-ignore
-                                      gap={8}
-                                    >
-                                      {hasIotRecipient && (
-                                        <IotSymbol
-                                          color={colors.iotGreen}
-                                          width={20}
-                                          height={20}
-                                        />
-                                      )}
-                                      {hasMobileRecipient && (
-                                        <MobileSymbol
-                                          color={colors.mobileBlue}
-                                          width={20}
-                                          height={20}
-                                        />
-                                      )}
-                                      <Text variant="textXsRegular">
-                                        Recipient
-                                      </Text>
-                                    </Box>
-                                    <Text variant="textSmRegular">
-                                      {ellipsizeAddress(
-                                        new PublicKey(
-                                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                          iotRecipient?.destination!,
-                                        ).toBase58(),
-                                      )}
-                                    </Text>
-                                  </Box>
-                                </Box>
-                              )}
-                            </>
-                          ) : (
-                            <Box
-                              flex={1}
-                              marginTop="2"
-                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                              // @ts-ignore
-                              gap={4}
-                            >
-                              {hasIotRecipient && (
-                                <Box
                                   flexDirection="row"
                                   padding="2"
                                   backgroundColor="cardBackground"
@@ -307,11 +248,20 @@ const ChangeRewardsRecipientScreen = () => {
                                     // @ts-ignore
                                     gap={8}
                                   >
-                                    <IotSymbol
-                                      color={colors.iotGreen}
-                                      width={20}
-                                      height={20}
-                                    />
+                                    {hasIotRecipient && (
+                                      <IotSymbol
+                                        color={colors.iotGreen}
+                                        width={20}
+                                        height={20}
+                                      />
+                                    )}
+                                    {hasMobileRecipient && (
+                                      <MobileSymbol
+                                        color={colors.mobileBlue}
+                                        width={20}
+                                        height={20}
+                                      />
+                                    )}
                                     <Text variant="textXsRegular">
                                       Recipient
                                     </Text>
@@ -325,107 +275,144 @@ const ChangeRewardsRecipientScreen = () => {
                                     )}
                                   </Text>
                                 </Box>
-                              )}
-                              {hasMobileRecipient && (
+                              </Box>
+                            )}
+                          </>
+                        ) : (
+                          <Box
+                            flex={1}
+                            marginTop="2"
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            gap={4}
+                          >
+                            {hasIotRecipient && (
+                              <Box
+                                flexDirection="row"
+                                padding="2"
+                                backgroundColor="cardBackground"
+                                borderRadius="2xl"
+                                justifyContent="space-between"
+                                position="relative"
+                              >
                                 <Box
                                   flexDirection="row"
-                                  padding="2"
-                                  backgroundColor="cardBackground"
-                                  borderRadius="2xl"
-                                  justifyContent="space-between"
-                                  position="relative"
+                                  alignItems="center"
+                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                  // @ts-ignore
+                                  gap={8}
                                 >
-                                  <Box
-                                    flexDirection="row"
-                                    alignItems="center"
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    gap={8}
-                                    l
-                                  >
-                                    <MobileSymbol
-                                      color={colors.mobileBlue}
-                                      width={20}
-                                      height={20}
-                                    />
-                                    <Text variant="textXsRegular">
-                                      Recipient
-                                    </Text>
-                                  </Box>
-                                  <Text variant="textSmRegular">
-                                    {ellipsizeAddress(
-                                      new PublicKey(
-                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                        mobileRecipient?.destination!,
-                                      ).toBase58(),
-                                    )}
-                                  </Text>
+                                  <IotSymbol
+                                    color={colors.iotGreen}
+                                    width={20}
+                                    height={20}
+                                  />
+                                  <Text variant="textXsRegular">Recipient</Text>
                                 </Box>
-                              )}
-                            </Box>
-                          )}
-                          <TouchableOpacityBox
-                            flexDirection="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            borderRadius="2xl"
-                            paddingVertical="1.5"
-                            marginLeft="2"
-                            paddingLeft="2"
-                            paddingRight="2"
-                            backgroundColor="cardBackground"
-                            onPress={handleRemoveRecipient}
-                          >
-                            {removing ? (
-                              <CircleLoader
-                                loaderSize={20}
-                                color="primaryText"
-                              />
-                            ) : (
-                              <Text variant="textXsMedium">
-                                {t('generic.remove')}
-                              </Text>
+                                <Text variant="textSmRegular">
+                                  {ellipsizeAddress(
+                                    new PublicKey(
+                                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                      iotRecipient?.destination!,
+                                    ).toBase58(),
+                                  )}
+                                </Text>
+                              </Box>
                             )}
-                          </TouchableOpacityBox>
-                        </Box>
-                      )}
-                  <TextInput
-                    floatingLabel={`${t(
-                      'changeRewardsRecipientScreen.newRecipient',
-                    )} ${recipientName}`}
-                    variant="regular"
-                    marginTop="2"
-                    height={80}
-                    width="100%"
-                    textColor="base.white"
-                    fontSize={15}
-                    TrailingIcon={Menu}
-                    onTrailingIconPress={handleAddressBookSelected}
-                    textInputProps={{
-                      placeholder: t('generic.solanaAddress'),
-                      placeholderTextColor: 'base.white',
-                      autoCorrect: false,
-                      autoComplete: 'off',
-                      onChangeText: handleEditAddress,
-                      onEndEditing: handleAddressBlur,
-                      value: recipient,
-                    }}
-                  />
-                  <Box
-                    borderRadius="2xl"
-                    backgroundColor="secondaryBackground"
-                    padding="3"
-                    marginVertical="2"
-                  >
-                    <Text variant="textXsMedium" color="orange.500">
-                      {t('changeRewardsRecipientScreen.warning')}
-                    </Text>
-                  </Box>
+                            {hasMobileRecipient && (
+                              <Box
+                                flexDirection="row"
+                                padding="2"
+                                backgroundColor="cardBackground"
+                                borderRadius="2xl"
+                                justifyContent="space-between"
+                                position="relative"
+                              >
+                                <Box
+                                  flexDirection="row"
+                                  alignItems="center"
+                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                  // @ts-ignore
+                                  gap={8}
+                                  l
+                                >
+                                  <MobileSymbol
+                                    color={colors.mobileBlue}
+                                    width={20}
+                                    height={20}
+                                  />
+                                  <Text variant="textXsRegular">Recipient</Text>
+                                </Box>
+                                <Text variant="textSmRegular">
+                                  {ellipsizeAddress(
+                                    new PublicKey(
+                                      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                      mobileRecipient?.destination!,
+                                    ).toBase58(),
+                                  )}
+                                </Text>
+                              </Box>
+                            )}
+                          </Box>
+                        )}
+                        <TouchableOpacityBox
+                          flexDirection="row"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          borderRadius="2xl"
+                          paddingVertical="1.5"
+                          marginLeft="2"
+                          paddingLeft="2"
+                          paddingRight="2"
+                          backgroundColor="cardBackground"
+                          onPress={handleRemoveRecipient}
+                        >
+                          {removing ? (
+                            <CircleLoader loaderSize={20} color="primaryText" />
+                          ) : (
+                            <Text variant="textXsMedium">
+                              {t('generic.remove')}
+                            </Text>
+                          )}
+                        </TouchableOpacityBox>
+                      </Box>
+                    )}
+                <TextInput
+                  floatingLabel={`${t(
+                    'changeRewardsRecipientScreen.newRecipient',
+                  )} ${recipientName}`}
+                  variant="regular"
+                  marginTop="2"
+                  height={80}
+                  width="100%"
+                  textColor="base.white"
+                  fontSize={15}
+                  TrailingIcon={Menu}
+                  onTrailingIconPress={handleAddressBookSelected}
+                  textInputProps={{
+                    placeholder: t('generic.solanaAddress'),
+                    placeholderTextColor: 'base.white',
+                    autoCorrect: false,
+                    autoComplete: 'off',
+                    onChangeText: handleEditAddress,
+                    onEndEditing: handleAddressBlur,
+                    value: recipient,
+                  }}
+                />
+                <Box
+                  borderRadius="2xl"
+                  backgroundColor="secondaryBackground"
+                  padding="3"
+                  marginVertical="2"
+                >
+                  <Text variant="textXsMedium" color="orange.500">
+                    {t('changeRewardsRecipientScreen.warning')}
+                  </Text>
                 </Box>
-              </SafeAreaBox>
-            </KeyboardAvoidingView>
-          </TouchableWithoutFeedback>
-        </AddressBookSelector>
+              </Box>
+            </SafeAreaBox>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
         <Box
           flexDirection="row"
           justifyContent="center"
@@ -433,7 +420,7 @@ const ChangeRewardsRecipientScreen = () => {
           minHeight={40}
         >
           {showError && (
-            <Text variant="textXsMedium" color="ros.500">
+            <Text variant="textXsMedium" color="error.500">
               {showError}
             </Text>
           )}
@@ -467,6 +454,11 @@ const ChangeRewardsRecipientScreen = () => {
           />
         </Box>
       </BackScreen>
+      <AddressBookSelector
+        ref={addressBookRef}
+        onContactSelected={handleContactSelected}
+        hideCurrentAccount
+      />
     </ReAnimatedBox>
   )
 }

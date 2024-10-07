@@ -185,7 +185,7 @@ const SettingsListItem = ({
         />
       )}
       {staticText && (
-        <Text fontWeight="bold" color="secondaryText">
+        <Text variant="textSmSemibold" fontWeight="bold" color="secondaryText">
           {value}
         </Text>
       )}

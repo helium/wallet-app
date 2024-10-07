@@ -91,7 +91,7 @@ const AccountCreatePassphraseScreen = () => {
         </Text>
         <Text
           variant="textXlMedium"
-          color="ros.500"
+          color="error.500"
           textAlign="center"
           marginVertical="6"
           marginHorizontal="8"

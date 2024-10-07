@@ -87,7 +87,7 @@ export const VoteOption = ({
             flexDirection="row"
             flexWrap="wrap"
             alignItems="center"
-            {...{ gap: 4 }}
+            gap="1"
           >
             <Text variant="textSmRegular" color="secondaryText">
               Voted by -
@@ -112,7 +112,7 @@ export const VoteOption = ({
 export const Voter = ({ voter }: { voter: PublicKey }) => {
   const { knownProxy } = useKnownProxy(voter)
   return (
-    <Text variant="textSmRegular" color="ros.500">
+    <Text variant="textSmRegular" color="error.500">
       {knownProxy?.name || shortenAddress(voter.toBase58())}
     </Text>
   )

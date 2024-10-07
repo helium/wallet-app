@@ -21,7 +21,7 @@ export const WarningBox = ({
     >
       <Box flexDirection="row" alignItems="center" mb="xs">
         <Box marginRight="xs">
-          <Alert width={16} height={16} color="ros.500" />
+          <Alert width={16} height={16} color="error.500" />
         </Box>
         <Text variant="textXsBold" color="primaryText">
           {header}

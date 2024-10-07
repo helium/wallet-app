@@ -303,7 +303,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             >
               <ButtonPressable
                 flex={1}
-                backgroundColor="ros.500"
+                backgroundColor="error.500"
                 height={BUTTON_HEIGHT}
                 backgroundColorDisabled="gray.300"
                 titleColorDisabled="gray.400"
