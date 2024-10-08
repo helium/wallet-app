@@ -30,6 +30,7 @@ import {
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
+import ScrollBox from '@components/ScrollBox'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -43,7 +44,6 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import ScrollBox from '@components/ScrollBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -261,7 +261,7 @@ const TransferCollectableScreen = () => {
                     variant="thickBlur"
                     height={80}
                     width="100%"
-                    textColor={'primaryText'}
+                    textColor="primaryText"
                     fontSize={15}
                     TrailingIcon={Menu}
                     onTrailingIconPress={handleAddressBookSelected}

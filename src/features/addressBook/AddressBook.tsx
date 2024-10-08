@@ -6,13 +6,13 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import CloseButton from '@components/CloseButton'
 import { CSAccount } from '@storage/cloudStorage'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
 
 const AddressBook = () => {
   const { t } = useTranslation()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<WalletNavigationProp>()
   const addressNav = useNavigation<AddressBookNavigationProp>()
 
   const onRequestClose = useCallback(() => {

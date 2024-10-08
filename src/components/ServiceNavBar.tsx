@@ -67,7 +67,7 @@ const NavBarItem = ({
       marginRight="0"
       hitSlop={hitSlop}
       alignItems="center"
-      justifyContent={'center'}
+      justifyContent="center"
     >
       <Animated.View style={animatedStyles}>
         <Box
@@ -80,9 +80,9 @@ const NavBarItem = ({
         />
       </Animated.View>
       <Box
-        justifyContent={'center'}
-        alignItems={'center'}
-        position={'absolute'}
+        justifyContent="center"
+        alignItems="center"
+        position="absolute"
         top={0}
         bottom={0}
       >
@@ -175,8 +175,8 @@ const NavServiceNavBar = ({
     <Box
       {...containerProps}
       paddingHorizontal="2xl"
-      flexDirection={'row'}
-      justifyContent={'center'}
+      flexDirection="row"
+      justifyContent="center"
       shadowColor="base.black"
       shadowOpacity={0.3}
       shadowOffset={{ width: 0, height: 6 }}
@@ -188,7 +188,7 @@ const NavServiceNavBar = ({
         backgroundColor="primaryText"
         borderRadius="full"
         padding="md"
-        gap={'2'}
+        gap="2"
       >
         {items}
       </Box>

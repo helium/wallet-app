@@ -42,6 +42,12 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import {
+  PaymentRouteParam,
+  WalletServiceStackParamList,
+} from '@services/WalletService'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -53,17 +59,10 @@ import { useAppDispatch } from '../../store/store'
 import { accountNetType, solAddressIsValid } from '../../utils/accountUtils'
 import { SendDetails } from '../../utils/linking'
 import * as logger from '../../utils/logger'
-import {
-  HomeNavigationProp,
-  HomeStackParamList,
-  PaymentRouteParam,
-} from '../home/homeTypes'
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 
 type LinkedPayment = {
   amount?: string
@@ -95,7 +94,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   return []
 }
 
-type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
+type Route = RouteProp<WalletServiceStackParamList, 'Send'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
   const { bottom } = useSafeAreaInsets()
@@ -144,7 +143,7 @@ const PaymentScreen = () => {
     } else {
       rootNav.reset({
         index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
+        routes: [{ name: 'ServiceSheetNavigator' }],
       })
     }
   }, [navigation, rootNav])
@@ -678,21 +677,12 @@ const PaymentScreen = () => {
                 </Box>
               </Box> */}
 
-        <Box
-          alignItems={'center'}
-          gap="2.5"
-          marginBottom={'4xl'}
-          marginTop="6xl"
-        >
+        <Box alignItems="center" gap="2.5" marginBottom="4xl" marginTop="6xl">
           <Image source={require('@assets/images/sendIcon.png')} />
           <Text variant="displaySmSemibold" color="primaryText">
             {t('payment.send')}
           </Text>
-          <Text
-            variant="textLgMedium"
-            color="secondaryText"
-            textAlign={'center'}
-          >
+          <Text variant="textLgMedium" color="secondaryText" textAlign="center">
             {t('payment.sendTokensToAnyAddress')}
           </Text>
         </Box>

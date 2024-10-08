@@ -24,13 +24,13 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
+import { Portal } from '@gorhom/portal'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { Activity } from '../../types/activity'
 import TransactionLineItem from './TransactionLineItem'
 import { useTxnDetails } from './useTxn'
-import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
-import { Portal } from '@gorhom/portal'
 
 type DetailData = { item: Activity; accountAddress: string; mint: PublicKey }
 

@@ -30,6 +30,9 @@ import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ScrollView } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSpacing } from '@theme/themeHooks'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -39,9 +42,6 @@ import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
-import { ScrollView } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSpacing } from '@theme/themeHooks'
 
 export const PositionsScreen = () => {
   const { t } = useTranslation()
@@ -269,7 +269,7 @@ export const PositionsScreen = () => {
               fontSize={16}
               borderRadius="full"
               backgroundColorOpacityPressed={0.7}
-              backgroundColor={'primaryText'}
+              backgroundColor="primaryText"
               title={t('gov.transactions.lockTokens')}
               titleColor="primaryBackground"
               titleColorPressed="base.black"

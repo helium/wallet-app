@@ -26,7 +26,7 @@ const HeliumBottomSheet = forwardRef<BottomSheet, BottomSheetProps>(
       return {
         width: 90,
         height: 4,
-        backgroundColor: colors['secondaryText'],
+        backgroundColor: colors.secondaryText,
       }
     }, [colors])
 

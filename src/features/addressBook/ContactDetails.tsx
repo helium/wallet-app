@@ -29,7 +29,7 @@ import { solAddressIsValid, accountNetType } from '@utils/accountUtils'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { useDebounce } from 'use-debounce'
 import { fetchDomainOwner } from '@utils/getDomainOwner'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import {
   AddressBookNavigationProp,
@@ -51,7 +51,7 @@ type Props = {
 
 const ContactDetails = ({ action, contact }: Props) => {
   const { t } = useTranslation()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<WalletNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
   const { backgroundStyle } = useOpacity('secondaryBackground', 1)

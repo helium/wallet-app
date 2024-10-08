@@ -9,13 +9,13 @@ import AccountIcon from '@components/AccountIcon'
 import SideDrawer from '@components/SideDrawer'
 import MenuButton from '@components/MenuButton'
 import { useNavigation } from '@react-navigation/native'
-import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 import { ThemeProvider } from '@shopify/restyle'
 import { lightTheme } from '@theme/theme'
 import HeliumBottomSheet from '@components/HeliumBottomSheet'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { FadeInSlow } from '@components/FadeInOut'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
   children?: React.ReactNode
@@ -47,6 +47,9 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
       case 'browser':
         serviceNav.replace('BrowserService')
         break
+      case 'notifications':
+        serviceNav.replace('NotificationsService')
+        break
       case 'settings':
         serviceNav.replace('SettingsService')
         break
@@ -67,7 +70,7 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
     setCurrentService('wallets')
     serviceNav.replace('AccountsService')
     bottomSheetRef.current?.expand()
-  }, [currentService])
+  }, [currentService, serviceNav, bottomSheetRef])
 
   const onCloseSheet = useCallback(() => {
     if (currentService === '') return
@@ -97,7 +100,7 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
             height="100%"
             flexDirection="column"
             zIndex={100}
-            position={'relative'}
+            position="relative"
           >
             {children}
           </Box>
@@ -138,7 +141,7 @@ const Header = ({
     >
       <MenuButton isOpen={false} onPress={onDrawerPress} />
       <Box flex={1}>
-        <Text variant="textLgSemibold" color="primaryText" textAlign={'center'}>
+        <Text variant="textLgSemibold" color="primaryText" textAlign="center">
           {titleAsWord}
         </Text>
       </Box>
@@ -148,10 +151,10 @@ const Header = ({
             <ReAnimatedBox
               entering={FadeIn}
               exiting={FadeOut}
-              borderRadius={'full'}
+              borderRadius="full"
               borderWidth={2}
-              borderColor={'primaryText'}
-              position={'absolute'}
+              borderColor="primaryText"
+              position="absolute"
               top={spacing['-xs']}
               bottom={spacing['-xs']}
               left={spacing['-xs']}

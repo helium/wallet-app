@@ -20,12 +20,12 @@ import React, { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const DEFAULT_PAGE_AMOUNT = 20
 
@@ -172,10 +172,10 @@ const HotspotList = () => {
         <Box flexDirection="row" alignItems="center">
           <Box backgroundColor="gray.500" height={1} flexGrow={1} />
           <Box flexDirection="row" alignItems="center" paddingHorizontal="2">
-            <Text variant={'textSmRegular'} color="secondaryText">
+            <Text variant="textSmRegular" color="secondaryText">
               You own
             </Text>
-            <Text variant={'textSmRegular'} color="primaryText" ml="xs">
+            <Text variant="textSmRegular" color="primaryText" ml="xs">
               {totalHotspots} hotspots
             </Text>
           </Box>
@@ -195,7 +195,7 @@ const HotspotList = () => {
           onPress={handleNavigateToHotspot}
           key={item.id}
           marginBottom="2"
-          marginHorizontal={'4'}
+          marginHorizontal="4"
         />
       )
     },
@@ -247,7 +247,7 @@ const HotspotList = () => {
         data={hotspotsWithMeta}
         numColumns={2}
         style={{
-          marginTop: spacing['xl'],
+          marginTop: spacing.xl,
         }}
         columnWrapperStyle={{
           flexDirection: 'column',

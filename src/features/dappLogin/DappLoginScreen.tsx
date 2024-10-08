@@ -11,13 +11,13 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import { useDebouncedCallback } from 'use-debounce'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { getKeypair } from '../../storage/secureStorage'
-import { HomeNavigationProp } from '../home/homeTypes'
 import DappAccount from './DappAccount'
 import DappConnect from './DappConnect'
 import { useWalletConnect } from './WalletConnectProvider'
@@ -57,7 +57,7 @@ const makeBurnTxn = async (opts: { payerB58: string }) => {
 type Route = RouteProp<RootStackParamList, 'DappLoginScreen'>
 const DappLoginScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { params } = route
   const {
@@ -102,7 +102,7 @@ const DappLoginScreen = () => {
     } else {
       rootNav.reset({
         index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
+        routes: [{ name: 'ServiceSheetNavigator' }],
       })
     }
   }, [disconnect, navigation, rootNav])

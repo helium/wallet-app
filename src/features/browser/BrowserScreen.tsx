@@ -118,7 +118,7 @@ const BrowserScreen = () => {
     return (
       <Box
         backgroundColor="primaryBackground"
-        paddingHorizontal={'6'}
+        paddingHorizontal="6"
         flexDirection={inputFocused ? 'row' : 'column'}
       >
         <ReAnimatedBox

@@ -4,10 +4,10 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { PublicKey } from '@solana/web3.js'
 import React, { memo, useCallback, useMemo } from 'react'
-import { Activity } from '../../types/activity'
-import useTxn from './useTxn'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
+import { Activity } from '../../types/activity'
+import useTxn from './useTxn'
 
 type Props = {
   mint: PublicKey
@@ -36,13 +36,13 @@ const TxnListItem = ({
   return (
     <TouchableOpacityBox
       alignItems="center"
-      backgroundColor={'cardBackground'}
+      backgroundColor="cardBackground"
       borderBottomColor="primaryBackground"
       borderBottomWidth={isLast ? 0 : 2}
       flexDirection="row"
       onPress={handlePress}
-      paddingHorizontal={'4'}
-      paddingVertical={'3'}
+      paddingHorizontal="4"
+      paddingVertical="3"
       {...rest}
     >
       <Box paddingRight="2">{listIcon}</Box>
@@ -65,7 +65,7 @@ const TxnListItem = ({
             {time}
           </Text>
         </Box>
-        <Box flex={1} justifyContent={'center'}>
+        <Box flex={1} justifyContent="center">
           <Text variant="textSmRegular" color={color} textAlign="right">
             {amt}
           </Text>

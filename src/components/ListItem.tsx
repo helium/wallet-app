@@ -62,7 +62,7 @@ const ListItem = ({
           {title}
         </Text>
         {subtitle && (
-          <Text variant={'textSmMedium'} marginTop="xs" color={subtitleColor}>
+          <Text variant="textSmMedium" marginTop="xs" color={subtitleColor}>
             {subtitle}
           </Text>
         )}

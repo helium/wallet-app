@@ -1,13 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { Box, ReAnimatedBox, SafeAreaBox, Text } from '.'
 import { useTranslation } from 'react-i18next'
-import TouchableOpacityBox from './TouchableOpacityBox'
 import {
   FadeInLeft,
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated'
 import { ww } from '@utils/layout'
+import TouchableOpacityBox from './TouchableOpacityBox'
+import { Box, ReAnimatedBox, SafeAreaBox, Text } from '.'
 import MenuButton from './MenuButton'
 
 type SideDrawerProps = {
@@ -56,7 +56,7 @@ const SideDrawer = ({ isExpanded, onRoute, onClose }: SideDrawerProps) => {
       top={0}
       right={0}
       bottom={0}
-      backgroundColor={'primaryBackground'}
+      backgroundColor="primaryBackground"
       zIndex={100}
       pointerEvents={isExpanded ? 'auto' : 'none'}
     >

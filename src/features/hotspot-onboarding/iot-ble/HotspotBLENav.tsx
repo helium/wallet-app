@@ -5,6 +5,7 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
 import * as React from 'react'
+import { useColors } from '@theme/themeHooks'
 import { OnboardingtackParamList } from '../navTypes'
 import AddGatewayBle from './AddGatewayBle'
 import ScanHotspots from './ScanHotspots'
@@ -13,7 +14,6 @@ import WifiSettings from './WifiSettings'
 import Diagnostics from './Diagnostics'
 import WifiSetup from './WifiSetup'
 import { IotBleOptionsProvider } from './optionsContext'
-import { useColors } from '@theme/themeHooks'
 
 const Stack = createNativeStackNavigator()
 

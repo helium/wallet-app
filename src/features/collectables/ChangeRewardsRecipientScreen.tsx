@@ -31,13 +31,13 @@ import { PublicKey } from '@solana/web3.js'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useColors, useSpacing } from '@theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
 import * as Logger from '../../utils/logger'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
 import { Mints } from '../../utils/constants'
-import ScrollBox from '@components/ScrollBox'
 
 type Route = RouteProp<
   CollectableStackParamList,
@@ -194,7 +194,7 @@ const ChangeRewardsRecipientScreen = () => {
               >
                 <Box flexGrow={1} justifyContent="center">
                   <Text
-                    marginStart={'2'}
+                    marginStart="2"
                     textAlign="left"
                     variant="textLgMedium"
                     adjustsFontSizeToFit
@@ -202,7 +202,7 @@ const ChangeRewardsRecipientScreen = () => {
                     {t('changeRewardsRecipientScreen.title')}
                   </Text>
                   <Text
-                    marginStart={'2'}
+                    marginStart="2"
                     variant="textSmMedium"
                     color="secondaryText"
                   >

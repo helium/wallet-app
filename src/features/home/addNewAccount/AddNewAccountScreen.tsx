@@ -50,7 +50,7 @@ const AddNewAccountScreen = () => {
   return (
     <Box flex={1} backgroundColor="primaryBackground">
       <Box>
-        <Box flexDirection="row" paddingBottom="4" paddingTop={'8'}>
+        <Box flexDirection="row" paddingBottom="4" paddingTop="8">
           <Box flex={1} />
           <Text variant="textXlMedium" color="primaryText">
             {t('addNewAccount.title')}

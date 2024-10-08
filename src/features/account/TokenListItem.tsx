@@ -23,10 +23,10 @@ import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useSolana } from '../../solana/SolanaProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
-import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { useSolana } from '../../solana/SolanaProvider'
+import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -66,7 +66,7 @@ export const TokenSkeleton = () => {
 }
 
 export const TokenListItem = ({ mint }: Props) => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const wallet = useCurrentWallet()
   const {
     amount,
@@ -99,8 +99,8 @@ export const TokenListItem = ({ mint }: Props) => {
         alignItems="center"
         paddingHorizontal="4"
         paddingVertical="4"
-        backgroundColor={'primaryBackground'}
-        backgroundColorPressed={'bg.primary-hover'}
+        backgroundColor="primaryBackground"
+        backgroundColorPressed="bg.primary-hover"
       >
         {loading ? (
           <Box
@@ -152,7 +152,7 @@ export const TokenListItem = ({ mint }: Props) => {
             </Box>
           )}
         </Box>
-        <Box flexDirection={'column'} alignItems={'flex-end'}>
+        <Box flexDirection="column" alignItems="flex-end">
           {symbol && (
             <AccountTokenCurrencyBalance
               variant="textSmMedium"
@@ -303,8 +303,8 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
         paddingVertical="4"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
-        backgroundColor={'primaryBackground'}
-        backgroundColorPressed={'bg.primary-hover'}
+        backgroundColor="primaryBackground"
+        backgroundColorPressed="bg.primary-hover"
       >
         {loading ? (
           <Box

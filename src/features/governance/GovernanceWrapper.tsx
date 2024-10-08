@@ -11,14 +11,14 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Animated } from 'react-native'
+import { FadeIn } from 'react-native-reanimated'
+import { useColors } from '@theme/themeHooks'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
 import { useSetTab } from './useSetTab'
 import { NetworkTabs } from './NetworkTabs'
-import { FadeIn } from 'react-native-reanimated'
-import { useColors } from '@theme/themeHooks'
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalsScreen'>
 export const GovernanceWrapper: React.FC<
@@ -89,7 +89,7 @@ export const GovernanceWrapper: React.FC<
   }, [loading, hasUnseenProposals])
 
   return (
-    <ReAnimatedBox entering={FadeIn} paddingHorizontal={'5'}>
+    <ReAnimatedBox entering={FadeIn} paddingHorizontal="5">
       <Box flex={1}>
         <Box flexDirection="column" height="100%">
           <Box mt="6" mb="6">

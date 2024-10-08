@@ -54,7 +54,7 @@ const SwapItem = ({
           padding="xl"
           {...rest}
         >
-          <Box flexDirection={'row'} gap="2.5">
+          <Box flexDirection="row" gap="2.5">
             <Box>
               <TokenPill
                 mint={mintSelected}

@@ -29,7 +29,7 @@ const RootNavigator = () => {
   }, [colors.primaryBackground])
 
   const initialRouteName = useMemo(() => {
-    return currentAccount ? 'TabBarNavigator' : 'OnboardingNavigator'
+    return currentAccount ? 'ServiceSheetNavigator' : 'OnboardingNavigator'
   }, [currentAccount])
 
   return (
@@ -38,7 +38,7 @@ const RootNavigator = () => {
       initialRouteName={initialRouteName}
     >
       <RootStack.Screen
-        name="TabBarNavigator"
+        name="ServiceSheetNavigator"
         component={ServiceSheetNavigator}
         options={screenOptions}
       />

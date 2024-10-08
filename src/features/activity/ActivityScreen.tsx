@@ -4,7 +4,7 @@ import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import Text from '@components/Text'
@@ -14,6 +14,7 @@ import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import { useColors, useSpacing } from '@theme/themeHooks'
+import { NavBarHeight } from '@components/ServiceNavBar'
 import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
 
@@ -22,16 +23,17 @@ const ActivityScreen = () => {
     useEnrichedTransactions()
   const { t } = useTranslation()
   const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
   const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
   const { triggerImpact } = useHaptic()
 
   const contentContainer = useMemo(
     () => ({
-      marginTop: spacing['6xl'],
-      paddingBottom: spacing['15'],
+      paddingTop: spacing['6xl'],
+      paddingBottom: NavBarHeight + bottom + spacing['6xl'],
     }),
-    [spacing],
+    [spacing, bottom],
   )
 
   const SectionData = useMemo((): {
@@ -96,7 +98,7 @@ const ActivityScreen = () => {
 
   const renderHeader = useCallback(() => {
     return (
-      <Box alignItems={'center'} gap="2.5">
+      <Box alignItems="center" gap="2.5">
         <Image source={require('@assets/images/transactionIcon.png')} />
         <Text
           variant="displayMdSemibold"

@@ -7,6 +7,7 @@ export type ServiceSheetStackParamList = {
   GovernanceService: undefined
   BrowserService: undefined
   SettingsService: undefined
+  NotificationsService: undefined
 }
 
 export type ServiceSheetNavigationProp =

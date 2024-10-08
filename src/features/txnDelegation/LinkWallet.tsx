@@ -18,7 +18,7 @@ import AccountSelector, {
 } from '@components/AccountSelector'
 import AccountButton from '@components/AccountButton'
 import useAlert from '@hooks/useAlert'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
@@ -33,7 +33,7 @@ const LinkWallet = () => {
   const {
     params: { requestAppId, callbackUrl, appName },
   } = useRoute<Route>()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<ServiceSheetNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
@@ -63,7 +63,7 @@ const LinkWallet = () => {
       } else {
         rootNav.reset({
           index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
+          routes: [{ name: 'ServiceSheetNavigator' }],
         })
       }
     },

@@ -17,12 +17,12 @@ import React, {
   useImperativeHandle,
   useRef,
 } from 'react'
+import { Portal } from '@gorhom/portal'
+import { useTranslation } from 'react-i18next'
 import Box from './Box'
 import ListItem from './ListItem'
-import { Portal } from '@gorhom/portal'
 import HeliumBottomSheet from './HeliumBottomSheet'
 import { SafeAreaBox, Text } from '.'
-import { useTranslation } from 'react-i18next'
 
 export type TokenListItem = {
   mint: PublicKey
@@ -80,12 +80,12 @@ const TokenSelector = forwardRef(
           appearsOnIndex={0}
           {...props}
         >
-          <SafeAreaBox backgroundColor={'primaryText'} flex={1}>
+          <SafeAreaBox backgroundColor="primaryText" flex={1}>
             <Text
               marginTop="xl"
               variant="displaySmSemibold"
               color="primaryBackground"
-              textAlign={'center'}
+              textAlign="center"
             >
               {t('tokenSelector.title')}
             </Text>

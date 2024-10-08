@@ -1,14 +1,14 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import Checkmark from '@assets/images/checkIco.svg'
 import { useColors } from '@theme/themeHooks'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 import Text from './Text'
 import Box from './Box'
 import AccountIcon from './AccountIcon'
 import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
 import { CSAccount } from '../storage/cloudStorage'
 import TouchableContainer from './TouchableContainer'
-import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
 
 type Props = {
   selected: boolean

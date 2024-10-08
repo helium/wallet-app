@@ -81,22 +81,22 @@ const MenuButton = ({ isOpen, onPress }: MenuButtonProps) => {
       <ReAnimatedBox
         height={4}
         width={28.87}
-        backgroundColor={'primaryText'}
-        borderRadius={'full'}
+        backgroundColor="primaryText"
+        borderRadius="full"
         style={[firstBoxAnimatedStyle]}
       />
       <ReAnimatedBox
         height={4}
         width={20.99}
-        backgroundColor={'primaryText'}
-        borderRadius={'full'}
+        backgroundColor="primaryText"
+        borderRadius="full"
         style={[secondBoxAnimatedStyle]}
       />
       <ReAnimatedBox
         height={4}
         width={12.02}
-        backgroundColor={'primaryText'}
-        borderRadius={'full'}
+        backgroundColor="primaryText"
+        borderRadius="full"
         style={[thirdBoxAnimatedStyle]}
       />
     </TouchableOpacityBox>

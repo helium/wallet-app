@@ -4,15 +4,13 @@ import {
   BottomTabBarProps,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
-import { Edge } from 'react-native-safe-area-context'
-import { Color, lightTheme } from '@theme/theme'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Color } from '@theme/theme'
 import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import { useColors } from '@theme/themeHooks'
 import ServiceNavBar from './ServiceNavBar'
-import { ThemeProvider } from '@shopify/restyle'
 
 const Tab = createBottomTabNavigator()
 
@@ -36,6 +34,7 @@ function CustomTabBar({
 }) {
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
+  const { bottom } = useSafeAreaInsets()
 
   const tabData = useMemo((): Array<{
     value: string
@@ -53,7 +52,6 @@ function CustomTabBar({
   }, [options])
 
   const selectedValue = tabData[state.index].value
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
   const onPress = useCallback(
     (type: string) => {
@@ -109,20 +107,24 @@ function CustomTabBar({
 
   return (
     <Box
-      backgroundColor={'transparent'}
-      position={'absolute'}
+      backgroundColor="transparent"
+      position="absolute"
       bottom={0}
       left={0}
       right={0}
     >
-      <SafeAreaBox edges={safeEdges}>
+      <Box
+        style={{
+          marginBottom: bottom,
+        }}
+      >
         <ServiceNavBar
           navBarOptions={tabData}
           selectedValue={selectedValue}
           onItemSelected={onPress}
           onItemLongPress={onLongPress}
         />
-      </SafeAreaBox>
+      </Box>
     </Box>
   )
 }

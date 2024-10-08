@@ -17,18 +17,17 @@ import React, {
   useState,
 } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
-import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
-import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
+import { StyleProp, ViewStyle } from 'react-native'
 import {
   WalletSignBottomSheetProps,
   WalletSignBottomSheetRef,
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
-import { StyleProp, ViewStyle } from 'react-native'
-import { da } from 'date-fns/locale'
+import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'
+import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
 
 const WalletSignBottomSheet = forwardRef(
   (

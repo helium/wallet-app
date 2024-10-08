@@ -23,37 +23,33 @@ const ReceivePage = () => {
       message: t('generic.toClipboard'),
       copyText: wallet?.toBase58() || '',
     })
-  }, [copyText, wallet])
+  }, [copyText, wallet, t])
 
   return (
-    <ScrollBox paddingHorizontal={'2xl'} paddingTop="6xl">
-      <Box alignItems={'center'} gap="2.5">
+    <ScrollBox paddingHorizontal="2xl" paddingTop="6xl">
+      <Box alignItems="center" gap="2.5">
         <Image source={require('@assets/images/receive.png')} />
-        <Text textAlign={'center'} variant={'displaySmSemibold'}>
+        <Text textAlign="center" variant="displaySmSemibold">
           {t('receivePage.title')}
         </Text>
-        <Text
-          textAlign={'center'}
-          variant={'textMdRegular'}
-          color="secondaryText"
-        >
+        <Text textAlign="center" variant="textMdRegular" color="secondaryText">
           {t('receivePage.subtitle')}
         </Text>
       </Box>
       <TouchableOpacityBox
         backgroundColor="cardBackground"
         padding="2xl"
-        flexDirection={'row'}
-        alignItems={'center'}
-        borderRadius={'2xl'}
+        flexDirection="row"
+        alignItems="center"
+        borderRadius="2xl"
         marginTop="4xl"
       >
         <Box
           padding="4"
-          backgroundColor={'primaryBackground'}
-          borderRadius={'2xl'}
+          backgroundColor="primaryBackground"
+          borderRadius="2xl"
           borderWidth={1}
-          borderColor={'border.primary'}
+          borderColor="border.primary"
         >
           <QRCode
             value="Just some string value"
@@ -65,11 +61,7 @@ const ReceivePage = () => {
           />
         </Box>
         <Box flex={1} />
-        <Text
-          variant={'textMdSemibold'}
-          textAlign={'center'}
-          marginRight={'2.5'}
-        >
+        <Text variant="textMdSemibold" textAlign="center" marginRight="2.5">
           {t('receivePage.shareQr')}
         </Text>
         <CarotRight color={colors['text.quaternary-500']} />
@@ -77,9 +69,9 @@ const ReceivePage = () => {
       <TouchableOpacityBox
         backgroundColor="cardBackground"
         padding="2xl"
-        flexDirection={'row'}
-        alignItems={'center'}
-        borderRadius={'2xl'}
+        flexDirection="row"
+        alignItems="center"
+        borderRadius="2xl"
         marginTop="xxs"
         onPress={onCopyAddress}
       >
@@ -89,7 +81,7 @@ const ReceivePage = () => {
           })}
         </Text>
         <Box flex={1} />
-        <Text variant="textMdMedium" color="primaryText" marginRight={'2.5'}>
+        <Text variant="textMdMedium" color="primaryText" marginRight="2.5">
           {t('receivePage.copyAddress')}
         </Text>
         <CarotRight color={colors['text.quaternary-500']} />

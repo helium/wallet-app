@@ -55,11 +55,11 @@ import {
 import 'text-encoding-polyfill'
 import { useDebounce } from 'use-debounce'
 import { useColors, useCreateOpacity, useSpacing } from '@theme/themeHooks'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
@@ -808,7 +808,7 @@ const AssertLocationScreen = () => {
                     </Box>
                   </Box>
                 </KeyboardAvoidingView>
-                <Box padding="3" marginBottom={'6xl'}>
+                <Box padding="3" marginBottom="6xl">
                   <ButtonPressable
                     flexGrow={1}
                     borderRadius="full"

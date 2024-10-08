@@ -1,9 +1,9 @@
 import React, { memo, useMemo } from 'react'
 import { TextProps } from '@shopify/restyle'
-import Box from './Box'
-import Text from './Text'
 import { locale } from '@utils/i18n'
 import { Theme } from '@theme/theme'
+import Box from './Box'
+import Text from './Text'
 
 const BalanceText = ({
   amount,
@@ -21,7 +21,7 @@ const BalanceText = ({
     const fraction = decimal.toString().split('.')[1]
     // Fraction with max length of decimals
     const fractionWithMaxDecimals = fraction?.slice(0, decimals)
-    return fraction ? '.' + fractionWithMaxDecimals : '.00'
+    return fraction ? `.${fractionWithMaxDecimals}` : '.00'
   }, [amount, integral, decimals])
 
   return (

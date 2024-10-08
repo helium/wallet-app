@@ -12,9 +12,9 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import FabButton from '@components/FabButton'
 import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
-import { CSAccount } from '../../storage/cloudStorage'
 import { useSpacing } from '@theme/themeHooks'
 import { da } from 'date-fns/locale'
+import { CSAccount } from '../../storage/cloudStorage'
 
 type Props = {
   onAddNew: () => void
@@ -133,7 +133,7 @@ const ContactsList = ({
           flexDirection="row"
           alignItems="center"
           padding="8"
-          paddingHorizontal={'0'}
+          paddingHorizontal="0"
           onPress={onAddNew}
         >
           <FabButton

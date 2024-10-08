@@ -16,12 +16,12 @@ import { useNavigation } from '@react-navigation/native'
 import { BoxProps, ThemeProvider } from '@shopify/restyle'
 import { lightTheme, Theme } from '@theme/theme'
 import ContactsList from '@features/addressBook/ContactsList'
-import { HomeNavigationProp } from '@features/home/homeTypes'
 import { CSAccount } from '@storage/cloudStorage'
 import { Portal } from '@gorhom/portal'
+import { useTranslation } from 'react-i18next'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import HeliumBottomSheet from './HeliumBottomSheet'
 import { SafeAreaBox, Text } from '.'
-import { useTranslation } from 'react-i18next'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void
@@ -43,7 +43,7 @@ const AddressBookSelector = forwardRef(
 
     const bottomSheetModalRef = useRef<BottomSheet>(null)
     const { t } = useTranslation()
-    const homeNav = useNavigation<HomeNavigationProp>()
+    const homeNav = useNavigation<WalletNavigationProp>()
     const [address, setAddress] = useState<string>()
     const [index, setIndex] = useState<number>()
 
@@ -73,12 +73,12 @@ const AddressBookSelector = forwardRef(
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         >
-          <SafeAreaBox backgroundColor={'primaryText'} flex={1}>
+          <SafeAreaBox backgroundColor="primaryText" flex={1}>
             <Text
               marginTop="xl"
               variant="displaySmSemibold"
               color="primaryBackground"
-              textAlign={'center'}
+              textAlign="center"
             >
               {t('addressBookSelector.title')}
             </Text>

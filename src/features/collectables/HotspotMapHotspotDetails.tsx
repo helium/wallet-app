@@ -40,11 +40,11 @@ import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertButton, Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
+import SafeAreaBox from '@components/SafeAreaBox'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
-import SafeAreaBox from '@components/SafeAreaBox'
 
 const IotMapDetails = ({
   maker,
@@ -589,7 +589,7 @@ export const HotspotMapHotspotDetails = ({
               {available?.map((a) => {
                 return (
                   <ListItem
-                    paddingLeft={'4'}
+                    paddingLeft="4"
                     key={a.value}
                     title={a.label}
                     Icon={

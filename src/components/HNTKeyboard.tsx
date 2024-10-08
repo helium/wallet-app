@@ -463,7 +463,7 @@ const HNTKeyboardSelector = forwardRef(
                 edges={safeEdges}
                 flexDirection="column"
                 alignItems="center"
-                marginTop={'6xl'}
+                marginTop="6xl"
               >
                 <Text
                   marginHorizontal="6"

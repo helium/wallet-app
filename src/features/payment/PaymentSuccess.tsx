@@ -1,5 +1,4 @@
 import SuccessIcon from '@assets/images/paymentSuccess.svg'
-import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -7,10 +6,10 @@ import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Payment } from './PaymentItem'
-import PaymentSummary from './PaymentSummary'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Payment } from './PaymentItem'
+import PaymentSummary from './PaymentSummary'
 
 type Props = {
   mint: PublicKey
@@ -33,11 +32,7 @@ const PaymentSuccess = ({
   const { bottom } = useSafeAreaInsets()
 
   return (
-    <Box
-      flex={1}
-      justifyContent="flex-end"
-      backgroundColor={'primaryBackground'}
-    >
+    <Box flex={1} justifyContent="flex-end" backgroundColor="primaryBackground">
       <Box padding="6" paddingBottom="0">
         <SuccessIcon />
       </Box>

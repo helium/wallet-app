@@ -3,6 +3,8 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import React, { memo, useMemo } from 'react'
+import { use } from 'i18next'
+import { useColors } from '@theme/themeHooks'
 import AddNewContact from '../addressBook/AddNewContact'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
@@ -23,8 +25,6 @@ import HotspotMapScreen from './HotspotMapScreen'
 import AssertLocationScreen from './AssertLocationScreen'
 import ChangeRewardsRecipientScreen from './ChangeRewardsRecipientScreen'
 import HotspotList from './HotspotList'
-import { use } from 'i18next'
-import { useColors } from '@theme/themeHooks'
 
 const CollectablesStack = createStackNavigator()
 

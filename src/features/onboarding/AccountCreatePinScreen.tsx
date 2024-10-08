@@ -6,6 +6,8 @@ import PinDisplay from '@components/PinDisplay'
 import Keypad from '@components/Keypad'
 import Box from '@components/Box'
 import { KeypadInput } from '@components/KeypadButton'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 import {
   CreateAccountNavigationProp,
   CreateAccountStackParamList,
@@ -14,8 +16,6 @@ import {
   ImportAccountNavigationProp,
   ImportAccountStackParamList,
 } from './import/importAccountNavTypes'
-import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
 
 type Route = RouteProp<
   CreateAccountStackParamList & ImportAccountStackParamList,

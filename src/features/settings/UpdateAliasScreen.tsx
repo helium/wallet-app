@@ -62,7 +62,7 @@ const UpdateAliasScreen = () => {
           >
             <AccountIcon size={40} address={currentAccount?.address || ''} />
             <TextInput
-              variant={'transparent'}
+              variant="transparent"
               textColor="primaryText"
               textInputProps={{
                 onChangeText: setAlias,
