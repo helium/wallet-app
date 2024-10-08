@@ -24,44 +24,49 @@ const PairStart = () => {
     <SafeAreaBox
       flex={1}
       justifyContent="center"
-      marginHorizontal="l"
+      marginHorizontal="6"
       edges={['bottom']}
     >
       <Box flex={1} justifyContent="center">
         <Box alignItems="center">
           <Ledger color={primaryText} height={61} width={61} />
-          <Text variant="h0" textAlign="center" marginVertical="l">
+          <Text
+            variant="displayLgRegular"
+            textAlign="center"
+            marginVertical="6"
+            color="primaryText"
+          >
             {t('ledger.pairStart.title')}
           </Text>
-          <Text variant="subtitle1" textAlign="center">
+          <Text variant="textXlMedium" textAlign="center" color="secondaryText">
             {t('ledger.pairStart.subtitle')}
           </Text>
         </Box>
       </Box>
       <Text
         visible={reachedAccountLimit}
-        variant="body1"
+        variant="textMdRegular"
         textAlign="center"
-        marginHorizontal="l"
-        color="error"
+        marginHorizontal="6"
+        color="error.500"
         fontWeight="500"
-        marginBottom="l"
+        marginBottom="6"
       >
         {t('accountImport.accountLimit')}
       </Text>
       <ButtonPressable
         disabled={reachedAccountLimit}
-        borderRadius="round"
+        borderRadius="full"
         onPress={handleStart}
         backgroundColor="primaryText"
         backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        titleColor="primary"
+        titleColorDisabled="gray.800"
+        titleColor="primaryBackground"
         fontWeight="500"
         title={t('ledger.pairStart.pair')}
-        marginBottom="l"
+        marginBottom="6"
       />
     </SafeAreaBox>
   )

@@ -39,11 +39,11 @@ export const SwapPreview = ({
 
   return (
     <Box
-      backgroundColor="surface"
-      borderRadius="l"
-      mt="m"
-      px="m"
-      py="ms"
+      backgroundColor="cardBackground"
+      borderRadius="2xl"
+      mt="4"
+      px="4"
+      py="3"
       {...{ gap: 8 }}
     >
       {loadingInputMintMetadata || loadingOutputMintMetadata ? (
@@ -59,7 +59,7 @@ export const SwapPreview = ({
               {inputMintJson ? (
                 <TokenIcon img={inputMintJson.image} size={30} />
               ) : null}
-              <Text variant="body1">{inputMintSymbol}</Text>
+              <Text variant="textMdRegular">{inputMintSymbol}</Text>
             </Box>
             <Box flexDirection="row" alignItems="center">
               <Pill text={inputAmount.toString()} Icon={Send} color="blue" />
@@ -74,7 +74,7 @@ export const SwapPreview = ({
               {outputMintJson ? (
                 <TokenIcon img={outputMintJson.image} size={30} />
               ) : null}
-              <Text variant="body1">{outputMintSymbol}</Text>
+              <Text variant="textMdRegular">{outputMintSymbol}</Text>
             </Box>
             <Box flexDirection="row" alignItems="center">
               <Pill
@@ -89,8 +89,8 @@ export const SwapPreview = ({
             alignItems="center"
             justifyContent="space-between"
           >
-            <Text variant="body2">Min Received due to slippage:</Text>
-            <Text variant="body2" color="green500">
+            <Text variant="textSmRegular">Min Received due to slippage:</Text>
+            <Text variant="textSmRegular" color="green.500">
               {`~${minReceived.toFixed(outputDecimals)}`}
             </Text>
           </Box>

@@ -5,7 +5,6 @@ import { FadeIn, FadeOut } from 'react-native-reanimated'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useBorderRadii } from '@theme/themeHooks'
 import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
@@ -21,7 +20,6 @@ const NftListItem = ({
   item: string
   collectables: Collectable[]
 }) => {
-  const { lm } = useBorderRadii()
   const { json } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
   const { triggerImpact } = useHaptic()
@@ -46,15 +44,15 @@ const NftListItem = ({
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
+        marginHorizontal="2"
+        marginVertical="2"
         alignItems="center"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xxl"
+        backgroundColor="bg.tertiary"
+        borderRadius="4xl"
         onPress={handleCollectableNavigation(collectables)}
       >
         <Image
-          borderRadius={lm}
+          borderRadius={5}
           style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
           source={{
             uri: json?.image || '',
@@ -62,20 +60,24 @@ const NftListItem = ({
           }}
         />
         <Box
-          padding="s"
+          padding="2"
           position="absolute"
           justifyContent="center"
           alignItems="center"
-          backgroundColor="white"
-          borderRadius="round"
+          backgroundColor="base.white"
+          borderRadius="full"
           bottom={20}
           right={16}
           flexDirection="row"
         >
-          <Text variant="subtitle4" color="black" marginRight="xs">
+          <Text
+            variant="textSmMedium"
+            color="primaryBackground"
+            marginRight="xs"
+          >
             {item}
           </Text>
-          <Text variant="body2" color="secondaryText">
+          <Text variant="textSmRegular" color="secondaryText">
             {collectables?.length}
           </Text>
         </Box>
@@ -88,13 +90,13 @@ export const NFTSkeleton = () => {
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
+        marginHorizontal="2"
+        marginVertical="2"
         alignItems="center"
       >
         <Box
-          backgroundColor="surface"
-          borderRadius="xl"
+          backgroundColor="cardBackground"
+          borderRadius="4xl"
           height={COLLECTABLE_HEIGHT}
           width="100%"
           justifyContent="center"

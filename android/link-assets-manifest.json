@@ -1,0 +1,13 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Figtree-Italic-VariableFont_wght.ttf",
+      "sha1": "8e76cbc3e74d415e8790eb62dfa1705539609dcb"
+    },
+    {
+      "path": "src/assets/fonts/Figtree-VariableFont_wght.ttf",
+      "sha1": "118c5e4678ec5f5f7222fb968cd88a5a92e7629d"
+    }
+  ]
+}

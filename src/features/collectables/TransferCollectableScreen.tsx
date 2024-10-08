@@ -30,6 +30,7 @@ import {
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
+import ScrollBox from '@components/ScrollBox'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -184,19 +185,15 @@ const TransferCollectableScreen = () => {
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <BackScreen
-        padding="none"
-        title={t('collectablesScreen.transferCollectable')}
-        backgroundImageUri={backgroundImageUri || ''}
-        edges={backEdges}
-        TrailingIcon={InfoIcon}
-        onTrailingIconPress={handleInfoPress}
-        headerTopMargin="l"
-      >
-        <AddressBookSelector
-          ref={addressBookRef}
-          onContactSelected={handleContactSelected}
-          hideCurrentAccount
+      <ScrollBox>
+        <BackScreen
+          padding="0"
+          title={t('collectablesScreen.transferCollectable')}
+          backgroundImageUri={backgroundImageUri || ''}
+          edges={backEdges}
+          TrailingIcon={InfoIcon}
+          onTrailingIconPress={handleInfoPress}
+          headerTopMargin="6"
         >
           <KeyboardAvoidingView
             style={{
@@ -213,21 +210,21 @@ const TransferCollectableScreen = () => {
                 edges={safeEdges}
                 backgroundColor="transparent"
                 flex={1}
-                padding="m"
+                padding="4"
                 alignItems="center"
               >
                 {metadata && (
                   <Box
-                    shadowColor="black"
+                    shadowColor="base.black"
                     shadowOpacity={0.4}
                     shadowOffset={{ width: 0, height: 10 }}
                     shadowRadius={10}
                     elevation={12}
                   >
                     <ImageBox
-                      marginTop="l"
+                      marginTop="6"
                       backgroundColor={
-                        metadata.image ? 'black' : 'surfaceSecondary'
+                        metadata.image ? 'base.black' : 'bg.tertiary'
                       }
                       height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                       width={COLLECTABLE_HEIGHT - spacing.xl * 5}
@@ -235,59 +232,64 @@ const TransferCollectableScreen = () => {
                         uri: metadata?.image,
                         cache: 'force-cache',
                       }}
-                      borderRadius="xxl"
+                      borderRadius="4xl"
                     />
                   </Box>
                 )}
                 <Text
-                  marginTop="l"
-                  marginBottom="s"
-                  marginHorizontal="l"
+                  marginTop="6"
+                  marginBottom="2"
+                  marginHorizontal="6"
                   textAlign="center"
-                  variant="h1Medium"
+                  variant="displayMdMedium"
                 >
                   {metadata.name}
                 </Text>
-                <Text variant="body3Medium" color="grey600" marginBottom="xl">
+                <Text variant="textXsMedium" color="gray.600" marginBottom="8">
                   {metadata.description ||
                     t('collectablesScreen.collectables.noDescription')}
                 </Text>
-                <TextInput
-                  floatingLabel={`${t(
-                    'collectablesScreen.transferTo',
-                  )} ${recipientName}`}
-                  variant="thickBlur"
-                  marginBottom="s"
-                  height={80}
-                  width="100%"
-                  textColor="white"
-                  fontSize={15}
-                  TrailingIcon={Menu}
-                  onTrailingIconPress={handleAddressBookSelected}
-                  textInputProps={{
-                    placeholder: t('generic.solanaAddress'),
-                    placeholderTextColor: 'white',
-                    autoCorrect: false,
-                    autoComplete: 'off',
-                    onChangeText: handleEditAddress,
-                    onEndEditing: handleAddressBlur,
-                    value: recipient,
-                  }}
-                />
+                <Box
+                  backgroundColor="cardBackground"
+                  borderRadius="xl"
+                  marginBottom="2"
+                >
+                  <TextInput
+                    floatingLabel={`${t(
+                      'collectablesScreen.transferTo',
+                    )} ${recipientName}`}
+                    variant="thickBlur"
+                    height={80}
+                    width="100%"
+                    textColor="primaryText"
+                    fontSize={15}
+                    TrailingIcon={Menu}
+                    onTrailingIconPress={handleAddressBookSelected}
+                    textInputProps={{
+                      placeholder: t('generic.solanaAddress'),
+                      placeholderTextColor: colors.secondaryText,
+                      autoCorrect: false,
+                      autoComplete: 'off',
+                      onChangeText: handleEditAddress,
+                      onEndEditing: handleAddressBlur,
+                      value: recipient,
+                    }}
+                  />
+                </Box>
                 {solFee ? (
                   <TextTransform
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    marginBottom="s"
-                    color="white"
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    marginBottom="2"
+                    color="primaryText"
                     i18nKey="collectablesScreen.transferFee"
                     values={{ amount: solFee }}
                   />
                 ) : (
                   <Text
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    marginBottom="s"
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    marginBottom="2"
                     color="secondaryText"
                   >
                     {t('generic.calculatingTransactionFee')}
@@ -297,38 +299,38 @@ const TransferCollectableScreen = () => {
                   opacity={
                     hasError || hasInsufficientBalance || networkError ? 100 : 0
                   }
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  marginBottom="l"
-                  color="red500"
+                  marginHorizontal="4"
+                  variant="textXsMedium"
+                  marginBottom="6"
+                  color="error.500"
                 >
                   {showError}
                 </Text>
-                <Box flexDirection="row" marginTop="m" marginHorizontal="xl">
+                <Box flexDirection="row" marginTop="4">
                   <ButtonPressable
                     height={65}
                     flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
+                    borderRadius="full"
+                    backgroundColor="primaryText"
                     backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="surfaceSecondary"
+                    backgroundColorDisabled="bg.tertiary"
                     backgroundColorDisabledOpacity={0.5}
-                    titleColorDisabled="secondaryText"
+                    titleColorDisabled="text.disabled"
                     title={transferring ? '' : t('collectablesScreen.transfer')}
                     disabled={!solAddressIsValid(recipient) || transferring}
-                    titleColor="black"
+                    titleColor="primaryBackground"
                     onPress={handleTransfer}
                     TrailingComponent={
                       transferring ? (
-                        <CircleLoader loaderSize={20} color="white" />
+                        <CircleLoader loaderSize={20} color="primaryText" />
                       ) : (
                         <ArrowRight
                           width={16}
                           height={15}
                           color={
                             !solAddressIsValid(recipient)
-                              ? colors.grey600
-                              : colors.black
+                              ? colors['gray.600']
+                              : colors['base.black']
                           }
                         />
                       )
@@ -338,8 +340,13 @@ const TransferCollectableScreen = () => {
               </SafeAreaBox>
             </ScrollView>
           </KeyboardAvoidingView>
-        </AddressBookSelector>
-      </BackScreen>
+        </BackScreen>
+        <AddressBookSelector
+          ref={addressBookRef}
+          onContactSelected={handleContactSelected}
+          hideCurrentAccount
+        />
+      </ScrollBox>
     </ReAnimatedBox>
   )
 }

@@ -6,13 +6,13 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import CloseButton from '@components/CloseButton'
 import { CSAccount } from '@storage/cloudStorage'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
 
 const AddressBook = () => {
   const { t } = useTranslation()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<WalletNavigationProp>()
   const addressNav = useNavigation<AddressBookNavigationProp>()
 
   const onRequestClose = useCallback(() => {
@@ -31,20 +31,22 @@ const AddressBook = () => {
   )
 
   return (
-    <Box flex={1} backgroundColor="surfaceSecondary">
+    <Box flex={1} backgroundColor="bg.tertiary">
       <Box
-        marginTop="s"
+        marginTop="2"
         style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
         flexDirection="row"
         alignItems="center"
       >
         <Box flex={1} />
-        <Text variant="subtitle2">{t('addressBook.title')}</Text>
+        <Text variant="textLgMedium" color="primaryText">
+          {t('addressBook.title')}
+        </Text>
         <Box flex={1} alignItems="flex-end">
           <CloseButton
             onPress={onRequestClose}
-            paddingVertical="s"
-            paddingHorizontal="m"
+            paddingVertical="2"
+            paddingHorizontal="4"
           />
         </Box>
       </Box>

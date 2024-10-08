@@ -31,8 +31,8 @@ const TouchableContainer = ({
   pressableStyles,
   onLayout,
   hitSlop,
-  backgroundColor = 'surfaceSecondary',
-  backgroundColorPressed = 'black500',
+  backgroundColor = 'cardBackground',
+  backgroundColorPressed = 'bg.primary-hover',
   ...boxProps
 }: ButtonPressAnimationProps & {
   backgroundColorPressed?: BoxProps<Theme>['backgroundColor']

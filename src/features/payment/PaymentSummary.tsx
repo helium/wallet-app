@@ -68,9 +68,9 @@ const PaymentSummary = ({
           key="ellipsis"
           style={{ marginLeft: MAX_ACCOUNT_ICONS * -4 }}
           width={16}
-          borderRadius="round"
+          borderRadius="full"
           height={16}
-          backgroundColor="black300"
+          backgroundColor="gray.true-700"
           flexDirection="row"
           alignItems="center"
           justifyContent="space-evenly"
@@ -78,20 +78,20 @@ const PaymentSummary = ({
           <Box
             width={2}
             height={2}
-            backgroundColor="surfaceSecondaryText"
-            borderRadius="round"
+            backgroundColor="secondaryText"
+            borderRadius="full"
           />
           <Box
             width={2}
             height={2}
-            backgroundColor="surfaceSecondaryText"
-            borderRadius="round"
+            backgroundColor="secondaryText"
+            borderRadius="full"
           />
           <Box
             width={2}
             height={2}
-            backgroundColor="surfaceSecondaryText"
-            borderRadius="round"
+            backgroundColor="secondaryText"
+            borderRadius="full"
           />
         </Box>,
       )
@@ -102,10 +102,10 @@ const PaymentSummary = ({
   return (
     <>
       <Box flexDirection="row" alignItems="center">
-        <Text variant="body1" color="primaryText" flex={1}>
+        <Text variant="textMdRegular" color="primaryText" flex={1}>
           {t('payment.total')}
         </Text>
-        <Text variant="h3" color="primaryText">
+        <Text variant="displayXsRegular" color="primaryText">
           {total}
         </Text>
       </Box>
@@ -114,17 +114,22 @@ const PaymentSummary = ({
         {showRecipients && payments.length > 0 && (
           <>
             {accountIcons}
-            <Text variant="body2" color="secondaryText" marginLeft="s">
+            <Text variant="textSmRegular" color="secondaryText" marginLeft="2">
               {t('payment.totalRecipients', { count: payments.length })}
             </Text>
           </>
         )}
         {!!errors?.length && (
-          <Text variant="body2" color="error">
+          <Text variant="textSmRegular" color="error.500">
             {errors[0]}
           </Text>
         )}
-        <Text variant="body2" color="secondaryText" flex={1} textAlign="right">
+        <Text
+          variant="textSmRegular"
+          color="secondaryText"
+          flex={1}
+          textAlign="right"
+        >
           {fee}
         </Text>
       </Box>

@@ -18,7 +18,7 @@ import AccountSelector, {
 } from '@components/AccountSelector'
 import AccountButton from '@components/AccountButton'
 import useAlert from '@hooks/useAlert'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
@@ -33,7 +33,7 @@ const LinkWallet = () => {
   const {
     params: { requestAppId, callbackUrl, appName },
   } = useRoute<Route>()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<ServiceSheetNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
@@ -63,7 +63,7 @@ const LinkWallet = () => {
       } else {
         rootNav.reset({
           index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
+          routes: [{ name: 'ServiceSheetNavigator' }],
         })
       }
     },
@@ -140,37 +140,33 @@ const LinkWallet = () => {
       <SafeAreaBox
         backgroundColor="primaryBackground"
         flex={1}
-        padding="l"
+        padding="6"
         justifyContent="center"
       >
-        <Text variant="body1" fontSize={32} marginTop="m">
+        <Text variant="textMdRegular" fontSize={32} marginTop="4">
           {t('linkWallet.title', { appName })}
         </Text>
-        <Text variant="body1" marginVertical="m">
+        <Text variant="textMdRegular" marginVertical="4">
           {t('linkWallet.body', { appName })}
         </Text>
 
         <AccountButton
           accountIconSize={26}
-          paddingVertical="l"
+          paddingVertical="6"
           title={formatAccountAlias(currentAccount)}
           address={currentAccount?.address}
           onPress={handleAccountButtonPress}
         />
 
         <TouchableOpacityBox
-          marginTop="ms"
+          marginTop="3"
           minHeight={56}
-          backgroundColor="surfaceContrast"
+          backgroundColor="primaryBackground"
           justifyContent="center"
-          borderRadius="round"
+          borderRadius="full"
           onPress={handleLink}
         >
-          <Text
-            variant="subtitle1"
-            color="surfaceContrastText"
-            textAlign="center"
-          >
+          <Text variant="textXlMedium" color="primaryText" textAlign="center">
             {t('linkWallet.yes')}
           </Text>
         </TouchableOpacityBox>
@@ -178,12 +174,12 @@ const LinkWallet = () => {
         <TouchableOpacityBox
           minHeight={56}
           justifyContent="center"
-          backgroundColor="secondary"
-          marginTop="ms"
-          borderRadius="round"
+          backgroundColor="secondaryBackground"
+          marginTop="3"
+          borderRadius="full"
           onPress={handleCancel}
         >
-          <Text variant="subtitle1" color="primaryText" textAlign="center">
+          <Text variant="textXlMedium" color="primaryText" textAlign="center">
             {t('linkWallet.no')}
           </Text>
         </TouchableOpacityBox>

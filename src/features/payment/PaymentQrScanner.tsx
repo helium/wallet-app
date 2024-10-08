@@ -4,14 +4,16 @@ import { useNavigation } from '@react-navigation/native'
 import useHaptic from '@hooks/useHaptic'
 import useAlert from '@hooks/useAlert'
 import QrScanner from '@components/QrScanner'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { WalletServiceNavigationProp } from '@services/WalletService'
 import { parseBurn, parseDelegate, parsePaymentLink } from '../../utils/linking'
-import { HomeNavigationProp } from '../home/homeTypes'
 
 const PaymentQrScanner = () => {
   const { triggerNotification } = useHaptic()
   const { showOKAlert } = useAlert()
   const { t } = useTranslation()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
+  const walletServiceNav = useNavigation<WalletServiceNavigationProp>()
 
   const handleBarCodeScanned = useCallback(
     async (data: string) => {
@@ -20,7 +22,7 @@ const PaymentQrScanner = () => {
       const delegate = parseDelegate(data)
       if (payment) {
         triggerNotification('success')
-        navigation.navigate('PaymentScreen', payment)
+        walletServiceNav.navigate('Send', payment)
       } else if (burn) {
         navigation.goBack()
         navigation.replace('BurnScreen', burn)
@@ -42,7 +44,7 @@ const PaymentQrScanner = () => {
         navigation.goBack()
       }
     },
-    [navigation, showOKAlert, t, triggerNotification],
+    [navigation, showOKAlert, t, triggerNotification, walletServiceNav],
   )
 
   return <QrScanner onBarCodeScanned={handleBarCodeScanned} />

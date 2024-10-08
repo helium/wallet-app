@@ -25,37 +25,42 @@ const CLIAccountImportStartScreen = () => {
   }, [navigation])
 
   return (
-    <SafeAreaBox flex={1} edges={edges} backgroundColor="secondary">
-      <Box flex={1} marginHorizontal="l">
-        <Box width="100%" alignItems="flex-end" paddingTop="l">
+    <SafeAreaBox flex={1} edges={edges} backgroundColor="secondaryBackground">
+      <Box flex={1} marginHorizontal="6">
+        <Box width="100%" alignItems="flex-end" paddingTop="6">
           <CloseButton onPress={onClose} />
         </Box>
         <Box flexGrow={1} alignItems="center">
           <Terminal width={98} height={98} />
 
-          <Text variant="h2" color="white" marginTop="l" textAlign="center">
+          <Text
+            variant="displaySmRegular"
+            color="primaryText"
+            marginTop="6"
+            textAlign="center"
+          >
             {t('accountImport.cli.import.title')}
           </Text>
 
           <TextTransform
-            marginTop="l"
-            variant="subtitle1"
+            marginTop="6"
+            variant="textXlMedium"
             textAlign="center"
-            color="grey500"
+            color="secondaryText"
             i18nKey="accountImport.cli.import.body"
           />
         </Box>
 
         <Box width="100%">
           <ButtonPressable
-            marginTop="m"
-            borderRadius="round"
-            backgroundColor="white"
+            marginTop="4"
+            borderRadius="full"
+            backgroundColor="primaryText"
             titleColor="primaryBackground"
             backgroundColorOpacityPressed={0.7}
             onPress={handleNext}
             title={t('accountImport.cli.import.buttonText')}
-            marginBottom="m"
+            marginBottom="4"
           />
         </Box>
       </Box>

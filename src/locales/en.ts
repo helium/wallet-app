@@ -121,7 +121,7 @@ export default {
     recoveryPhrase: 'Secret Phrase',
     keyImport: 'Private Key',
     subTitle:
-      'To import your existing Helium wallet, enter its <havelockBlue>12</havelockBlue> or <jazzberryJam>24</jazzberryJam> word security key.',
+      'To import your existing Helium wallet, enter its <blue.500>12</blue.500> or <pink.500>24</pink.500> word security key.',
     title: 'Import\nWallet',
     wordEntry: {
       changeWordAmount: 'Change to a {{totalWords}}-word recovery phrase',
@@ -309,7 +309,8 @@ export default {
     },
   },
   activityScreen: {
-    title: 'My Activity',
+    title: 'Activity',
+    subtitle: 'View your blockchain history.',
     transactionSuccessful: 'Transaction Successful',
     transactionFailed: 'Transaction Failed',
     viewOnExplorer: 'View on Explorer',
@@ -460,7 +461,8 @@ export default {
   swapsScreen: {
     priceImpact:
       'Price impact more than {{percent}}%. Try swapping a smaller amount.',
-    title: 'Swap my Tokens',
+    title: 'Swap',
+    subtitle: 'Swap your tokens for others',
     swapTokens: 'Swap Tokens',
     youPay: 'You Pay',
     youReceive: 'You Receive',
@@ -922,6 +924,7 @@ export default {
     selectContact: 'Select Contact',
     selfPay: 'Self Pay',
     send: 'Send',
+    sendTokensToAnyAddress: 'Send tokens to any address on the Solana Network.',
     sendButton: 'Swipe to Send {{ticker}}',
     senderAccount: 'Sender Wallet',
     sending: 'Sending...',
@@ -937,6 +940,7 @@ export default {
     submitSuccess: 'Transaction\nSubmitted',
     title: 'Send {{ticker}}',
     total: 'Total',
+    to: 'To',
     totalRecipients: '{{count}} Recipient',
     totalRecipients_one: '{{count}} Recipient',
     totalRecipients_other: '{{count}} Recipients',
@@ -991,6 +995,9 @@ export default {
     },
   },
   settings: {
+    system: 'System',
+    light: 'Light',
+    dark: 'Dark',
     confirmSignout: {
       forgotAlert: {
         body: 'Would you like to reveal your wallets words?',
@@ -1004,14 +1011,14 @@ export default {
       alertTitle: 'Are you sure?',
       done: 'Done',
       subtitle:
-        '<secondaryText>Do not share your private key!</secondaryText><red500>\n\nIf someone has your private key they will have full control of your wallet! Do not enter this into any websites. Any individual asking for this key is likely a scammer.</red500>',
+        '<secondaryText>Do not share your private key!</secondaryText><error.500>\n\nIf someone has your private key they will have full control of your wallet! Do not enter this into any websites. Any individual asking for this key is likely a scammer.</error.500>',
       tap: 'Tap to reveal your private key',
       title: 'Your Private Key',
     },
     revealWords: {
       next: 'I have written these down',
       subtitle:
-        '<secondaryText>Never give these words to anyone, or enter them into any website. <red500>Any person or website asking for these words is likely a scammer</red500>. It is crucial you write all of these\n{{numWords}} words down, in order, and keep them safe.</secondaryText><red500>\n\nHelium cannot recover these words.</red500>',
+        '<secondaryText>Never give these words to anyone, or enter them into any website. <error.500>Any person or website asking for these words is likely a scammer</error.500>. It is crucial you write all of these\n{{numWords}} words down, in order, and keep them safe.</secondaryText><error.500>\n\nHelium cannot recover these words.</error.500>',
       title: 'Your {{numWords}} Word Password',
       warning: 'Helium cannot recover these words',
     },
@@ -1244,7 +1251,7 @@ export default {
           title: 'Vote Power',
         },
         {
-          body: '<caribbeanGreen>Get your voice heard.</caribbeanGreen>\n\nVote on Active Votes\nManage your locked positions\nOr browse past HIPs.',
+          body: '<green.400>Get your voice heard.</green.400>\n\nVote on Active Votes\nManage your locked positions\nOr browse past HIPs.',
           title: 'Ready to Vote?',
         },
       ],
@@ -1433,5 +1440,54 @@ export default {
       relinquishVote: 'Relinquish vote failed, please try again.',
       relinquishVotes: 'Relinquish votes failed, please try again.',
     },
+  },
+  sideDrawer: {
+    routes: [
+      {
+        title: 'Wallet',
+        value: 'wallet',
+      },
+      {
+        title: 'Governance',
+        value: 'governance',
+      },
+      {
+        title: 'Hotspots',
+        value: 'hotspots',
+      },
+      {
+        title: 'Browser',
+        value: 'browser',
+      },
+      {
+        title: 'Notifications',
+        value: 'notifications',
+      },
+      {
+        title: 'Settings',
+        value: 'settings',
+      },
+    ],
+  },
+  walletAlertBanner: {
+    insufficentSol:
+      'Insufficient SOL to pay for fees. Please add more SOL to your wallet.',
+    tokenPrice:
+      'We are currently experiencing issues fetching token prices. Please try again later.',
+  },
+  accountsService: {
+    title: 'Your Wallets',
+  },
+  receivePage: {
+    title: 'Receive',
+    subtitle: 'Share your QR or address to request tokens.',
+    shareQr: 'Share QR',
+    copyAddress: 'Copy Address',
+  },
+  tokenSelector: {
+    title: 'Select a currency',
+  },
+  addressBookSelector: {
+    title: 'Select a contact',
   },
 }

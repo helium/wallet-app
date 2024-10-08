@@ -29,25 +29,25 @@ const slides: Array<CarouselItem> = [
     titleKey: 'defiTutorial.slides.0.title',
     bodyKey: 'defiTutorial.slides.0.body',
     image: require('@assets/images/defiSlide1.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-12',
   },
   {
     titleKey: 'defiTutorial.slides.1.title',
     bodyKey: 'defiTutorial.slides.1.body',
     image: require('@assets/images/defiSlide2.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-12',
   },
   {
     titleKey: 'defiTutorial.slides.2.title',
     bodyKey: 'defiTutorial.slides.2.body',
     image: require('@assets/images/defiSlide3.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-12',
   },
   {
     titleKey: 'defiTutorial.slides.3.title',
     bodyKey: 'defiTutorial.slides.3.body',
     image: require('@assets/images/defiSlide4.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-12',
   },
 ]
 const DAppTutorial = () => {
@@ -87,18 +87,18 @@ const DAppTutorial = () => {
             width={wp(50)}
           />
           <Text
-            variant="h1"
+            variant="displayMdSemibold"
             textAlign="center"
             marginTop={item.imageVerticalOffset}
+            color="primaryText"
           >
             {t(item.titleKey)}
           </Text>
           <TextTransform
-            variant="body1"
-            colorTextVariant="bold"
+            variant="textMdRegular"
             textAlign="center"
-            color="secondaryText"
-            marginTop="m"
+            color="text.tertiary-600"
+            marginTop="4"
             i18nKey={t(item.bodyKey)}
           />
         </Box>
@@ -112,24 +112,15 @@ const DAppTutorial = () => {
       width: 6,
       height: 6,
       borderRadius: 3,
-      marginHorizontal: spacing.s,
-      backgroundColor: colors.white,
+      marginHorizontal: spacing['0.5'],
+      backgroundColor: colors.primaryText,
     }),
-    [colors.white, spacing.s],
+    [colors, spacing],
   )
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <SafeAreaBox flex={1} edges={edges}>
-        <Box
-          paddingTop="xxl"
-          paddingBottom="xl"
-          backgroundColor="primaryBackground"
-        >
-          <Text variant="h4" textAlign="center">
-            {t('defiTutorial.title')}
-          </Text>
-        </Box>
+      <SafeAreaBox flex={1} edges={edges} backgroundColor="primaryBackground">
         <Carousel
           style={{ backgroundColor: 'blue' }}
           ref={carouselRef}
@@ -151,18 +142,19 @@ const DAppTutorial = () => {
           />
 
           <ButtonPressable
-            marginBottom="l"
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="secondaryText"
+            backgroundColorDisabled="bg.disabled"
+            titleColorDisabled="text.disabled"
             title={t('defiTutorial.enterDApps')}
-            titleColor="black"
-            marginHorizontal="l"
+            titleColor="primaryBackground"
+            marginHorizontal="6"
             onPress={handleEnterDAppPressed}
             disabled={!viewedSlides}
+            style={{
+              marginBottom: spacing['6xl'],
+            }}
           />
         </Box>
       </SafeAreaBox>

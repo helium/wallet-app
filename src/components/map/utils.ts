@@ -34,5 +34,5 @@ export const MAP_CONTAINER_STYLE: ViewProps['style'] = {
   width: '100%',
   overflow: 'hidden',
   position: 'relative',
-  backgroundColor: 'rgb(19,24,37)',
+  backgroundColor: 'rgb(0,0,0)',
 }

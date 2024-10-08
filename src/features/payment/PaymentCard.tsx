@@ -8,7 +8,6 @@ import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { checkSecureAccount } from '../../storage/secureStorage'
 import animateTransition from '../../utils/animateTransition'
@@ -16,7 +15,6 @@ import { SendDetails } from '../../utils/linking'
 import PaymentSummary from './PaymentSummary'
 
 type Props = {
-  handleCancel: () => void
   totalBalance: BN
   feeTokenBalance?: BN
   onSubmit: (opts?: { txn: PaymentV2; txnJson: string }) => void
@@ -27,7 +25,6 @@ type Props = {
 }
 
 const PaymentCard = ({
-  handleCancel,
   totalBalance,
   feeTokenBalance,
   onSubmit,
@@ -39,7 +36,6 @@ const PaymentCard = ({
   const { symbol } = useMetaplexMetadata(mint)
   const { t } = useTranslation()
   const [payEnabled, setPayEnabled] = useState(false)
-  const [height, setHeight] = useState(0)
   const { currentAccount } = useAccountStorage()
 
   const handlePayPressed = useCallback(async () => {
@@ -54,27 +50,10 @@ const PaymentCard = ({
     setPayEnabled(true)
   }, [currentAccount?.ledgerDevice, currentAccount?.address])
 
-  const handleLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      if (height > 0) return
-      setHeight(e.nativeEvent.layout.height)
-    },
-    [height],
-  )
-
   const handleSubmit = onSubmit
 
   return (
-    <Box
-      borderTopLeftRadius="xl"
-      borderTopRightRadius="xl"
-      padding="l"
-      height={height || undefined}
-      onLayout={handleLayout}
-      overflow="hidden"
-      minHeight={232}
-      backgroundColor="secondary"
-    >
+    <Box paddingHorizontal="8">
       <PaymentSummary
         mint={mint}
         totalBalance={totalBalance}
@@ -86,38 +65,24 @@ const PaymentCard = ({
       <Box flex={1} justifyContent="flex-end">
         {!payEnabled ? (
           <>
-            <Box flexDirection="row" marginTop="l" marginBottom="m">
+            <Box flexDirection="row" marginTop="6" marginBottom="4">
               <TouchableOpacityBox
                 flex={1}
                 minHeight={66}
-                justifyContent="center"
-                marginEnd="m"
-                borderRadius="round"
-                overflow="hidden"
-                backgroundColor="secondaryIcon"
-                onPress={handleCancel}
-              >
-                <Text variant="subtitle1" textAlign="center" color="grey600">
-                  {t('generic.cancel')}
-                </Text>
-              </TouchableOpacityBox>
-              <TouchableOpacityBox
-                flex={1}
-                minHeight={66}
-                backgroundColor="surfaceContrast"
+                backgroundColor="primaryText"
                 opacity={disabled ? 0.6 : 1}
                 justifyContent="center"
                 alignItems="center"
                 onPress={handlePayPressed}
                 disabled={disabled}
-                borderRadius="round"
+                borderRadius="full"
                 flexDirection="row"
               >
                 <Text
-                  marginLeft="s"
-                  variant="subtitle1"
+                  marginLeft="2"
+                  variant="textXlMedium"
                   textAlign="center"
-                  color={disabled ? 'secondaryText' : 'surfaceContrastText'}
+                  color={disabled ? 'text.disabled' : 'primaryBackground'}
                 >
                   {t('payment.pay')}
                 </Text>
@@ -126,7 +91,7 @@ const PaymentCard = ({
           </>
         ) : (
           <SubmitButton
-            marginTop="l"
+            marginVertical="6"
             title={t('payment.sendButton', {
               ticker: symbol,
             })}

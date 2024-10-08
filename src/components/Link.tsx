@@ -4,7 +4,7 @@ import Text from './Text'
 
 type Props = { children?: ReactNode; href?: string }
 const Link = ({ children, href }: Props) => (
-  <Text variant="body2" onPress={() => href && Linking.openURL(href)}>
+  <Text variant="textSmRegular" onPress={() => href && Linking.openURL(href)}>
     {children}
   </Text>
 )

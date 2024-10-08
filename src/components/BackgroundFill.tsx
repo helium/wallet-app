@@ -7,7 +7,7 @@ import Box from './Box'
 type Props = BoxProps<Theme>
 const BackgroundFill = ({ opacity, backgroundColor, ...boxProps }: Props) => (
   <Box
-    backgroundColor={backgroundColor || 'error'}
+    backgroundColor={backgroundColor || 'error.500'}
     opacity={opacity || 0.4}
     style={StyleSheet.absoluteFill}
     // eslint-disable-next-line react/jsx-props-no-spreading

@@ -1,11 +1,11 @@
 import { createNavigationContainerRef } from '@react-navigation/native'
-import { HomeStackParamList } from '../features/home/homeTypes'
+import { AccountsServiceStackParamList } from '@services/AccountsService'
 import { RootStackParamList } from './rootTypes'
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>()
 
 export const navToImportAccount = (
-  params: HomeStackParamList['ReImportAccountNavigator'],
+  params: AccountsServiceStackParamList['ReImportAccountNavigator'],
 ) => {
   if (!navigationRef.isReady()) return
   navigationRef.navigate('ReImportAccountNavigator' as any, params as any)

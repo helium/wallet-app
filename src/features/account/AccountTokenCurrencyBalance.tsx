@@ -45,9 +45,11 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
 
   return (
     <Text
+      variant="textSmRegular"
       numberOfLines={1}
       adjustsFontSizeToFit
       maxFontSizeMultiplier={1}
+      color="primaryText"
       {...textProps}
     >
       {balanceString || ' '}

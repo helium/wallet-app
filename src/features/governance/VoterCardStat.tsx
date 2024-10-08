@@ -12,10 +12,10 @@ export const VoterCardStat: React.FC<
 > = ({ title, value, ...boxProps }) => {
   return (
     <Box flexDirection="column" {...boxProps}>
-      <Text variant="body3" color="white" opacity={0.5}>
+      <Text variant="textXsRegular" color="primaryText" opacity={0.5}>
         {title}
       </Text>
-      <Text variant="body1" color="white">
+      <Text variant="textMdRegular" color="primaryText">
         {value}
       </Text>
     </Box>

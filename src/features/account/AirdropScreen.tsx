@@ -4,10 +4,7 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
@@ -15,7 +12,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import * as logger from '@utils/logger'
 import * as solUtils from '@utils/solanaUtils'
 import axios from 'axios'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   interpolate,
@@ -26,16 +23,24 @@ import {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
+import HNT from '@assets/images/hnt.svg'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import {
+  WalletNavigationProp,
+  WalletStackParamList,
+} from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useSolana } from '../../solana/SolanaProvider'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 
 const DROP_HEIGHT = 79
 
-type Route = RouteProp<HomeStackParamList, 'AirdropScreen'>
+type Route = RouteProp<WalletStackParamList, 'AirdropScreen'>
 
 const AirdropScreen = () => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
+  const { bottom } = useSafeAreaInsets()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
   const { t } = useTranslation()
@@ -47,7 +52,7 @@ const AirdropScreen = () => {
   const route = useRoute<Route>()
   const { mint: mintStr } = route.params
   const mint = usePublicKey(mintStr)
-  const { symbol, json } = useMetaplexMetadata(mint)
+  const { symbol } = useMetaplexMetadata(mint)
 
   const onAirdrop = useCallback(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider) return
@@ -74,8 +79,6 @@ const AirdropScreen = () => {
       }
     }
   }, [anchorProvider, currentAccount?.solanaAddress, mint, navigation, symbol])
-
-  const edges = useMemo(() => ['bottom'] as Edge[], [])
 
   const onAnimationDropComplete = useCallback(() => {
     ring.value = 1
@@ -146,63 +149,73 @@ const AirdropScreen = () => {
   }, [ring, ringDrop])
 
   return (
-    <BackScreen headerBackgroundColor="black" flex={1} padding="none">
-      <SafeAreaBox edges={edges} backgroundColor="black" flex={1}>
-        <Box>
-          <Text variant="h4" textAlign="center" marginTop="l">
-            {t('airdropScreen.title')}
-          </Text>
-          <Text
-            variant="body1"
-            textAlign="center"
-            color="secondaryText"
-            marginTop="m"
+    <ScrollBox contentContainerStyle={{ flex: 1 }}>
+      <BackScreen flex={1} padding="0">
+        <Box flex={1}>
+          <Box>
+            <Text variant="textXlRegular" textAlign="center" marginTop="6">
+              {t('airdropScreen.title')}
+            </Text>
+            <Text
+              variant="textMdRegular"
+              textAlign="center"
+              color="secondaryText"
+              marginTop="4"
+            >
+              {t('airdropScreen.subtitle')}
+            </Text>
+          </Box>
+          <Box
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            marginBottom="6"
           >
-            {t('airdropScreen.subtitle')}
-          </Text>
-        </Box>
-        <Box
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          marginBottom="l"
-        >
-          <Box justifyContent="center" alignItems="center">
-            <TokenIcon size={160} img={json?.image} />
-            <Box position="absolute" top={120}>
-              <ReAnimatedBox style={[ringStyle, dropStyle]}>
-                <DripLogo />
-              </ReAnimatedBox>
+            <Box justifyContent="center" alignItems="center" marginTop="6xl">
+              <Box>
+                <HNT width={160} height={160} color="red" />
+              </Box>
+              <Box position="absolute" top={120}>
+                <ReAnimatedBox style={[ringStyle, dropStyle]}>
+                  <DripLogo />
+                </ReAnimatedBox>
+              </Box>
             </Box>
           </Box>
+          <Text
+            variant="textMdRegular"
+            textAlign="center"
+            color="error.500"
+            marginTop="4"
+          >
+            {errorMessage ? t('airdropScreen.error') : ''}
+          </Text>
+          <ButtonPressable
+            style={{
+              marginBottom: NavBarHeight + bottom,
+            }}
+            borderRadius="full"
+            onPress={onAirdrop}
+            backgroundColor="primaryText"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="bg.tertiary"
+            backgroundColorDisabledOpacity={0.5}
+            titleColorDisabled="gray.800"
+            titleColor="primaryBackground"
+            title={
+              !loading
+                ? t('airdropScreen.airdropTicker', { ticker: symbol || '' })
+                : ''
+            }
+            disabled={loading}
+            marginHorizontal="6"
+            LeadingComponent={
+              loading && <CircleLoader loaderSize={20} color="primaryText" />
+            }
+          />
         </Box>
-        <Text variant="body1" textAlign="center" color="red500" marginTop="m">
-          {errorMessage ? t('airdropScreen.error') : ''}
-        </Text>
-        <ButtonPressable
-          borderRadius="round"
-          onPress={onAirdrop}
-          backgroundColor="primaryText"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="primary"
-          fontWeight="500"
-          title={
-            !loading
-              ? t('airdropScreen.airdropTicker', { ticker: symbol || '' })
-              : ''
-          }
-          disabled={loading}
-          marginVertical="l"
-          marginHorizontal="l"
-          LeadingComponent={
-            loading && <CircleLoader loaderSize={20} color="white" />
-          }
-        />
-      </SafeAreaBox>
-    </BackScreen>
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

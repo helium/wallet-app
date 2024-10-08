@@ -51,19 +51,19 @@ const SwappingScreen = () => {
     return (
       <Box flexDirection="row" alignItems="center">
         <Box
-          backgroundColor="black"
-          borderRadius="round"
-          padding="s"
-          marginEnd="m"
+          backgroundColor="base.black"
+          borderRadius="full"
+          padding="2"
+          marginEnd="4"
         >
           <TokenIcon img={jsonA?.image} size={50} />
         </Box>
-        <ArrowRight color="white" height={24} width={26.5} />
+        <ArrowRight color="primaryText" height={24} width={26.5} />
         <Box
-          marginStart="m"
-          backgroundColor="black"
-          borderRadius="round"
-          padding="s"
+          marginStart="4"
+          backgroundColor="base.black"
+          borderRadius="full"
+          padding="2"
         >
           <TokenIcon img={jsonB?.image} size={50} />
         </Box>
@@ -78,12 +78,12 @@ const SwappingScreen = () => {
       backgroundColor="secondaryBackground"
     >
       <BackScreen
-        padding="none"
+        padding="0"
         edges={backEdges}
         onClose={onReturn}
         hideBack
-        headerTopMargin="l"
-        paddingHorizontal="l"
+        headerTopMargin="6"
+        paddingHorizontal="6"
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           {TokensSwappedContainer}
@@ -93,13 +93,17 @@ const SwappingScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Text variant="h2" color="white" marginTop="xl">
+              <Text
+                variant="displaySmRegular"
+                color="primaryText"
+                marginTop="8"
+              >
                 {t('swapsScreen.swapComplete')}
               </Text>
               <Text
-                variant="body1"
+                variant="textMdRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('swapsScreen.swapCompleteBody')}
@@ -114,17 +118,17 @@ const SwappingScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h2"
-                color="white"
-                marginTop="xl"
+                variant="displaySmRegular"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('swapsScreen.swapError')}
               </Text>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 textAlign="center"
               >
                 {parseTransactionError(
@@ -142,9 +146,9 @@ const SwappingScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h2"
-                color="white"
-                marginTop="xl"
+                variant="displaySmRegular"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('swapsScreen.swapError')}
@@ -159,42 +163,42 @@ const SwappingScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h2"
-                color="white"
-                marginTop="xl"
+                variant="displaySmRegular"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('swapsScreen.swappingTokens')}
               </Text>
               <Text
-                marginTop="m"
-                variant="body0"
-                color="grey600"
+                marginTop="4"
+                variant="textXlRegular"
+                color="gray.600"
                 textAlign="center"
               >
                 {t('swapsScreen.swappingTokensBody')}
               </Text>
-              <Box marginTop="xl" flexDirection="row" marginHorizontal="l">
-                <IndeterminateProgressBar paddingHorizontal="l" />
+              <Box marginTop="8" flexDirection="row" marginHorizontal="6">
+                <IndeterminateProgressBar paddingHorizontal="6" />
               </Box>
             </Animated.View>
           )}
         </Box>
-        <Box width="100%" justifyContent="flex-end" paddingTop="l">
+        <Box width="100%" justifyContent="flex-end" paddingTop="6">
           <ButtonPressable
-            marginHorizontal="m"
-            marginBottom="xl"
+            marginHorizontal="4"
+            marginBottom="8"
             height={65}
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="base.white"
             backgroundColorOpacity={0.1}
             backgroundColorOpacityPressed={0.05}
             titleColorPressedOpacity={0.3}
             title={t('swapsScreen.returnToSwaps')}
-            titleColor="white"
+            titleColor="base.white"
             onPress={onReturn}
             LeadingComponent={
-              <BackArrow width={16} height={15} color="white" />
+              <BackArrow width={16} height={15} color="primaryText" />
             }
           />
         </Box>

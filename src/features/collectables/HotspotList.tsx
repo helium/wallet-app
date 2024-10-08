@@ -12,7 +12,7 @@ import useHotspots from '@hooks/useHotspots'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useColors } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
@@ -20,6 +20,7 @@ import React, { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
@@ -50,8 +51,8 @@ function RewardItem({
       <TokenIcon img={json?.image} size={24} />
       <Text
         marginLeft="xs"
-        color="white"
-        variant="subtitle4"
+        color="primaryBackground"
+        variant="textSmMedium"
         numberOfLines={1}
         adjustsFontSizeToFit
         maxFontSizeMultiplier={1.1}
@@ -59,7 +60,7 @@ function RewardItem({
         {realAmount}
         {hasMore ? '+' : ''}
       </Text>
-      <Text marginLeft="xs" variant="subtitle4" color="grey50">
+      <Text marginLeft="xs" variant="textSmMedium" color="gray.50">
         {symbol}
       </Text>
     </Box>
@@ -72,6 +73,8 @@ const HotspotList = () => {
   const isFocused = useIsFocused()
   const { primaryText } = useColors()
   const { triggerImpact } = useHaptic()
+  const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
 
   const {
     hotspots,
@@ -126,8 +129,8 @@ const HotspotList = () => {
   const renderHeader = useCallback(() => {
     return (
       <Box
-        marginTop="m"
-        marginBottom="s"
+        marginTop="4"
+        marginBottom="2"
         flexDirection="column"
         alignItems="stretch"
       >
@@ -135,44 +138,49 @@ const HotspotList = () => {
           flexDirection="row"
           justifyContent="space-between"
           alignItems="stretch"
-          marginBottom="l"
+          marginBottom="6"
+          paddingHorizontal="4"
         >
           <ButtonPressable
             height={36}
-            borderRadius="round"
-            backgroundColor="surfaceSecondary"
+            borderRadius="full"
+            backgroundColor="fg.quinary-400"
             backgroundColorOpacityPressed={0.7}
             flex={1}
-            LeadingComponent={<Globe width={18} height={18} color="white" />}
+            LeadingComponent={
+              <Globe width={18} height={18} color="primaryText" />
+            }
             title={t('collectablesScreen.hotspots.openMap')}
-            titleColor="white"
+            titleColor="base.white"
             fontSize={14}
             onPress={handleNavigateToMap}
           />
           <Box marginHorizontal="xs" />
           <ButtonPressable
             height={36}
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="base.white"
             backgroundColorOpacityPressed={0.7}
             flex={1}
             LeadingComponent={<Plus width={18} height={18} color="black" />}
             title={t('collectablesScreen.hotspots.connect')}
-            titleColor="black"
+            titleColor="base.black"
             fontSize={14}
             onPress={handleNavigateToHotspotOnboard}
           />
         </Box>
         <Box flexDirection="row" alignItems="center">
-          <Box backgroundColor="grey500" height={1} flexGrow={1} />
-          <Box flexDirection="row" alignItems="center" paddingHorizontal="s">
-            <Text color="grey50">You own</Text>
-            <Text color="white" ml="xs">
+          <Box backgroundColor="gray.500" height={1} flexGrow={1} />
+          <Box flexDirection="row" alignItems="center" paddingHorizontal="2">
+            <Text variant="textSmRegular" color="secondaryText">
+              You own
+            </Text>
+            <Text variant="textSmRegular" color="primaryText" ml="xs">
               {totalHotspots} hotspots
             </Text>
           </Box>
 
-          <Box backgroundColor="grey500" height={1} flexGrow={1} />
+          <Box backgroundColor="gray.500" height={1} flexGrow={1} />
         </Box>
       </Box>
     )
@@ -186,7 +194,8 @@ const HotspotList = () => {
           hotspot={item}
           onPress={handleNavigateToHotspot}
           key={item.id}
-          marginBottom="s"
+          marginBottom="2"
+          marginHorizontal="4"
         />
       )
     },
@@ -215,7 +224,7 @@ const HotspotList = () => {
 
   const Footer = useCallback(
     () => (
-      <Box marginTop="m" marginBottom="s">
+      <Box marginTop="4" marginBottom="2">
         {fetchingMore ? <CircleLoader loaderSize={40} /> : <Box height={40} />}
       </Box>
     ),
@@ -237,6 +246,9 @@ const HotspotList = () => {
       <FlatList
         data={hotspotsWithMeta}
         numColumns={2}
+        style={{
+          marginTop: spacing.xl,
+        }}
         columnWrapperStyle={{
           flexDirection: 'column',
         }}
@@ -258,10 +270,13 @@ const HotspotList = () => {
         ListFooterComponent={Footer}
       />
       <Box
-        backgroundColor="surfaceSecondary"
-        borderTopLeftRadius="l"
-        borderTopRightRadius="l"
-        p="m"
+        backgroundColor="fg.quinary-400"
+        borderTopLeftRadius="4xl"
+        borderTopRightRadius="4xl"
+        p="4"
+        style={{
+          paddingBottom: spacing[4] + bottom,
+        }}
       >
         <Box flexDirection="row" justifyContent="space-evenly">
           <RewardItem
@@ -277,15 +292,14 @@ const HotspotList = () => {
         </Box>
         <ButtonPressable
           flexGrow={1}
-          marginTop="m"
-          borderRadius="round"
-          backgroundColor="hntBlue"
+          marginTop="4"
+          borderRadius="full"
+          backgroundColor="primaryText"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
+          backgroundColorDisabled="secondaryBackground"
           titleColorDisabled="secondaryText"
           title={t('collectablesScreen.hotspots.claimAllRewards')}
-          titleColor="white"
+          titleColor="primaryBackground"
           disabled={
             (pendingIotRewards &&
               pendingIotRewards.eq(new BN('0')) &&

@@ -2,7 +2,8 @@ import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
+import { useColors } from '@theme/themeHooks'
 import AddNewContact from '../addressBook/AddNewContact'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
 import AddressQrScanner from '../addressBook/AddressQrScanner'
@@ -13,7 +14,6 @@ import AntennaSetupScreen from './AntennaSetupScreen'
 import ClaimAllRewardsScreen from './ClaimAllRewardsScreen'
 import ClaimRewardsScreen from './ClaimRewardsScreen'
 import ClaimingRewardsScreen from './ClaimingRewardsScreen'
-import CollectablesTopTabs from './CollectablesTopTabs'
 import CollectionScreen from './CollectionScreen'
 import NftDetailsScreen from './NftDetailsScreen'
 import NftMetadataScreen from './NftMetadataScreen'
@@ -23,20 +23,23 @@ import TransferCompleteScreen from './TransferCompleteScreen'
 import HotspotMapScreen from './HotspotMapScreen'
 import AssertLocationScreen from './AssertLocationScreen'
 import ChangeRewardsRecipientScreen from './ChangeRewardsRecipientScreen'
+import HotspotList from './HotspotList'
 
 const CollectablesStack = createStackNavigator()
 
-const screenOptions: StackNavigationOptions = {
-  headerShown: false,
-}
-
 const CollectablesStackScreen = () => {
+  const colors = useColors()
+  const screenOptions: StackNavigationOptions = useMemo(
+    () => ({
+      headerShown: false,
+      cardStyle: { backgroundColor: colors.primaryBackground },
+    }),
+    [colors],
+  )
+
   return (
     <CollectablesStack.Navigator screenOptions={screenOptions}>
-      <CollectablesStack.Screen
-        name="CollectablesTopTab"
-        component={CollectablesTopTabs}
-      />
+      <CollectablesStack.Screen name="HotspotList" component={HotspotList} />
       <CollectablesStack.Screen
         name="HotspotMapScreen"
         component={HotspotMapScreen}

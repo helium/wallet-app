@@ -70,17 +70,17 @@ const WifiSetup = () => {
       </Box>
 
       <ButtonPressable
-        mt="l"
-        borderRadius="round"
-        titleColor="white"
-        borderColor="white"
+        mt="6"
+        borderRadius="full"
+        titleColor="base.white"
+        borderColor="base.white"
         borderWidth={1}
         backgroundColor="transparent"
         onPress={handleSetWifi}
         disabled={loading}
         title={t('hotspotOnboarding.wifiSettings.setup')}
       />
-      <Text>{loading ? 'loading...' : status}</Text>
+      <Text variant="textSmRegular">{loading ? 'loading...' : status}</Text>
     </BackScreen>
   )
 }

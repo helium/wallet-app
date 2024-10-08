@@ -77,19 +77,23 @@ export const DelegateTokensModal = ({
           onClose={handleOnClose}
           backgroundColor="transparent"
           flex={1}
-          padding="m"
-          marginHorizontal="s"
+          padding="4"
+          marginHorizontal="2"
         >
           <Box flexGrow={1} justifyContent="center">
             {!loading && (
               <>
-                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+                <Text
+                  textAlign="left"
+                  variant="textLgMedium"
+                  adjustsFontSizeToFit
+                >
                   {t('gov.transactions.delegatePosition')}
                 </Text>
                 <Text
-                  variant="subtitle4"
+                  variant="textSmMedium"
                   color="secondaryText"
-                  marginBottom="m"
+                  marginBottom="4"
                 >
                   {t('gov.positions.selectSubDao')}
                 </Text>
@@ -98,7 +102,11 @@ export const DelegateTokensModal = ({
             {loading && (
               <Box justifyContent="center" alignItems="center">
                 <CircleLoader loaderSize={20} />
-                <Text variant="subtitle4" color="secondaryText" marginTop="ms">
+                <Text
+                  variant="textSmMedium"
+                  color="secondaryText"
+                  marginTop="3"
+                >
                   {t('gov.positions.fetchingSubDaos')}
                 </Text>
               </Box>
@@ -114,18 +122,18 @@ export const DelegateTokensModal = ({
                   return (
                     <TouchableOpacityBox
                       key={subDao.pubkey.toString()}
-                      borderRadius="l"
-                      marginTop={idx > 0 ? 'm' : 'none'}
+                      borderRadius="2xl"
+                      marginTop={idx > 0 ? '4' : 'none'}
                       backgroundColor={
-                        isSelected ? 'secondaryBackground' : 'secondary'
+                        isSelected ? 'secondaryBackground' : 'bg.tertiary'
                       }
                       onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
                     >
-                      <Box flexDirection="row" padding="ms" alignItems="center">
+                      <Box flexDirection="row" padding="3" alignItems="center">
                         <Box
-                          borderColor="black"
+                          borderColor="base.black"
                           borderWidth={2}
-                          borderRadius="round"
+                          borderRadius="full"
                         >
                           <TokenIcon
                             size={26}
@@ -133,9 +141,9 @@ export const DelegateTokensModal = ({
                           />
                         </Box>
                         <Text
-                          variant="subtitle3"
+                          variant="textMdMedium"
                           color="primaryText"
-                          marginLeft="m"
+                          marginLeft="4"
                         >
                           {subDao.dntMetadata.name}
                         </Text>
@@ -150,29 +158,29 @@ export const DelegateTokensModal = ({
               flexDirection="row"
               justifyContent="center"
               alignItems="center"
-              paddingTop="ms"
+              paddingTop="3"
             >
-              <Text variant="body3Medium" color="red500">
+              <Text variant="textXsMedium" color="error.500">
                 {showError}
               </Text>
             </Box>
           )}
-          <Box flexDirection="row" paddingTop="m">
+          <Box flexDirection="row" paddingTop="4">
             <ButtonPressable
               flex={1}
               fontSize={16}
-              borderRadius="round"
-              backgroundColor="white"
+              borderRadius="full"
+              backgroundColor="base.white"
               backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="surfaceSecondary"
+              backgroundColorDisabled="bg.tertiary"
               backgroundColorDisabledOpacity={0.9}
               titleColorDisabled="secondaryText"
               title={isSubmitting ? '' : 'Delegate Tokens'}
-              titleColor="black"
+              titleColor="base.black"
               onPress={handleSubmit}
               disabled={!selectedSubDaoPk || isSubmitting}
               TrailingComponent={
-                isSubmitting ? <CircleLoader color="white" /> : undefined
+                isSubmitting ? <CircleLoader color="primaryText" /> : undefined
               }
             />
           </Box>

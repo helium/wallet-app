@@ -47,16 +47,16 @@ const CollectablesScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
-        <Text marginTop="m" alignSelf="center" variant="h4">
+        <Text marginTop="4" alignSelf="center" variant="textXlRegular">
           {t('collectablesScreen.title')}
         </Text>
         <TabBar
-          marginTop="l"
-          backgroundColor="black"
+          marginTop="6"
+          backgroundColor="base.black"
           tabBarOptions={tabData}
           selectedValue={selectedItem}
           onItemSelected={handleItemSelected}
-          marginBottom="ms"
+          marginBottom="3"
         />
 
         {selectedItem === tabData[0].value && <AccountHotspotsList />}

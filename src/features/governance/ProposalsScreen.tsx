@@ -11,18 +11,18 @@ export const ProposalsScreen = () => {
   const selectedTab = 'proposals'
 
   return (
-    <GovernanceWrapper selectedTab={selectedTab}>
-      <VotingPowerCard
-        onPress={async (m) =>
-          navigation.push('PositionsScreen', {
-            mint: m.toBase58(),
-          })
-        }
-      />
-      <ScrollView>
+    <ScrollView>
+      <GovernanceWrapper selectedTab={selectedTab}>
+        <VotingPowerCard
+          onPress={async (m) =>
+            navigation.push('PositionsScreen', {
+              mint: m.toBase58(),
+            })
+          }
+        />
         <ProposalsList />
-      </ScrollView>
-    </GovernanceWrapper>
+      </GovernanceWrapper>
+    </ScrollView>
   )
 }
 

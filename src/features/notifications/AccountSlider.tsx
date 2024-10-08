@@ -108,7 +108,7 @@ const AccountSlider = () => {
   const keyExtractor = useCallback((item) => item || '', [])
 
   return (
-    <Box marginBottom="l" marginTop="m">
+    <Box marginBottom="6" marginTop="4">
       <Carousel
         ref={carouselRef}
         firstItem={selectedList ? data.indexOf(selectedList) : 0}

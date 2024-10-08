@@ -71,43 +71,43 @@ const TransferCollectableScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <BackScreen
-        padding="none"
+        padding="0"
         backgroundImageUri={backgroundImageUri}
         edges={backEdges}
         onClose={onReturn}
         hideBack
-        headerTopMargin="l"
+        headerTopMargin="6"
       >
         <Box
           backgroundColor="transparent"
           flex={1}
-          padding="m"
+          padding="4"
           alignItems="center"
           justifyContent="center"
         >
           <Box
             flexGrow={1}
-            marginBottom="xl"
+            marginBottom="8"
             justifyContent="center"
             alignItems="center"
           >
             {metadata && (
               <Box
-                shadowColor="black"
+                shadowColor="base.black"
                 shadowOpacity={0.4}
                 shadowOffset={{ width: 0, height: 10 }}
                 shadowRadius={10}
                 elevation={12}
               >
                 <ImageBox
-                  marginTop="l"
+                  marginTop="6"
                   backgroundColor={
-                    metadata.image ? 'black' : 'surfaceSecondary'
+                    metadata.image ? 'primaryBackground' : 'bg.tertiary'
                   }
                   height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                   width={COLLECTABLE_HEIGHT - spacing.xl * 5}
                   source={{ uri: metadata.image, cache: 'force-cache' }}
-                  borderRadius="xxl"
+                  borderRadius="4xl"
                 />
               </Box>
             )}
@@ -119,7 +119,11 @@ const TransferCollectableScreen = () => {
                   entering={FadeIn}
                   exiting={FadeOut}
                 >
-                  <Text variant="h2" color="white" marginTop="xl">
+                  <Text
+                    variant="displaySmRegular"
+                    color="primaryText"
+                    marginTop="8"
+                  >
                     {t('collectablesScreen.transferComplete')}
                   </Text>
                 </Animated.View>
@@ -132,17 +136,17 @@ const TransferCollectableScreen = () => {
                 exiting={FadeOut}
               >
                 <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
+                  variant="displaySmRegular"
+                  color="primaryText"
+                  marginTop="8"
                   textAlign="center"
                 >
                   {t('collectablesScreen.transferError')}
                 </Text>
                 <Text
-                  variant="body2"
+                  variant="textSmRegular"
                   color="secondaryText"
-                  marginTop="xl"
+                  marginTop="8"
                   numberOfLines={2}
                   textAlign="center"
                 >
@@ -161,9 +165,9 @@ const TransferCollectableScreen = () => {
                 exiting={FadeOut}
               >
                 <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
+                  variant="displaySmRegular"
+                  color="primaryText"
+                  marginTop="8"
                   textAlign="center"
                 >
                   {t('collectablesScreen.transferError')}
@@ -178,42 +182,42 @@ const TransferCollectableScreen = () => {
                 exiting={FadeOut}
               >
                 <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
+                  variant="displaySmRegular"
+                  color="primaryText"
+                  marginTop="8"
                   textAlign="center"
                 >
                   {t('collectablesScreen.transferingNftTitle')}
                 </Text>
                 <Text
-                  variant="body0"
-                  color="grey600"
+                  variant="textXlRegular"
+                  color="gray.600"
                   textAlign="center"
-                  marginBottom="m"
+                  marginBottom="4"
                 >
                   {t('collectablesScreen.transferingNftBody')}
                 </Text>
-                <Box flexDirection="row" marginHorizontal="xxl">
-                  <IndeterminateProgressBar paddingHorizontal="l" />
+                <Box flexDirection="row" marginHorizontal="12">
+                  <IndeterminateProgressBar paddingHorizontal="6" />
                 </Box>
               </Animated.View>
             )}
           </Box>
           <Box flex={1} width="100%" justifyContent="flex-end">
             <ButtonPressable
-              marginHorizontal="m"
-              marginBottom="m"
+              marginHorizontal="4"
+              marginBottom="4"
               height={65}
-              borderRadius="round"
-              backgroundColor="white"
+              borderRadius="full"
+              backgroundColor="base.white"
               backgroundColorOpacity={0.1}
               backgroundColorOpacityPressed={0.05}
               titleColorPressedOpacity={0.3}
               title={t('collectablesScreen.returnToCollectables')}
-              titleColor="white"
+              titleColor="base.white"
               onPress={onReturn}
               LeadingComponent={
-                <BackArrow width={16} height={15} color="white" />
+                <BackArrow width={16} height={15} color="primaryText" />
               }
             />
           </Box>

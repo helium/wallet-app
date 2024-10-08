@@ -2,9 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useIsFocused } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
 import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
@@ -15,7 +13,6 @@ import NotificationsList from './NotificationsList'
 
 const NotificationsScreen = () => {
   const { t } = useTranslation()
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { selectedNotification, updateAllNotifications } =
     useNotificationStorage()
   const isFocused = useIsFocused()
@@ -34,7 +31,13 @@ const NotificationsScreen = () => {
   const HeaderComponent = useMemo(() => {
     return (
       <>
-        <Text textAlign="center" variant="h4" marginTop="m" marginBottom="l">
+        <Text
+          textAlign="center"
+          variant="textXlRegular"
+          marginTop="6xl"
+          marginBottom="6"
+          color="primaryText"
+        >
           {t('notifications.title')}
         </Text>
         <AccountSlider />
@@ -49,17 +52,17 @@ const NotificationsScreen = () => {
         position="absolute"
         bottom={0}
         width="100%"
-        paddingHorizontal="m"
-        marginBottom="xl"
+        paddingHorizontal="4"
+        marginBottom="8"
       >
         <ButtonPressable
           title={selectedNotification.actionTitle}
           onPress={onActionPress}
-          backgroundColor="highlight"
-          marginTop="m"
-          borderRadius="round"
+          backgroundColor="yellow.500"
+          marginTop="4"
+          borderRadius="full"
           height={60}
-          titleColor="black900"
+          titleColor="base.black"
         />
       </Box>
     ) : (
@@ -69,16 +72,12 @@ const NotificationsScreen = () => {
 
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
-      <SafeAreaBox
-        flex={1}
-        backgroundColor="primaryBackground"
-        edges={safeEdges}
-      >
+      <Box flex={1} backgroundColor="primaryBackground">
         <NotificationsList
           HeaderComponent={HeaderComponent}
           FooterComponent={FooterComponent}
         />
-      </SafeAreaBox>
+      </Box>
     </ReAnimatedBox>
   )
 }

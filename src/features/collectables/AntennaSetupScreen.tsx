@@ -36,7 +36,6 @@ const AntennaSetupScreen = () => {
   const entityKey = useEntityKey(collectable)
   const iotInfoAcc = useIotInfo(entityKey)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [hasSetDefaults, setHasSetDefaults] = useState(false)
   const [gain, setGain] = useState<string>()
   const [elevation, setElevation] = useState<string>()
@@ -104,10 +103,10 @@ const AntennaSetupScreen = () => {
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
       <BackScreen
-        headerTopMargin="l"
-        padding="none"
+        headerTopMargin="6xl"
+        padding="0"
         title={t('antennaSetupScreen.title')}
-        edges={backEdges}
+        edges={[]}
       >
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
@@ -115,25 +114,29 @@ const AntennaSetupScreen = () => {
               edges={safeEdges}
               backgroundColor="transparent"
               flex={1}
-              padding="m"
-              marginHorizontal="s"
+              padding="4"
+              marginHorizontal="2"
               marginVertical="xs"
             >
               <Box flexGrow={1} justifyContent="center">
-                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+                <Text
+                  textAlign="left"
+                  variant="textLgMedium"
+                  adjustsFontSizeToFit
+                >
                   {t('antennaSetupScreen.antennaSetup')}
                 </Text>
                 <Text
-                  variant="subtitle4"
+                  variant="textSmMedium"
                   color="secondaryText"
-                  marginBottom="m"
+                  marginBottom="4"
                 >
                   {t('antennaSetupScreen.antennaSetupDescription')}
                 </Text>
                 <Box
                   width="100%"
-                  backgroundColor="secondary"
-                  borderRadius="l"
+                  backgroundColor="secondaryBackground"
+                  borderRadius="2xl"
                   paddingVertical="xs"
                 >
                   <TextInput
@@ -146,7 +149,11 @@ const AntennaSetupScreen = () => {
                       keyboardType: 'decimal-pad',
                     }}
                   />
-                  <Box height={1} width="100%" backgroundColor="black200" />
+                  <Box
+                    height={2}
+                    width="100%"
+                    backgroundColor="primaryBackground"
+                  />
                   <TextInput
                     variant="transparent"
                     floatingLabel={`${t(
@@ -165,11 +172,11 @@ const AntennaSetupScreen = () => {
                 flexDirection="row"
                 justifyContent="center"
                 alignItems="center"
-                marginVertical="s"
+                marginVertical="2"
                 minHeight={40}
               >
                 {showError && (
-                  <Text variant="body3Medium" color="red500">
+                  <Text variant="textXsMedium" color="error.500">
                     {showError}
                   </Text>
                 )}
@@ -178,18 +185,15 @@ const AntennaSetupScreen = () => {
                 <ButtonPressable
                   height={BUTTON_HEIGHT}
                   flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
+                  borderRadius="full"
+                  backgroundColor="primaryText"
                   backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="white"
-                  backgroundColorDisabledOpacity={0.0}
-                  titleColorDisabled="grey600"
                   title={updating ? '' : t('antennaSetupScreen.submit')}
-                  titleColor="black"
+                  titleColor="primaryBackground"
                   onPress={handleUpdateElevGain}
                   TrailingComponent={
                     updating ? (
-                      <CircleLoader loaderSize={20} color="black" />
+                      <CircleLoader loaderSize={20} color="primaryBackground" />
                     ) : undefined
                   }
                 />

@@ -5,6 +5,8 @@ import { Keypair } from '@solana/web3.js'
 import { toSecureAccount } from '@storage/secureStorage'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -56,7 +58,7 @@ const AccountConfirmPinScreen = () => {
         index: 0,
         routes: [
           {
-            name: 'TabBarNavigator',
+            name: 'ServiceSheetNavigator',
           },
         ],
       })
@@ -86,4 +88,12 @@ const AccountConfirmPinScreen = () => {
   )
 }
 
-export default AccountConfirmPinScreen
+const AccountConfirmPinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <AccountConfirmPinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default AccountConfirmPinScreenWrapper

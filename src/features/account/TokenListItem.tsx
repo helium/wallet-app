@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import Arrow from '@assets/images/listItemRight.svg'
 import Lock from '@assets/images/lockClosed.svg'
-import InfoWarning from '@assets/images/warning.svg'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import Text from '@components/Text'
@@ -18,16 +17,15 @@ import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import usePrevious from '@hooks/usePrevious'
 import { useNavigation } from '@react-navigation/native'
-import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
-import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useSolana } from '../../solana/SolanaProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 
 export const ITEM_HEIGHT = 72
@@ -42,19 +40,24 @@ export const TokenSkeleton = () => {
         flexDirection="row"
         height={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="l"
+        paddingHorizontal="6"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
       >
         <Box
           width={40}
           height={40}
-          borderRadius="round"
-          backgroundColor="surface"
+          borderRadius="full"
+          backgroundColor="cardBackground"
         />
-        <Box flex={1} paddingHorizontal="m">
-          <Box width={120} height={16} backgroundColor="surface" />
-          <Box width={70} height={16} marginTop="s" backgroundColor="surface" />
+        <Box flex={1} paddingHorizontal="4">
+          <Box width={120} height={16} backgroundColor="cardBackground" />
+          <Box
+            width={70}
+            height={16}
+            marginTop="2"
+            backgroundColor="cardBackground"
+          />
         </Box>
         <Arrow width={4} height={4} />
       </Box>
@@ -63,7 +66,7 @@ export const TokenSkeleton = () => {
 }
 
 export const TokenListItem = ({ mint }: Props) => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const wallet = useCurrentWallet()
   const {
     amount,
@@ -94,74 +97,109 @@ export const TokenListItem = ({ mint }: Props) => {
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
+        paddingHorizontal="4"
+        paddingVertical="4"
+        backgroundColor="primaryBackground"
+        backgroundColorPressed="bg.primary-hover"
       >
         {loading ? (
           <Box
             width={40}
             height={40}
-            borderRadius="round"
-            backgroundColor="surface"
+            borderRadius="full"
+            backgroundColor="fg.quinary-400"
           />
         ) : (
           <TokenIcon img={json?.image} />
         )}
 
-        <Box flex={1} paddingHorizontal="m">
+        <Box flex={1} paddingHorizontal="4">
           {loadingOwned ? (
-            <Box flex={1} paddingHorizontal="m">
-              <Box width={120} height={16} backgroundColor="surface" />
+            <Box flex={1} paddingHorizontal="4">
+              <Box width={120} height={16} backgroundColor="fg.quinary-400" />
               <Box
                 width={70}
                 height={16}
-                marginTop="s"
-                backgroundColor="surface"
+                marginTop="2"
+                backgroundColor="fg.quinary-400"
               />
             </Box>
           ) : (
             <Box>
-              <Box flexDirection="row" alignItems="center">
+              <Text
+                variant="textMdRegular"
+                color="text.tertiary-600"
+                maxFontSizeMultiplier={1.3}
+              >
+                {json?.name}
+              </Text>
+              <Box flexDirection="row" alignItems="flex-end" gap="1">
                 <Text
-                  variant="body1"
-                  color="primaryText"
+                  variant="textMdRegular"
+                  color="text.tertiary-600"
                   maxFontSizeMultiplier={1.3}
                 >
-                  {`${balanceToDisplay} `}
+                  {`${balanceToDisplay}`}
                 </Text>
                 <Text
-                  variant="body2Medium"
-                  color="secondaryText"
+                  variant="textSmMedium"
+                  color="text.tertiary-600"
                   maxFontSizeMultiplier={1.3}
                 >
                   {symbol}
                 </Text>
               </Box>
-              {symbol && (
-                <AccountTokenCurrencyBalance
-                  variant="subtitle4"
-                  color="secondaryText"
-                  ticker={symbol.toUpperCase()}
-                />
-              )}
             </Box>
           )}
         </Box>
-        {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
-          <Box mr="m">
-            <InfoWarning width={28} height={28} />
-          </Box>
-        )}
-        <Arrow />
+        <Box flexDirection="column" alignItems="flex-end">
+          {symbol && (
+            <AccountTokenCurrencyBalance
+              variant="textSmMedium"
+              color="secondaryText"
+              ticker={symbol.toUpperCase()}
+            />
+          )}
+          {/* 
+          TODO: Bring this back once we are tracking balances on the wallet api 
+          <PercentChange change={120.0} type="up" /> */}
+        </Box>
       </TouchableContainer>
     </FadeInOut>
   )
 }
 
+const PercentChange = ({
+  change,
+  type,
+}: {
+  change: number
+  type: 'up' | 'down' | 'neutral'
+}) => {
+  const color = useMemo(() => {
+    switch (type) {
+      case 'up':
+        return 'green.light-500'
+      case 'down':
+        return 'blue.dark-600'
+      case 'neutral':
+        return 'fg.quinary-400'
+    }
+  }, [type])
+
+  const prefix = useMemo(() => {
+    return change > 0 ? '+' : '-'
+  }, [change])
+
+  return (
+    <Text adjustsFontSizeToFit variant="textSmMedium" color={color}>
+      {`${prefix}${change.toFixed(2).toLocaleString()}%`}
+    </Text>
+  )
+}
+
 export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<ServiceSheetNavigationProp>()
   const { anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
   const { triggerImpact } = useHaptic()
@@ -237,7 +275,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(navigation as any).navigate('Governance', {
+    ;(navigation as any).navigate('GovernanceService', {
       screen: 'PositionsScreen',
       initial: false,
       params: { mint: mintStr },
@@ -261,17 +299,19 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
         flexDirection="row"
         minHeight={ITEM_HEIGHT}
         alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
+        paddingHorizontal="4"
+        paddingVertical="4"
         borderBottomColor="primaryBackground"
         borderBottomWidth={1}
+        backgroundColor="primaryBackground"
+        backgroundColorPressed="bg.primary-hover"
       >
         {loading ? (
           <Box
             width={40}
             height={40}
-            borderRadius="round"
-            backgroundColor="surface"
+            borderRadius="full"
+            backgroundColor="cardBackground"
           />
         ) : (
           <Box position="relative">
@@ -280,16 +320,16 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
               position="absolute"
               top={-6}
               right={-8}
-              backgroundColor="bottomSheetBg"
+              backgroundColor="cardBackground"
               justifyContent="center"
-              borderRadius="round"
+              borderRadius="full"
               alignItems="center"
               height={22}
               width={22}
             >
               <Box
-                backgroundColor="orange500"
-                borderRadius="round"
+                backgroundColor="orange.500"
+                borderRadius="full"
                 justifyContent="center"
                 alignItems="center"
                 height={18}
@@ -305,36 +345,38 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
           </Box>
         )}
 
-        <Box flex={1} paddingHorizontal="m">
+        <Box flex={1} paddingHorizontal="4">
           {loadingAmount ? (
-            <Box flex={1} paddingHorizontal="m">
-              <Box width={120} height={16} backgroundColor="surface" />
+            <Box flex={1} paddingHorizontal="4">
+              <Box width={120} height={16} backgroundColor="cardBackground" />
               <Box
                 width={70}
                 height={16}
-                marginTop="s"
-                backgroundColor="surface"
+                marginTop="2"
+                backgroundColor="cardBackground"
               />
             </Box>
           ) : (
             <Box>
               <Box flexDirection="row" alignItems="center">
                 <Text
-                  variant="body1"
+                  variant="textMdRegular"
                   color="primaryText"
                   maxFontSizeMultiplier={1.3}
                 >
                   {`${balanceToDisplay} `}
                 </Text>
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
                   {symbol} (Locked)
                 </Text>
               </Box>
-              <Text color="secondaryText">-</Text>
+              <Text variant="textSmRegular" color="secondaryText">
+                -
+              </Text>
             </Box>
           )}
         </Box>

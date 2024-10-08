@@ -1,20 +1,17 @@
-import ContactIcon from '@assets/images/account.svg'
+import AddressIcon from '@assets/images/addressIcon.svg'
 import Remove from '@assets/images/remove.svg'
-import AccountIcon from '@components/AccountIcon'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import MemoInput from '@components/MemoInput'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Address from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import { useColors, useOpacity } from '@theme/themeHooks'
-import { shortenAddress } from '@utils/formatting'
+import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
@@ -66,7 +63,7 @@ type Props = {
   showAmount?: boolean
 } & Payment
 
-const ITEM_HEIGHT = 80
+const ITEM_HEIGHT = 74
 
 const PaymentItem = ({
   account,
@@ -92,7 +89,6 @@ const PaymentItem = ({
   ...boxProps
 }: Props) => {
   const decimals = useMint(mint)?.info?.decimals
-  const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
@@ -194,53 +190,50 @@ const PaymentItem = ({
     [account, address],
   )
 
-  const AddressIcon = useCallback(() => {
-    if (address && Address.isValid(address)) {
-      return <AccountIcon address={address} size={40} />
-    }
-    return <ContactIcon color={secondaryText} />
-  }, [address, secondaryText])
-
   return (
-    <Box
-      marginHorizontal="l"
-      backgroundColor="secondary"
-      borderRadius="xl"
-      overflow="hidden"
-      {...boxProps}
-    >
-      {hasError && <BackgroundFill backgroundColor="error" opacity={0.2} />}
+    <Box marginHorizontal="6" overflow="hidden" {...boxProps}>
+      {hasError && <BackgroundFill backgroundColor="error.500" opacity={0.2} />}
       <Box flexDirection="row">
         {isDeepLink && address ? (
           <Text
-            variant="subtitle2"
+            variant="textLgMedium"
             color="primaryText"
             flex={1}
-            paddingHorizontal="l"
-            paddingVertical="m"
+            paddingHorizontal="6"
+            paddingVertical="4"
           >
             {ellipsizeAddress(address)}
           </Text>
         ) : (
-          <Box flex={1} minHeight={ITEM_HEIGHT} justifyContent="center">
+          <Box
+            marginTop="md"
+            flex={1}
+            minHeight={ITEM_HEIGHT}
+            justifyContent="center"
+            backgroundColor="cardBackground"
+            borderTopStartRadius="2xl"
+            borderTopEndRadius="2xl"
+          >
             <Box>
               <Box
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <Box flex={1} marginTop="s">
-                  <Text />
-                  <Box position="absolute" top={10} left={0}>
-                    <Text marginStart="m" variant="body3" color="secondaryText">
-                      {account?.alias && account?.alias.split('.').length === 2
-                        ? address && shortenAddress(address, 6)
-                        : account?.alias}
+                <Box flex={1}>
+                  <Box position="absolute" top={0} left={0}>
+                    <Text
+                      marginStart="4"
+                      variant="textMdSemibold"
+                      color="primaryText"
+                    >
+                      {t('payment.to')}
                     </Text>
                   </Box>
                   <TextInput
-                    variant="transparent"
+                    variant="transparentSmall"
                     flex={1}
+                    marginTop="3"
                     textInputProps={{
                       placeholder: t('payment.enterAddress'),
                       value: rawAddress || address,
@@ -255,13 +248,18 @@ const PaymentItem = ({
                     }}
                   />
                   {isProgramAccount ? (
-                    <Text ml="m" mb="s" color="orange500">
+                    <Text
+                      variant="textMdSemibold"
+                      ml="4"
+                      mb="2"
+                      color="orange.500"
+                    >
                       {t('payment.programOwnedWarning')}
                     </Text>
                   ) : null}
                 </Box>
                 <TouchableOpacityBox
-                  marginEnd="l"
+                  marginEnd="6"
                   onPress={handleAddressBookSelected}
                 >
                   <AddressIcon />
@@ -273,7 +271,7 @@ const PaymentItem = ({
         {!!onRemove && (
           <TouchableOpacityBox
             justifyContent="center"
-            paddingRight="m"
+            paddingRight="4"
             onPress={handleRemove}
           >
             <Remove color={secondaryText} />
@@ -281,10 +279,15 @@ const PaymentItem = ({
         )}
       </Box>
 
-      <Box height={1} backgroundColor="primaryBackground" />
-
       {showAmount && (
-        <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
+        <Box
+          flexDirection="row"
+          minHeight={ITEM_HEIGHT}
+          backgroundColor="cardBackground"
+          borderBottomStartRadius="2xl"
+          borderBottomEndRadius="2xl"
+          marginTop="0.5"
+        >
           {!amount || amount?.isZero() ? (
             <>
               <TouchableOpacityBox
@@ -294,11 +297,10 @@ const PaymentItem = ({
               >
                 {!loadingMeta && (
                   <Text
-                    color="secondaryText"
-                    padding="m"
-                    variant="subtitle2"
-                    fontWeight="100"
-                    style={colorStyle}
+                    color="primaryText"
+                    opacity={0.3}
+                    padding="4"
+                    variant="textLgSemibold"
                   >
                     {t('payment.enterAmount', {
                       ticker: symbol,
@@ -314,14 +316,14 @@ const PaymentItem = ({
               flex={1}
             >
               <Text
-                paddingHorizontal="m"
-                variant="subtitle2"
+                paddingHorizontal="4"
+                variant="textLgMedium"
                 color="primaryText"
               >
                 {humanReadable(amount, decimals)}
               </Text>
               {fee && (
-                <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
+                <Text paddingHorizontal="4" variant="textXsRegular">
                   {t('payment.fee', {
                     value: humanReadable(feeAsTokens, 8),
                   })}
@@ -332,19 +334,22 @@ const PaymentItem = ({
 
           <TouchableOpacityBox
             onPress={handleToggleMax}
-            backgroundColor={max ? 'white' : 'transparent'}
-            borderColor={max ? 'transparent' : 'surface'}
+            backgroundColor={max ? 'base.white' : 'transparent'}
+            borderColor={max ? 'transparent' : 'cardBackground'}
             borderWidth={1.5}
-            borderRadius="m"
+            borderRadius="2xl"
             paddingVertical="xs"
-            paddingHorizontal="ms"
-            marginRight="ms"
-            marginVertical="l"
+            paddingHorizontal="3"
+            marginRight="3"
+            marginVertical="6"
             justifyContent="center"
             disabled
             visible={false} // TODO: Enable once we move to solana (will need some rework)
           >
-            <Text variant="body3" color={max ? 'black900' : 'secondaryText'}>
+            <Text
+              variant="textXsRegular"
+              color={max ? 'base.black' : 'secondaryText'}
+            >
               {toUpper(t('payment.max'))}
             </Text>
           </TouchableOpacityBox>

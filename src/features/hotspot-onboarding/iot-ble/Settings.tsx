@@ -116,7 +116,7 @@ const Settings = () => {
       )
 
       if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
-        collectNav.push('CollectablesTopTab')
+        collectNav.push('HotspotList')
       }
 
       collectNav.push('HotspotMapScreen', {
@@ -151,21 +151,21 @@ const Settings = () => {
             navigation.push(item.route, {})
           }}
           alignItems="center"
-          padding="l"
+          padding="6"
           flexDirection="row"
           borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="grey900"
+          borderColor="gray.900"
           borderBottomWidth={1}
         >
           <FabButton
             icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
+            backgroundColor="secondaryBackground"
+            iconColor="base.white"
             size={30}
             disabled
-            marginRight="ms"
+            marginRight="3"
           />
-          <Text color="secondaryText" variant="subtitle1">
+          <Text color="secondaryText" variant="textXlMedium">
             {item.name}
           </Text>
         </TouchableOpacityBox>
@@ -190,18 +190,18 @@ const Settings = () => {
         keyExtractor={keyExtractor}
       />
       {error && (
-        <Text variant="body1Medium" color="red500">
+        <Text variant="textMdMedium" color="error.500">
           {t('hotspotOnboarding.settings.hotspotError')}
           {errorMessage}
         </Text>
       )}
       {!loadingInfo && !loadingKta && (
         <ButtonPressable
-          marginTop="l"
-          borderRadius="round"
-          titleColor="black"
+          marginTop="6"
+          borderRadius="full"
+          titleColor="base.black"
           borderColor="transparent"
-          backgroundColor="white"
+          backgroundColor="base.white"
           disabled={loading || !!error || !address}
           title={iotInfo ? t('generic.done') : t('generic.next')}
           onPress={navNext}

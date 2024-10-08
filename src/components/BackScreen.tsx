@@ -6,7 +6,7 @@ import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { Color, Spacing, Theme } from '@theme/theme'
-import { useHitSlop } from '@theme/themeHooks'
+import { useColors, useHitSlop } from '@theme/themeHooks'
 import BackButton from './BackButton'
 import Box from './Box'
 import CloseButton from './CloseButton'
@@ -41,7 +41,7 @@ const BackScreen = ({
   edges,
   onClose,
   hideBack,
-  headerHorizontalPadding = 'lx',
+  headerHorizontalPadding = '7',
   onLayout,
   onHeaderLayout,
   title,
@@ -54,7 +54,8 @@ const BackScreen = ({
   ...rest
 }: Props) => {
   const navigation = useNavigation()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
+  const colors = useColors()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
 
   return (
@@ -76,21 +77,23 @@ const BackScreen = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Text variant="subtitle1">{title}</Text>
+            <Text variant="textXlMedium" color="primaryText">
+              {title}
+            </Text>
           </Box>
           {!hideBack && (
             <BackButton
-              marginHorizontal="n_ms"
-              paddingHorizontal="none"
+              marginHorizontal="-3"
+              paddingHorizontal="0"
               onPress={navigation.goBack}
             />
           )}
           <Box flex={1} />
           {onClose && (
             <CloseButton
-              paddingHorizontal="lx"
+              paddingHorizontal="7"
               hitSlop={hitSlop}
-              marginEnd="n_lx"
+              marginEnd="-7"
               onPress={onClose}
             />
           )}
@@ -98,16 +101,16 @@ const BackScreen = ({
           {TrailingIcon && (
             <TouchableOpacityBox
               hitSlop={hitSlop}
-              marginEnd="n_lx"
-              paddingHorizontal="lx"
+              marginEnd="-7"
+              paddingHorizontal="7"
               onPress={onTrailingIconPress}
               justifyContent="center"
             >
-              <TrailingIcon />
+              <TrailingIcon color={colors.primaryText} />
             </TouchableOpacityBox>
           )}
         </Box>
-        <Box padding={padding || 'lx'} flex={flex || 1} {...rest}>
+        <Box padding={padding || '7'} flex={flex || 1} {...rest}>
           {children}
         </Box>
       </SafeAreaBox>

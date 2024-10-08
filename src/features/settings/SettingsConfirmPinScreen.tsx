@@ -2,6 +2,8 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import ConfirmPinView from '@components/ConfirmPinView'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp, SettingsStackParamList } from './settingsTypes'
 
@@ -86,4 +88,12 @@ const SettingsConfirmPinScreen = () => {
   )
 }
 
-export default SettingsConfirmPinScreen
+const SettingsConfirmPinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <SettingsConfirmPinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default SettingsConfirmPinScreenWrapper

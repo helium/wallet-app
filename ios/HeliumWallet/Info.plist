@@ -44,12 +44,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
-  <dict>
-    <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
-    <true/>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>ec2-35-82-2-45.us-west-2.compute.amazonaws.com</key>
@@ -79,12 +78,8 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
-		<string>DMSans-Bold.ttf</string>
-		<string>DMSans-BoldItalic.ttf</string>
-		<string>DMSans-Italic.ttf</string>
-		<string>DMSans-Medium.ttf</string>
-		<string>DMSans-MediumItalic.ttf</string>
-		<string>DMSans-Regular.ttf</string>
+		<string>Figtree-Italic-VariableFont_wght.ttf</string>
+		<string>Figtree-VariableFont_wght.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

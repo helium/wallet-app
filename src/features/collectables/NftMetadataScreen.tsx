@@ -34,18 +34,18 @@ const NftMetadataScreen = () => {
       traitValue: boolean | string | string[] | undefined,
     ) => (
       <Box
-        padding="s"
-        paddingHorizontal="m"
-        borderRadius="round"
+        padding="2"
+        paddingHorizontal="4"
+        borderRadius="full"
         backgroundColor="transparent10"
-        margin="s"
+        margin="2"
         key={`${traitType}+${stringify(traitValue)}`}
       >
-        <Text variant="subtitle4" color="grey600">
+        <Text variant="textSmMedium" color="gray.600">
           {traitType?.toUpperCase() ||
             t('collectablesScreen.collectables.noTraitType')}
         </Text>
-        <Text variant="body1" color="white" textAlign="center">
+        <Text variant="textMdRegular" color="primaryText" textAlign="center">
           {stringify(traitValue) ||
             t('collectablesScreen.collectables.noTraitValue')}
         </Text>
@@ -57,17 +57,17 @@ const NftMetadataScreen = () => {
   return (
     <BackScreen
       title={t('collectablesScreen.metadata')}
-      padding="none"
-      headerTopMargin="l"
+      padding="0"
+      headerTopMargin="6"
     >
       <ScrollView>
         <SafeAreaBox alignItems="center" flex={1}>
-          <Text variant="subtitle1" color="grey600" marginBottom="l">
+          <Text variant="textXlMedium" color="gray.600" marginBottom="6">
             {t('collectablesScreen.collectables.properties')}
           </Text>
           <Box
             flexDirection="row"
-            paddingHorizontal="m"
+            paddingHorizontal="4"
             flexWrap="wrap"
             justifyContent="center"
           >
