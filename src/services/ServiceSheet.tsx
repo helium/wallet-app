@@ -74,7 +74,7 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
 
     setCurrentService('')
     bottomSheetRef.current?.close()
-  }, [])
+  }, [bottomSheetRef, currentService])
 
   return (
     <ReAnimatedBox entering={FadeInSlow} flex={1} style={{ paddingTop: top }}>
@@ -124,7 +124,7 @@ const Header = ({
   const wallet = useCurrentWallet()
 
   const titleAsWord = useMemo(() => {
-    if (!title) return ''
+    if (!title || title === '') return ''
     return title?.charAt(0).toUpperCase() + title?.slice(1)
   }, [title])
 
