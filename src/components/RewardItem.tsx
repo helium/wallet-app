@@ -28,6 +28,8 @@ const RewardItem = ({ mint, amount, hasMore, ...rest }: RewardItemProps) => {
 
   return (
     <Box
+      backgroundColor="cardBackground"
+      borderRadius="2xl"
       paddingVertical="6"
       paddingHorizontal="8"
       justifyContent="center"
@@ -36,10 +38,6 @@ const RewardItem = ({ mint, amount, hasMore, ...rest }: RewardItemProps) => {
       width={167}
       {...rest}
     >
-      <Box position="absolute" top={0} right={0} bottom={0} left={0}>
-        <RewardBG />
-      </Box>
-
       <TokenIcon img={json?.image} size={70} />
 
       <Text

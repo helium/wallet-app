@@ -71,7 +71,6 @@ const HotspotMapScreen = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
-  const [backEdges] = [['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [hotspot, setHotspot] = useState(route.params?.hotspot)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
@@ -398,7 +397,7 @@ const HotspotMapScreen = () => {
   )
 
   return (
-    <SafeAreaBox edges={backEdges} flex={1}>
+    <Box flex={1}>
       <Box
         flexGrow={1}
         justifyContent="center"
@@ -464,8 +463,8 @@ const HotspotMapScreen = () => {
           alignItems="center"
           position="absolute"
           width="100%"
-          paddingTop="6"
-          paddingLeft="3"
+          paddingTop="10"
+          paddingLeft="5"
           top={0}
         >
           <TouchableOpacityBox
@@ -474,8 +473,12 @@ const HotspotMapScreen = () => {
             alignItems="center"
             onPress={() => navigation.goBack()}
           >
-            <BackArrow color={colors.primaryText} />
-            <Text variant="textMdMedium" color="primaryText" marginLeft="3">
+            <BackArrow color={colors.primaryBackground} />
+            <Text
+              variant="textMdMedium"
+              color="primaryBackground"
+              marginLeft="3"
+            >
               {t('collectablesScreen.hotspots.map.back')}
             </Text>
           </TouchableOpacityBox>
@@ -581,7 +584,7 @@ const HotspotMapScreen = () => {
           </BottomSheetScrollView>
         </BottomSheetModal>
       </BottomSheetModalProvider>
-    </SafeAreaBox>
+    </Box>
   )
 }
 

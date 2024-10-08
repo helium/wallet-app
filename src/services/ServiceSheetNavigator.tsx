@@ -6,7 +6,7 @@ import AccountsService from './AccountsService'
 import GovernanceService from './GovernanceService'
 import BrowserService from './BrowserService'
 import { useMemo } from 'react'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useBorderRadii, useColors, useSpacing } from '@theme/themeHooks'
 import SettingsService from './SettingsService'
 
 const ServiceSheetStack = createNativeStackNavigator()
@@ -14,6 +14,7 @@ const ServiceSheetStack = createNativeStackNavigator()
 const ServiceSheetNavigator = () => {
   const spacing = useSpacing()
   const colors = useColors()
+  const borderRadii = useBorderRadii()
 
   const navigatorScreenOptions = useMemo(
     () => ({
@@ -21,8 +22,8 @@ const ServiceSheetNavigator = () => {
       animation: 'none',
       contentStyle: {
         backgroundColor: colors['fg.white'],
-        borderTopLeftRadius: spacing[15],
-        borderTopRightRadius: spacing[15],
+        borderTopLeftRadius: borderRadii['4xl'] + borderRadii['4xl'],
+        borderTopRightRadius: borderRadii['4xl'] + borderRadii['4xl'],
         overflow: 'hidden',
       },
     }),
