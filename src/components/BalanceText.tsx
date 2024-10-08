@@ -16,7 +16,7 @@ const BalanceText = ({
   const integral = useMemo(() => Math.floor(amount || 0), [amount])
 
   const fractional = useMemo(() => {
-    if (amount === undefined) return '-'
+    if (amount === undefined) return ''
     const decimal = amount - integral
     const fraction = decimal.toString().split('.')[1]
     // Fraction with max length of decimals
@@ -31,10 +31,12 @@ const BalanceText = ({
           paddingTop="2"
           adjustsFontSizeToFit
           variant="displayLgBold"
-          color="primaryText"
+          color={
+            amount === undefined ? 'text.placeholder-subtle' : 'primaryText'
+          }
           {...rest}
         >
-          {`$${integral.toLocaleString(locale)}`}
+          {amount === undefined ? '-' : `$${integral.toLocaleString(locale)}`}
         </Text>
         <Text
           adjustsFontSizeToFit

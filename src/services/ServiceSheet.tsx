@@ -25,7 +25,7 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const bottomSheetRef = useRef<BottomSheet>(null)
   const serviceNav = useNavigation<ServiceSheetNavigationProp>()
-  const [currentService, setCurrentService] = useState('')
+  const [currentService, setCurrentService] = useState('wallet')
   const { top } = useSafeAreaInsets()
 
   const onRoute = useCallback((value: string) => {
@@ -90,7 +90,7 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
         walletsSelected={currentService === 'wallets'}
         onClose={onCloseSheet}
       />
-      <HeliumBottomSheet ref={bottomSheetRef} onClose={onCloseSheet}>
+      <HeliumBottomSheet ref={bottomSheetRef} onClose={onCloseSheet} index={0}>
         <ThemeProvider theme={lightTheme}>
           <Box
             flex={1}
