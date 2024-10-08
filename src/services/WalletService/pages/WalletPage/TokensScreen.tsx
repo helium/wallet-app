@@ -174,7 +174,7 @@ const TokensScreen = () => {
         </Box>
       </Box>
     )
-  }, [options, selectedIndex, onItemSelected])
+  }, [options, selectedIndex, onItemSelected, total])
 
   const contentContainerStyle = useMemo(
     () => ({
