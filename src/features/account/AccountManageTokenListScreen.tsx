@@ -19,7 +19,6 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
-import { Edge } from 'react-native-safe-area-context'
 import BackScreen from '@components/BackScreen'
 import ScrollBox from '@components/ScrollBox'
 import { BoxProps } from '@shopify/restyle'
@@ -167,7 +166,6 @@ const AccountManageTokenListScreen: React.FC = () => {
   const keyExtractor = useCallback((item: string) => {
     return item
   }, [])
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
   return (
     <ScrollBox>

@@ -88,7 +88,7 @@ const AccountActionBar = ({
         }
       }
     },
-    [pin?.status, requirePinForPayment, navigation, mint],
+    [pin?.status, requirePinForPayment, navigation, mint, walletPageNav],
   )
 
   const fabMargin = useMemo(() => {

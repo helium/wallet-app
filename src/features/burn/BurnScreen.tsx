@@ -366,7 +366,6 @@ const BurnScreen = () => {
               subtitle={t('burn.choooseSubDAO')}
               address={currentAccount?.address}
               onPress={handleTokenTypeSelected}
-              showBubbleArrow
               marginHorizontal="6"
               mint={mint}
             />

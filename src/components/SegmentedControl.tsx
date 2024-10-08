@@ -1,21 +1,7 @@
-import React, {
-  FC,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent, LayoutChangeEvent } from 'react-native'
-import {
-  runOnJS,
-  useAnimatedStyle,
-  withDelay,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated'
-import { Svg, SvgProps } from 'react-native-svg'
+import { SvgProps } from 'react-native-svg'
 import { useColors } from '@theme/themeHooks'
 import { Theme } from '../theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
@@ -41,9 +27,12 @@ const SegmentedItem = ({
 }) => {
   const { primaryBackground, ...colors } = useColors()
 
-  const onLayout = useCallback((e: LayoutChangeEvent) => {
-    onSetWidth(e.nativeEvent.layout.width)
-  }, [])
+  const onLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      onSetWidth(e.nativeEvent.layout.width)
+    },
+    [onSetWidth],
+  )
 
   return (
     <TouchableOpacityBox

@@ -26,7 +26,7 @@ const GovernanceStackScreen = () => {
       animationEnabled: false,
       cardStyle: { backgroundColor: colors.primaryBackground },
     }),
-    [],
+    [colors],
   )
 
   return (

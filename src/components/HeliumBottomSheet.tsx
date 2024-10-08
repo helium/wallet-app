@@ -1,5 +1,5 @@
+import React, { forwardRef, useMemo } from 'react'
 import BottomSheet, { BottomSheetProps } from '@gorhom/bottom-sheet'
-import { BottomSheetMethods } from '@gorhom/bottom-sheet/lib/typescript/types'
 import {
   useBackgroundStyle,
   useBorderRadii,
@@ -7,7 +7,6 @@ import {
   useSpacing,
 } from '@theme/themeHooks'
 import { wh } from '@utils/layout'
-import { ReactNode, Ref, forwardRef, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'

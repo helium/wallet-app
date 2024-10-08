@@ -182,7 +182,7 @@ const AccountTokenScreen = () => {
         <ActivityIndicator animating={activityLoading} />
       </Box>
     )
-  }, [activityData, activityLoading, t])
+  }, [activityLoading, t])
 
   const actionBarProps = useMemo(() => {
     let options = {
@@ -268,7 +268,17 @@ const AccountTokenScreen = () => {
           )}
       </Box>
     )
-  }, [actionBarProps, hasAirdrop, isDevnet, json?.image, mint, symbol, t])
+  }, [
+    actionBarProps,
+    hasAirdrop,
+    isDevnet,
+    json?.image,
+    mint,
+    symbol,
+    t,
+    amount,
+    showModal,
+  ])
 
   return (
     <>

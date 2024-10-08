@@ -9,7 +9,6 @@ import { Select } from '@components/Select'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import React, { useEffect, useMemo, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Animated } from 'react-native'
 import { FadeIn } from 'react-native-reanimated'
 import { useColors } from '@theme/themeHooks'
@@ -27,7 +26,6 @@ export const GovernanceWrapper: React.FC<
     header?: React.ReactElement
   }>
 > = ({ selectedTab, children, header }) => {
-  const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { loading, hasUnseenProposals } = useGovernance()

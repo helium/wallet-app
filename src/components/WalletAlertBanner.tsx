@@ -26,7 +26,7 @@ const WalletAlertBanner = () => {
     if ((amount || 0) < MIN_BALANCE_THRESHOLD) {
       return t('walletAlertBanner.insufficentSol')
     }
-  }, [amount])
+  }, [amount, t])
 
   const onAnimationComplete = useCallback((isFinished) => {
     if (isFinished) {

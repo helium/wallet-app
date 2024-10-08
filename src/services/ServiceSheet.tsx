@@ -28,33 +28,36 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
   const [currentService, setCurrentService] = useState('wallet')
   const { top } = useSafeAreaInsets()
 
-  const onRoute = useCallback((value: string) => {
-    setIsExpanded(false)
-    bottomSheetRef.current?.expand()
-    setCurrentService(value)
+  const onRoute = useCallback(
+    (value: string) => {
+      setIsExpanded(false)
+      bottomSheetRef.current?.expand()
+      setCurrentService(value)
 
-    switch (value) {
-      default:
-      case 'wallet':
-        serviceNav.replace('WalletService')
-        break
-      case 'hotspots':
-        serviceNav.replace('HotspotService')
-        break
-      case 'governance':
-        serviceNav.replace('GovernanceService')
-        break
-      case 'browser':
-        serviceNav.replace('BrowserService')
-        break
-      case 'notifications':
-        serviceNav.replace('NotificationsService')
-        break
-      case 'settings':
-        serviceNav.replace('SettingsService')
-        break
-    }
-  }, [])
+      switch (value) {
+        default:
+        case 'wallet':
+          serviceNav.replace('WalletService')
+          break
+        case 'hotspots':
+          serviceNav.replace('HotspotService')
+          break
+        case 'governance':
+          serviceNav.replace('GovernanceService')
+          break
+        case 'browser':
+          serviceNav.replace('BrowserService')
+          break
+        case 'notifications':
+          serviceNav.replace('NotificationsService')
+          break
+        case 'settings':
+          serviceNav.replace('SettingsService')
+          break
+      }
+    },
+    [serviceNav],
+  )
 
   const onDrawerPress = useCallback(() => {
     setIsExpanded((s) => !s)

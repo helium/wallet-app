@@ -43,11 +43,14 @@ export const NetworkTabs: React.FC = () => {
     [],
   )
 
-  const onItemSelected = useCallback((index: number) => {
-    setSelectedIndex(index)
-    const pk = new PublicKey(options[index].value)
-    navigation.setParams({ mint: pk.toBase58() })
-  }, [])
+  const onItemSelected = useCallback(
+    (index: number) => {
+      setSelectedIndex(index)
+      const pk = new PublicKey(options[index].value)
+      navigation.setParams({ mint: pk.toBase58() })
+    },
+    [navigation, options],
+  )
 
   return (
     <Box flexDirection="row" justifyContent="center">

@@ -11,9 +11,7 @@ import {
 import useBackHandler from '@hooks/useBackHandler'
 import { PublicKey } from '@solana/web3.js'
 import React, {
-  ReactNode,
   Ref,
-  createContext,
   forwardRef,
   useCallback,
   useImperativeHandle,
@@ -41,7 +39,7 @@ export type TransactionDetailSelectorRef = {
 }
 
 const TransactionDetailSelector = forwardRef(
-  ({ ...rest }: Props, ref: Ref<TransactionDetailSelectorRef>) => {
+  (_: Props, ref: Ref<TransactionDetailSelectorRef>) => {
     useImperativeHandle(ref, () => ({ showTransaction }))
 
     const { t } = useTranslation()

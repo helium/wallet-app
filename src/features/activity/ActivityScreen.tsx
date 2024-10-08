@@ -4,14 +4,12 @@ import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import CircleLoader from '@components/CircleLoader'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { NavBarHeight } from '@components/ServiceNavBar'
@@ -19,7 +17,7 @@ import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
 
 const ActivityScreen = () => {
-  const { transactions, loading, fetchingMore, fetchMore, refresh } =
+  const { transactions, loading, fetchingMore, refresh } =
     useEnrichedTransactions()
   const { t } = useTranslation()
   const spacing = useSpacing()

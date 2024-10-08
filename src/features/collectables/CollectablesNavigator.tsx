@@ -3,7 +3,6 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import React, { memo, useMemo } from 'react'
-import { use } from 'i18next'
 import { useColors } from '@theme/themeHooks'
 import AddNewContact from '../addressBook/AddNewContact'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
@@ -35,7 +34,7 @@ const CollectablesStackScreen = () => {
       headerShown: false,
       cardStyle: { backgroundColor: colors.primaryBackground },
     }),
-    [],
+    [colors],
   )
 
   return (

@@ -101,7 +101,7 @@ const YourWalletsPage = () => {
         Toast.show(e.message || e.toString())
       }
     },
-    [navigation, currentAccount],
+    [navigation, currentAccount, accounts, onboardingData, setOnboardingData],
   )
 
   const filteredAccounts = useMemo(() => {
@@ -116,9 +116,9 @@ const YourWalletsPage = () => {
       }, {} as { [key: string]: CSAccount[] })
 
     const { none, ...rest } = grouped
-    const ret = Object.values(rest).map((accounts, index) => ({
+    const ret = Object.values(rest).map((accs, index) => ({
       title: `Seed Phrase ${index + 1}`,
-      data: accounts,
+      data: accs,
     }))
     if (none) {
       ret.push({
@@ -159,15 +159,16 @@ const YourWalletsPage = () => {
   )
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({
       item,
       index,
       section,
-      ...rest
     }: {
+      // eslint-disable-next-line react/no-unused-prop-types
       index: number
+      // eslint-disable-next-line react/no-unused-prop-types
       item: CSAccount
+      // eslint-disable-next-line react/no-unused-prop-types
       section: {
         title: string
         data: CSAccount[]
@@ -219,7 +220,7 @@ const YourWalletsPage = () => {
         </TouchableContainer>
       )
     },
-    [currentAccount?.address, handleAccountChange],
+    [currentAccount?.address, handleAccountChange, colors],
   )
 
   const handleNetTypeChange = useCallback(
@@ -241,7 +242,7 @@ const YourWalletsPage = () => {
   const handleAddNew = useCallback(() => {
     handleNetTypeChange(NetTypes.MAINNET)
     navigation.navigate('AddNewAccountNavigator')
-  }, [handleNetTypeChange, handleAddSub])
+  }, [handleNetTypeChange, handleAddSub, navigation])
 
   const renderSectionHeader = useCallback(
     ({ section: { title, data } }) => {
@@ -267,7 +268,7 @@ const YourWalletsPage = () => {
         </Box>
       )
     },
-    [filteredAccounts],
+    [filteredAccounts, currentAccount],
   )
 
   const renderSectionFooter = useCallback(
@@ -305,7 +306,7 @@ const YourWalletsPage = () => {
         </TouchableOpacityBox>
       </Box>
     )
-  }, [])
+  }, [bottom, handleAddNew, setFooterHeight])
 
   return (
     <ReAnimatedBox entering={FadeIn} flex={1}>

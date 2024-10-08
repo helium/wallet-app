@@ -15,7 +15,6 @@ import { SendDetails } from '../../utils/linking'
 import PaymentSummary from './PaymentSummary'
 
 type Props = {
-  handleCancel: () => void
   totalBalance: BN
   feeTokenBalance?: BN
   onSubmit: (opts?: { txn: PaymentV2; txnJson: string }) => void
@@ -26,7 +25,6 @@ type Props = {
 }
 
 const PaymentCard = ({
-  handleCancel,
   totalBalance,
   feeTokenBalance,
   onSubmit,
