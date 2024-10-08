@@ -195,6 +195,7 @@ const HotspotList = () => {
           onPress={handleNavigateToHotspot}
           key={item.id}
           marginBottom="2"
+          marginHorizontal={'4'}
         />
       )
     },

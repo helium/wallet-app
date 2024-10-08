@@ -41,10 +41,14 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
           flexDirection="row"
           alignItems="center"
         >
-          <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+          <Box flexDirection="row" alignItems="center" gap="4">
             {json?.image ? <TokenIcon img={json.image} size={30} /> : null}
-            <Text variant="textMdRegular">{symbol}</Text>
-            <Text variant="textXsRegular">{ellipsizeAddress(payee)}</Text>
+            <Text color="primaryText" variant="textMdSemibold">
+              {symbol}
+            </Text>
+            <Text color="secondaryText" variant="textXsRegular">
+              {ellipsizeAddress(payee)}
+            </Text>
           </Box>
           <Box flexDirection="row" alignItems="center">
             <Pill

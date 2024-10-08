@@ -9,6 +9,8 @@ import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   mint: PublicKey
@@ -28,8 +30,14 @@ const PaymentSuccess = ({
   mint,
 }: Props) => {
   const { t } = useTranslation()
+  const { bottom } = useSafeAreaInsets()
+
   return (
-    <Box flex={1} justifyContent="flex-end">
+    <Box
+      flex={1}
+      justifyContent="flex-end"
+      backgroundColor={'primaryBackground'}
+    >
       <Box padding="6" paddingBottom="0">
         <SuccessIcon />
       </Box>
@@ -41,8 +49,11 @@ const PaymentSuccess = ({
         borderTopRightRadius="4xl"
         padding="6"
         overflow="hidden"
+        style={{
+          paddingBottom: NavBarHeight + bottom,
+        }}
+        backgroundColor="cardBackground"
       >
-        <BackgroundFill backgroundColor="secondaryBackground" opacity={0.4} />
         <PaymentSummary
           mint={mint}
           totalBalance={totalBalance}
@@ -54,7 +65,7 @@ const PaymentSuccess = ({
           marginTop="12"
           marginBottom="4"
           onPress={onSuccess}
-          backgroundColor="blue.light-500"
+          backgroundColor="primaryText"
           paddingVertical="4"
           borderRadius="full"
           alignItems="center"

@@ -12,7 +12,6 @@ import {
   ImageBox,
   ReAnimatedBlurBox,
   ReAnimatedBox,
-  SafeAreaBox,
   SearchInput,
   Text,
   TextInput,
@@ -53,26 +52,27 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useDebounce } from 'use-debounce'
-import { useColors, useCreateOpacity } from '@theme/themeHooks'
+import { useColors, useCreateOpacity, useSpacing } from '@theme/themeHooks'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
 const AssertLocationScreen = () => {
   const { t } = useTranslation()
+  const { bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
   const route = useRoute<Route>()
   const { backgroundStyle } = useCreateOpacity()
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
   const { info: iotInfoAcc } = useIotInfo(entityKey)
   const { info: mobileInfoAcc } = useMobileInfo(entityKey)
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const mapRef = useRef<MapLibreGL.MapView>(null)
   const cameraRef = useRef<MapLibreGL.Camera>(null)
   const { showOKAlert } = useAlert()
@@ -411,7 +411,7 @@ const AssertLocationScreen = () => {
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <SafeAreaBox edges={backEdges} flex={1}>
+      <Box flex={1}>
         <Box
           flexGrow={1}
           justifyContent="center"
@@ -507,8 +507,8 @@ const AssertLocationScreen = () => {
             alignItems="center"
             position="absolute"
             width="100%"
-            paddingTop="6"
-            paddingLeft="3"
+            paddingTop="6xl"
+            paddingLeft="5"
             top={0}
           >
             <TouchableOpacityBox
@@ -517,8 +517,12 @@ const AssertLocationScreen = () => {
               alignItems="center"
               onPress={() => navigation.goBack()}
             >
-              <BackArrow color="primaryText" />
-              <Text variant="textMdMedium" color="primaryText" marginLeft="3">
+              <BackArrow color={colors.primaryBackground} />
+              <Text
+                variant="textMdMedium"
+                color="primaryBackground"
+                marginLeft="3"
+              >
                 Back
               </Text>
             </TouchableOpacityBox>
@@ -701,7 +705,7 @@ const AssertLocationScreen = () => {
             </Box>
             <TouchableOpacityBox
               width="100%"
-              backgroundColor="primaryBackground"
+              backgroundColor="primaryText"
               borderRadius="full"
               paddingVertical="5"
               disabled={disabled}
@@ -709,14 +713,17 @@ const AssertLocationScreen = () => {
               alignItems="center"
               justifyContent="center"
               onPress={handleAssertLocationPress}
+              style={{
+                marginBottom: bottom + spacing['0.5'],
+              }}
             >
               {debouncedDisabled || asserting ? (
-                <CircleLoader loaderSize={19} color="primaryText" />
+                <CircleLoader loaderSize={19} color="primaryBackground" />
               ) : (
                 <Text
                   variant="textLgMedium"
                   marginHorizontal="xs"
-                  color="primaryText"
+                  color="primaryBackground"
                 >
                   {t('assertLocationScreen.title')}
                 </Text>
@@ -801,17 +808,17 @@ const AssertLocationScreen = () => {
                     </Box>
                   </Box>
                 </KeyboardAvoidingView>
-                <Box padding="3">
+                <Box padding="3" marginBottom={'6xl'}>
                   <ButtonPressable
                     flexGrow={1}
                     borderRadius="full"
-                    backgroundColor="base.white"
+                    backgroundColor="primaryText"
                     backgroundColorOpacityPressed={0.7}
                     backgroundColorDisabled="base.white"
                     backgroundColorDisabledOpacity={0.0}
                     titleColorDisabled="gray.600"
                     title={asserting ? '' : t('assertLocationScreen.title')}
-                    titleColor="base.black"
+                    titleColor="primaryBackground"
                     onPress={handleAssertLocationPress}
                   />
                 </Box>
@@ -819,7 +826,7 @@ const AssertLocationScreen = () => {
             </TouchableWithoutFeedback>
           </ReAnimatedBlurBox>
         ) : undefined}
-      </SafeAreaBox>
+      </Box>
     </ReAnimatedBox>
   )
 }

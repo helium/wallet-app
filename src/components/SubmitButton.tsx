@@ -15,11 +15,11 @@ type Props = {
 } & BoxProps<Theme>
 
 const SubmitButton = ({
-  color = 'blue.light-500',
+  color = 'primaryBackground',
   onSubmit,
   title,
   disabled = false,
-  backgroundColor = 'secondaryText',
+  backgroundColor = 'primaryText',
   ...boxProps
 }: Props) => {
   const { secondaryText, ...rest } = useColors()
