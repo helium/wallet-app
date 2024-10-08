@@ -43,6 +43,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import ScrollBox from '@components/ScrollBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -184,161 +185,168 @@ const TransferCollectableScreen = () => {
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <BackScreen
-        padding="0"
-        title={t('collectablesScreen.transferCollectable')}
-        backgroundImageUri={backgroundImageUri || ''}
-        edges={backEdges}
-        TrailingIcon={InfoIcon}
-        onTrailingIconPress={handleInfoPress}
-        headerTopMargin="6"
-      >
-        <KeyboardAvoidingView
-          style={{
-            flex: 1,
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-          behavior="padding"
-          enabled
-          keyboardVerticalOffset={100}
+      <ScrollBox>
+        <BackScreen
+          padding="0"
+          title={t('collectablesScreen.transferCollectable')}
+          backgroundImageUri={backgroundImageUri || ''}
+          edges={backEdges}
+          TrailingIcon={InfoIcon}
+          onTrailingIconPress={handleInfoPress}
+          headerTopMargin="6"
         >
-          <ScrollView>
-            <SafeAreaBox
-              edges={safeEdges}
-              backgroundColor="transparent"
-              flex={1}
-              padding="4"
-              alignItems="center"
-            >
-              {metadata && (
-                <Box
-                  shadowColor="base.black"
-                  shadowOpacity={0.4}
-                  shadowOffset={{ width: 0, height: 10 }}
-                  shadowRadius={10}
-                  elevation={12}
+          <KeyboardAvoidingView
+            style={{
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+            behavior="padding"
+            enabled
+            keyboardVerticalOffset={100}
+          >
+            <ScrollView>
+              <SafeAreaBox
+                edges={safeEdges}
+                backgroundColor="transparent"
+                flex={1}
+                padding="4"
+                alignItems="center"
+              >
+                {metadata && (
+                  <Box
+                    shadowColor="base.black"
+                    shadowOpacity={0.4}
+                    shadowOffset={{ width: 0, height: 10 }}
+                    shadowRadius={10}
+                    elevation={12}
+                  >
+                    <ImageBox
+                      marginTop="6"
+                      backgroundColor={
+                        metadata.image ? 'base.black' : 'bg.tertiary'
+                      }
+                      height={COLLECTABLE_HEIGHT - spacing.xl * 5}
+                      width={COLLECTABLE_HEIGHT - spacing.xl * 5}
+                      source={{
+                        uri: metadata?.image,
+                        cache: 'force-cache',
+                      }}
+                      borderRadius="4xl"
+                    />
+                  </Box>
+                )}
+                <Text
+                  marginTop="6"
+                  marginBottom="2"
+                  marginHorizontal="6"
+                  textAlign="center"
+                  variant="displayMdMedium"
                 >
-                  <ImageBox
-                    marginTop="6"
-                    backgroundColor={
-                      metadata.image ? 'base.black' : 'bg.tertiary'
-                    }
-                    height={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                    width={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                    source={{
-                      uri: metadata?.image,
-                      cache: 'force-cache',
+                  {metadata.name}
+                </Text>
+                <Text variant="textXsMedium" color="gray.600" marginBottom="8">
+                  {metadata.description ||
+                    t('collectablesScreen.collectables.noDescription')}
+                </Text>
+                <Box
+                  backgroundColor="cardBackground"
+                  borderRadius="xl"
+                  marginBottom="2"
+                >
+                  <TextInput
+                    floatingLabel={`${t(
+                      'collectablesScreen.transferTo',
+                    )} ${recipientName}`}
+                    variant="thickBlur"
+                    height={80}
+                    width="100%"
+                    textColor={'primaryText'}
+                    fontSize={15}
+                    TrailingIcon={Menu}
+                    onTrailingIconPress={handleAddressBookSelected}
+                    textInputProps={{
+                      placeholder: t('generic.solanaAddress'),
+                      placeholderTextColor: colors.secondaryText,
+                      autoCorrect: false,
+                      autoComplete: 'off',
+                      onChangeText: handleEditAddress,
+                      onEndEditing: handleAddressBlur,
+                      value: recipient,
                     }}
-                    borderRadius="4xl"
                   />
                 </Box>
-              )}
-              <Text
-                marginTop="6"
-                marginBottom="2"
-                marginHorizontal="6"
-                textAlign="center"
-                variant="displayMdMedium"
-              >
-                {metadata.name}
-              </Text>
-              <Text variant="textXsMedium" color="gray.600" marginBottom="8">
-                {metadata.description ||
-                  t('collectablesScreen.collectables.noDescription')}
-              </Text>
-              <TextInput
-                floatingLabel={`${t(
-                  'collectablesScreen.transferTo',
-                )} ${recipientName}`}
-                variant="thickBlur"
-                marginBottom="2"
-                height={80}
-                width="100%"
-                textColor="base.white"
-                fontSize={15}
-                TrailingIcon={Menu}
-                onTrailingIconPress={handleAddressBookSelected}
-                textInputProps={{
-                  placeholder: t('generic.solanaAddress'),
-                  placeholderTextColor: 'base.white',
-                  autoCorrect: false,
-                  autoComplete: 'off',
-                  onChangeText: handleEditAddress,
-                  onEndEditing: handleAddressBlur,
-                  value: recipient,
-                }}
-              />
-              {solFee ? (
-                <TextTransform
-                  marginHorizontal="4"
-                  variant="textXsMedium"
-                  marginBottom="2"
-                  color="primaryText"
-                  i18nKey="collectablesScreen.transferFee"
-                  values={{ amount: solFee }}
-                />
-              ) : (
+                {solFee ? (
+                  <TextTransform
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    marginBottom="2"
+                    color="primaryText"
+                    i18nKey="collectablesScreen.transferFee"
+                    values={{ amount: solFee }}
+                  />
+                ) : (
+                  <Text
+                    marginHorizontal="4"
+                    variant="textXsMedium"
+                    marginBottom="2"
+                    color="secondaryText"
+                  >
+                    {t('generic.calculatingTransactionFee')}
+                  </Text>
+                )}
                 <Text
+                  opacity={
+                    hasError || hasInsufficientBalance || networkError ? 100 : 0
+                  }
                   marginHorizontal="4"
                   variant="textXsMedium"
-                  marginBottom="2"
-                  color="secondaryText"
+                  marginBottom="6"
+                  color="error.500"
                 >
-                  {t('generic.calculatingTransactionFee')}
+                  {showError}
                 </Text>
-              )}
-              <Text
-                opacity={
-                  hasError || hasInsufficientBalance || networkError ? 100 : 0
-                }
-                marginHorizontal="4"
-                variant="textXsMedium"
-                marginBottom="6"
-                color="error.500"
-              >
-                {showError}
-              </Text>
-              <Box flexDirection="row" marginTop="4" marginHorizontal="8">
-                <ButtonPressable
-                  height={65}
-                  flexGrow={1}
-                  borderRadius="full"
-                  backgroundColor="base.white"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="bg.tertiary"
-                  backgroundColorDisabledOpacity={0.5}
-                  titleColorDisabled="secondaryText"
-                  title={transferring ? '' : t('collectablesScreen.transfer')}
-                  disabled={!solAddressIsValid(recipient) || transferring}
-                  titleColor="base.black"
-                  onPress={handleTransfer}
-                  TrailingComponent={
-                    transferring ? (
-                      <CircleLoader loaderSize={20} color="primaryText" />
-                    ) : (
-                      <ArrowRight
-                        width={16}
-                        height={15}
-                        color={
-                          !solAddressIsValid(recipient)
-                            ? colors['gray.600']
-                            : colors['base.black']
-                        }
-                      />
-                    )
-                  }
-                />
-              </Box>
-            </SafeAreaBox>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </BackScreen>
-      <AddressBookSelector
-        ref={addressBookRef}
-        onContactSelected={handleContactSelected}
-        hideCurrentAccount
-      />
+                <Box flexDirection="row" marginTop="4">
+                  <ButtonPressable
+                    height={65}
+                    flexGrow={1}
+                    borderRadius="full"
+                    backgroundColor="primaryText"
+                    backgroundColorOpacityPressed={0.7}
+                    backgroundColorDisabled="bg.tertiary"
+                    backgroundColorDisabledOpacity={0.5}
+                    titleColorDisabled="text.disabled"
+                    title={transferring ? '' : t('collectablesScreen.transfer')}
+                    disabled={!solAddressIsValid(recipient) || transferring}
+                    titleColor="primaryBackground"
+                    onPress={handleTransfer}
+                    TrailingComponent={
+                      transferring ? (
+                        <CircleLoader loaderSize={20} color="primaryText" />
+                      ) : (
+                        <ArrowRight
+                          width={16}
+                          height={15}
+                          color={
+                            !solAddressIsValid(recipient)
+                              ? colors['gray.600']
+                              : colors['base.black']
+                          }
+                        />
+                      )
+                    }
+                  />
+                </Box>
+              </SafeAreaBox>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </BackScreen>
+        <AddressBookSelector
+          ref={addressBookRef}
+          onContactSelected={handleContactSelected}
+          hideCurrentAccount
+        />
+      </ScrollBox>
     </ReAnimatedBox>
   )
 }

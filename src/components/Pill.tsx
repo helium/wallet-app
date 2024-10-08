@@ -30,8 +30,8 @@ export const Pill = memo(
   }) => {
     const colorDefs = {
       blue: {
-        border: 'blueBorder',
-        background: 'blue950',
+        border: 'blue.300',
+        background: 'blue.950',
         text: 'blue.500',
       },
       green: {
@@ -75,14 +75,19 @@ export const Pill = memo(
         flexDirection="row"
         alignItems="center"
         borderRadius="4xl"
-        padding="xs"
+        paddingHorizontal="2.5"
+        paddingVertical="1"
         borderWidth={2}
         borderColor={colorDefs[color].border as any}
         backgroundColor={colorDefs[color].background as any}
       >
         {Icon ? (
           <Box>
-            <Icon color={colorDefs[color].text as any} {...iconProps} />
+            <Icon
+              color={colorDefs[color].text as any}
+              width={20}
+              {...iconProps}
+            />
           </Box>
         ) : null}
 

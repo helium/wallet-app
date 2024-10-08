@@ -166,9 +166,9 @@ const ClaimRewardsScreen = () => {
           )}
           <Box flexGrow={1} />
           <ButtonPressable
-            marginBottom="6"
+            marginBottom="6xl"
             borderRadius="full"
-            backgroundColor="base.white"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.7}
             backgroundColorDisabled="bg.tertiary"
             backgroundColorDisabledOpacity={0.5}
@@ -176,7 +176,7 @@ const ClaimRewardsScreen = () => {
             title={
               !redeeming ? t('collectablesScreen.hotspots.claimRewards') : ''
             }
-            titleColor="base.black"
+            titleColor="primaryBackground"
             marginHorizontal="6"
             onPress={onClaimRewards}
             disabled={addAllToAccountDisabled || redeeming}

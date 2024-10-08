@@ -93,7 +93,7 @@ const PaymentCard = ({
           </>
         ) : (
           <SubmitButton
-            marginTop="6"
+            marginVertical="6"
             title={t('payment.sendButton', {
               ticker: symbol,
             })}

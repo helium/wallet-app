@@ -63,6 +63,7 @@ import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
 import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
 import { NavBarHeight } from '@components/ServiceNavBar'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 
 type LinkedPayment = {
   amount?: string
@@ -127,7 +128,7 @@ const PaymentScreen = () => {
   const { anchorProvider, connection } = useSolana()
 
   const appDispatch = useAppDispatch()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
 
@@ -256,7 +257,7 @@ const PaymentScreen = () => {
   )
 
   const handleQrScan = useCallback(() => {
-    navigation.navigate('PaymentQrScanner')
+    // navigation.navigate('PaymentQrScanner')
   }, [navigation])
 
   const canAddPayee = useMemo(() => {
@@ -785,7 +786,7 @@ const PaymentScreen = () => {
         payments={paymentState.payments}
         feeTokenBalance={paymentState.networkFee}
         onRetry={handleSubmit}
-        onSuccess={navigation.popToTop}
+        onSuccess={navigation.goBack}
         actionTitle={t('payment.backToAccounts')}
       />
     </KeyboardAwareScrollView>

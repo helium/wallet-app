@@ -530,7 +530,9 @@ const HNTKeyboardSelector = forwardRef(
                     }
                     disabled={!allowOverdraft ? !hasSufficientBalance : false}
                   >
-                    <Text variant="textLgMedium">{t('generic.confirm')}</Text>
+                    <Text color="primaryBackground" variant="textLgMedium">
+                      {t('generic.confirm')}
+                    </Text>
                   </TouchableOpacityBox>
                 </Box>
               </SafeAreaBox>

@@ -151,9 +151,9 @@ const AntennaSetupScreen = () => {
                     }}
                   />
                   <Box
-                    height={1}
+                    height={2}
                     width="100%"
-                    backgroundColor="gray.true-700"
+                    backgroundColor="primaryBackground"
                   />
                   <TextInput
                     variant="transparent"
@@ -187,13 +187,10 @@ const AntennaSetupScreen = () => {
                   height={BUTTON_HEIGHT}
                   flexGrow={1}
                   borderRadius="full"
-                  backgroundColor="base.white"
+                  backgroundColor="primaryText"
                   backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="base.white"
-                  backgroundColorDisabledOpacity={0.0}
-                  titleColorDisabled="gray.600"
                   title={updating ? '' : t('antennaSetupScreen.submit')}
-                  titleColor="base.black"
+                  titleColor="primaryBackground"
                   onPress={handleUpdateElevGain}
                   TrailingComponent={
                     updating ? (

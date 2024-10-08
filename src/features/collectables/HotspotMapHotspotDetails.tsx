@@ -44,6 +44,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
+import SafeAreaBox from '@components/SafeAreaBox'
 
 const IotMapDetails = ({
   maker,
@@ -447,8 +448,12 @@ export const HotspotMapHotspotDetails = ({
   })
 
   return (
-    <>
-      <Box padding="3" borderBottomColor="base.black" borderBottomWidth={1}>
+    <SafeAreaBox edges={['bottom']}>
+      <Box
+        padding="3"
+        borderBottomColor="primaryBackground"
+        borderBottomWidth={2}
+      >
         {isLoading && (
           <Box
             flexDirection="row"
@@ -568,15 +573,15 @@ export const HotspotMapHotspotDetails = ({
           {selectExplorerOpen ? (
             <>
               <Box
-                borderBottomColor="base.black"
+                borderBottomColor="primaryBackground"
                 padding="4"
-                borderBottomWidth={1}
+                borderBottomWidth={2}
               >
-                <Text variant="textXlMedium">
+                <Text color="primaryText" variant="textXlMedium">
                   {t('activityScreen.selectExplorer')}
                 </Text>
 
-                <Text variant="textSmRegular">
+                <Text color="primaryText" variant="textSmRegular">
                   {t('activityScreen.selectExplorerSubtitle')}
                 </Text>
               </Box>
@@ -584,6 +589,7 @@ export const HotspotMapHotspotDetails = ({
               {available?.map((a) => {
                 return (
                   <ListItem
+                    paddingLeft={'4'}
                     key={a.value}
                     title={a.label}
                     Icon={
@@ -608,8 +614,8 @@ export const HotspotMapHotspotDetails = ({
             <>
               <TouchableOpacityBox
                 paddingVertical="4"
-                borderBottomColor="base.black"
-                borderBottomWidth={1}
+                borderBottomColor="primaryBackground"
+                borderBottomWidth={2}
                 onPress={hasRewards ? handleClaimRewards : undefined}
                 disabled={!hasRewards}
               >
@@ -685,8 +691,8 @@ export const HotspotMapHotspotDetails = ({
               </TouchableOpacityBox>
               <TouchableOpacityBox
                 paddingVertical="4"
-                borderBottomColor="base.black"
-                borderBottomWidth={1}
+                borderBottomColor="primaryBackground"
+                borderBottomWidth={2}
                 onPress={handleRecipientChange}
               >
                 <Box
@@ -761,6 +767,6 @@ export const HotspotMapHotspotDetails = ({
           )}
         </Box>
       )}
-    </>
+    </SafeAreaBox>
   )
 }

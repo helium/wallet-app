@@ -80,7 +80,7 @@ export const WalletSignBottomSheetCompact = ({
       )}
 
       {!(insufficientFunds || insufficientRentExempt) && (
-        <Text variant="textLgMedium">
+        <Text color="primaryText" variant="textLgSemibold" marginTop={'6xl'}>
           {header || t('transactions.signTxn')}
         </Text>
       )}
@@ -110,7 +110,9 @@ export const WalletSignBottomSheetCompact = ({
       {renderer && renderer()}
       <Box marginTop="4" flexDirection="row">
         <Box flexGrow={1}>
-          <Text variant="textMdBold">{t('browserScreen.totalNetworkFee')}</Text>
+          <Text color="primaryText" variant="textMdBold">
+            {t('browserScreen.totalNetworkFee')}
+          </Text>
         </Box>
         <Text variant="textMdMedium" color="blue.500">
           {`~${estimatedTotalSolByLamports} SOL`}
