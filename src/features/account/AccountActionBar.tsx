@@ -6,9 +6,9 @@ import { PublicKey } from '@solana/web3.js'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 import { WalletServiceNavigationProp } from '@services/WalletService'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 export type Action =
   | 'send'

@@ -11,7 +11,7 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { toUpper } from 'lodash'
@@ -206,13 +206,13 @@ const PaymentItem = ({
           </Text>
         ) : (
           <Box
-            marginTop={'md'}
+            marginTop="md"
             flex={1}
             minHeight={ITEM_HEIGHT}
             justifyContent="center"
-            backgroundColor={'cardBackground'}
-            borderTopStartRadius={'2xl'}
-            borderTopEndRadius={'2xl'}
+            backgroundColor="cardBackground"
+            borderTopStartRadius="2xl"
+            borderTopEndRadius="2xl"
           >
             <Box>
               <Box
@@ -233,7 +233,7 @@ const PaymentItem = ({
                   <TextInput
                     variant="transparentSmall"
                     flex={1}
-                    marginTop={'3'}
+                    marginTop="3"
                     textInputProps={{
                       placeholder: t('payment.enterAddress'),
                       value: rawAddress || address,
@@ -283,10 +283,10 @@ const PaymentItem = ({
         <Box
           flexDirection="row"
           minHeight={ITEM_HEIGHT}
-          backgroundColor={'cardBackground'}
-          borderBottomStartRadius={'2xl'}
-          borderBottomEndRadius={'2xl'}
-          marginTop={'0.5'}
+          backgroundColor="cardBackground"
+          borderBottomStartRadius="2xl"
+          borderBottomEndRadius="2xl"
+          marginTop="0.5"
         >
           {!amount || amount?.isZero() ? (
             <>

@@ -19,6 +19,9 @@ import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
+import ScrollBox from '@components/ScrollBox'
+import { WalletStackParamList } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Activity } from '../../types/activity'
@@ -31,9 +34,6 @@ import TransactionDetailSelector, {
 } from './TransactionDetail'
 import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
-import { FlatList } from 'react-native-gesture-handler'
-import ScrollBox from '@components/ScrollBox'
-import { WalletStackParamList } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
 
@@ -279,6 +279,8 @@ const AccountTokenScreen = () => {
             title={t('accountsScreen.title', {
               ticker: symbol,
             })}
+            edges={[]}
+            headerTopMargin="6xl"
           >
             <FlatList
               style={listStyle}

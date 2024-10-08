@@ -80,7 +80,7 @@ export const WalletSignBottomSheetCompact = ({
       )}
 
       {!(insufficientFunds || insufficientRentExempt) && (
-        <Text color="primaryText" variant="textLgSemibold" marginTop={'6xl'}>
+        <Text color="primaryText" variant="textLgSemibold" marginTop="6xl">
           {header || t('transactions.signTxn')}
         </Text>
       )}

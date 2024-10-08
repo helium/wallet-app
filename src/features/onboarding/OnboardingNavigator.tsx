@@ -4,14 +4,14 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import React, { memo, useMemo } from 'react'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import CreateImportAccountScreen from './CreateImportAccountScreen'
 import CreateAccountNavigator from './create/CreateAccountNavigator'
 import ImportAccountNavigator from './import/ImportAccountNavigator'
 import ImportPrivateKey from './import/ImportPrivateKey'
 import { OnboardingStackParamList } from './onboardingTypes'
-import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
 
 const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
 

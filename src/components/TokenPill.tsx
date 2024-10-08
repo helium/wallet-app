@@ -104,7 +104,7 @@ export const TokenPill = memo(
               {hasTicker && (
                 <Text
                   variant="textSmSemibold"
-                  color={'primaryText'}
+                  color="primaryText"
                   flexGrow={1}
                   textAlign="center"
                 >

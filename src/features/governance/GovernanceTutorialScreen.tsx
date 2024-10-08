@@ -1,11 +1,10 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Carousel, Pagination } from 'react-native-snap-carousel'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextTransform from '@components/TextTransform'
 import { useAppStorage } from '@storage/AppStorageProvider'
@@ -63,7 +62,7 @@ export const GovernanceTutorialScreen = () => {
   const colors = useColors()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { setVoteTutorialCompleted } = useAppStorage()
-  const edges = useMemo(() => ['top'] as Edge[], [])
+  const { bottom } = useSafeAreaInsets()
 
   const handleVotePressed = useCallback(() => {
     setVoteTutorialCompleted()
@@ -87,9 +86,10 @@ export const GovernanceTutorialScreen = () => {
             source={item.image}
             resizeMode="contain"
             alignSelf="center"
+            width={150}
           />
           <Text
-            variant="displayMdRegular"
+            variant="displayMdSemibold"
             textAlign="center"
             marginTop={item.imageVerticalOffset}
             color="primaryText"
@@ -97,7 +97,7 @@ export const GovernanceTutorialScreen = () => {
             {t(item.titleKey)}
           </Text>
           <TextTransform
-            variant="textMdBold"
+            variant="textMdRegular"
             textAlign="center"
             color="secondaryText"
             marginTop="4"
@@ -115,13 +115,13 @@ export const GovernanceTutorialScreen = () => {
       height: 6,
       borderRadius: 3,
       marginHorizontal: spacing['0.5'],
-      backgroundColor: colors['base.white'],
+      backgroundColor: colors.primaryText,
     }),
     [colors, spacing],
   )
 
   return (
-    <SafeAreaBox flex={1} edges={edges}>
+    <Box flex={1}>
       <Box flexGrow={1} justifyContent="center" paddingTop="6">
         <Carousel
           ref={carouselRef}
@@ -142,12 +142,17 @@ export const GovernanceTutorialScreen = () => {
             inactiveDotScale={1}
           />
 
-          <Box flexDirection="row" marginHorizontal="7" marginVertical="4">
+          <Box
+            flexDirection="row"
+            marginHorizontal="7"
+            style={{
+              marginBottom: bottom + spacing['0.5'],
+            }}
+          >
             <ButtonPressable
               flex={1}
               fontSize={16}
               borderRadius="full"
-              borderWidth={2}
               title={t('gov.tutorial.goToVote')}
               titleColor="primaryBackground"
               backgroundColor="primaryText"
@@ -160,7 +165,7 @@ export const GovernanceTutorialScreen = () => {
           </Box>
         </Box>
       </Box>
-    </SafeAreaBox>
+    </Box>
   )
 }
 

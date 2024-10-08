@@ -2,10 +2,10 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import ConfirmPinView from '@components/ConfirmPinView'
-import { useAppStorage } from '../../storage/AppStorageProvider'
-import { SettingsNavigationProp, SettingsStackParamList } from './settingsTypes'
 import { ThemeProvider } from '@shopify/restyle'
 import { darkTheme } from '@theme/theme'
+import { useAppStorage } from '../../storage/AppStorageProvider'
+import { SettingsNavigationProp, SettingsStackParamList } from './settingsTypes'
 
 type Route = RouteProp<SettingsStackParamList, 'SettingsConfirmPin'>
 

@@ -21,15 +21,15 @@ import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { accountNetType } from '@utils/accountUtils'
 import { ResolvedPath } from '@hooks/useDerivationAccounts'
+import { AccountsServiceStackParamList } from '@services/AccountsService'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { HomeStackParamList } from '../home/homeTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { useOnboarding } from './OnboardingProvider'
 
-type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
+type Route = RouteProp<AccountsServiceStackParamList, 'AccountAssignScreen'>
 
 const AccountAssignScreen = () => {
   const route = useRoute<Route>()
@@ -147,7 +147,7 @@ const AccountAssignScreen = () => {
       if (hasAccounts) {
         rootNav.reset({
           index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
+          routes: [{ name: 'ServiceSheetNavigator' }],
         })
         reset()
       } else {
@@ -212,7 +212,7 @@ const AccountAssignScreen = () => {
               fontSize={24}
               marginLeft="4"
               marginRight="8"
-              variant={'transparentSmall'}
+              variant="transparentSmall"
               textInputProps={{
                 placeholder: t('accountAssign.AccountNamePlaceholder'),
                 autoCorrect: false,

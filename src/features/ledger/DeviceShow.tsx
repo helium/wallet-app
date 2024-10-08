@@ -13,6 +13,7 @@ import { useColors, useSpacing } from '@theme/themeHooks'
 import BackButton from '@components/BackButton'
 import { CSAccountVersion, CSAccounts } from '@storage/cloudStorage'
 import useLedger, { LedgerAccount } from '@hooks/useLedger'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import {
   LedgerNavigatorNavigationProp,
   LedgerNavigatorStackParamList,
@@ -22,7 +23,6 @@ import {
   MAX_ACCOUNTS,
 } from '../../storage/AccountStorageProvider'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
-import { HomeNavigationProp } from '../home/homeTypes'
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceShow'>
 
@@ -33,7 +33,7 @@ type SectionData = {
   }
 }
 const DeviceShow = () => {
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<WalletNavigationProp>()
   const navigation = useNavigation<LedgerNavigatorNavigationProp>()
   const route = useRoute<Route>()
   const { ledgerDevice } = route.params
@@ -296,7 +296,7 @@ const DeviceShow = () => {
   }, [accountsToAdd, ledgerDevice, navigation, upsertAccounts])
 
   const handleClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
+    homeNav.navigate('TokensScreen')
   }, [homeNav])
 
   const onCheckboxToggled = useCallback(

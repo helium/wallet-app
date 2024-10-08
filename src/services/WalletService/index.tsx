@@ -1,24 +1,33 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import Wallet from '@assets/images/wallet.svg'
 import Receive from '@assets/images/receive.svg'
 import Send from '@assets/images/send.svg'
 import Swap from '@assets/images/swap.svg'
 import Transactions from '@assets/images/transactionsTabIcon.svg'
+import ServiceSheetPage, {
+  ServiceNavBarOption,
+} from '@components/ServiceSheetPage'
+import { StackNavigationProp } from '@react-navigation/stack'
 import WalletPage from './pages/WalletPage'
 import SendPage from './pages/SendPage'
 import TransactionsPage from './pages/TransactionsPage'
 import SwapPage from './pages/SwapPage'
 import ReceivePage from './pages/ReceivePage'
-import ServiceSheetPage, {
-  ServiceNavBarOption,
-} from '@components/ServiceSheetPage'
-import { StackNavigationProp } from '@react-navigation/stack'
+
+export type PaymentRouteParam = {
+  payer?: string
+  payments?: string
+  payee?: string
+  amount?: string
+  memo?: string
+  netType?: string
+  defaultTokenType?: string
+  mint?: string
+}
 
 export type WalletServiceStackParamList = {
   Receive: undefined
-  Send: {
-    mint?: string
-  }
+  Send: undefined | PaymentRouteParam
   Swap: undefined
   Transactions: undefined
   Wallet: undefined

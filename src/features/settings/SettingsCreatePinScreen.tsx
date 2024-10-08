@@ -6,9 +6,9 @@ import PinDisplay from '@components/PinDisplay'
 import Keypad from '@components/Keypad'
 import Box from '@components/Box'
 import { KeypadInput } from '@components/KeypadButton'
-import { SettingsNavigationProp } from './settingsTypes'
 import { ThemeProvider } from '@shopify/restyle'
 import { darkTheme } from '@theme/theme'
+import { SettingsNavigationProp } from './settingsTypes'
 
 const SettingsCreatePinScreen = () => {
   const { t } = useTranslation()

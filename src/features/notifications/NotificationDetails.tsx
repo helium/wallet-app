@@ -2,7 +2,6 @@ import React, { memo, useEffect, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import Animated from 'react-native-reanimated'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import BackButton from '@components/BackButton'
@@ -67,11 +66,11 @@ const NotificationDetails = () => {
 
   return (
     <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
-      <SafeAreaBox
+      <Box
         backgroundColor="primaryBackground"
         flex={1}
         paddingHorizontal="6"
-        paddingTop="4"
+        paddingTop="6xl"
       >
         <BackButton
           onPress={navigation.goBack}
@@ -106,7 +105,7 @@ const NotificationDetails = () => {
             {parseMarkup(notification.body)}
           </Text>
         </Box>
-      </SafeAreaBox>
+      </Box>
     </Animated.View>
   )
 }

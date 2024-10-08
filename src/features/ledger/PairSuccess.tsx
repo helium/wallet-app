@@ -23,7 +23,7 @@ const PairSuccess = () => {
         index: 0,
         routes: [
           {
-            name: 'TabBarNavigator',
+            name: 'ServiceSheetNavigator',
           },
         ],
       })

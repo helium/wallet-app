@@ -17,7 +17,6 @@ import BigAdd from '@assets/images/bigAdd.svg'
 import BigClose from '@assets/images/bigClose.svg'
 import Checkmark from '@assets/images/checkmark.svg'
 import { useNavigation } from '@react-navigation/native'
-import { AccountsServiceNavigationProp } from '../accountServiceTypes'
 import {
   HELIUM_DERIVATION,
   keypairFromSeed,
@@ -30,6 +29,7 @@ import Toast from 'react-native-simple-toast'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useLayoutHeight from '@hooks/useLayoutHeight'
+import { AccountsServiceNavigationProp } from '../accountServiceTypes'
 
 const YourWalletsPage = () => {
   const { t } = useTranslation()
@@ -132,7 +132,7 @@ const YourWalletsPage = () => {
 
   const Header = useCallback(() => {
     return (
-      <Box padding={'4'} alignItems={'center'}>
+      <Box padding="4" alignItems="center">
         <Image
           source={require('@assets/images/accounts.png')}
           width={210.38}
@@ -141,7 +141,7 @@ const YourWalletsPage = () => {
         <Text
           variant="displayMdSemibold"
           color="primaryText"
-          textAlign={'center'}
+          textAlign="center"
         >
           {t('accountsService.title')}
         </Text>
@@ -190,11 +190,11 @@ const YourWalletsPage = () => {
       return (
         <TouchableContainer
           onPress={handleAccountChange(item)}
-          backgroundColorPressed={'bg.primary-hover'}
+          backgroundColorPressed="bg.primary-hover"
           flexDirection="row"
           alignItems="center"
           gap="2.5"
-          backgroundColor={'cardBackground'}
+          backgroundColor="cardBackground"
           padding="xl"
           borderTopStartRadius={borderTopStartRadius}
           borderTopEndRadius={borderTopEndRadius}
@@ -204,7 +204,7 @@ const YourWalletsPage = () => {
         >
           <AccountIcon address={accountAddress} size={25} />
           <Box flex={1}>
-            <Text variant="textLgSemibold" color={'primaryText'}>
+            <Text variant="textLgSemibold" color="primaryText">
               {item.alias}
             </Text>
             <Text variant="textSmRegular" color="primaryText" opacity={0.4}>
@@ -251,7 +251,7 @@ const YourWalletsPage = () => {
         <Box
           flexDirection="row"
           alignItems="center"
-          marginBottom={'2'}
+          marginBottom="2"
           marginTop={firstSection ? '0' : '5'}
         >
           <Text
@@ -288,9 +288,9 @@ const YourWalletsPage = () => {
   const Footer = useCallback(() => {
     return (
       <Box
-        flexDirection={'row'}
+        flexDirection="row"
         paddingHorizontal="5"
-        position={'absolute'}
+        position="absolute"
         bottom={bottom}
         left={0}
         right={0}
@@ -346,9 +346,9 @@ const SectionFooter: React.FC<{
           flexDirection="row"
           alignItems="center"
           marginTop="0.5"
-          backgroundColorPressed={'bg.primary-hover'}
-          borderBottomEndRadius={'2xl'}
-          borderBottomStartRadius={'2xl'}
+          backgroundColorPressed="bg.primary-hover"
+          borderBottomEndRadius="2xl"
+          borderBottomStartRadius="2xl"
           padding="xl"
         >
           <Text variant="textMdSemibold" color="secondaryText" flex={1}>

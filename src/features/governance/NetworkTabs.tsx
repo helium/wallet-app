@@ -5,12 +5,12 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Animated } from 'react-native'
-import { GovernanceNavigationProp } from './governanceTypes'
 import SegmentedControl from '@components/SegmentedControl'
 import { Mints } from '@utils/constants'
 import IOT from '@assets/images/iot.svg'
 import MOBILE from '@assets/images/mobile.svg'
 import HNT from '@assets/images/hnt.svg'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 export const NetworkTabs: React.FC = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()

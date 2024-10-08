@@ -1,6 +1,5 @@
 import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
-import { Asset, getAssetsByOwner, truthy } from '@helium/spl-utils'
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { Asset, truthy } from '@helium/spl-utils'
 import {
   AccountInfo,
   Keypair,

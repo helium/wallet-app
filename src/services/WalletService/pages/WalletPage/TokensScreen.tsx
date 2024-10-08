@@ -4,7 +4,6 @@ import React, { useCallback, useMemo, useState } from 'react'
 import Tokens from '@assets/images/tokens.svg'
 import Collectables from '@assets/images/collectables.svg'
 import BalanceText from '@components/BalanceText'
-import { getSortValue } from '@features/account/AccountTokenList'
 import { FlatList, RefreshControl } from 'react-native'
 import { useBalance } from '@utils/Balance'
 import { DC_MINT, truthy } from '@helium/spl-utils'
@@ -21,7 +20,6 @@ import WalletAlertBanner from '@components/WalletAlertBanner'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAsyncCallback } from 'react-async-hook'
-import { useSolana } from '@/solana/SolanaProvider'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useAppDispatch } from '@store/store'
 import { syncTokenAccounts } from '@store/slices/balancesSlice'
@@ -30,10 +28,12 @@ import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { times } from 'lodash'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
-import { WalletNavigationProp } from './WalletPageNavigator'
 import Config from '@assets/images/config.svg'
 import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
+import { getSortValue } from '@utils/solanaUtils'
+import { WalletNavigationProp } from './WalletPageNavigator'
+import { useSolana } from '@/solana/SolanaProvider'
 
 const TokensScreen = () => {
   const { anchorProvider, cluster } = useSolana()
@@ -161,15 +161,15 @@ const TokensScreen = () => {
 
   const renderHeader = useCallback(() => {
     return (
-      <Box marginBottom={'3xl'} marginTop="2">
+      <Box marginBottom="3xl" marginTop="2">
         <SegmentedControl
           options={options}
           selectedIndex={selectedIndex}
           onItemSelected={onItemSelected}
-          marginBottom={'2xl'}
+          marginBottom="2xl"
         />
         <WalletAlertBanner />
-        <Box alignItems={'center'} marginTop="3xl" width={'100%'}>
+        <Box alignItems="center" marginTop="3xl" width="100%">
           <BalanceText amount={total} decimals={2} />
         </Box>
       </Box>

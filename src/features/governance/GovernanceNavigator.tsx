@@ -5,6 +5,7 @@ import {
 } from '@react-navigation/stack'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import React, { memo, useMemo } from 'react'
+import { useColors } from '@theme/themeHooks'
 import AssignProxyScreen from './AssignProxyScreen'
 import GovernanceTutorialScreen from './GovernanceTutorialScreen'
 import PositionsScreen from './PositionsScreen'
@@ -13,7 +14,6 @@ import ProposalsScreen from './ProposalsScreen'
 import RevokeProxyScreen from './RevokeProxyScreen'
 import VoterScreen from './VoterScreen'
 import VotersScreen from './VotersScreen'
-import { useColors } from '@theme/themeHooks'
 
 const GovernanceStack = createStackNavigator()
 const GovernanceStackScreen = () => {

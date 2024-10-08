@@ -162,7 +162,7 @@ export default function VotersScreen() {
     <ScrollView>
       <GovernanceWrapper selectedTab="voters">
         <Text
-          variant={'textSmRegular'}
+          variant="textSmRegular"
           color="primaryText"
           opacity={0.5}
           fontSize={20}

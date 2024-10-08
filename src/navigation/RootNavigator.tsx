@@ -5,15 +5,15 @@ import {
 import { useColors } from '@theme/themeHooks'
 import React, { memo, useEffect, useMemo } from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
+import ServiceSheetNavigator from '@services/ServiceSheetNavigator'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 import DappLoginScreen from '../features/dappLogin/DappLoginScreen'
 import OnboardingNavigator from '../features/onboarding/OnboardingNavigator'
 import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
 import PaymentScreen from '../features/payment/PaymentScreen'
 import LinkWallet from '../features/txnDelegation/LinkWallet'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
-import ServiceSheetNavigator from '@services/ServiceSheetNavigator'
 import { RootStackParamList } from './rootTypes'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
 
@@ -27,7 +27,7 @@ const RootNavigator = () => {
   }, [colors.primaryBackground])
 
   const initialRouteName = useMemo(() => {
-    return currentAccount ? 'TabBarNavigator' : 'OnboardingNavigator'
+    return currentAccount ? 'ServiceSheetNavigator' : 'OnboardingNavigator'
   }, [currentAccount])
 
   return (
@@ -36,7 +36,7 @@ const RootNavigator = () => {
       initialRouteName={initialRouteName}
     >
       <RootStack.Screen
-        name="TabBarNavigator"
+        name="ServiceSheetNavigator"
         component={ServiceSheetNavigator}
         options={screenOptions}
       />

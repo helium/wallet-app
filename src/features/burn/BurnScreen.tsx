@@ -43,6 +43,10 @@ import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
+import {
+  WalletNavigationProp,
+  WalletStackParamList,
+} from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
@@ -60,14 +64,13 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
 
 const FEE = new BN(TXN_FEE_IN_SOL)
 
-type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
+type Route = RouteProp<WalletStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
   const route = useRoute<Route>()
   const {
@@ -78,7 +81,7 @@ const BurnScreen = () => {
     defaultAccountAddress,
   } = useAccountStorage()
   const { top } = useSafeAreaInsets()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('6')
@@ -298,13 +301,7 @@ const BurnScreen = () => {
   if (!amountBalance) return null
 
   return (
-    <HNTKeyboard
-      ref={hntKeyboardRef}
-      onConfirmBalance={onConfirmBalance}
-      mint={DC_MINT}
-      networkFee={FEE}
-      usePortal
-    >
+    <>
       <AccountSelector ref={accountSelectorRef}>
         <SafeAreaBox
           backgroundColor="secondaryBackground"
@@ -522,6 +519,12 @@ const BurnScreen = () => {
           actionTitle={t('generic.ok')}
         />
       </AccountSelector>
+      <HNTKeyboard
+        ref={hntKeyboardRef}
+        onConfirmBalance={onConfirmBalance}
+        mint={DC_MINT}
+        networkFee={FEE}
+      />
       <TokenSelector
         ref={tokenSelectorRef}
         onTokenSelected={onMintSelected}
@@ -532,7 +535,7 @@ const BurnScreen = () => {
         onContactSelected={handleContactSelected}
         hideCurrentAccount
       />
-    </HNTKeyboard>
+    </>
   )
 }
 

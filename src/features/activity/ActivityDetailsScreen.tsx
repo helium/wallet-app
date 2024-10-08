@@ -18,6 +18,8 @@ import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking, ScrollView } from 'react-native'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
@@ -79,6 +81,7 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
 }
 
 const ActivityDetailsScreen = () => {
+  const { bottom } = useSafeAreaInsets()
   const route = useRoute<Route>()
   const colors = useColors()
   const { t, i18n } = useTranslation()
@@ -350,7 +353,8 @@ const ActivityDetailsScreen = () => {
       <BackScreen
         title={t('activityScreen.activityDetails')}
         flex={1}
-        headerTopMargin="4"
+        edges={[]}
+        headerTopMargin="6xl"
       >
         <Box alignItems="center" justifyContent="center" flex={1}>
           <Box justifyContent="center" alignItems="center" marginTop="4">
@@ -383,7 +387,6 @@ const ActivityDetailsScreen = () => {
           <Box width="100%">
             <ButtonPressable
               marginTop="8"
-              marginBottom={'6xl'}
               marginHorizontal="4"
               borderRadius="full"
               backgroundColor="primaryBackground"
@@ -393,6 +396,9 @@ const ActivityDetailsScreen = () => {
               title={t('activityScreen.viewOnExplorer')}
               titleColor="base.black"
               onPress={handleOpenExplorer}
+              style={{
+                marginBottom: NavBarHeight + bottom,
+              }}
             />
           </Box>
         </Box>

@@ -1460,6 +1460,10 @@ export default {
         value: 'browser',
       },
       {
+        title: 'Notifications',
+        value: 'notifications',
+      },
+      {
         title: 'Settings',
         value: 'settings',
       },

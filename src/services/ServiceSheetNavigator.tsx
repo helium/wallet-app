@@ -1,13 +1,14 @@
+import React, { useMemo } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { useBorderRadii, useColors, useSpacing } from '@theme/themeHooks'
 import ServiceSheet from './ServiceSheet'
 import WalletService from './WalletService'
 import HotspotService from './HotspotService'
 import AccountsService from './AccountsService'
 import GovernanceService from './GovernanceService'
 import BrowserService from './BrowserService'
-import { useMemo } from 'react'
-import { useBorderRadii, useColors, useSpacing } from '@theme/themeHooks'
 import SettingsService from './SettingsService'
+import NotificationsService from './NotificationsService'
 
 const ServiceSheetStack = createNativeStackNavigator()
 
@@ -27,7 +28,7 @@ const ServiceSheetNavigator = () => {
         overflow: 'hidden',
       },
     }),
-    [spacing],
+    [spacing, borderRadii, colors],
   )
 
   return (
@@ -54,6 +55,10 @@ const ServiceSheetNavigator = () => {
         <ServiceSheetStack.Screen
           name="BrowserService"
           component={BrowserService}
+        />
+        <ServiceSheetStack.Screen
+          name="NotificationsService"
+          component={NotificationsService}
         />
         <ServiceSheetStack.Screen
           name="SettingsService"

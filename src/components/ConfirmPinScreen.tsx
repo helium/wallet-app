@@ -3,18 +3,16 @@ import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import * as LocalAuthentication from 'expo-local-authentication'
+import { WalletServiceNavigationProp } from '@services/WalletService'
+import { WalletStackParamList } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import ConfirmPinView from './ConfirmPinView'
-import {
-  HomeNavigationProp,
-  HomeStackParamList,
-} from '../features/home/homeTypes'
 import { useAppStorage } from '../storage/AppStorageProvider'
 
-type Route = RouteProp<HomeStackParamList, 'ConfirmPin'>
+type Route = RouteProp<WalletStackParamList, 'ConfirmPin'>
 
 const ConfirmPinScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletServiceNavigationProp>()
   const { params } = route
   const { t } = useTranslation()
   const { pin } = useAppStorage()
@@ -22,7 +20,7 @@ const ConfirmPinScreen = () => {
   const pinSuccess = useCallback(async () => {
     switch (params.action) {
       case 'payment':
-        navigation.replace('PaymentScreen')
+        navigation.navigate('Send', {})
         break
     }
   }, [navigation, params.action])

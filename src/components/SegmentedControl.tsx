@@ -15,11 +15,11 @@ import {
   withSpring,
   withTiming,
 } from 'react-native-reanimated'
+import { Svg, SvgProps } from 'react-native-svg'
+import { useColors } from '@theme/themeHooks'
 import { Theme } from '../theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { Svg, SvgProps } from 'react-native-svg'
-import { useColors } from '@theme/themeHooks'
 
 type Option = {
   value: string
@@ -49,12 +49,12 @@ const SegmentedItem = ({
     <TouchableOpacityBox
       paddingVertical="2"
       paddingHorizontal="3"
-      justifyContent={'center'}
-      alignItems={'center'}
+      justifyContent="center"
+      alignItems="center"
       onPress={onSelected}
       onLayout={onLayout}
       gap="sm"
-      flexDirection={'row'}
+      flexDirection="row"
     >
       {option.Icon && (
         <option.Icon
@@ -119,7 +119,7 @@ const SegmentedControl = ({
   )
 
   return (
-    <Box borderRadius="4xl" alignItems={'center'}>
+    <Box borderRadius="4xl" alignItems="center">
       <Box
         borderRadius="4xl"
         {...boxProps}

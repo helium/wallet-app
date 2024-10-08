@@ -178,7 +178,7 @@ export const SolanaConnection = (sessionKey: string) =>
     ),
     testnet: new WrappedConnection(clusterApiUrl('testnet')),
     'mainnet-beta': new WrappedConnection(
-      `https://rpc.helius.xyz/?api-key=6acaedc2-d08d-4239-81a9-43017204fb45`,
+      'https://rpc.helius.xyz/?api-key=6acaedc2-d08d-4239-81a9-43017204fb45',
     ),
   } as const)
 
@@ -2070,4 +2070,14 @@ export const createUpdateCompressionDestinationTxn = async (
     }),
     feePayer: payer,
   }
+}
+
+const sortValues: Record<string, number> = {
+  [HNT_MINT.toBase58()]: 10,
+  [IOT_MINT.toBase58()]: 9,
+  [MOBILE_MINT.toBase58()]: 8,
+  [DC_MINT.toBase58()]: 7,
+}
+export function getSortValue(mint: string): number {
+  return sortValues[mint] || 0
 }

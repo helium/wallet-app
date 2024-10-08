@@ -22,7 +22,7 @@ export const ProposalTags: React.FC<{
                   borderRadius="2xl"
                 >
                   <Text
-                    variant={'textSmRegular'}
+                    variant="textSmRegular"
                     fontSize={10}
                     color="secondaryText"
                   >

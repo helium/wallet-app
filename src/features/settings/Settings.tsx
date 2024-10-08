@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -27,14 +28,13 @@ import {
 import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
-import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
 import useAuthIntervals from './useAuthIntervals'
 
 const Settings = () => {
   const { t } = useTranslation()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<WalletNavigationProp>()
   const settingsNav = useNavigation<SettingsNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const spacing = useSpacing()

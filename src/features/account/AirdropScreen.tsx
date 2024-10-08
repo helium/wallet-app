@@ -24,19 +24,22 @@ import {
   withTiming,
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSolana } from '../../solana/SolanaProvider'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import ScrollBox from '@components/ScrollBox'
 import HNT from '@assets/images/hnt.svg'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { NavBarHeight } from '@components/ServiceNavBar'
+import {
+  WalletNavigationProp,
+  WalletStackParamList,
+} from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { useSolana } from '../../solana/SolanaProvider'
 
 const DROP_HEIGHT = 79
 
-type Route = RouteProp<HomeStackParamList, 'AirdropScreen'>
+type Route = RouteProp<WalletStackParamList, 'AirdropScreen'>
 
 const AirdropScreen = () => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const { bottom } = useSafeAreaInsets()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
@@ -168,7 +171,7 @@ const AirdropScreen = () => {
             alignItems="center"
             marginBottom="6"
           >
-            <Box justifyContent="center" alignItems="center" marginTop={'6xl'}>
+            <Box justifyContent="center" alignItems="center" marginTop="6xl">
               <Box>
                 <HNT width={160} height={160} color="red" />
               </Box>

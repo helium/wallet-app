@@ -36,7 +36,6 @@ const AntennaSetupScreen = () => {
   const entityKey = useEntityKey(collectable)
   const iotInfoAcc = useIotInfo(entityKey)
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [hasSetDefaults, setHasSetDefaults] = useState(false)
   const [gain, setGain] = useState<string>()
   const [elevation, setElevation] = useState<string>()
@@ -104,10 +103,10 @@ const AntennaSetupScreen = () => {
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
       <BackScreen
-        headerTopMargin="6"
+        headerTopMargin="6xl"
         padding="0"
         title={t('antennaSetupScreen.title')}
-        edges={backEdges}
+        edges={[]}
       >
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">

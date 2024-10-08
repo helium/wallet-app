@@ -142,7 +142,7 @@ const ImportPrivateKey = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else if (hasAccounts) {
-      navigation.replace('TabBarNavigator')
+      navigation.replace('ServiceSheetNavigator')
     } else {
       navigation.replace('OnboardingNavigator')
     }

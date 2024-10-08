@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Box, ReAnimatedBox, Text } from '.'
 import { useTranslation } from 'react-i18next'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -7,6 +6,7 @@ import { NATIVE_MINT } from '@solana/spl-token'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { runOnJS, useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import useLayoutHeight from '@hooks/useLayoutHeight'
+import { Box, ReAnimatedBox, Text } from '.'
 
 const WalletAlertBanner = () => {
   const { t } = useTranslation()
@@ -55,10 +55,10 @@ const WalletAlertBanner = () => {
   if (!body) return null
 
   return (
-    <ReAnimatedBox style={[animatedStyles]} marginHorizontal={'5'}>
+    <ReAnimatedBox style={[animatedStyles]} marginHorizontal="5">
       <Box
-        backgroundColor={'fg.quinary-400'}
-        borderRadius={'lg'}
+        backgroundColor="fg.quinary-400"
+        borderRadius="lg"
         padding="4"
         onLayout={isExpanded ? setHeight : undefined}
       >

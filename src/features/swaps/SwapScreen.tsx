@@ -1,6 +1,5 @@
 import Menu from '@assets/images/menu.svg'
 import Plus from '@assets/images/plus.svg'
-import Refresh from '@assets/images/refresh.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
@@ -69,12 +68,12 @@ import {
   Image,
 } from 'react-native'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
+import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
-import ScrollBox from '@components/ScrollBox'
-import { NavBarHeight } from '@components/ServiceNavBar'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
@@ -307,7 +306,7 @@ const SwapScreen = () => {
         borderRadius="2xl"
         marginHorizontal="4"
         opacity={disabled ? 0.3 : 1}
-        backgroundColor={'cardBackground'}
+        backgroundColor="cardBackground"
       >
         <TouchableOpacityBox
           flex={1}
@@ -339,7 +338,7 @@ const SwapScreen = () => {
               borderEndWidth={isLast ? 0 : 2}
               borderTopRightRadius={isLast ? '4xl' : 'none'}
               borderBottomRightRadius={isLast ? '4xl' : 'none'}
-              borderColor={'primaryBackground'}
+              borderColor="primaryBackground"
               backgroundColor={
                 !disabled && isActive ? 'secondaryBackground' : 'cardBackground'
               }
@@ -682,7 +681,7 @@ const SwapScreen = () => {
 
   return (
     <ScrollBox
-      backgroundColor={'primaryBackground'}
+      backgroundColor="primaryBackground"
       style={{
         paddingTop: spacing['6xl'],
       }}
@@ -692,7 +691,7 @@ const SwapScreen = () => {
           backgroundColor="primaryBackground"
           edges={edges}
           flex={1}
-          paddingHorizontal={'5'}
+          paddingHorizontal="5"
           style={{
             marginBottom: slippageInfoVisible
               ? 0
@@ -804,7 +803,7 @@ const SwapScreen = () => {
               backgroundColorDisabled="bg.tertiary"
               backgroundColorDisabledOpacity={0.5}
               titleColorDisabled="secondaryText"
-              titleColor={'primaryBackground'}
+              titleColor="primaryBackground"
               disabled={
                 hasInsufficientBalance ||
                 insufficientTokensToSwap ||

@@ -1,18 +1,36 @@
 import React, { useMemo } from 'react'
-import { ThemeProvider } from '@shopify/restyle'
-import { lightTheme } from '@theme/theme'
 import {
   StackNavigationOptions,
+  StackNavigationProp,
   createStackNavigator,
 } from '@react-navigation/stack'
-import YourWalletsPage from './pages/YourWalletsPage'
 import { useColors } from '@theme/themeHooks'
 import AddNewAccountNavigator from '@features/home/addNewAccount/AddNewAccountNavigator'
 import AccountAssignScreen from '@features/onboarding/AccountAssignScreen'
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { RouteAccount } from '@features/onboarding/create/createAccountNavTypes'
+import ImportAccountNavigator from '@features/onboarding/import/ImportAccountNavigator'
+import YourWalletsPage from './pages/YourWalletsPage'
 
-const AccountsServiceStack = createStackNavigator()
+export type AccountsServiceStackParamList = {
+  YourWalletsPage: undefined
+  AddNewAccountNavigator: undefined
+  AccountAssignScreen: undefined | RouteAccount
+  ReImportAccountNavigator:
+    | undefined
+    | {
+        screen: 'AccountImportScreen'
+        params: {
+          restoringAccount?: boolean
+          accountAddress?: string
+        }
+      }
+}
+
+export type AccountsServiceNavigationProp =
+  StackNavigationProp<AccountsServiceStackParamList>
+
+const AccountsServiceStack =
+  createStackNavigator<AccountsServiceStackParamList>()
 
 const AccountsService = () => {
   const colors = useColors()
@@ -37,6 +55,10 @@ const AccountsService = () => {
       <AccountsServiceStack.Screen
         name="AccountAssignScreen"
         component={AccountAssignScreen}
+      />
+      <AccountsServiceStack.Screen
+        name="ReImportAccountNavigator"
+        component={ImportAccountNavigator}
       />
     </AccountsServiceStack.Navigator>
   )

@@ -19,8 +19,8 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
-import { useOnboarding } from '../OnboardingProvider'
 import { AccountsServiceNavigationProp } from '@services/AccountsService/accountServiceTypes'
+import { useOnboarding } from '../OnboardingProvider'
 
 export default () => {
   const { t } = useTranslation()
@@ -229,7 +229,7 @@ export default () => {
         flex={1}
         backgroundColor="secondaryBackground"
         height="100%"
-        paddingHorizontal={'4'}
+        paddingHorizontal="4"
       >
         <Text
           variant="displayMdRegular"
@@ -245,7 +245,7 @@ export default () => {
           {t('accountImport.privateKey.selectAccountsBody')}
         </Text>
         {error && (
-          <Text variant="textSmRegular" color="error.500" textAlign={'center'}>
+          <Text variant="textSmRegular" color="error.500" textAlign="center">
             {error.message}
           </Text>
         )}

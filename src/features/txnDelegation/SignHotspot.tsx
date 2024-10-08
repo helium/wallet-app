@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import Config from 'react-native-config'
 import Toast from 'react-native-simple-toast'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import {
   RootNavigationProp,
   RootStackParamList,
@@ -31,7 +32,6 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { getKeypair } from '../../storage/secureStorage'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import * as Logger from '../../utils/logger'
-import { HomeNavigationProp } from '../home/homeTypes'
 import useSolTxns from './useSolTxns'
 
 const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
@@ -49,7 +49,7 @@ const SignHotspot = () => {
     configMsgStr: params.configurationMessage,
   })
 
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<ServiceSheetNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
@@ -86,7 +86,7 @@ const SignHotspot = () => {
       } else {
         rootNav.reset({
           index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
+          routes: [{ name: 'ServiceSheetNavigator' }],
         })
       }
     },

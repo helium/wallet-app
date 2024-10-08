@@ -159,7 +159,7 @@ const HeliumActionSheet = forwardRef(
             borderRadius="2xl"
           >
             <Text
-              variant={'textSmRegular'}
+              variant="textSmRegular"
               fontWeight="500"
               fontSize={18}
               color="secondaryText"

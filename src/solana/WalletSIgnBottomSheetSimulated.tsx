@@ -25,14 +25,14 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { useColors } from '@theme/themeHooks'
 import { useSolana } from './SolanaProvider'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { useColors } from '@theme/themeHooks'
 
 const WELL_KNOWN_CANOPY_URL =
   'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/merkles.json'
@@ -202,7 +202,7 @@ export const WalletSignBottomSheetSimulated = ({
     totalWarnings && !suppressWarnings && worstSeverity === 'critical'
 
   return (
-    <SafeAreaBox p="4" edges={['bottom']} marginTop={'6xl'}>
+    <SafeAreaBox p="4" edges={['bottom']} marginTop="6xl">
       {header || url ? (
         <Box marginBottom="2">
           {header ? (
@@ -520,9 +520,9 @@ export const WalletSignBottomSheetSimulated = ({
           <ButtonPressable
             width="48%"
             borderRadius="full"
-            backgroundColor={'secondaryBackground'}
+            backgroundColor="secondaryBackground"
             backgroundColorOpacityPressed={0.05}
-            backgroundColorPressed={'fg.secondary-hover'}
+            backgroundColorPressed="fg.secondary-hover"
             titleColor="primaryText"
             titleColorPressed="primaryText"
             title={t('browserScreen.cancel')}

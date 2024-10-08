@@ -2,9 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useIsFocused } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
 import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
@@ -15,7 +13,6 @@ import NotificationsList from './NotificationsList'
 
 const NotificationsScreen = () => {
   const { t } = useTranslation()
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { selectedNotification, updateAllNotifications } =
     useNotificationStorage()
   const isFocused = useIsFocused()
@@ -37,7 +34,7 @@ const NotificationsScreen = () => {
         <Text
           textAlign="center"
           variant="textXlRegular"
-          marginTop="4"
+          marginTop="6xl"
           marginBottom="6"
           color="primaryText"
         >
@@ -75,16 +72,12 @@ const NotificationsScreen = () => {
 
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
-      <SafeAreaBox
-        flex={1}
-        backgroundColor="primaryBackground"
-        edges={safeEdges}
-      >
+      <Box flex={1} backgroundColor="primaryBackground">
         <NotificationsList
           HeaderComponent={HeaderComponent}
           FooterComponent={FooterComponent}
         />
-      </SafeAreaBox>
+      </Box>
     </ReAnimatedBox>
   )
 }
