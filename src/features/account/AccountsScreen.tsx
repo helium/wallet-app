@@ -48,7 +48,6 @@ import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
 import { ITEM_HEIGHT } from './TokenListItem'
-import { withTransactionDetail } from './TransactionDetail'
 import ServiceNavBar from '@components/ServiceNavBar'
 import { SvgProps } from 'react-native-svg'
 import { Color } from '@theme/theme'
@@ -393,4 +392,4 @@ const AccountsScreen = () => {
   )
 }
 
-export default memo(withTransactionDetail(AccountsScreen))
+export default AccountsScreen

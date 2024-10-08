@@ -120,7 +120,9 @@ const ConfirmPinView = ({
       <Box alignItems="center">
         {clearable && onCancel && (
           <TouchableOpacityBox padding="6" onPress={onCancel}>
-            <Text variant="textMdRegular">{t('auth.signOut')}</Text>
+            <Text color="primaryText" variant="textMdRegular">
+              {t('auth.signOut')}
+            </Text>
           </TouchableOpacityBox>
         )}
       </Box>

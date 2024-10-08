@@ -103,7 +103,7 @@ const ClaimAllRewardsScreen = () => {
       entering={DelayedFadeIn}
       backgroundColor="primaryBackground"
     >
-      <BackScreen title={title} paddingVertical="0" paddingHorizontal="4">
+      <BackScreen title={title} paddingVertical="0" paddingHorizontal="5">
         <Box flexGrow={1}>
           <Box flexGrow={2} alignItems="center">
             <Box flexGrow={1}>
@@ -157,7 +157,7 @@ const ClaimAllRewardsScreen = () => {
           <ButtonPressable
             marginBottom="6"
             borderRadius="full"
-            backgroundColor="hntBlue"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.7}
             backgroundColorDisabled="bg.tertiary"
             backgroundColorDisabledOpacity={0.5}
@@ -165,8 +165,7 @@ const ClaimAllRewardsScreen = () => {
             title={
               !redeeming ? t('collectablesScreen.hotspots.claimAllRewards') : ''
             }
-            titleColor="base.white"
-            marginHorizontal="6"
+            titleColor="primaryBackground"
             onPress={onClaimRewards}
             disabled={redeeming}
             TrailingComponent={
