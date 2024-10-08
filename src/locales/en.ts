@@ -771,6 +771,9 @@ export default {
       scanQrCode: 'Scan QR Code',
       warning: 'Please enable your camera permission via [Settings]',
       ok: 'OK',
+      unexpectedQrCodeContent:
+        'The QR code you scanned is not valid. Please try again.',
+      unexpectedQrCodeTitle: 'Unexpected QR Code',
     },
     selectKeystoneAccounts: {
       subtitle:
