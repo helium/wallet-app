@@ -39,9 +39,14 @@ import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
+import { ScrollView } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSpacing } from '@theme/themeHooks'
 
 export const PositionsScreen = () => {
   const { t } = useTranslation()
+  const { bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
@@ -234,82 +239,83 @@ export const PositionsScreen = () => {
   }
 
   return (
-    <GovernanceWrapper selectedTab="positions">
-      <Box flexDirection="column" flex={1}>
-        <Box flex={1}>
-          <PositionsList header={<VotingPowerCard marginBottom="6" />} />
-        </Box>
-        {showError && (
+    <ScrollView>
+      <GovernanceWrapper selectedTab="positions">
+        <Box flexDirection="column" flex={1}>
+          <Box flex={1}>
+            <PositionsList header={<VotingPowerCard marginBottom="6" />} />
+          </Box>
+          {showError && (
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              paddingTop="3"
+            >
+              <Text variant="textXsMedium" color="error.500">
+                {showError}
+              </Text>
+            </Box>
+          )}
           <Box
             flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="3"
+            gap="4"
+            style={{
+              marginBottom: bottom + spacing['0.5'],
+            }}
           >
-            <Text variant="textXsMedium" color="error.500">
-              {showError}
-            </Text>
+            <ButtonPressable
+              flex={1}
+              fontSize={16}
+              borderRadius="full"
+              backgroundColorOpacityPressed={0.7}
+              backgroundColor={'primaryText'}
+              title={t('gov.transactions.lockTokens')}
+              titleColor="primaryBackground"
+              titleColorPressed="base.black"
+              onPress={() => setIsLockModalOpen(true)}
+              disabled={claimingAllRewards || loading}
+            />
+            {HNT_MINT.equals(mint) && (
+              <>
+                <ButtonPressable
+                  flex={1}
+                  fontSize={16}
+                  borderRadius="full"
+                  backgroundColor="primaryText"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="fg.disabled"
+                  backgroundColorDisabledOpacity={0.9}
+                  titleColorDisabled="text.disabled"
+                  title={
+                    claimingAllRewards ? '' : t('gov.transactions.claimRewards')
+                  }
+                  titleColor="primaryBackground"
+                  onPress={handleClaimRewards}
+                  disabled={
+                    !positionsWithRewards?.length ||
+                    claimingAllRewards ||
+                    loading
+                  }
+                />
+              </>
+            )}
           </Box>
-        )}
-        <Box flexDirection="row" padding="4">
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="full"
-            borderWidth={2}
-            borderColor="base.white"
-            backgroundColorOpacityPressed={0.7}
-            title={t('gov.transactions.lockTokens')}
-            titleColor="base.white"
-            titleColorPressed="base.black"
-            onPress={() => setIsLockModalOpen(true)}
-            disabled={claimingAllRewards || loading}
-          />
-          {HNT_MINT.equals(mint) && (
-            <>
-              <Box paddingHorizontal="2" />
-              <ButtonPressable
-                flex={1}
-                fontSize={16}
-                borderRadius="full"
-                borderWidth={2}
-                borderColor={
-                  // eslint-disable-next-line no-nested-ternary
-                  claimingAllRewards
-                    ? 'bg.tertiary'
-                    : !positionsWithRewards?.length
-                    ? 'bg.tertiary'
-                    : 'base.white'
-                }
-                backgroundColor="base.white"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="bg.tertiary"
-                backgroundColorDisabledOpacity={0.9}
-                titleColorDisabled="secondaryText"
-                title={
-                  claimingAllRewards ? '' : t('gov.transactions.claimRewards')
-                }
-                titleColor="base.black"
-                onPress={handleClaimRewards}
-                disabled={
-                  !positionsWithRewards?.length || claimingAllRewards || loading
-                }
-              />
-            </>
+          {claimingAllRewards && (
+            <ClaimingRewardsModal status={statusOfClaim} />
+          )}
+          {isLockModalOpen && (
+            <LockTokensModal
+              mint={mint}
+              maxLockupAmount={maxLockupAmount}
+              calcMultiplierFn={handleCalcLockupMultiplier}
+              onClose={() => setIsLockModalOpen(false)}
+              onSubmit={handleLockTokens}
+            />
           )}
         </Box>
-        {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
-        {isLockModalOpen && (
-          <LockTokensModal
-            mint={mint}
-            maxLockupAmount={maxLockupAmount}
-            calcMultiplierFn={handleCalcLockupMultiplier}
-            onClose={() => setIsLockModalOpen(false)}
-            onSubmit={handleLockTokens}
-          />
-        )}
-      </Box>
-    </GovernanceWrapper>
+      </GovernanceWrapper>
+    </ScrollView>
   )
 }
 

@@ -19,7 +19,7 @@ import BN from 'bn.js'
 import { times } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, Image, RefreshControl } from 'react-native'
+import { FlatList, Image, RefreshControl, ScrollView } from 'react-native'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
@@ -80,7 +80,7 @@ export default function VotersScreen() {
         width="100%"
         justifyContent="center"
         alignItems="center"
-        mb="4"
+        marginVertical="4"
       >
         <Text variant="textMdRegular" color="primaryText">
           {t('gov.voters.noneFound')}
@@ -159,31 +159,39 @@ export default function VotersScreen() {
   const { primaryText } = useColors()
 
   return (
-    <GovernanceWrapper selectedTab="voters">
-      <Text color="primaryText" opacity={0.5} fontSize={20} mb="6">
-        {t('gov.voters.title')}
-      </Text>
-      <SearchInput
-        placeholder={t('gov.voters.searchPlaceholder')}
-        onChangeText={setProxySearch}
-        value={proxySearch}
-      />
-      <FlatList
-        keyExtractor={keyExtractor}
-        data={proxies}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmptyComponent}
-        refreshControl={
-          <RefreshControl
-            refreshing={loading || isLoading || isFetchingNextPage}
-            onRefresh={refetch}
-            title=""
-            tintColor={primaryText}
-          />
-        }
-        onEndReached={handleOnEndReached}
-      />
-    </GovernanceWrapper>
+    <ScrollView>
+      <GovernanceWrapper selectedTab="voters">
+        <Text
+          variant={'textSmRegular'}
+          color="primaryText"
+          opacity={0.5}
+          fontSize={20}
+          mb="6"
+        >
+          {t('gov.voters.title')}
+        </Text>
+        <SearchInput
+          placeholder={t('gov.voters.searchPlaceholder')}
+          onChangeText={setProxySearch}
+          value={proxySearch}
+        />
+        <FlatList
+          keyExtractor={keyExtractor}
+          data={proxies}
+          renderItem={renderItem}
+          ListEmptyComponent={renderEmptyComponent}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading || isLoading || isFetchingNextPage}
+              onRefresh={refetch}
+              title=""
+              tintColor={primaryText}
+            />
+          }
+          onEndReached={handleOnEndReached}
+        />
+      </GovernanceWrapper>
+    </ScrollView>
   )
 }
 
