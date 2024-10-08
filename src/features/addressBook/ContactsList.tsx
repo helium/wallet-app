@@ -13,7 +13,6 @@ import FabButton from '@components/FabButton'
 import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
 import { useSpacing } from '@theme/themeHooks'
-import { da } from 'date-fns/locale'
 import { CSAccount } from '../../storage/cloudStorage'
 
 type Props = {

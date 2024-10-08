@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import Search from '@assets/images/search.svg'
 import { BoxProps } from '@shopify/restyle'
-import { BorderRadii, Color, Spacing, Theme } from '@theme/theme'
+import { BorderRadii, Spacing, Theme } from '@theme/theme'
 import { useColors, useInputVariants } from '@theme/themeHooks'
 import React, { useCallback } from 'react'
 import { TextInputProps } from 'react-native'
@@ -28,7 +28,7 @@ const SearchInput = ({
   ...boxProps
 }: Props) => {
   const {
-    regular: { borderRadius, padding, color },
+    regular: { borderRadius, padding },
   } = useInputVariants()
   const colors = useColors()
 

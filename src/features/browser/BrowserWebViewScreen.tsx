@@ -67,7 +67,7 @@ const BrowserWebViewScreen = () => {
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
   const [isScriptInjected, setIsScriptInjected] = useState(false)
-  const { primaryText, ...colors } = useColors()
+  const { ...colors } = useColors()
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -446,7 +446,7 @@ const BrowserWebViewScreen = () => {
         </TouchableOpacityBox>
       </Box>
     )
-  }, [currentUrl, closeModal, spacing, primaryText])
+  }, [currentUrl, closeModal, spacing, colors])
 
   const onBack = useCallback(() => {
     webview.current?.goBack()
@@ -497,7 +497,7 @@ const BrowserWebViewScreen = () => {
         </Box>
       </Box>
     )
-  }, [onBack, onForward, isFavorite, onFavorite, onRefresh, primaryText])
+  }, [onBack, onForward, isFavorite, onFavorite, onRefresh, colors])
 
   return (
     <Box position="absolute" top={0} left={0} right={0} bottom={0}>

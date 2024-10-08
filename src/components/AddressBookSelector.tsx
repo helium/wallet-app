@@ -36,7 +36,7 @@ type Props = {
 } & BoxProps<Theme>
 const AddressBookSelector = forwardRef(
   (
-    { onContactSelected, hideCurrentAccount, ...boxProps }: Props,
+    { onContactSelected, hideCurrentAccount }: Props,
     ref: Ref<AddressBookRef>,
   ) => {
     useImperativeHandle(ref, () => ({ showAddressBook }))
@@ -85,7 +85,7 @@ const AddressBookSelector = forwardRef(
           </SafeAreaBox>
         </BottomSheetBackdrop>
       ),
-      [],
+      [t],
     )
 
     const handleAddNewContact = useCallback(() => {

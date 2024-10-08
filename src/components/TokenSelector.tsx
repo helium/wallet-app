@@ -92,7 +92,7 @@ const TokenSelector = forwardRef(
           </SafeAreaBox>
         </BottomSheetBackdrop>
       ),
-      [],
+      [t],
     )
 
     const handleTokenPress = useCallback(
@@ -129,7 +129,7 @@ const TokenSelector = forwardRef(
           />
         )
       },
-      [handleTokenPress],
+      [handleTokenPress, tokenData],
     )
 
     return (

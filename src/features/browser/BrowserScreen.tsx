@@ -182,6 +182,7 @@ const BrowserScreen = () => {
     colors,
     spacing,
     onSubmitEditing,
+    alphaColor,
   ])
 
   const renderSectionHeader = useCallback(({ section: { title } }) => {
@@ -265,7 +266,7 @@ const BrowserScreen = () => {
       backgroundColor: colors.primaryBackground,
       flex: 1,
     }),
-    [spacing],
+    [spacing, colors],
   )
 
   const keyExtractor = useCallback((item, index) => item + index, [])

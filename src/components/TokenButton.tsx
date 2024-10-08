@@ -26,7 +26,6 @@ type Props = {
   address?: string
   title?: string
   subtitle?: string
-  showBubbleArrow?: boolean
   innerBoxProps?: BoxProps<Theme>
   mint?: PublicKey
 } & BoxProps<Theme>
@@ -36,7 +35,6 @@ const TokenButton = ({
   address,
   title,
   subtitle,
-  showBubbleArrow,
   innerBoxProps,
   mint,
   backgroundColor: backgroundColorProps,

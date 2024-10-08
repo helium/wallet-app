@@ -178,14 +178,7 @@ export default () => {
         </TouchableContainer>
       )
     },
-    [
-      colors.primaryText,
-      colors.secondaryText,
-      colors.transparent10,
-      derivationAccounts,
-      selected,
-      t,
-    ],
+    [colors, derivationAccounts, selected, t],
   )
 
   const keyExtractor = useCallback(
@@ -221,7 +214,7 @@ export default () => {
         },
       })
     }
-  }, [hasAccounts, navigation, words])
+  }, [hasAccounts, navigation, words, accountsNavigation])
 
   return (
     <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>

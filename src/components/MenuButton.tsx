@@ -1,5 +1,6 @@
+import React from 'react'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { Box, ReAnimatedBox } from '.'
+import { ReAnimatedBox } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
 type MenuButtonProps = {

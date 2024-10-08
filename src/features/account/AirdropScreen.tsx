@@ -12,7 +12,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import * as logger from '@utils/logger'
 import * as solUtils from '@utils/solanaUtils'
 import axios from 'axios'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   interpolate,

@@ -1,4 +1,3 @@
-import RewardBG from '@assets/images/rewardBg.svg'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'

@@ -40,7 +40,7 @@ const AccountsService = () => {
       animationEnabled: false,
       cardStyle: { backgroundColor: colors.primaryBackground },
     }),
-    [],
+    [colors],
   )
   return (
     <AccountsServiceStack.Navigator screenOptions={screenOptions}>

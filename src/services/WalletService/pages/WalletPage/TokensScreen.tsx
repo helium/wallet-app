@@ -183,7 +183,7 @@ const TokensScreen = () => {
       marginTop: spacing['4'],
       paddingBottom: NavBarHeight + bottom + spacing['2xl'],
     }),
-    [],
+    [colors, spacing, bottom],
   )
 
   useEffect(() => {
