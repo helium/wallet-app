@@ -26,6 +26,7 @@ import { useAsync } from 'react-async-hook'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -198,7 +199,7 @@ const PercentChange = ({
 }
 
 export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
-  const navigation = useNavigation()
+  const navigation = useNavigation<ServiceSheetNavigationProp>()
   const { anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
   const { triggerImpact } = useHaptic()
@@ -274,7 +275,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const handleNavigation = useCallback(() => {
     triggerImpact('light')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(navigation as any).navigate('Governance', {
+    ;(navigation as any).navigate('GovernanceService', {
       screen: 'PositionsScreen',
       initial: false,
       params: { mint: mintStr },

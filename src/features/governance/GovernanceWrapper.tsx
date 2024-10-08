@@ -5,15 +5,12 @@ import UserStar from '@assets/images/userStar.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
 import { Select } from '@components/Select'
-import Text from '@components/Text'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Animated } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
@@ -33,7 +30,6 @@ export const GovernanceWrapper: React.FC<
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { loading, hasUnseenProposals } = useGovernance()
   const anim = useRef(new Animated.Value(1))
   const setSelectedTab = useSetTab()
