@@ -1,12 +1,11 @@
 import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import InfoIcon from '@assets/images/info.svg'
 import ArrowRight from '@assets/images/arrowRight.svg'
-import SafeAreaBox from '@components/SafeAreaBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import globalStyles from '@theme/globalStyles'
 import Box from '@components/Box'
@@ -14,26 +13,30 @@ import ImageBox from '@components/ImageBox'
 import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
-import { useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { ww } from '../../utils/layout'
-import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
 import ScrollBox from '@components/ScrollBox'
+import {
+  WalletNavigationProp,
+  WalletStackParamList,
+} from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { Collectable } from '@types/solana'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import NftMetadata from './NftMetadata'
 
-type Route = RouteProp<CollectableStackParamList, 'NftDetailsScreen'>
+type Route = RouteProp<WalletStackParamList, 'NftDetailsScreen'>
 
 const NftDetailsScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
+  const { bottom } = useSafeAreaInsets()
+  const colors = useColors()
 
   const { t } = useTranslation()
 
-  const { collectable } = route.params
+  const { collectable }: { collectable: Collectable } = route.params
   const { json } = collectable
 
   const spacing = useSpacing()
@@ -44,18 +47,6 @@ const NftDetailsScreen = () => {
     })
   }, [collectable, navigation])
 
-  const handleInfoPress = useCallback(() => {
-    if (json) {
-      navigation.push('NftMetadataScreen', {
-        metadata: json,
-      })
-    }
-  }, [navigation, json])
-
-  const backgroundImageUri = useMemo(() => {
-    return json?.image
-  }, [json])
-
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <ScrollBox>
@@ -63,20 +54,13 @@ const NftDetailsScreen = () => {
           padding="5"
           title={t('collectablesScreen.nfts.nftDetialTitle')}
           edges={[]}
-          TrailingIcon={InfoIcon}
-          onTrailingIconPress={handleInfoPress}
           headerTopMargin="6xl"
           headerHorizontalPadding="5"
         >
           <ScrollView>
-            <SafeAreaBox
-              edges={safeEdges}
-              backgroundColor="transparent"
-              flex={1}
-              alignItems="center"
-            >
+            <Box flex={1}>
               {json && (
-                <Box>
+                <Box alignItems="center">
                   <ImageBox
                     marginTop="6"
                     backgroundColor={
@@ -105,28 +89,37 @@ const NftDetailsScreen = () => {
               >
                 {json?.description || t('collectables.noDescription')}
               </Text>
-              <Box flexDirection="row" marginBottom="8" marginTop="4">
-                {collectable.model === 'nft' && (
+              <Box flexDirection="row">
+                {collectable?.content?.metadata?.token_standard ===
+                  'ProgrammableNonFungible' && (
                   <ButtonPressable
                     height={65}
                     flexGrow={1}
                     borderRadius="full"
-                    backgroundColor="base.white"
+                    backgroundColor="primaryText"
                     backgroundColorOpacity={1}
                     backgroundColorOpacityPressed={0.7}
-                    titleColorDisabled="gray.600"
-                    backgroundColorDisabled="base.white"
-                    backgroundColorDisabledOpacity={0.1}
                     title={t('collectablesScreen.transfer')}
-                    titleColor="base.black"
+                    titleColor="primaryBackground"
                     onPress={handleSend}
                     TrailingComponent={
-                      <ArrowRight width={16} height={15} color="black" />
+                      <ArrowRight
+                        width={16}
+                        height={15}
+                        color={colors.primaryBackground}
+                      />
                     }
                   />
                 )}
               </Box>
-            </SafeAreaBox>
+              <Box
+                flex={1}
+                marginTop="2xl"
+                style={{ marginBottom: NavBarHeight + bottom }}
+              >
+                <NftMetadata metadata={json} />
+              </Box>
+            </Box>
           </ScrollView>
         </BackScreen>
       </ScrollBox>

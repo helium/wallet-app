@@ -65,7 +65,8 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
 
   const onWalletIconPress = useCallback(() => {
     if (currentService === 'wallets' && bottomSheetOpen) {
-      bottomSheetRef.current?.close()
+      // TODO: Bring this back once we have the stickers page
+      // bottomSheetRef.current?.close()
       return
     }
 
@@ -76,7 +77,8 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
   const onCloseSheet = useCallback(() => {
     if (currentService === '') return
 
-    bottomSheetRef.current?.close()
+    // TODO: Bring this back once we have the stickers page
+    // bottomSheetRef.current?.close()
   }, [bottomSheetRef, currentService])
 
   const onChangeSheet = useCallback((index: number) => {
@@ -145,7 +147,9 @@ const Header = ({
       flexDirection="row"
       padding="5"
       onPress={onClose}
-      disabled={title === ''}
+      disabled
+      // TODO: Bring this back once we have the stickers page
+      // disabled={title === ''}
     >
       <MenuButton isOpen={false} onPress={onDrawerPress} />
       <Box flex={1}>

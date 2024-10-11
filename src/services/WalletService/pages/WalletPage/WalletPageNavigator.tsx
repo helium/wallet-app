@@ -11,12 +11,12 @@ import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import BurnScreen from '@features/burn/BurnScreen'
 import AccountManageTokenListScreen from '@features/account/AccountManageTokenListScreen'
 import PaymentQrScanner from '@features/payment/PaymentQrScanner'
-import AddNewContact from '@features/addressBook/AddNewContact'
 import TokensTabs from './TokensTabs'
 import NftDetailsScreen from '@features/collectables/NftDetailsScreen'
-import { Collectable } from '../../../../types/solana'
+import { Collectable, CompressedNFT } from '../../../../types/solana'
 import CollectionScreen from '@features/collectables/CollectionScreen'
 import ManageCollectables from '@features/collectables/ManageCollectables'
+import TransferCollectableScreen from '@features/collectables/TransferCollectableScreen'
 
 export type BurnRouteParam = {
   address: string
@@ -43,6 +43,9 @@ export type WalletStackParamList = {
     collection: Collectable[]
   }
   ManageCollectables: undefined
+  TransferCollectableScreen: {
+    collectable: CompressedNFT | Collectable
+  }
 }
 
 export type WalletNavigationProp = StackNavigationProp<WalletStackParamList>
@@ -89,6 +92,11 @@ const WalletPageNavigator = () => {
       <WalletStack.Screen
         name="ManageCollectables"
         component={ManageCollectables}
+      />
+
+      <WalletStack.Screen
+        name="TransferCollectableScreen"
+        component={TransferCollectableScreen}
       />
     </WalletStack.Navigator>
   )

@@ -16,7 +16,6 @@ import ClaimRewardsScreen from './ClaimRewardsScreen'
 import ClaimingRewardsScreen from './ClaimingRewardsScreen'
 import CollectionScreen from './CollectionScreen'
 import NftDetailsScreen from './NftDetailsScreen'
-import NftMetadataScreen from './NftMetadataScreen'
 import SettingUpAntennaScreen from './SettingUpAntennaScreen'
 import TransferCollectableScreen from './TransferCollectableScreen'
 import TransferCompleteScreen from './TransferCompleteScreen'
@@ -97,11 +96,6 @@ const CollectablesStackScreen = () => {
       <CollectablesStack.Screen
         name="ScanAddress"
         component={AddressQrScanner}
-      />
-
-      <CollectablesStack.Screen
-        name="NftMetadataScreen"
-        component={NftMetadataScreen}
       />
 
       <CollectablesStack.Screen

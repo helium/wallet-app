@@ -233,7 +233,7 @@ export default {
   collectablesScreen: {
     title: 'Collectables',
     metadata: 'Metadata',
-    transfer: 'Transfer Hotspot',
+    transfer: 'Transfer',
     transferComplete: 'Hotspot Transferred!',
     returnToCollectables: 'Return to Collectables',
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
@@ -1507,6 +1507,8 @@ export default {
   },
   accountsService: {
     title: 'Your Wallets',
+    switchingAccounts: 'Switching accounts',
+    pleaseBePatient: 'Please be patient. This may take a moment.',
   },
   receivePage: {
     title: 'Receive',

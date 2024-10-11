@@ -39,7 +39,7 @@ const SegmentedItem = ({
   return (
     <TouchableOpacityBox
       flex={fullWidth ? 1 : undefined}
-      paddingVertical="2"
+      paddingVertical="1.5"
       paddingHorizontal="3"
       justifyContent="center"
       alignItems="center"
@@ -47,6 +47,8 @@ const SegmentedItem = ({
       onLayout={onLayout}
       gap="sm"
       flexDirection="row"
+      backgroundColor={selected ? 'primaryText' : 'transparent'}
+      borderRadius="full"
     >
       {option.Icon && (
         <option.Icon
@@ -120,15 +122,6 @@ const SegmentedControl = ({
         flexDirection="row"
         position="relative"
       >
-        <ReAnimatedBox
-          width={itemWidth}
-          backgroundColor="primaryText"
-          borderRadius="4xl"
-          position="absolute"
-          left={leftPosition}
-          bottom={5}
-          top={5}
-        />
         {options.map((option, index) => (
           <SegmentedItem
             fullWidth={fullWidth}

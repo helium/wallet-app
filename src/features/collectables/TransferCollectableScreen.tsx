@@ -1,5 +1,4 @@
 import ArrowRight from '@assets/images/arrowRight.svg'
-import InfoIcon from '@assets/images/info.svg'
 import Menu from '@assets/images/menu.svg'
 import AddressBookSelector, {
   AddressBookRef,
@@ -11,15 +10,11 @@ import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
-import TextTransform from '@components/TextTransform'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import {
   KeyboardAvoidingView,
@@ -28,22 +23,20 @@ import {
   ScrollView,
   TextInputEndEditingEventData,
 } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import ScrollBox from '@components/ScrollBox'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { ww } from '../../utils/layout'
 import * as Logger from '../../utils/logger'
-import { createTransferCollectableMessage } from '../../utils/solanaUtils'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { Asset } from '@helium/spl-utils'
+import { NavBarHeight } from '@components/ServiceNavBar'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -55,9 +48,7 @@ const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
-
+  const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
 
   const { collectable } = route.params
@@ -68,68 +59,23 @@ const TransferCollectableScreen = () => {
   const [recipientName, setRecipientName] = useState('')
   const [hasError, setHasError] = useState(false)
   const [networkError, setNetworkError] = useState<undefined | string>()
-  const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
-    undefined | boolean
-  >()
-  const [solFee, setSolFee] = useState<number | undefined>(undefined)
-  const { currentAccount } = useAccountStorage()
-  const { anchorProvider } = useSolana()
   const addressBookRef = useRef<AddressBookRef>(null)
   const colors = useColors()
   const [transferring, setTransferring] = useState(false)
 
-  const compressedNFT = useMemo(
-    () => collectable as CompressedNFT,
-    [collectable],
-  )
-  const nft = useMemo(() => collectable as Collectable, [collectable])
+  const nft = useMemo(() => collectable as Asset, [collectable])
+
+  const image = useMemo(() => {
+    return nft?.content?.files?.[0]?.uri
+  }, [nft])
 
   const metadata = useMemo(() => {
-    return compressedNFT?.content?.metadata || nft?.json
-  }, [compressedNFT, nft])
+    return nft?.content?.metadata
+  }, [nft])
+
+  console.log('metadata', metadata)
 
   const { submitCollectable } = useSubmitTxn()
-
-  useAsync(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider?.connection) return
-
-    const { connection } = anchorProvider
-
-    try {
-      const { message } = await createTransferCollectableMessage(
-        anchorProvider,
-        currentAccount?.solanaAddress,
-        currentAccount?.address || '',
-        collectable,
-        currentAccount?.solanaAddress,
-      )
-
-      const response = await connection.getFeeForMessage(
-        message,
-        'singleGossip',
-      )
-
-      if (!response?.value) return
-
-      setSolFee(response.value / LAMPORTS_PER_SOL)
-
-      const balance = await connection.getBalance(
-        new PublicKey(currentAccount?.solanaAddress),
-      )
-      setHasInsufficientBalance(response.value > balance)
-    } catch (error) {
-      Logger.error(error)
-      setNetworkError((error as Error).message)
-    }
-  }, [])
-
-  const handleInfoPress = useCallback(() => {
-    if (metadata) {
-      navigation.push('NftMetadataScreen', {
-        metadata,
-      })
-    }
-  }, [metadata, navigation])
 
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})
@@ -179,21 +125,18 @@ const TransferCollectableScreen = () => {
 
   const showError = useMemo(() => {
     if (hasError) return t('generic.notValidSolanaAddress')
-    if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
-  }, [hasError, hasInsufficientBalance, networkError, t])
+  }, [hasError, networkError, t])
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <ScrollBox>
         <BackScreen
-          padding="0"
+          padding="xl"
           title={t('collectablesScreen.transferCollectable')}
           backgroundImageUri={backgroundImageUri || ''}
-          edges={backEdges}
-          TrailingIcon={InfoIcon}
-          onTrailingIconPress={handleInfoPress}
-          headerTopMargin="6"
+          edges={[]}
+          headerTopMargin="6xl"
         >
           <KeyboardAvoidingView
             style={{
@@ -206,21 +149,14 @@ const TransferCollectableScreen = () => {
             keyboardVerticalOffset={100}
           >
             <ScrollView>
-              <SafeAreaBox
-                edges={safeEdges}
+              <Box
                 backgroundColor="transparent"
                 flex={1}
                 padding="4"
                 alignItems="center"
               >
                 {metadata && (
-                  <Box
-                    shadowColor="base.black"
-                    shadowOpacity={0.4}
-                    shadowOffset={{ width: 0, height: 10 }}
-                    shadowRadius={10}
-                    elevation={12}
-                  >
+                  <Box>
                     <ImageBox
                       marginTop="6"
                       backgroundColor={
@@ -229,7 +165,7 @@ const TransferCollectableScreen = () => {
                       height={COLLECTABLE_HEIGHT - spacing.xl * 5}
                       width={COLLECTABLE_HEIGHT - spacing.xl * 5}
                       source={{
-                        uri: metadata?.image,
+                        uri: image,
                         cache: 'force-cache',
                       }}
                       borderRadius="4xl"
@@ -239,7 +175,6 @@ const TransferCollectableScreen = () => {
                 <Text
                   marginTop="6"
                   marginBottom="2"
-                  marginHorizontal="6"
                   textAlign="center"
                   variant="displayMdMedium"
                 >
@@ -276,29 +211,8 @@ const TransferCollectableScreen = () => {
                     }}
                   />
                 </Box>
-                {solFee ? (
-                  <TextTransform
-                    marginHorizontal="4"
-                    variant="textXsMedium"
-                    marginBottom="2"
-                    color="primaryText"
-                    i18nKey="collectablesScreen.transferFee"
-                    values={{ amount: solFee }}
-                  />
-                ) : (
-                  <Text
-                    marginHorizontal="4"
-                    variant="textXsMedium"
-                    marginBottom="2"
-                    color="secondaryText"
-                  >
-                    {t('generic.calculatingTransactionFee')}
-                  </Text>
-                )}
                 <Text
-                  opacity={
-                    hasError || hasInsufficientBalance || networkError ? 100 : 0
-                  }
+                  opacity={hasError || networkError ? 100 : 0}
                   marginHorizontal="4"
                   variant="textXsMedium"
                   marginBottom="6"
@@ -306,14 +220,20 @@ const TransferCollectableScreen = () => {
                 >
                   {showError}
                 </Text>
-                <Box flexDirection="row" marginTop="4">
+                <Box
+                  flexDirection="row"
+                  marginTop="4"
+                  style={{
+                    marginBottom: NavBarHeight + bottom,
+                  }}
+                >
                   <ButtonPressable
                     height={65}
                     flexGrow={1}
                     borderRadius="full"
                     backgroundColor="primaryText"
                     backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="bg.tertiary"
+                    backgroundColorDisabled="fg.disabled"
                     backgroundColorDisabledOpacity={0.5}
                     titleColorDisabled="text.disabled"
                     title={transferring ? '' : t('collectablesScreen.transfer')}
@@ -329,15 +249,15 @@ const TransferCollectableScreen = () => {
                           height={15}
                           color={
                             !solAddressIsValid(recipient)
-                              ? colors['gray.600']
-                              : colors['base.black']
+                              ? colors['text.disabled']
+                              : colors['primaryBackground']
                           }
                         />
                       )
                     }
                   />
                 </Box>
-              </SafeAreaBox>
+              </Box>
             </ScrollView>
           </KeyboardAvoidingView>
         </BackScreen>

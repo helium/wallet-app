@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
 import { ReAnimatedBox } from '@components/AnimatedBox'
@@ -30,13 +30,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { AccountsServiceNavigationProp } from '../accountServiceTypes'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
+import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
+import CircleLoader from '@components/CircleLoader'
+import { set } from 'lodash'
 
 const YourWalletsPage = () => {
   const { t } = useTranslation()
+  const [switchingAccounts, setSwitchingAccounts] = useState<
+    CSAccount | undefined
+  >()
   const spacing = useSpacing()
   const { setOnboardingData, onboardingData } = useOnboarding()
   const colors = useColors()
-  const navigation = useNavigation<AccountsServiceNavigationProp>()
+  const navigation = useNavigation<
+    AccountsServiceNavigationProp & ServiceSheetNavigationProp
+  >()
   const { sortedAccounts, currentAccount, setCurrentAccount, accounts } =
     useAccountStorage()
   const { bottom } = useSafeAreaInsets()
@@ -152,10 +161,19 @@ const YourWalletsPage = () => {
 
   const handleAccountChange = useCallback(
     (item: CSAccount) => () => {
-      setCurrentAccount(item)
+      setSwitchingAccounts(item)
     },
     [setCurrentAccount],
   )
+
+  useEffect(() => {
+    if (!switchingAccounts) return
+
+    setTimeout(() => {
+      setCurrentAccount(switchingAccounts)
+      navigation.navigate('WalletService')
+    }, 0)
+  }, [switchingAccounts, setCurrentAccount, navigation])
 
   const renderItem = useCallback(
     ({
@@ -306,6 +324,29 @@ const YourWalletsPage = () => {
       </Box>
     )
   }, [bottom, handleAddNew, setFooterHeight])
+
+  if (switchingAccounts) {
+    return (
+      <ReAnimatedBox
+        entering={FadeIn}
+        flex={1}
+        padding="5"
+        justifyContent={'center'}
+        alignItems={'center'}
+        gap="2"
+      >
+        <Text variant="textXlMedium" color="primaryText">
+          {t('accountsService.switchingAccounts')}
+        </Text>
+        <Text variant="textMdRegular" color="secondaryText">
+          {t('accountsService.pleaseBePatient')}
+        </Text>
+        <Box marginTop={'4'}>
+          <CircleLoader />
+        </Box>
+      </ReAnimatedBox>
+    )
+  }
 
   return (
     <ReAnimatedBox entering={FadeIn} flex={1}>
