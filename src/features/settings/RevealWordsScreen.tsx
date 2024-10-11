@@ -8,6 +8,7 @@ import BackScreen from '@components/BackScreen'
 import TextTransform from '@components/TextTransform'
 import { getSecureAccount } from '@storage/secureStorage'
 import RevealWords from '@components/RevealWords'
+import ScrollBox from '@components/ScrollBox'
 
 const RevealWordsScreen = () => {
   const { currentAccount } = useAccountStorage()
@@ -24,7 +25,7 @@ const RevealWordsScreen = () => {
   const ListHeaderComponent = useMemo(() => {
     return (
       <Box
-        backgroundColor="ros.300"
+        backgroundColor="error.200"
         borderRadius="2xl"
         padding="6"
         marginBottom="6"
@@ -42,24 +43,25 @@ const RevealWordsScreen = () => {
   }, [mnemonic?.length])
 
   return (
-    <BackScreen
-      rootBackgroundColor="base.black"
-      backgroundColor="base.black"
-      flex={1}
-      title={
-        mnemonic?.length
-          ? t('settings.revealWords.title', { numWords: mnemonic.length })
-          : ''
-      }
-      edges={[]}
-      padding="0"
-    >
-      <RevealWords
-        mnemonic={mnemonic || []}
-        ListHeaderComponent={ListHeaderComponent}
-        onDone={navigation.goBack}
-      />
-    </BackScreen>
+    <ScrollBox>
+      <BackScreen
+        flex={1}
+        title={
+          mnemonic?.length
+            ? t('settings.revealWords.title', { numWords: mnemonic.length })
+            : ''
+        }
+        edges={[]}
+        padding="0"
+        headerTopMargin="6xl"
+      >
+        <RevealWords
+          mnemonic={mnemonic || []}
+          ListHeaderComponent={ListHeaderComponent}
+          onDone={navigation.goBack}
+        />
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

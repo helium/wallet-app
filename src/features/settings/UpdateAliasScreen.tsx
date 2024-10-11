@@ -36,32 +36,29 @@ const UpdateAliasScreen = () => {
     <BackScreen
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="8"
+      title={t('accountAssign.title')}
+      padding="0"
+      paddingHorizontal="5"
+      edges={[]}
+      headerTopMargin="6xl"
     >
       <KeyboardAvoidingView
         keyboardVerticalOffset={insets.top + spacing[12] + spacing[12]}
         behavior={Platform.OS === 'android' ? 'height' : 'padding'}
         style={styles.container}
       >
-        <Box alignItems="center" flex={1}>
-          <Text
-            variant="displayMdRegular"
-            textAlign="center"
-            fontSize={44}
-            lineHeight={44}
-          >
-            {t('accountAssign.title')}
-          </Text>
+        <Box alignItems="center" flex={1} marginTop="6xl">
           <Box
-            backgroundColor="transparent10"
-            borderRadius="4xl"
-            padding="4"
-            width="100%"
-            marginTop="8"
+            backgroundColor="cardBackground"
             flexDirection="row"
+            alignItems="center"
+            borderRadius="2xl"
+            padding="4"
+            gap="2"
           >
             <AccountIcon size={40} address={currentAccount?.address || ''} />
             <TextInput
+              flex={1}
               variant="transparent"
               textColor="primaryText"
               textInputProps={{
@@ -73,19 +70,18 @@ const UpdateAliasScreen = () => {
                 autoCapitalize: 'words',
               }}
               fontSize={24}
-              marginLeft="4"
-              marginRight="8"
             />
           </Box>
 
           <Box flex={1} />
 
           <FabButton
+            marginBottom="6xl"
             onPress={handlePress}
             icon="arrowRight"
             disabled={!alias}
             backgroundColor="primaryText"
-            iconColor="primaryText"
+            iconColor="primaryBackground"
             backgroundColorPressed="primaryBackground"
             backgroundColorOpacityPressed={0.1}
           />

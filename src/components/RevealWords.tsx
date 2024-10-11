@@ -40,15 +40,13 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
     ({ item, index }: { item: string; index: number }) => {
       return (
         <Box
-          borderRadius="full"
+          borderRadius="xl"
           padding="2"
           marginHorizontal="2"
           marginBottom="4"
           flex={1}
           overflow="hidden"
           backgroundColor="cardBackground"
-          borderWidth={1}
-          borderColor="border.primary"
           alignItems="center"
           justifyContent="center"
           flexDirection="row"
@@ -78,7 +76,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   const contentContainerStyle = useMemo(
     () => ({
       flexGrow: 1,
-      paddingHorizontal: spacing[4],
+      paddingHorizontal: spacing[5],
     }),
     [spacing],
   )
@@ -111,8 +109,8 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
         <ButtonPressable
           height={60}
           borderRadius="full"
-          backgroundColor="bg.tertiary"
-          titleColor="primaryText"
+          backgroundColor="primaryText"
+          titleColor="primaryBackground"
           title={t('settings.revealWords.next')}
           marginBottom="4"
           onPress={onDone}

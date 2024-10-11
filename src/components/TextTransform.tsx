@@ -7,12 +7,12 @@ import Text from './Text'
 
 const getComponents = (variant?: ResponsiveValue<TextVariant, Theme>) => ({
   b: <Text fontWeight="700" variant={variant} />,
-  errorText: <Text color="error.500" variant={variant} />,
+  errorText: <Text color="error.500" fontWeight="600" variant={variant} />,
   primaryText: <Text color="primaryText" variant={variant} />,
   secondaryText: <Text color="secondaryText" variant={variant} />,
   'blue.500': <Text color="blue.500" variant={variant} />,
   'pink.500': <Text color="pink.500" variant={variant} />,
-  'error.500': <Text color="error.500" variant={variant} />,
+  'error.500': <Text color="error.500" fontWeight="600" variant={variant} />,
   'green.light-500': <Text color="green.light-500" variant={variant} />,
   'blue.light-500': <Text color="blue.light-500" variant={variant} />,
   'green.400': <Text color="green.400" variant={variant} />,

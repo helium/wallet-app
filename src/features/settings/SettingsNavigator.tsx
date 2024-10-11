@@ -55,15 +55,10 @@ const SettingsNavigator = () => {
         component={SettingsCreatePinScreen}
         options={{ presentation: 'modal' }}
       />
-      <SettingsStack.Screen
-        name="RevealWords"
-        component={RevealWordsWrapper}
-        options={{ presentation: 'fullScreenModal' }}
-      />
+      <SettingsStack.Screen name="RevealWords" component={RevealWordsWrapper} />
       <SettingsStack.Screen
         name="RevealPrivateKey"
         component={RevealPrivateKeyWrapper}
-        options={{ presentation: 'fullScreenModal' }}
       />
       <SettingsStack.Screen name="UpdateAlias" component={UpdateAliasScreen} />
       <SettingsStack.Screen
@@ -77,13 +72,8 @@ const SettingsNavigator = () => {
       <SettingsStack.Screen
         name="MigrateWallet"
         component={SolanaMigrationWrapper}
-        options={{ presentation: 'transparentModal' }}
       />
-      <SettingsStack.Screen
-        name="AutoGasManager"
-        component={AutoGasManager}
-        options={{ presentation: 'transparentModal' }}
-      />
+      <SettingsStack.Screen name="AutoGasManager" component={AutoGasManager} />
     </SettingsStack.Navigator>
   )
 }

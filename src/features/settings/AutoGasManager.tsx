@@ -11,9 +11,11 @@ import { useVisibleTokens } from '@storage/TokensProvider'
 import React, { FC, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Switch } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const AutoGasManager: FC = () => {
   const { visibleTokens } = useVisibleTokens()
+  const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation()
   const validInputMints = useMemo(
     () =>
@@ -40,24 +42,14 @@ const AutoGasManager: FC = () => {
   }, [updateAutoGasManagementToken, inputMint, navigation])
 
   return (
-    <BackScreen backgroundColor="primaryBackground" flex={1}>
+    <BackScreen
+      backgroundColor="primaryBackground"
+      flex={1}
+      title={t('settings.autoGasManagement.title')}
+      edges={[]}
+      headerTopMargin="6xl"
+    >
       <Box flexDirection="column" flex={1}>
-        <Box
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="center"
-          paddingTop="2"
-          paddingHorizontal="4"
-        >
-          <Text
-            variant="textXlRegular"
-            color="primaryText"
-            flex={1}
-            textAlign="center"
-          >
-            {t('settings.autoGasManagement.title')}
-          </Text>
-        </Box>
         <Box flex={1} paddingHorizontal="4" marginTop="6">
           <Text
             variant="textMdMedium"
@@ -116,27 +108,27 @@ const AutoGasManager: FC = () => {
 
         <Box
           flexDirection="row"
-          marginHorizontal="4"
-          justifyContent="space-between"
+          gap="4"
+          style={{
+            marginBottom: bottom,
+          }}
         >
           <ButtonPressable
-            width="48%"
+            flex={1}
             borderRadius="full"
-            backgroundColor="gray.700"
+            backgroundColor="fg.quinary-400"
             backgroundColorOpacityPressed={0.05}
             titleColorPressedOpacity={0.3}
-            titleColor="base.white"
+            titleColor="primaryBackground"
             title={t('generic.cancel')}
             onPress={() => navigation.goBack()}
           />
           <ButtonPressable
-            width="48%"
+            flex={1}
             borderRadius="full"
-            backgroundColor="base.white"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="secondaryBackground"
-            titleColorDisabled="secondaryText"
-            titleColor="base.black"
+            titleColor="primaryBackground"
             titleColorPressedOpacity={0.3}
             title={t('generic.save')}
             onPress={handleSave}

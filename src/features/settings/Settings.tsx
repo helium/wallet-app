@@ -315,7 +315,7 @@ const Settings = () => {
   }, [settingsNav])
 
   const handlePressAutoGasManager = useCallback(() => {
-    settingsNav.navigate('AutoGasManager')
+    settingsNav.push('AutoGasManager')
   }, [settingsNav])
 
   const handleMigrateWallet = useCallback(() => {

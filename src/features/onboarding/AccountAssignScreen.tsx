@@ -207,22 +207,24 @@ const AccountAssignScreen = () => {
               size={40}
               address={paths[0] && paths[0].keypair.publicKey.toBase58()}
             />
-            <TextInput
-              textColor="primaryText"
-              fontSize={24}
-              marginLeft="4"
-              marginRight="8"
-              variant="transparentSmall"
-              textInputProps={{
-                placeholder: t('accountAssign.AccountNamePlaceholder'),
-                autoCorrect: false,
-                autoComplete: 'off',
-                autoCapitalize: 'words',
-                onChangeText: setAlias,
-                value: alias,
-                autoFocus: true,
-              }}
-            />
+            <Box backgroundColor={'cardBackground'}>
+              <TextInput
+                textColor="primaryText"
+                fontSize={24}
+                marginLeft="4"
+                marginRight="8"
+                variant="transparentSmall"
+                textInputProps={{
+                  placeholder: t('accountAssign.AccountNamePlaceholder'),
+                  autoCorrect: false,
+                  autoComplete: 'off',
+                  autoCapitalize: 'words',
+                  onChangeText: setAlias,
+                  value: alias,
+                  autoFocus: true,
+                }}
+              />
+            </Box>
           </Box>
 
           <Box

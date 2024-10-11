@@ -107,8 +107,8 @@ const SettingsListItem = ({
   )
 
   let textColor: Color = 'primaryText'
-  if (destructive && !disabled) textColor = 'ros.300'
-  if (destructive && disabled) textColor = 'ros.400'
+  if (destructive && !disabled) textColor = 'error.500'
+  if (destructive && disabled) textColor = 'error.300'
   if (!destructive && disabled) textColor = 'gray.400'
 
   const handleSelect = useCallback(
