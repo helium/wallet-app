@@ -4,6 +4,14 @@ import ServiceSheetPage, {
   ServiceNavBarOption,
 } from '@components/ServiceSheetPage'
 import CollectablesNavigator from '@features/collectables/CollectablesNavigator'
+import { StackNavigationProp } from '@react-navigation/stack'
+
+export type HotspotServiceStackParamList = {
+  Hotspot: undefined
+}
+
+export type HotspotServiceNavigationProp =
+  StackNavigationProp<HotspotServiceStackParamList>
 
 const HotspotService = () => {
   const options = useMemo((): Array<ServiceNavBarOption> => {

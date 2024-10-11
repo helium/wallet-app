@@ -9,6 +9,8 @@ import { CSAccount } from '@storage/cloudStorage'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
+import BackScreen from '@components/BackScreen'
+import ScrollBox from '@components/ScrollBox'
 
 const AddressBook = () => {
   const { t } = useTranslation()
@@ -31,30 +33,21 @@ const AddressBook = () => {
   )
 
   return (
-    <Box flex={1} backgroundColor="bg.tertiary">
-      <Box
-        marginTop="2"
-        style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
-        flexDirection="row"
-        alignItems="center"
+    <ScrollBox>
+      <BackScreen
+        headerTopMargin="6xl"
+        edges={[]}
+        title={t('addressBook.title')}
+        padding="0"
       >
-        <Box flex={1} />
-        <Text variant="textLgMedium" color="primaryText">
-          {t('addressBook.title')}
-        </Text>
-        <Box flex={1} alignItems="flex-end">
-          <CloseButton
-            onPress={onRequestClose}
-            paddingVertical="2"
-            paddingHorizontal="4"
+        <Box flex={1} backgroundColor="primaryBackground">
+          <ContactsList
+            onAddNew={handleAddNewContact}
+            handleContactSelected={handleEditContact}
           />
         </Box>
-      </Box>
-      <ContactsList
-        onAddNew={handleAddNewContact}
-        handleContactSelected={handleEditContact}
-      />
-    </Box>
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

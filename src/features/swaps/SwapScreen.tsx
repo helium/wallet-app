@@ -74,6 +74,8 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
+import SegmentedControl from '@components/SegmentedControl'
+import { Portal } from '@gorhom/portal'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
@@ -291,78 +293,6 @@ const SwapScreen = () => {
       </Box>
     )
   }, [refresh, t, handleClose])
-
-  const Slippage = useMemo(() => {
-    if (isDevnet) {
-      return null
-    }
-
-    const bpsOptions: number[] = [30, 50, 100]
-    const disabled = outputMint.equals(DC_MINT)
-
-    return (
-      <Box
-        flexDirection="row"
-        borderRadius="2xl"
-        marginHorizontal="4"
-        opacity={disabled ? 0.3 : 1}
-        backgroundColor="cardBackground"
-      >
-        <TouchableOpacityBox
-          flex={1}
-          borderEndWidth={2}
-          borderColor="primaryBackground"
-          alignItems="center"
-          justifyContent="center"
-          alignContent="center"
-          flexDirection="row"
-          paddingHorizontal="3"
-          onPress={() => setSlippageInfoVisible(true)}
-        >
-          <Text variant="textXsMedium" color="secondaryText">
-            {t('swapsScreen.slippage')}
-          </Text>
-        </TouchableOpacityBox>
-
-        {bpsOptions.map((bps, idx) => {
-          const isLast = idx === bpsOptions.length - 1
-          const isActive = slippageBps === bps
-
-          return (
-            <TouchableOpacityBox
-              disabled={disabled}
-              key={bps}
-              flex={1}
-              padding="3"
-              alignItems="center"
-              borderEndWidth={isLast ? 0 : 2}
-              borderTopRightRadius={isLast ? '4xl' : 'none'}
-              borderBottomRightRadius={isLast ? '4xl' : 'none'}
-              borderColor="primaryBackground"
-              backgroundColor={
-                !disabled && isActive ? 'secondaryBackground' : 'cardBackground'
-              }
-              onPress={() => setSlippageBps(bps)}
-            >
-              <Text
-                variant="textXsMedium"
-                color={isActive ? 'primaryText' : 'secondaryText'}
-              >
-                {bps / 100}%
-              </Text>
-            </TouchableOpacityBox>
-          )
-        })}
-      </Box>
-    )
-  }, [
-    slippageBps,
-    setSlippageBps,
-    outputMint,
-    setSlippageInfoVisible,
-    t,
-    isDevnet,
-  ])
 
   const setTokenTypeHandler = useCallback(
     (mint: PublicKey) => {
@@ -679,6 +609,76 @@ const SwapScreen = () => {
     return loadingPrice
   }, [loading, loadingPrice, isDevnet])
 
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const bpsOptions: number[] = useMemo(() => [30, 50, 100], [])
+
+  const options = useMemo(
+    () =>
+      bpsOptions.map((bps, idx) => {
+        return {
+          value: idx,
+          label: `${bps / 100}%`,
+        }
+      }),
+    [bpsOptions],
+  )
+
+  const onItemSelected = useCallback((index: number) => {
+    const bps = bpsOptions[index]
+    setSlippageBps(bps)
+    setSelectedIndex(index)
+  }, [])
+
+  const Slippage = useMemo(() => {
+    if (isDevnet) {
+      return null
+    }
+
+    const disabled = outputMint.equals(DC_MINT)
+
+    if (disabled) {
+      return null
+    }
+
+    return (
+      <Box
+        backgroundColor={'cardBackground'}
+        borderRadius={'2xl'}
+        padding="4"
+        gap="2"
+      >
+        <Box flexDirection={'row'} alignItems={'flex-end'}>
+          <Text variant="textLgSemibold" color="primaryText" flex={1}>
+            {t('swapsScreen.slippage')}
+          </Text>
+          <TouchableOpacityBox>
+            <Text
+              variant="textMdSemibold"
+              color="secondaryText"
+              onPress={() => setSlippageInfoVisible(true)}
+            >
+              What is slippage?
+            </Text>
+          </TouchableOpacityBox>
+        </Box>
+        <SegmentedControl
+          options={options}
+          selectedIndex={selectedIndex}
+          onItemSelected={onItemSelected}
+          fullWidth
+        />
+      </Box>
+    )
+  }, [
+    slippageBps,
+    setSlippageBps,
+    outputMint,
+    setSlippageInfoVisible,
+    t,
+    isDevnet,
+    selectedIndex,
+  ])
+
   return (
     <ScrollBox
       backgroundColor="primaryBackground"
@@ -800,9 +800,9 @@ const SwapScreen = () => {
               borderRadius="full"
               backgroundColor="primaryText"
               backgroundColorOpacityPressed={0.7}
-              backgroundColorDisabled="bg.tertiary"
+              backgroundColorDisabled="bg.disabled"
               backgroundColorDisabledOpacity={0.5}
-              titleColorDisabled="secondaryText"
+              titleColorDisabled="text.disabled"
               titleColor="primaryBackground"
               disabled={
                 hasInsufficientBalance ||
@@ -855,51 +855,53 @@ const SwapScreen = () => {
         </SafeAreaBox>
       </TouchableWithoutFeedback>
       {slippageInfoVisible ? (
-        <ReAnimatedBlurBox
-          visible
-          entering={FadeInFast}
-          position="absolute"
-          height="100%"
-          width="100%"
-          marginBottom="6xl"
-        >
-          <Box flexDirection="column" height="100%">
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              marginTop="6"
-            >
-              <Box flex={1}>
-                <CloseButton
-                  marginStart="4"
-                  onPress={() => setSlippageInfoVisible(false)}
-                />
+        <Portal>
+          <ReAnimatedBlurBox
+            visible
+            entering={FadeInFast}
+            position="absolute"
+            height="100%"
+            width="100%"
+            marginBottom="6xl"
+          >
+            <Box flexDirection="column" height="100%" marginTop={'6xl'}>
+              <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                marginTop="6"
+              >
+                <Box flex={1}>
+                  <CloseButton
+                    marginStart="4"
+                    onPress={() => setSlippageInfoVisible(false)}
+                  />
+                </Box>
+                <Box flex={1} alignItems="center" flexDirection="row">
+                  <Text
+                    variant="textXlSemibold"
+                    color="primaryText"
+                    flex={1}
+                    textAlign="center"
+                  >
+                    {t('swapsScreen.slippage')}
+                  </Text>
+                </Box>
+                <Box flex={1} />
               </Box>
-              <Box flex={1} alignItems="center" flexDirection="row">
+              <Box flex={1} paddingHorizontal="4" marginTop="6">
                 <Text
-                  variant="textXlRegular"
+                  variant="textMdMedium"
                   color="primaryText"
                   flex={1}
                   textAlign="center"
                 >
-                  {t('swapsScreen.slippage')}
+                  {t('swapsScreen.slippageInfo')}
                 </Text>
               </Box>
-              <Box flex={1} />
             </Box>
-            <Box flex={1} paddingHorizontal="4" marginTop="6">
-              <Text
-                variant="textMdMedium"
-                color="primaryText"
-                flex={1}
-                textAlign="center"
-              >
-                {t('swapsScreen.slippageInfo')}
-              </Text>
-            </Box>
-          </Box>
-        </ReAnimatedBlurBox>
+          </ReAnimatedBlurBox>
+        </Portal>
       ) : undefined}
       <HNTKeyboard
         ref={hntKeyboardRef}

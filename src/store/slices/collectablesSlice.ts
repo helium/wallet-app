@@ -3,7 +3,7 @@ import { Cluster, Connection, PublicKey } from '@solana/web3.js'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Collectable } from '../../types/solana'
+import { Collectable, CompressedNFT } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 
 export type WalletCollectables = {
@@ -14,35 +14,69 @@ export type WalletCollectables = {
 }
 
 export type CollectablesByWallet = Record<string, WalletCollectables>
-export type CollectablesByCluster = Record<Cluster, CollectablesByWallet>
+export type CollectablesByCluster = {
+  'mainnet-beta': CollectablesByWallet
+  devnet: CollectablesByWallet
+  testnet: CollectablesByWallet
+  approvedCollections: string[]
+}
 
 const initialState: CollectablesByCluster = {
   'mainnet-beta': {},
   devnet: {},
   testnet: {},
+  approvedCollections: solUtils.heliumNFTs(),
 }
 
 export const fetchCollectables = createAsyncThunk(
   'collectables/fetchCollectables',
-  async ({
-    account,
-    connection,
-  }: {
-    account: CSAccount
-    cluster: Cluster
-    connection: Connection
-  }) => {
+  async (
+    {
+      account,
+      connection,
+    }: {
+      account: CSAccount
+      cluster: Cluster
+      connection: Connection
+    },
+    { getState },
+  ) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
-
     const pubKey = new PublicKey(account.solanaAddress)
-    const fetchedCollectables = await solUtils.getNFTs(
-      pubKey,
-      connection as WrappedConnection,
-    )
-    const groupedCollectables = solUtils.groupNFTs(fetchedCollectables)
+    let page = 1
+    let isLastPage = false
+    let fetchedCollectables: CompressedNFT[] = []
+
+    const { collectables } = (await getState()) as {
+      collectables: CollectablesByCluster
+    }
+
+    while (!isLastPage) {
+      const response = await solUtils.getNFTs(
+        pubKey,
+        connection as WrappedConnection,
+        page,
+      )
+      fetchedCollectables = fetchedCollectables.concat(response)
+      isLastPage = response.length === 0
+      page++
+    }
+
+    const approvedCollections =
+      collectables.approvedCollections || solUtils.heliumNFTs()
+
+    const filteredCollectables = fetchedCollectables.filter((collectable) => {
+      const collection = collectable?.grouping?.find(
+        (k) => k.group_key === 'collection',
+      )?.group_value
+
+      return approvedCollections.includes(collection)
+    })
+
+    const groupedCollectables = solUtils.groupNFTs(filteredCollectables)
 
     const collectablesWithMetadata = await solUtils.getNFTsMetadata(
-      fetchedCollectables,
+      filteredCollectables,
     )
 
     const groupedCollectablesWithMeta = solUtils.groupNFTsWithMetaData(
@@ -72,6 +106,22 @@ const collectables = createSlice({
         state[cluster] = {}
       }
       state[cluster][address] = { ...state[cluster][address], loading: false }
+    },
+    toggleApprovedCollection: (
+      state,
+      action: PayloadAction<{ collection: string }>,
+    ) => {
+      if (!state.approvedCollections) {
+        state.approvedCollections = solUtils.heliumNFTs()
+      }
+
+      if (state.approvedCollections.includes(action.payload.collection)) {
+        state.approvedCollections = state.approvedCollections.filter(
+          (c) => c !== action.payload.collection,
+        )
+      } else {
+        state.approvedCollections.push(action.payload.collection)
+      }
     },
   },
   extraReducers: (builder) => {

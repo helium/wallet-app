@@ -41,8 +41,7 @@ const TxnListItem = ({
       borderBottomWidth={isLast ? 0 : 2}
       flexDirection="row"
       onPress={handlePress}
-      paddingHorizontal="4"
-      paddingVertical="3"
+      padding="4"
       {...rest}
     >
       <Box paddingRight="2">{listIcon}</Box>

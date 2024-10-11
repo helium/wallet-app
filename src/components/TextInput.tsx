@@ -111,7 +111,7 @@ const TI = forwardRef(
             style={{
               color: getTextColor,
               fontSize: fontSize || inputVariants.regular.fontSize,
-              fontWeight: fontWeight || 'bold',
+              fontWeight: fontWeight || '500',
               fontFamily: floatingLabel
                 ? textVariants.textSmRegular.fontFamily
                 : undefined,

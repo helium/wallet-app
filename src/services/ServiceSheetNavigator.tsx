@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useBorderRadii, useColors } from '@theme/themeHooks'
 import ServiceSheet from './ServiceSheet'
@@ -15,6 +15,7 @@ const ServiceSheetStack = createNativeStackNavigator()
 const ServiceSheetNavigator = () => {
   const colors = useColors()
   const borderRadii = useBorderRadii()
+  const [currentService, setCurrentService] = useState('wallet')
 
   const navigatorScreenOptions = useMemo(
     () => ({
@@ -30,10 +31,42 @@ const ServiceSheetNavigator = () => {
     [borderRadii, colors],
   )
 
+  const onFocus = useCallback((target: string | undefined) => {
+    switch (target?.split('-')[0]) {
+      default:
+      case 'WalletService':
+        setCurrentService('wallet')
+        break
+      case 'HotspotService':
+        setCurrentService('hotspots')
+        break
+      case 'AccountsService':
+        setCurrentService('wallets')
+        break
+      case 'GovernanceService':
+        setCurrentService('governance')
+        break
+      case 'BrowserService':
+        setCurrentService('browser')
+        break
+      case 'NotificationsService':
+        setCurrentService('notifications')
+        break
+      case 'SettingsService':
+        setCurrentService('settings')
+        break
+    }
+  }, [])
+
   return (
-    <ServiceSheet>
+    <ServiceSheet currentService={currentService}>
       <ServiceSheetStack.Navigator
         screenOptions={navigatorScreenOptions as any}
+        screenListeners={{
+          focus: ({ target }) => {
+            onFocus(target)
+          },
+        }}
       >
         <ServiceSheetStack.Screen
           name="WalletService"

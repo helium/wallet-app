@@ -173,7 +173,7 @@ const SwappingScreen = () => {
               <Text
                 marginTop="4"
                 variant="textXlRegular"
-                color="gray.600"
+                color="secondaryText"
                 textAlign="center"
               >
                 {t('swapsScreen.swappingTokensBody')}

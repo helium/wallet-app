@@ -95,7 +95,6 @@ const YourWalletsPage = () => {
           navigation.navigate('AccountAssignScreen', {
             words,
           })
-          // connectedWalletsRef.current?.hide()
         }
       } catch (e: any) {
         Toast.show(e.message || e.toString())

@@ -8,11 +8,20 @@ import {
   collectables as collectablesSli,
 } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
-import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
+import {
+  getNFTs,
+  getNFTsMetadata,
+  groupNFTsWithMetaData,
+  onLogs,
+  removeAccountChangeListener,
+} from '../utils/solanaUtils'
 import { useSolana } from '../solana/SolanaProvider'
+import { CompressedNFT } from '@types/solana'
+import { WrappedConnection } from '@utils/WrappedConnection'
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
+  fetchAllCollectablesByGroup: () => Promise<Record<string, CompressedNFT[]>>
 } => {
   const { cluster, anchorProvider } = useSolana()
   const dispatch = useAppDispatch()
@@ -58,6 +67,33 @@ const useCollectables = (): WalletCollectables & {
     accountSubscriptionId.current = subId
   }, [anchorProvider, currentAccount, dispatch, refresh])
 
+  const fetchAllCollectablesByGroup = useCallback(async () => {
+    if (!anchorProvider) return {}
+
+    let page = 1
+    let isLastPage = false
+    let fetchedCollectables: CompressedNFT[] = []
+
+    while (!isLastPage) {
+      const response = await getNFTs(
+        anchorProvider?.publicKey,
+        anchorProvider?.connection as WrappedConnection,
+        page,
+      )
+      fetchedCollectables = fetchedCollectables.concat(response)
+      isLastPage = response.length === 0
+      page++
+    }
+
+    const collectablesWithMetadata = await getNFTsMetadata(fetchedCollectables)
+
+    const groupedCollectablesWithMeta = await groupNFTsWithMetaData(
+      collectablesWithMetadata,
+    )
+
+    return groupedCollectablesWithMeta
+  }, [anchorProvider])
+
   if (
     !currentAccount?.solanaAddress ||
     !collectables[cluster]?.[currentAccount?.solanaAddress]
@@ -67,12 +103,14 @@ const useCollectables = (): WalletCollectables & {
       collectables: {},
       collectablesWithMeta: {},
       refresh,
+      fetchAllCollectablesByGroup,
     }
   }
 
   return {
     ...collectables[cluster][currentAccount?.solanaAddress],
     refresh,
+    fetchAllCollectablesByGroup,
   }
 }
 export default useCollectables

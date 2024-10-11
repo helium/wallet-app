@@ -510,8 +510,8 @@ const HNTKeyboardSelector = forwardRef(
                     marginRight="xs"
                     overflow="hidden"
                   >
-                    <BackgroundFill backgroundColor="error.500" />
-                    <Text variant="textLgMedium" color="error.500">
+                    <BackgroundFill backgroundColor="fg.quinary-400" />
+                    <Text variant="textLgMedium" color="primaryText">
                       {t('generic.cancel')}
                     </Text>
                   </TouchableOpacityBox>

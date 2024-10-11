@@ -15,6 +15,7 @@ import {
   CollectableStackParamList,
 } from './collectablesTypes'
 import { Collectable } from '../../types/solana'
+import ScrollBox from '@components/ScrollBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -76,26 +77,29 @@ const CollectionScreen = () => {
   const keyExtractor = useCallback((item: Collectable) => item.id, [])
 
   return (
-    <BackScreen
-      padding="0"
-      headerBackgroundColor="primaryBackground"
-      title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
-      headerTopMargin="6"
-    >
-      <ReAnimatedBox
-        marginTop="2"
-        entering={DelayedFadeIn}
-        style={globalStyles.container}
+    <ScrollBox>
+      <BackScreen
+        padding="0"
+        headerBackgroundColor="primaryBackground"
+        title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
+        headerTopMargin="6xl"
+        edges={[]}
       >
-        <FlatList
-          scrollEnabled
-          data={collectables}
-          numColumns={2}
-          renderItem={renderCollectable}
-          keyExtractor={keyExtractor}
-        />
-      </ReAnimatedBox>
-    </BackScreen>
+        <ReAnimatedBox
+          marginTop="2"
+          entering={DelayedFadeIn}
+          style={globalStyles.container}
+        >
+          <FlatList
+            scrollEnabled
+            data={collectables}
+            numColumns={2}
+            renderItem={renderCollectable}
+            keyExtractor={keyExtractor}
+          />
+        </ReAnimatedBox>
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

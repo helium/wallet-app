@@ -8,7 +8,7 @@ import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
 type Option = {
-  value: string
+  value: string | number
   label: string
   Icon?: FC<SvgProps>
   iconProps?: SvgProps
@@ -19,11 +19,13 @@ const SegmentedItem = ({
   selected,
   onSelected,
   onSetWidth,
+  fullWidth,
 }: {
   option: Option
   selected: boolean
   onSelected: ((event: GestureResponderEvent) => void) | undefined
   onSetWidth: (width: number) => void
+  fullWidth?: boolean
 }) => {
   const { primaryBackground, ...colors } = useColors()
 
@@ -36,6 +38,7 @@ const SegmentedItem = ({
 
   return (
     <TouchableOpacityBox
+      flex={fullWidth ? 1 : undefined}
       paddingVertical="2"
       paddingHorizontal="3"
       justifyContent="center"
@@ -67,11 +70,13 @@ type Props = {
   options: Option[]
   selectedIndex: number
   onItemSelected: (index: number) => void
+  fullWidth?: boolean
 } & BoxProps<Theme>
 const SegmentedControl = ({
   options,
   onItemSelected,
   selectedIndex,
+  fullWidth,
   ...boxProps
 }: Props) => {
   const [optionWidths, setOptionWidths] = useState(
@@ -126,6 +131,7 @@ const SegmentedControl = ({
         />
         {options.map((option, index) => (
           <SegmentedItem
+            fullWidth={fullWidth}
             key={option.value}
             option={option}
             selected={index === selectedIndex}

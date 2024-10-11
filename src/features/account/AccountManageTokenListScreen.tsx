@@ -27,6 +27,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import { NavBarHeight } from '@components/ServiceNavBar'
 
 const CheckableTokenListItem = ({
   bottomBorder,
@@ -56,8 +57,7 @@ const CheckableTokenListItem = ({
       flexDirection="row"
       minHeight={72}
       alignItems="center"
-      paddingHorizontal="4"
-      paddingVertical="4"
+      padding="4"
       borderBottomColor="primaryBackground"
       borderBottomWidth={bottomBorder ? 2 : 0}
       disabled
@@ -183,6 +183,9 @@ const AccountManageTokenListScreen: React.FC = () => {
           data={mints}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
+          contentContainerStyle={{
+            paddingBottom: NavBarHeight,
+          }}
         />
       </BackScreen>
     </ScrollBox>

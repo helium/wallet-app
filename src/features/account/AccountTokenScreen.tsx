@@ -15,7 +15,7 @@ import { RouteProp, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { useModal } from '@storage/ModalsProvider'
 import { useColors } from '@theme/themeHooks'
-import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
+import { GovMints, MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
@@ -34,6 +34,8 @@ import TransactionDetailSelector, {
 } from './TransactionDetail'
 import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
+import { PublicKey } from '@solana/web3.js'
+import { TokenListGovItem } from './TokenListItem'
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
 
@@ -207,32 +209,36 @@ const AccountTokenScreen = () => {
   }, [mint])
 
   const renderHeader = useCallback(() => {
+    const isGovMint = GovMints.some((m) => new PublicKey(m).equals(mint))
+
     return (
-      <Box paddingHorizontal="6" ref={headerContainerRef}>
+      <Box ref={headerContainerRef}>
         <Box>
-          <Box marginBottom="8">
+          <Box marginBottom="4">
             <Box alignItems="center" marginBottom="4">
               <TokenIcon img={json?.image} size={50} />
             </Box>
-            <AccountTokenBalance marginTop="2" mint={mint} />
-            {!!symbol && (
-              <AccountTokenCurrencyBalance
-                ticker={symbol.toUpperCase()}
-                variant="textXlRegular"
-                color="secondaryText"
-                textAlign="center"
-                marginBottom="8"
+            <Box paddingHorizontal={'2'}>
+              <AccountTokenBalance marginTop="2" mint={mint} />
+              {!!symbol && (
+                <AccountTokenCurrencyBalance
+                  ticker={symbol.toUpperCase()}
+                  variant="textXlRegular"
+                  color="secondaryText"
+                  textAlign="center"
+                  marginBottom="8"
+                />
+              )}
+              <AccountActionBar
+                hasSend={actionBarProps.hasSend}
+                hasRequest={actionBarProps.hasRequest}
+                hasDelegate={actionBarProps.hasDelegate}
+                mint={mint}
+                compact={!mint.equals(DC_MINT)}
+                hasBottomTitle={!mint.equals(DC_MINT)}
+                hasAirdrop={hasAirdrop}
               />
-            )}
-            <AccountActionBar
-              hasSend={actionBarProps.hasSend}
-              hasRequest={actionBarProps.hasRequest}
-              hasDelegate={actionBarProps.hasDelegate}
-              mint={mint}
-              compact={!mint.equals(DC_MINT)}
-              hasBottomTitle={!mint.equals(DC_MINT)}
-              hasAirdrop={hasAirdrop}
-            />
+            </Box>
           </Box>
         </Box>
         {mint.equals(NATIVE_MINT) &&
@@ -266,6 +272,8 @@ const AccountTokenScreen = () => {
               <Box height={MIN_BOTTOM_BAR_HEIGHT} />
             </>
           )}
+
+        {isGovMint && <TokenListGovItem mint={mint} marginBottom={'4'} />}
       </Box>
     )
   }, [

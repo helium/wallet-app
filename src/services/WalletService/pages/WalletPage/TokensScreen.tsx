@@ -1,8 +1,5 @@
 import Box from '@components/Box'
-import SegmentedControl from '@components/SegmentedControl'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import Tokens from '@assets/images/tokens.svg'
-import Collectables from '@assets/images/collectables.svg'
+import React, { ReactElement, useCallback, useEffect, useMemo } from 'react'
 import BalanceText from '@components/BalanceText'
 import { FlatList, RefreshControl } from 'react-native'
 import { useBalance } from '@utils/Balance'
@@ -10,7 +7,7 @@ import { DC_MINT, truthy } from '@helium/spl-utils'
 import { DEFAULT_TOKENS, useVisibleTokens } from '@storage/TokensProvider'
 import { PublicKey } from '@solana/web3.js'
 import {
-  TokenListGovItem,
+  HeliumTokenListItem,
   TokenListItem,
   TokenSkeleton,
 } from '@features/account/TokenListItem'
@@ -36,9 +33,8 @@ import { checkSecureAccount } from '@storage/secureStorage'
 import { WalletNavigationProp } from './WalletPageNavigator'
 import { useSolana } from '@/solana/SolanaProvider'
 
-const TokensScreen = () => {
+const TokensScreen = ({ Tabs }: { Tabs: ReactElement }) => {
   const { anchorProvider, cluster } = useSolana()
-  const [selectedIndex, setSelectedIndex] = useState(0)
   const { tokenAccounts } = useBalance()
   const { visibleTokens } = useVisibleTokens()
   const colors = useColors()
@@ -50,22 +46,6 @@ const TokensScreen = () => {
   const navigation = useNavigation<WalletNavigationProp>()
   const { t } = useTranslation()
   const { total } = useBalance()
-
-  const options = useMemo(
-    () => [
-      {
-        value: 'tokens',
-        label: 'Tokens',
-        Icon: Tokens,
-      },
-      {
-        value: 'collectables',
-        label: 'Collectables',
-        Icon: Collectables,
-      },
-    ],
-    [],
-  )
 
   const { loading: refetchingTokens, execute: refetchTokens } =
     useAsyncCallback(async () => {
@@ -156,32 +136,23 @@ const TokensScreen = () => {
     return all
   }, [tokenAccounts, visibleTokens])
 
-  const onItemSelected = useCallback((index: number) => {
-    setSelectedIndex(index)
-  }, [])
-
   const renderHeader = useCallback(() => {
     return (
-      <Box marginBottom="3xl" marginTop="2">
-        <SegmentedControl
-          options={options}
-          selectedIndex={selectedIndex}
-          onItemSelected={onItemSelected}
-          marginBottom="2xl"
-        />
+      <Box marginBottom="3xl">
+        {Tabs}
         <WalletAlertBanner />
-        <Box alignItems="center" marginTop="3xl" width="100%">
+        <Box alignItems="center" width="100%">
           <BalanceText amount={total} decimals={2} />
         </Box>
       </Box>
     )
-  }, [options, selectedIndex, onItemSelected, total])
+  }, [total, Tabs])
 
   const contentContainerStyle = useMemo(
     () => ({
       backgroundColor: colors['base.white'],
-      marginTop: spacing['4'],
-      paddingBottom: NavBarHeight + bottom + spacing['2xl'],
+      paddingTop: spacing['4'],
+      paddingBottom: NavBarHeight + bottom,
     }),
     [colors, spacing, bottom],
   )
@@ -201,13 +172,9 @@ const TokensScreen = () => {
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: PublicKey }) => {
-      if (GovMints.some((m) => new PublicKey(m).equals(item)))
-        return (
-          <Box>
-            <TokenListItem mint={item} />
-            <TokenListGovItem mint={item} />
-          </Box>
-        )
+      if (GovMints.some((m) => new PublicKey(m).equals(item))) {
+        return <HeliumTokenListItem mint={item} />
+      }
 
       return <TokenListItem mint={item} />
     },

@@ -116,10 +116,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowDown"
-            backgroundColor="green.light-500"
-            backgroundColorOpacity={0.2}
+            backgroundColor="green.300"
             backgroundColorOpacityPressed={0.4}
-            iconColor="green.light-500"
+            iconColor="green.700"
             title={compact || maxCompact ? undefined : t('accountView.deposit')}
             onPress={handleAction('request')}
             width={maxCompact ? 47.5 : undefined}
@@ -147,10 +146,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="swaps"
-            backgroundColor="orange.500"
-            backgroundColorOpacity={0.2}
+            backgroundColor="orange.300"
             backgroundColorOpacityPressed={0.4}
-            iconColor="orange.500"
+            iconColor="orange.700"
             title={compact || maxCompact ? undefined : t('accountView.swaps')}
             onPress={handleAction('swaps')}
             width={maxCompact ? 47.5 : undefined}
@@ -178,10 +176,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="airdrop"
-            backgroundColor="violet.200"
-            backgroundColorOpacity={0.2}
+            backgroundColor="violet.300"
             backgroundColorOpacityPressed={0.4}
-            iconColor="violet.200"
+            iconColor="violet.700"
             title={
               compact || maxCompact ? undefined : t('airdropScreen.airdrop')
             }
@@ -211,10 +208,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowUp"
-            backgroundColor="blue.light-500"
-            backgroundColorOpacity={0.2}
+            backgroundColor="blue.300"
             backgroundColorOpacityPressed={0.4}
-            iconColor="blue.light-500"
+            iconColor="blue.700"
             title={compact || maxCompact ? undefined : t('accountView.send')}
             onPress={handleAction('send')}
             reverse

@@ -11,6 +11,7 @@ import { useColors } from '@theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import ScrollBox from '@components/ScrollBox'
 import useCopyText from '@hooks/useCopyText'
+import TouchableContainer from '@components/TouchableContainer'
 
 const ReceivePage = () => {
   const { t } = useTranslation()
@@ -36,7 +37,7 @@ const ReceivePage = () => {
           {t('receivePage.subtitle')}
         </Text>
       </Box>
-      <TouchableOpacityBox
+      <TouchableContainer
         backgroundColor="cardBackground"
         padding="2xl"
         flexDirection="row"
@@ -65,8 +66,8 @@ const ReceivePage = () => {
           {t('receivePage.shareQr')}
         </Text>
         <CarotRight color={colors['text.quaternary-500']} />
-      </TouchableOpacityBox>
-      <TouchableOpacityBox
+      </TouchableContainer>
+      <TouchableContainer
         backgroundColor="cardBackground"
         padding="2xl"
         flexDirection="row"
@@ -85,7 +86,7 @@ const ReceivePage = () => {
           {t('receivePage.copyAddress')}
         </Text>
         <CarotRight color={colors['text.quaternary-500']} />
-      </TouchableOpacityBox>
+      </TouchableContainer>
     </ScrollBox>
   )
 }

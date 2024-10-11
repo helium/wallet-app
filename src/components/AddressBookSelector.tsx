@@ -19,9 +19,10 @@ import ContactsList from '@features/addressBook/ContactsList'
 import { CSAccount } from '@storage/cloudStorage'
 import { Portal } from '@gorhom/portal'
 import { useTranslation } from 'react-i18next'
-import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import HeliumBottomSheet from './HeliumBottomSheet'
 import { SafeAreaBox, Text } from '.'
+import { SendNavigationProp } from '@services/WalletService/pages/SendPage/SentPageNavigator'
+import { AddressBookNavigationProp } from '@features/addressBook/addressBookTypes'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void
@@ -43,7 +44,9 @@ const AddressBookSelector = forwardRef(
 
     const bottomSheetModalRef = useRef<BottomSheet>(null)
     const { t } = useTranslation()
-    const homeNav = useNavigation<WalletNavigationProp>()
+    const navigation = useNavigation<
+      SendNavigationProp & AddressBookNavigationProp
+    >()
     const [address, setAddress] = useState<string>()
     const [index, setIndex] = useState<number>()
 
@@ -89,8 +92,14 @@ const AddressBookSelector = forwardRef(
     )
 
     const handleAddNewContact = useCallback(() => {
-      homeNav.navigate('AddNewContact')
-    }, [homeNav])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(navigation as any).navigate('AddressBook', {
+        screen: 'AddNewContact',
+        initial: false,
+        params: undefined,
+      })
+      bottomSheetModalRef.current?.close()
+    }, [navigation, address])
 
     return (
       <Portal>

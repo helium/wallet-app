@@ -12,7 +12,11 @@ import BurnScreen from '@features/burn/BurnScreen'
 import AccountManageTokenListScreen from '@features/account/AccountManageTokenListScreen'
 import PaymentQrScanner from '@features/payment/PaymentQrScanner'
 import AddNewContact from '@features/addressBook/AddNewContact'
-import TokensScreen from './TokensScreen'
+import TokensTabs from './TokensTabs'
+import NftDetailsScreen from '@features/collectables/NftDetailsScreen'
+import { Collectable } from '../../../../types/solana'
+import CollectionScreen from '@features/collectables/CollectionScreen'
+import ManageCollectables from '@features/collectables/ManageCollectables'
 
 export type BurnRouteParam = {
   address: string
@@ -32,7 +36,13 @@ export type WalletStackParamList = {
   BurnScreen: BurnRouteParam
   AccountManageTokenListScreen: undefined
   PaymentQrScanner: undefined
-  AddNewContact: undefined
+  NftDetailsScreen: {
+    collectable: Collectable
+  }
+  CollectionScreen: {
+    collection: Collectable[]
+  }
+  ManageCollectables: undefined
 }
 
 export type WalletNavigationProp = StackNavigationProp<WalletStackParamList>
@@ -52,7 +62,7 @@ const WalletPageNavigator = () => {
 
   return (
     <WalletStack.Navigator screenOptions={navigatorScreenOptions}>
-      <WalletStack.Screen name="TokensScreen" component={TokensScreen} />
+      <WalletStack.Screen name="TokensScreen" component={TokensTabs} />
       <WalletStack.Screen
         name="AccountTokenScreen"
         component={AccountTokenScreen}
@@ -68,7 +78,18 @@ const WalletPageNavigator = () => {
         name="PaymentQrScanner"
         component={PaymentQrScanner}
       />
-      <WalletStack.Screen name="AddNewContact" component={AddNewContact} />
+      <WalletStack.Screen
+        name="NftDetailsScreen"
+        component={NftDetailsScreen}
+      />
+      <WalletStack.Screen
+        name="CollectionScreen"
+        component={CollectionScreen}
+      />
+      <WalletStack.Screen
+        name="ManageCollectables"
+        component={ManageCollectables}
+      />
     </WalletStack.Navigator>
   )
 }

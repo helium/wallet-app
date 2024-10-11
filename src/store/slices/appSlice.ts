@@ -2,14 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster } from '@solana/web3.js'
 
 export type AppState = {
-  showConnectedWallets: boolean
   showBanner: boolean
   cluster?: Cluster
   currentService: 'wallet' | 'governance' | 'hotspots' | 'settings'
 }
 
 const initialState: AppState = {
-  showConnectedWallets: false,
   showBanner: true,
   currentService: 'wallet',
 }
@@ -26,9 +24,6 @@ const appSlice = createSlice({
     },
     setCluster: (state, action: PayloadAction<Cluster>) => {
       state.cluster = action.payload
-    },
-    toggleConnectedWallets: (state) => {
-      state.showConnectedWallets = !state.showConnectedWallets
     },
     setShowBanner: (state, action: PayloadAction<boolean>) => {
       state.showBanner = action.payload

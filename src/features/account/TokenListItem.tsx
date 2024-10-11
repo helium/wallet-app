@@ -27,6 +27,9 @@ import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useSolana } from '../../solana/SolanaProvider'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import useAmountLocked from '@hooks/useAmountLocked'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -169,6 +172,121 @@ export const TokenListItem = ({ mint }: Props) => {
   )
 }
 
+export const HeliumTokenListItem = ({ mint }: Props) => {
+  const navigation = useNavigation<WalletNavigationProp>()
+  const wallet = useCurrentWallet()
+  const {
+    amount,
+    decimals,
+    loading: loadingOwned,
+  } = useOwnedAmount(wallet, mint)
+  const { triggerImpact } = useHaptic()
+  const { json, symbol, loading } = useMetaplexMetadata(mint)
+  const mintStr = mint.toBase58()
+  const { amountLocked } = useAmountLocked(mint)
+
+  const handleNavigation = useCallback(() => {
+    triggerImpact('light')
+    navigation.navigate('AccountTokenScreen', {
+      mint: mintStr,
+    })
+  }, [navigation, mintStr, triggerImpact])
+
+  const balanceToDisplay = useMemo(() => {
+    let realAmount = new BN(0)
+    if (amountLocked) {
+      realAmount = realAmount.add(amountLocked)
+    }
+
+    if (amount) {
+      const amountAsBN = new BN(amount.toString())
+      realAmount = realAmount.add(amountAsBN)
+    }
+
+    return realAmount && typeof decimals !== 'undefined'
+      ? humanReadable(realAmount, decimals)
+      : '0'
+  }, [amount, decimals, amountLocked])
+
+  return (
+    <FadeInOut>
+      <TouchableContainer
+        onPress={handleNavigation}
+        flexDirection="row"
+        minHeight={ITEM_HEIGHT}
+        alignItems="center"
+        paddingHorizontal="4"
+        paddingVertical="4"
+        backgroundColor="primaryBackground"
+        backgroundColorPressed="bg.primary-hover"
+      >
+        {loading ? (
+          <Box
+            width={40}
+            height={40}
+            borderRadius="full"
+            backgroundColor="fg.quinary-400"
+          />
+        ) : (
+          <TokenIcon img={json?.image} />
+        )}
+
+        <Box flex={1} paddingHorizontal="4">
+          {loadingOwned ? (
+            <Box flex={1} paddingHorizontal="4">
+              <Box width={120} height={16} backgroundColor="fg.quinary-400" />
+              <Box
+                width={70}
+                height={16}
+                marginTop="2"
+                backgroundColor="fg.quinary-400"
+              />
+            </Box>
+          ) : (
+            <Box>
+              <Text
+                variant="textMdRegular"
+                color="text.tertiary-600"
+                maxFontSizeMultiplier={1.3}
+              >
+                {json?.name}
+              </Text>
+              <Box flexDirection="row" alignItems="flex-end" gap="1">
+                <Text
+                  variant="textMdRegular"
+                  color="text.tertiary-600"
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {`${balanceToDisplay}`}
+                </Text>
+                <Text
+                  variant="textSmMedium"
+                  color="text.tertiary-600"
+                  maxFontSizeMultiplier={1.3}
+                >
+                  {symbol}
+                </Text>
+              </Box>
+            </Box>
+          )}
+        </Box>
+        <Box flexDirection="column" alignItems="flex-end">
+          {symbol && (
+            <AccountTokenCurrencyBalance
+              variant="textSmMedium"
+              color="secondaryText"
+              ticker={symbol.toUpperCase()}
+            />
+          )}
+          {/* 
+          TODO: Bring this back once we are tracking balances on the wallet api 
+          <PercentChange change={120.0} type="up" /> */}
+        </Box>
+      </TouchableContainer>
+    </FadeInOut>
+  )
+}
+
 const PercentChange = ({
   change,
   type,
@@ -198,7 +316,10 @@ const PercentChange = ({
   )
 }
 
-export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
+export const TokenListGovItem = ({
+  mint,
+  ...rest
+}: { mint: PublicKey } & BoxProps<Theme>) => {
   const navigation = useNavigation<ServiceSheetNavigationProp>()
   const { anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
@@ -292,96 +413,88 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     return !prevLocked && (loadingPositionKeys || loadingPositions)
   }, [loadingPositionKeys, loadingPositions, prevLocked])
 
+  if (balanceToDisplay === '0') return null
+
   return (
-    <FadeInOut>
-      <TouchableContainer
-        onPress={handleNavigation}
-        flexDirection="row"
-        minHeight={ITEM_HEIGHT}
-        alignItems="center"
-        paddingHorizontal="4"
-        paddingVertical="4"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
-        backgroundColor="primaryBackground"
-        backgroundColorPressed="bg.primary-hover"
-      >
-        {loading ? (
+    <TouchableContainer
+      onPress={handleNavigation}
+      flexDirection="row"
+      minHeight={ITEM_HEIGHT}
+      alignItems="center"
+      padding="4"
+      backgroundColor="cardBackground"
+      backgroundColorPressed="bg.primary-hover"
+      borderRadius={'2xl'}
+      {...rest}
+    >
+      {loading ? (
+        <Box
+          width={40}
+          height={40}
+          borderRadius="full"
+          backgroundColor="cardBackground"
+        />
+      ) : (
+        <Box position="relative">
+          <TokenIcon img={json?.image} />
           <Box
-            width={40}
-            height={40}
-            borderRadius="full"
+            position="absolute"
+            top={-6}
+            right={-8}
             backgroundColor="cardBackground"
-          />
-        ) : (
-          <Box position="relative">
-            <TokenIcon img={json?.image} />
+            justifyContent="center"
+            borderRadius="full"
+            alignItems="center"
+            height={22}
+            width={22}
+          >
             <Box
-              position="absolute"
-              top={-6}
-              right={-8}
-              backgroundColor="cardBackground"
-              justifyContent="center"
+              backgroundColor="orange.500"
               borderRadius="full"
+              justifyContent="center"
               alignItems="center"
-              height={22}
-              width={22}
+              height={18}
+              width={18}
             >
-              <Box
-                backgroundColor="orange.500"
-                borderRadius="full"
-                justifyContent="center"
-                alignItems="center"
-                height={18}
-                width={18}
+              <Lock width={12} height={12} color={colors.secondaryBackground} />
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      <Box flex={1} paddingHorizontal="4">
+        {loadingAmount ? (
+          <Box flex={1} paddingHorizontal="4">
+            <Box width={120} height={16} backgroundColor="cardBackground" />
+            <Box
+              width={70}
+              height={16}
+              marginTop="2"
+              backgroundColor="cardBackground"
+            />
+          </Box>
+        ) : (
+          <Box>
+            <Box flexDirection="row" alignItems="center">
+              <Text
+                variant="textMdRegular"
+                color="primaryText"
+                maxFontSizeMultiplier={1.3}
               >
-                <Lock
-                  width={12}
-                  height={12}
-                  color={colors.secondaryBackground}
-                />
-              </Box>
+                {`${balanceToDisplay} `}
+              </Text>
+              <Text
+                variant="textSmMedium"
+                color="secondaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {symbol} (Locked)
+              </Text>
             </Box>
           </Box>
         )}
-
-        <Box flex={1} paddingHorizontal="4">
-          {loadingAmount ? (
-            <Box flex={1} paddingHorizontal="4">
-              <Box width={120} height={16} backgroundColor="cardBackground" />
-              <Box
-                width={70}
-                height={16}
-                marginTop="2"
-                backgroundColor="cardBackground"
-              />
-            </Box>
-          ) : (
-            <Box>
-              <Box flexDirection="row" alignItems="center">
-                <Text
-                  variant="textMdRegular"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {`${balanceToDisplay} `}
-                </Text>
-                <Text
-                  variant="textSmMedium"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {symbol} (Locked)
-                </Text>
-              </Box>
-              <Text variant="textSmRegular" color="secondaryText">
-                -
-              </Text>
-            </Box>
-          )}
-        </Box>
-        <Arrow />
-      </TouchableContainer>
-    </FadeInOut>
+      </Box>
+      <Arrow />
+    </TouchableContainer>
   )
 }

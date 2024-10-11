@@ -11,6 +11,8 @@ import useHaptic from '@hooks/useHaptic'
 import { ww } from '../../utils/layout'
 import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
+import { useBorderRadii } from '@theme/themeHooks'
+import useLayoutWidth from '@hooks/useLayoutWidth'
 
 const COLLECTABLE_HEIGHT = ww / 2
 const NftListItem = ({
@@ -23,6 +25,8 @@ const NftListItem = ({
   const { json } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
   const { triggerImpact } = useHaptic()
+  const borderRadii = useBorderRadii()
+  const [height, setHeight] = useLayoutWidth()
 
   const handleCollectableNavigation = useCallback(
     (collection: Collectable[]) => () => {
@@ -42,47 +46,41 @@ const NftListItem = ({
   )
 
   return (
-    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
-      <TouchableOpacityBox
-        marginHorizontal="2"
-        marginVertical="2"
+    <TouchableOpacityBox
+      alignItems="center"
+      flex={1}
+      backgroundColor="bg.tertiary"
+      borderRadius="4xl"
+      onPress={handleCollectableNavigation(collectables)}
+      onLayout={setHeight}
+    >
+      <Image
+        borderRadius={borderRadii['2xl']}
+        style={{ height: height || '100%', width: '100%' }}
+        source={{
+          uri: json?.image || '',
+          cache: 'force-cache',
+        }}
+      />
+      <Box
+        padding="2"
+        position="absolute"
+        justifyContent="center"
         alignItems="center"
-        backgroundColor="bg.tertiary"
-        borderRadius="4xl"
-        onPress={handleCollectableNavigation(collectables)}
+        backgroundColor="base.white"
+        borderRadius="full"
+        bottom={20}
+        right={16}
+        flexDirection="row"
       >
-        <Image
-          borderRadius={5}
-          style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
-          source={{
-            uri: json?.image || '',
-            cache: 'force-cache',
-          }}
-        />
-        <Box
-          padding="2"
-          position="absolute"
-          justifyContent="center"
-          alignItems="center"
-          backgroundColor="base.white"
-          borderRadius="full"
-          bottom={20}
-          right={16}
-          flexDirection="row"
-        >
-          <Text
-            variant="textSmMedium"
-            color="primaryBackground"
-            marginRight="xs"
-          >
-            {item}
-          </Text>
-          <Text variant="textSmRegular" color="secondaryText">
-            {collectables?.length}
-          </Text>
-        </Box>
-      </TouchableOpacityBox>
-    </ReAnimatedBox>
+        <Text variant="textSmMedium" color="primaryText" marginRight="xs">
+          {item}
+        </Text>
+        <Text variant="textSmRegular" color="secondaryText">
+          {collectables?.length}
+        </Text>
+      </Box>
+    </TouchableOpacityBox>
   )
 }
 

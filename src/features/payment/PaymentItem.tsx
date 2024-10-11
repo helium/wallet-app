@@ -300,7 +300,7 @@ const PaymentItem = ({
                     color="primaryText"
                     opacity={0.3}
                     padding="4"
-                    variant="textLgSemibold"
+                    variant="textLgMedium"
                   >
                     {t('payment.enterAmount', {
                       ticker: symbol,

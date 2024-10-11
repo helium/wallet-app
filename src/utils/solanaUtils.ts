@@ -904,6 +904,7 @@ export const heliumNFTs = (): string[] => {
 export const getNFTs = async (
   pubKey: PublicKey,
   connection: WrappedConnection,
+  page = 1,
 ) => {
   const approvedNFTs = heliumNFTs()
 
@@ -912,20 +913,14 @@ export const getNFTs = async (
   }>(
     pubKey.toBase58(),
     { sortBy: 'created', sortDirection: 'asc' },
-    1000,
-    1,
+    50,
+    page,
     '',
     '',
     { showFungible: true },
   )
 
-  return items.filter((item) => {
-    const collection = item.grouping.find(
-      (k) => k.group_key === 'collection',
-    )?.group_value
-
-    return approvedNFTs.includes(collection || '')
-  })
+  return items
 }
 
 export const getHotspotWithRewards = async (

@@ -191,7 +191,7 @@ const TransferCollectableScreen = () => {
                 </Text>
                 <Text
                   variant="textXlRegular"
-                  color="gray.600"
+                  color="secondaryText"
                   textAlign="center"
                   marginBottom="4"
                 >

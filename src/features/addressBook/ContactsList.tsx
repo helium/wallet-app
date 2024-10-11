@@ -14,6 +14,8 @@ import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
 import { useSpacing } from '@theme/themeHooks'
 import { CSAccount } from '../../storage/cloudStorage'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   onAddNew: () => void
@@ -36,6 +38,7 @@ const ContactsList = ({
 
   const { t } = useTranslation()
   const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
   const [searchTerm, setSearchTerm] = useState('')
   const handleContactPressed = useCallback(
     (item: CSAccount) => {
@@ -158,8 +161,9 @@ const ContactsList = ({
   const contentContainerStyle = useMemo(() => {
     return {
       padding: spacing['5'],
+      paddingBottom: NavBarHeight + bottom,
     }
-  }, [spacing])
+  }, [spacing, bottom])
 
   if (insideBottomSheet) {
     return (

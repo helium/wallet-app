@@ -682,7 +682,12 @@ const PaymentScreen = () => {
           <Text variant="displaySmSemibold" color="primaryText">
             {t('payment.send')}
           </Text>
-          <Text variant="textLgMedium" color="secondaryText" textAlign="center">
+          <Text
+            variant="textLgMedium"
+            color="secondaryText"
+            textAlign="center"
+            paddingHorizontal="8"
+          >
             {t('payment.sendTokensToAnyAddress')}
           </Text>
         </Box>

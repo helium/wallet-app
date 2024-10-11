@@ -18,21 +18,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
+  currentService: string
   children?: React.ReactNode
 }
 
-const ServiceSheet = ({ children }: ServiceSheetProps) => {
+const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [bottomSheetOpen, setBottomSheetOpen] = useState(true)
   const bottomSheetRef = useRef<BottomSheet>(null)
   const serviceNav = useNavigation<ServiceSheetNavigationProp>()
-  const [currentService, setCurrentService] = useState('wallet')
   const { top } = useSafeAreaInsets()
 
   const onRoute = useCallback(
     (value: string) => {
       setIsExpanded(false)
       bottomSheetRef.current?.expand()
-      setCurrentService(value)
 
       switch (value) {
         default:
@@ -64,23 +64,24 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
   }, [])
 
   const onWalletIconPress = useCallback(() => {
-    if (currentService === 'wallets') {
-      setCurrentService('')
+    if (currentService === 'wallets' && bottomSheetOpen) {
       bottomSheetRef.current?.close()
       return
     }
 
-    setCurrentService('wallets')
     serviceNav.replace('AccountsService')
     bottomSheetRef.current?.expand()
-  }, [currentService, serviceNav, bottomSheetRef])
+  }, [currentService, serviceNav, bottomSheetRef, bottomSheetOpen])
 
   const onCloseSheet = useCallback(() => {
     if (currentService === '') return
 
-    setCurrentService('')
     bottomSheetRef.current?.close()
   }, [bottomSheetRef, currentService])
+
+  const onChangeSheet = useCallback((index: number) => {
+    setBottomSheetOpen(index === 0)
+  }, [])
 
   return (
     <ReAnimatedBox entering={FadeInSlow} flex={1} style={{ paddingTop: top }}>
@@ -90,13 +91,17 @@ const ServiceSheet = ({ children }: ServiceSheetProps) => {
         onClose={onDrawerPress}
       />
       <Header
-        title={currentService}
+        title={bottomSheetOpen ? currentService : ''}
         onDrawerPress={onDrawerPress}
         onWalletIconPress={onWalletIconPress}
-        walletsSelected={currentService === 'wallets'}
+        walletsSelected={bottomSheetOpen && currentService === 'wallets'}
         onClose={onCloseSheet}
       />
-      <HeliumBottomSheet ref={bottomSheetRef} onClose={onCloseSheet} index={0}>
+      <HeliumBottomSheet
+        ref={bottomSheetRef}
+        onChange={onChangeSheet}
+        index={0}
+      >
         <ThemeProvider theme={lightTheme}>
           <Box
             flex={1}

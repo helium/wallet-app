@@ -22,16 +22,18 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
-import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import iotMobileTokens from './animations/iot-mobile-tokens.json'
 import iotTokens from './animations/iot-tokens.json'
 import mobileTokens from './animations/mobile-tokens.json'
+import { useColors } from '@theme/themeHooks'
+import { HotspotServiceNavigationProp } from '@services/HotspotService'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
-  const navigation = useNavigation<TabBarNavigationProp>()
+  const colors = useColors()
+  const navigation = useNavigation<HotspotServiceNavigationProp>()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { bottom } = useSafeAreaInsets()
@@ -58,7 +60,7 @@ const ClaimingRewardsScreen = () => {
     // Reset Collectables stack to first screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Collectables' }],
+      routes: [{ name: 'Hotspot' }],
     })
   }, [navigation])
 
@@ -81,7 +83,7 @@ const ClaimingRewardsScreen = () => {
     <ReAnimatedBox
       entering={DelayedFadeIn}
       flex={1}
-      backgroundColor="base.black"
+      backgroundColor="primaryBackground"
     >
       <Box
         backgroundColor="transparent"
@@ -92,7 +94,7 @@ const ClaimingRewardsScreen = () => {
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
             padding="4"
-            shadowColor="base.black"
+            shadowColor="primaryText"
             shadowOpacity={0.4}
             shadowOffset={{ width: 0, height: 10 }}
             shadowRadius={10}
@@ -188,7 +190,7 @@ const ClaimingRewardsScreen = () => {
                 </Text>
                 <Text
                   variant="textMdRegular"
-                  color="gray.50"
+                  color="secondaryText"
                   textAlign="center"
                   marginTop="2"
                 >
@@ -258,15 +260,16 @@ const ClaimingRewardsScreen = () => {
             marginBottom="4"
             height={65}
             borderRadius="full"
-            backgroundColor="base.white"
-            backgroundColorOpacity={0.1}
-            backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
+            backgroundColor="primaryText"
             title={t('collectablesScreen.returnToCollectables')}
-            titleColor="base.white"
+            titleColor="primaryBackground"
             onPress={onReturn}
             LeadingComponent={
-              <BackArrow width={16} height={15} color="primaryText" />
+              <BackArrow
+                width={16}
+                height={15}
+                color={colors.primaryBackground}
+              />
             }
           />
         </Box>
