@@ -116,9 +116,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowDown"
-            backgroundColor="green.300"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="green.700"
+            iconColor="primaryBackground"
             title={compact || maxCompact ? undefined : t('accountView.deposit')}
             onPress={handleAction('request')}
             width={maxCompact ? 47.5 : undefined}
@@ -208,9 +208,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowUp"
-            backgroundColor="blue.300"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="blue.700"
+            iconColor="primaryBackground"
             title={compact || maxCompact ? undefined : t('accountView.send')}
             onPress={handleAction('send')}
             reverse

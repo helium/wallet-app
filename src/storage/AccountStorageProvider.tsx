@@ -20,6 +20,7 @@ import {
   accountNetType,
   AccountNetTypeOpt,
   heliumAddressToSolAddress,
+  solAddressToHelium,
 } from '../utils/accountUtils'
 import makeApiToken from '../utils/makeApiToken'
 import { getSessionKey } from '../utils/walletApiV2'
@@ -339,6 +340,34 @@ const useAccountStorageHook = () => {
     [contacts],
   )
 
+  const editAvatar = useCallback(
+    async (avatar: string) => {
+      if (!accounts || !currentAccount?.address) return
+
+      const editedAccount: CSAccount = {
+        ...currentAccount,
+        avatar,
+      }
+
+      const editedAccounts = accounts
+      editedAccounts[currentAccount?.address] = editedAccount
+
+      setAccounts(editedAccounts)
+      await updateCloudAccounts(editedAccounts)
+    },
+    [currentAccount, accounts],
+  )
+
+  const getAvatar = useCallback(
+    async (address: string) => {
+      if (!accounts) return
+      const account = accounts[solAddressToHelium(address)]
+
+      return account?.avatar
+    },
+    [accounts],
+  )
+
   const updateDefaultAccountAddress = useCallback(
     async (address: string | undefined) => {
       await setCloudDefaultAccountAddress(address)
@@ -419,6 +448,8 @@ const useAccountStorageHook = () => {
     updateDefaultAccountAddress,
     upsertAccount,
     upsertAccounts,
+    editAvatar,
+    getAvatar,
   }
 }
 
@@ -445,6 +476,8 @@ const initialState = {
   sortedTestnetAccounts: [],
   upsertAccount: async () => undefined,
   upsertAccounts: async () => undefined,
+  editAvatar: async () => undefined,
+  getAvatar: async () => undefined,
 }
 
 const AccountStorageContext =

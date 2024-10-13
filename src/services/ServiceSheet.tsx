@@ -103,6 +103,8 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
         ref={bottomSheetRef}
         onChange={onChangeSheet}
         index={0}
+        // TODO: Bring this back once we have the stickers page
+        enablePanDownToClose={false}
       >
         <ThemeProvider theme={lightTheme}>
           <Box

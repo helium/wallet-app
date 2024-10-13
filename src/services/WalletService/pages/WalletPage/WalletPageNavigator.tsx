@@ -27,7 +27,7 @@ export type BurnRouteParam = {
 }
 
 export type WalletStackParamList = {
-  TokensScreen: undefined
+  TokensTabs: undefined
   AccountTokenScreen: { mint: string }
   AirdropScreen: { mint: string }
   ConfirmPin: {
@@ -65,7 +65,7 @@ const WalletPageNavigator = () => {
 
   return (
     <WalletStack.Navigator screenOptions={navigatorScreenOptions}>
-      <WalletStack.Screen name="TokensScreen" component={TokensTabs} />
+      <WalletStack.Screen name="TokensTabs" component={TokensTabs} />
       <WalletStack.Screen
         name="AccountTokenScreen"
         component={AccountTokenScreen}

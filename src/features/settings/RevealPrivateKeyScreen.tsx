@@ -4,7 +4,6 @@ import { useAsync } from 'react-async-hook'
 import { useNavigation } from '@react-navigation/native'
 import Text from '@components/Text'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import BackScreen from '@components/BackScreen'
 import TextTransform from '@components/TextTransform'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -12,6 +11,7 @@ import CopyAddress from '@components/CopyAddress'
 import useAlert from '@hooks/useAlert'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 
 const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()
@@ -28,7 +28,7 @@ const RevealPrivateKeyScreen = () => {
     const secureAccount = await getSecureAccount(currentAccount.address)
     if (!secureAccount?.keypair.sk) return
     setPrivateKey(
-      JSON.stringify(
+      bs58.encode(
         Buffer.from(secureAccount?.keypair?.sk, 'base64').toJSON().data,
       ),
     )
@@ -60,7 +60,7 @@ const RevealPrivateKeyScreen = () => {
             marginHorizontal="xs"
             height={140}
             marginVertical="6"
-            backgroundColor="gray.900"
+            backgroundColor="primaryText"
             padding="6"
             borderRadius="2xl"
             justifyContent="center"
@@ -68,7 +68,7 @@ const RevealPrivateKeyScreen = () => {
             <Text
               variant="textSmRegular"
               fontSize={12}
-              color="primaryText"
+              color="primaryBackground"
               maxFontSizeMultiplier={1}
               selectable
             >
@@ -83,7 +83,7 @@ const RevealPrivateKeyScreen = () => {
           marginHorizontal="xs"
           height={{ none: 80, sm: 100 }}
           marginVertical="6"
-          backgroundColor="gray.900"
+          backgroundColor="primaryText"
           padding="6"
           borderRadius="2xl"
           justifyContent="center"
@@ -91,7 +91,7 @@ const RevealPrivateKeyScreen = () => {
           <Text
             variant="textSmRegular"
             fontSize={18}
-            color="primaryText"
+            color="primaryBackground"
             maxFontSizeMultiplier={1}
             textAlign="center"
             fontWeight="bold"
@@ -102,15 +102,6 @@ const RevealPrivateKeyScreen = () => {
         </TouchableOpacityBox>
       )}
       <Box flex={1} />
-      <ButtonPressable
-        height={60}
-        borderRadius="full"
-        backgroundColor="bg.tertiary"
-        titleColor="primaryText"
-        title={t('settings.revealPrivateKey.done')}
-        marginBottom="4"
-        onPress={navigation.goBack}
-      />
     </BackScreen>
   )
 }

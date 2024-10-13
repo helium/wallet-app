@@ -609,7 +609,6 @@ const SwapScreen = () => {
     return loadingPrice
   }, [loading, loadingPrice, isDevnet])
 
-  const [selectedIndex, setSelectedIndex] = useState(0)
   const bpsOptions: number[] = useMemo(() => [30, 50, 100], [])
 
   const options = useMemo(
@@ -626,7 +625,6 @@ const SwapScreen = () => {
   const onItemSelected = useCallback((index: number) => {
     const bps = bpsOptions[index]
     setSlippageBps(bps)
-    setSelectedIndex(index)
   }, [])
 
   const Slippage = useMemo(() => {
@@ -663,7 +661,6 @@ const SwapScreen = () => {
         </Box>
         <SegmentedControl
           options={options}
-          selectedIndex={selectedIndex}
           onItemSelected={onItemSelected}
           fullWidth
         />
@@ -676,7 +673,6 @@ const SwapScreen = () => {
     setSlippageInfoVisible,
     t,
     isDevnet,
-    selectedIndex,
   ])
 
   return (

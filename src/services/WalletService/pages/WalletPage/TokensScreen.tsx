@@ -33,7 +33,7 @@ import { checkSecureAccount } from '@storage/secureStorage'
 import { WalletNavigationProp } from './WalletPageNavigator'
 import { useSolana } from '@/solana/SolanaProvider'
 
-const TokensScreen = ({ Tabs }: { Tabs: ReactElement }) => {
+const TokensScreen = () => {
   const { anchorProvider, cluster } = useSolana()
   const { tokenAccounts } = useBalance()
   const { visibleTokens } = useVisibleTokens()
@@ -139,14 +139,13 @@ const TokensScreen = ({ Tabs }: { Tabs: ReactElement }) => {
   const renderHeader = useCallback(() => {
     return (
       <Box marginBottom="3xl">
-        {Tabs}
         <WalletAlertBanner />
         <Box alignItems="center" width="100%">
           <BalanceText amount={total} decimals={2} />
         </Box>
       </Box>
     )
-  }, [total, Tabs])
+  }, [total])
 
   const contentContainerStyle = useMemo(
     () => ({

@@ -296,7 +296,7 @@ const DeviceShow = () => {
   }, [accountsToAdd, ledgerDevice, navigation, upsertAccounts])
 
   const handleClose = useCallback(() => {
-    homeNav.navigate('TokensScreen')
+    homeNav.navigate('TokensTabs')
   }, [homeNav])
 
   const onCheckboxToggled = useCallback(

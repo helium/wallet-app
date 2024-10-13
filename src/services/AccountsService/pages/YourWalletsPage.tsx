@@ -314,9 +314,10 @@ const YourWalletsPage = () => {
         right={0}
         onLayout={setFooterHeight}
       >
-        <TouchableOpacityBox>
+        {/** TODO: Bring back when stickers page is added */}
+        {/* <TouchableOpacityBox>
           <BigClose />
-        </TouchableOpacityBox>
+        </TouchableOpacityBox> */}
         <Box flex={1} />
         <TouchableOpacityBox onPress={handleAddNew}>
           <BigAdd />
@@ -362,6 +363,7 @@ const YourWalletsPage = () => {
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
         renderSectionFooter={renderSectionFooter}
+        stickySectionHeadersEnabled={false}
       />
       <Footer />
     </ReAnimatedBox>

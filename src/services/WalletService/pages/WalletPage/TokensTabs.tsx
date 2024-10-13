@@ -1,16 +1,39 @@
-import Box from '@components/Box'
-import ScrollBox from '@components/ScrollBox'
-import SegmentedControl from '@components/SegmentedControl'
-import React, { useCallback, useMemo, useState } from 'react'
+import SegmentedControl, {
+  SegmentedControlRef,
+} from '@components/SegmentedControl'
+import React, { useCallback, useMemo, useRef } from 'react'
 import Tokens from '@assets/images/tokens.svg'
 import Collectables from '@assets/images/collectables.svg'
 import TokensScreen from './TokensScreen'
+import {
+  MaterialTopTabNavigationOptions,
+  createMaterialTopTabNavigator,
+} from '@react-navigation/material-top-tabs'
+import { StackNavigationProp } from '@react-navigation/stack'
 import NftList from '@features/collectables/NftList'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import { FadeIn } from 'react-native-reanimated'
+import { useColors } from '@theme/themeHooks'
+import { useNavigation } from '@react-navigation/native'
+
+export type TokensStackParamList = {
+  TokensScreen: undefined
+  NftList: undefined
+}
+
+export type TokensNavigationProp = StackNavigationProp<TokensStackParamList>
+
+const TokensStack = createMaterialTopTabNavigator()
 
 const TokensTabs = () => {
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const segmentedControlRef = useRef<SegmentedControlRef>(null)
+  const colors = useColors()
+  const navigatorScreenOptions = useMemo(
+    () =>
+      ({
+        headerShown: false,
+      } as MaterialTopTabNavigationOptions),
+    [colors],
+  )
+  const navigation = useNavigation<TokensNavigationProp>()
 
   const options = useMemo(
     () => [
@@ -29,37 +52,38 @@ const TokensTabs = () => {
   )
 
   const onItemSelected = useCallback((index: number) => {
-    setSelectedIndex(index)
+    if (index === 0) {
+      navigation.navigate('TokensScreen')
+    }
+
+    if (index === 1) {
+      navigation.navigate('NftList')
+    }
   }, [])
 
   const TopTabs = useCallback(() => {
     return (
       <SegmentedControl
         options={options}
-        selectedIndex={selectedIndex}
         onItemSelected={onItemSelected}
         marginTop="3xl"
         marginBottom={'xl'}
+        ref={segmentedControlRef}
       />
     )
-  }, [onItemSelected, options, selectedIndex])
+  }, [onItemSelected, options])
 
   return (
-    <ScrollBox
-      contentContainerStyle={{
-        flex: 1,
+    <TokensStack.Navigator
+      screenOptions={navigatorScreenOptions}
+      tabBar={TopTabs}
+      sceneContainerStyle={{
+        backgroundColor: colors['primaryBackground'],
       }}
     >
-      {selectedIndex === 0 ? (
-        <ReAnimatedBox entering={FadeIn} flex={1}>
-          <TokensScreen Tabs={<TopTabs />} />
-        </ReAnimatedBox>
-      ) : (
-        <ReAnimatedBox entering={FadeIn} flex={1}>
-          <NftList Tabs={<TopTabs />} />
-        </ReAnimatedBox>
-      )}
-    </ScrollBox>
+      <TokensStack.Screen name="TokensScreen" component={TokensScreen} />
+      <TokensStack.Screen name="NftList" component={NftList} />
+    </TokensStack.Navigator>
   )
 }
 

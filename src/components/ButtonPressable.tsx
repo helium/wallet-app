@@ -33,6 +33,7 @@ type Props = BoxProps<Theme> & {
   style?: ViewStyle
   LeadingComponent?: React.ReactNode
   TrailingComponent?: React.ReactNode
+  iconProps?: SvgProps
 }
 
 const ButtonPressable = ({
@@ -60,6 +61,7 @@ const ButtonPressable = ({
   height = 60,
   LeadingComponent,
   TrailingComponent,
+  iconProps,
   ...boxProps
 }: Props) => {
   const [pressed, setPressed] = useState(false)
@@ -151,7 +153,7 @@ const ButtonPressable = ({
         padding={height || boxProps.maxHeight || padding ? padding : '6'}
         style={backgroundColorStyle}
         flexDirection="row"
-        justifyContent={Icon ? 'space-between' : 'center'}
+        justifyContent={Icon ? 'center' : 'center'}
         alignItems="center"
         {...containerProps}
       >
@@ -168,7 +170,7 @@ const ButtonPressable = ({
             {title}
           </Text>
         )}
-        {Icon && <Icon color={iconColor} />}
+        {Icon && <Icon color={iconColor} {...iconProps} />}
         {TrailingComponent && <Box marginStart="xs">{TrailingComponent}</Box>}
       </Box>
     </ButtonPressAnimation>

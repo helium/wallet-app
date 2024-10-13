@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect, ReactElement } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
@@ -14,7 +14,7 @@ import Config from '@assets/images/config.svg'
 import Text from '@components/Text'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 
-const NftList = ({ Tabs }: { Tabs: ReactElement }) => {
+const NftList = () => {
   const spacing = useSpacing()
   const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<WalletNavigationProp>()
@@ -26,12 +26,6 @@ const NftList = ({ Tabs }: { Tabs: ReactElement }) => {
     refresh,
   } = useCollectables()
   const { primaryText } = useColors()
-
-  useEffect(() => {
-    return navigation.addListener('focus', () => {
-      refresh()
-    })
-  }, [navigation, refresh])
 
   const flatListItems = useMemo(() => {
     // always return an even number of items, if odd add an empty string
@@ -135,7 +129,6 @@ const NftList = ({ Tabs }: { Tabs: ReactElement }) => {
       renderItem={renderItem}
       ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}
-      ListHeaderComponent={Tabs}
       ListFooterComponent={renderFooterComponent}
     />
   )

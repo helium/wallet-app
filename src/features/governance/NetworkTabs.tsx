@@ -1,10 +1,7 @@
 import Box from '@components/Box'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useGovernance } from '@storage/GovernanceProvider'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { Animated } from 'react-native'
+import React, { useCallback, useMemo } from 'react'
 import SegmentedControl from '@components/SegmentedControl'
 import { Mints } from '@utils/constants'
 import IOT from '@assets/images/iot.svg'
@@ -14,11 +11,6 @@ import { GovernanceNavigationProp } from './governanceTypes'
 
 export const NetworkTabs: React.FC = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const { currentAccount } = useAccountStorage()
-  const { mint, proposalCountByMint } = useGovernance()
-  const anim = useRef(new Animated.Value(1))
-  const [selectedIndex, setSelectedIndex] = useState(0)
-
   const options = useMemo(
     () => [
       {
@@ -45,7 +37,6 @@ export const NetworkTabs: React.FC = () => {
 
   const onItemSelected = useCallback(
     (index: number) => {
-      setSelectedIndex(index)
       const pk = new PublicKey(options[index].value)
       navigation.setParams({ mint: pk.toBase58() })
     },
@@ -54,11 +45,7 @@ export const NetworkTabs: React.FC = () => {
 
   return (
     <Box flexDirection="row" justifyContent="center">
-      <SegmentedControl
-        options={options}
-        selectedIndex={selectedIndex}
-        onItemSelected={onItemSelected}
-      />
+      <SegmentedControl options={options} onItemSelected={onItemSelected} />
       {/* {GovMints.map((m) => {
         const pk = new PublicKey(m)
         const hasUnseenProposals =

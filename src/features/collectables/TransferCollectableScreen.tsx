@@ -73,8 +73,6 @@ const TransferCollectableScreen = () => {
     return nft?.content?.metadata
   }, [nft])
 
-  console.log('metadata', metadata)
-
   const { submitCollectable } = useSubmitTxn()
 
   const handleAddressBookSelected = useCallback(() => {

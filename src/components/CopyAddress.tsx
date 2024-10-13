@@ -40,7 +40,7 @@ const CopyAddress = ({ address, ...boxProps }: Props) => {
     <TouchableOpacityBox
       {...boxProps}
       flexDirection="row"
-      backgroundColor="green.light-500"
+      backgroundColor="primaryText"
       borderRadius="full"
       alignItems="center"
       padding="4"
@@ -48,13 +48,13 @@ const CopyAddress = ({ address, ...boxProps }: Props) => {
       onPress={copyAddress}
       marginRight="3"
     >
-      <CopyAddressIcon color={colors.secondaryText} />
+      <CopyAddressIcon color={colors.primaryBackground} />
       <Text
         marginLeft="2"
         variant="textMdRegular"
         fontWeight="500"
         fontSize={17}
-        color="primaryText"
+        color="primaryBackground"
       >
         {t('generic.copy')}
       </Text>
