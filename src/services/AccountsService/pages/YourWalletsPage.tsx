@@ -171,7 +171,7 @@ const YourWalletsPage = () => {
 
     setTimeout(() => {
       setCurrentAccount(switchingAccounts)
-      navigation.navigate('WalletService')
+      navigation.replace('WalletService')
     }, 0)
   }, [switchingAccounts, setCurrentAccount, navigation])
 

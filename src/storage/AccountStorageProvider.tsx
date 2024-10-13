@@ -353,6 +353,7 @@ const useAccountStorageHook = () => {
       editedAccounts[currentAccount?.address] = editedAccount
 
       setAccounts(editedAccounts)
+      setCurrentAccount(editedAccount)
       await updateCloudAccounts(editedAccounts)
     },
     [currentAccount, accounts],

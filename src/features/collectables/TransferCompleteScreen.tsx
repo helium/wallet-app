@@ -22,7 +22,7 @@ import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { RootState } from '../../store/rootReducer'
-import { Collectable, CompressedNFT } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import { CollectableStackParamList } from './collectablesTypes'
 
@@ -46,15 +46,10 @@ const TransferCollectableScreen = () => {
   )
   const spacing = useSpacing()
 
-  const compressedNFT = useMemo(
-    () => collectable as CompressedNFT,
-    [collectable],
-  )
-  const nft = useMemo(() => collectable as Collectable, [collectable])
-
+  const asset = useMemo(() => collectable as CompressedNFT, [collectable])
   const metadata = useMemo(() => {
-    return compressedNFT?.content?.metadata || nft?.json
-  }, [compressedNFT, nft])
+    return asset?.content?.metadata
+  }, [asset])
 
   const backgroundImageUri = useMemo(() => {
     return metadata?.image

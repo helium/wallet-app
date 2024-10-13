@@ -12,10 +12,10 @@ import { useNavigation } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
 import { lightTheme } from '@theme/theme'
 import HeliumBottomSheet from '@components/HeliumBottomSheet'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { FadeInSlow } from '@components/FadeInOut'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ServiceSheetNavigationProp } from './serviceSheetTypes'
+import { useAccountStorage } from '@storage/AccountStorageProvider'
 
 type ServiceSheetProps = {
   currentService: string
@@ -136,7 +136,7 @@ const Header = ({
   onClose: () => void
 }) => {
   const spacing = useSpacing()
-  const wallet = useCurrentWallet()
+  const { currentAccount } = useAccountStorage()
 
   const titleAsWord = useMemo(() => {
     if (!title || title === '') return ''
@@ -175,7 +175,7 @@ const Header = ({
               right={spacing['-xs']}
             />
           )}
-          <AccountIcon size={36} address={wallet?.toBase58()} />
+          <AccountIcon size={36} address={currentAccount?.solanaAddress} />
         </Box>
       </TouchableOpacityBox>
     </TouchableOpacityBox>

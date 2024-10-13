@@ -44,8 +44,7 @@ const CollectionScreen = () => {
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Collectable }) => {
-      const { json } = item
-
+      const json = item.content?.metadata
       return (
         <ReAnimatedBox
           style={{ width: '50%' }}
@@ -64,7 +63,7 @@ const CollectionScreen = () => {
               borderRadius={borderRadii['4xl']}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
-                uri: json?.image || '',
+                uri: item?.content?.files?.[0]?.uri || '',
               }}
             />
           </TouchableOpacityBox>

@@ -38,7 +38,7 @@ const NftDetailsScreen = () => {
   const { t } = useTranslation()
 
   const { collectable }: { collectable: Collectable } = route.params
-  const { json } = collectable
+  const { content } = collectable
 
   const spacing = useSpacing()
 
@@ -48,9 +48,13 @@ const NftDetailsScreen = () => {
     })
   }, [collectable, navigation])
 
+  const imageUri = useMemo(() => {
+    return content?.files?.[0]?.uri
+  }, [content])
+
   const updateAvatar = useCallback(async () => {
-    await editAvatar(json.image)
-  }, [json])
+    await editAvatar(imageUri)
+  }, [imageUri])
 
   const TransferButton = useCallback(() => {
     return (
@@ -132,16 +136,16 @@ const NftDetailsScreen = () => {
         >
           <ScrollView>
             <Box flex={1}>
-              {json && (
+              {content && (
                 <Box alignItems="center">
                   <ImageBox
                     marginTop="6"
                     backgroundColor={
-                      json.image ? 'primaryBackground' : 'bg.tertiary'
+                      imageUri ? 'primaryBackground' : 'bg.tertiary'
                     }
                     height={COLLECTABLE_HEIGHT - spacing['6'] * 2}
                     width={COLLECTABLE_HEIGHT - spacing['6'] * 2}
-                    source={{ uri: json.image, cache: 'force-cache' }}
+                    source={{ uri: imageUri, cache: 'force-cache' }}
                     borderRadius="4xl"
                   />
                 </Box>
@@ -152,7 +156,7 @@ const NftDetailsScreen = () => {
                 textAlign="center"
                 variant="displayMdMedium"
               >
-                {json?.name}
+                {content?.metadata?.name}
               </Text>
               <Text
                 variant="textXsMedium"
@@ -160,7 +164,8 @@ const NftDetailsScreen = () => {
                 marginBottom="8"
                 textAlign="center"
               >
-                {json?.description || t('collectables.noDescription')}
+                {content?.metadata?.description ||
+                  t('collectables.noDescription')}
               </Text>
               <Box flexDirection="row">
                 {isNFT && (
@@ -180,7 +185,7 @@ const NftDetailsScreen = () => {
                 marginTop="2xl"
                 style={{ marginBottom: NavBarHeight + bottom }}
               >
-                <NftMetadata metadata={json} />
+                <NftMetadata metadata={content?.metadata} />
               </Box>
             </Box>
           </ScrollView>

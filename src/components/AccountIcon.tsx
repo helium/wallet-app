@@ -10,12 +10,12 @@ type Props = { address?: string; size: number } & Omit<
   'seed' | 'size'
 >
 const AccountIcon = ({ address, ...jazzIconProps }: Props) => {
-  const { getAvatar } = useAccountStorage()
+  const { getAvatar, currentAccount } = useAccountStorage()
 
   const { result: avatar } = useAsync(async () => {
     if (!address) return
     return getAvatar(address)
-  }, [address])
+  }, [address, currentAccount])
 
   const seed = useMemo(() => {
     if (!address) return null

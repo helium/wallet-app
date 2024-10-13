@@ -10,8 +10,7 @@ import {
 import { useAppDispatch } from '../store/store'
 import {
   getNFTs,
-  getNFTsMetadata,
-  groupNFTsWithMetaData,
+  groupNFTs,
   onLogs,
   removeAccountChangeListener,
 } from '../utils/solanaUtils'
@@ -85,11 +84,7 @@ const useCollectables = (): WalletCollectables & {
       page++
     }
 
-    const collectablesWithMetadata = await getNFTsMetadata(fetchedCollectables)
-
-    const groupedCollectablesWithMeta = await groupNFTsWithMetaData(
-      collectablesWithMetadata,
-    )
+    const groupedCollectablesWithMeta = await groupNFTs(fetchedCollectables)
 
     return groupedCollectablesWithMeta
   }, [anchorProvider])
@@ -101,7 +96,6 @@ const useCollectables = (): WalletCollectables & {
     return {
       loading: false,
       collectables: {},
-      collectablesWithMeta: {},
       refresh,
       fetchAllCollectablesByGroup,
     }

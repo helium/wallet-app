@@ -21,7 +21,6 @@ const NftList = () => {
 
   const {
     collectables,
-    collectablesWithMeta,
     loading: loadingCollectables,
     refresh,
   } = useCollectables()
@@ -33,10 +32,8 @@ const NftList = () => {
       return Object.keys(collectables || [])
     }
 
-    return collectablesWithMeta
-      ? Object.keys(collectables || []).concat([''])
-      : []
-  }, [collectablesWithMeta])
+    return collectables ? Object.keys(collectables || []).concat(['']) : []
+  }, [collectables])
 
   const renderItem = useCallback(
     ({
@@ -50,12 +47,12 @@ const NftList = () => {
       }
       return (
         <NFTListItem
-          item={collectablesWithMeta[token][0]?.content?.metadata?.symbol}
-          collectables={collectablesWithMeta[token]}
+          item={collectables[token][0]?.content?.metadata?.symbol}
+          collectables={collectables[token]}
         />
       )
     },
-    [collectablesWithMeta],
+    [collectables],
   )
 
   const renderEmptyComponent = useCallback(() => {

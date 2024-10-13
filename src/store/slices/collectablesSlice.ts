@@ -9,7 +9,6 @@ import * as solUtils from '../../utils/solanaUtils'
 export type WalletCollectables = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   collectables: Record<string, any[]>
-  collectablesWithMeta: Record<string, Collectable[]>
   loading: boolean
 }
 
@@ -75,17 +74,8 @@ export const fetchCollectables = createAsyncThunk(
 
     const groupedCollectables = solUtils.groupNFTs(filteredCollectables)
 
-    const collectablesWithMetadata = await solUtils.getNFTsMetadata(
-      filteredCollectables,
-    )
-
-    const groupedCollectablesWithMeta = solUtils.groupNFTsWithMetaData(
-      collectablesWithMetadata,
-    )
-
     return {
       groupedCollectables,
-      groupedCollectablesWithMeta,
     }
   },
 )
@@ -131,7 +121,6 @@ const collectables = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[cluster][address] || {
-        collectablesWithMeta: {},
         collectables: {},
       }
       state[cluster][address] = {
@@ -142,14 +131,12 @@ const collectables = createSlice({
     builder.addCase(fetchCollectables.fulfilled, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
       const { cluster } = action.meta.arg
-      const { groupedCollectables, groupedCollectablesWithMeta } =
-        action.payload
+      const { groupedCollectables } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
 
       state[cluster][address] = {
         collectables: groupedCollectables,
-        collectablesWithMeta: groupedCollectablesWithMeta,
         loading: false,
       }
     })
@@ -159,7 +146,6 @@ const collectables = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[cluster][address] || {
-        collectablesWithMeta: {},
         collectables: {},
       }
       state[cluster][address] = {

@@ -22,7 +22,7 @@ const NftListItem = ({
   item: string
   collectables: Collectable[]
 }) => {
-  const { json } = collectables[0]
+  const { content } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
   const { triggerImpact } = useHaptic()
   const borderRadii = useBorderRadii()
@@ -35,14 +35,14 @@ const NftListItem = ({
         navigation.navigate('CollectionScreen', {
           collection,
         })
-      } else if (json) {
+      } else if (content?.metadata) {
         triggerImpact('light')
         navigation.navigate('NftDetailsScreen', {
           collectable: collection[0],
         })
       }
     },
-    [navigation, triggerImpact, json],
+    [navigation, triggerImpact, content],
   )
 
   return (
@@ -58,7 +58,7 @@ const NftListItem = ({
         borderRadius={borderRadii['2xl']}
         style={{ height: height || '100%', width: '100%' }}
         source={{
-          uri: json?.image || '',
+          uri: content?.files?.[0]?.uri || '',
           cache: 'force-cache',
         }}
       />

@@ -906,8 +906,6 @@ export const getNFTs = async (
   connection: WrappedConnection,
   page = 1,
 ) => {
-  const approvedNFTs = heliumNFTs()
-
   const { items } = await connection.getAssetsByOwner<{
     items: CompressedNFT[]
   }>(
@@ -976,28 +974,6 @@ export const getCompressedCollectablesByCreator = async (
 }
 
 /**
- * Returns the account's collectables with metadata
- * @param collectables collectables without metadata
- * @returns collectables with metadata
- */
-export const getNFTsMetadata = async (collectables: CompressedNFT[]) =>
-  (
-    await Promise.all(
-      collectables.map(async (col) => {
-        try {
-          const { data } = await axios.get(col.content.json_uri, {
-            timeout: 3000,
-          })
-
-          return { ...col, json: data }
-        } catch (e: any) {
-          return null
-        }
-      }),
-    )
-  ).filter(truthy)
-
-/**
  * Returns the account's collectables grouped by token type
  * @param collectables collectables
  * @returns grouped collecables by token type
@@ -1016,29 +992,6 @@ export const groupNFTs = (collectables: CompressedNFT[]) => {
     }
     return acc
   }, {} as Record<string, any[]>)
-
-  return collectablesGroupedByName
-}
-
-/**
- * Returns the account's collectables grouped by token type
- * @param collectables collectables with metadata
- * @returns grouped collecables by token type
- */
-export const groupNFTsWithMetaData = (collectables: CompressedNFT[]) => {
-  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.content.metadata
-    const collection = cur.grouping.find(
-      (k) => k.group_key === 'collection',
-    )?.group_value
-
-    if (!acc[collection || symbol]) {
-      acc[collection || symbol] = [cur]
-    } else {
-      acc[collection || symbol].push(cur)
-    }
-    return acc
-  }, {} as Record<string, Collectable[]>)
 
   return collectablesGroupedByName
 }
