@@ -4,7 +4,6 @@ import SegmentedControl, {
 import React, { useCallback, useMemo, useRef } from 'react'
 import Tokens from '@assets/images/tokens.svg'
 import Collectables from '@assets/images/collectables.svg'
-import TokensScreen from './TokensScreen'
 import {
   MaterialTopTabNavigationOptions,
   createMaterialTopTabNavigator,
@@ -13,6 +12,7 @@ import { StackNavigationProp } from '@react-navigation/stack'
 import NftList from '@features/collectables/NftList'
 import { useColors } from '@theme/themeHooks'
 import { useNavigation } from '@react-navigation/native'
+import TokensScreen from './TokensScreen'
 
 export type TokensStackParamList = {
   TokensScreen: undefined
@@ -30,8 +30,9 @@ const TokensTabs = () => {
     () =>
       ({
         headerShown: false,
+        swipeEnabled: false,
       } as MaterialTopTabNavigationOptions),
-    [colors],
+    [],
   )
   const navigation = useNavigation<TokensNavigationProp>()
 
@@ -51,15 +52,18 @@ const TokensTabs = () => {
     [],
   )
 
-  const onItemSelected = useCallback((index: number) => {
-    if (index === 0) {
-      navigation.navigate('TokensScreen')
-    }
+  const onItemSelected = useCallback(
+    (index: number) => {
+      if (index === 0) {
+        navigation.navigate('TokensScreen')
+      }
 
-    if (index === 1) {
-      navigation.navigate('NftList')
-    }
-  }, [])
+      if (index === 1) {
+        navigation.navigate('NftList')
+      }
+    },
+    [navigation],
+  )
 
   const TopTabs = useCallback(() => {
     return (
@@ -67,7 +71,7 @@ const TokensTabs = () => {
         options={options}
         onItemSelected={onItemSelected}
         marginTop="3xl"
-        marginBottom={'xl'}
+        marginBottom="xl"
         ref={segmentedControlRef}
       />
     )
@@ -78,7 +82,7 @@ const TokensTabs = () => {
       screenOptions={navigatorScreenOptions}
       tabBar={TopTabs}
       sceneContainerStyle={{
-        backgroundColor: colors['primaryBackground'],
+        backgroundColor: colors.primaryBackground,
       }}
     >
       <TokensStack.Screen name="TokensScreen" component={TokensScreen} />

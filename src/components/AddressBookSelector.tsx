@@ -19,10 +19,10 @@ import ContactsList from '@features/addressBook/ContactsList'
 import { CSAccount } from '@storage/cloudStorage'
 import { Portal } from '@gorhom/portal'
 import { useTranslation } from 'react-i18next'
-import HeliumBottomSheet from './HeliumBottomSheet'
-import { SafeAreaBox, Text } from '.'
 import { SendNavigationProp } from '@services/WalletService/pages/SendPage/SentPageNavigator'
 import { AddressBookNavigationProp } from '@features/addressBook/addressBookTypes'
+import HeliumBottomSheet from './HeliumBottomSheet'
+import { SafeAreaBox, Text } from '.'
 
 export type AddressBookRef = {
   showAddressBook: (opts: { address?: string; index?: number }) => void
@@ -99,7 +99,7 @@ const AddressBookSelector = forwardRef(
         params: undefined,
       })
       bottomSheetModalRef.current?.close()
-    }, [navigation, address])
+    }, [navigation])
 
     return (
       <Portal>

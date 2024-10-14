@@ -326,7 +326,12 @@ const HNTKeyboardSelector = forwardRef(
         return <HandleBasic marginTop="2" marginBottom="4" />
       }
       return (
-        <Box flexDirection="row" margin="4" marginBottom="0">
+        <Box
+          flexDirection="row"
+          margin="4"
+          marginBottom="0"
+          paddingHorizontal={'xl'}
+        >
           <Box flex={1} />
           <Box
             width={58}
@@ -338,18 +343,18 @@ const HNTKeyboardSelector = forwardRef(
             <TouchableOpacityBox
               marginBottom="2"
               onPress={handleSetMax}
-              backgroundColor={maxEnabled ? 'base.white' : 'transparent'}
-              borderColor={maxEnabled ? 'transparent' : 'cardBackground'}
+              backgroundColor={maxEnabled ? 'primaryText' : 'transparent'}
+              borderColor={maxEnabled ? 'transparent' : 'border.primary'}
               borderWidth={1.5}
               borderRadius="2xl"
               paddingVertical="xs"
               paddingHorizontal="3"
             >
               <Text
-                variant="textMdMedium"
+                variant="textMdSemibold"
                 textAlign="center"
                 alignSelf="flex-end"
-                color={maxEnabled ? 'base.black' : 'secondaryText'}
+                color={maxEnabled ? 'primaryBackground' : 'primaryText'}
               >
                 {t('payment.max')}
               </Text>
@@ -452,6 +457,7 @@ const HNTKeyboardSelector = forwardRef(
         <ThemeProvider theme={lightTheme}>
           <BottomSheetModalProvider>
             <HeliumBottomSheet
+              handleComponent={renderHandle}
               onChange={handleChange}
               ref={bottomSheetModalRef}
               index={-1}

@@ -14,8 +14,8 @@ import { lightTheme } from '@theme/theme'
 import HeliumBottomSheet from '@components/HeliumBottomSheet'
 import { FadeInSlow } from '@components/FadeInOut'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
   currentService: string
@@ -75,11 +75,10 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
   }, [currentService, serviceNav, bottomSheetRef, bottomSheetOpen])
 
   const onCloseSheet = useCallback(() => {
-    if (currentService === '') return
-
+    // if (currentService === '') return
     // TODO: Bring this back once we have the stickers page
     // bottomSheetRef.current?.close()
-  }, [bottomSheetRef, currentService])
+  }, [])
 
   const onChangeSheet = useCallback((index: number) => {
     setBottomSheetOpen(index === 0)

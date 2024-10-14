@@ -4,7 +4,6 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
-import { is } from 'date-fns/locale'
 
 function stringify(
   s: boolean | string | string[] | undefined,
@@ -65,14 +64,14 @@ const NftMetadata = ({ metadata }) => {
 
         return (
           <Attribute
-            key={index}
+            key={value}
             traitType={trait_type}
             traitValue={value}
             borderTopStartRadius={borderTopStartRadius}
             borderTopEndRadius={borderTopEndRadius}
             borderBottomStartRadius={borderBottomStartRadius}
             borderBottomEndRadius={borderBottomEndRadius}
-            borderColor={'primaryBackground'}
+            borderColor="primaryBackground"
             borderBottomWidth={!isLast ? 2 : 0}
           />
         )

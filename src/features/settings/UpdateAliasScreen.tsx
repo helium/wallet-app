@@ -10,7 +10,6 @@ import FabButton from '@components/FabButton'
 import { useSpacing } from '@theme/themeHooks'
 import AccountIcon from '@components/AccountIcon'
 import BackScreen from '@components/BackScreen'
-import Text from '@components/Text'
 import { SettingsNavigationProp } from './settingsTypes'
 
 const UpdateAliasScreen = () => {

@@ -1,14 +1,14 @@
 import { getPositionKeysForOwner } from '@helium/voter-stake-registry-sdk'
 import { PublicKey } from '@solana/web3.js'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useCurrentWallet } from './useCurrentWallet'
-import { useSolana } from '@/solana/SolanaProvider'
 import {
   useHeliumVsrState,
   usePositions,
 } from '@helium/voter-stake-registry-hooks'
 import { BN } from 'bn.js'
+import { useCurrentWallet } from './useCurrentWallet'
+import { useSolana } from '../solana/SolanaProvider'
 
 const useAmountLocked = (mint: PublicKey) => {
   const wallet = useCurrentWallet()
@@ -36,16 +36,15 @@ const useAmountLocked = (mint: PublicKey) => {
 
   const { result } = useAsync(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async (args: any | undefined, useContext: boolean) => {
-      if (args && !useContext) {
-        return getPositionKeysForOwner(args)
+    async (a: any | undefined, useContext: boolean) => {
+      if (a && !useContext) {
+        return getPositionKeysForOwner(a)
       }
     },
     [args, useContextPositions],
   )
 
-  const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
-    usePositions(result?.positions)
+  const { accounts: fetchedPositions } = usePositions(result?.positions)
 
   const positions = useMemo(
     () =>
@@ -57,17 +56,17 @@ const useAmountLocked = (mint: PublicKey) => {
 
   const { amountLocked } = useMemo(() => {
     if (positions && positions.length) {
-      let amountLocked = new BN(0)
+      let amountL = new BN(0)
       positions.forEach((position) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (position && !position.isProxiedToMe) {
-          amountLocked = amountLocked.add(position.amountDepositedNative)
+          amountL = amountL.add(position.amountDepositedNative)
         }
       })
 
       return {
-        amountLocked,
+        amountL,
       }
     }
 

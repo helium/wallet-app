@@ -263,7 +263,8 @@ export default {
     },
     nfts: {
       title: 'NFTs',
-      nftDetialTitle: 'NFT Detail',
+      nftDetailTitle: 'NFT Detail',
+      setAsAvatar: 'Set as Avatar',
     },
     hotspots: {
       title: 'Hotspots',

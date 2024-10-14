@@ -8,11 +8,11 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
+import { useBorderRadii } from '@theme/themeHooks'
+import useLayoutWidth from '@hooks/useLayoutWidth'
 import { ww } from '../../utils/layout'
 import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
-import { useBorderRadii } from '@theme/themeHooks'
-import useLayoutWidth from '@hooks/useLayoutWidth'
 
 const COLLECTABLE_HEIGHT = ww / 2
 const NftListItem = ({

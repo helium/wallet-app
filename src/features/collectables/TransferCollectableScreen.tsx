@@ -23,9 +23,11 @@ import {
   ScrollView,
   TextInputEndEditingEventData,
 } from 'react-native'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import ScrollBox from '@components/ScrollBox'
+import { Asset } from '@helium/spl-utils'
+import { NavBarHeight } from '@components/ServiceNavBar'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { CSAccount } from '../../storage/cloudStorage'
 import { solAddressIsValid } from '../../utils/accountUtils'
@@ -35,8 +37,6 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { Asset } from '@helium/spl-utils'
-import { NavBarHeight } from '@components/ServiceNavBar'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -248,7 +248,7 @@ const TransferCollectableScreen = () => {
                           color={
                             !solAddressIsValid(recipient)
                               ? colors['text.disabled']
-                              : colors['primaryBackground']
+                              : colors.primaryBackground
                           }
                         />
                       )

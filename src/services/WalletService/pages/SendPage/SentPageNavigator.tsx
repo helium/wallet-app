@@ -4,7 +4,6 @@ import {
   createStackNavigator,
 } from '@react-navigation/stack'
 import React, { useMemo } from 'react'
-import AccountTokenScreen from '@features/account/AccountTokenScreen'
 import { useColors } from '@theme/themeHooks'
 import PaymentScreen from '@features/payment/PaymentScreen'
 import AddressBookNavigator from '@features/addressBook/AddressBookNavigator'

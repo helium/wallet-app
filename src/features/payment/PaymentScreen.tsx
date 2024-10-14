@@ -255,9 +255,9 @@ const PaymentScreen = () => {
     [currentAccount?.address, dispatch],
   )
 
-  const handleQrScan = useCallback(() => {
-    // navigation.navigate('PaymentQrScanner')
-  }, [navigation])
+  // const handleQrScan = useCallback(() => {
+  // navigation.navigate('PaymentQrScanner')
+  // }, [navigation])
 
   const canAddPayee = useMemo(() => {
     if (currentAccount?.ledgerDevice) {

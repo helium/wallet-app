@@ -22,13 +22,13 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
+import { useColors } from '@theme/themeHooks'
+import { HotspotServiceNavigationProp } from '@services/HotspotService'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import iotMobileTokens from './animations/iot-mobile-tokens.json'
 import iotTokens from './animations/iot-tokens.json'
 import mobileTokens from './animations/mobile-tokens.json'
-import { useColors } from '@theme/themeHooks'
-import { HotspotServiceNavigationProp } from '@services/HotspotService'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()

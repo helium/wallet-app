@@ -22,6 +22,7 @@ import { View } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import ScrollBox from '@components/ScrollBox'
 import { WalletStackParamList } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { PublicKey } from '@solana/web3.js'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Activity } from '../../types/activity'
@@ -34,7 +35,6 @@ import TransactionDetailSelector, {
 } from './TransactionDetail'
 import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
-import { PublicKey } from '@solana/web3.js'
 import { TokenListGovItem } from './TokenListItem'
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
@@ -218,7 +218,7 @@ const AccountTokenScreen = () => {
             <Box alignItems="center" marginBottom="4">
               <TokenIcon img={json?.image} size={50} />
             </Box>
-            <Box paddingHorizontal={'2'}>
+            <Box paddingHorizontal="2">
               <AccountTokenBalance marginTop="2" mint={mint} />
               {!!symbol && (
                 <AccountTokenCurrencyBalance
@@ -273,7 +273,7 @@ const AccountTokenScreen = () => {
             </>
           )}
 
-        {isGovMint && <TokenListGovItem mint={mint} marginBottom={'4'} />}
+        {isGovMint && <TokenListGovItem mint={mint} marginBottom="4" />}
       </Box>
     )
   }, [

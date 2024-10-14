@@ -32,21 +32,21 @@ const CollectionItem = ({
   const colors = useColors()
 
   const onApprove = useCallback(
-    (id: string) => (approved: boolean) => {
-      setApproved(approved)
+    (id: string) => (a: boolean) => {
+      setApproved(a)
       dispatch(
         collectablesSli.actions.toggleApprovedCollection({
           collection: id,
         }),
       )
     },
-    [],
+    [dispatch],
   )
 
   return (
     <Box
-      backgroundColor={'cardBackground'}
-      borderColor={'primaryBackground'}
+      backgroundColor="cardBackground"
+      borderColor="primaryBackground"
       padding="4"
       flexDirection="row"
       gap="2"
@@ -59,12 +59,7 @@ const CollectionItem = ({
           style={{ width: 40, height: 40, borderRadius: spacing.sm }}
         />
       ) : (
-        <Box
-          width={40}
-          height={40}
-          justifyContent={'center'}
-          alignItems={'center'}
-        >
+        <Box width={40} height={40} justifyContent="center" alignItems="center">
           <VisibilityOff color={colors.primaryText} width={20} height={20} />
         </Box>
       )}

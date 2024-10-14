@@ -11,12 +11,12 @@ import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import BurnScreen from '@features/burn/BurnScreen'
 import AccountManageTokenListScreen from '@features/account/AccountManageTokenListScreen'
 import PaymentQrScanner from '@features/payment/PaymentQrScanner'
-import TokensTabs from './TokensTabs'
 import NftDetailsScreen from '@features/collectables/NftDetailsScreen'
-import { Collectable, CompressedNFT } from '../../../../types/solana'
 import CollectionScreen from '@features/collectables/CollectionScreen'
 import ManageCollectables from '@features/collectables/ManageCollectables'
 import TransferCollectableScreen from '@features/collectables/TransferCollectableScreen'
+import { Collectable, CompressedNFT } from '../../../../types/solana'
+import TokensTabs from './TokensTabs'
 
 export type BurnRouteParam = {
   address: string

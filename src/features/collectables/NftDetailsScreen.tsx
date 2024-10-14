@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ImageLoadEventData, ScrollView } from 'react-native'
+import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
@@ -14,7 +14,6 @@ import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { useSpacing } from '@theme/themeHooks'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { ww } from '../../utils/layout'
 import ScrollBox from '@components/ScrollBox'
 import {
   WalletNavigationProp,
@@ -22,9 +21,10 @@ import {
 } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { Collectable } from '@types/solana'
 import { NavBarHeight } from '@components/ServiceNavBar'
-import NftMetadata from './NftMetadata'
 import ButtonPressable from '@components/ButtonPressable'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import NftMetadata from './NftMetadata'
+import { ww } from '../../utils/layout'
 
 type Route = RouteProp<WalletStackParamList, 'NftDetailsScreen'>
 
@@ -54,7 +54,7 @@ const NftDetailsScreen = () => {
 
   const updateAvatar = useCallback(async () => {
     await editAvatar(imageUri)
-  }, [imageUri])
+  }, [imageUri, editAvatar])
 
   const TransferButton = useCallback(() => {
     return (
@@ -112,7 +112,7 @@ const NftDetailsScreen = () => {
           flexWrap="wrap"
           textAlign="center"
         >
-          Set as Avatar
+          {t('collectablesScreen.nfts.setAsAvatar')}
         </Text>
       </Box>
     )
@@ -129,7 +129,7 @@ const NftDetailsScreen = () => {
       <ScrollBox>
         <BackScreen
           padding="5"
-          title={t('collectablesScreen.nfts.nftDetialTitle')}
+          title={t('collectablesScreen.nfts.nftDetailTitle')}
           edges={[]}
           headerTopMargin="6xl"
           headerHorizontalPadding="5"

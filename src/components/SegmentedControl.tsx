@@ -12,11 +12,10 @@ import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent, LayoutChangeEvent } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import { useColors } from '@theme/themeHooks'
+import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { Theme } from '../theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { debounce as lodashDebounce } from 'lodash'
 
 type Option = {
   value: string | number
@@ -57,12 +56,14 @@ const SegmentedItem = ({
     if (!hasTouched) return initialBackgroundColor
 
     return 'transparent'
-  }, [initialBackgroundColor, selected])
+  }, [initialBackgroundColor, hasTouched])
 
   const onPressHandler = useCallback(
     (event: GestureResponderEvent) => {
       setHasTouched(true)
-      onSelected && onSelected(event)
+      if (onSelected) {
+        onSelected(event)
+      }
     },
     [onSelected],
   )

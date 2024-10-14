@@ -14,7 +14,6 @@ import { ellipsizeAddress } from '@utils/accountUtils'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import SmallAdd from '@assets/images/smallAdd.svg'
 import BigAdd from '@assets/images/bigAdd.svg'
-import BigClose from '@assets/images/bigClose.svg'
 import Checkmark from '@assets/images/checkmark.svg'
 import { useNavigation } from '@react-navigation/native'
 import {
@@ -29,11 +28,9 @@ import Toast from 'react-native-simple-toast'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useLayoutHeight from '@hooks/useLayoutHeight'
-import { AccountsServiceNavigationProp } from '../accountServiceTypes'
 import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import CircleLoader from '@components/CircleLoader'
-import { set } from 'lodash'
+import { AccountsServiceNavigationProp } from '../accountServiceTypes'
 
 const YourWalletsPage = () => {
   const { t } = useTranslation()
@@ -105,6 +102,9 @@ const YourWalletsPage = () => {
             words,
           })
         }
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
       } catch (e: any) {
         Toast.show(e.message || e.toString())
       }
@@ -163,12 +163,13 @@ const YourWalletsPage = () => {
     (item: CSAccount) => () => {
       setSwitchingAccounts(item)
     },
-    [setCurrentAccount],
+    [setSwitchingAccounts],
   )
 
   useEffect(() => {
     if (!switchingAccounts) return
 
+    // Need to wait for a UI tick to allow the animation to finish
     setTimeout(() => {
       setCurrentAccount(switchingAccounts)
       navigation.replace('WalletService')
@@ -237,7 +238,7 @@ const YourWalletsPage = () => {
         </TouchableContainer>
       )
     },
-    [currentAccount?.address, handleAccountChange, colors],
+    [currentAccount, handleAccountChange, colors],
   )
 
   const handleNetTypeChange = useCallback(
@@ -259,7 +260,7 @@ const YourWalletsPage = () => {
   const handleAddNew = useCallback(() => {
     handleNetTypeChange(NetTypes.MAINNET)
     navigation.navigate('AddNewAccountNavigator')
-  }, [handleNetTypeChange, handleAddSub, navigation])
+  }, [handleNetTypeChange, navigation])
 
   const renderSectionHeader = useCallback(
     ({ section: { title, data } }) => {
@@ -332,8 +333,8 @@ const YourWalletsPage = () => {
         entering={FadeIn}
         flex={1}
         padding="5"
-        justifyContent={'center'}
-        alignItems={'center'}
+        justifyContent="center"
+        alignItems="center"
         gap="2"
       >
         <Text variant="textXlMedium" color="primaryText">
@@ -342,7 +343,7 @@ const YourWalletsPage = () => {
         <Text variant="textMdRegular" color="secondaryText">
           {t('accountsService.pleaseBePatient')}
         </Text>
-        <Box marginTop={'4'}>
+        <Box marginTop="4">
           <CircleLoader />
         </Box>
       </ReAnimatedBox>

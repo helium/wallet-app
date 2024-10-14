@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
-import { useNavigation } from '@react-navigation/native'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import BackScreen from '@components/BackScreen'
@@ -9,14 +8,13 @@ import TextTransform from '@components/TextTransform'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CopyAddress from '@components/CopyAddress'
 import useAlert from '@hooks/useAlert'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 
 const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { t } = useTranslation()
-  const navigation = useNavigation()
   const [privateKey, setPrivateKey] = useState<string>()
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()

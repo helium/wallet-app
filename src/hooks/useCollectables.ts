@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
+import { CompressedNFT } from '@types/solana'
+import { WrappedConnection } from '@utils/WrappedConnection'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
@@ -15,8 +17,6 @@ import {
   removeAccountChangeListener,
 } from '../utils/solanaUtils'
 import { useSolana } from '../solana/SolanaProvider'
-import { CompressedNFT } from '@types/solana'
-import { WrappedConnection } from '@utils/WrappedConnection'
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
@@ -81,7 +81,7 @@ const useCollectables = (): WalletCollectables & {
       )
       fetchedCollectables = fetchedCollectables.concat(response)
       isLastPage = response.length === 0
-      page++
+      page += 1
     }
 
     const groupedCollectablesWithMeta = await groupNFTs(fetchedCollectables)

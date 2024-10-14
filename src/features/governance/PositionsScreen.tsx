@@ -250,7 +250,7 @@ export const PositionsScreen = () => {
               flexDirection="row"
               justifyContent="center"
               alignItems="center"
-              paddingTop="3"
+              marginVertical="3"
             >
               <Text variant="textXsMedium" color="error.500">
                 {showError}

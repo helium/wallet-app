@@ -207,7 +207,7 @@ const AccountAssignScreen = () => {
               size={40}
               address={paths[0] && paths[0].keypair.publicKey.toBase58()}
             />
-            <Box backgroundColor={'cardBackground'}>
+            <Box backgroundColor="cardBackground">
               <TextInput
                 textColor="primaryText"
                 fontSize={24}

@@ -51,8 +51,7 @@
       "@types/*": ["./src/types/*"],
       "@features/*": ["./src/features/*"],
       "@services/*": ["./src/services/*"],
-      "@store/*": ["./src/store/*"],
-      "@/solana/*": ["./src/solana/*"]
+      "@store/*": ["./src/store/*"]
     }
   },
   "exclude": [

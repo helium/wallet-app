@@ -13,9 +13,9 @@ import FabButton from '@components/FabButton'
 import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
 import { useSpacing } from '@theme/themeHooks'
-import { CSAccount } from '../../storage/cloudStorage'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { CSAccount } from '../../storage/cloudStorage'
 
 type Props = {
   onAddNew: () => void

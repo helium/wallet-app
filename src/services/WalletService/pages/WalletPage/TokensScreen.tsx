@@ -1,5 +1,5 @@
 import Box from '@components/Box'
-import React, { ReactElement, useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import BalanceText from '@components/BalanceText'
 import { FlatList, RefreshControl } from 'react-native'
 import { useBalance } from '@utils/Balance'
@@ -31,7 +31,7 @@ import { useTranslation } from 'react-i18next'
 import { getSortValue } from '@utils/solanaUtils'
 import { checkSecureAccount } from '@storage/secureStorage'
 import { WalletNavigationProp } from './WalletPageNavigator'
-import { useSolana } from '@/solana/SolanaProvider'
+import { useSolana } from '../../../../solana/SolanaProvider'
 
 const TokensScreen = () => {
   const { anchorProvider, cluster } = useSolana()

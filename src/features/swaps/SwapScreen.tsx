@@ -70,12 +70,12 @@ import {
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
 import { NavBarHeight } from '@components/ServiceNavBar'
+import SegmentedControl from '@components/SegmentedControl'
+import { Portal } from '@gorhom/portal'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
-import SegmentedControl from '@components/SegmentedControl'
-import { Portal } from '@gorhom/portal'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
@@ -242,10 +242,6 @@ const SwapScreen = () => {
     outputMint,
   ])
 
-  const handleClose = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
-
   useAsync(async () => {
     refresh()
   }, [])
@@ -292,7 +288,7 @@ const SwapScreen = () => {
         </Text>
       </Box>
     )
-  }, [refresh, t, handleClose])
+  }, [refresh, t])
 
   const setTokenTypeHandler = useCallback(
     (mint: PublicKey) => {
@@ -622,10 +618,13 @@ const SwapScreen = () => {
     [bpsOptions],
   )
 
-  const onItemSelected = useCallback((index: number) => {
-    const bps = bpsOptions[index]
-    setSlippageBps(bps)
-  }, [])
+  const onItemSelected = useCallback(
+    (index: number) => {
+      const bps = bpsOptions[index]
+      setSlippageBps(bps)
+    },
+    [bpsOptions],
+  )
 
   const Slippage = useMemo(() => {
     if (isDevnet) {
@@ -640,12 +639,12 @@ const SwapScreen = () => {
 
     return (
       <Box
-        backgroundColor={'cardBackground'}
-        borderRadius={'2xl'}
+        backgroundColor="cardBackground"
+        borderRadius="2xl"
         padding="4"
         gap="2"
       >
-        <Box flexDirection={'row'} alignItems={'flex-end'}>
+        <Box flexDirection="row" alignItems="flex-end">
           <Text variant="textLgSemibold" color="primaryText" flex={1}>
             {t('swapsScreen.slippage')}
           </Text>
@@ -666,14 +665,7 @@ const SwapScreen = () => {
         />
       </Box>
     )
-  }, [
-    slippageBps,
-    setSlippageBps,
-    outputMint,
-    setSlippageInfoVisible,
-    t,
-    isDevnet,
-  ])
+  }, [outputMint, setSlippageInfoVisible, t, isDevnet, onItemSelected, options])
 
   return (
     <ScrollBox
@@ -860,7 +852,7 @@ const SwapScreen = () => {
             width="100%"
             marginBottom="6xl"
           >
-            <Box flexDirection="column" height="100%" marginTop={'6xl'}>
+            <Box flexDirection="column" height="100%" marginTop="6xl">
               <Box
                 flexDirection="row"
                 justifyContent="space-between"

@@ -3,7 +3,7 @@ import { Cluster, Connection, PublicKey } from '@solana/web3.js'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Collectable, CompressedNFT } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 
 export type WalletCollectables = {
@@ -58,7 +58,7 @@ export const fetchCollectables = createAsyncThunk(
       )
       fetchedCollectables = fetchedCollectables.concat(response)
       isLastPage = response.length === 0
-      page++
+      page += 1
     }
 
     const approvedCollections =

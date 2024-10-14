@@ -62,50 +62,52 @@ const BalanceText = ({
   )
 }
 
-const BalanceChange = ({ change }: { change: number }) => {
-  return (
-    <Text adjustsFontSizeToFit variant="textLgSemibold" color="fg.quinary-400">
-      {`$${change.toFixed(2).toLocaleString()}`}
-    </Text>
-  )
-}
+// TODO: Bring this back once we are tracking balances on the wallet api
+// const BalanceChange = ({ change }: { change: number }) => {
+//   return (
+//     <Text adjustsFontSizeToFit variant="textLgSemibold" color="fg.quinary-400">
+//       {`$${change.toFixed(2).toLocaleString()}`}
+//     </Text>
+//   )
+// }
 
-const PercentageContainer = ({
-  percentage,
-  type,
-}: {
-  percentage: number
-  type: 'up' | 'down' | 'neutral'
-}) => {
-  const backgroundColor = useMemo(() => {
-    switch (type) {
-      case 'up':
-        return 'green.light-500'
-      case 'down':
-        return 'error.500'
-      case 'neutral':
-        return 'fg.quinary-400'
-    }
-  }, [type])
+// TODO: Bring this back once we are tracking balances on the wallet api
+// const PercentageContainer = ({
+//   percentage,
+//   type,
+// }: {
+//   percentage: number
+//   type: 'up' | 'down' | 'neutral'
+// }) => {
+//   const backgroundColor = useMemo(() => {
+//     switch (type) {
+//       case 'up':
+//         return 'green.light-500'
+//       case 'down':
+//         return 'error.500'
+//       case 'neutral':
+//         return 'fg.quinary-400'
+//     }
+//   }, [type])
 
-  return (
-    <Box
-      flexDirection="row"
-      alignItems="flex-end"
-      backgroundColor={backgroundColor}
-      borderRadius="md"
-      paddingHorizontal="xs"
-      paddingVertical="1"
-    >
-      <Text
-        adjustsFontSizeToFit
-        variant="textLgSemibold"
-        color="primaryBackground"
-      >
-        {`+${percentage.toFixed(2)}%`}
-      </Text>
-    </Box>
-  )
-}
+//   return (
+//     <Box
+//       flexDirection="row"
+//       alignItems="flex-end"
+//       backgroundColor={backgroundColor}
+//       borderRadius="md"
+//       paddingHorizontal="xs"
+//       paddingVertical="1"
+//     >
+//       <Text
+//         adjustsFontSizeToFit
+//         variant="textLgSemibold"
+//         color="primaryBackground"
+//       >
+//         {`+${percentage.toFixed(2)}%`}
+//       </Text>
+//     </Box>
+//   )
+// }
 
 export default memo(BalanceText)

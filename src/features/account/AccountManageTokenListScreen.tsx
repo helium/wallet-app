@@ -23,11 +23,11 @@ import BackScreen from '@components/BackScreen'
 import ScrollBox from '@components/ScrollBox'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
+import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSolana } from '../../solana/SolanaProvider'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import { NavBarHeight } from '@components/ServiceNavBar'
 
 const CheckableTokenListItem = ({
   bottomBorder,

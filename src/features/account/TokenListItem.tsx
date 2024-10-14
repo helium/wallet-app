@@ -25,11 +25,11 @@ import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
-import { useSolana } from '../../solana/SolanaProvider'
-import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import useAmountLocked from '@hooks/useAmountLocked'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
+import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import { useSolana } from '../../solana/SolanaProvider'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -287,34 +287,35 @@ export const HeliumTokenListItem = ({ mint }: Props) => {
   )
 }
 
-const PercentChange = ({
-  change,
-  type,
-}: {
-  change: number
-  type: 'up' | 'down' | 'neutral'
-}) => {
-  const color = useMemo(() => {
-    switch (type) {
-      case 'up':
-        return 'green.light-500'
-      case 'down':
-        return 'blue.dark-600'
-      case 'neutral':
-        return 'fg.quinary-400'
-    }
-  }, [type])
+// TODO: Bring back once we add chart history back to the wallet api
+// const PercentChange = ({
+//   change,
+//   type,
+// }: {
+//   change: number
+//   type: 'up' | 'down' | 'neutral'
+// }) => {
+//   const color = useMemo(() => {
+//     switch (type) {
+//       case 'up':
+//         return 'green.light-500'
+//       case 'down':
+//         return 'blue.dark-600'
+//       case 'neutral':
+//         return 'fg.quinary-400'
+//     }
+//   }, [type])
 
-  const prefix = useMemo(() => {
-    return change > 0 ? '+' : '-'
-  }, [change])
+//   const prefix = useMemo(() => {
+//     return change > 0 ? '+' : '-'
+//   }, [change])
 
-  return (
-    <Text adjustsFontSizeToFit variant="textSmMedium" color={color}>
-      {`${prefix}${change.toFixed(2).toLocaleString()}%`}
-    </Text>
-  )
-}
+//   return (
+//     <Text adjustsFontSizeToFit variant="textSmMedium" color={color}>
+//       {`${prefix}${change.toFixed(2).toLocaleString()}%`}
+//     </Text>
+//   )
+// }
 
 export const TokenListGovItem = ({
   mint,
@@ -424,7 +425,7 @@ export const TokenListGovItem = ({
       padding="4"
       backgroundColor="cardBackground"
       backgroundColorPressed="bg.primary-hover"
-      borderRadius={'2xl'}
+      borderRadius="2xl"
       {...rest}
     >
       {loading ? (

@@ -6,13 +6,13 @@ import Box from '@components/Box'
 import useCollectables from '@hooks/useCollectables'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { useNavigation } from '@react-navigation/native'
-import NFTListItem, { NFTSkeleton } from './NftListItem'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Config from '@assets/images/config.svg'
 import Text from '@components/Text'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import NFTListItem, { NFTSkeleton } from './NftListItem'
 
 const NftList = () => {
   const spacing = useSpacing()

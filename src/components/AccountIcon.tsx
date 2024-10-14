@@ -1,8 +1,8 @@
 import React, { memo, useMemo } from 'react'
 import Jazzicon, { IJazziconProps } from 'react-native-jazzicon'
-import { getJazzSeed } from '../utils/accountUtils'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useAsync } from 'react-async-hook'
+import { getJazzSeed } from '../utils/accountUtils'
 import { ImageBox } from '.'
 
 type Props = { address?: string; size: number } & Omit<

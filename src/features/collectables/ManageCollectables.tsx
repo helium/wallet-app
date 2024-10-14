@@ -3,19 +3,18 @@ import ScrollBox from '@components/ScrollBox'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import useCollectables from '@hooks/useCollectables'
 import { RootState } from '@store/rootReducer'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors } from '@theme/themeHooks'
 import { heliumNFTs } from '@utils/solanaUtils'
 import React, { useCallback } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FlatList, RefreshControl } from 'react-native'
 import { useSelector } from 'react-redux'
-import CollectionItem, { Collection } from './CollectionItem'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import CollectionItem, { Collection } from './CollectionItem'
 
 const ManageCollectables = () => {
   const { bottom } = useSafeAreaInsets()
   const colors = useColors()
-  const spacing = useSpacing()
   const { fetchAllCollectablesByGroup } = useCollectables()
   const approvedCollections = useSelector(
     (state: RootState) => state.collectables.approvedCollections,
@@ -44,11 +43,11 @@ const ManageCollectables = () => {
     collectionItems.sort((a, b) => {
       if (approved.includes(a.id) && !approved.includes(b.id)) {
         return -1
-      } else if (!approved.includes(a.id) && approved.includes(b.id)) {
-        return 1
-      } else {
-        return 0
       }
+      if (!approved.includes(a.id) && approved.includes(b.id)) {
+        return 1
+      }
+      return 0
     })
 
     return collectionItems
@@ -59,7 +58,7 @@ const ManageCollectables = () => {
     execute,
     loading,
   } = useAsync(async () => {
-    return await fetchSortedCollectables()
+    return fetchSortedCollectables()
   }, [])
 
   const renderItem = useCallback(
@@ -88,7 +87,7 @@ const ManageCollectables = () => {
         />
       )
     },
-    [spacing, approvedCollections, collectables],
+    [approvedCollections, collectables],
   )
 
   const keyExtractor = useCallback((item: Collection) => {

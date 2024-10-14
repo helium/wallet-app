@@ -10,12 +10,12 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
 import { useBorderRadii } from '@theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
 import { Collectable } from '../../types/solana'
-import ScrollBox from '@components/ScrollBox'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -44,7 +44,6 @@ const CollectionScreen = () => {
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Collectable }) => {
-      const json = item.content?.metadata
       return (
         <ReAnimatedBox
           style={{ width: '50%' }}
