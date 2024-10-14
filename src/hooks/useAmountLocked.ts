@@ -66,7 +66,7 @@ const useAmountLocked = (mint: PublicKey) => {
       })
 
       return {
-        amountL,
+        amountLocked: amountL,
       }
     }
 

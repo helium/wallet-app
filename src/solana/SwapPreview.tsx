@@ -44,7 +44,7 @@ export const SwapPreview = ({
       mt="4"
       px="4"
       py="3"
-      {...{ gap: 8 }}
+      gap="8"
     >
       {loadingInputMintMetadata || loadingOutputMintMetadata ? (
         <CircleLoader />
@@ -55,7 +55,7 @@ export const SwapPreview = ({
             flexDirection="row"
             alignItems="center"
           >
-            <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+            <Box flexDirection="row" alignItems="center" gap="4">
               {inputMintJson ? (
                 <TokenIcon img={inputMintJson.image} size={30} />
               ) : null}
@@ -70,7 +70,7 @@ export const SwapPreview = ({
             flexDirection="row"
             alignItems="center"
           >
-            <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+            <Box flexDirection="row" alignItems="center" gap="4">
               {outputMintJson ? (
                 <TokenIcon img={outputMintJson.image} size={30} />
               ) : null}

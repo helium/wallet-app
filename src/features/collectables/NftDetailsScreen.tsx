@@ -19,12 +19,12 @@ import {
   WalletNavigationProp,
   WalletStackParamList,
 } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
-import { Collectable } from '@types/solana'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import ButtonPressable from '@components/ButtonPressable'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import NftMetadata from './NftMetadata'
 import { ww } from '../../utils/layout'
+import { CompressedNFT } from '../../types/solana'
 
 type Route = RouteProp<WalletStackParamList, 'NftDetailsScreen'>
 
@@ -37,7 +37,7 @@ const NftDetailsScreen = () => {
 
   const { t } = useTranslation()
 
-  const { collectable }: { collectable: Collectable } = route.params
+  const { collectable }: { collectable: CompressedNFT } = route.params
   const { content } = collectable
 
   const spacing = useSpacing()

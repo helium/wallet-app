@@ -95,12 +95,12 @@ export const baseTheme = {
   cardVariants: {
     regular: {
       padding: '4',
-      borderRadius: '4',
+      borderRadius: 'xl',
       backgroundColor: 'cardBackground',
     },
     elevated: {
       shadowColor: 'cardBackground',
-      borderRadius: '4',
+      borderRadius: 'xl',
       shadowOffset: {
         width: 0,
         height: 9,
@@ -190,6 +190,12 @@ const darkTheme = createTheme({
     inactiveIcon: darkColors['fg.disabled'], // foreground.fg.disabled
     transparent10: '#ffffff1A',
     transparent: '#00000000',
+    hntBlue: '#2755F8',
+    mobileDarkBlue: '#00273D',
+    mobileBlue: '#009EF8',
+    iotDarkGreen: '#053919',
+    iotGreen: '#26ED75',
+    solanaPurple: '#9945FF',
   },
 })
 

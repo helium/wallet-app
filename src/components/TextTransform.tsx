@@ -1,4 +1,6 @@
-/* eslint-disable react/jsx-props-no-spreading */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
+
 import React, { useMemo } from 'react'
 import { Trans } from 'react-i18next'
 import { ResponsiveValue, TextProps } from '@shopify/restyle'

@@ -84,7 +84,7 @@
     "@react-navigation/native-stack": "6.7.0",
     "@react-navigation/stack": "6.2.2",
     "@reduxjs/toolkit": "1.9.1",
-    "@shopify/restyle": "2.4.4",
+    "@shopify/restyle": "2.4.2",
     "@solana/spl-account-compression": "0.1.4",
     "@solana/spl-memo": "0.2.3",
     "@solana/spl-token": "0.3.6",

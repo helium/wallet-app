@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
-import { CompressedNFT } from '@types/solana'
 import { WrappedConnection } from '@utils/WrappedConnection'
+import { CompressedNFT } from '../types/solana'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {

@@ -17,7 +17,7 @@ export const MessagePreview = ({
     mt="4"
     px="4"
     py="3"
-    {...{ gap: 8 }}
+    gap="8"
   >
     {message && <Text variant="textSmRegular">{message}</Text>}
     {warning && (

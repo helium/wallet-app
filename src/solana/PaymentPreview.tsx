@@ -31,7 +31,7 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
       mt="4"
       px="4"
       py="3"
-      {...{ gap: 8 }}
+      gap="8"
     >
       {payments.map(({ payee, balanceAmount }, index) => (
         <Box
