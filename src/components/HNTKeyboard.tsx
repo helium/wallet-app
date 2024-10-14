@@ -330,7 +330,7 @@ const HNTKeyboardSelector = forwardRef(
           flexDirection="row"
           margin="4"
           marginBottom="0"
-          paddingHorizontal={'xl'}
+          paddingHorizontal="xl"
         >
           <Box flex={1} />
           <Box
