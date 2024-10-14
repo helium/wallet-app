@@ -3,11 +3,11 @@ import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
 import SafeAreaBox from './SafeAreaBox'
 import Text from './Text'
+import ScrollBox from './ScrollBox'
 
 export const GlobalError = ({
   error,
@@ -41,14 +41,14 @@ export const GlobalError = ({
         >
           {t('crash.subTitle')}
         </Text>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollBox contentContainerStyle={{ flexGrow: 1 }}>
           <Text variant="textXsBold" color="error.500">
             {error.message}
           </Text>
           <Text variant="textXsRegular" color="error.500">
             {error.stack}
           </Text>
-        </ScrollView>
+        </ScrollBox>
         <ButtonPressable
           innerContainerProps={{
             justifyContent: 'center',

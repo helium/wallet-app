@@ -11,10 +11,11 @@ import { useColors, useSpacing } from '@theme/themeHooks'
 import React, { ReactText, memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, Platform, ScrollView, SectionList } from 'react-native'
+import { Alert, Linking, Platform, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import ScrollBox from '@components/ScrollBox'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -621,12 +622,14 @@ const Settings = () => {
   )
 
   return (
-    <ScrollView
+    <ScrollBox
       style={{
         backgroundColor: colors.primaryBackground,
       }}
+      scrollEnabled
     >
       <SectionList
+        scrollEnabled
         contentContainerStyle={contentContainer}
         sections={SectionData}
         keyExtractor={keyExtractor}
@@ -638,7 +641,7 @@ const Settings = () => {
         // ^ Sometimes on initial page load there is a bug with SectionList
         // where it won't render all items right away. This seems to fix it.
       />
-    </ScrollView>
+    </ScrollBox>
   )
 }
 

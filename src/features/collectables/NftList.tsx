@@ -12,6 +12,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Config from '@assets/images/config.svg'
 import Text from '@components/Text'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import ScrollBox from '@components/ScrollBox'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
 
 const NftList = () => {
@@ -106,28 +107,30 @@ const NftList = () => {
   )
 
   return (
-    <FlatList
-      enabled
-      data={flatListItems}
-      numColumns={2}
-      refreshControl={
-        <RefreshControl
-          refreshing={loadingCollectables}
-          onRefresh={refresh}
-          title=""
-          tintColor={primaryText}
-        />
-      }
-      columnWrapperStyle={{
-        flexDirection: 'row',
-        gap: spacing[4],
-      }}
-      contentContainerStyle={contentContainerStyle}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      keyExtractor={keyExtractor}
-      ListFooterComponent={renderFooterComponent}
-    />
+    <ScrollBox>
+      <FlatList
+        enabled
+        data={flatListItems}
+        numColumns={2}
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingCollectables}
+            onRefresh={refresh}
+            title=""
+            tintColor={primaryText}
+          />
+        }
+        columnWrapperStyle={{
+          flexDirection: 'row',
+          gap: spacing[4],
+        }}
+        contentContainerStyle={contentContainerStyle}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        keyExtractor={keyExtractor}
+        ListFooterComponent={renderFooterComponent}
+      />
+    </ScrollBox>
   )
 }
 

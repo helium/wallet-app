@@ -48,6 +48,7 @@ import {
   PaymentRouteParam,
   WalletServiceStackParamList,
 } from '@services/WalletService'
+import ScrollBox from '@components/ScrollBox'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -644,22 +645,23 @@ const PaymentScreen = () => {
   }, [mint, visibleTokens])
 
   return (
-    <KeyboardAwareScrollView
-      enableOnAndroid
-      enableResetScrollToCoords={false}
-      keyboardShouldPersistTaps="always"
-    >
-      <Box
-        flex={1}
-        borderTopStartRadius="4xl"
-        borderTopEndRadius="4xl"
-        backgroundColor="primaryBackground"
-        style={{
-          ...containerStyle,
-          paddingBottom: NavBarHeight + bottom,
-        }}
+    <ScrollBox>
+      <KeyboardAwareScrollView
+        enableOnAndroid
+        enableResetScrollToCoords={false}
+        keyboardShouldPersistTaps="always"
       >
-        {/* <Box
+        <Box
+          flex={1}
+          borderTopStartRadius="4xl"
+          borderTopEndRadius="4xl"
+          backgroundColor="primaryBackground"
+          style={{
+            ...containerStyle,
+            paddingBottom: NavBarHeight + bottom,
+          }}
+        >
+          {/* <Box
                 flexDirection="row"
                 justifyContent="space-between"
                 alignItems="center"
@@ -677,112 +679,113 @@ const PaymentScreen = () => {
                 </Box>
               </Box> */}
 
-        <Box alignItems="center" gap="2.5" marginBottom="4xl" marginTop="6xl">
-          <Image source={require('@assets/images/sendIcon.png')} />
-          <Text variant="displaySmSemibold" color="primaryText">
-            {t('payment.send')}
-          </Text>
-          <Text
-            variant="textLgMedium"
-            color="secondaryText"
-            textAlign="center"
-            paddingHorizontal="8"
-          >
-            {t('payment.sendTokensToAnyAddress')}
-          </Text>
-        </Box>
-
-        <TokenButton
-          backgroundColor="cardBackground"
-          title={t('payment.title', { ticker: symbol })}
-          subtitle={tokenButtonBalance}
-          address={currentAccount?.address}
-          onPress={handleTokenTypeSelected}
-          marginHorizontal="6"
-          mint={mint}
-        />
-
-        {paymentState.payments.map((p, index) => (
-          // eslint-disable-next-line react/no-array-index-key
-          <React.Fragment key={index}>
-            <PaymentItem
-              {...p}
-              hideMemo
-              marginTop={index === 0 ? 'xs' : 'none'}
-              marginBottom="6"
-              hasError={p.address === currentAccount?.address || p.hasError}
-              index={index}
-              onAddressBookSelected={handleAddressBookSelected}
-              onEditAmount={handleEditAmount}
-              onToggleMax={handleToggleMax}
-              onEditAddress={handleEditAddress}
-              handleAddressError={handleAddressError}
-              onUpdateError={handleSetPaymentError}
-              mint={mint}
-              onRemove={
-                paymentState.payments.length > 1 ? handleRemove : undefined
-              }
-              netType={networkType}
-              showAmount
-            />
-          </React.Fragment>
-        ))}
-        {canAddPayee && (
-          <TouchableOpacityBox
-            minHeight={75}
-            onPress={handleAddPayee}
-            borderRadius="4xl"
-            overflow="hidden"
-            marginHorizontal="6"
-            marginBottom="6"
-            alignItems="center"
-            justifyContent="center"
-            backgroundColor="secondaryBackground"
-          >
-            <Text variant="textMdRegular" color="secondaryText">
-              {t('payment.addRecipient')}
+          <Box alignItems="center" gap="2.5" marginBottom="4xl" marginTop="6xl">
+            <Image source={require('@assets/images/sendIcon.png')} />
+            <Text variant="displaySmSemibold" color="primaryText">
+              {t('payment.send')}
             </Text>
-          </TouchableOpacityBox>
-        )}
-        <PaymentCard
+            <Text
+              variant="textLgMedium"
+              color="secondaryText"
+              textAlign="center"
+              paddingHorizontal="8"
+            >
+              {t('payment.sendTokensToAnyAddress')}
+            </Text>
+          </Box>
+
+          <TokenButton
+            backgroundColor="cardBackground"
+            title={t('payment.title', { ticker: symbol })}
+            subtitle={tokenButtonBalance}
+            address={currentAccount?.address}
+            onPress={handleTokenTypeSelected}
+            marginHorizontal="6"
+            mint={mint}
+          />
+
+          {paymentState.payments.map((p, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <React.Fragment key={index}>
+              <PaymentItem
+                {...p}
+                hideMemo
+                marginTop={index === 0 ? 'xs' : 'none'}
+                marginBottom="6"
+                hasError={p.address === currentAccount?.address || p.hasError}
+                index={index}
+                onAddressBookSelected={handleAddressBookSelected}
+                onEditAmount={handleEditAmount}
+                onToggleMax={handleToggleMax}
+                onEditAddress={handleEditAddress}
+                handleAddressError={handleAddressError}
+                onUpdateError={handleSetPaymentError}
+                mint={mint}
+                onRemove={
+                  paymentState.payments.length > 1 ? handleRemove : undefined
+                }
+                netType={networkType}
+                showAmount
+              />
+            </React.Fragment>
+          ))}
+          {canAddPayee && (
+            <TouchableOpacityBox
+              minHeight={75}
+              onPress={handleAddPayee}
+              borderRadius="4xl"
+              overflow="hidden"
+              marginHorizontal="6"
+              marginBottom="6"
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor="secondaryBackground"
+            >
+              <Text variant="textMdRegular" color="secondaryText">
+                {t('payment.addRecipient')}
+              </Text>
+            </TouchableOpacityBox>
+          )}
+          <PaymentCard
+            mint={mint}
+            totalBalance={paymentState.totalAmount}
+            feeTokenBalance={paymentState.networkFee}
+            disabled={!isFormValid}
+            onSubmit={handleSubmit}
+            payments={payments}
+            errors={errors}
+          />
+        </Box>
+        <HNTKeyboard
+          ref={hntKeyboardRef}
+          onConfirmBalance={handleBalance}
           mint={mint}
-          totalBalance={paymentState.totalAmount}
-          feeTokenBalance={paymentState.networkFee}
-          disabled={!isFormValid}
-          onSubmit={handleSubmit}
-          payments={payments}
-          errors={errors}
+          networkFee={paymentState.networkFee}
         />
-      </Box>
-      <HNTKeyboard
-        ref={hntKeyboardRef}
-        onConfirmBalance={handleBalance}
-        mint={mint}
-        networkFee={paymentState.networkFee}
-      />
-      <TokenSelector
-        ref={tokenSelectorRef}
-        onTokenSelected={onTokenSelected}
-        tokenData={data}
-      />
-      <AddressBookSelector
-        ref={addressBookRef}
-        onContactSelected={handleContactSelected}
-        hideCurrentAccount
-      />
-      <PaymentSubmit
-        mint={mint}
-        submitLoading={!!solanaPayment?.loading}
-        submitSucceeded={!!solanaPayment?.success}
-        submitError={solanaPayment?.error}
-        totalBalance={paymentState.totalAmount}
-        payments={paymentState.payments}
-        feeTokenBalance={paymentState.networkFee}
-        onRetry={handleSubmit}
-        onSuccess={navigation.goBack}
-        actionTitle={t('payment.backToAccounts')}
-      />
-    </KeyboardAwareScrollView>
+        <TokenSelector
+          ref={tokenSelectorRef}
+          onTokenSelected={onTokenSelected}
+          tokenData={data}
+        />
+        <AddressBookSelector
+          ref={addressBookRef}
+          onContactSelected={handleContactSelected}
+          hideCurrentAccount
+        />
+        <PaymentSubmit
+          mint={mint}
+          submitLoading={!!solanaPayment?.loading}
+          submitSucceeded={!!solanaPayment?.success}
+          submitError={solanaPayment?.error}
+          totalBalance={paymentState.totalAmount}
+          payments={paymentState.payments}
+          feeTokenBalance={paymentState.networkFee}
+          onRetry={handleSubmit}
+          onSuccess={navigation.goBack}
+          actionTitle={t('payment.backToAccounts')}
+        />
+      </KeyboardAwareScrollView>
+    </ScrollBox>
   )
 }
 

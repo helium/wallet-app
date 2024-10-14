@@ -192,7 +192,7 @@ export const ProposalCard = ({
             justifyContent="space-between"
             alignItems="center"
           >
-            <Text variant="textMdMedium" color="primaryText" flexShrink={1}>
+            <Text variant="textMdSemibold" color="primaryText" flexShrink={1}>
               {proposal?.name}
             </Text>
           </Box>
@@ -242,12 +242,12 @@ export const ProposalCard = ({
                 </Text>
               )}
               {derivedState === 'passed' && (
-                <Text variant="textSmRegular" color="green.light-500">
+                <Text variant="textSmRegular" color="success.500">
                   {t('gov.proposals.success')}
                 </Text>
               )}
               {derivedState === 'completed' && (
-                <Text variant="textSmRegular" color="green.light-500">
+                <Text variant="textSmRegular" color="success.500">
                   {t('gov.proposals.completed')}
                 </Text>
               )}

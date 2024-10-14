@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
@@ -134,7 +133,7 @@ const NftDetailsScreen = () => {
           headerTopMargin="6xl"
           headerHorizontalPadding="5"
         >
-          <ScrollView>
+          <ScrollBox>
             <Box flex={1}>
               {content && (
                 <Box alignItems="center">
@@ -188,7 +187,7 @@ const NftDetailsScreen = () => {
                 <NftMetadata metadata={content?.metadata} />
               </Box>
             </Box>
-          </ScrollView>
+          </ScrollBox>
         </BackScreen>
       </ScrollBox>
     </ReAnimatedBox>

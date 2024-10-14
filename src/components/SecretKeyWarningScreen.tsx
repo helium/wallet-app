@@ -1,5 +1,5 @@
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
-import { ScrollView, View } from 'react-native'
+import { View } from 'react-native'
 import InfoWarning from '@assets/images/customWarning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
@@ -14,6 +14,7 @@ import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
 import { BackScreen } from '.'
+import ScrollBox from './ScrollBox'
 
 const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
@@ -66,7 +67,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
       {children}
       {!animationComplete && (
         <Animated.View style={style}>
-          <ScrollView
+          <ScrollBox
             style={{
               backgroundColor: primaryBackground,
               flexGrow: 1,
@@ -139,7 +140,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
                 </Text>
               </Box>
             </BackScreen>
-          </ScrollView>
+          </ScrollBox>
         </Animated.View>
       )}
     </View>

@@ -30,9 +30,9 @@ import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSpacing } from '@theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -239,7 +239,7 @@ export const PositionsScreen = () => {
   }
 
   return (
-    <ScrollView>
+    <ScrollBox>
       <GovernanceWrapper selectedTab="positions">
         <Box flexDirection="column" flex={1}>
           <Box flex={1}>
@@ -315,7 +315,7 @@ export const PositionsScreen = () => {
           )}
         </Box>
       </GovernanceWrapper>
-    </ScrollView>
+    </ScrollBox>
   )
 }
 

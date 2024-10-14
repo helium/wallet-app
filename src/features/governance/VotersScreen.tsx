@@ -19,8 +19,9 @@ import BN from 'bn.js'
 import { times } from 'lodash'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, Image, RefreshControl, ScrollView } from 'react-native'
+import { FlatList, Image, RefreshControl } from 'react-native'
 import { useDebounce } from 'use-debounce'
+import ScrollBox from '@components/ScrollBox'
 import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
@@ -159,7 +160,7 @@ export default function VotersScreen() {
   const { primaryText } = useColors()
 
   return (
-    <ScrollView>
+    <ScrollBox>
       <GovernanceWrapper selectedTab="voters">
         <Text
           variant="textSmRegular"
@@ -191,7 +192,7 @@ export default function VotersScreen() {
           onEndReached={handleOnEndReached}
         />
       </GovernanceWrapper>
-    </ScrollView>
+    </ScrollBox>
   )
 }
 

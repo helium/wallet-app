@@ -3,7 +3,7 @@ import Plus from '@assets/images/plus.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -68,10 +68,11 @@ import {
   Image,
 } from 'react-native'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import ScrollBox from '@components/ScrollBox'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import SegmentedControl from '@components/SegmentedControl'
 import { Portal } from '@gorhom/portal'
+import ScrollBox from '@components/ScrollBox'
+import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
@@ -626,6 +627,13 @@ const SwapScreen = () => {
     [bpsOptions],
   )
 
+  const onToggleSlippageInfo = useCallback(() => {
+    setSlippageInfoVisible(!slippageInfoVisible)
+    changeNavigationBarColor(
+      slippageInfoVisible ? colors.primaryBackground : colors.primaryText,
+    )
+  }, [colors, slippageInfoVisible])
+
   const Slippage = useMemo(() => {
     if (isDevnet) {
       return null
@@ -652,7 +660,7 @@ const SwapScreen = () => {
             <Text
               variant="textMdSemibold"
               color="secondaryText"
-              onPress={() => setSlippageInfoVisible(true)}
+              onPress={onToggleSlippageInfo}
             >
               What is slippage?
             </Text>
@@ -665,7 +673,7 @@ const SwapScreen = () => {
         />
       </Box>
     )
-  }, [outputMint, setSlippageInfoVisible, t, isDevnet, onItemSelected, options])
+  }, [isDevnet, outputMint, t, onToggleSlippageInfo, options, onItemSelected])
 
   return (
     <ScrollBox
@@ -844,7 +852,8 @@ const SwapScreen = () => {
       </TouchableWithoutFeedback>
       {slippageInfoVisible ? (
         <Portal>
-          <ReAnimatedBlurBox
+          <ReAnimatedBox
+            backgroundColor="primaryBackground"
             visible
             entering={FadeInFast}
             position="absolute"
@@ -860,10 +869,7 @@ const SwapScreen = () => {
                 marginTop="6"
               >
                 <Box flex={1}>
-                  <CloseButton
-                    marginStart="4"
-                    onPress={() => setSlippageInfoVisible(false)}
-                  />
+                  <CloseButton marginStart="4" onPress={onToggleSlippageInfo} />
                 </Box>
                 <Box flex={1} alignItems="center" flexDirection="row">
                   <Text
@@ -888,7 +894,7 @@ const SwapScreen = () => {
                 </Text>
               </Box>
             </Box>
-          </ReAnimatedBlurBox>
+          </ReAnimatedBox>
         </Portal>
       ) : undefined}
       <HNTKeyboard

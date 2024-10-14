@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useBorderRadii, useColors } from '@theme/themeHooks'
+import { StackNavigationOptions } from '@react-navigation/stack'
 import ServiceSheet from './ServiceSheet'
 import WalletService from './WalletService'
 import HotspotService from './HotspotService'
@@ -18,16 +19,17 @@ const ServiceSheetNavigator = () => {
   const [currentService, setCurrentService] = useState('wallet')
 
   const navigatorScreenOptions = useMemo(
-    () => ({
-      headerShown: false,
-      animation: 'none',
-      contentStyle: {
-        backgroundColor: colors['fg.white'],
-        borderTopLeftRadius: borderRadii['4xl'] + borderRadii['4xl'],
-        borderTopRightRadius: borderRadii['4xl'] + borderRadii['4xl'],
-        overflow: 'hidden',
-      },
-    }),
+    () =>
+      ({
+        headerShown: false,
+        animation: 'none',
+        contentStyle: {
+          backgroundColor: colors['fg.white'],
+          borderTopLeftRadius: borderRadii['4xl'] + borderRadii['4xl'],
+          borderTopRightRadius: borderRadii['4xl'] + borderRadii['4xl'],
+          overflow: 'hidden',
+        },
+      } as StackNavigationOptions),
     [borderRadii, colors],
   )
 

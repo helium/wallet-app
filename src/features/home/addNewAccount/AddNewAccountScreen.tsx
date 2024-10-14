@@ -1,13 +1,13 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import TabBar from '@components/TabBar'
 import Text from '@components/Text'
 import globalStyles from '@theme/globalStyles'
+import ScrollBox from '@components/ScrollBox'
 import ConnectKeystoneStart from '../../keystone/ConnectKeystoneStartScreen'
 import PairStart from '../../ledger/PairStart'
 import AccountCreateStart from '../../onboarding/create/AccountCreateStart'
@@ -64,7 +64,7 @@ const AddNewAccountScreen = () => {
         />
       </Box>
 
-      <ScrollView contentContainerStyle={contentContainerStyle}>
+      <ScrollBox contentContainerStyle={contentContainerStyle}>
         <Box flex={1}>
           {selectedOption === 'create' && (
             <FadeInOut style={globalStyles.container}>
@@ -87,7 +87,7 @@ const AddNewAccountScreen = () => {
             </FadeInOut>
           )}
         </Box>
-      </ScrollView>
+      </ScrollBox>
     </Box>
   )
 }

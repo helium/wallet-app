@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import Box from '@components/Box'
 import BottomSheet from '@gorhom/bottom-sheet'
-import { useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { ReAnimatedBox, Text } from '@components'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -15,6 +15,7 @@ import HeliumBottomSheet from '@components/HeliumBottomSheet'
 import { FadeInSlow } from '@components/FadeInOut'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
@@ -28,6 +29,7 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
   const bottomSheetRef = useRef<BottomSheet>(null)
   const serviceNav = useNavigation<ServiceSheetNavigationProp>()
   const { top } = useSafeAreaInsets()
+  const colors = useColors()
 
   const onRoute = useCallback(
     (value: string) => {
@@ -61,7 +63,12 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
 
   const onDrawerPress = useCallback(() => {
     setIsExpanded((s) => !s)
-  }, [])
+    changeNavigationBarColor(
+      isExpanded ? colors.primaryText : colors.primaryBackground,
+      undefined,
+      true,
+    )
+  }, [colors, isExpanded])
 
   const onWalletIconPress = useCallback(() => {
     if (currentService === 'wallets' && bottomSheetOpen) {

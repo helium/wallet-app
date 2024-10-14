@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { ScrollView, View } from 'react-native'
+import { View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
@@ -24,6 +24,7 @@ import {
   parseSolanaStatus,
   useGetSolanaStatusQuery,
 } from '../store/slices/solanaStatusApi'
+import ScrollBox from './ScrollBox'
 
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
@@ -75,7 +76,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
       {children}
       {!animationComplete && (
         <Animated.View style={style}>
-          <ScrollView
+          <ScrollBox
             style={{
               backgroundColor: primaryBackground,
               flexGrow: 1,
@@ -130,7 +131,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
                 marginTop="6"
               />
             </Box>
-          </ScrollView>
+          </ScrollBox>
         </Animated.View>
       )}
     </View>

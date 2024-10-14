@@ -30,6 +30,7 @@ import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
 import { getSortValue } from '@utils/solanaUtils'
 import { checkSecureAccount } from '@storage/secureStorage'
+import ScrollBox from '@components/ScrollBox'
 import { WalletNavigationProp } from './WalletPageNavigator'
 import { useSolana } from '../../../../solana/SolanaProvider'
 
@@ -216,27 +217,29 @@ const TokensScreen = () => {
   }, [])
 
   return (
-    <FlatList
-      data={mints}
-      ListHeaderComponent={renderHeader}
-      refreshControl={
-        <RefreshControl
-          enabled
-          refreshing={refetchingTokens}
-          onRefresh={refetchTokens}
-          title=""
-          tintColor={colors.primaryText}
-        />
-      }
-      contentContainerStyle={contentContainerStyle}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      ListFooterComponent={renderFooterComponent}
-      keyExtractor={keyExtractor}
-      style={{
-        backgroundColor: colors['base.white'],
-      }}
-    />
+    <ScrollBox>
+      <FlatList
+        data={mints}
+        ListHeaderComponent={renderHeader}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={refetchingTokens}
+            onRefresh={refetchTokens}
+            title=""
+            tintColor={colors.primaryText}
+          />
+        }
+        contentContainerStyle={contentContainerStyle}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={renderFooterComponent}
+        keyExtractor={keyExtractor}
+        style={{
+          backgroundColor: colors['base.white'],
+        }}
+      />
+    </ScrollBox>
   )
 }
 

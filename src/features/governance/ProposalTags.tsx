@@ -17,14 +17,14 @@ export const ProposalTags: React.FC<{
                   backgroundColor={
                     tag.toLowerCase().includes('temp check')
                       ? 'orange.500'
-                      : 'cardBackground'
+                      : 'fg.quinary-400'
                   }
-                  borderRadius="2xl"
+                  borderRadius="sm"
                 >
                   <Text
-                    variant="textSmRegular"
+                    variant="textSmSemibold"
                     fontSize={10}
-                    color="secondaryText"
+                    color="primaryBackground"
                   >
                     {tag.toUpperCase()}
                   </Text>

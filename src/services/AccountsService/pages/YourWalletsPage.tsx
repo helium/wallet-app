@@ -195,16 +195,18 @@ const YourWalletsPage = () => {
       const { data } = section
 
       const isSelected = item.address === currentAccount?.address
-      const mnemoicSelected =
-        data[0] && data[0].mnemonicHash === currentAccount?.mnemonicHash
+      const showBottomBorder =
+        (data[index] &&
+          data[index].mnemonicHash !== currentAccount?.mnemonicHash) ||
+        section.title === 'Private Keys'
       const isLast = index === data.length - 1
       const accountAddress = item?.solanaAddress
       const borderTopStartRadius = index === 0 ? '2xl' : undefined
       const borderTopEndRadius = index === 0 ? '2xl' : undefined
       const borderBottomStartRadius =
-        index === data.length - 1 && !mnemoicSelected ? '2xl' : undefined
+        index === data.length - 1 && showBottomBorder ? '2xl' : undefined
       const borderBottomEndRadius =
-        index === data.length - 1 && !mnemoicSelected ? '2xl' : undefined
+        index === data.length - 1 && showBottomBorder ? '2xl' : undefined
 
       return (
         <TouchableContainer

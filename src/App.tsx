@@ -127,26 +127,26 @@ const App = () => {
                     <WalletOnboardingProvider
                       baseUrl={Config.ONBOARDING_API_URL}
                     >
-                       <KeystoneOnboardingProvider>
-                      <WalletConnectProvider>
-                        <HotspotOnboardingProvider
-                          baseUrl={Config.ONBOARDING_API_URL}
-                        >
-                          <LockScreen>
-                            {accountsRestored && (
-                              <>
-                                <NavigationContainer
-                                  theme={navTheme}
-                                  linking={linking}
-                                  ref={navigationRef}
-                                >
-                                  <BalanceProvider>
-                                    <TokensProvider>
-                                      <ModalProvider>
-                                        <WalletSignProvider>
-                                          <GovernanceProvider>
-                                            <AutoGasBanner />
-                                            <RootNavigator />
+                      <KeystoneOnboardingProvider>
+                        <WalletConnectProvider>
+                          <HotspotOnboardingProvider
+                            baseUrl={Config.ONBOARDING_API_URL}
+                          >
+                            <LockScreen>
+                              {accountsRestored && (
+                                <>
+                                  <NavigationContainer
+                                    theme={navTheme}
+                                    linking={linking}
+                                    ref={navigationRef}
+                                  >
+                                    <BalanceProvider>
+                                      <TokensProvider>
+                                        <ModalProvider>
+                                          <WalletSignProvider>
+                                            <GovernanceProvider>
+                                              <AutoGasBanner />
+                                              <RootNavigator />
 
                                               {/* place app specific modals here */}
                                               <InsufficientSolConversionModal />

@@ -20,7 +20,6 @@ import {
   KeyboardAvoidingView,
   LogBox,
   NativeSyntheticEvent,
-  ScrollView,
   TextInputEndEditingEventData,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -146,7 +145,7 @@ const TransferCollectableScreen = () => {
             enabled
             keyboardVerticalOffset={100}
           >
-            <ScrollView>
+            <ScrollBox>
               <Box
                 backgroundColor="transparent"
                 flex={1}
@@ -256,7 +255,7 @@ const TransferCollectableScreen = () => {
                   />
                 </Box>
               </Box>
-            </ScrollView>
+            </ScrollBox>
           </KeyboardAvoidingView>
         </BackScreen>
         <AddressBookSelector

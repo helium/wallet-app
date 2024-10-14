@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { upperCase } from 'lodash'
 import wordlist from '@constants/wordlists/english.json'
@@ -9,6 +8,8 @@ import FabButton from '@components/FabButton'
 import usePrevious from '@hooks/usePrevious'
 import { Color } from '@theme/theme'
 import Clipboard from '@react-native-community/clipboard'
+import ScrollBox from '@components/ScrollBox'
+import { ScrollView } from 'react-native-gesture-handler'
 import MatchingWord from './MatchingWord'
 
 type Props = {
@@ -139,7 +140,7 @@ const PassphraseAutocomplete = ({
         )}
       </Box>
       <Box minHeight={53}>
-        <ScrollView
+        <ScrollBox
           ref={matchingListRef}
           horizontal
           keyboardShouldPersistTaps="always"
@@ -156,7 +157,7 @@ const PassphraseAutocomplete = ({
                 onPress={handleWordSelect}
               />
             ))}
-        </ScrollView>
+        </ScrollBox>
       </Box>
     </>
   )

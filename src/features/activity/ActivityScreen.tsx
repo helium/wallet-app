@@ -13,6 +13,7 @@ import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { NavBarHeight } from '@components/ServiceNavBar'
+import ScrollBox from '@components/ScrollBox'
 import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
 
@@ -160,30 +161,32 @@ const ActivityScreen = () => {
   const keyExtractor = useCallback((item, index) => item.signature + index, [])
 
   return (
-    <SectionList
-      style={{
-        backgroundColor: colors.primaryBackground,
-      }}
-      contentContainerStyle={contentContainer}
-      sections={SectionData}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      renderSectionHeader={renderSectionHeader}
-      ListHeaderComponent={renderHeader}
-      refreshControl={
-        <RefreshControl
-          enabled
-          refreshing={loading}
-          onRefresh={refresh}
-          title=""
-          tintColor={colors.primaryText}
-        />
-      }
-      stickySectionHeadersEnabled={false}
-      onEndReachedThreshold={0.05}
-      // onEndReached={fetchMore}
-      ListFooterComponent={Footer}
-    />
+    <ScrollBox backgroundColor="primaryBackground">
+      <SectionList
+        style={{
+          backgroundColor: colors.primaryBackground,
+        }}
+        contentContainerStyle={contentContainer}
+        sections={SectionData}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        ListHeaderComponent={renderHeader}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={loading}
+            onRefresh={refresh}
+            title=""
+            tintColor={colors.primaryText}
+          />
+        }
+        stickySectionHeadersEnabled={false}
+        onEndReachedThreshold={0.05}
+        // onEndReached={fetchMore}
+        ListFooterComponent={Footer}
+      />
+    </ScrollBox>
   )
 }
 

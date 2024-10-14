@@ -10,7 +10,7 @@ import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { PublicKey } from '@solana/web3.js'
 import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
-import { Keyboard, ScrollView } from 'react-native'
+import { Keyboard } from 'react-native'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import BN from 'bn.js'
@@ -22,6 +22,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { getMinDurationFmt, getTimeLeftFromNowFmt } from '@utils/dateTools'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useTranslation } from 'react-i18next'
+import ScrollBox from '@components/ScrollBox'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const TransferTokensModal = ({
@@ -123,7 +124,7 @@ export const TransferTokensModal = ({
           padding="4"
           marginHorizontal="2"
         >
-          <ScrollView>
+          <ScrollBox>
             <Box flexGrow={1} justifyContent="center">
               <Text
                 textAlign="left"
@@ -316,7 +317,7 @@ export const TransferTokensModal = ({
                 </Text>
               </Box>
             )}
-          </ScrollView>
+          </ScrollBox>
           <Box flexDirection="row" paddingTop="4">
             <ButtonPressable
               flex={1}

@@ -33,8 +33,6 @@ export const Select: React.FC<SelectProps> = ({
     <>
       <TouchableContainer
         padding="4"
-        borderWidth={1}
-        borderColor="border.primary"
         backgroundColor="cardBackground"
         backgroundColorPressed="secondaryBackground"
         borderRadius="2xl"

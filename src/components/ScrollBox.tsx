@@ -1,7 +1,8 @@
 import { createBox } from '@shopify/restyle'
 import { ReactNode } from 'react'
 import { Theme } from '@theme/theme'
-import { ScrollView, ScrollViewProps } from 'react-native'
+import { ScrollViewProps } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
 const ScrollBox = createBox<
   Theme,

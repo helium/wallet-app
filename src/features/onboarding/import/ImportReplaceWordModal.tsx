@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Modal, ScrollView } from 'react-native'
+import { Modal } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
 import wordlist from '@constants/wordlists/english.json'
@@ -8,6 +8,7 @@ import Box from '@components/Box'
 import SafeAreaBox from '@components/SafeAreaBox'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors } from '@theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
 import MatchingWord from './MatchingWord'
 
 type Props = {
@@ -74,7 +75,7 @@ const ImportReplaceWordModal = ({
         </TouchableOpacityBox>
         <Box marginTop={{ none: '6', sm: '12' }}>
           <Box minHeight={53}>
-            <ScrollView
+            <ScrollBox
               horizontal
               keyboardShouldPersistTaps="always"
               keyboardDismissMode="none"
@@ -90,7 +91,7 @@ const ImportReplaceWordModal = ({
                     onPress={handleWordSelect}
                   />
                 ))}
-            </ScrollView>
+            </ScrollBox>
           </Box>
           <TextInput
             textInputProps={{

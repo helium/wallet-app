@@ -25,8 +25,12 @@ const RootNavigator = () => {
   const RootStack = createStackNavigator<RootStackParamList>()
 
   useEffect(() => {
-    changeNavigationBarColor(colors.primaryBackground, true, false)
-  }, [colors.primaryBackground])
+    if (currentAccount) {
+      changeNavigationBarColor(colors.primaryText, true, false)
+    } else {
+      changeNavigationBarColor(colors.primaryBackground, true, false)
+    }
+  }, [colors, currentAccount])
 
   const initialRouteName = useMemo(() => {
     return currentAccount ? 'ServiceSheetNavigator' : 'OnboardingNavigator'

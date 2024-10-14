@@ -8,11 +8,11 @@ import { Image } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
 import CarotRight from '@assets/images/carot-right.svg'
 import { useColors } from '@theme/themeHooks'
-import ScrollBox from '@components/ScrollBox'
 import useCopyText from '@hooks/useCopyText'
 import TouchableContainer from '@components/TouchableContainer'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn } from 'react-native-reanimated'
+import ScrollBox from '@components/ScrollBox'
 
 const ReceivePage = () => {
   const { t } = useTranslation()

@@ -31,7 +31,7 @@ import {
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import HntIcon from '@assets/images/helium.svg'
-import { ScrollView } from 'react-native-gesture-handler'
+import ScrollBox from '@components/ScrollBox'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [
@@ -254,7 +254,7 @@ export const LockTokensModal = ({
                 enabled
                 keyboardVerticalOffset={100}
               >
-                <ScrollView>
+                <ScrollBox>
                   {!showLockupKindInfo && (
                     <Box flexGrow={1} justifyContent="center">
                       <Text
@@ -587,7 +587,7 @@ export const LockTokensModal = ({
                       ))}
                     </Box>
                   )}
-                </ScrollView>
+                </ScrollBox>
               </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
           )}

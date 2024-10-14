@@ -17,9 +17,10 @@ import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking, ScrollView } from 'react-native'
+import { Linking } from 'react-native'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
@@ -342,7 +343,7 @@ const ActivityDetailsScreen = () => {
   )
 
   return (
-    <ScrollView
+    <ScrollBox
       style={{ backgroundColor: colors.primaryBackground }}
       contentContainerStyle={{
         flexGrow: 1,
@@ -410,7 +411,7 @@ const ActivityDetailsScreen = () => {
           {accountOptions()}
         </BlurActionSheet>
       </BackScreen>
-    </ScrollView>
+    </ScrollBox>
   )
 }
 

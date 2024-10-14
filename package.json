@@ -173,7 +173,7 @@
     "react-native-localize": "2.2.3",
     "react-native-mail": "6.1.1",
     "react-native-markdown-display": "^7.0.0-alpha.2",
-    "react-native-navigation-bar-color": "2.0.2",
+    "react-native-navigation-bar-color": "^2.0.2",
     "react-native-network-info": "5.2.1",
     "react-native-onesignal": "5.2.2",
     "react-native-os": "^1.2.6",

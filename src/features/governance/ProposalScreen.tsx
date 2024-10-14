@@ -40,8 +40,8 @@ import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -293,7 +293,7 @@ export const ProposalScreen = () => {
           flex={1}
           marginTop="6"
         >
-          <ScrollView>
+          <ScrollBox>
             <Box paddingHorizontal="4">
               <Box
                 flexGrow={1}
@@ -582,7 +582,7 @@ export const ProposalScreen = () => {
                 </Box>
               )}
             </Box>
-          </ScrollView>
+          </ScrollBox>
         </SafeAreaBox>
       </BackScreen>
     </ReAnimatedBox>

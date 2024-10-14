@@ -12,6 +12,7 @@ import { Spacing } from '@theme/theme'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { wp } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
+import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import { GovernanceNavigationProp } from './governanceTypes'
 
 type CarouselItem = {
@@ -123,16 +124,19 @@ export const GovernanceTutorialScreen = () => {
   return (
     <Box flex={1}>
       <Box flexGrow={1} justifyContent="center" paddingTop="6">
-        <Carousel
-          ref={carouselRef}
-          layout="default"
-          vertical={false}
-          data={slides}
-          renderItem={renderCarouselItem}
-          sliderWidth={wp(100)}
-          itemWidth={wp(90)}
-          onSnapToItem={onSnapToItem}
-        />
+        <NativeViewGestureHandler disallowInterruption>
+          <Carousel
+            ref={carouselRef}
+            layout="default"
+            vertical={false}
+            data={slides}
+            renderItem={renderCarouselItem}
+            sliderWidth={wp(100)}
+            itemWidth={wp(90)}
+            onSnapToItem={onSnapToItem}
+          />
+        </NativeViewGestureHandler>
+
         <Box>
           <Pagination
             dotsLength={slides.length}

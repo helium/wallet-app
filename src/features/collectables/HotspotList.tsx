@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
@@ -243,32 +244,34 @@ const HotspotList = () => {
 
   return (
     <>
-      <FlatList
-        data={hotspotsWithMeta}
-        numColumns={2}
-        style={{
-          marginTop: spacing.xl,
-        }}
-        columnWrapperStyle={{
-          flexDirection: 'column',
-        }}
-        ListHeaderComponent={renderHeader}
-        refreshControl={
-          <RefreshControl
-            enabled
-            refreshing={loadingHotspots}
-            onRefresh={handleRefresh}
-            title=""
-            tintColor={primaryText}
-          />
-        }
-        renderItem={renderCollectable}
-        ListEmptyComponent={renderEmptyComponent}
-        onEndReachedThreshold={0.001}
-        onEndReached={handleOnEndReached}
-        keyExtractor={keyExtractor}
-        ListFooterComponent={Footer}
-      />
+      <ScrollBox>
+        <FlatList
+          data={hotspotsWithMeta}
+          numColumns={2}
+          style={{
+            marginTop: spacing.xl,
+          }}
+          columnWrapperStyle={{
+            flexDirection: 'column',
+          }}
+          ListHeaderComponent={renderHeader}
+          refreshControl={
+            <RefreshControl
+              enabled
+              refreshing={loadingHotspots}
+              onRefresh={handleRefresh}
+              title=""
+              tintColor={primaryText}
+            />
+          }
+          renderItem={renderCollectable}
+          ListEmptyComponent={renderEmptyComponent}
+          onEndReachedThreshold={0.001}
+          onEndReached={handleOnEndReached}
+          keyExtractor={keyExtractor}
+          ListFooterComponent={Footer}
+        />
+      </ScrollBox>
       <Box
         backgroundColor="fg.quinary-400"
         borderTopLeftRadius="4xl"

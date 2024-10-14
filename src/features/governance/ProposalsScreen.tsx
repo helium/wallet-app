@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
 import React from 'react'
-import { ScrollView } from 'react-native'
+import ScrollBox from '@components/ScrollBox'
 import GovernanceWrapper from './GovernanceWrapper'
 import { ProposalsList } from './ProposalsList'
 import { VotingPowerCard } from './VotingPowerCard'
@@ -11,7 +11,7 @@ export const ProposalsScreen = () => {
   const selectedTab = 'proposals'
 
   return (
-    <ScrollView>
+    <ScrollBox>
       <GovernanceWrapper selectedTab={selectedTab}>
         <VotingPowerCard
           onPress={async (m) =>
@@ -22,7 +22,7 @@ export const ProposalsScreen = () => {
         />
         <ProposalsList />
       </GovernanceWrapper>
-    </ScrollView>
+    </ScrollBox>
   )
 }
 
