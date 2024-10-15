@@ -84,14 +84,14 @@ const SegmentedItem = ({
     >
       {option.Icon && (
         <option.Icon
-          color={selected ? primaryBackground : colors['fg.quinary-400']}
+          color={selected ? primaryBackground : colors['text.disabled']}
           {...option.iconProps}
         />
       )}
       <Text
         variant="textLgSemibold"
         fontSize={17}
-        color={selected ? 'primaryBackground' : 'fg.quinary-400'}
+        color={selected ? 'primaryBackground' : 'text.disabled'}
         textAlign="center"
       >
         {option.label}
@@ -162,13 +162,8 @@ const SegmentedControl = forwardRef(
     }, [leftPosition, itemWidth, hasTouched])
 
     return (
-      <Box borderRadius="4xl" alignItems="center">
-        <Box
-          borderRadius="4xl"
-          {...boxProps}
-          flexDirection="row"
-          position="relative"
-        >
+      <Box borderRadius="4xl" alignItems="center" {...boxProps}>
+        <Box borderRadius="4xl" flexDirection="row" position="relative">
           <ReAnimatedBox
             position="absolute"
             width={itemWidth}

@@ -14,6 +14,7 @@ type Color =
   | 'iotGreen'
   | 'mobileBlue'
   | 'hntBlue'
+  | 'quinary'
 export const Pill = memo(
   ({
     text,
@@ -50,24 +51,29 @@ export const Pill = memo(
         text: 'orange.500',
       },
       black: {
-        background: 'black',
+        background: 'base.black',
         text: 'base.white',
-        border: 'black',
+        border: 'base.black',
       },
       hntBlue: {
-        background: 'hntBlue',
+        background: 'purple.500',
         text: 'base.white',
-        border: 'black',
+        border: 'purple.500',
       },
       iotGreen: {
         background: 'iotGreen',
         text: 'base.white',
-        border: 'black',
+        border: 'iotGreen',
       },
       mobileBlue: {
-        background: 'mobileBlue',
+        background: 'blue.600',
         text: 'base.white',
-        border: 'black',
+        border: 'blue.600',
+      },
+      quinary: {
+        background: 'fg.quinary-400',
+        text: 'primaryBackground',
+        border: 'fg.quinary-400',
       },
     }
     return (
@@ -93,11 +99,11 @@ export const Pill = memo(
 
         {text ? (
           <Text
-            variant="textSmRegular"
             ml="2"
             mr="2"
             color={colorDefs[color].text as any}
             {...textProps}
+            variant="textSmSemibold"
           >
             {text}
           </Text>

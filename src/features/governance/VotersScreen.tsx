@@ -236,7 +236,7 @@ const VoterCard: React.FC<{
           <Pill
             iconProps={{ width: 8, height: 8 }}
             Icon={majority ? MajorityCircle : MinorityCircle}
-            color="black"
+            color="quinary"
             textProps={{ variant: 'textXsRegular' }}
             text={
               majority ? t('gov.voters.majority') : t('gov.voters.minority')

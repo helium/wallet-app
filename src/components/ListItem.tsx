@@ -1,11 +1,11 @@
 import React from 'react'
 import CheckMarkFill from '@assets/images/checkmarkFill.svg'
 import { useColors } from '@theme/themeHooks'
-import { Color } from '@theme/theme'
+import { Color, Theme } from '@theme/theme'
 import { Insets } from 'react-native'
+import { BoxProps } from '@shopify/restyle'
 import Box from './Box'
 import Text from './Text'
-import { TouchableOpacityBoxProps } from './TouchableOpacityBox'
 import TouchableContainer from './TouchableContainer'
 
 export const LIST_ITEM_HEIGHT = 70
@@ -21,7 +21,7 @@ export type ListItemProps = {
   hasDivider?: boolean
   hasPressedState?: boolean
   hitSlop?: Insets
-} & TouchableOpacityBoxProps
+} & BoxProps<Theme>
 
 const ListItem = ({
   Icon,

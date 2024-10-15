@@ -90,7 +90,7 @@ export const GovernanceWrapper: React.FC<
     <ReAnimatedBox entering={FadeIn} paddingHorizontal="5">
       <Box flex={1}>
         <Box flexDirection="column" height="100%">
-          <Box mt="6" mb="6">
+          <Box mt="6xl">
             <NetworkTabs />
           </Box>
           {loading ? (

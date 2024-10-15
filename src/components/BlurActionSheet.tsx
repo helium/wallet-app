@@ -1,17 +1,17 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
+import React, { memo, useCallback, useMemo, useRef } from 'react'
+import BottomSheet, {
+  BottomSheetBackdrop,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useAsync } from 'react-async-hook'
 import { Portal } from '@gorhom/portal'
-import { useColors, useOpacity } from '@theme/themeHooks'
-import CustomBlurBackdrop from './CustomBlurBackdrop'
+import { ThemeProvider } from '@shopify/restyle'
+import { lightTheme } from '@theme/theme'
+import { useTranslation } from 'react-i18next'
 import SafeAreaBox from './SafeAreaBox'
-import { wh } from '../utils/layout'
+import HeliumBottomSheet from './HeliumBottomSheet'
+import Text from './Text'
 
 type Props = {
   title: string
@@ -21,10 +21,8 @@ type Props = {
 }
 
 const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const [contentHeight, setContentHeight] = useState(0)
-  const { backgroundStyle } = useOpacity('gray.700', 0.4)
-  const colors = useColors()
+  const bottomSheetModalRef = useRef<BottomSheet>(null)
+  const { t } = useTranslation()
 
   const handleOnClose = useCallback(() => {
     if (onClose) {
@@ -34,62 +32,54 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
 
   useAsync(async () => {
     if (open) {
-      await bottomSheetModalRef.current?.present()
+      await bottomSheetModalRef.current?.expand()
     } else {
-      await bottomSheetModalRef.current?.dismiss()
+      await bottomSheetModalRef.current?.close()
     }
   }, [open])
 
-  const snapPoints = useMemo(() => {
-    let maxHeight: number | string = '75%'
-    if (contentHeight > 0) {
-      maxHeight = Math.min(wh * 0.75, contentHeight)
-    }
-
-    return [maxHeight]
-  }, [contentHeight])
-
   const renderBackdrop = useCallback(
     (props) => (
-      <CustomBlurBackdrop
+      <BottomSheetBackdrop
         onPress={handleOnClose}
         title={title}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        opacity={0.6}
+        opacity={1}
         {...props}
-      />
+      >
+        <SafeAreaBox flex={1}>
+          <Text
+            variant="textLgSemibold"
+            color="primaryText"
+            marginTop="xl"
+            textAlign="center"
+          >
+            {t('blurActionSheet.selectAnOption')}
+          </Text>
+        </SafeAreaBox>
+      </BottomSheetBackdrop>
     ),
-    [handleOnClose, title],
+    [handleOnClose, title, t],
   )
 
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
-  const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
-    setContentHeight(e.nativeEvent.layout.height + 40)
-  }, [])
-
   return (
     <Portal>
-      <BottomSheetModalProvider>
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          index={0}
-          snapPoints={snapPoints}
-          backdropComponent={renderBackdrop}
-          backgroundStyle={backgroundStyle}
-          onDismiss={handleOnClose}
-          handleIndicatorStyle={{
-            backgroundColor: colors.primaryText,
-          }}
-        >
+      <HeliumBottomSheet
+        ref={bottomSheetModalRef}
+        index={-1}
+        backdropComponent={renderBackdrop}
+      >
+        <ThemeProvider theme={lightTheme}>
           <BottomSheetScrollView>
-            <SafeAreaBox edges={safeEdges} onLayout={handleContentLayout}>
+            <SafeAreaBox edges={safeEdges} padding="xl" marginTop="xl">
               {children}
             </SafeAreaBox>
           </BottomSheetScrollView>
-        </BottomSheetModal>
-      </BottomSheetModalProvider>
+        </ThemeProvider>
+      </HeliumBottomSheet>
     </Portal>
   )
 }

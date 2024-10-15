@@ -6,7 +6,7 @@ import {
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
 import axios from 'axios'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useAccount } from '@helium/account-fetch-cache-hooks'
 import { useSelector } from 'react-redux'

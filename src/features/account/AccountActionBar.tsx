@@ -146,9 +146,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="swaps"
-            backgroundColor="orange.300"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="orange.700"
+            iconColor="primaryBackground"
             title={compact || maxCompact ? undefined : t('accountView.swaps')}
             onPress={handleAction('swaps')}
             width={maxCompact ? 47.5 : undefined}
@@ -176,9 +176,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="airdrop"
-            backgroundColor="violet.300"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="violet.700"
+            iconColor="primaryBackground"
             title={
               compact || maxCompact ? undefined : t('airdropScreen.airdrop')
             }

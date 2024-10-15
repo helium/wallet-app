@@ -110,7 +110,7 @@ export const VoterScreen = () => {
                   <Text mt="4" variant="textXlRegular">
                     {proxy.name}
                   </Text>
-                  <Box flexDirection="row" alignItems="center" mb="6">
+                  <Box flexDirection="row" alignItems="center" mb="6" gap="1">
                     <Text mr="2" variant="textMdRegular">
                       {shortenAddress(proxy.wallet)}
                     </Text>

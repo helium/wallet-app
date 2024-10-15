@@ -1523,4 +1523,7 @@ export default {
   addressBookSelector: {
     title: 'Select a contact',
   },
+  blurActionSheet: {
+    selectAnOption: 'Select an option',
+  },
 }

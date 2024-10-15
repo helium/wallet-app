@@ -55,20 +55,32 @@ export const Select: React.FC<SelectProps> = ({
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
       >
-        <>
-          {options.map((option) => (
-            <ListItem
-              key={option.value}
-              title={option.label}
-              onPress={() => {
-                onValueChange(option.value)
-                setFiltersOpen(false)
-              }}
-              selected={value === option.value}
-              hasPressedState={false}
-            />
-          ))}
-        </>
+        <Box marginTop="6xl">
+          {options.map((option, index) => {
+            const borderTopStartRadius = index === 0 ? 'xl' : 'none'
+            const borderTopEndRadius = index === 0 ? 'xl' : 'none'
+            const borderBottomStartRadius =
+              index === options.length - 1 ? 'xl' : 'none'
+            const borderBottomEndRadius =
+              index === options.length - 1 ? 'xl' : 'none'
+
+            return (
+              <ListItem
+                key={option.value}
+                title={option.label}
+                onPress={() => {
+                  onValueChange(option.value)
+                  setFiltersOpen(false)
+                }}
+                selected={value === option.value}
+                borderTopStartRadius={borderTopStartRadius}
+                borderTopEndRadius={borderTopEndRadius}
+                borderBottomStartRadius={borderBottomStartRadius}
+                borderBottomEndRadius={borderBottomEndRadius}
+              />
+            )
+          })}
+        </Box>
       </BlurActionSheet>
     </>
   )
