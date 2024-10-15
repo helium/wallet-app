@@ -192,7 +192,11 @@ const ScanHotspots = () => {
   const keyExtractor = React.useCallback(({ id }: Device) => id, [])
 
   return (
-    <BackScreen title={t('hotspotOnboarding.scan.title')}>
+    <BackScreen
+      title={t('hotspotOnboarding.scan.title')}
+      edges={[]}
+      headerTopMargin="6xl"
+    >
       <Text
         marginTop="4"
         marginBottom="4"
@@ -228,10 +232,8 @@ const ScanHotspots = () => {
       <ButtonPressable
         marginTop="6"
         borderRadius="full"
-        titleColor={scanning ? 'primaryText' : 'primaryBackground'}
-        borderColor={scanning ? 'primaryText' : 'transparent'}
-        borderWidth={scanning ? 2 : 0}
-        backgroundColor={scanning ? 'transparent' : 'primaryText'}
+        titleColor="primaryBackground"
+        backgroundColor={scanning ? 'fg.quinary-400' : 'primaryText'}
         title={
           // eslint-disable-next-line no-nested-ternary
           canScan

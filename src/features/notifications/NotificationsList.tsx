@@ -7,6 +7,7 @@ import Text from '@components/Text'
 import { useSpacing } from '@theme/themeHooks'
 import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
+import ScrollBox from '@components/ScrollBox'
 import { NotificationsListNavigationProp } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationListItem from './NotificationListItem'
@@ -136,7 +137,7 @@ const NotificationsList = ({
   const keyExtractor = useCallback((item, index) => item.time + index, [])
 
   return (
-    <Box flex={1}>
+    <ScrollBox flex={1}>
       {HeaderComponent}
       <SectionList
         keyExtractor={keyExtractor}
@@ -147,7 +148,7 @@ const NotificationsList = ({
         renderItem={renderItem}
         ListEmptyComponent={EmptyListView}
       />
-    </Box>
+    </ScrollBox>
   )
 }
 

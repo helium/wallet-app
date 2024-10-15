@@ -63,6 +63,7 @@ const ServiceSheetNavigator = () => {
   return (
     <ServiceSheet currentService={currentService}>
       <ServiceSheetStack.Navigator
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         screenOptions={navigatorScreenOptions as any}
         screenListeners={{
           focus: ({ target }) => {

@@ -30,6 +30,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import CircleLoader from '@components/CircleLoader'
+import ScrollBox from '@components/ScrollBox'
 import { AccountsServiceNavigationProp } from '../accountServiceTypes'
 
 const YourWalletsPage = () => {
@@ -354,20 +355,22 @@ const YourWalletsPage = () => {
 
   return (
     <ReAnimatedBox entering={FadeIn} flex={1}>
-      <SectionList
-        contentContainerStyle={{
-          padding: spacing['2xl'],
-          paddingBottom: footerHeight + bottom + spacing['6xl'],
-        }}
-        keyExtractor={keyExtractor}
-        sections={filteredAccounts}
-        ListHeaderComponent={Header}
-        scrollEnabled
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
-        stickySectionHeadersEnabled={false}
-      />
+      <ScrollBox>
+        <SectionList
+          contentContainerStyle={{
+            padding: spacing['2xl'],
+            paddingBottom: footerHeight + bottom + spacing['6xl'],
+          }}
+          keyExtractor={keyExtractor}
+          sections={filteredAccounts}
+          ListHeaderComponent={Header}
+          scrollEnabled
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          stickySectionHeadersEnabled={false}
+        />
+      </ScrollBox>
       <Footer />
     </ReAnimatedBox>
   )

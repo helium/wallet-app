@@ -7,7 +7,6 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
@@ -92,7 +91,6 @@ const PaymentItem = ({
   const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const { secondaryText } = useColors()
-  const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
   const [rawAddress, setRawAddress] = useState('')
   const [debouncedAddress] = useDebounce(rawAddress, 500)
 
@@ -295,18 +293,14 @@ const PaymentItem = ({
                 flex={1}
                 justifyContent="center"
               >
-                {!loadingMeta && (
-                  <Text
-                    color="primaryText"
-                    opacity={0.3}
-                    padding="4"
-                    variant="textLgMedium"
-                  >
-                    {t('payment.enterAmount', {
-                      ticker: symbol,
-                    })}
-                  </Text>
-                )}
+                <Text
+                  color="primaryText"
+                  opacity={0.3}
+                  padding="4"
+                  variant="textLgMedium"
+                >
+                  {t('payment.enterAmount')}
+                </Text>
               </TouchableOpacityBox>
             </>
           ) : (

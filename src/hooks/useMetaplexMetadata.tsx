@@ -6,10 +6,13 @@ import {
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
 import axios from 'axios'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useAccount } from '@helium/account-fetch-cache-hooks'
-
+import { useSelector } from 'react-redux'
+import { RootState } from '@store/rootReducer'
+import { useAppDispatch } from '@store/store'
+import { tokensSlice } from '@store/slices/tokensSlice'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cache: Record<string, Promise<any>> = {}
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,6 +82,16 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   symbol: string | undefined
   name: string | undefined
 } {
+  const dispatch = useAppDispatch()
+  const { tokens } = useSelector((state: RootState) => state.tokens)
+
+  const cachedToken = useMemo(() => {
+    if (mint) {
+      return tokens[mint.toBase58()]
+    }
+    return undefined
+  }, [mint, tokens])
+
   const metadataAddr = useMemo(() => {
     if (mint) {
       return getMetadataId(mint)
@@ -91,9 +104,20 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
     METADATA_PARSER,
   )
 
-  const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
-    metadataAcc?.data.uri.trim(),
-  ])
+  const { result: json, loading: jsonLoading } = useAsync(async () => {
+    if (!mint) return
+    const meta = await getMetadata(metadataAcc?.data.uri.trim())
+
+    dispatch(
+      tokensSlice.actions.setToken({
+        mint: mint.toBase58(),
+        name: meta?.name,
+        symbol: meta?.symbol,
+        img: meta?.image,
+      }),
+    )
+    return meta
+  }, [mint, dispatch, metadataAcc])
 
   if (mint?.equals(NATIVE_MINT)) {
     return {
@@ -122,6 +146,20 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
       },
       symbol: 'USDC',
       name: 'USDC',
+    }
+  }
+
+  if (cachedToken) {
+    return {
+      metadata: undefined,
+      loading: false,
+      json: {
+        name: cachedToken.name,
+        symbol: cachedToken.symbol,
+        image: cachedToken.img,
+      },
+      symbol: cachedToken.symbol,
+      name: cachedToken.name,
     }
   }
 

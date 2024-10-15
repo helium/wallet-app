@@ -1,8 +1,6 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
 import { useIsFocused } from '@react-navigation/native'
 import { Linking } from 'react-native'
-import { useTranslation } from 'react-i18next'
-import Text from '@components/Text'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
@@ -12,7 +10,6 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import NotificationsList from './NotificationsList'
 
 const NotificationsScreen = () => {
-  const { t } = useTranslation()
   const { selectedNotification, updateAllNotifications } =
     useNotificationStorage()
   const isFocused = useIsFocused()
@@ -30,20 +27,11 @@ const NotificationsScreen = () => {
 
   const HeaderComponent = useMemo(() => {
     return (
-      <>
-        <Text
-          textAlign="center"
-          variant="textXlRegular"
-          marginTop="6xl"
-          marginBottom="6"
-          color="primaryText"
-        >
-          {t('notifications.title')}
-        </Text>
+      <Box marginTop="6xl">
         <AccountSlider />
-      </>
+      </Box>
     )
-  }, [t])
+  }, [])
 
   const FooterComponent = useMemo(() => {
     return selectedNotification?.actionTitle &&

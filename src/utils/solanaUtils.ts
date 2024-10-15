@@ -178,7 +178,7 @@ export const SolanaConnection = (sessionKey: string) =>
     ),
     testnet: new WrappedConnection(clusterApiUrl('testnet')),
     'mainnet-beta': new WrappedConnection(
-      'https://rpc.helius.xyz/?api-key=6acaedc2-d08d-4239-81a9-43017204fb45',
+      `${Config.MAINNET_RPC_URL}/?session-key=${sessionKey}`,
     ),
   } as const)
 

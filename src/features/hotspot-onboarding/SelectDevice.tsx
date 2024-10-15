@@ -66,7 +66,11 @@ const SelectOnboardableDevice = () => {
   )
 
   return (
-    <BackScreen title={t('hotspotOnboarding.selectOnboardingMethod.title')}>
+    <BackScreen
+      title={t('hotspotOnboarding.selectOnboardingMethod.title')}
+      edges={[]}
+      headerTopMargin="6xl"
+    >
       <Text
         variant="textXlMedium"
         color="secondaryText"

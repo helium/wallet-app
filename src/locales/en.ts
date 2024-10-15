@@ -932,7 +932,7 @@ export default {
     addRecipient: '+ Add Recipient',
     backToAccounts: 'Back to Wallets',
     enterAddress: 'Enter Address',
-    enterAmount: 'Enter {{ticker}} Amount',
+    enterAmount: 'Enter Amount',
     enterMemo: 'Enter Memo (Optional)',
     fee: '+{{value}} Fee',
     insufficientFunds: 'Insufficient {{token}}',

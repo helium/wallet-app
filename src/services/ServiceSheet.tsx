@@ -57,8 +57,14 @@ const ServiceSheet = ({ children, currentService }: ServiceSheetProps) => {
           serviceNav.replace('SettingsService')
           break
       }
+
+      changeNavigationBarColor(
+        isExpanded ? colors.primaryText : colors.primaryBackground,
+        undefined,
+        true,
+      )
     },
-    [serviceNav],
+    [colors, serviceNav, isExpanded],
   )
 
   const onDrawerPress = useCallback(() => {

@@ -15,6 +15,7 @@ import { wp } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
+import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import { BrowserNavigationProp } from './browserTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 
@@ -121,17 +122,19 @@ const DAppTutorial = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <SafeAreaBox flex={1} edges={edges} backgroundColor="primaryBackground">
-        <Carousel
-          style={{ backgroundColor: 'blue' }}
-          ref={carouselRef}
-          layout="default"
-          vertical={false}
-          data={slides}
-          renderItem={renderCarouselItem}
-          sliderWidth={wp(100)}
-          itemWidth={wp(90)}
-          onSnapToItem={onSnapToItem}
-        />
+        <NativeViewGestureHandler disallowInterruption>
+          <Carousel
+            style={{ backgroundColor: 'blue' }}
+            ref={carouselRef}
+            layout="default"
+            vertical={false}
+            data={slides}
+            renderItem={renderCarouselItem}
+            sliderWidth={wp(100)}
+            itemWidth={wp(90)}
+            onSnapToItem={onSnapToItem}
+          />
+        </NativeViewGestureHandler>
         <Box>
           <Pagination
             dotsLength={slides.length}
