@@ -217,19 +217,20 @@ const TokensScreen = () => {
   }, [])
 
   return (
-    <ScrollBox>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={refetchingTokens}
+          onRefresh={refetchTokens}
+          title=""
+          tintColor={colors.primaryText}
+        />
+      }
+    >
       <FlatList
         data={mints}
         ListHeaderComponent={renderHeader}
-        refreshControl={
-          <RefreshControl
-            enabled
-            refreshing={refetchingTokens}
-            onRefresh={refetchTokens}
-            title=""
-            tintColor={colors.primaryText}
-          />
-        }
         contentContainerStyle={contentContainerStyle}
         renderItem={renderItem}
         ListEmptyComponent={renderEmptyComponent}

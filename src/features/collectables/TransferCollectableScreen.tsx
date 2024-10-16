@@ -1,5 +1,4 @@
 import ArrowRight from '@assets/images/arrowRight.svg'
-import Menu from '@assets/images/menu.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
@@ -27,15 +26,15 @@ import 'text-encoding-polyfill'
 import ScrollBox from '@components/ScrollBox'
 import { Asset } from '@helium/spl-utils'
 import { NavBarHeight } from '@components/ServiceNavBar'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import AddressIcon from '@assets/images/addressIcon.svg'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { CSAccount } from '../../storage/cloudStorage'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { ww } from '../../utils/layout'
 import * as Logger from '../../utils/logger'
-import {
-  CollectableNavigationProp,
-  CollectableStackParamList,
-} from './collectablesTypes'
+import { CollectableStackParamList } from './collectablesTypes'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -45,7 +44,7 @@ type Route = RouteProp<CollectableStackParamList, 'TransferCollectableScreen'>
 
 const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
@@ -185,18 +184,19 @@ const TransferCollectableScreen = () => {
                   backgroundColor="cardBackground"
                   borderRadius="xl"
                   marginBottom="2"
+                  flexDirection="row"
+                  alignItems="center"
+                  padding="4"
+                  paddingHorizontal="1"
                 >
                   <TextInput
                     floatingLabel={`${t(
                       'collectablesScreen.transferTo',
                     )} ${recipientName}`}
-                    variant="thickBlur"
-                    height={80}
-                    width="100%"
+                    variant="transparentSmall"
                     textColor="primaryText"
                     fontSize={15}
-                    TrailingIcon={Menu}
-                    onTrailingIconPress={handleAddressBookSelected}
+                    flex={1}
                     textInputProps={{
                       placeholder: t('generic.solanaAddress'),
                       placeholderTextColor: colors.secondaryText,
@@ -207,6 +207,12 @@ const TransferCollectableScreen = () => {
                       value: recipient,
                     }}
                   />
+                  <TouchableOpacityBox
+                    marginEnd="6"
+                    onPress={handleAddressBookSelected}
+                  >
+                    <AddressIcon />
+                  </TouchableOpacityBox>
                 </Box>
                 <Text
                   opacity={hasError || networkError ? 100 : 0}

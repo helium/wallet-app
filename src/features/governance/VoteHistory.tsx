@@ -19,6 +19,7 @@ import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
+import ScrollBox from '@components/ScrollBox'
 import { ProposalTags } from './ProposalTags'
 import { VoterCardStat } from './VoterCardStat'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -107,13 +108,7 @@ export const VoteHistory: React.FC<{
   const { primaryText } = useColors()
 
   return (
-    <FlatList
-      ListHeaderComponent={header}
-      keyExtractor={keyExtractor}
-      data={dedupedVoteHistories}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      onEndReached={handleOnEndReached}
+    <ScrollBox
       refreshControl={
         <RefreshControl
           refreshing={loading}
@@ -122,7 +117,16 @@ export const VoteHistory: React.FC<{
           tintColor={primaryText}
         />
       }
-    />
+    >
+      <FlatList
+        ListHeaderComponent={header}
+        keyExtractor={keyExtractor}
+        data={dedupedVoteHistories}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        onEndReached={handleOnEndReached}
+      />
+    </ScrollBox>
   )
 }
 

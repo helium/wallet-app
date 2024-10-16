@@ -46,7 +46,10 @@ import { NavBarHeight } from '@components/ServiceNavBar'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { PaymentRouteParam } from '@services/WalletService'
 import ScrollBox from '@components/ScrollBox'
-import { SendStackParamList } from '@services/WalletService/pages/SendPage/SentPageNavigator'
+import {
+  SendNavigationProp,
+  SendStackParamList,
+} from '@services/WalletService/pages/SendPage/SentPageNavigator'
 import { useAsyncCallback } from 'react-async-hook'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
@@ -131,6 +134,7 @@ const PaymentScreen = () => {
   const appDispatch = useAppDispatch()
   const navigation = useNavigation<WalletNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
+  const sendNav = useNavigation<SendNavigationProp>()
   const { t } = useTranslation()
 
   useDisappear(() => {
@@ -643,14 +647,8 @@ const PaymentScreen = () => {
   }, [balance, decimals])
 
   const onSuccess = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ;(rootNav as any).replace('ServiceSheetNavigator', {
-      screen: 'WalletService',
-      params: {
-        screen: 'Send',
-      },
-    })
-  }, [rootNav])
+    sendNav.replace('PaymentScreen')
+  }, [sendNav])
 
   const data = useMemo((): TokenListItem[] => {
     const tokens = [...visibleTokens]

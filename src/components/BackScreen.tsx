@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
@@ -32,6 +32,7 @@ type Props = BoxProps<Theme> & {
   onTrailingIconPress?: () => void
   headerTopMargin?: Spacing
   rootBackgroundColor?: Color
+  onBack?: () => void
 }
 
 const BackScreen = ({
@@ -51,12 +52,21 @@ const BackScreen = ({
   onTrailingIconPress,
   headerTopMargin,
   rootBackgroundColor,
+  onBack,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
   const hitSlop = useHitSlop('6')
   const colors = useColors()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
+
+  const onBackHandler = useCallback(() => {
+    if (onBack) {
+      onBack()
+    } else {
+      navigation.goBack()
+    }
+  }, [navigation, onBack])
 
   return (
     <Box flex={1} backgroundColor={rootBackgroundColor}>
@@ -85,7 +95,7 @@ const BackScreen = ({
             <BackButton
               marginHorizontal="-3"
               paddingHorizontal="0"
-              onPress={navigation.goBack}
+              onPress={onBackHandler}
             />
           )}
           <Box flex={1} />

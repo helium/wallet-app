@@ -14,6 +14,7 @@ import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl, SectionList } from 'react-native'
+import ScrollBox from '@components/ScrollBox'
 import { PositionCard } from './PositionCard'
 
 interface IPositionsListProps extends BoxProps<Theme> {
@@ -145,50 +146,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
   )
 
   return (
-    <SectionList
-      renderSectionHeader={renderSectionHeader}
-      ListHeaderComponent={
-        <>
-          {header}
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingVertical="5"
-          >
-            <Text variant="textXsRegular" color="secondaryText">
-              Positions
-            </Text>
-          </Box>
-          <Box
-            flex={1}
-            flexDirection="row"
-            backgroundColor="bg.tertiary"
-            alignItems="center"
-            justifyContent="center"
-            borderRadius="2xl"
-            padding="3"
-            marginBottom="4"
-            paddingLeft="0"
-            {...boxProps}
-          >
-            <LightningBolt
-              color={colors['blue.light-500']}
-              height={36}
-              width={36}
-            />
-            <Box flexShrink={1}>
-              <Text variant="textSmRegular" color="secondaryText">
-                Increase your voting power by locking tokens
-              </Text>
-            </Box>
-          </Box>
-        </>
-      }
-      keyExtractor={keyExtractor}
-      sections={loading ? [] : SectionData}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
+    <ScrollBox
       refreshControl={
         <RefreshControl
           refreshing={loading}
@@ -197,7 +155,53 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
           tintColor={colors.primaryText}
         />
       }
-    />
+    >
+      <SectionList
+        renderSectionHeader={renderSectionHeader}
+        ListHeaderComponent={
+          <>
+            {header}
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              paddingVertical="5"
+            >
+              <Text variant="textXsRegular" color="secondaryText">
+                Positions
+              </Text>
+            </Box>
+            <Box
+              flex={1}
+              flexDirection="row"
+              backgroundColor="bg.tertiary"
+              alignItems="center"
+              justifyContent="center"
+              borderRadius="2xl"
+              padding="3"
+              marginBottom="4"
+              paddingLeft="0"
+              {...boxProps}
+            >
+              <LightningBolt
+                color={colors['blue.light-500']}
+                height={36}
+                width={36}
+              />
+              <Box flexShrink={1}>
+                <Text variant="textSmRegular" color="secondaryText">
+                  Increase your voting power by locking tokens
+                </Text>
+              </Box>
+            </Box>
+          </>
+        }
+        keyExtractor={keyExtractor}
+        sections={loading ? [] : SectionData}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+      />
+    </ScrollBox>
   )
 }
 

@@ -233,7 +233,7 @@ export default {
     title: 'Collectables',
     metadata: 'Metadata',
     transfer: 'Transfer',
-    transferComplete: 'Hotspot Transferred!',
+    transferComplete: 'Asset Transferred!',
     returnToCollectables: 'Return to Collectables',
     transferFee: '<b>Fee</b> <secondaryText> {{ amount }} SOL </secondaryText>',
     transferingNftTitle: 'Transferring NFT...',
@@ -1525,5 +1525,8 @@ export default {
   },
   blurActionSheet: {
     selectAnOption: 'Select an option',
+  },
+  manageCollectables: {
+    title: 'Manage collectable list',
   },
 }

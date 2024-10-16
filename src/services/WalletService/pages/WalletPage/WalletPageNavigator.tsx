@@ -15,7 +15,8 @@ import NftDetailsScreen from '@features/collectables/NftDetailsScreen'
 import CollectionScreen from '@features/collectables/CollectionScreen'
 import ManageCollectables from '@features/collectables/ManageCollectables'
 import TransferCollectableScreen from '@features/collectables/TransferCollectableScreen'
-import { Collectable, CompressedNFT } from '../../../../types/solana'
+import TransferCompleteScreen from '@features/collectables/TransferCompleteScreen'
+import { CompressedNFT } from '../../../../types/solana'
 import TokensTabs from './TokensTabs'
 
 export type BurnRouteParam = {
@@ -37,14 +38,17 @@ export type WalletStackParamList = {
   AccountManageTokenListScreen: undefined
   PaymentQrScanner: undefined
   NftDetailsScreen: {
-    collectable: Collectable
+    collectable: CompressedNFT
   }
   CollectionScreen: {
-    collection: Collectable[]
+    collection: CompressedNFT[]
   }
   ManageCollectables: undefined
   TransferCollectableScreen: {
-    collectable: CompressedNFT | Collectable
+    collectable: CompressedNFT
+  }
+  TransferCompleteScreen: {
+    collectable: CompressedNFT
   }
 }
 
@@ -97,6 +101,10 @@ const WalletPageNavigator = () => {
       <WalletStack.Screen
         name="TransferCollectableScreen"
         component={TransferCollectableScreen}
+      />
+      <WalletStack.Screen
+        name="TransferCompleteScreen"
+        component={TransferCompleteScreen}
       />
     </WalletStack.Navigator>
   )

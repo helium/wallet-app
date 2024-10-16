@@ -168,18 +168,19 @@ const AccountManageTokenListScreen: React.FC = () => {
   }, [])
 
   return (
-    <ScrollBox>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={refetchingTokens}
+          onRefresh={refetchTokens}
+          title=""
+          tintColor={colors.primaryText}
+        />
+      }
+    >
       <BackScreen edges={[]} headerTopMargin="6xl">
         <FlatList
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={refetchingTokens}
-              onRefresh={refetchTokens}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
           data={mints}
           renderItem={renderItem}
           keyExtractor={keyExtractor}

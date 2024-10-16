@@ -161,7 +161,18 @@ const ActivityScreen = () => {
   const keyExtractor = useCallback((item, index) => item.signature + index, [])
 
   return (
-    <ScrollBox backgroundColor="primaryBackground">
+    <ScrollBox
+      backgroundColor="primaryBackground"
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={loading}
+          onRefresh={refresh}
+          title=""
+          tintColor={colors.primaryText}
+        />
+      }
+    >
       <SectionList
         style={{
           backgroundColor: colors.primaryBackground,
@@ -172,15 +183,6 @@ const ActivityScreen = () => {
         renderItem={renderItem}
         renderSectionHeader={renderSectionHeader}
         ListHeaderComponent={renderHeader}
-        refreshControl={
-          <RefreshControl
-            enabled
-            refreshing={loading}
-            onRefresh={refresh}
-            title=""
-            tintColor={colors.primaryText}
-          />
-        }
         stickySectionHeadersEnabled={false}
         onEndReachedThreshold={0.05}
         // onEndReached={fetchMore}

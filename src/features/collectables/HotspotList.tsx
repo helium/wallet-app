@@ -244,7 +244,17 @@ const HotspotList = () => {
 
   return (
     <>
-      <ScrollBox>
+      <ScrollBox
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={loadingHotspots}
+            onRefresh={handleRefresh}
+            title=""
+            tintColor={primaryText}
+          />
+        }
+      >
         <FlatList
           data={hotspotsWithMeta}
           numColumns={2}
@@ -255,15 +265,6 @@ const HotspotList = () => {
             flexDirection: 'column',
           }}
           ListHeaderComponent={renderHeader}
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loadingHotspots}
-              onRefresh={handleRefresh}
-              title=""
-              tintColor={primaryText}
-            />
-          }
           renderItem={renderCollectable}
           ListEmptyComponent={renderEmptyComponent}
           onEndReachedThreshold={0.001}

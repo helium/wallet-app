@@ -102,7 +102,7 @@ const collectables = createSlice({
       action: PayloadAction<{ collection: string }>,
     ) => {
       if (!state.approvedCollections) {
-        state.approvedCollections = solUtils.heliumNFTs()
+        state.approvedCollections = []
       }
 
       if (state.approvedCollections.includes(action.payload.collection)) {

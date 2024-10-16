@@ -111,6 +111,12 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
+import {
+  Metaplex,
+  Signer,
+  token,
+  walletAdapterIdentity,
+} from '@metaplex-foundation/js'
 import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -508,45 +514,52 @@ export const createTransferCollectableMessage = async (
 export const transferCollectable = async (
   anchorProvider: AnchorProvider,
   solanaAddress: string,
-  heliumAddress: string,
-  collectable: Collectable,
+  collectable: CompressedNFT,
   payee: string,
 ): Promise<TransactionDraft> => {
   const payer = new PublicKey(solanaAddress)
   try {
+    const feePayer: Signer = {
+      publicKey: anchorProvider.publicKey,
+      signTransaction: async (tx) => {
+        return anchorProvider.wallet.signTransaction(tx)
+      },
+      signMessage: async (msg) => msg,
+      signAllTransactions: async (txs) => {
+        return anchorProvider.wallet.signAllTransactions(txs)
+      },
+    }
+
+    const asset = new PublicKey(collectable.id)
+
+    const metaplex = new Metaplex(anchorProvider.connection)
+    metaplex.use(walletAdapterIdentity(anchorProvider.wallet))
     const recipientPubKey = new PublicKey(payee)
-    const mintPubkey = new PublicKey(collectable.address)
 
-    const instructions: TransactionInstruction[] = []
-
-    const ownerATA = await getAssociatedTokenAddress(mintPubkey, payer)
+    const ownerATA = await getAssociatedTokenAddress(asset, payer)
 
     const recipientATA = await getAssociatedTokenAddress(
-      mintPubkey,
+      asset,
       recipientPubKey,
       true,
     )
 
-    instructions.push(
-      createAssociatedTokenAccountIdempotentInstruction(
-        anchorProvider.publicKey,
-        recipientATA,
-        recipientPubKey,
-        mintPubkey,
-      ),
-    )
+    const nft = await metaplex.nfts().findByMint({ mintAddress: asset })
 
-    instructions.push(
-      createTransferCheckedInstruction(
-        ownerATA, // from (should be a token account)
-        mintPubkey, // mint
-        recipientATA, // to (should be a token account)
-        payer, // from's owner
-        1, // amount
-        0, // decimals
-        [], // signers
-      ),
-    )
+    const txBuilder = metaplex
+      .nfts()
+      .builders()
+      .transfer({
+        nftOrSft: nft,
+        fromOwner: anchorProvider.publicKey,
+        toOwner: new PublicKey(payee),
+        amount: token(1),
+        authority: feePayer,
+        fromToken: ownerATA,
+        toToken: recipientATA,
+      })
+
+    const instructions = txBuilder.getInstructions()
 
     return {
       instructions: await withPriorityFees({
@@ -749,7 +762,6 @@ const mapProof = (assetProof: { proof: string[] }): AccountMeta[] => {
 export const transferCompressedCollectable = async (
   anchorProvider: AnchorProvider,
   solanaAddress: string,
-  heliumAddress: string,
   collectable: CompressedNFT,
   payee: string,
 ): Promise<TransactionDraft> => {
@@ -830,6 +842,10 @@ export const transferCompressedCollectable = async (
 }
 
 export const heliumNFTs = (): string[] => {
+  return []
+}
+
+export const governanceNFTs = (): string[] => {
   // HST collection ID
   const fanoutMint = membershipCollectionKey(
     fanoutKey('HST')[0],

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
@@ -13,12 +13,17 @@ import Config from '@assets/images/config.svg'
 import Text from '@components/Text'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import ScrollBox from '@components/ScrollBox'
+import { useSelector } from 'react-redux'
+import { RootState } from '@store/rootReducer'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
 
 const NftList = () => {
   const spacing = useSpacing()
   const { bottom } = useSafeAreaInsets()
   const navigation = useNavigation<WalletNavigationProp>()
+  const approvedCollections = useSelector(
+    (state: RootState) => state.collectables.approvedCollections,
+  )
 
   const {
     collectables,
@@ -26,6 +31,12 @@ const NftList = () => {
     refresh,
   } = useCollectables()
   const { primaryText } = useColors()
+
+  useEffect(() => {
+    if (approvedCollections.length > 0) {
+      refresh()
+    }
+  }, [refresh, approvedCollections])
 
   const flatListItems = useMemo(() => {
     // always return an even number of items, if odd add an empty string
@@ -107,19 +118,20 @@ const NftList = () => {
   )
 
   return (
-    <ScrollBox>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          refreshing={loadingCollectables}
+          onRefresh={refresh}
+          title=""
+          tintColor={primaryText}
+        />
+      }
+    >
       <FlatList
         enabled
         data={flatListItems}
         numColumns={2}
-        refreshControl={
-          <RefreshControl
-            refreshing={loadingCollectables}
-            onRefresh={refresh}
-            title=""
-            tintColor={primaryText}
-          />
-        }
         columnWrapperStyle={{
           flexDirection: 'row',
           gap: spacing[4],

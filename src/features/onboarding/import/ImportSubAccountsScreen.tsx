@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
 import { AccountsServiceNavigationProp } from '@services/AccountsService/accountServiceTypes'
+import ScrollBox from '@components/ScrollBox'
 import { useOnboarding } from '../OnboardingProvider'
 
 export default () => {
@@ -217,63 +218,66 @@ export default () => {
   }, [hasAccounts, navigation, words, accountsNavigation])
 
   return (
-    <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
-      <Box
-        flex={1}
-        backgroundColor="secondaryBackground"
-        height="100%"
-        paddingHorizontal="4"
-      >
-        <Text
-          variant="displayMdRegular"
-          mt="8"
-          textAlign="center"
-          fontSize={44}
-          lineHeight={44}
-          mb="2"
-        >
-          {t('accountImport.privateKey.selectAccounts')}
-        </Text>
-        <Text textAlign="center" p="2" variant="textMdRegular" mb="6">
-          {t('accountImport.privateKey.selectAccountsBody')}
-        </Text>
-        {error && (
-          <Text variant="textSmRegular" color="error.500" textAlign="center">
-            {error.message}
-          </Text>
-        )}
-        <FlatList
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={() => {}}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
-          data={derivationAccounts}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          enabled
           refreshing={loading}
-          onEndReached={fetchMore}
+          onRefresh={() => {}}
+          title=""
+          tintColor={colors.primaryText}
         />
-        <ButtonPressable
-          marginTop="6"
-          borderRadius="full"
-          backgroundColor="primaryText"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="bg.tertiary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="gray.800"
-          titleColor="primaryBackground"
-          disabled={selected.size === 0}
-          onPress={onNext}
-          title={t('generic.next')}
-          marginBottom="6"
-          marginHorizontal="6"
-        />
-      </Box>
-    </SafeAreaBox>
+      }
+    >
+      <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
+        <Box
+          flex={1}
+          backgroundColor="secondaryBackground"
+          height="100%"
+          paddingHorizontal="4"
+        >
+          <Text
+            variant="displayMdRegular"
+            mt="8"
+            textAlign="center"
+            fontSize={44}
+            lineHeight={44}
+            mb="2"
+          >
+            {t('accountImport.privateKey.selectAccounts')}
+          </Text>
+          <Text textAlign="center" p="2" variant="textMdRegular" mb="6">
+            {t('accountImport.privateKey.selectAccountsBody')}
+          </Text>
+          {error && (
+            <Text variant="textSmRegular" color="error.500" textAlign="center">
+              {error.message}
+            </Text>
+          )}
+          <FlatList
+            data={derivationAccounts}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            refreshing={loading}
+            onEndReached={fetchMore}
+          />
+          <ButtonPressable
+            marginTop="6"
+            borderRadius="full"
+            backgroundColor="primaryText"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="bg.tertiary"
+            backgroundColorDisabledOpacity={0.5}
+            titleColorDisabled="gray.800"
+            titleColor="primaryBackground"
+            disabled={selected.size === 0}
+            onPress={onNext}
+            title={t('generic.next')}
+            marginBottom="6"
+            marginHorizontal="6"
+          />
+        </Box>
+      </SafeAreaBox>
+    </ScrollBox>
   )
 }

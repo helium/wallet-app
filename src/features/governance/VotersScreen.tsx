@@ -160,7 +160,16 @@ export default function VotersScreen() {
   const { primaryText } = useColors()
 
   return (
-    <ScrollBox>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          refreshing={loading || isLoading || isFetchingNextPage}
+          onRefresh={refetch}
+          title=""
+          tintColor={primaryText}
+        />
+      }
+    >
       <GovernanceWrapper selectedTab="voters">
         <Text
           variant="textSmRegular"
@@ -181,14 +190,6 @@ export default function VotersScreen() {
           data={proxies}
           renderItem={renderItem}
           ListEmptyComponent={renderEmptyComponent}
-          refreshControl={
-            <RefreshControl
-              refreshing={loading || isLoading || isFetchingNextPage}
-              onRefresh={refetch}
-              title=""
-              tintColor={primaryText}
-            />
-          }
           onEndReached={handleOnEndReached}
         />
       </GovernanceWrapper>

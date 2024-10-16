@@ -10,9 +10,11 @@ import { useAsync } from 'react-async-hook'
 import { FlatList, RefreshControl } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import CollectionItem, { Collection } from './CollectionItem'
 
 const ManageCollectables = () => {
+  const { t } = useTranslation()
   const { bottom } = useSafeAreaInsets()
   const colors = useColors()
   const { fetchAllCollectablesByGroup } = useCollectables()
@@ -95,22 +97,23 @@ const ManageCollectables = () => {
   }, [])
 
   return (
-    <ScrollBox>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={loading}
+          onRefresh={execute}
+          title=""
+          tintColor={colors.primaryText}
+        />
+      }
+    >
       <BackScreen
-        title="Manage collectable list"
+        title={t('manageCollectables.title')}
         edges={[]}
         headerTopMargin="6xl"
       >
         <FlatList
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={execute}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
           data={collectables}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
