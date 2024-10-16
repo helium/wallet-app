@@ -76,6 +76,7 @@ export const TokenListItem = ({ mint }: Props) => {
     decimals,
     loading: loadingOwned,
   } = useOwnedAmount(wallet, mint)
+
   const { triggerImpact } = useHaptic()
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()

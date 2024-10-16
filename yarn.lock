@@ -14025,6 +14025,7 @@ __metadata:
     react-error-boundary: ^4.0.13
     react-i18next: 11.18.4
     react-native: 0.74.5
+    react-native-animated-numbers: ^0.6.2
     react-native-appstate-hook: 1.0.6
     react-native-ble-plx: 2.0.3
     react-native-charts-wrapper: 0.5.10
@@ -19467,6 +19468,16 @@ __metadata:
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
   checksum: 9d6d111d8990dc98bc5402c1266a808b0459b5d54830bbea24c12d908b536df7883f268a7868cfaedde3dd9d4e0d574db456f84d2e6df9c4526f99bb4b5344d8
+  languageName: node
+  linkType: hard
+
+"react-native-animated-numbers@npm:^0.6.2":
+  version: 0.6.2
+  resolution: "react-native-animated-numbers@npm:0.6.2"
+  peerDependencies:
+    react: ">=16.8.0"
+    react-native: ">=0.59"
+  checksum: 4a7e56bd06ac67e282633eeee7e0bcb836dd2e10d45e1e755b208bbb15c5fd4e111f9990669dfa288e88928adfbfe70a67a5ca1d9e864da22c3c87ed4f12263d
   languageName: node
   linkType: hard
 

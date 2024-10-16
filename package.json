@@ -157,6 +157,7 @@
     "react-error-boundary": "^4.0.13",
     "react-i18next": "11.18.4",
     "react-native": "0.74.5",
+    "react-native-animated-numbers": "^0.6.2",
     "react-native-appstate-hook": "1.0.6",
     "react-native-ble-plx": "2.0.3",
     "react-native-charts-wrapper": "0.5.10",

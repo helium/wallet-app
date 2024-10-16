@@ -1,7 +1,7 @@
 import Box from '@components/Box'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import BalanceText from '@components/BalanceText'
-import { FlatList, RefreshControl } from 'react-native'
+import { AppState, FlatList, Platform, RefreshControl } from 'react-native'
 import { useBalance } from '@utils/Balance'
 import { DC_MINT, truthy } from '@helium/spl-utils'
 import { DEFAULT_TOKENS, useVisibleTokens } from '@storage/TokensProvider'
@@ -16,7 +16,7 @@ import { useColors, useSpacing } from '@theme/themeHooks'
 import WalletAlertBanner from '@components/WalletAlertBanner'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAsyncCallback } from 'react-async-hook'
+import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useAppDispatch } from '@store/store'
 import { syncTokenAccounts } from '@store/slices/balancesSlice'
@@ -31,22 +31,53 @@ import { useTranslation } from 'react-i18next'
 import { getSortValue } from '@utils/solanaUtils'
 import { checkSecureAccount } from '@storage/secureStorage'
 import ScrollBox from '@components/ScrollBox'
+import SharedGroupPreferences from 'react-native-shared-group-preferences'
+import { useAppStorage } from '@storage/AppStorageProvider'
+import { CSAccount } from '@storage/cloudStorage'
+import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { useNotificationStorage } from '@storage/NotificationStorageProvider'
+import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
 import { WalletNavigationProp } from './WalletPageNavigator'
 import { useSolana } from '../../../../solana/SolanaProvider'
 
 const TokensScreen = () => {
+  const widgetGroup = 'group.com.helium.mobile.wallet.widget'
   const { anchorProvider, cluster } = useSolana()
   const { tokenAccounts } = useBalance()
   const { visibleTokens } = useVisibleTokens()
   const colors = useColors()
   const spacing = useSpacing()
   const { bottom } = useSafeAreaInsets()
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, sortedAccounts, defaultAccountAddress } =
+    useAccountStorage()
   const dispatch = useAppDispatch()
+  const { locked, currency } = useAppStorage()
+  const rootNav = useNavigation<RootNavigationProp>()
   const cache = useAccountFetchCache()
   const navigation = useNavigation<WalletNavigationProp>()
+  const serviceNav = useNavigation<ServiceSheetNavigationProp>()
+  const { openedNotification } = useNotificationStorage()
   const { t } = useTranslation()
-  const { total } = useBalance()
+
+  // Hook that is used for helium balance widget.
+  useAsync(async () => {
+    if (Platform.OS === 'ios') {
+      const defaultAccount = sortedAccounts.find(
+        (account: CSAccount) => account.address === defaultAccountAddress,
+      )
+
+      await SharedGroupPreferences.setItem(
+        'heliumWalletWidgetKey',
+        {
+          defaultAccountAddress: defaultAccount?.solanaAddress,
+          defaultAccountAlias: defaultAccount?.alias,
+          currencyType: currency,
+          cluster,
+        },
+        widgetGroup,
+      )
+    }
+  }, [defaultAccountAddress, sortedAccounts])
 
   const { loading: refetchingTokens, execute: refetchTokens } =
     useAsyncCallback(async () => {
@@ -118,6 +149,32 @@ const TokensScreen = () => {
       }
     })
 
+  // Trigger refresh when the app comes into the foreground from the background
+  useEffect(() => {
+    const listener = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        refetchTokens()
+      }
+    })
+    return () => {
+      listener.remove()
+    }
+  }, [refetchTokens])
+
+  // if user signs out from lockscreen
+  useEffect(() => {
+    if (sortedAccounts.length === 0) {
+      rootNav.replace('OnboardingNavigator')
+    }
+  }, [rootNav, sortedAccounts.length])
+
+  useEffect(() => {
+    if (openedNotification && !locked) {
+      // navigate to notifications if we are coming from tapping a push
+      serviceNav.push('NotificationsService')
+    }
+  }, [serviceNav, openedNotification, locked])
+
   const mints = useMemo(() => {
     const taMints = tokenAccounts
       ?.filter(
@@ -142,11 +199,11 @@ const TokensScreen = () => {
       <Box marginBottom="3xl">
         <WalletAlertBanner />
         <Box alignItems="center" width="100%">
-          <BalanceText amount={total} decimals={2} />
+          <BalanceText />
         </Box>
       </Box>
     )
-  }, [total])
+  }, [])
 
   const contentContainerStyle = useMemo(
     () => ({
@@ -213,7 +270,7 @@ const TokensScreen = () => {
 
   const keyExtractor = useCallback((mint: PublicKey) => {
     const isGov = GovMints.some((m) => new PublicKey(m).equals(mint))
-    return `${mint.toBase58()}${isGov ? '-gov' : ''}`
+    return `${mint.toBase58()}${isGov ? '-gov' : '-spl'}`
   }, [])
 
   return (

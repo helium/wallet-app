@@ -35,7 +35,6 @@ import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
 
-export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { cluster, anchorProvider } = useSolana()

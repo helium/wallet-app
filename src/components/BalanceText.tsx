@@ -1,50 +1,81 @@
-import React, { memo, useMemo } from 'react'
-import { TextProps } from '@shopify/restyle'
-import { locale } from '@utils/i18n'
-import { Theme } from '@theme/theme'
+import React, { memo, useEffect, useMemo, useState } from 'react'
+import AnimatedNumbers from 'react-native-animated-numbers'
+import { useTextVariants } from '@theme/themeHooks'
+import { Easing } from 'react-native-reanimated'
+import { useBalance } from '@utils/Balance'
 import Box from './Box'
 import Text from './Text'
 
-const BalanceText = ({
-  amount,
-  decimals,
-  ...rest
-}: {
-  amount: number | undefined
-  decimals: number | undefined
-} & TextProps<Theme>) => {
-  const integral = useMemo(() => Math.floor(amount || 0), [amount])
+const BalanceText = () => {
+  const { total: amount } = useBalance()
 
-  const fractional = useMemo(() => {
-    if (amount === undefined) return ''
+  const textVariants = useTextVariants()
+  const integral = useMemo(() => Math.floor(amount || 0), [amount])
+  const [realAmount, setAmount] = useState(amount || 0)
+
+  useEffect(() => {
+    setTimeout(() => {
+      setAmount(amount || 0)
+    }, 3000)
+  }, [amount])
+
+  const firstFractional = useMemo(() => {
+    if (amount === undefined) return 0
     const decimal = amount - integral
     const fraction = decimal.toString().split('.')[1]
     // Fraction with max length of decimals
-    const fractionWithMaxDecimals = fraction?.slice(0, decimals)
-    return fraction ? `.${fractionWithMaxDecimals}` : '.00'
-  }, [amount, integral, decimals])
+    const fractionWithMaxDecimals = fraction?.slice(0, 1)
+    return fraction ? Number(fractionWithMaxDecimals) : 0
+  }, [amount, integral])
+
+  const secondFractional = useMemo(() => {
+    if (amount === undefined) return 0
+    const decimal = amount - integral
+    const fraction = decimal.toString().split('.')[1]
+    // Fraction with max length of decimals
+    const fractionWithMaxDecimals = fraction?.slice(1, 2)
+    return fraction ? Number(fractionWithMaxDecimals) : 0
+  }, [amount, integral])
 
   return (
     <Box>
       <Box flexDirection="row" alignItems="flex-end">
-        <Text
-          paddingTop="2"
-          adjustsFontSizeToFit
-          variant="displayLgBold"
-          color={
-            amount === undefined ? 'text.placeholder-subtle' : 'primaryText'
-          }
-          {...rest}
-        >
-          {amount === undefined ? '-' : `$${integral.toLocaleString(locale)}`}
-        </Text>
+        <AnimatedNumbers
+          includeComma
+          animateToNumber={realAmount || 0}
+          fontStyle={{
+            fontSize: textVariants.displayLgBold.fontSize,
+            fontWeight: 'bold',
+            fontFamily: textVariants.displayLgBold.fontFamily,
+          }}
+          easing={Easing.elastic(1.2)}
+          animationDuration={1400}
+        />
         <Text
           adjustsFontSizeToFit
           variant="displayLgBold"
           color="text.placeholder-subtle"
         >
-          {fractional}
+          .
         </Text>
+        <AnimatedNumbers
+          includeComma
+          animateToNumber={firstFractional || 0}
+          fontStyle={{
+            fontSize: textVariants.displayLgBold.fontSize,
+            fontWeight: 'bold',
+            fontFamily: textVariants.displayLgBold.fontFamily,
+          }}
+        />
+        <AnimatedNumbers
+          includeComma
+          animateToNumber={secondFractional || 0}
+          fontStyle={{
+            fontSize: textVariants.displayLgBold.fontSize,
+            fontWeight: 'bold',
+            fontFamily: textVariants.displayLgBold.fontFamily,
+          }}
+        />
       </Box>
       {/* 
       TODO: Bring this back once we are tracking balances on the wallet api 
