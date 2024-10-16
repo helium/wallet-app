@@ -62,6 +62,7 @@ const App = () => {
     'ws error: received bad response code from server 429',
     'Ignored unsubscribe request because an active subscription with id',
     'accountFetchCache Batching account fetch of',
+    'VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other functionality - use another VirtualizedList-backed container instead.',
   ])
 
   const { appState } = useAppState()
