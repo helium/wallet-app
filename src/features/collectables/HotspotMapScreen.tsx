@@ -553,7 +553,7 @@ const HotspotMapScreen = () => {
       <BottomSheetModalProvider>
         <BottomSheetModal
           ref={bottomSheetRef}
-          snapPoints={[160]}
+          snapPoints={[200]}
           enablePanDownToClose
           enableDynamicSizing
           animateOnMount

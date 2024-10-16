@@ -61,8 +61,13 @@ const AccountActionBar = ({
           ) {
             walletPageNav.navigate('ConfirmPin', { action: 'payment' })
           } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
             navigation.navigate('Send', {
-              mint: mint?.toBase58(),
+              screen: 'PaymentScreen',
+              params: {
+                mint: mint?.toBase58(),
+              },
             })
           }
           break

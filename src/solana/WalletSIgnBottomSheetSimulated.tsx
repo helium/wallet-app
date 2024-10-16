@@ -288,7 +288,7 @@ export const WalletSignBottomSheetSimulated = ({
                 <TouchableOpacityBox
                   onPress={() => setInfoVisible((prev) => !prev)}
                 >
-                  <InfoIcon width={15} height={15} />
+                  <InfoIcon width={15} height={15} color={colors.primaryText} />
                 </TouchableOpacityBox>
               </Box>
               {infoVisible && (
@@ -355,7 +355,11 @@ export const WalletSignBottomSheetSimulated = ({
                   <TouchableOpacityBox
                     onPress={() => setWritableInfoVisible((prev) => !prev)}
                   >
-                    <InfoIcon width={15} height={15} />
+                    <InfoIcon
+                      width={15}
+                      height={15}
+                      color={colors.primaryText}
+                    />
                   </TouchableOpacityBox>
                 </Box>
                 <Text variant="textMdRegular" color="gray.50">

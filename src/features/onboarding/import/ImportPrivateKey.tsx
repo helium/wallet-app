@@ -11,7 +11,7 @@ import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
 import React, { memo, useCallback, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import RNSodium from 'react-native-sodium'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
@@ -65,8 +65,8 @@ const ImportPrivateKey = () => {
     [accounts, setOnboardingData, t],
   )
 
-  const decodePrivateKey = useCallback(
-    async (key?: string) => {
+  const { execute: decodePrivateKey, loading: decodingPrivateKey } =
+    useAsyncCallback(async (key?: string) => {
       setPublicKey(undefined)
 
       if (key) {
@@ -130,9 +130,7 @@ const ImportPrivateKey = () => {
           Logger.error(e)
         }
       }
-    },
-    [createAccount, encodedKey, password, t],
-  )
+    })
 
   useAsync(async () => {
     await decodePrivateKey()
@@ -152,11 +150,14 @@ const ImportPrivateKey = () => {
     function getRoute(subRoute: string) {
       if (hasAccounts) {
         return [
-          'TabBarNavigator',
+          'ServiceSheetNavigator',
           {
-            screen: 'Home',
+            screen: 'AccountsService',
             params: {
-              screen: subRoute,
+              screen: 'ReImportAccountNavigator',
+              params: {
+                screen: subRoute,
+              },
             },
           },
         ]
@@ -227,6 +228,7 @@ const ImportPrivateKey = () => {
         marginTop="8"
         marginBottom="8"
         visible={!!encodedKey}
+        color="secondaryText"
       >
         Enter the password you set for your private key.
       </Text>
@@ -253,11 +255,17 @@ const ImportPrivateKey = () => {
       >
         {error}
       </Text>
-      <Text variant="textMdRegular" marginTop="8" visible={!!publicKey}>
+      <Text
+        variant="textMdRegular"
+        color="primaryText"
+        marginTop="8"
+        visible={!!publicKey}
+      >
         {t('accountImport.privateKey.body')}
       </Text>
       <Text
         variant="textMdRegular"
+        color="secondaryText"
         fontWeight="bold"
         marginTop="8"
         textAlign="center"
@@ -276,6 +284,7 @@ const ImportPrivateKey = () => {
         backgroundColorDisabledOpacity={0.5}
         titleColor="primaryBackground"
         disabled={!!error || publicKey === undefined}
+        loading={decodingPrivateKey}
       />
     </SafeAreaBox>
   )

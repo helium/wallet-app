@@ -9,6 +9,7 @@ import { useCreateOpacity } from '@theme/themeHooks'
 import Box from './Box'
 import ButtonPressAnimation from './ButtonPressAnimation'
 import Text from './Text'
+import CircleLoader from './CircleLoader'
 
 type Props = BoxProps<Theme> & {
   backgroundColorDisabled?: Color
@@ -34,6 +35,9 @@ type Props = BoxProps<Theme> & {
   LeadingComponent?: React.ReactNode
   TrailingComponent?: React.ReactNode
   iconProps?: SvgProps
+  loading?: boolean
+  customLoadingColor?: Color
+  customLoadingColorDisabled?: Color
 }
 
 const ButtonPressable = ({
@@ -62,6 +66,9 @@ const ButtonPressable = ({
   LeadingComponent,
   TrailingComponent,
   iconProps,
+  loading,
+  customLoadingColor = 'primaryText',
+  customLoadingColorDisabled = 'text.disabled',
   ...boxProps
 }: Props) => {
   const [pressed, setPressed] = useState(false)
@@ -137,6 +144,12 @@ const ButtonPressable = ({
     backgroundColorOpacity,
   ])
 
+  const circleLoaderColor = useMemo(() => {
+    if (disabled) return customLoadingColorDisabled
+    if (loading) return customLoadingColor
+    return 'primaryText'
+  }, [disabled, loading, customLoadingColor, customLoadingColorDisabled])
+
   return (
     <ButtonPressAnimation
       overflow="hidden"
@@ -155,23 +168,34 @@ const ButtonPressable = ({
         flexDirection="row"
         justifyContent={Icon ? 'center' : 'center'}
         alignItems="center"
+        borderRadius="full"
         {...containerProps}
       >
-        {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
+        {loading ? (
+          <Box flexDirection="row" alignItems="center" padding="4">
+            <CircleLoader color={circleLoaderColor} loaderSize={20} />
+          </Box>
+        ) : (
+          <>
+            {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
 
-        {title && (
-          <Text
-            variant="textXlMedium"
-            fontSize={fontSize || 19}
-            fontWeight={fontWeight}
-            style={titleColorStyle}
-            marginHorizontal="xs"
-          >
-            {title}
-          </Text>
+            {title && (
+              <Text
+                variant="textXlMedium"
+                fontSize={fontSize || 19}
+                fontWeight={fontWeight}
+                style={titleColorStyle}
+                marginHorizontal="xs"
+              >
+                {title}
+              </Text>
+            )}
+            {Icon && <Icon color={iconColor} {...iconProps} />}
+            {TrailingComponent && (
+              <Box marginStart="xs">{TrailingComponent}</Box>
+            )}
+          </>
         )}
-        {Icon && <Icon color={iconColor} {...iconProps} />}
-        {TrailingComponent && <Box marginStart="xs">{TrailingComponent}</Box>}
       </Box>
     </ButtonPressAnimation>
   )

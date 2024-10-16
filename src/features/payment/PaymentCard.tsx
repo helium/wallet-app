@@ -1,16 +1,12 @@
 import Box from '@components/Box'
-import SubmitButton from '@components/SubmitButton'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { PaymentV2 } from '@helium/transactions'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import ButtonPressable from '@components/ButtonPressable'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import animateTransition from '../../utils/animateTransition'
 import { SendDetails } from '../../utils/linking'
 import PaymentSummary from './PaymentSummary'
 
@@ -22,6 +18,7 @@ type Props = {
   errors?: string[]
   payments?: SendDetails[]
   mint: PublicKey
+  loading?: boolean
 }
 
 const PaymentCard = ({
@@ -32,13 +29,12 @@ const PaymentCard = ({
   mint,
   payments,
   errors,
+  loading,
 }: Props) => {
-  const { symbol } = useMetaplexMetadata(mint)
   const { t } = useTranslation()
-  const [payEnabled, setPayEnabled] = useState(false)
   const { currentAccount } = useAccountStorage()
 
-  const handlePayPressed = useCallback(async () => {
+  const handleSubmit = useCallback(async () => {
     if (!currentAccount?.ledgerDevice && !currentAccount?.keystoneDevice) {
       const hasSecureAccount = await checkSecureAccount(
         currentAccount?.address,
@@ -46,15 +42,8 @@ const PaymentCard = ({
       )
       if (!hasSecureAccount) return
     }
-    animateTransition('PaymentCard.payEnabled')
-    setPayEnabled(true)
-  }, [
-    currentAccount?.ledgerDevice,
-    currentAccount?.address,
-    currentAccount?.keystoneDevice,
-  ])
-
-  const handleSubmit = onSubmit
+    onSubmit()
+  }, [onSubmit, currentAccount])
 
   return (
     <Box paddingHorizontal="8">
@@ -67,41 +56,23 @@ const PaymentCard = ({
         errors={errors}
       />
       <Box flex={1} justifyContent="flex-end">
-        {!payEnabled ? (
-          <>
-            <Box flexDirection="row" marginTop="6" marginBottom="4">
-              <TouchableOpacityBox
-                flex={1}
-                minHeight={66}
-                backgroundColor="primaryText"
-                opacity={disabled ? 0.4 : 1}
-                justifyContent="center"
-                alignItems="center"
-                onPress={handlePayPressed}
-                disabled={disabled}
-                borderRadius="full"
-                flexDirection="row"
-              >
-                <Text
-                  marginLeft="2"
-                  variant="textXlMedium"
-                  textAlign="center"
-                  color={disabled ? 'text.disabled' : 'primaryBackground'}
-                >
-                  {t('payment.pay')}
-                </Text>
-              </TouchableOpacityBox>
-            </Box>
-          </>
-        ) : (
-          <SubmitButton
-            marginVertical="6"
-            title={t('payment.sendButton', {
-              ticker: symbol,
-            })}
-            onSubmit={handleSubmit}
-          />
-        )}
+        <>
+          <Box flexDirection="row" marginTop="6" marginBottom="4">
+            <ButtonPressable
+              flex={1}
+              backgroundColor="primaryText"
+              onPress={handleSubmit}
+              disabled={disabled}
+              title={t('payment.pay')}
+              titleColor="primaryBackground"
+              titleColorDisabled="text.disabled"
+              backgroundColorDisabled="bg.disabled"
+              loading={loading}
+              customLoadingColor="primaryBackground"
+              customLoadingColorDisabled="text.disabled"
+            />
+          </Box>
+        </>
       </Box>
     </Box>
   )

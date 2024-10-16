@@ -1,6 +1,5 @@
 import AddressIcon from '@assets/images/addressIcon.svg'
 import Remove from '@assets/images/remove.svg'
-import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import MemoInput from '@components/MemoInput'
 import Text from '@components/Text'
@@ -22,6 +21,7 @@ import {
   TextInputEndEditingEventData,
 } from 'react-native'
 import { useDebounce } from 'use-debounce'
+import { shortenAddress } from '@utils/formatting'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
 import {
@@ -188,9 +188,33 @@ const PaymentItem = ({
     [account, address],
   )
 
+  const toLabel = useMemo(() => {
+    if (address && account?.alias && account?.alias.split('.').length === 2) {
+      return shortenAddress(address, 6)
+    }
+
+    if (account?.alias) {
+      return account?.alias
+    }
+
+    return t('payment.to')
+  }, [account?.alias, address, t])
+
+  const addressLabel = useMemo(() => {
+    if (address && account?.alias && account?.alias.split('.').length === 2) {
+      return rawAddress
+    }
+
+    // TODO: We need to fix this since this does not work if someone adds a contact as cat.sol for example. Requires a refactor to payment screen
+    if (account?.alias && account?.alias.split('.').length !== 2) {
+      return address
+    }
+
+    return rawAddress
+  }, [account?.alias, address, rawAddress])
+
   return (
     <Box marginHorizontal="6" overflow="hidden" {...boxProps}>
-      {hasError && <BackgroundFill backgroundColor="error.500" opacity={0.2} />}
       <Box flexDirection="row">
         {isDeepLink && address ? (
           <Text
@@ -208,7 +232,7 @@ const PaymentItem = ({
             flex={1}
             minHeight={ITEM_HEIGHT}
             justifyContent="center"
-            backgroundColor="cardBackground"
+            backgroundColor={hasError ? 'error.200' : 'cardBackground'}
             borderTopStartRadius="2xl"
             borderTopEndRadius="2xl"
           >
@@ -225,7 +249,7 @@ const PaymentItem = ({
                       variant="textMdSemibold"
                       color="primaryText"
                     >
-                      {t('payment.to')}
+                      {toLabel}
                     </Text>
                   </Box>
                   <TextInput
@@ -234,7 +258,7 @@ const PaymentItem = ({
                     marginTop="3"
                     textInputProps={{
                       placeholder: t('payment.enterAddress'),
-                      value: rawAddress || address,
+                      value: addressLabel,
                       onChangeText: setRawAddress,
                       onEndEditing: handleAddressBlur,
                       autoCapitalize: 'none',
@@ -281,7 +305,7 @@ const PaymentItem = ({
         <Box
           flexDirection="row"
           minHeight={ITEM_HEIGHT}
-          backgroundColor="cardBackground"
+          backgroundColor={hasError ? 'error.200' : 'cardBackground'}
           borderBottomStartRadius="2xl"
           borderBottomEndRadius="2xl"
           marginTop="0.5"

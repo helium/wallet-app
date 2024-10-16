@@ -56,6 +56,7 @@ import 'text-encoding-polyfill'
 import { useDebounce } from 'use-debounce'
 import { useColors, useCreateOpacity, useSpacing } from '@theme/themeHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import CloseButton from '@components/CloseButton'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -732,7 +733,8 @@ const AssertLocationScreen = () => {
           </Box>
         )}
         {elevGainVisible ? (
-          <ReAnimatedBlurBox
+          <ReAnimatedBox
+            backgroundColor="primaryBackground"
             visible={elevGainVisible}
             entering={FadeInFast}
             flexDirection="row"
@@ -743,6 +745,15 @@ const AssertLocationScreen = () => {
           >
             <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
               <Box flex={1}>
+                <Box flexDirection="row">
+                  <Box flex={1} />
+                  <CloseButton
+                    marginEnd="4"
+                    marginTop="6xl"
+                    color="primaryText"
+                    onPress={() => setElevGainVisible(false)}
+                  />
+                </Box>
                 <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
                   <Box
                     backgroundColor="transparent"
@@ -755,6 +766,7 @@ const AssertLocationScreen = () => {
                         textAlign="left"
                         variant="textLgMedium"
                         adjustsFontSizeToFit
+                        color="primaryText"
                       >
                         {t('assertLocationScreen.antennaSetup')}
                       </Text>
@@ -824,7 +836,7 @@ const AssertLocationScreen = () => {
                 </Box>
               </Box>
             </TouchableWithoutFeedback>
-          </ReAnimatedBlurBox>
+          </ReAnimatedBox>
         ) : undefined}
       </Box>
     </ReAnimatedBox>

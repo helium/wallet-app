@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import Close from '@assets/images/close.svg'
 import InfoIcon from '@assets/images/info.svg'
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
+import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
@@ -32,6 +32,7 @@ import {
 import { Edge } from 'react-native-safe-area-context'
 import HntIcon from '@assets/images/helium.svg'
 import ScrollBox from '@components/ScrollBox'
+import { useColors } from '@theme/themeHooks'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [
@@ -103,6 +104,7 @@ export const LockTokensModal = ({
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
 }) => {
   const { t } = useTranslation()
+  const colors = useColors()
   const { currentAccount } = useAccountStorage()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const { info: mintAcc } = useMint(mint)
@@ -230,12 +232,13 @@ export const LockTokensModal = ({
 
   return (
     <Portal hostName="GovernancePortalHost">
-      <ReAnimatedBlurBox
+      <ReAnimatedBox
         visible
         entering={FadeInFast}
         position="absolute"
         height="100%"
         width="100%"
+        backgroundColor="primaryBackground"
       >
         <BackScreen
           hideBack
@@ -280,7 +283,7 @@ export const LockTokensModal = ({
                       {hasMinLockup ? (
                         <Box
                           borderRadius="2xl"
-                          backgroundColor="secondaryBackground"
+                          backgroundColor="cardBackground"
                           padding="3"
                           marginBottom="2"
                         >
@@ -320,7 +323,10 @@ export const LockTokensModal = ({
                                 <TouchableOpacityBox
                                   onPress={() => setShowLockupKindInfo(true)}
                                 >
-                                  <InfoIcon width={20} />
+                                  <InfoIcon
+                                    width={20}
+                                    color={colors.primaryText}
+                                  />
                                 </TouchableOpacityBox>
                               </Box>
                               <Box flexDirection="row">
@@ -337,7 +343,7 @@ export const LockTokensModal = ({
                                       borderRadius="2xl"
                                       marginLeft={idx > 0 ? '3' : 'none'}
                                       backgroundColor={
-                                        isActive ? 'bg.tertiary' : 'gray.800'
+                                        isActive ? 'primaryText' : 'transparent'
                                       }
                                       onPress={() => {
                                         setLockupKind(option)
@@ -348,8 +354,8 @@ export const LockTokensModal = ({
                                         fontWeight="400"
                                         color={
                                           isActive
-                                            ? 'primaryText'
-                                            : 'secondaryText'
+                                            ? 'primaryBackground'
+                                            : 'text.disabled'
                                         }
                                       >
                                         {option.display}
@@ -360,10 +366,10 @@ export const LockTokensModal = ({
                               </Box>
                             </Box>
                             <TouchableOpacityBox
-                              borderTopColor="gray.true-700"
-                              borderTopWidth={1}
-                              borderBottomColor="gray.true-700"
-                              borderBottomWidth={1}
+                              borderTopColor="primaryBackground"
+                              borderTopWidth={2}
+                              borderBottomColor="primaryBackground"
+                              borderBottomWidth={2}
                               padding="4"
                               onPress={handleAmountPressed}
                             >
@@ -373,7 +379,9 @@ export const LockTokensModal = ({
                               <Text
                                 variant="textMdRegular"
                                 fontWeight="400"
-                                color={amount ? 'base.white' : 'gray.600'}
+                                color={
+                                  amount ? 'primaryText' : 'text.placeholder'
+                                }
                               >
                                 {amount || 'Amount (tokens)'}
                               </Text>
@@ -464,7 +472,7 @@ export const LockTokensModal = ({
                                     borderRadius="2xl"
                                     marginLeft={idx > 0 ? '2' : 'none'}
                                     backgroundColor={
-                                      isActive ? 'bg.tertiary' : 'gray.800'
+                                      isActive ? 'primaryText' : 'transparent'
                                     }
                                     onPress={() => {
                                       setLockupPeriod(option)
@@ -476,8 +484,8 @@ export const LockTokensModal = ({
                                       fontWeight="400"
                                       color={
                                         isActive
-                                          ? 'primaryText'
-                                          : 'secondaryText'
+                                          ? 'primaryBackground'
+                                          : 'text.disabled'
                                       }
                                     >
                                       {option.display}
@@ -497,7 +505,9 @@ export const LockTokensModal = ({
                             floatingLabelWeight="500"
                             fontSize={16}
                             fontWeight="400"
-                            TrailingIcon={() => <Close color="primaryText" />}
+                            TrailingIcon={() => (
+                              <Close color={colors.primaryText} />
+                            )}
                             TrailingIconOptions={{
                               onPress: () => {
                                 setShowCustomDuration(false)
@@ -529,8 +539,8 @@ export const LockTokensModal = ({
                         )}
                         <Box
                           padding="4"
-                          borderTopColor="gray.true-700"
-                          borderTopWidth={1}
+                          borderTopColor="primaryBackground"
+                          borderTopWidth={2}
                         >
                           <Box
                             flexDirection="row"
@@ -569,6 +579,7 @@ export const LockTokensModal = ({
                             textAlign="left"
                             variant="textLgMedium"
                             adjustsFontSizeToFit
+                            color="primaryText"
                           >
                             {type.display}
                           </Text>
@@ -611,7 +622,7 @@ export const LockTokensModal = ({
                   </Text>
                   <Box
                     borderRadius="2xl"
-                    backgroundColor="secondaryBackground"
+                    backgroundColor="cardBackground"
                     padding="3"
                     marginBottom="4"
                   >
@@ -638,21 +649,25 @@ export const LockTokensModal = ({
                   <TouchableOpacityBox
                     borderRadius="2xl"
                     backgroundColor={
-                      !selectedSubDaoPk ? 'secondaryBackground' : 'bg.tertiary'
+                      !selectedSubDaoPk ? 'primaryText' : 'cardBackground'
                     }
                     onPress={() => setSelectedSubDaoPk(null)}
                   >
                     <Box flexDirection="row" padding="3" alignItems="center">
                       <Box
-                        borderColor="base.black"
+                        borderColor="primaryBackground"
                         borderWidth={2}
                         borderRadius="full"
                       >
                         <HntIcon width={26} height={26} color="primaryText" />
                       </Box>
                       <Text
-                        variant="textMdMedium"
-                        color="primaryText"
+                        variant="textMdSemibold"
+                        color={
+                          !selectedSubDaoPk
+                            ? 'primaryBackground'
+                            : 'text.disabled'
+                        }
                         marginLeft="4"
                       >
                         None
@@ -673,7 +688,7 @@ export const LockTokensModal = ({
                         borderRadius="2xl"
                         marginTop="4"
                         backgroundColor={
-                          isSelected ? 'secondaryBackground' : 'bg.tertiary'
+                          isSelected ? 'primaryText' : 'cardBackground'
                         }
                         onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
                       >
@@ -683,7 +698,7 @@ export const LockTokensModal = ({
                           alignItems="center"
                         >
                           <Box
-                            borderColor="base.black"
+                            borderColor="primaryBackground"
                             borderWidth={2}
                             borderRadius="full"
                           >
@@ -693,8 +708,10 @@ export const LockTokensModal = ({
                             />
                           </Box>
                           <Text
-                            variant="textMdMedium"
-                            color="primaryText"
+                            variant="textMdSemibold"
+                            color={
+                              isSelected ? 'primaryBackground' : 'text.disabled'
+                            }
                             marginLeft="4"
                           >
                             {subDao.dntMetadata.name}
@@ -719,17 +736,17 @@ export const LockTokensModal = ({
             </Box>
           )}
           {step === 1 && (
-            <Box flexDirection="row" paddingTop="3">
+            <Box flexDirection="row" paddingTop="3" marginBottom="xl">
               {!showLockupKindInfo ? (
                 <ButtonPressable
                   flex={1}
                   fontSize={16}
                   borderRadius="full"
-                  backgroundColor="base.white"
+                  backgroundColor="primaryText"
                   backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="bg.tertiary"
+                  backgroundColorDisabled="bg.disabled"
                   backgroundColorDisabledOpacity={0.9}
-                  titleColorDisabled="secondaryText"
+                  titleColorDisabled="text.disabled"
                   title={
                     isSubmitting
                       ? ''
@@ -741,7 +758,7 @@ export const LockTokensModal = ({
                           split: t('gov.transactions.splitPosition'),
                         }[mode]
                   }
-                  titleColor="base.black"
+                  titleColor="primaryBackground"
                   onPress={handleSubmit}
                   disabled={
                     {
@@ -774,10 +791,10 @@ export const LockTokensModal = ({
                   flex={1}
                   fontSize={16}
                   borderRadius="full"
-                  backgroundColor="base.white"
+                  backgroundColor="primaryText"
                   backgroundColorOpacityPressed={0.7}
                   title="Back"
-                  titleColor="base.black"
+                  titleColor="primaryBackground"
                   onPress={() => {
                     setShowLockupKindInfo(false)
                   }}
@@ -791,13 +808,13 @@ export const LockTokensModal = ({
                 flex={1}
                 fontSize={16}
                 borderRadius="full"
-                backgroundColor="base.white"
+                backgroundColor="primaryText"
                 backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="bg.tertiary"
+                backgroundColorDisabled="bg.disabled"
                 backgroundColorDisabledOpacity={0.9}
-                titleColorDisabled="secondaryText"
+                titleColorDisabled="text.disabled"
                 title={isSubmitting ? '' : t('gov.transactions.lockTokens')}
-                titleColor="base.black"
+                titleColor="primaryBackground"
                 onPress={handleSubmit}
                 disabled={isSubmitting}
                 TrailingComponent={
@@ -809,7 +826,7 @@ export const LockTokensModal = ({
             </Box>
           )}
         </BackScreen>
-      </ReAnimatedBlurBox>
+      </ReAnimatedBox>
       <HNTKeyboard
         ref={hntKeyboardRef}
         mint={mint}

@@ -35,6 +35,7 @@ import { AccountsServiceNavigationProp } from '../accountServiceTypes'
 
 const YourWalletsPage = () => {
   const { t } = useTranslation()
+  const [addingSubAccount, setAddingSubAccount] = useState(false)
   const [switchingAccounts, setSwitchingAccounts] = useState<
     CSAccount | undefined
   >()
@@ -51,6 +52,7 @@ const YourWalletsPage = () => {
 
   const handleAddSub = useCallback(
     async (acc: CSAccount) => {
+      setAddingSubAccount(true)
       try {
         if (!currentAccount) {
           throw new Error('No current account')
@@ -108,9 +110,11 @@ const YourWalletsPage = () => {
         // @ts-ignore
       } catch (e: any) {
         Toast.show(e.message || e.toString())
+      } finally {
+        setAddingSubAccount(false)
       }
     },
-    [navigation, currentAccount, accounts, onboardingData, setOnboardingData],
+    [accounts, currentAccount, navigation, onboardingData, setOnboardingData],
   )
 
   const filteredAccounts = useMemo(() => {
@@ -230,7 +234,7 @@ const YourWalletsPage = () => {
               {item.alias}
             </Text>
             <Text variant="textSmRegular" color="primaryText" opacity={0.4}>
-              {ellipsizeAddress(item.address, {
+              {ellipsizeAddress(accountAddress || '', {
                 numChars: 4,
               })}
             </Text>
@@ -330,7 +334,7 @@ const YourWalletsPage = () => {
     )
   }, [bottom, handleAddNew, setFooterHeight])
 
-  if (switchingAccounts) {
+  if (switchingAccounts || addingSubAccount) {
     return (
       <ReAnimatedBox
         entering={FadeIn}
@@ -341,7 +345,9 @@ const YourWalletsPage = () => {
         gap="2"
       >
         <Text variant="textXlMedium" color="primaryText">
-          {t('accountsService.switchingAccounts')}
+          {addingSubAccount
+            ? t('accountsService.addingSubAccount')
+            : t('accountsService.switchingAccounts')}
         </Text>
         <Text variant="textMdRegular" color="secondaryText">
           {t('accountsService.pleaseBePatient')}

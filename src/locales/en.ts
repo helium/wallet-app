@@ -195,8 +195,7 @@ export default {
   },
   accountsScreen: {
     activity: 'Activity',
-    allFilterFooter:
-      "You've reached the end of your activity.\nSelect a different filter to view more.",
+    allFilterFooter: "You've reached the end of your activity.",
     filter: 'Filter',
     filterTransactions: 'Filter Transactions',
     filterTypes: {
@@ -1509,6 +1508,7 @@ export default {
   accountsService: {
     title: 'Your Wallets',
     switchingAccounts: 'Switching accounts',
+    addingSubAccount: 'Adding Sub Account',
     pleaseBePatient: 'Please be patient. This may take a moment.',
   },
   receivePage: {

@@ -7,9 +7,10 @@ import React, { useMemo } from 'react'
 import { useColors } from '@theme/themeHooks'
 import PaymentScreen from '@features/payment/PaymentScreen'
 import AddressBookNavigator from '@features/addressBook/AddressBookNavigator'
+import { PaymentRouteParam } from '@services/WalletService'
 
 export type SendStackParamList = {
-  PaymentScreen: undefined
+  PaymentScreen: undefined | PaymentRouteParam
   AddressBook: undefined
 }
 

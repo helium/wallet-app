@@ -9,6 +9,7 @@ import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import React from 'react'
+import { useColors } from '@theme/themeHooks'
 
 interface ISwapPreviewProps {
   inputMint: PublicKey
@@ -36,6 +37,7 @@ export const SwapPreview = ({
     symbol: outputMintSymbol,
     json: outputMintJson,
   } = useMetaplexMetadata(outputMint)
+  const colors = useColors()
 
   return (
     <Box
@@ -59,7 +61,9 @@ export const SwapPreview = ({
               {inputMintJson ? (
                 <TokenIcon img={inputMintJson.image} size={30} />
               ) : null}
-              <Text variant="textMdRegular">{inputMintSymbol}</Text>
+              <Text variant="textMdSemibold" color="primaryText">
+                {inputMintSymbol}
+              </Text>
             </Box>
             <Box flexDirection="row" alignItems="center">
               <Pill text={inputAmount.toString()} Icon={Send} color="blue" />
@@ -74,13 +78,18 @@ export const SwapPreview = ({
               {outputMintJson ? (
                 <TokenIcon img={outputMintJson.image} size={30} />
               ) : null}
-              <Text variant="textMdRegular">{outputMintSymbol}</Text>
+              <Text variant="textMdSemibold" color="primaryText">
+                {outputMintSymbol}
+              </Text>
             </Box>
             <Box flexDirection="row" alignItems="center">
               <Pill
                 text={outputAmount.toString()}
                 Icon={Receive}
                 color="green"
+                iconProps={{
+                  color: colors['green.500'],
+                }}
               />
             </Box>
           </Box>
@@ -89,7 +98,9 @@ export const SwapPreview = ({
             alignItems="center"
             justifyContent="space-between"
           >
-            <Text variant="textSmRegular">Min Received due to slippage:</Text>
+            <Text variant="textSmRegular" color="primaryText">
+              Min Received due to slippage:
+            </Text>
             <Text variant="textSmRegular" color="green.500">
               {`~${minReceived.toFixed(outputDecimals)}`}
             </Text>

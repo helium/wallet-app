@@ -44,11 +44,10 @@ import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
-import {
-  PaymentRouteParam,
-  WalletServiceStackParamList,
-} from '@services/WalletService'
+import { PaymentRouteParam } from '@services/WalletService'
 import ScrollBox from '@components/ScrollBox'
+import { SendStackParamList } from '@services/WalletService/pages/SendPage/SentPageNavigator'
+import { useAsyncCallback } from 'react-async-hook'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -95,7 +94,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   return []
 }
 
-type Route = RouteProp<WalletServiceStackParamList, 'Send'>
+type Route = RouteProp<SendStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
   const { bottom } = useSafeAreaInsets()
@@ -104,7 +103,9 @@ const PaymentScreen = () => {
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const { visibleTokens } = useVisibleTokens()
   const inputMint = usePublicKey(route.params?.mint)
+
   const [mint, setMint] = useState<PublicKey>(inputMint || HNT_MINT)
+
   const {
     currentAccount,
     currentNetworkAddress,
@@ -135,6 +136,12 @@ const PaymentScreen = () => {
   useDisappear(() => {
     appDispatch(solanaSlice.actions.resetPayment())
   })
+
+  useEffect(() => {
+    if (!inputMint) return
+    appDispatch(solanaSlice.actions.resetPayment())
+    setMint(inputMint)
+  }, [inputMint, appDispatch])
 
   const navBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -290,25 +297,27 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
-  const handleSubmit = useCallback(async () => {
-    try {
-      await submitPayment(
-        paymentState.payments
-          .filter((p) => p.address && p.amount)
-          .map((payment) => ({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            payee: payment.address!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            balanceAmount: payment.amount!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            max: payment.max!,
-          })),
-        paymentState.mint,
-      )
-    } catch (e) {
-      logger.error(e)
-    }
-  }, [submitPayment, paymentState.mint, paymentState.payments])
+  const { execute: handleSubmit, loading: submitLoading } = useAsyncCallback(
+    async () => {
+      try {
+        await submitPayment(
+          paymentState.payments
+            .filter((p) => p.address && p.amount)
+            .map((payment) => ({
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              payee: payment.address!,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              balanceAmount: payment.amount!,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              max: payment.max!,
+            })),
+          paymentState.mint,
+        )
+      } catch (e) {
+        logger.error(e)
+      }
+    },
+  )
 
   const insufficientFunds = useMemo((): [
     value: boolean,
@@ -633,6 +642,16 @@ const PaymentScreen = () => {
     return humanReadable(balance, decimals)
   }, [balance, decimals])
 
+  const onSuccess = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(rootNav as any).replace('ServiceSheetNavigator', {
+      screen: 'WalletService',
+      params: {
+        screen: 'Send',
+      },
+    })
+  }, [rootNav])
+
   const data = useMemo((): TokenListItem[] => {
     const tokens = [...visibleTokens]
       .filter(truthy)
@@ -739,7 +758,7 @@ const PaymentScreen = () => {
               marginBottom="6"
               alignItems="center"
               justifyContent="center"
-              backgroundColor="secondaryBackground"
+              backgroundColor="cardBackground"
             >
               <Text variant="textMdRegular" color="secondaryText">
                 {t('payment.addRecipient')}
@@ -754,6 +773,7 @@ const PaymentScreen = () => {
             onSubmit={handleSubmit}
             payments={payments}
             errors={errors}
+            loading={submitLoading}
           />
         </Box>
         <HNTKeyboard
@@ -781,7 +801,7 @@ const PaymentScreen = () => {
           payments={paymentState.payments}
           feeTokenBalance={paymentState.networkFee}
           onRetry={handleSubmit}
-          onSuccess={navigation.goBack}
+          onSuccess={onSuccess}
           actionTitle={t('payment.backToAccounts')}
         />
       </KeyboardAwareScrollView>

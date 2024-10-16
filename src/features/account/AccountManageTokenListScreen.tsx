@@ -169,7 +169,7 @@ const AccountManageTokenListScreen: React.FC = () => {
 
   return (
     <ScrollBox>
-      <BackScreen>
+      <BackScreen edges={[]} headerTopMargin="6xl">
         <FlatList
           refreshControl={
             <RefreshControl

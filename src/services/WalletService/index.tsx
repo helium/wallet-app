@@ -27,7 +27,7 @@ export type PaymentRouteParam = {
 
 export type WalletServiceStackParamList = {
   Receive: undefined
-  Send: undefined | PaymentRouteParam
+  Send: undefined
   Swap: undefined
   Transactions: undefined
   Wallet: undefined
