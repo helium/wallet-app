@@ -71,6 +71,7 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
         ref={bottomSheetModalRef}
         index={-1}
         backdropComponent={renderBackdrop}
+        onClose={handleOnClose}
       >
         <ThemeProvider theme={lightTheme}>
           <BottomSheetScrollView>
