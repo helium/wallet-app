@@ -33,7 +33,7 @@ const NftList = () => {
   const { primaryText } = useColors()
 
   useEffect(() => {
-    if (approvedCollections.length > 0) {
+    if (approvedCollections?.length > 0) {
       refresh()
     }
   }, [refresh, approvedCollections])
