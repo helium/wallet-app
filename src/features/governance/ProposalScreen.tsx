@@ -70,7 +70,7 @@ export const ProposalScreen = () => {
   )
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
-  const { mint, loading, amountLocked } = useGovernance()
+  const { mint, loading, amountLocked, votingPower } = useGovernance()
   const handleBrowseVoters = useCallback(() => {
     navigation.navigate('VotersScreen', {
       mint: mint.toBase58(),
@@ -269,7 +269,7 @@ export const ProposalScreen = () => {
         ))
 
   const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
-  const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+  const noVotingPower = !loading && (!votingPower || votingPower.isZero())
   const voted = !voting && voteWeights?.some((n) => n.gt(new BN(0)))
   const showVoteResults =
     derivedState !== 'cancelled' &&

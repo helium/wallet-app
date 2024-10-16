@@ -89,7 +89,7 @@ export const VotingPowerCard = ({
     if (onPress) await onPress(mint)
   }, [onPress, mint])
 
-  const noVotingPower = !loading && (!amountLocked || amountLocked.isZero())
+  const noVotingPower = !loading && (!votingPower || votingPower.isZero())
 
   const renderCard = (compact = false) => {
     if (loading) return <VotingPowerCardSkeleton />
