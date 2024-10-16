@@ -487,7 +487,7 @@ const HotspotMapScreen = () => {
           alignItems="center"
           position="absolute"
           width="100%"
-          bottom={10}
+          bottom={26}
         >
           <Box marginHorizontal="3">
             <TouchableOpacityBox
