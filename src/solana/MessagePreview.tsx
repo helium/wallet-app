@@ -19,7 +19,11 @@ export const MessagePreview = ({
     py="3"
     gap="8"
   >
-    {message && <Text variant="textSmRegular">{message}</Text>}
+    {message && (
+      <Text variant="textSmRegular" color="primaryText">
+        {message}
+      </Text>
+    )}
     {warning && (
       <Text variant="textSmRegular" color="orange.500">
         {warning}

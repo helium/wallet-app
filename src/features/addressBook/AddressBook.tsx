@@ -13,7 +13,7 @@ const AddressBook = () => {
   const addressNav = useNavigation<AddressBookNavigationProp>()
 
   const handleAddNewContact = useCallback(() => {
-    addressNav.navigate('AddNewContact')
+    addressNav.push('AddNewContact')
   }, [addressNav])
 
   const handleEditContact = useCallback(

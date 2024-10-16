@@ -22,7 +22,7 @@ const AddressExtra = ({
     return <ActivityIndicator color="gray.800" />
   }
   if (isValidAddress) {
-    return <Checkmark color={colors['blue.light-500']} />
+    return <Checkmark color={colors['blue.500']} />
   }
   return (
     <TouchableOpacityBox onPress={onScanPress} hitSlop={hitSlop}>

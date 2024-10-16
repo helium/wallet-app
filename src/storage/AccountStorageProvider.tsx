@@ -14,6 +14,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
+import { cloneDeep } from 'lodash'
 import { authSlice } from '../store/slices/authSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -309,17 +310,24 @@ const useAccountStorageHook = () => {
 
   const editContact = useCallback(
     async (oldAddress: string, updatedAccount: CSAccount) => {
-      const nextAccount = updatedAccount
+      let nextAccount = cloneDeep(updatedAccount)
+      if (updatedAccount.address === oldAddress) return
+
       if (!nextAccount.solanaAddress && nextAccount.address) {
-        nextAccount.solanaAddress = heliumAddressToSolAddress(
-          nextAccount.address,
+        nextAccount = {
+          ...nextAccount,
+          solanaAddress: heliumAddressToSolAddress(nextAccount.address),
+        }
+      }
+      let filtered: CSAccount[] = contacts
+      if (oldAddress !== updatedAccount.address) {
+        filtered = contacts.filter(
+          (c) =>
+            c.address !== oldAddress &&
+            c.solanaAddress !== heliumAddressToSolAddress(oldAddress),
         )
       }
-      const filtered = contacts.filter(
-        (c) =>
-          c.address !== oldAddress &&
-          c.solanaAddress !== heliumAddressToSolAddress(oldAddress),
-      )
+
       const nextContacts = [...filtered, nextAccount]
       setContacts(nextContacts)
 
