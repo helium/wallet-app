@@ -82,7 +82,7 @@ const KeystoneAccountAssignScreen = () => {
     if (hasAccounts) {
       rootNav.reset({
         index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
+        routes: [{ name: 'ServiceSheetNavigator' }],
       })
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -108,13 +108,14 @@ const KeystoneAccountAssignScreen = () => {
       paddingHorizontal="xl"
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.l}
+        keyboardVerticalOffset={insets.top + spacing.xl}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
           <Text
-            variant="h1"
+            color="primaryText"
+            variant="displayMdSemibold"
             textAlign="center"
             fontSize={44}
             lineHeight={44}
@@ -126,7 +127,7 @@ const KeystoneAccountAssignScreen = () => {
           <Box
             backgroundColor="transparent10"
             borderRadius="xl"
-            padding="m"
+            padding="4"
             width="100%"
             marginTop="xl"
             flexDirection="row"
@@ -143,7 +144,7 @@ const KeystoneAccountAssignScreen = () => {
             <TextInput
               textColor="primaryText"
               fontSize={24}
-              marginLeft="m"
+              marginLeft="4"
               marginRight="xl"
               textInputProps={{
                 placeholder: t('accountAssign.AccountNamePlaceholder'),
@@ -169,11 +170,11 @@ const KeystoneAccountAssignScreen = () => {
               style={{ height: 20, width: 20 }}
               tintColors={{
                 true: colors.primaryText,
-                false: colors.transparent10,
+                false: colors.secondaryText,
               }}
-              onCheckColor={colors.secondary}
+              onCheckColor={colors.primaryBackground}
               onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
+              tintColor={colors.secondaryText}
               onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
@@ -182,9 +183,9 @@ const KeystoneAccountAssignScreen = () => {
             />
 
             <Text
-              variant="body1"
+              variant="textMdMedium"
               color={setAsDefault ? 'primaryText' : 'secondaryText'}
-              marginLeft="m"
+              marginLeft="4"
             >
               {t('accountAssign.setDefault')}
             </Text>
@@ -192,7 +193,7 @@ const KeystoneAccountAssignScreen = () => {
 
           <Box flex={1} />
           {!loading && existingNames?.has(alias) ? (
-            <Text mb="m" color="red500">
+            <Text mb="4" color="error.500">
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
@@ -202,11 +203,9 @@ const KeystoneAccountAssignScreen = () => {
             <FabButton
               onPress={handlePress}
               icon="arrowRight"
-              iconColor="primary"
+              iconColor="primaryBackground"
               disabled={!alias || existingNames?.has(alias)}
               backgroundColor="primaryText"
-              backgroundColorPressed="surfaceContrast"
-              backgroundColorOpacityPressed={0.1}
             />
           )}
         </Box>

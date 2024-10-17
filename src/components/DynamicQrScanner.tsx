@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
+import { useColors } from '@theme/themeHooks'
 import { CameraScannerLayout } from './CameraScannerLayout'
 import Box from './Box'
 import BackScreen from './BackScreen'
@@ -20,6 +21,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const [hasPermission, setHasPermission] = useState<boolean>()
   const navigation = useNavigation()
   const { showOKCancelAlert } = useAlert()
+  const colors = useColors()
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -60,7 +62,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   }
 
   return (
-    <BackScreen padding="none">
+    <BackScreen padding="none" edges={[]}>
       {/* if permission is not granted, show a black screen and notice alert modal */}
       {hasPermission !== true && <Box />}
 
@@ -69,7 +71,10 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
           <CameraView
             onBarcodeScanned={handleBarCodeScanned}
             barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-            style={StyleSheet.absoluteFillObject}
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              backgroundColor: colors.primaryBackground,
+            }}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             ratio="16:9"
@@ -84,9 +89,15 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
             position="absolute"
             bottom="10%"
             alignSelf="center"
-            paddingHorizontal="s"
+            paddingHorizontal="1"
           >
-            <Text variant="subtitle3" marginTop="xxxl" textAlign="center">
+            <Text
+              marginHorizontal="xl"
+              variant="textMdSemibold"
+              marginTop="6xl"
+              textAlign="center"
+              color="primaryText"
+            >
               {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
             </Text>
           </Box>

@@ -76,9 +76,13 @@ const CreateImportAccountScreen = () => {
           </Box>
         </TouchableOpacityBox>
         <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox onPress={connectKeystone} padding="5">
+        <TouchableOpacityBox
+          onPress={connectKeystone}
+          padding="5"
+          backgroundColor="cardBackground"
+        >
           <Box flexDirection="row" alignItems="center">
-            <Text variant="textXlMedium" flex={1}>
+            <Text color="primaryText" variant="textXlMedium" flex={1}>
               {t('accountSetup.createImport.keystone')}
             </Text>
             <Keystone height={20} width={20} color={colors.primaryText} />

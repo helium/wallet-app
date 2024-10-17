@@ -4808,7 +4808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ngraveio/bc-ur@npm:^1.1.5, @ngraveio/bc-ur@npm:^1.1.6":
+"@ngraveio/bc-ur@npm:^1.1.13, @ngraveio/bc-ur@npm:^1.1.5, @ngraveio/bc-ur@npm:^1.1.6":
   version: 1.1.13
   resolution: "@ngraveio/bc-ur@npm:1.1.13"
   dependencies:
@@ -13898,6 +13898,7 @@ __metadata:
     "@metaplex-foundation/js": ^0.19.5
     "@metaplex-foundation/mpl-bubblegum": 0.6.0
     "@metaplex-foundation/mpl-token-metadata": 2.10.0
+    "@ngraveio/bc-ur": ^1.1.13
     "@novalabsxyz/mobile-theme": 2.0.0-y.25
     "@onsol/tldparser": ^0.5.3
     "@react-native-async-storage/async-storage": 1.18.1

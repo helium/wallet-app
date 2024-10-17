@@ -1,6 +1,6 @@
 import Box from '@components/Box'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import BalanceText from '@components/BalanceText'
+import TotalFiatBalance from '@components/TotalFiatBalance'
 import { AppState, FlatList, Platform, RefreshControl } from 'react-native'
 import { useBalance } from '@utils/Balance'
 import { DC_MINT, truthy } from '@helium/spl-utils'
@@ -199,7 +199,7 @@ const TokensScreen = () => {
       <Box marginBottom="3xl">
         <WalletAlertBanner />
         <Box alignItems="center" width="100%">
-          <BalanceText />
+          <TotalFiatBalance />
         </Box>
       </Box>
     )

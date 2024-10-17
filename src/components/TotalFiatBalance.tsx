@@ -7,7 +7,7 @@ import { useTheme } from '@shopify/restyle'
 import Box from './Box'
 import Text from './Text'
 
-const BalanceText = () => {
+const TotalFiatBalance = () => {
   const { total: amount } = useBalance()
   const { colors } = useTheme()
 
@@ -150,4 +150,4 @@ const BalanceText = () => {
 //   )
 // }
 
-export default memo(BalanceText)
+export default memo(TotalFiatBalance)
