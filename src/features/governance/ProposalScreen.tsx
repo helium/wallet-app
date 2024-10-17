@@ -70,7 +70,7 @@ export const ProposalScreen = () => {
   )
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
-  const { mint, loading, amountLocked, votingPower } = useGovernance()
+  const { mint, loading, votingPower } = useGovernance()
   const handleBrowseVoters = useCallback(() => {
     navigation.navigate('VotersScreen', {
       mint: mint.toBase58(),
