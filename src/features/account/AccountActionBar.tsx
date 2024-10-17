@@ -52,7 +52,10 @@ const AccountActionBar = ({
     (type: Action) => () => {
       switch (type) {
         case 'send': {
-          if (pin?.status === 'on' && requirePinForPayment) {
+          if (
+            (pin?.status === 'on' || pin?.status === 'restored') &&
+            requirePinForPayment
+          ) {
             navigation.navigate('ConfirmPin', { action: 'payment' })
           } else {
             navigation.navigate('PaymentScreen', {
