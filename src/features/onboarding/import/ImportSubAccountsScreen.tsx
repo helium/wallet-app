@@ -221,8 +221,8 @@ export default () => {
     <ScrollBox
       backgroundColor="primaryBackground"
       contentContainerStyle={{
-        flex: 1,
         backgroundColor: colors.primaryBackground,
+        flex: 1,
       }}
       refreshControl={
         <RefreshControl
@@ -242,6 +242,7 @@ export default () => {
           paddingHorizontal="4"
         >
           <Text
+            color="primaryText"
             variant="displayMdRegular"
             mt="8"
             textAlign="center"
@@ -251,7 +252,13 @@ export default () => {
           >
             {t('accountImport.privateKey.selectAccounts')}
           </Text>
-          <Text textAlign="center" p="2" variant="textMdRegular" mb="6">
+          <Text
+            textAlign="center"
+            p="2"
+            variant="textMdRegular"
+            mb="6"
+            color="secondaryText"
+          >
             {t('accountImport.privateKey.selectAccountsBody')}
           </Text>
           {error && (

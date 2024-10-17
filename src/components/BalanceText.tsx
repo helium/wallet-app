@@ -44,6 +44,9 @@ const BalanceText = () => {
   return (
     <Box>
       <Box flexDirection="row" alignItems="flex-end">
+        <Text adjustsFontSizeToFit variant="displayLgBold" color="primaryText">
+          $
+        </Text>
         <AnimatedNumbers
           includeComma
           animateToNumber={realAmount || 0}
