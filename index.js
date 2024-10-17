@@ -1,3 +1,4 @@
+import './shim'
 import { ThemeProvider } from '@shopify/restyle'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'

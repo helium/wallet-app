@@ -167,6 +167,7 @@ export default {
       importPrivateKey: 'Import a Private Key',
       ledger: 'Pair with Ledger',
       title: 'What would\nyou like to do?',
+      keystone: 'Connect Keystone to Wallet',
     },
     createPin: {
       subtitle: 'Let’s secure your wallet with a PIN Code.',
@@ -762,6 +763,34 @@ export default {
     tap: 'Get Started',
     title: 'Welcome to\nHelium Wallet',
   },
+  keystone: {
+    connectKeystoneStart: {
+      subtitle:
+        'Click on the "Connect with Keystone" button below to scan the QR code displayed on the Keystone device.',
+      title: 'Connect Keystone to Wallet',
+      scanQrCode: 'Scan QR Code',
+      warning: 'Please enable your camera permission via [Settings]',
+      ok: 'OK',
+      unexpectedQrCodeContent:
+        'The QR code you scanned is not valid. Please try again.',
+      unexpectedQrCodeTitle: 'Unexpected QR Code',
+    },
+    selectKeystoneAccounts: {
+      subtitle:
+        'A secret phrase can be used to generate multiple wallets by using derivation paths. The following derivation paths have been automatically detected. Select the wallets you would like to import.',
+      title: 'Select Keystone Accounts',
+    },
+    scanQrCode: 'Scan the QR Code',
+    payment: {
+      scanTxQrcodeScreenTitle: 'Scan the QR Code',
+      scanTxQrcodeScreenSubtitle1: 'Scan the QR code via your Keystone device',
+      scanTxQrcodeScreenSubtitle2:
+        "Click on the 'Get Signature' button after signing the transaction with your Keystone device.",
+      scanTxQrcodeScreenSubtitle3:
+        'Place the QR code from your Keystone device in front of the camera.',
+      getSignature: 'Get Signature',
+    },
+  },
   ledger: {
     openTheSolanaApp: 'Open the Solana app on your {{ device }}',
     pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
@@ -868,6 +897,7 @@ export default {
     create: 'New',
     import: 'Import',
     ledger: 'Ledger',
+    keystone: 'Keystone',
   },
   ordinals: [
     '1st',
