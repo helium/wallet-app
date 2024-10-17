@@ -67,6 +67,7 @@ const AccountCreatePinScreen = () => {
     >
       <Box flex={1} />
       <Text
+        color="primaryText"
         marginBottom="4"
         variant="displayMdRegular"
         maxFontSizeMultiplier={1}
@@ -76,7 +77,11 @@ const AccountCreatePinScreen = () => {
         {t('accountSetup.createPin.title')}
       </Text>
 
-      <Text variant="textMdRegular" maxFontSizeMultiplier={1.2}>
+      <Text
+        variant="textMdRegular"
+        maxFontSizeMultiplier={1.2}
+        color="secondaryText"
+      >
         {t('accountSetup.createPin.subtitle')}
       </Text>
       <PinDisplay length={pin.length} marginVertical="8" />

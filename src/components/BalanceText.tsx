@@ -3,19 +3,23 @@ import AnimatedNumbers from 'react-native-animated-numbers'
 import { useTextVariants } from '@theme/themeHooks'
 import { Easing } from 'react-native-reanimated'
 import { useBalance } from '@utils/Balance'
+import { useTheme } from '@shopify/restyle'
 import Box from './Box'
 import Text from './Text'
 
 const BalanceText = () => {
   const { total: amount } = useBalance()
+  const { colors } = useTheme()
 
   const textVariants = useTextVariants()
   const integral = useMemo(() => Math.floor(amount || 0), [amount])
   const [realAmount, setAmount] = useState(amount || 0)
 
   useEffect(() => {
+    if (!amount) return
+
     setTimeout(() => {
-      setAmount(amount || 0)
+      setAmount(amount)
     }, 3000)
   }, [amount])
 
@@ -62,6 +66,7 @@ const BalanceText = () => {
           includeComma
           animateToNumber={firstFractional || 0}
           fontStyle={{
+            color: colors['text.placeholder-subtle'],
             fontSize: textVariants.displayLgBold.fontSize,
             fontWeight: 'bold',
             fontFamily: textVariants.displayLgBold.fontFamily,
@@ -71,6 +76,7 @@ const BalanceText = () => {
           includeComma
           animateToNumber={secondFractional || 0}
           fontStyle={{
+            color: colors['text.placeholder-subtle'],
             fontSize: textVariants.displayLgBold.fontSize,
             fontWeight: 'bold',
             fontFamily: textVariants.displayLgBold.fontFamily,

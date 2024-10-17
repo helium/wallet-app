@@ -18,7 +18,7 @@ import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
 
 const ActivityScreen = () => {
-  const { transactions, loading, fetchingMore, refresh } =
+  const { transactions, loading, fetchingMore, fetchMore, refresh } =
     useEnrichedTransactions()
   const { t } = useTranslation()
   const spacing = useSpacing()
@@ -185,7 +185,7 @@ const ActivityScreen = () => {
         ListHeaderComponent={renderHeader}
         stickySectionHeadersEnabled={false}
         onEndReachedThreshold={0.05}
-        // onEndReached={fetchMore}
+        onEndReached={fetchMore}
         ListFooterComponent={Footer}
       />
     </ScrollBox>
