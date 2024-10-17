@@ -107,7 +107,8 @@ const BackScreen = ({
             </TouchableOpacityBox>
           )}
         </Box>
-        <Box padding={padding || 'lx'} flex={flex || 1} {...rest}>
+        {/* if padding is not set, set it to 'lx' , if padding set to 'none' , set it to 0 */}
+        <Box padding={padding ?? 'lx'} flex={flex || 1} {...rest}>
           {children}
         </Box>
       </SafeAreaBox>

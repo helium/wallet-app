@@ -10,6 +10,7 @@ import CreateAccountNavigator from './create/CreateAccountNavigator'
 import ImportAccountNavigator from './import/ImportAccountNavigator'
 import ImportPrivateKey from './import/ImportPrivateKey'
 import { OnboardingStackParamList } from './onboardingTypes'
+import KeystoneNavigator from '../keystone/KeystoneNavigator'
 
 const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
 
@@ -48,6 +49,11 @@ const OnboardingNavigator = () => {
       <OnboardingStack.Screen
         name="LedgerNavigator"
         component={LedgerNavigator}
+        options={subScreenOptions}
+      />
+      <OnboardingStack.Screen
+        name="KeystoneNavigator"
+        component={KeystoneNavigator}
         options={subScreenOptions}
       />
       <OnboardingStack.Screen

@@ -169,9 +169,11 @@ const TabBarNavigator = () => {
     updateCluster,
   ])
 
+  // keystone account do not need to migrate
   return (
     <>
       {currentAccount?.solanaAddress &&
+        !currentAccount?.keystoneDevice &&
         anchorProvider &&
         !doneSolanaMigration[cluster]?.includes(currentAccount.solanaAddress) &&
         !manualMigration[cluster]?.includes(currentAccount.solanaAddress) && (
