@@ -15,6 +15,24 @@ const BalanceText = () => {
   const integral = useMemo(() => Math.floor(amount || 0), [amount])
   const [realAmount, setAmount] = useState(amount || 0)
 
+  const firstFractional = useMemo(() => {
+    if (realAmount === undefined) return 0
+    const decimal = realAmount - integral
+    const fraction = decimal.toString().split('.')[1]
+    // Fraction with max length of decimals
+    const fractionWithMaxDecimals = fraction?.slice(0, 1)
+    return fraction ? Number(fractionWithMaxDecimals) : 0
+  }, [realAmount, integral])
+
+  const secondFractional = useMemo(() => {
+    if (realAmount === undefined) return 0
+    const decimal = realAmount - integral
+    const fraction = decimal.toString().split('.')[1]
+    // Fraction with max length of decimals
+    const fractionWithMaxDecimals = fraction?.slice(1, 2)
+    return fraction ? Number(fractionWithMaxDecimals) : 0
+  }, [realAmount, integral])
+
   useEffect(() => {
     if (!amount) return
 
@@ -22,24 +40,6 @@ const BalanceText = () => {
       setAmount(amount)
     }, 3000)
   }, [amount])
-
-  const firstFractional = useMemo(() => {
-    if (amount === undefined) return 0
-    const decimal = amount - integral
-    const fraction = decimal.toString().split('.')[1]
-    // Fraction with max length of decimals
-    const fractionWithMaxDecimals = fraction?.slice(0, 1)
-    return fraction ? Number(fractionWithMaxDecimals) : 0
-  }, [amount, integral])
-
-  const secondFractional = useMemo(() => {
-    if (amount === undefined) return 0
-    const decimal = amount - integral
-    const fraction = decimal.toString().split('.')[1]
-    // Fraction with max length of decimals
-    const fractionWithMaxDecimals = fraction?.slice(1, 2)
-    return fraction ? Number(fractionWithMaxDecimals) : 0
-  }, [amount, integral])
 
   return (
     <Box>

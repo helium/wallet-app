@@ -219,6 +219,11 @@ export default () => {
 
   return (
     <ScrollBox
+      backgroundColor="primaryBackground"
+      contentContainerStyle={{
+        flex: 1,
+        backgroundColor: colors.primaryBackground,
+      }}
       refreshControl={
         <RefreshControl
           enabled
@@ -229,10 +234,10 @@ export default () => {
         />
       }
     >
-      <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
+      <SafeAreaBox backgroundColor="primaryBackground" flex={1}>
         <Box
           flex={1}
-          backgroundColor="secondaryBackground"
+          backgroundColor="primaryBackground"
           height="100%"
           paddingHorizontal="4"
         >
