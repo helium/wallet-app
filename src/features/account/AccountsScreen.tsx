@@ -141,9 +141,15 @@ const AccountsScreen = () => {
 
   useEffect(() => {
     if (currentAccount?.ledgerDevice) return
+    // if current account is keystone account , check pass
+    if (currentAccount?.keystoneDevice) return
     const address = currentAccount?.address
     if (address) checkSecureAccount(address)
-  }, [currentAccount?.address, currentAccount?.ledgerDevice])
+  }, [
+    currentAccount?.address,
+    currentAccount?.ledgerDevice,
+    currentAccount?.keystoneDevice,
+  ])
 
   useEffect(() => {
     if (openedNotification && !locked) {

@@ -25,6 +25,7 @@ export type HomeStackParamList = {
   AccountManageTokenListScreen: undefined
   AccountTokenScreen: { mint: string }
   AccountAssignScreen: undefined | RouteAccount
+  KeystoneAccountAssignScreen: undefined
   ConfirmPin: {
     action: 'payment'
   }

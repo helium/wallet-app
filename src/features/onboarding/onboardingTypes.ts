@@ -9,9 +9,10 @@ export type OnboardingStackParamList = {
   CLIAccountNavigator: undefined
   ImportPrivateKey: { key?: string }
   OnboardingStackParamList: undefined
+  KeystoneNavigator: undefined
 }
 
 export type OnboardingNavigationProp =
   StackNavigationProp<OnboardingStackParamList>
 
-export type OnboardingOpt = 'import' | 'create' | 'ledger'
+export type OnboardingOpt = 'import' | 'create' | 'ledger' | 'keystone'

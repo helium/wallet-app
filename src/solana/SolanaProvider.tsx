@@ -28,6 +28,9 @@ import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 import nacl from 'tweetnacl'
+import KeystoneModal, {
+  KeystoneModalRef,
+} from '../features/keystone/KeystoneModal'
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
@@ -45,6 +48,7 @@ const useSolanaHook = () => {
   )
   const { loading, result: sessionKey } = useAsync(getSessionKey, [])
   const ledgerModalRef = useRef<LedgerModalRef>()
+  const keystoneModalRef = useRef<KeystoneModalRef>()
   const connection = useMemo(() => {
     const sessionKeyActual =
       !loading && !sessionKey ? Config.RPC_SESSION_KEY_FALLBACK : sessionKey
@@ -69,10 +73,12 @@ const useSolanaHook = () => {
 
   const signTxn = useCallback(
     async (transaction: Transaction | VersionedTransaction) => {
+      // ledger device and keystone device will use cold wallet sign tx
       if (
-        !currentAccount?.ledgerDevice?.id ||
-        !currentAccount?.ledgerDevice?.type ||
-        currentAccount?.accountIndex === undefined
+        (!currentAccount?.ledgerDevice?.id ||
+          !currentAccount?.ledgerDevice?.type ||
+          currentAccount?.accountIndex === undefined) &&
+        !currentAccount?.keystoneDevice
       ) {
         if (!isVersionedTransaction(transaction)) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -90,6 +96,21 @@ const useSolanaHook = () => {
           },
         ])
 
+        return transaction
+      }
+      if (currentAccount?.keystoneDevice) {
+        const signature = await keystoneModalRef.current?.showKeystoneModal({
+          transaction: isVersionedTransaction(transaction)
+            ? Buffer.from(transaction.message.serialize())
+            : transaction.serializeMessage(),
+        })
+        if (!signature || signature.length === 0) {
+          throw new Error('Transaction is not signed')
+        }
+        transaction.addSignature(
+          new PublicKey(currentAccount.solanaAddress as string),
+          signature,
+        )
         return transaction
       }
 
@@ -144,7 +165,8 @@ const useSolanaHook = () => {
     if (
       (!secureAcct &&
         !currentAccount?.ledgerDevice &&
-        !currentAccount?.solanaAddress) ||
+        !currentAccount?.solanaAddress &&
+        !currentAccount?.keystoneDevice) ||
       !connection
     )
       return
@@ -184,6 +206,7 @@ const useSolanaHook = () => {
     connection,
     currentAccount?.solanaAddress,
     currentAccount?.ledgerDevice,
+    currentAccount?.keystoneDevice,
     secureAcct,
     signTxn,
   ])
@@ -293,6 +316,7 @@ const useSolanaHook = () => {
     cache,
     signMsg,
     ledgerModalRef,
+    keystoneModalRef,
   }
 }
 
@@ -305,6 +329,7 @@ const initialState: {
   updateCluster: (nextCluster: Cluster) => void
   signMsg: (msg: Buffer) => Promise<Buffer>
   ledgerModalRef: React.MutableRefObject<LedgerModalRef | undefined>
+  keystoneModalRef: React.MutableRefObject<KeystoneModalRef | undefined>
 } = {
   anchorProvider: undefined,
   cluster: 'mainnet-beta' as Cluster,
@@ -314,6 +339,7 @@ const initialState: {
   updateCluster: (_nextCluster: Cluster) => {},
   signMsg: (_msg: Buffer) => Promise.resolve(_msg),
   ledgerModalRef: { current: undefined },
+  keystoneModalRef: { current: undefined },
 }
 const SolanaContext =
   createContext<ReturnType<typeof useSolanaHook>>(initialState)
@@ -329,7 +355,11 @@ const SolanaProvider = ({ children }: { children: ReactNode }) => {
               connection={values.connection}
               cluster={values.cluster}
             >
-              <LedgerModal ref={values?.ledgerModalRef}>{children}</LedgerModal>
+              <KeystoneModal ref={values?.keystoneModalRef}>
+                <LedgerModal ref={values?.ledgerModalRef}>
+                  {children}
+                </LedgerModal>
+              </KeystoneModal>
             </SolanaProviderRnHelium>
           </AccountContext.Provider>
         </ConnectionContext.Provider>

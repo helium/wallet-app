@@ -22,6 +22,7 @@ import SettingsNavigator from '../settings/SettingsNavigator'
 import SwapNavigator from '../swaps/SwapNavigator'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportSubAccountsScreen from '../onboarding/import/ImportSubAccountsScreen'
+import KeystoneAccountAssignScreen from '../keystone/KeystoneAccountAssignScreen'
 
 const HomeStack = createStackNavigator()
 
@@ -48,6 +49,10 @@ const HomeStackScreen = () => {
       <HomeStack.Screen
         name="AccountAssignScreen"
         component={AccountAssignScreen}
+      />
+      <HomeStack.Screen
+        name="KeystoneAccountAssignScreen"
+        component={KeystoneAccountAssignScreen}
       />
       <HomeStack.Screen name="ConfirmPin" component={ConfirmPinScreen} />
       <HomeStack.Screen

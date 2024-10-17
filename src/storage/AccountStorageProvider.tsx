@@ -271,6 +271,7 @@ const useAccountStorageHook = () => {
           address,
           netType: accountNetType(address),
           accountIndex: ledgerIndex ?? 0,
+          keystoneDevice: curr.keystoneDevice,
         } as CSAccount
         return acc
       }, {})
