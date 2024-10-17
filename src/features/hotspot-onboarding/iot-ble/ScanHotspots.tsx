@@ -165,22 +165,22 @@ const ScanHotspots = () => {
         <TouchableOpacityBox
           onPress={connectDevice(item)}
           alignItems="center"
-          padding="m"
+          padding="4"
           flexDirection="row"
           borderTopWidth={1}
-          borderColor="grey900"
+          borderColor="gray.900"
           borderBottomWidth={1}
           disabled={connecting}
         >
           <FabButton
             icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
+            backgroundColor="secondaryBackground"
+            iconColor="base.white"
             size={20}
             disabled
-            marginRight="ms"
+            marginRight="3"
           />
-          <Text color="secondaryText" variant="body1Medium">
+          <Text color="secondaryText" variant="textMdMedium">
             {item.name}
           </Text>
         </TouchableOpacityBox>
@@ -192,11 +192,15 @@ const ScanHotspots = () => {
   const keyExtractor = React.useCallback(({ id }: Device) => id, [])
 
   return (
-    <BackScreen title={t('hotspotOnboarding.scan.title')}>
+    <BackScreen
+      title={t('hotspotOnboarding.scan.title')}
+      edges={[]}
+      headerTopMargin="6xl"
+    >
       <Text
-        marginTop="m"
-        marginBottom="m"
-        variant="subtitle1"
+        marginTop="4"
+        marginBottom="4"
+        variant="textXlMedium"
         color="secondaryText"
         textAlign="left"
         adjustsFontSizeToFit
@@ -206,8 +210,8 @@ const ScanHotspots = () => {
       {scannedDevices.length === 0 && scanning && <CircleLoader />}
       {scannedDevices.length === 0 && scanning && (
         <Text
-          mt="s"
-          variant="body1Medium"
+          mt="2"
+          variant="textMdMedium"
           textAlign="center"
           color="secondaryText"
         >
@@ -221,17 +225,15 @@ const ScanHotspots = () => {
         keyExtractor={keyExtractor}
       />
       {error && (
-        <Text variant="body1Medium" color="red500">
+        <Text variant="textMdMedium" color="error.500">
           {error}
         </Text>
       )}
       <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor={scanning ? 'white' : 'black'}
-        borderColor={scanning ? 'white' : 'transparent'}
-        borderWidth={scanning ? 2 : 0}
-        backgroundColor={scanning ? 'transparent' : 'white'}
+        marginTop="6"
+        borderRadius="full"
+        titleColor="primaryBackground"
+        backgroundColor={scanning ? 'fg.quinary-400' : 'primaryText'}
         title={
           // eslint-disable-next-line no-nested-ternary
           canScan
@@ -241,7 +243,7 @@ const ScanHotspots = () => {
             : t('hotspotOnboarding.scan.notEnabled')
         }
         onPress={handleScanPress}
-        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
         disabled={!canScan || connecting}
       />

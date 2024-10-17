@@ -6,6 +6,8 @@ import PinDisplay from '@components/PinDisplay'
 import Keypad from '@components/Keypad'
 import Box from '@components/Box'
 import { KeypadInput } from '@components/KeypadButton'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@theme/theme'
 import {
   CreateAccountNavigationProp,
   CreateAccountStackParamList,
@@ -59,14 +61,15 @@ const AccountCreatePinScreen = () => {
     <Box
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      paddingHorizontal="8"
       justifyContent="center"
       alignItems="center"
     >
       <Box flex={1} />
       <Text
-        marginBottom="m"
-        variant="h1"
+        color="primaryText"
+        marginBottom="4"
+        variant="displayMdRegular"
         maxFontSizeMultiplier={1}
         numberOfLines={1}
         adjustsFontSizeToFit
@@ -74,14 +77,26 @@ const AccountCreatePinScreen = () => {
         {t('accountSetup.createPin.title')}
       </Text>
 
-      <Text variant="body1" maxFontSizeMultiplier={1.2}>
+      <Text
+        variant="textMdRegular"
+        maxFontSizeMultiplier={1.2}
+        color="secondaryText"
+      >
         {t('accountSetup.createPin.subtitle')}
       </Text>
-      <PinDisplay length={pin.length} marginVertical="xl" />
+      <PinDisplay length={pin.length} marginVertical="8" />
       <Keypad flex={2} customButtonType="cancel" onPress={handlePress} />
       <Box flex={1} />
     </Box>
   )
 }
 
-export default AccountCreatePinScreen
+const AccountCreatePinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <AccountCreatePinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default AccountCreatePinScreenWrapper

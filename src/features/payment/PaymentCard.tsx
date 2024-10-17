@@ -1,22 +1,16 @@
 import Box from '@components/Box'
-import SubmitButton from '@components/SubmitButton'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { PaymentV2 } from '@helium/transactions'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
+import ButtonPressable from '@components/ButtonPressable'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import animateTransition from '../../utils/animateTransition'
 import { SendDetails } from '../../utils/linking'
 import PaymentSummary from './PaymentSummary'
 
 type Props = {
-  handleCancel: () => void
   totalBalance: BN
   feeTokenBalance?: BN
   onSubmit: (opts?: { txn: PaymentV2; txnJson: string }) => void
@@ -24,10 +18,10 @@ type Props = {
   errors?: string[]
   payments?: SendDetails[]
   mint: PublicKey
+  loading?: boolean
 }
 
 const PaymentCard = ({
-  handleCancel,
   totalBalance,
   feeTokenBalance,
   onSubmit,
@@ -35,14 +29,12 @@ const PaymentCard = ({
   mint,
   payments,
   errors,
+  loading,
 }: Props) => {
-  const { symbol } = useMetaplexMetadata(mint)
   const { t } = useTranslation()
-  const [payEnabled, setPayEnabled] = useState(false)
-  const [height, setHeight] = useState(0)
   const { currentAccount } = useAccountStorage()
 
-  const handlePayPressed = useCallback(async () => {
+  const handleSubmit = useCallback(async () => {
     if (!currentAccount?.ledgerDevice && !currentAccount?.keystoneDevice) {
       const hasSecureAccount = await checkSecureAccount(
         currentAccount?.address,
@@ -50,35 +42,11 @@ const PaymentCard = ({
       )
       if (!hasSecureAccount) return
     }
-    animateTransition('PaymentCard.payEnabled')
-    setPayEnabled(true)
-  }, [
-    currentAccount?.ledgerDevice,
-    currentAccount?.address,
-    currentAccount?.keystoneDevice,
-  ])
-
-  const handleLayout = useCallback(
-    (e: LayoutChangeEvent) => {
-      if (height > 0) return
-      setHeight(e.nativeEvent.layout.height)
-    },
-    [height],
-  )
-
-  const handleSubmit = onSubmit
+    onSubmit()
+  }, [onSubmit, currentAccount])
 
   return (
-    <Box
-      borderTopLeftRadius="xl"
-      borderTopRightRadius="xl"
-      padding="l"
-      height={height || undefined}
-      onLayout={handleLayout}
-      overflow="hidden"
-      minHeight={232}
-      backgroundColor="secondary"
-    >
+    <Box paddingHorizontal="8">
       <PaymentSummary
         mint={mint}
         totalBalance={totalBalance}
@@ -88,55 +56,23 @@ const PaymentCard = ({
         errors={errors}
       />
       <Box flex={1} justifyContent="flex-end">
-        {!payEnabled ? (
-          <>
-            <Box flexDirection="row" marginTop="l" marginBottom="m">
-              <TouchableOpacityBox
-                flex={1}
-                minHeight={66}
-                justifyContent="center"
-                marginEnd="m"
-                borderRadius="round"
-                overflow="hidden"
-                backgroundColor="secondaryIcon"
-                onPress={handleCancel}
-              >
-                <Text variant="subtitle1" textAlign="center" color="grey600">
-                  {t('generic.cancel')}
-                </Text>
-              </TouchableOpacityBox>
-              <TouchableOpacityBox
-                flex={1}
-                minHeight={66}
-                backgroundColor="surfaceContrast"
-                opacity={disabled ? 0.6 : 1}
-                justifyContent="center"
-                alignItems="center"
-                onPress={handlePayPressed}
-                disabled={disabled}
-                borderRadius="round"
-                flexDirection="row"
-              >
-                <Text
-                  marginLeft="s"
-                  variant="subtitle1"
-                  textAlign="center"
-                  color={disabled ? 'secondaryText' : 'surfaceContrastText'}
-                >
-                  {t('payment.pay')}
-                </Text>
-              </TouchableOpacityBox>
-            </Box>
-          </>
-        ) : (
-          <SubmitButton
-            marginTop="l"
-            title={t('payment.sendButton', {
-              ticker: symbol,
-            })}
-            onSubmit={handleSubmit}
-          />
-        )}
+        <>
+          <Box flexDirection="row" marginTop="6" marginBottom="4">
+            <ButtonPressable
+              flex={1}
+              backgroundColor="primaryText"
+              onPress={handleSubmit}
+              disabled={disabled}
+              title={t('payment.pay')}
+              titleColor="primaryBackground"
+              titleColorDisabled="text.disabled"
+              backgroundColorDisabled="bg.disabled"
+              loading={loading}
+              customLoadingColor="primaryBackground"
+              customLoadingColorDisabled="text.disabled"
+            />
+          </Box>
+        </>
       </Box>
     </Box>
   )

@@ -161,13 +161,13 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
       <Box {...boxProps} flex={1}>
         <Box flexDirection="row" justifyContent="center">
           <TouchableOpacityBox
-            paddingVertical="lm"
-            paddingHorizontal="xxl"
+            paddingVertical="5"
+            paddingHorizontal="12"
             flexDirection="row"
             justifyContent="center"
             onPress={() => setFiltersOpen(true)}
           >
-            <Text variant="body3" color="secondaryText">
+            <Text variant="textXsRegular" color="secondaryText">
               {t('gov.proposals.filter', {
                 filter: filter.charAt(0).toUpperCase() + filter.slice(1),
               })}
@@ -175,7 +175,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
           </TouchableOpacityBox>
         </Box>
         {isLoading ? (
-          <CircleLoader loaderSize={24} color="white" />
+          <CircleLoader loaderSize={24} color="primaryText" />
         ) : (
           proposals
             ?.filter((p) => Boolean(p.info))
@@ -183,7 +183,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
               <ProposalCard
                 key={proposal.publicKey.toBase58()}
                 filter={filter}
-                marginTop={idx > 0 ? 'm' : 'none'}
+                marginTop={idx > 0 ? '4' : 'none'}
                 proposal={proposal.info as ProposalV0}
                 proposalKey={proposal.publicKey}
                 onPress={async (m, p) =>

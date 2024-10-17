@@ -65,38 +65,40 @@ export const WalletSignBottomSheetCompact = ({
   )
 
   return (
-    <Box padding="m" marginBottom="m">
+    <Box padding="4" marginBottom="4">
       {warning && (
         <Box
-          borderRadius="l"
+          borderRadius="2xl"
           backgroundColor="secondaryBackground"
-          padding="m"
-          marginBottom="m"
+          padding="4"
+          marginBottom="4"
         >
-          <Text variant="body1Medium" color="orange500">
+          <Text variant="textMdMedium" color="orange.500">
             {warning}
           </Text>
         </Box>
       )}
 
       {!(insufficientFunds || insufficientRentExempt) && (
-        <Text variant="subtitle2">{header || t('transactions.signTxn')}</Text>
+        <Text color="primaryText" variant="textLgSemibold" marginTop="6xl">
+          {header || t('transactions.signTxn')}
+        </Text>
       )}
 
       {!(insufficientFunds || insufficientRentExempt) && message && (
-        <Text variant="body1Medium" color="secondaryText">
+        <Text variant="textMdMedium" color="secondaryText">
           {message}
         </Text>
       )}
 
       {(insufficientFunds || insufficientRentExempt) && (
         <Box
-          borderRadius="l"
+          borderRadius="2xl"
           backgroundColor="secondaryBackground"
-          padding="m"
-          marginTop="m"
+          padding="4"
+          marginTop="4"
         >
-          <Text variant="body1Medium" color="red500">
+          <Text variant="textMdMedium" color="error.500">
             {insufficientFunds
               ? t('browserScreen.insufficientFunds')
               : t('browserScreen.insufficientRentExempt', {
@@ -106,17 +108,19 @@ export const WalletSignBottomSheetCompact = ({
         </Box>
       )}
       {renderer && renderer()}
-      <Box marginTop="m" flexDirection="row">
+      <Box marginTop="4" flexDirection="row">
         <Box flexGrow={1}>
-          <Text variant="body1Bold">{t('browserScreen.totalNetworkFee')}</Text>
+          <Text color="primaryText" variant="textMdBold">
+            {t('browserScreen.totalNetworkFee')}
+          </Text>
         </Box>
-        <Text variant="body1Medium" color="blue500">
+        <Text variant="textMdMedium" color="blue.500">
           {`~${estimatedTotalSolByLamports} SOL`}
         </Text>
       </Box>
-      <Box alignItems="center" py="l">
+      <Box alignItems="center" py="6">
         <TouchableOpacity onPress={onSimulate}>
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('transactions.simulateTxn')}
           </Text>
         </TouchableOpacity>
@@ -124,25 +128,25 @@ export const WalletSignBottomSheetCompact = ({
       <Box flexDirection="row" justifyContent="space-between">
         <ButtonPressable
           width="48%"
-          borderRadius="round"
-          backgroundColor="white"
+          borderRadius="full"
+          backgroundColor="base.white"
           backgroundColorOpacity={0.1}
           backgroundColorOpacityPressed={0.05}
           titleColorPressedOpacity={0.3}
-          titleColor="white"
+          titleColor="base.white"
           title={t('browserScreen.cancel')}
           onPress={onCancel}
         />
         <ButtonPressable
           width="48%"
-          borderRadius="round"
-          backgroundColor="white"
+          borderRadius="full"
+          backgroundColor="base.white"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.5}
           titleColorDisabled="secondaryText"
           title={t('browserScreen.approve')}
-          titleColor="black"
+          titleColor="base.black"
           onPress={onAccept}
         />
       </Box>

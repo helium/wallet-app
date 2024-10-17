@@ -1,7 +1,5 @@
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
 import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { truthy } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
@@ -9,13 +7,15 @@ import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
-import { useHitSlop, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import React, { ReactText, memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import ScrollBox from '@components/ScrollBox'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -29,21 +29,20 @@ import {
 import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
-import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
 import useAuthIntervals from './useAuthIntervals'
 
 const Settings = () => {
   const { t } = useTranslation()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<WalletNavigationProp>()
   const settingsNav = useNavigation<SettingsNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const spacing = useSpacing()
   const version = useAppVersion()
   const buildNumber = deviceInfo.getBuildNumber()
-  const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
+  const colors = useColors()
   const {
     currentAccount,
     accounts,
@@ -76,16 +75,12 @@ const Settings = () => {
     () => appPin !== undefined && appPin.status !== 'off',
     [appPin],
   )
-
-  const onRequestClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
-  }, [homeNav])
-
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingBottom: spacing['15'],
+      marginTop: spacing['6xl'],
     }),
-    [spacing.xxxl],
+    [spacing],
   )
 
   const keyExtractor = useCallback((item, index) => item.title + index, [])
@@ -321,7 +316,7 @@ const Settings = () => {
   }, [settingsNav])
 
   const handlePressAutoGasManager = useCallback(() => {
-    settingsNav.navigate('AutoGasManager')
+    settingsNav.push('AutoGasManager')
   }, [settingsNav])
 
   const handleMigrateWallet = useCallback(() => {
@@ -601,39 +596,40 @@ const Settings = () => {
   )
 
   const renderSectionHeader = useCallback(
-    ({ section: { title, icon } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-      >
-        {icon !== undefined && icon}
-        <Text variant="body2" fontWeight="bold">
-          {title}
-        </Text>
-      </Box>
-    ),
-    [],
+    ({ section: { title, icon } }) => {
+      const firstSection =
+        title ===
+        t('settings.sections.account.title', {
+          alias: currentAccount?.alias,
+        })
+
+      return (
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          paddingTop={firstSection ? '4' : '12'}
+          paddingBottom="4"
+          paddingHorizontal="6"
+        >
+          {icon !== undefined && icon}
+          <Text variant="textSmRegular" fontWeight="bold" color="primaryText">
+            {title}
+          </Text>
+        </Box>
+      )
+    },
+    [currentAccount, t],
   )
 
   return (
-    <SafeAreaBox backgroundColor="surfaceSecondary">
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal="l"
-      >
-        <Text variant="h1">{t('settings.title')}</Text>
-        <CloseButton
-          onPress={onRequestClose}
-          hitSlop={hitSlop}
-          paddingVertical="m"
-        />
-      </Box>
+    <ScrollBox
+      style={{
+        backgroundColor: colors.primaryBackground,
+      }}
+      scrollEnabled
+    >
       <SectionList
+        scrollEnabled
         contentContainerStyle={contentContainer}
         sections={SectionData}
         keyExtractor={keyExtractor}
@@ -645,7 +641,7 @@ const Settings = () => {
         // ^ Sometimes on initial page load there is a bug with SectionList
         // where it won't render all items right away. This seems to fix it.
       />
-    </SafeAreaBox>
+    </ScrollBox>
   )
 }
 

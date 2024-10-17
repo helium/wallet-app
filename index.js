@@ -1,5 +1,4 @@
 import './shim'
-import { ThemeProvider } from '@shopify/restyle'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { AppRegistry } from 'react-native'
@@ -17,7 +16,6 @@ import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 import { persistor } from './src/store/persistence'
 import store from './src/store/store'
-import { darkThemeColors, theme } from './src/theme/theme'
 import './src/utils/i18n'
 
 // eslint-disable-next-line no-undef
@@ -35,33 +33,26 @@ function fallbackRender(props) {
 
 const render = () => {
   return (
-    <ThemeProvider
-      theme={{
-        ...theme,
-        colors: darkThemeColors,
+    <ErrorBoundary
+      fallbackRender={fallbackRender}
+      onReset={async () => {
+        await persistor.purge()
       }}
     >
-      <ErrorBoundary
-        fallbackRender={fallbackRender}
-        onReset={async () => {
-          await persistor.purge()
-        }}
-      >
-        <ReduxProvider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <LanguageProvider>
-              <AppStorageProvider>
-                <AccountStorageProvider>
-                  <NotificationStorageProvider>
-                    <App />
-                  </NotificationStorageProvider>
-                </AccountStorageProvider>
-              </AppStorageProvider>
-            </LanguageProvider>
-          </PersistGate>
-        </ReduxProvider>
-      </ErrorBoundary>
-    </ThemeProvider>
+      <ReduxProvider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <LanguageProvider>
+            <AppStorageProvider>
+              <AccountStorageProvider>
+                <NotificationStorageProvider>
+                  <App />
+                </NotificationStorageProvider>
+              </AccountStorageProvider>
+            </AppStorageProvider>
+          </LanguageProvider>
+        </PersistGate>
+      </ReduxProvider>
+    </ErrorBoundary>
   )
 }
 

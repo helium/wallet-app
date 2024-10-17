@@ -8,7 +8,7 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Theme } from '@theme/theme'
+import { TextVariant, Theme } from '@theme/theme'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import { getEscrowTokenAccount, humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next'
 
 type Props = {
   mint: PublicKey
-  textVariant?: 'h0' | 'h1' | 'h2' | 'h2Medium'
+  textVariant?: TextVariant
   showTicker?: boolean
 } & BoxProps<Theme>
 
@@ -38,7 +38,7 @@ const EscrowDetails = () => {
 
   return (
     <Box>
-      <Text variant="body1" color="secondaryText" textAlign="center">
+      <Text variant="textMdRegular" color="secondaryText" textAlign="center">
         {t('accountsScreen.receivedBalance', {
           amount: humanReadable(
             new BN(iotEscrowAcct?.amount?.toString() || '0').add(
@@ -64,6 +64,7 @@ const AccountTokenBalance = ({
     decimals,
     loading: loadingOwned,
   } = useOwnedAmount(wallet, mint)
+
   const balanceStr =
     typeof decimals !== 'undefined' && balance
       ? humanReadable(new BN(balance?.toString() || '0'), decimals)
@@ -80,10 +81,15 @@ const AccountTokenBalance = ({
     <Box flexDirection="row" justifyContent="center" {...boxProps}>
       {!showTicker &&
         (loadingOwned ? (
-          <Box width={70} height={20} marginTop="s" backgroundColor="surface" />
+          <Box
+            width={70}
+            height={20}
+            marginTop="2"
+            backgroundColor="cardBackground"
+          />
         ) : (
           <Text
-            variant={textVariant || 'h1'}
+            variant={textVariant || 'displayMdRegular'}
             color="primaryText"
             numberOfLines={1}
             maxFontSizeMultiplier={1}
@@ -95,7 +101,7 @@ const AccountTokenBalance = ({
       <Box>
         {showTicker && (
           <TextTransform
-            variant={textVariant || 'h1'}
+            variant={textVariant || 'displayMdRegular'}
             color="primaryText"
             numberOfLines={1}
             maxFontSizeMultiplier={1}

@@ -34,28 +34,30 @@ const CopyAddressPill = ({ ...rest }: BoxProps<Theme>) => {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: spacing.s,
-      paddingHorizontal: spacing.m,
+      paddingVertical: spacing[2],
+      paddingHorizontal: spacing[4],
     } as ViewStyle
   }, [spacing])
 
   return (
     <Box flexDirection="column" alignItems="center" {...rest}>
       <ButtonPressAnimation
-        backgroundColor="surfaceSecondary"
-        borderRadius="round"
-        marginBottom="l"
+        backgroundColor="cardBackground"
+        borderColor="border.primary"
+        borderWidth={1}
+        borderRadius="full"
+        marginBottom="6"
         onPress={handleCopyAddress}
         pressableStyles={CopyAddressStyles}
       >
         <Text
-          variant="body2"
+          variant="textSmRegular"
           color="secondaryText"
           numberOfLines={1}
           adjustsFontSizeToFit
           maxFontSizeMultiplier={1.2}
           textAlign="center"
-          marginEnd="s"
+          marginEnd="2"
         >
           {ellipsizeAddress(currentAccount?.solanaAddress || '', {
             numChars: 6,

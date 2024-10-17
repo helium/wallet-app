@@ -5,7 +5,8 @@ import BN from 'bn.js'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
-import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
+import { BurnRouteParam } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { PaymentRouteParam } from '@services/WalletService'
 import { RootStackParamList } from '../navigation/rootTypes'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { solAddressIsValid } from './accountUtils'
@@ -29,7 +30,7 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       PaymentScreen: 'payment',
       DappLoginScreen: 'dapp_login',
       ImportPrivateKey: 'import_key/:key',
-      TabBarNavigator: {
+      ServiceSheetNavigator: {
         screens: {
           Governance: {
             screens: {

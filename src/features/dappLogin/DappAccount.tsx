@@ -60,27 +60,27 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
           flexDirection="row"
           alignItems="center"
           justifyContent="center"
-          marginVertical="l"
+          marginVertical="6"
         >
           {isCrowdspot ? (
             <Crowdspot height={70} width={70} />
           ) : (
             <AddDapp color={colors.primaryText} height={70} width={70} />
           )}
-          <Box marginHorizontal="s">
+          <Box marginHorizontal="2">
             <DappEllipsis />
           </Box>
           <AccountIcon address={currentAccount?.address} size={70} />
         </Box>
-        <Text variant="h0" textAlign="center">
+        <Text variant="displayLgRegular" textAlign="center">
           {t('dappLogin.account.title', {
             appName,
           })}
         </Text>
         <Text
-          variant="subtitle1"
+          variant="textXlMedium"
           textAlign="center"
-          marginVertical="l"
+          marginVertical="6"
           color="secondaryText"
         >
           {t('dappLogin.account.subtitle', { appName })}
@@ -96,35 +96,35 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
             flex={1}
             minHeight={66}
             justifyContent="center"
-            marginEnd="m"
-            borderRadius="round"
+            marginEnd="4"
+            borderRadius="full"
             overflow="hidden"
-            backgroundColor="secondaryIcon"
+            backgroundColor="secondaryText"
             onPress={onCancel}
           >
-            <Text variant="subtitle1" textAlign="center" color="primaryText">
+            <Text variant="textXlMedium" textAlign="center" color="primaryText">
               {t('generic.cancel')}
             </Text>
           </TouchableOpacityBox>
           <TouchableOpacityBox
             flex={1}
             minHeight={66}
-            backgroundColor="surfaceContrast"
+            backgroundColor="primaryBackground"
             justifyContent="center"
             alignItems="center"
             onPress={onLogin}
-            borderRadius="round"
+            borderRadius="full"
             disabled={loading}
             flexDirection="row"
           >
             {loading ? (
-              <ActivityIndicator color={colors.surfaceContrastText} />
+              <ActivityIndicator color={colors.secondaryText} />
             ) : (
               <Text
-                marginLeft="s"
-                variant="subtitle1"
+                marginLeft="2"
+                variant="textXlMedium"
                 textAlign="center"
-                color="secondary"
+                color="secondaryText"
               >
                 {t('dappLogin.login')}
               </Text>

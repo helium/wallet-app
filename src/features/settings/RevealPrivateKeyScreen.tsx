@@ -1,22 +1,20 @@
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
-import { useNavigation } from '@react-navigation/native'
 import Text from '@components/Text'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import BackScreen from '@components/BackScreen'
 import TextTransform from '@components/TextTransform'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CopyAddress from '@components/CopyAddress'
 import useAlert from '@hooks/useAlert'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { t } = useTranslation()
-  const navigation = useNavigation()
   const [privateKey, setPrivateKey] = useState<string>()
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()
@@ -28,7 +26,7 @@ const RevealPrivateKeyScreen = () => {
     const secureAccount = await getSecureAccount(currentAccount.address)
     if (!secureAccount?.keypair.sk) return
     setPrivateKey(
-      JSON.stringify(
+      bs58.encode(
         Buffer.from(secureAccount?.keypair?.sk, 'base64').toJSON().data,
       ),
     )
@@ -44,30 +42,31 @@ const RevealPrivateKeyScreen = () => {
 
   return (
     <BackScreen backgroundColor="primaryBackground" flex={1}>
-      <Text variant="h1" maxFontSizeMultiplier={1} marginTop="xl">
+      <Text variant="displayMdRegular" maxFontSizeMultiplier={1} marginTop="8">
         {t('settings.revealPrivateKey.title')}
       </Text>
       <TextTransform
-        variant="body1"
+        variant="textMdRegular"
         maxFontSizeMultiplier={1}
-        marginTop="m"
+        marginTop="4"
         i18nKey="settings.revealPrivateKey.subtitle"
-        marginBottom="xl"
+        marginBottom="8"
       />
       {revealed ? (
         <>
           <Box
             marginHorizontal="xs"
             height={140}
-            marginVertical="l"
-            backgroundColor="grey900"
-            padding="l"
-            borderRadius="m"
+            marginVertical="6"
+            backgroundColor="primaryText"
+            padding="6"
+            borderRadius="2xl"
             justifyContent="center"
           >
             <Text
+              variant="textSmRegular"
               fontSize={12}
-              color="primaryText"
+              color="primaryBackground"
               maxFontSizeMultiplier={1}
               selectable
             >
@@ -80,16 +79,17 @@ const RevealPrivateKeyScreen = () => {
         <TouchableOpacityBox
           onPress={showConfirmDialog}
           marginHorizontal="xs"
-          height={{ smallPhone: 80, phone: 100 }}
-          marginVertical="l"
-          backgroundColor="grey900"
-          padding="l"
-          borderRadius="m"
+          height={{ none: 80, sm: 100 }}
+          marginVertical="6"
+          backgroundColor="primaryText"
+          padding="6"
+          borderRadius="2xl"
           justifyContent="center"
         >
           <Text
+            variant="textSmRegular"
             fontSize={18}
-            color="primaryText"
+            color="primaryBackground"
             maxFontSizeMultiplier={1}
             textAlign="center"
             fontWeight="bold"
@@ -100,15 +100,6 @@ const RevealPrivateKeyScreen = () => {
         </TouchableOpacityBox>
       )}
       <Box flex={1} />
-      <ButtonPressable
-        height={60}
-        borderRadius="round"
-        backgroundColor="surfaceSecondary"
-        titleColor="primaryText"
-        title={t('settings.revealPrivateKey.done')}
-        marginBottom="m"
-        onPress={navigation.goBack}
-      />
     </BackScreen>
   )
 }

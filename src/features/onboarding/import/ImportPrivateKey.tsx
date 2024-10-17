@@ -11,7 +11,7 @@ import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
 import React, { memo, useCallback, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import RNSodium from 'react-native-sodium'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
@@ -65,8 +65,8 @@ const ImportPrivateKey = () => {
     [accounts, setOnboardingData, t],
   )
 
-  const decodePrivateKey = useCallback(
-    async (key?: string) => {
+  const { execute: decodePrivateKey, loading: decodingPrivateKey } =
+    useAsyncCallback(async (key?: string) => {
       setPublicKey(undefined)
 
       if (key) {
@@ -130,9 +130,7 @@ const ImportPrivateKey = () => {
           Logger.error(e)
         }
       }
-    },
-    [createAccount, encodedKey, password, t],
-  )
+    })
 
   useAsync(async () => {
     await decodePrivateKey()
@@ -142,7 +140,7 @@ const ImportPrivateKey = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else if (hasAccounts) {
-      navigation.replace('TabBarNavigator')
+      navigation.replace('ServiceSheetNavigator')
     } else {
       navigation.replace('OnboardingNavigator')
     }
@@ -152,11 +150,14 @@ const ImportPrivateKey = () => {
     function getRoute(subRoute: string) {
       if (hasAccounts) {
         return [
-          'TabBarNavigator',
+          'ServiceSheetNavigator',
           {
-            screen: 'Home',
+            screen: 'AccountsService',
             params: {
-              screen: subRoute,
+              screen: 'ReImportAccountNavigator',
+              params: {
+                screen: subRoute,
+              },
             },
           },
         ]
@@ -195,15 +196,16 @@ const ImportPrivateKey = () => {
   )
 
   return (
-    <SafeAreaBox paddingHorizontal="l" flex={1}>
-      <BackButton onPress={onBack} paddingHorizontal="none" />
-      <Text variant="h1" marginTop="m">
+    <SafeAreaBox paddingHorizontal="6" flex={1}>
+      <BackButton onPress={onBack} paddingHorizontal="0" />
+      <Text variant="displayMdRegular" marginTop="4" color="primaryText">
         {t('accountImport.privateKey.title')}
       </Text>
       <Text
-        variant="body1"
-        marginTop="xl"
-        marginBottom="xl"
+        color="secondaryText"
+        variant="textMdRegular"
+        marginTop="8"
+        marginBottom="8"
         visible={!publicKey && !encodedKey}
       >
         {t('accountImport.privateKey.paste')}
@@ -222,10 +224,11 @@ const ImportPrivateKey = () => {
         variant="underline"
       />
       <Text
-        variant="body1"
-        marginTop="xl"
-        marginBottom="xl"
+        variant="textMdRegular"
+        marginTop="8"
+        marginBottom="8"
         visible={!!encodedKey}
+        color="secondaryText"
       >
         Enter the password you set for your private key.
       </Text>
@@ -240,24 +243,31 @@ const ImportPrivateKey = () => {
           autoComplete: 'off',
           returnKeyType: 'done',
         }}
+        textColor="primaryText"
         variant="underline"
       />
       <Text
-        variant="body1"
-        marginTop="m"
-        marginBottom="m"
+        variant="textMdRegular"
+        marginTop="4"
+        marginBottom="4"
         visible={!!error}
-        color="red500"
+        color="error.500"
       >
         {error}
       </Text>
-      <Text variant="body1" marginTop="xl" visible={!!publicKey}>
+      <Text
+        variant="textMdRegular"
+        color="primaryText"
+        marginTop="8"
+        visible={!!publicKey}
+      >
         {t('accountImport.privateKey.body')}
       </Text>
       <Text
-        variant="body1"
+        variant="textMdRegular"
+        color="secondaryText"
         fontWeight="bold"
-        marginTop="xl"
+        marginTop="8"
         textAlign="center"
         visible={!!publicKey}
       >
@@ -267,13 +277,14 @@ const ImportPrivateKey = () => {
       <ButtonPressable
         onPress={onImportAccount}
         title={t('accountImport.privateKey.action')}
-        borderRadius="round"
-        backgroundColor="white"
+        borderRadius="full"
+        backgroundColor="primaryText"
         backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
-        titleColor="black"
+        titleColor="primaryBackground"
         disabled={!!error || publicKey === undefined}
+        loading={decodingPrivateKey}
       />
     </SafeAreaBox>
   )

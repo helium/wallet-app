@@ -1,13 +1,11 @@
 import Error from '@assets/images/error.svg'
 import Receive from '@assets/images/receive.svg'
 import Send from '@assets/images/send.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
@@ -16,11 +14,13 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHaptic from '@hooks/useHaptic'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import globalStyles from '@theme/globalStyles'
 import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking, ScrollView } from 'react-native'
+import { Linking } from 'react-native'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
@@ -46,7 +46,7 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
       >
         <ImageBox {...props} blurRadius={100} />
         <Box
-          p="s"
+          p="2"
           position="absolute"
           top={0}
           left={0}
@@ -58,20 +58,20 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
           }}
         >
-          <Text textAlign="center" variant="body1Bold" color="red500">
+          <Text textAlign="center" variant="textMdBold" color="error.500">
             {t('activityScreen.scamWarning')}
           </Text>
           <ButtonPressable
             title={t('activityScreen.showAnyway')}
             onPress={() => setDismissed(true)}
-            borderRadius="round"
-            borderColor="red500"
+            borderRadius="full"
+            borderColor="error.500"
             borderWidth={1}
-            px="m"
-            titleColorDisabled="black500"
-            titleColor="red500"
+            px="4"
+            titleColorDisabled="gray.800"
+            titleColor="error.500"
             fontWeight="500"
-            marginTop="l"
+            marginTop="6"
           />
         </Box>
       </Box>
@@ -82,6 +82,7 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
 }
 
 const ActivityDetailsScreen = () => {
+  const { bottom } = useSafeAreaInsets()
   const route = useRoute<Route>()
   const colors = useColors()
   const { t, i18n } = useTranslation()
@@ -128,7 +129,7 @@ const ActivityDetailsScreen = () => {
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
     if (enrichedTx.transactionError || confirmedSig.err) {
-      return <Error color={colors.error} width={150} height={150} />
+      return <Error color={colors['error.500']} width={150} height={150} />
     }
     const userSignedTransaction =
       wallet && enrichedTx.signers?.includes(wallet.toBase58())
@@ -141,8 +142,8 @@ const ActivityDetailsScreen = () => {
       if (!nft?.metadata.image) {
         return (
           <Box
-            backgroundColor="surface"
-            borderRadius="xl"
+            backgroundColor="cardBackground"
+            borderRadius="4xl"
             width={250}
             height={250}
             justifyContent="center"
@@ -161,7 +162,7 @@ const ActivityDetailsScreen = () => {
           }}
           width={250}
           height={250}
-          borderRadius="xxl"
+          borderRadius="4xl"
         />
       )
     }
@@ -178,15 +179,15 @@ const ActivityDetailsScreen = () => {
           }}
           width={250}
           height={250}
-          borderRadius="xxl"
+          borderRadius="4xl"
         />
       )
     }
 
     return userSignedTransaction ? (
-      <Send color={colors.blue500} width={150} height={150} />
+      <Send color={colors['blue.500']} width={150} height={150} />
     ) : (
-      <Receive color={colors.green500} width={150} height={150} />
+      <Receive color={colors['green.500']} width={150} height={150} />
     )
   }, [colors, transaction, wallet])
 
@@ -224,13 +225,13 @@ const ActivityDetailsScreen = () => {
     }
 
     return (
-      <Box marginTop="l" flex={1} width="100%" justifyContent="center">
+      <Box marginTop="6" flex={1} width="100%" justifyContent="center">
         {fromAccount && (
           <AddressActivityItem
             accountAddress={fromAccount}
-            marginHorizontal="l"
+            marginHorizontal="6"
             marginBottom="xs"
-            borderRadius="xl"
+            borderRadius="4xl"
             showBubbleArrow
             onMenuPress={onAddressItemPress(fromAccount)}
           />
@@ -238,8 +239,8 @@ const ActivityDetailsScreen = () => {
         {toAccount && (
           <AddressActivityItem
             accountAddress={toAccount}
-            marginHorizontal="l"
-            borderRadius="xl"
+            marginHorizontal="6"
+            borderRadius="4xl"
             onMenuPress={onAddressItemPress(toAccount)}
           />
         )}
@@ -342,67 +343,75 @@ const ActivityDetailsScreen = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-        }}
+    <ScrollBox
+      style={{ backgroundColor: colors.primaryBackground }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        backgroundColor: colors.primaryBackground,
+      }}
+    >
+      <BackScreen
+        title={t('activityScreen.activityDetails')}
+        flex={1}
+        edges={[]}
+        headerTopMargin="6xl"
       >
-        <BackScreen
-          title={t('activityScreen.activityDetails')}
-          flex={1}
-          headerTopMargin="m"
-        >
-          <Box alignItems="center" justifyContent="center" flex={1}>
-            <Box justifyContent="center" alignItems="center" marginTop="m">
-              {activityImage}
-              <Text
-                variant="h1Medium"
-                marginTop="m"
-                marginBottom="s"
-                textAlign="center"
-              >
-                {title}
-              </Text>
-              <Text
-                variant="subtitle3"
-                color="offWhite"
-                marginBottom="s"
-                textAlign="center"
-              >
-                {description}
-              </Text>
-              <Text variant="body3" textAlign="center" color="secondaryText">
-                {dateLabel}
-              </Text>
-            </Box>
-            {AccountAddressListItems}
-            <Box width="100%">
-              <ButtonPressable
-                marginTop="xl"
-                marginHorizontal="m"
-                borderRadius="round"
-                backgroundColor="white"
-                titleColorDisabled="grey600"
-                backgroundColorDisabled="white"
-                backgroundColorDisabledOpacity={0.1}
-                title={t('activityScreen.viewOnExplorer')}
-                titleColor="black"
-                onPress={handleOpenExplorer}
-              />
-            </Box>
+        <Box alignItems="center" justifyContent="center" flex={1}>
+          <Box justifyContent="center" alignItems="center" marginTop="4">
+            {activityImage}
+            <Text
+              variant="displayMdMedium"
+              marginTop="4"
+              marginBottom="2"
+              textAlign="center"
+            >
+              {title}
+            </Text>
+            <Text
+              variant="textMdMedium"
+              color="primaryText"
+              marginBottom="2"
+              textAlign="center"
+            >
+              {description}
+            </Text>
+            <Text
+              variant="textXsRegular"
+              textAlign="center"
+              color="secondaryText"
+            >
+              {dateLabel}
+            </Text>
           </Box>
-          <BlurActionSheet
-            title={t('collectablesScreen.transferActions')}
-            open={optionsOpen}
-            onClose={toggleActionSheet(false)}
-          >
-            {accountOptions()}
-          </BlurActionSheet>
-        </BackScreen>
-      </ScrollView>
-    </ReAnimatedBox>
+          {AccountAddressListItems}
+          <Box width="100%">
+            <ButtonPressable
+              marginTop="8"
+              marginHorizontal="4"
+              borderRadius="full"
+              backgroundColor="primaryBackground"
+              titleColorDisabled="gray.600"
+              backgroundColorDisabled="base.white"
+              backgroundColorDisabledOpacity={0.1}
+              title={t('activityScreen.viewOnExplorer')}
+              titleColor="base.black"
+              onPress={handleOpenExplorer}
+              style={{
+                marginBottom: NavBarHeight + bottom,
+              }}
+            />
+          </Box>
+        </Box>
+        <BlurActionSheet
+          title={t('collectablesScreen.transferActions')}
+          open={optionsOpen}
+          onClose={toggleActionSheet(false)}
+        >
+          {accountOptions()}
+        </BlurActionSheet>
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

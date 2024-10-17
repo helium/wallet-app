@@ -2,12 +2,11 @@
 /* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
-import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
+import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import FabButton from '@components/FabButton'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Map from '@components/map/Map'
@@ -46,7 +45,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
@@ -63,7 +61,7 @@ const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const route = useRoute<Route>()
-  const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
+  const bottomSheetStyle = useBackgroundStyle('bg.tertiary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
   const mapRef = useRef<MapLibreGL.MapView>(null)
@@ -71,7 +69,6 @@ const HotspotMapScreen = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
-  const [backEdges] = [['top']] as Edge[][]
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [hotspot, setHotspot] = useState(route.params?.hotspot)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
@@ -398,190 +395,194 @@ const HotspotMapScreen = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
-      <SafeAreaBox edges={backEdges} flex={1}>
-        <Box
-          flexGrow={1}
-          justifyContent="center"
-          alignItems="center"
-          backgroundColor="surfaceSecondary"
-          overflow="hidden"
-          position="relative"
+    <Box flex={1}>
+      <Box
+        flexGrow={1}
+        justifyContent="center"
+        alignItems="center"
+        overflow="hidden"
+        position="relative"
+      >
+        <ReAnimatedBlurBox
+          visible={isLoading}
+          exiting={DelayedFadeIn}
+          position="absolute"
+          flex={1}
+          width="100%"
+          height="100%"
+          // On android, the blur just doesn't go away when done loading.
+          zIndex={isLoading ? 100 : 0}
         >
-          <ReAnimatedBlurBox
-            visible={isLoading}
-            exiting={DelayedFadeIn}
-            position="absolute"
-            flex={1}
-            width="100%"
-            height="100%"
-            // On android, the blur just doesn't go away when done loading.
-            zIndex={isLoading ? 100 : 0}
-          >
-            <Box flex={1} height="100%" justifyContent="center">
-              <CircleLoader loaderSize={24} color="white" />
-            </Box>
-          </ReAnimatedBlurBox>
-          <Map
-            map={mapRef}
-            camera={cameraRef}
-            onUserLocationUpdate={onUserLocationUpdate}
-            centerCoordinate={initialCenter}
-            mapProps={{
-              onRegionDidChange: handleRegionChanged,
-              onPress: () => {
-                setActiveHex(undefined)
-                setLegendVisible(false)
-              },
+          <Box flex={1} height="100%" justifyContent="center">
+            <CircleLoader loaderSize={24} color="primaryText" />
+          </Box>
+        </ReAnimatedBlurBox>
+        <Map
+          map={mapRef}
+          camera={cameraRef}
+          onUserLocationUpdate={onUserLocationUpdate}
+          centerCoordinate={initialCenter}
+          mapProps={{
+            onRegionDidChange: handleRegionChanged,
+            onPress: () => {
+              setActiveHex(undefined)
+              setLegendVisible(false)
+            },
+          }}
+        >
+          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+          {/* @ts-ignore */}
+          <MapLibreGL.Images
+            images={{
+              iotHex: require('@assets/images/mapIotHex.png'),
+              iotHexActive: require('@assets/images/mapIotHexActive.png'),
+              mobileHex: require('@assets/images/mapMobileHex.png'),
+              mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
             }}
+          />
+          <MapLibreGL.ShapeSource
+            id="hexsFeature"
+            shape={hexsFeature}
+            onPress={handleHexClick}
+            hitbox={{ width: iconSize, height: iconSize }}
           >
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-            {/* @ts-ignore */}
-            <MapLibreGL.Images
-              images={{
-                iotHex: require('@assets/images/mapIotHex.png'),
-                iotHexActive: require('@assets/images/mapIotHexActive.png'),
-                mobileHex: require('@assets/images/mapMobileHex.png'),
-                mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
+            <MapLibreGL.FillLayer
+              sourceID="hexs"
+              id="hexs-fill"
+              style={{
+                fillColor: ['get', 'color'],
+                fillOpacity: ['get', 'opacity'],
               }}
             />
-            <MapLibreGL.ShapeSource
-              id="hexsFeature"
-              shape={hexsFeature}
-              onPress={handleHexClick}
-              hitbox={{ width: iconSize, height: iconSize }}
-            >
-              <MapLibreGL.FillLayer
-                sourceID="hexs"
-                id="hexs-fill"
-                style={{
-                  fillColor: ['get', 'color'],
-                  fillOpacity: ['get', 'opacity'],
-                }}
-              />
-            </MapLibreGL.ShapeSource>
-          </Map>
-          <Box
+          </MapLibreGL.ShapeSource>
+        </Map>
+        <Box
+          flexDirection="row"
+          alignItems="center"
+          position="absolute"
+          width="100%"
+          paddingTop="10"
+          paddingLeft="5"
+          top={0}
+        >
+          <TouchableOpacityBox
             flexDirection="row"
+            justifyContent="center"
             alignItems="center"
-            position="absolute"
-            width="100%"
-            paddingTop="l"
-            paddingLeft="ms"
-            top={0}
+            onPress={() => navigation.goBack()}
           >
+            <BackArrow color={colors.primaryBackground} />
+            <Text
+              variant="textMdMedium"
+              color="primaryBackground"
+              marginLeft="3"
+            >
+              {t('collectablesScreen.hotspots.map.back')}
+            </Text>
+          </TouchableOpacityBox>
+        </Box>
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems="center"
+          position="absolute"
+          width="100%"
+          bottom={26}
+        >
+          <Box marginHorizontal="3">
             <TouchableOpacityBox
               flexDirection="row"
               justifyContent="center"
               alignItems="center"
-              onPress={() => navigation.goBack()}
+              backgroundColor={networkType === 'IOT' ? 'green.950' : 'blue.950'}
+              paddingRight="3"
+              paddingLeft="2"
+              paddingVertical="1.5"
+              borderRadius="full"
+              opacity={0.8}
+              activeOpacity={1}
+              onPress={handleToggleNetwork}
             >
-              <BackArrow color="white" />
-              <Text variant="subtitle3" color="white" marginLeft="ms">
-                {t('collectablesScreen.hotspots.map.back')}
+              <Hex
+                width={24}
+                height={24}
+                color={
+                  networkType === 'IOT'
+                    ? colors['green.500']
+                    : colors['blue.500']
+                }
+              />
+              <Text
+                variant="textSmRegular"
+                marginLeft="1.5"
+                color={networkType === 'IOT' ? 'green.500' : 'blue.500'}
+              >
+                {t('collectablesScreen.hotspots.map.type', {
+                  type: networkType,
+                })}
               </Text>
             </TouchableOpacityBox>
           </Box>
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-            position="absolute"
-            width="100%"
-            bottom={10}
-          >
-            <Box marginHorizontal="ms">
-              <TouchableOpacityBox
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                backgroundColor={networkType === 'IOT' ? 'green950' : 'blue950'}
-                paddingRight="ms"
-                paddingLeft="s"
-                paddingVertical="sx"
-                borderRadius="round"
-                opacity={0.8}
-                activeOpacity={1}
-                onPress={handleToggleNetwork}
-              >
-                <Hex
-                  width={24}
-                  height={24}
-                  color={
-                    networkType === 'IOT' ? colors.green500 : colors.blue500
-                  }
-                />
-                <Text
-                  marginLeft="sx"
-                  color={networkType === 'IOT' ? 'green500' : 'blue500'}
-                >
-                  {t('collectablesScreen.hotspots.map.type', {
-                    type: networkType,
-                  })}
-                </Text>
-              </TouchableOpacityBox>
-            </Box>
-            <Box flexDirection="row" alignItems="center" marginHorizontal="ms">
-              <FabButton
-                icon="questionMark"
-                backgroundColor="white"
-                backgroundColorOpacity={0.3}
-                backgroundColorOpacityPressed={0.5}
-                marginRight="ms"
-                width={36}
-                height={36}
-                justifyContent="center"
-                onPress={handleLegendPress}
-                // TODO: Make this visible when modled coverage is available
-                visible={false}
-              />
-              <FabButton
-                icon="mapUserLocation"
-                backgroundColor="white"
-                backgroundColorOpacity={0.3}
-                backgroundColorOpacityPressed={0.5}
-                width={36}
-                height={36}
-                justifyContent="center"
-                onPress={handleUserLocationPress}
-              />
-            </Box>
+          <Box flexDirection="row" alignItems="center" marginHorizontal="3">
+            <FabButton
+              icon="questionMark"
+              backgroundColor="base.white"
+              backgroundColorOpacity={0.3}
+              backgroundColorOpacityPressed={0.5}
+              marginRight="3"
+              width={36}
+              height={36}
+              justifyContent="center"
+              onPress={handleLegendPress}
+              // TODO: Make this visible when modled coverage is available
+              visible={false}
+            />
+            <FabButton
+              icon="mapUserLocation"
+              backgroundColor="base.white"
+              backgroundColorOpacity={0.3}
+              backgroundColorOpacityPressed={0.5}
+              width={36}
+              height={36}
+              justifyContent="center"
+              onPress={handleUserLocationPress}
+            />
           </Box>
         </Box>
-        <BottomSheetModalProvider>
-          <BottomSheetModal
-            ref={bottomSheetRef}
-            snapPoints={[160]}
-            enablePanDownToClose
-            enableDynamicSizing
-            animateOnMount
-            index={0}
-            backgroundStyle={bottomSheetStyle}
-            handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
-            onDismiss={() => setActiveHex(undefined)}
-            onChange={(idx) => setBottomSheetSnapIndex(idx)}
-          >
-            <BottomSheetScrollView>
-              <Box
-                onLayout={(e) =>
-                  setBottomSheetHeight(e.nativeEvent.layout.height)
-                }
-              >
-                {legendVisible && <HotspotMapLegend network={networkType} />}
-                {activeHexItem && (
-                  <HotspotMapHotspotDetails
-                    hotspot={activeHexItem.hotspot}
-                    info={activeHexItem?.info}
-                    showActions={bottomSheetSnapIndex === 1}
-                    network={networkType}
-                  />
-                )}
-              </Box>
-            </BottomSheetScrollView>
-          </BottomSheetModal>
-        </BottomSheetModalProvider>
-      </SafeAreaBox>
-    </ReAnimatedBox>
+      </Box>
+      <BottomSheetModalProvider>
+        <BottomSheetModal
+          ref={bottomSheetRef}
+          snapPoints={[180]}
+          enablePanDownToClose
+          enableDynamicSizing
+          animateOnMount
+          index={0}
+          backgroundStyle={bottomSheetStyle}
+          handleIndicatorStyle={{ backgroundColor: colors.secondaryText }}
+          onDismiss={() => setActiveHex(undefined)}
+          onChange={(idx) => setBottomSheetSnapIndex(idx)}
+        >
+          <BottomSheetScrollView>
+            <Box
+              onLayout={(e) =>
+                setBottomSheetHeight(e.nativeEvent.layout.height)
+              }
+            >
+              {legendVisible && <HotspotMapLegend network={networkType} />}
+              {activeHexItem && (
+                <HotspotMapHotspotDetails
+                  hotspot={activeHexItem.hotspot}
+                  info={activeHexItem?.info}
+                  showActions={bottomSheetSnapIndex === 1}
+                  network={networkType}
+                />
+              )}
+            </Box>
+          </BottomSheetScrollView>
+        </BottomSheetModal>
+      </BottomSheetModalProvider>
+    </Box>
   )
 }
 

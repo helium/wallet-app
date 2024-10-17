@@ -9,6 +9,7 @@ import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import React from 'react'
+import { useColors } from '@theme/themeHooks'
 
 interface ISwapPreviewProps {
   inputMint: PublicKey
@@ -36,15 +37,16 @@ export const SwapPreview = ({
     symbol: outputMintSymbol,
     json: outputMintJson,
   } = useMetaplexMetadata(outputMint)
+  const colors = useColors()
 
   return (
     <Box
-      backgroundColor="surface"
-      borderRadius="l"
-      mt="m"
-      px="m"
-      py="ms"
-      {...{ gap: 8 }}
+      backgroundColor="cardBackground"
+      borderRadius="2xl"
+      mt="4"
+      px="4"
+      py="3"
+      gap="8"
     >
       {loadingInputMintMetadata || loadingOutputMintMetadata ? (
         <CircleLoader />
@@ -55,11 +57,13 @@ export const SwapPreview = ({
             flexDirection="row"
             alignItems="center"
           >
-            <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+            <Box flexDirection="row" alignItems="center" gap="4">
               {inputMintJson ? (
                 <TokenIcon img={inputMintJson.image} size={30} />
               ) : null}
-              <Text variant="body1">{inputMintSymbol}</Text>
+              <Text variant="textMdSemibold" color="primaryText">
+                {inputMintSymbol}
+              </Text>
             </Box>
             <Box flexDirection="row" alignItems="center">
               <Pill text={inputAmount.toString()} Icon={Send} color="blue" />
@@ -70,17 +74,22 @@ export const SwapPreview = ({
             flexDirection="row"
             alignItems="center"
           >
-            <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+            <Box flexDirection="row" alignItems="center" gap="4">
               {outputMintJson ? (
                 <TokenIcon img={outputMintJson.image} size={30} />
               ) : null}
-              <Text variant="body1">{outputMintSymbol}</Text>
+              <Text variant="textMdSemibold" color="primaryText">
+                {outputMintSymbol}
+              </Text>
             </Box>
             <Box flexDirection="row" alignItems="center">
               <Pill
                 text={outputAmount.toString()}
                 Icon={Receive}
                 color="green"
+                iconProps={{
+                  color: colors['green.500'],
+                }}
               />
             </Box>
           </Box>
@@ -89,8 +98,10 @@ export const SwapPreview = ({
             alignItems="center"
             justifyContent="space-between"
           >
-            <Text variant="body2">Min Received due to slippage:</Text>
-            <Text variant="body2" color="green500">
+            <Text variant="textSmRegular" color="primaryText">
+              Min Received due to slippage:
+            </Text>
+            <Text variant="textSmRegular" color="green.500">
               {`~${minReceived.toFixed(outputDecimals)}`}
             </Text>
           </Box>

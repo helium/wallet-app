@@ -10,7 +10,6 @@ import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import useSubmitTxn from '@hooks/useSubmitTxn'
@@ -26,12 +25,13 @@ import {
   TextInputEndEditingEventData,
   TouchableWithoutFeedback,
 } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useColors } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
 import * as Logger from '../../utils/logger'
 import {
   CollectableNavigationProp,
@@ -46,12 +46,12 @@ type Route = RouteProp<
 const ChangeRewardsRecipientScreen = () => {
   const { t } = useTranslation()
   const colors = useColors()
+  const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
   const route = useRoute<Route>()
   const nav = useNavigation<CollectableNavigationProp>()
   const wallet = useCurrentWallet()
   const { hotspot } = route.params
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const addressBookRef = useRef<AddressBookRef>(null)
   const [recipient, setRecipient] = useState('')
   const [recipientName, setRecipientName] = useState('')
@@ -177,45 +177,44 @@ const ChangeRewardsRecipientScreen = () => {
 
   return (
     <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
-      <BackScreen
-        headerTopMargin="l"
-        padding="none"
-        title={t('changeRewardsRecipientScreen.title')}
-        edges={backEdges}
-      >
-        <AddressBookSelector
-          ref={addressBookRef}
-          onContactSelected={handleContactSelected}
-          hideCurrentAccount
+      <ScrollBox>
+        <BackScreen
+          headerTopMargin="6xl"
+          padding="0"
+          title={t('changeRewardsRecipientScreen.title')}
+          edges={[]}
         >
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-              <SafeAreaBox
-                edges={safeEdges}
+              <Box
                 backgroundColor="transparent"
                 flex={1}
-                padding="m"
-                marginHorizontal="s"
+                padding="4"
                 marginVertical="xs"
               >
                 <Box flexGrow={1} justifyContent="center">
                   <Text
+                    marginStart="2"
                     textAlign="left"
-                    variant="subtitle2"
+                    variant="textLgMedium"
                     adjustsFontSizeToFit
                   >
                     {t('changeRewardsRecipientScreen.title')}
                   </Text>
-                  <Text variant="subtitle4" color="secondaryText">
+                  <Text
+                    marginStart="2"
+                    variant="textSmMedium"
+                    color="secondaryText"
+                  >
                     {t('changeRewardsRecipientScreen.description')}
                   </Text>
                   <Box
-                    borderRadius="m"
-                    backgroundColor="secondary"
-                    padding="ms"
-                    marginTop="s"
+                    borderRadius="2xl"
+                    backgroundColor="cardBackground"
+                    padding="3"
+                    marginTop="2"
                   >
-                    <Text variant="body3">
+                    <Text variant="textXsRegular">
                       {t('changeRewardsRecipientScreen.blurb')}
                     </Text>
                   </Box>
@@ -225,7 +224,7 @@ const ChangeRewardsRecipientScreen = () => {
                         <Box
                           flexDirection="row"
                           justifyContent="space-between"
-                          marginTop="s"
+                          marginTop="2"
                         >
                           {!recipientsAreDifferent ? (
                             <>
@@ -240,9 +239,9 @@ const ChangeRewardsRecipientScreen = () => {
                                   <Box
                                     flex={1}
                                     flexDirection="row"
-                                    padding="s"
-                                    backgroundColor="black600"
-                                    borderRadius="m"
+                                    padding="2"
+                                    backgroundColor="cardBackground"
+                                    borderRadius="2xl"
                                     justifyContent="space-between"
                                     position="relative"
                                   >
@@ -267,9 +266,11 @@ const ChangeRewardsRecipientScreen = () => {
                                           height={20}
                                         />
                                       )}
-                                      <Text variant="body3">Recipient</Text>
+                                      <Text variant="textXsRegular">
+                                        Recipient
+                                      </Text>
                                     </Box>
-                                    <Text variant="body2">
+                                    <Text variant="textSmRegular">
                                       {ellipsizeAddress(
                                         new PublicKey(
                                           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -284,7 +285,7 @@ const ChangeRewardsRecipientScreen = () => {
                           ) : (
                             <Box
                               flex={1}
-                              marginTop="s"
+                              marginTop="2"
                               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                               // @ts-ignore
                               gap={4}
@@ -292,9 +293,9 @@ const ChangeRewardsRecipientScreen = () => {
                               {hasIotRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  padding="s"
-                                  backgroundColor="black600"
-                                  borderRadius="m"
+                                  padding="2"
+                                  backgroundColor="cardBackground"
+                                  borderRadius="2xl"
                                   justifyContent="space-between"
                                   position="relative"
                                 >
@@ -310,9 +311,11 @@ const ChangeRewardsRecipientScreen = () => {
                                       width={20}
                                       height={20}
                                     />
-                                    <Text variant="body3">Recipient</Text>
+                                    <Text variant="textXsRegular">
+                                      Recipient
+                                    </Text>
                                   </Box>
-                                  <Text variant="body2">
+                                  <Text variant="textSmRegular">
                                     {ellipsizeAddress(
                                       new PublicKey(
                                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -325,9 +328,9 @@ const ChangeRewardsRecipientScreen = () => {
                               {hasMobileRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  padding="s"
-                                  backgroundColor="black600"
-                                  borderRadius="m"
+                                  padding="2"
+                                  backgroundColor="cardBackground"
+                                  borderRadius="2xl"
                                   justifyContent="space-between"
                                   position="relative"
                                 >
@@ -344,9 +347,11 @@ const ChangeRewardsRecipientScreen = () => {
                                       width={20}
                                       height={20}
                                     />
-                                    <Text variant="body3">Recipient</Text>
+                                    <Text variant="textXsRegular">
+                                      Recipient
+                                    </Text>
                                   </Box>
-                                  <Text variant="body2">
+                                  <Text variant="textSmRegular">
                                     {ellipsizeAddress(
                                       new PublicKey(
                                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -362,102 +367,117 @@ const ChangeRewardsRecipientScreen = () => {
                             flexDirection="row"
                             justifyContent="space-between"
                             alignItems="center"
-                            borderRadius="m"
-                            paddingVertical="sx"
-                            marginLeft="s"
-                            paddingLeft="s"
-                            paddingRight="s"
-                            backgroundColor="black600"
+                            borderRadius="2xl"
+                            paddingVertical="1.5"
+                            marginLeft="2"
+                            paddingLeft="2"
+                            paddingRight="2"
+                            backgroundColor="cardBackground"
                             onPress={handleRemoveRecipient}
                           >
                             {removing ? (
-                              <CircleLoader loaderSize={20} color="white" />
+                              <CircleLoader
+                                loaderSize={20}
+                                color="primaryText"
+                              />
                             ) : (
-                              <Text variant="body3Medium">
+                              <Text variant="textXsMedium">
                                 {t('generic.remove')}
                               </Text>
                             )}
                           </TouchableOpacityBox>
                         </Box>
                       )}
-                  <TextInput
-                    floatingLabel={`${t(
-                      'changeRewardsRecipientScreen.newRecipient',
-                    )} ${recipientName}`}
-                    variant="regular"
-                    marginTop="s"
-                    height={80}
-                    width="100%"
-                    textColor="white"
-                    fontSize={15}
-                    TrailingIcon={Menu}
-                    onTrailingIconPress={handleAddressBookSelected}
-                    textInputProps={{
-                      placeholder: t('generic.solanaAddress'),
-                      placeholderTextColor: 'white',
-                      autoCorrect: false,
-                      autoComplete: 'off',
-                      onChangeText: handleEditAddress,
-                      onEndEditing: handleAddressBlur,
-                      value: recipient,
-                    }}
-                  />
                   <Box
-                    borderRadius="m"
-                    backgroundColor="secondary"
-                    padding="ms"
-                    marginVertical="s"
+                    marginTop="2"
+                    backgroundColor="cardBackground"
+                    borderRadius="xl"
                   >
-                    <Text variant="body3Medium" color="flamenco">
+                    <TextInput
+                      floatingLabel={`${t(
+                        'changeRewardsRecipientScreen.newRecipient',
+                      )} ${recipientName}`}
+                      variant="transparent"
+                      height={80}
+                      width="100%"
+                      textColor="primaryText"
+                      fontSize={15}
+                      TrailingIcon={Menu}
+                      onTrailingIconPress={handleAddressBookSelected}
+                      textInputProps={{
+                        placeholder: t('generic.solanaAddress'),
+                        placeholderTextColor: colors.placeholderText,
+                        autoCorrect: false,
+                        autoComplete: 'off',
+                        onChangeText: handleEditAddress,
+                        onEndEditing: handleAddressBlur,
+                        value: recipient,
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    borderRadius="xl"
+                    backgroundColor="cardBackground"
+                    padding="3"
+                    marginVertical="2"
+                  >
+                    <Text variant="textXsMedium" color="orange.500">
                       {t('changeRewardsRecipientScreen.warning')}
                     </Text>
                   </Box>
                 </Box>
-              </SafeAreaBox>
+              </Box>
             </KeyboardAvoidingView>
           </TouchableWithoutFeedback>
-        </AddressBookSelector>
-        <Box
-          flexDirection="row"
-          justifyContent="center"
-          alignItems="center"
-          minHeight={40}
-        >
-          {showError && (
-            <Text variant="body3Medium" color="red500">
-              {showError}
-            </Text>
-          )}
-        </Box>
-        <Box
-          flexDirection="row"
-          paddingHorizontal="m"
-          paddingBottom="m"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            borderWidth={2}
-            borderColor="white"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.9}
-            titleColorDisabled="secondaryText"
-            title={updating ? '' : t('changeRewardsRecipientScreen.submit')}
-            titleColor="black"
-            onPress={removing || updating ? () => {} : handleUpdateRecipient}
-            TrailingComponent={
-              updating ? (
-                <CircleLoader loaderSize={20} color="black" />
-              ) : undefined
-            }
-          />
-        </Box>
-      </BackScreen>
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            minHeight={40}
+          >
+            {showError && (
+              <Text variant="textXsMedium" color="error.500">
+                {showError}
+              </Text>
+            )}
+          </Box>
+          <Box
+            flexDirection="row"
+            paddingHorizontal="4"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <ButtonPressable
+              flex={1}
+              fontSize={16}
+              borderRadius="full"
+              borderWidth={2}
+              borderColor="base.white"
+              backgroundColor="primaryText"
+              backgroundColorOpacityPressed={0.7}
+              backgroundColorDisabled="bg.tertiary"
+              backgroundColorDisabledOpacity={0.9}
+              titleColorDisabled="secondaryText"
+              title={updating ? '' : t('changeRewardsRecipientScreen.submit')}
+              titleColor="primaryBackground"
+              onPress={removing || updating ? () => {} : handleUpdateRecipient}
+              TrailingComponent={
+                updating ? (
+                  <CircleLoader loaderSize={20} color="primaryText" />
+                ) : undefined
+              }
+              style={{
+                marginBottom: bottom + spacing[1],
+              }}
+            />
+          </Box>
+        </BackScreen>
+        <AddressBookSelector
+          ref={addressBookRef}
+          onContactSelected={handleContactSelected}
+          hideCurrentAccount
+        />
+      </ScrollBox>
     </ReAnimatedBox>
   )
 }

@@ -6,8 +6,9 @@ import { PublicKey } from '@solana/web3.js'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
+import { WalletServiceNavigationProp } from '@services/WalletService'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useAppStorage } from '../../storage/AppStorageProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
 
 export type Action =
   | 'send'
@@ -44,64 +45,63 @@ const AccountActionBar = ({
   hasAirdrop,
   mint,
 }: Props) => {
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletServiceNavigationProp>()
+  const walletPageNav = useNavigation<WalletNavigationProp>()
   const { t } = useTranslation()
   const { requirePinForPayment, pin } = useAppStorage()
 
   const handleAction = useCallback(
     (type: Action) => () => {
       switch (type) {
+        default:
         case 'send': {
           if (
             (pin?.status === 'on' || pin?.status === 'restored') &&
             requirePinForPayment
           ) {
-            navigation.navigate('ConfirmPin', { action: 'payment' })
+            walletPageNav.navigate('ConfirmPin', { action: 'payment' })
           } else {
-            navigation.navigate('PaymentScreen', {
-              mint: mint?.toBase58(),
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            navigation.navigate('Send', {
+              screen: 'PaymentScreen',
+              params: {
+                mint: mint?.toBase58(),
+              },
             })
           }
           break
         }
         case 'request': {
-          navigation.navigate('RequestScreen')
+          navigation.navigate('Receive')
           break
         }
         case 'swaps': {
-          navigation.navigate('SwapNavigator')
+          navigation.navigate('Swap')
           break
         }
         case 'airdrop': {
           if (mint) {
-            navigation.navigate('AirdropScreen', { mint: mint?.toBase58() })
+            walletPageNav.navigate('AirdropScreen', { mint: mint?.toBase58() })
           }
           break
         }
-        case '5G': {
-          navigation.navigate('OnboardData')
-          break
-        }
         case 'delegate': {
-          navigation.navigate('BurnScreen', {
+          walletPageNav.navigate('BurnScreen', {
             address: '',
             amount: '',
             isDelegate: true,
           })
           break
         }
-        default: {
-          // show()
-          break
-        }
       }
     },
-    [pin?.status, requirePinForPayment, navigation, mint],
+    [pin?.status, requirePinForPayment, navigation, mint, walletPageNav],
   )
 
   const fabMargin = useMemo(() => {
-    if (compact) return 'm'
-    if (maxCompact) return 's'
+    if (compact) return '4'
+    if (maxCompact) return '2'
     return undefined
   }, [compact, maxCompact])
 
@@ -121,10 +121,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowDown"
-            backgroundColor="greenBright500"
-            backgroundColorOpacity={0.2}
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="greenBright500"
+            iconColor="primaryBackground"
             title={compact || maxCompact ? undefined : t('accountView.deposit')}
             onPress={handleAction('request')}
             width={maxCompact ? 47.5 : undefined}
@@ -132,9 +131,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -152,10 +151,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="swaps"
-            backgroundColor="orange500"
-            backgroundColorOpacity={0.2}
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="orange500"
+            iconColor="primaryBackground"
             title={compact || maxCompact ? undefined : t('accountView.swaps')}
             onPress={handleAction('swaps')}
             width={maxCompact ? 47.5 : undefined}
@@ -163,9 +161,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -183,10 +181,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="airdrop"
-            backgroundColor="electricViolet"
-            backgroundColorOpacity={0.2}
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="electricViolet"
+            iconColor="primaryBackground"
             title={
               compact || maxCompact ? undefined : t('airdropScreen.airdrop')
             }
@@ -196,9 +193,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -216,10 +213,9 @@ const AccountActionBar = ({
         >
           <FabButton
             icon="fatArrowUp"
-            backgroundColor="blueBright500"
-            backgroundColorOpacity={0.2}
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.4}
-            iconColor="blueBright500"
+            iconColor="primaryBackground"
             title={compact || maxCompact ? undefined : t('accountView.send')}
             onPress={handleAction('send')}
             reverse
@@ -228,9 +224,9 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
+            <Box marginTop="2">
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 marginTop="xs"
                 textAlign="center"
@@ -243,10 +239,10 @@ const AccountActionBar = ({
       )}
       {hasDelegate && (
         <FabButton
-          backgroundColor="blueBright500"
+          backgroundColor="blue.light-500"
           backgroundColorOpacity={0.2}
           backgroundColorOpacityPressed={0.1}
-          iconColor="blueBright500"
+          iconColor="blue.light-500"
           title={compact || maxCompact ? undefined : t('accountView.delegate')}
           onPress={handleAction('delegate')}
           reverse

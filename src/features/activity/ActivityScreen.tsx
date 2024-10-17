@@ -1,20 +1,19 @@
 import React, { useCallback, useMemo } from 'react'
-import { RefreshControl, SectionList } from 'react-native'
+import { Image, RefreshControl, SectionList } from 'react-native'
 import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import CircleLoader from '@components/CircleLoader'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
-import globalStyles from '@theme/globalStyles'
 import { useColors, useSpacing } from '@theme/themeHooks'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import ScrollBox from '@components/ScrollBox'
 import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
 
@@ -23,15 +22,17 @@ const ActivityScreen = () => {
     useEnrichedTransactions()
   const { t } = useTranslation()
   const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
   const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
   const { triggerImpact } = useHaptic()
 
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingTop: spacing['6xl'],
+      paddingBottom: NavBarHeight + bottom + spacing['6xl'],
     }),
-    [spacing.xxxl],
+    [spacing, bottom],
   )
 
   const SectionData = useMemo((): {
@@ -80,13 +81,13 @@ const ActivityScreen = () => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop="xl"
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop="8"
+        paddingBottom="4"
+        paddingHorizontal="6"
         backgroundColor="primaryBackground"
         justifyContent="center"
       >
-        <Text variant="body3" textAlign="center" color="secondaryText">
+        <Text variant="textXsRegular" textAlign="center" color="secondaryText">
           {title}
         </Text>
       </Box>
@@ -96,14 +97,21 @@ const ActivityScreen = () => {
 
   const renderHeader = useCallback(() => {
     return (
-      <Box
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-      >
-        <Text variant="h4" textAlign="center">
+      <Box alignItems="center" gap="2.5">
+        <Image source={require('@assets/images/transactionIcon.png')} />
+        <Text
+          variant="displayMdSemibold"
+          textAlign="center"
+          color="primaryText"
+        >
           {t('activityScreen.title')}
+        </Text>
+        <Text
+          variant="textLgRegular"
+          textAlign="center"
+          color="fg.quaternary-500"
+        >
+          {t('activityScreen.subtitle')}
         </Text>
       </Box>
     )
@@ -119,8 +127,6 @@ const ActivityScreen = () => {
     [navigation, triggerImpact],
   )
 
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
-
   const renderItem = useCallback(
     ({ item, index, section }) => {
       const firstItem = index === 0
@@ -134,7 +140,7 @@ const ActivityScreen = () => {
             borderBottomStartRadius={lastItem ? 'xl' : undefined}
             borderBottomEndRadius={lastItem ? 'xl' : undefined}
             hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
-            marginHorizontal="m"
+            marginHorizontal="4"
             transaction={item}
             onPress={handleActivityItemPress(item)}
           />
@@ -146,7 +152,7 @@ const ActivityScreen = () => {
 
   const Footer = useCallback(() => {
     return fetchingMore ? (
-      <Box marginTop="m">
+      <Box marginTop="4">
         <CircleLoader loaderSize={40} />
       </Box>
     ) : null
@@ -155,30 +161,34 @@ const ActivityScreen = () => {
   const keyExtractor = useCallback((item, index) => item.signature + index, [])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
-      <SafeAreaBox edges={safeEdges}>
-        <SectionList
-          contentContainerStyle={contentContainer}
-          sections={SectionData}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          ListHeaderComponent={renderHeader}
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={refresh}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
-          onEndReachedThreshold={0.05}
-          onEndReached={fetchMore}
-          ListFooterComponent={Footer}
+    <ScrollBox
+      backgroundColor="primaryBackground"
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={loading}
+          onRefresh={refresh}
+          title=""
+          tintColor={colors.primaryText}
         />
-      </SafeAreaBox>
-    </ReAnimatedBox>
+      }
+    >
+      <SectionList
+        style={{
+          backgroundColor: colors.primaryBackground,
+        }}
+        contentContainerStyle={contentContainer}
+        sections={SectionData}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        ListHeaderComponent={renderHeader}
+        stickySectionHeadersEnabled={false}
+        onEndReachedThreshold={0.05}
+        onEndReached={fetchMore}
+        ListFooterComponent={Footer}
+      />
+    </ScrollBox>
   )
 }
 

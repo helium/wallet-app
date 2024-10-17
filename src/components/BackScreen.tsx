@@ -1,12 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { LayoutChangeEvent, Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { Color, Spacing, Theme } from '@theme/theme'
-import { useHitSlop } from '@theme/themeHooks'
+import { useColors, useHitSlop } from '@theme/themeHooks'
 import BackButton from './BackButton'
 import Box from './Box'
 import CloseButton from './CloseButton'
@@ -32,6 +32,7 @@ type Props = BoxProps<Theme> & {
   onTrailingIconPress?: () => void
   headerTopMargin?: Spacing
   rootBackgroundColor?: Color
+  onBack?: () => void
 }
 
 const BackScreen = ({
@@ -41,7 +42,7 @@ const BackScreen = ({
   edges,
   onClose,
   hideBack,
-  headerHorizontalPadding = 'lx',
+  headerHorizontalPadding = '7',
   onLayout,
   onHeaderLayout,
   title,
@@ -51,11 +52,21 @@ const BackScreen = ({
   onTrailingIconPress,
   headerTopMargin,
   rootBackgroundColor,
+  onBack,
   ...rest
 }: Props) => {
   const navigation = useNavigation()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
+  const colors = useColors()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
+
+  const onBackHandler = useCallback(() => {
+    if (onBack) {
+      onBack()
+    } else {
+      navigation.goBack()
+    }
+  }, [navigation, onBack])
 
   return (
     <Box flex={1} backgroundColor={rootBackgroundColor}>
@@ -76,21 +87,23 @@ const BackScreen = ({
             alignItems="center"
             justifyContent="center"
           >
-            <Text variant="subtitle1">{title}</Text>
+            <Text variant="textXlMedium" color="primaryText">
+              {title}
+            </Text>
           </Box>
           {!hideBack && (
             <BackButton
-              marginHorizontal="n_ms"
-              paddingHorizontal="none"
-              onPress={navigation.goBack}
+              marginHorizontal="-3"
+              paddingHorizontal="0"
+              onPress={onBackHandler}
             />
           )}
           <Box flex={1} />
           {onClose && (
             <CloseButton
-              paddingHorizontal="lx"
+              paddingHorizontal="7"
               hitSlop={hitSlop}
-              marginEnd="n_lx"
+              marginEnd="-7"
               onPress={onClose}
             />
           )}
@@ -98,17 +111,16 @@ const BackScreen = ({
           {TrailingIcon && (
             <TouchableOpacityBox
               hitSlop={hitSlop}
-              marginEnd="n_lx"
-              paddingHorizontal="lx"
+              marginEnd="-7"
+              paddingHorizontal="7"
               onPress={onTrailingIconPress}
               justifyContent="center"
             >
-              <TrailingIcon />
+              <TrailingIcon color={colors.primaryText} />
             </TouchableOpacityBox>
           )}
         </Box>
-        {/* if padding is not set, set it to 'lx' , if padding set to 'none' , set it to 0 */}
-        <Box padding={padding ?? 'lx'} flex={flex || 1} {...rest}>
+        <Box padding={padding || '7'} flex={flex || 1} {...rest}>
           {children}
         </Box>
       </SafeAreaBox>

@@ -1,7 +1,4 @@
-import Close from '@assets/images/close.svg'
 import Box from '@components/Box'
-import IconPressedContainer from '@components/IconPressedContainer'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
@@ -11,37 +8,39 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import CheckBox from '@react-native-community/checkbox'
-import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
-import { humanReadable } from '@utils/solanaUtils'
+import { getSortValue, humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
-import { Edge } from 'react-native-safe-area-context'
+import BackScreen from '@components/BackScreen'
+import ScrollBox from '@components/ScrollBox'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
+import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSolana } from '../../solana/SolanaProvider'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
-import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import { getSortValue } from './AccountTokenList'
 
 const CheckableTokenListItem = ({
   bottomBorder,
   mint: token,
   checked,
   onUpdateTokens,
+  ...rest
 }: {
   bottomBorder: boolean
   mint: string
   checked: boolean
   onUpdateTokens: (_token: PublicKey, _value: boolean) => void
-}) => {
+} & BoxProps<Theme>) => {
   const mint = usePublicKey(token)
   const wallet = useCurrentWallet()
   const { amount, decimals } = useOwnedAmount(wallet, mint)
@@ -55,24 +54,27 @@ const CheckableTokenListItem = ({
 
   return (
     <TouchableContainer
-      onPress={() => {}}
       flexDirection="row"
       minHeight={72}
       alignItems="center"
-      paddingHorizontal="m"
-      paddingVertical="m"
+      padding="4"
       borderBottomColor="primaryBackground"
-      borderBottomWidth={bottomBorder ? 0 : 1}
+      borderBottomWidth={bottomBorder ? 2 : 0}
       disabled
+      {...rest}
     >
       <TokenIcon img={json?.image} />
-      <Box flex={1} paddingHorizontal="m">
+      <Box flex={1} paddingHorizontal="4">
         <Box flexDirection="row" alignItems="center">
-          <Text variant="body1" color="primaryText" maxFontSizeMultiplier={1.3}>
+          <Text
+            variant="textMdRegular"
+            color="primaryText"
+            maxFontSizeMultiplier={1.3}
+          >
             {`${balanceToDisplay} `}
           </Text>
           <Text
-            variant="body2Medium"
+            variant="textSmMedium"
             color="secondaryText"
             maxFontSizeMultiplier={1.3}
           >
@@ -81,7 +83,7 @@ const CheckableTokenListItem = ({
         </Box>
         {symbol && (
           <AccountTokenCurrencyBalance
-            variant="subtitle4"
+            variant="textSmMedium"
             color="secondaryText"
             ticker={symbol.toUpperCase()}
           />
@@ -93,11 +95,11 @@ const CheckableTokenListItem = ({
           style={{ height: 18, width: 18 }}
           tintColors={{
             true: colors.primaryText,
-            false: colors.transparent10,
+            false: colors.primaryText,
           }}
-          onCheckColor={colors.secondary}
+          onCheckColor={colors.primaryBackground}
           onTintColor={colors.primaryText}
-          tintColor={colors.transparent10}
+          tintColor={colors.primaryText}
           onFillColor={colors.primaryText}
           onAnimationType="fill"
           offAnimationType="fill"
@@ -110,9 +112,6 @@ const CheckableTokenListItem = ({
 }
 
 const AccountManageTokenListScreen: React.FC = () => {
-  const navigation = useNavigation<HomeNavigationProp>()
-  const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
   const { visibleTokens, setVisibleTokens } = useVisibleTokens()
   const { tokenAccounts } = useBalance()
   const mints = useMemo(() => {
@@ -141,12 +140,23 @@ const AccountManageTokenListScreen: React.FC = () => {
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: token }: { index: number; item: string }) => {
+      const isFirst = index === 0
+      const isLast = index === (mints?.length || 0) - 1
+      const borderTopStartRadius = isFirst ? 'xl' : 'none'
+      const borderTopEndRadius = isFirst ? 'xl' : 'none'
+      const borderBottomStartRadius = isLast ? 'xl' : 'none'
+      const borderBottomEndRadius = isLast ? 'xl' : 'none'
+
       return (
         <CheckableTokenListItem
           mint={token}
-          bottomBorder={index === (mints?.length || 0) - 1}
+          bottomBorder={!isLast}
           checked={visibleTokens.has(token)}
           onUpdateTokens={setVisibleTokens}
+          borderTopStartRadius={borderTopStartRadius}
+          borderTopEndRadius={borderTopEndRadius}
+          borderBottomStartRadius={borderBottomStartRadius}
+          borderBottomEndRadius={borderBottomEndRadius}
         />
       )
     },
@@ -156,44 +166,30 @@ const AccountManageTokenListScreen: React.FC = () => {
   const keyExtractor = useCallback((item: string) => {
     return item
   }, [])
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
   return (
-    <SafeAreaBox flex={1} edges={safeEdges}>
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        borderTopStartRadius="xl"
-        borderTopEndRadius="xl"
-        marginBottom="m"
-      >
-        <Box hitSlop={hitSlop} padding="s">
-          <IconPressedContainer
-            onPress={navigation.goBack}
-            activeOpacity={0.75}
-            idleOpacity={1.0}
-          >
-            <Close color={primaryText} height={16} width={16} />
-          </IconPressedContainer>
-        </Box>
-      </Box>
-
-      <FlatList
-        refreshControl={
-          <RefreshControl
-            enabled
-            refreshing={refetchingTokens}
-            onRefresh={refetchTokens}
-            title=""
-            tintColor={colors.primaryText}
-          />
-        }
-        data={mints}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-      />
-    </SafeAreaBox>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          enabled
+          refreshing={refetchingTokens}
+          onRefresh={refetchTokens}
+          title=""
+          tintColor={colors.primaryText}
+        />
+      }
+    >
+      <BackScreen edges={[]} headerTopMargin="6xl">
+        <FlatList
+          data={mints}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={{
+            paddingBottom: NavBarHeight,
+          }}
+        />
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

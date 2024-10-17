@@ -37,6 +37,8 @@ export type CSAccount = {
   proposalIdsSeenByMint?: Record<string, string[]>
   //
   version?: CSAccountVersion
+  // avatar uri
+  avatar?: string
 }
 export type CSAccountVersion = 'v1'
 export type CSAccounts = Record<string, CSAccount>

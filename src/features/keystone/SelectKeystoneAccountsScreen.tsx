@@ -137,22 +137,22 @@ const SelectKeystoneAccountsScreen = () => {
           flexDirection="row"
           minHeight={72}
           alignItems="center"
-          paddingHorizontal="m"
-          paddingVertical="m"
+          paddingHorizontal="4"
+          paddingVertical="4"
           borderBottomColor="primaryBackground"
           borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 1}
         >
-          <Box flex={1} paddingHorizontal="m">
+          <Box flex={1} paddingHorizontal="4">
             <Box flexDirection="column" justifyContent="flex-start">
               <Text
-                variant="body1"
+                variant="textSmRegular"
                 color="primaryText"
                 maxFontSizeMultiplier={1.3}
               >
                 {item.path}
               </Text>
               <Text
-                variant="body2Medium"
+                variant="textMdMedium"
                 color="secondaryText"
                 maxFontSizeMultiplier={1.3}
               >
@@ -161,7 +161,7 @@ const SelectKeystoneAccountsScreen = () => {
                 )}
               </Text>
               <Text
-                variant="body2Medium"
+                variant="textMdMedium"
                 color="secondaryText"
                 maxFontSizeMultiplier={1.3}
               >
@@ -178,11 +178,11 @@ const SelectKeystoneAccountsScreen = () => {
               style={{ height: 18, width: 18 }}
               tintColors={{
                 true: colors.primaryText,
-                false: colors.transparent10,
+                false: colors.secondaryText,
               }}
-              onCheckColor={colors.secondary}
+              onCheckColor={colors.primaryBackground}
               onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
+              tintColor={colors.secondaryText}
               onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
@@ -193,28 +193,29 @@ const SelectKeystoneAccountsScreen = () => {
         </TouchableContainer>
       )
     },
-    [
-      colors.primaryText,
-      colors.secondary,
-      colors.transparent10,
-      derivationAccounts,
-      selected,
-    ],
+    [colors, derivationAccounts, selected],
   )
   return (
     <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
       <Box flex={1} backgroundColor="secondaryBackground" height="100%">
         <Text
-          variant="h1"
+          color="primaryText"
+          variant="displayMdSemibold"
           mt="xl"
           textAlign="center"
           fontSize={44}
           lineHeight={44}
-          mb="s"
+          mb="1"
         >
           {t('keystone.selectKeystoneAccounts.title')}
         </Text>
-        <Text textAlign="center" p="s" variant="body1" mb="l">
+        <Text
+          textAlign="center"
+          p="1"
+          variant="textSmRegular"
+          mb="xl"
+          color="secondaryText"
+        >
           {t('keystone.selectKeystoneAccounts.subtitle')}
         </Text>
         <FlatList
@@ -235,19 +236,17 @@ const SelectKeystoneAccountsScreen = () => {
         />
 
         <ButtonPressable
-          marginTop="l"
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="black500"
+          marginTop="xl"
+          borderRadius="full"
+          backgroundColor="primaryText"
+          backgroundColorDisabled="bg.disabled"
+          titleColorDisabled="text.disabled"
+          titleColor="primaryBackground"
           disabled={selected.size === 0}
           onPress={onNext}
           title="Next"
-          marginBottom="l"
-          marginHorizontal="l"
+          marginBottom="4"
+          marginHorizontal="4"
         />
       </Box>
     </SafeAreaBox>

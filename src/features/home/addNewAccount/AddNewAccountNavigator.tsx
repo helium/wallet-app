@@ -1,8 +1,9 @@
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
+import { useColors } from '@theme/themeHooks'
 import KeystoneNavigator from '../../keystone/KeystoneNavigator'
 import AddNewAccountScreen from './AddNewAccountScreen'
 import LedgerNavigator from '../../ledger/LedgerNavigator'
@@ -12,12 +13,18 @@ import CLIAccountNavigator from '../../onboarding/cli-import/CLIAccountNavigator
 
 const AddAccountStack = createStackNavigator()
 
-const navigatorScreenOptions = {
-  presentation: 'transparentModal',
-  headerShown: false,
-} as StackNavigationOptions
-
 const AddNewAccountNavigator = () => {
+  const colors = useColors()
+  const navigatorScreenOptions = useMemo(
+    () =>
+      ({
+        presentation: 'transparentModal',
+        headerShown: false,
+        cardStyle: { backgroundColor: colors.primaryBackground },
+      } as StackNavigationOptions),
+    [colors],
+  )
+
   return (
     <AddAccountStack.Navigator screenOptions={navigatorScreenOptions}>
       <AddAccountStack.Screen
@@ -36,7 +43,6 @@ const AddNewAccountNavigator = () => {
       <AddAccountStack.Screen
         name="LedgerNavigator"
         component={LedgerNavigator}
-        // options={cardPresentation}
       />
       <AddAccountStack.Screen
         name="CLIAccountNavigator"

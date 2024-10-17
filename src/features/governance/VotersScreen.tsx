@@ -21,6 +21,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Image, RefreshControl } from 'react-native'
 import { useDebounce } from 'use-debounce'
+import ScrollBox from '@components/ScrollBox'
 import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
 import { VoterCardStat } from './VoterCardStat'
@@ -74,15 +75,15 @@ export default function VotersScreen() {
 
     return (
       <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
+        backgroundColor="bg.tertiary"
+        borderRadius="2xl"
         height={VOTER_HEIGHT}
         width="100%"
         justifyContent="center"
         alignItems="center"
-        mb="m"
+        marginVertical="4"
       >
-        <Text variant="body1" color="white">
+        <Text variant="textMdRegular" color="primaryText">
           {t('gov.voters.noneFound')}
         </Text>
       </Box>
@@ -110,10 +111,10 @@ export default function VotersScreen() {
         return (
           <>
             <Box
-              my="m"
-              p="m"
-              backgroundColor="surfaceSecondary"
-              borderRadius="l"
+              my="4"
+              p="4"
+              backgroundColor="bg.tertiary"
+              borderRadius="2xl"
               flexDirection="row"
               alignItems="center"
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -121,7 +122,7 @@ export default function VotersScreen() {
               gap={8}
             >
               <Warning width={24} height={24} />
-              <Text variant="body2" color="grey600" flex={1}>
+              <Text variant="textSmRegular" color="gray.600" flex={1}>
                 {t('gov.voters.warning')}
               </Text>
             </Box>
@@ -132,16 +133,16 @@ export default function VotersScreen() {
       if (renderBelowIndex > 0 && index === renderBelowIndex) {
         return (
           <>
-            <Box p="m">
-              <Box flexDirection="row" alignItems="center" mb="s">
+            <Box p="4">
+              <Box flexDirection="row" alignItems="center" mb="2">
                 <BlueCheck width={24} height={24} />
-                <Text ml="m" variant="body2" opacity={0.75}>
+                <Text ml="4" variant="textSmRegular" opacity={0.75}>
                   {t('gov.voters.assignBelow')}
                 </Text>
               </Box>
               <Box
                 borderWidth={1}
-                borderColor="dividerGrey"
+                borderColor="border.primary"
                 width="60%"
                 alignSelf="center"
               />
@@ -159,31 +160,40 @@ export default function VotersScreen() {
   const { primaryText } = useColors()
 
   return (
-    <GovernanceWrapper selectedTab="voters">
-      <Text color="white" opacity={0.5} fontSize={20} mb="l">
-        {t('gov.voters.title')}
-      </Text>
-      <SearchInput
-        placeholder={t('gov.voters.searchPlaceholder')}
-        onChangeText={setProxySearch}
-        value={proxySearch}
-      />
-      <FlatList
-        keyExtractor={keyExtractor}
-        data={proxies}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmptyComponent}
-        refreshControl={
-          <RefreshControl
-            refreshing={loading || isLoading || isFetchingNextPage}
-            onRefresh={refetch}
-            title=""
-            tintColor={primaryText}
-          />
-        }
-        onEndReached={handleOnEndReached}
-      />
-    </GovernanceWrapper>
+    <ScrollBox
+      refreshControl={
+        <RefreshControl
+          refreshing={loading || isLoading || isFetchingNextPage}
+          onRefresh={refetch}
+          title=""
+          tintColor={primaryText}
+        />
+      }
+    >
+      <GovernanceWrapper selectedTab="voters">
+        <Text
+          variant="textSmRegular"
+          color="primaryText"
+          opacity={0.5}
+          fontSize={20}
+          mb="6"
+        >
+          {t('gov.voters.title')}
+        </Text>
+        <SearchInput
+          placeholder={t('gov.voters.searchPlaceholder')}
+          onChangeText={setProxySearch}
+          value={proxySearch}
+        />
+        <FlatList
+          keyExtractor={keyExtractor}
+          data={proxies}
+          renderItem={renderItem}
+          ListEmptyComponent={renderEmptyComponent}
+          onEndReached={handleOnEndReached}
+        />
+      </GovernanceWrapper>
+    </ScrollBox>
   )
 }
 
@@ -198,9 +208,9 @@ const VoterCard: React.FC<{
   return (
     <TouchableContainer
       flexDirection="column"
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      mb="m"
+      backgroundColor="bg.tertiary"
+      borderRadius="2xl"
+      mb="4"
       onPress={() => {
         navigation.navigate('VoterScreen', {
           mint: mint.toBase58(),
@@ -210,25 +220,25 @@ const VoterCard: React.FC<{
     >
       <Box
         flexDirection="row"
-        px="m"
-        py="s"
+        px="4"
+        py="2"
         borderBottomWidth={2}
-        borderBottomColor="dividerGrey"
+        borderBottomColor="border.primary"
       >
         <Image
           source={{ uri: proxy.image }}
           style={{ width: 48, height: 48, borderRadius: 100 }}
         />
-        <Box px="m" flexDirection="column" justifyContent="center">
-          <Text variant="body1">{proxy.name}</Text>
-          <Text variant="body3">{shortenAddress(proxy.wallet)}</Text>
+        <Box px="4" flexDirection="column" justifyContent="center">
+          <Text variant="textMdRegular">{proxy.name}</Text>
+          <Text variant="textXsRegular">{shortenAddress(proxy.wallet)}</Text>
         </Box>
         <Box flex={1} alignItems="flex-end">
           <Pill
             iconProps={{ width: 8, height: 8 }}
             Icon={majority ? MajorityCircle : MinorityCircle}
-            color="black"
-            textProps={{ variant: 'body3' }}
+            color="quinary"
+            textProps={{ variant: 'textXsRegular' }}
             text={
               majority ? t('gov.voters.majority') : t('gov.voters.minority')
             }
@@ -236,7 +246,7 @@ const VoterCard: React.FC<{
         </Box>
       </Box>
 
-      <Box px="m" py="s" flexDirection="row" justifyContent="space-between">
+      <Box px="4" py="2" flexDirection="row" justifyContent="space-between">
         <VoterCardStat
           title="Total Voting Power"
           value={

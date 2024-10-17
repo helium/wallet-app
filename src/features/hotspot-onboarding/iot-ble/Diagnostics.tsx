@@ -41,46 +41,46 @@ const Diagnostics = () => {
               key={key}
               flexDirection="row"
               justifyContent="space-between"
-              mb="s"
-              pb="s"
-              borderColor="grey900"
+              mb="2"
+              pb="2"
+              borderColor="gray.900"
               borderBottomWidth={1}
             >
-              <Text variant="subtitle2" color="secondaryText">
+              <Text variant="textLgMedium" color="secondaryText">
                 {key}
               </Text>
-              <Text variant="subtitle2" color="secondaryText">
+              <Text variant="textLgMedium" color="secondaryText">
                 {JSON.stringify(value)}
               </Text>
             </Box>
           ))}
         {!diagnosticInfo && !loading && (
-          <Text variant="subtitle1" color="secondaryText">
+          <Text variant="textXlMedium" color="secondaryText">
             {t('hotspotOnboarding.diagnostics.noneFound')}
           </Text>
         )}
       </ScrollView>
 
       <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor="white"
-        borderColor="white"
+        marginTop="6"
+        borderRadius="full"
+        titleColor="base.white"
+        borderColor="base.white"
         borderWidth={2}
         backgroundColor="transparent"
         title={loading ? undefined : t('hotspotOnboarding.diagnostics.get')}
         onPress={handleSetDiagnostics}
-        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
         disabled={loading}
         LeadingComponent={loading ? <CircleLoader /> : undefined}
       />
       <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor="black"
+        marginTop="6"
+        borderRadius="full"
+        titleColor="base.black"
         borderColor="transparent"
-        backgroundColor="white"
+        backgroundColor="base.white"
         title={t('generic.done')}
         onPress={navNext}
       />

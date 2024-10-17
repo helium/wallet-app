@@ -67,7 +67,7 @@ const ScanQrCodeScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isScanQrCodeComplete])
   return (
-    <SafeAreaBox flex={1}>
+    <SafeAreaBox flex={1} backgroundColor="primaryBackground">
       <DynamicQrScanner
         onBarCodeScanned={handleBarCodeScanned}
         progress={progress}

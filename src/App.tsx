@@ -9,18 +9,16 @@ import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import globalStyles from '@theme/globalStyles'
-import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
-import { useColorScheme } from '@theme/themeHooks'
+import { darkTheme } from '@theme/theme'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
-import { LogBox } from 'react-native'
+import { LogBox, Platform, StatusBar, UIManager } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { OneSignal } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import LockScreen from './features/lock/LockScreen'
@@ -64,38 +62,41 @@ const App = () => {
     'ws error: received bad response code from server 429',
     'Ignored unsubscribe request because an active subscription with id',
     'accountFetchCache Batching account fetch of',
+    'VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other functionality - use another VirtualizedList-backed container instead.',
   ])
 
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
-  // const { cache } = useSolana()
   const { setOpenedNotification } = useNotificationStorage()
 
   const linking = useDeepLinking()
 
-  const colorScheme = useColorScheme()
+  const themeObject = useMemo(() => {
+    return darkTheme
+  }, [])
+
+  if (Platform.OS === 'android') {
+    if (UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true)
+    }
+  }
   const colorAdaptedTheme = useMemo(
     () => ({
-      ...theme,
-      colors: colorScheme === 'light' ? lightThemeColors : darkThemeColors,
+      ...themeObject,
     }),
-    [colorScheme],
+    [themeObject],
   )
 
   const navTheme = useMemo(
     () => ({
       ...DarkTheme,
-      dark: colorScheme === 'light',
+      dark: true,
       colors: {
         ...DarkTheme.colors,
-        background:
-          colorScheme === 'light'
-            ? lightThemeColors.primaryBackground
-            : darkThemeColors.primaryBackground,
+        background: themeObject.colors.primaryBackground,
       },
     }),
-
-    [colorScheme],
+    [themeObject],
   )
 
   useMount(() => {
@@ -114,6 +115,10 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={globalStyles.container}>
+        <StatusBar
+          backgroundColor={themeObject.colors.primaryBackground}
+          barStyle="light-content"
+        />
         <SafeAreaProvider>
           <ThemeProvider theme={colorAdaptedTheme}>
             <PortalProvider>
@@ -142,7 +147,6 @@ const App = () => {
                                           <WalletSignProvider>
                                             <GovernanceProvider>
                                               <AutoGasBanner />
-                                              <NetworkAwareStatusBar />
                                               <RootNavigator />
 
                                               {/* place app specific modals here */}

@@ -1,321 +1,106 @@
 import { createTheme } from '@shopify/restyle'
 
-export const Font = {
-  italic: 'DMSans-Italic',
-  regular: 'DMSans-Regular',
-  mediumItalic: 'DMSans-MediumItalic',
-  medium: 'DMSans-Medium',
-  bold: 'DMSans-Bold',
-  boldItalic: 'DMSans-BoldItalic',
+import darkThemeTokens from '@novalabsxyz/mobile-theme/build/dark-theme.json'
+import lightThemeTokens from '@novalabsxyz/mobile-theme/build/light-theme.json'
+
+const NovaFont = {
+  bold: 'Figtree',
+  boldItalic: 'Figtree',
+  italic: 'Figtree',
+  light: 'Figtree',
+  medium: 'Figtree',
+  mediumItalic: 'Figtree',
+  regular: 'Figtree',
+  semiBold: 'Figtree',
 }
 
-const textVariants = {
-  h0: {
-    fontFamily: Font.regular,
-    fontSize: 42,
-    lineHeight: 44,
-    color: 'primaryText',
-  },
-  h1: {
-    fontFamily: Font.regular,
-    fontSize: 37,
-    color: 'primaryText',
-  },
-  h2: {
-    fontFamily: Font.regular,
-    fontSize: 33,
-    color: 'primaryText',
-  },
-  h3: {
-    fontFamily: Font.regular,
-    fontSize: 27,
-    color: 'primaryText',
-  },
-  h4: {
-    fontFamily: Font.regular,
-    fontSize: 22,
-    color: 'primaryText',
-  },
-  subtitle1: {
-    fontFamily: Font.medium,
-    fontSize: 20,
-    color: 'primaryText',
-  },
-  subtitle2: {
-    fontFamily: Font.medium,
-    fontSize: 19,
-    color: 'primaryText',
-  },
-  subtitle3: {
-    fontFamily: Font.medium,
-    fontSize: 17,
-    color: 'primaryText',
-  },
-  subtitle4: {
-    fontFamily: Font.medium,
-    fontSize: 14,
-    color: 'primaryText',
-  },
-  body0: {
-    fontFamily: Font.regular,
-    fontSize: 21,
-    color: 'primaryText',
-  },
-  body1: {
-    fontFamily: Font.regular,
-    fontSize: 16,
-    color: 'primaryText',
-  },
-  body2: {
-    fontFamily: Font.regular,
-    fontSize: 14,
-    color: 'primaryText',
-  },
-  body3: {
-    fontFamily: Font.regular,
-    fontSize: 12,
-    color: 'primaryText',
-  },
-  body4: {
-    fontFamily: Font.regular,
-    fontSize: 8,
-    color: 'primaryText',
-  },
-  regular: {
-    fontFamily: Font.regular,
-  },
-  medium: {
-    fontFamily: Font.medium,
-  },
-  bold: {
-    fontFamily: Font.bold,
-  },
+export const breakpoints = {
+  none: 0,
+  xs: 300,
+  sm: 400,
+  md: 640,
+  lg: 960,
+  xl: 1200,
+  xxl: 1440,
 }
 
-/**
- * Use https://www.hexdictionary.com/ to determine color names, for example https://www.hexdictionary.com/color/d23e72.
- * https://elektrobild.org/tools/sort-colors can be used to sort colors.
- */
-
-const palette = {
-  aquaMarine: '#69DBB3',
-
-  black200: '#414141',
-  black300: '#464646',
-  black400: '#333333',
-  black500: '#2B2B2B',
-  black600: '#212121',
-  black650: '#191919',
-  black700: '#161616',
-  black750: '#1A1A1A',
-  black800: '#1A1C22',
-  black850: '#131313',
-  black900: '#0E0E0E',
-  black900_9A: '#0000009A',
-
-  black: '#000000',
-
-  blue500: '#3B82F6',
-  blue950: '#172554',
-  blueBorder: 'rgba(59, 130, 246, 0.25)',
-  hntBlue: '#2755F8',
-  mobileDarkBlue: '#00273D',
-  mobileBlue: '#009EF8',
-  iotDarkGreen: '#053919',
-  iotGreen: '#26ED75',
-
-  green500: '#22C55E',
-  green950: '#052E16',
-  greenBorder: 'rgba(34, 197, 94, 0.25)',
-
-  orange500: '#f97316',
-  orange950: '#431407',
-  orangeBorder: 'rgba(245, 115, 22, 0.25)',
-
-  blueBright500: '#009FF9',
-
-  blueRibbon: '#484CF6',
-
-  caribbeanGreen: '#27DCB7',
-
-  darkGrey: '#333333',
-
-  electricViolet: '#DD0FFF',
-
-  flamenco: '#FF800B',
-
-  gold: '#FFD700',
-
-  greenBright500: '#27EE76',
-
-  grey50: '#B8B8B8',
-  grey100: '#F7F7F7',
-  grey200: '#EFEFF0',
-  grey300: '#AEAEAE',
-  grey350: '#828282',
-  grey400: '#666666',
-  grey500: '#747A92',
-  grey600: '#999999',
-  grey700: '#5A5E6C',
-  grey800: '#54596F',
-  grey900: '#2C2E37',
-  lightGrey: '#E2E2E2',
-  dividerGrey: '#2E2E2E',
-
-  matchaGray900: '#2B2B2B',
-
-  havelockBlue: '#0C93E5',
-
-  jazzberryJam: '#D23E72',
-
-  lividBrown: '#421B27',
-
-  malachite: '#14D111',
-
-  offWhite: '#F9FAFC',
-
-  warning: '#FFE5C7',
-
-  critical500: '#EF4444',
-  critical950: '#450A0A',
-  criticalBorder: 'rgba(239, 68, 68, 0.25)',
-
-  persianRose: '#FF2DB7',
-
-  purple500: '#B556FF',
-
-  purpleHeart: '#3E42E5',
-
-  red200: '#F59CA2',
-
-  red300: '#F97570',
-  red400: '#FF6666',
-  red500: '#E43B70',
-  red500Transparent10: '#E43B701A',
-  matchaRed500: '#EF4444',
-  matchaRed950: '#450A0A',
-  redBorder: 'rgba(239, 68, 68, 0.25)',
-
-  solanaGreen: '#14F195',
-  solanaPurple: '#9945FF',
-
-  transparent: '#00000000',
-  transparent10: '#FFFFFF1A',
-
-  turquoise: '#2BD7E2',
-
-  white: '#FFFFFF',
-  bottomSheetBg: '#191919',
-}
-
-export const lightThemeColors = {
-  ...palette,
-  primary: palette.white,
-  secondary: palette.grey300,
-  primaryBackground: palette.grey200,
-  secondaryBackground: palette.black750,
-  primaryText: palette.black700,
-  primaryIcon: palette.black700,
-  secondaryIcon: palette.black300,
-  secondaryText: palette.grey400,
-  error: palette.red500,
-  surface: palette.white,
-  surfaceText: palette.grey700,
-  surfaceSecondary: palette.grey100,
-  surfaceSecondaryText: palette.black500,
-  surfaceContrast: palette.white,
-  surfaceContrastText: palette.white,
-  plainInputBackground: palette.grey200,
-  regularInputBackground: palette.offWhite,
-  highlight: palette.blueBright500,
-  testnet: palette.red500,
-  transparent: palette.transparent,
-  bottomSheetBg: palette.bottomSheetBg,
-}
-
-export const darkThemeColors = {
-  ...palette,
-  primary: palette.black900,
-  secondary: palette.black600,
-  primaryBackground: palette.black,
-  secondaryBackground: palette.black850,
-  primaryText: palette.white,
-  primaryIcon: palette.black600,
-  secondaryIcon: palette.black300,
-  secondaryText: palette.grey400,
-  error: palette.red500,
-  surface: palette.black200,
-  surfaceText: palette.white,
-  surfaceSecondary: palette.black650,
-  surfaceSecondaryText: palette.grey300,
-  surfaceContrast: palette.white,
-  surfaceContrastText: palette.black900,
-  plainInputBackground: palette.black200,
-  regularInputBackground: palette.black750,
-  highlight: palette.blueBright500,
-  testnet: palette.red500,
-  transparent: palette.transparent,
-}
-
-export const theme = createTheme({
-  colors: lightThemeColors,
-  spacing: {
-    n_xxxxl: -240,
-    n_xxxl: -60,
-    n_xxl: -48,
-    n_xl: -32,
-    n_lx: -28,
-    n_l: -24,
-    n_lm: -20,
-    n_m: -16,
-    n_ms: -12,
-    n_s: -8,
-    n_xs: -4,
-    n_xxs: -2,
-    n_xxxs: -1,
-    none: 0,
-    xxxs: 1,
-    xxs: 2,
-    xs: 4,
-    sx: 6,
-    s: 8,
-    ms: 12,
-    m: 16,
-    lm: 20,
-    l: 24,
-    lx: 28,
-    xl: 32,
-    xxl: 48,
-    xxxl: 60,
-    xxxxl: 240,
-  },
-  borderRadii: {
-    none: 0,
-    s: 4,
-    ms: 6,
-    m: 8,
-    lm: 10,
-    l: 12,
-    lx: 16,
-    xl: 20,
-    xxl: 35,
-    round: 1000,
-  },
-  breakpoints: {
-    smallPhone: 0,
-    phone: 380,
-    largePhone: 430,
-    tablet: 768,
+export const baseTheme = {
+  borderRadii: lightThemeTokens.borderRadii,
+  breakpoints,
+  Font: NovaFont,
+  inputVariants: {
+    outline: {
+      color: 'primaryText',
+      fontSize: 18,
+      fontFamily: 'Figtree',
+      padding: '4',
+      borderRadius: '4xl',
+    },
+    outlineSuccess: {
+      color: 'blue.500',
+      fontSize: 18,
+      fontFamily: 'Figtree',
+      padding: '4',
+      borderRadius: '4xl',
+      borderWidth: 1,
+      borderColor: 'blue.500',
+    },
+    plain: {
+      color: 'primaryText',
+      fontSize: 18,
+      fontFamily: 'Figtree',
+      padding: '4',
+      backgroundColor: 'inputBackground',
+    },
+    regular: {
+      color: 'primaryText',
+      fontSize: 18,
+      fontFamily: 'Figtree',
+      padding: '4',
+      backgroundColor: 'inputBackground',
+      borderRadius: '4xl',
+    },
+    transparent: {
+      color: 'primaryText',
+      fontSize: 19,
+      padding: '4',
+      backgroundColor: 'transparent',
+      borderRadius: '4xl',
+    },
+    thickBlur: {
+      padding: '4',
+      borderRadius: '4xl',
+      backgroundColor: 'transparent10',
+    },
+    thickDark: {
+      padding: 'm',
+      borderRadius: '4xl',
+      backgroundColor: 'bg.tertiary',
+    },
+    transparentSmall: {
+      color: 'primaryText',
+      fontSize: 16,
+      padding: '2',
+      paddingHorizontal: '4',
+      backgroundColor: 'transparent',
+    },
+    underline: {
+      fontSize: 36,
+      color: 'purple.500',
+      borderBottomColor: 'purple.500',
+      borderBottomWidth: 2,
+      paddingBottom: 'xs',
+    },
   },
   cardVariants: {
     regular: {
-      padding: 'ms',
-      borderRadius: 'ms',
-      backgroundColor: 'surface',
+      padding: '4',
+      borderRadius: 'xl',
+      backgroundColor: 'cardBackground',
     },
     elevated: {
-      shadowColor: 'surface',
-      borderRadius: 'm',
+      shadowColor: 'cardBackground',
+      borderRadius: 'xl',
       shadowOffset: {
         width: 0,
         height: 9,
@@ -325,101 +110,116 @@ export const theme = createTheme({
       elevation: 9,
     },
     modal: {
-      backgroundColor: 'surface',
-      borderRadius: 'xl',
+      backgroundColor: 'cardBackground',
+      borderRadius: '4xl',
     },
+  },
+  spacing: {
+    ...lightThemeTokens.spacing,
   },
   textVariants: {
-    ...textVariants,
-
-    body0Medium: { ...textVariants.body0, ...textVariants.medium },
-    body0Bold: { ...textVariants.body0, ...textVariants.bold },
-
-    body1Medium: { ...textVariants.body1, ...textVariants.medium },
-    body1Bold: { ...textVariants.body1, ...textVariants.bold },
-
-    body2Medium: { ...textVariants.body2, ...textVariants.medium },
-    body2Bold: { ...textVariants.body2, ...textVariants.bold },
-
-    body3Medium: { ...textVariants.body3, ...textVariants.medium },
-    body3Bold: { ...textVariants.body3, ...textVariants.bold },
-
-    h1Medium: { ...textVariants.h1, ...textVariants.medium },
-    h1Bold: { ...textVariants.h1, ...textVariants.bold },
-
-    h2Medium: { ...textVariants.h2, ...textVariants.medium },
-    h2Bold: { ...textVariants.h2, ...textVariants.bold },
-
-    h3Medium: { ...textVariants.h3, ...textVariants.medium },
-    h3Bold: { ...textVariants.h3, ...textVariants.bold },
-
-    h4Medium: { ...textVariants.h4, ...textVariants.medium },
-    h4Bold: { ...textVariants.h4, ...textVariants.bold },
+    ...lightThemeTokens.textVariants,
   },
-  inputVariants: {
-    plain: {
-      color: 'primaryText',
-      fontSize: 19,
-      paddingBottom: 'm',
-      paddingTop: 'm',
-      paddingHorizontal: 'xl',
-      backgroundColor: 'plainInputBackground',
-    },
-    regular: {
-      color: 'primaryText',
-      fontSize: 19,
-      padding: 'm',
-      backgroundColor: 'regularInputBackground',
-      borderRadius: 'lm',
-    },
-    transparent: {
-      color: 'primaryText',
-      fontSize: 19,
-      padding: 'm',
-      backgroundColor: 'transparent',
-      borderRadius: 'lm',
-    },
-    underline: {
-      fontSize: textVariants.h1.fontSize,
-      color: 'purple500',
-      borderBottomColor: 'purple500',
-      borderBottomWidth: 2,
-      paddingBottom: 'xs',
-    },
-    thickBlur: {
-      padding: 'm',
-      borderRadius: 'xl',
-      backgroundColor: 'transparent10',
-    },
-    thickDark: {
-      padding: 'm',
-      borderRadius: 'xl',
-      backgroundColor: 'surfaceSecondary',
-    },
-    transparentSmall: {
-      color: 'primaryText',
-      fontSize: 16,
-      padding: 's',
-      paddingHorizontal: 'm',
-      backgroundColor: 'transparent',
-    },
+}
+
+const lightColors = lightThemeTokens.colors
+const darkColors = darkThemeTokens.colors
+
+const allSpacing = {
+  ...baseTheme.spacing,
+  // TODO: Add thise spacings to the theme
+  '-24': -96,
+  '-8': -32,
+  '-7': -28,
+  '-0.25': -1,
+  '0.25': 1,
+  '0.5': 2,
+  '0.75': 3,
+  '1': 4,
+  '2.5': 10,
+  '6': 24,
+  '7': 28,
+  '11': 44,
+  '14': 56,
+  '15': 60,
+  '28': 112,
+}
+
+const lightTheme = createTheme({
+  ...baseTheme,
+  spacing: allSpacing,
+  colors: {
+    ...lightColors,
+
+    primaryBackground: lightColors['bg.primary'], // background.bg.primary
+    secondaryBackground: lightColors['bg.secondary'], // background.bg.secondary
+    cardBackground: lightColors['bg.tertiary'], // background.bg.primary // add border around all cards... secondary border
+    primaryText: lightColors['text.primary-900'], // text.primary.900 -> text.primary
+    secondaryText: lightColors['text.secondary-700'], // text.text.secondary.700 -> text.secondary
+    placeholderText: lightColors['text.placeholder'], // text.placeholder
+    // accentText: palette.silver, //  text.tertiary, //probably remove
+    inputBackground: lightColors['bg.primary'], // background.bg.primary // add border around all inputs... primary border
+    activeBackground: lightColors['bg.active'], // background.bg.active
+    inactiveIcon: lightColors['fg.disabled'], // foreground.fg.disabled
+    transparent10: '#ffffff1A',
+    transparent: '#00000000',
+    hntBlue: '#2755F8',
+    mobileDarkBlue: '#00273D',
+    mobileBlue: '#009EF8',
+    iotDarkGreen: '#053919',
+    iotGreen: '#26ED75',
+    solanaPurple: '#9945FF',
   },
 })
 
-export type Theme = typeof theme
+const darkTheme = createTheme({
+  ...baseTheme,
+  spacing: allSpacing,
+  colors: {
+    ...darkColors,
+
+    primaryBackground: darkColors['bg.primary'], // background.bg.primary
+    secondaryBackground: darkColors['bg.secondary'], // background.bg.secondary
+    cardBackground: darkColors['bg.tertiary'], // background.bg.primary // add border around all cards... secondary border
+    primaryText: darkColors['text.primary-900'], // text.primary.900 -> text.primary
+    secondaryText: darkColors['text.secondary-700'], // text.text.secondary.700 -> text.secondary
+    placeholderText: darkColors['text.placeholder'], // text.placeholder
+    // accentText: palette.silver, //  text.tertiary, //probably remove
+    inputBackground: darkColors['bg.primary'], // background.bg.primary // add border around all inputs... primary border
+    activeBackground: darkColors['bg.active'], // background.bg.active
+    inactiveIcon: darkColors['fg.disabled'], // foreground.fg.disabled
+    transparent10: '#ffffff1A',
+    transparent: '#00000000',
+    hntBlue: '#2755F8',
+    mobileDarkBlue: '#00273D',
+    mobileBlue: '#009EF8',
+    iotDarkGreen: '#053919',
+    iotGreen: '#26ED75',
+    solanaPurple: '#9945FF',
+  },
+})
+
+export type Theme = typeof lightTheme
 export type TextVariant = keyof Theme['textVariants']
+export type TextInputVariant = keyof Theme['inputVariants']
 export type Spacing = keyof Theme['spacing']
 export type Color = keyof Theme['colors']
 export type BorderRadii = keyof Theme['borderRadii']
 export type FontWeight =
-  | '500'
-  | 'bold'
-  | 'normal'
   | '100'
   | '200'
   | '300'
   | '400'
+  | '500'
   | '600'
   | '700'
   | '800'
   | '900'
+  | 'normal'
+  | 'bold'
+
+export { lightColors, darkColors }
+
+export { NovaFont as Font }
+
+export { lightTheme, darkTheme }

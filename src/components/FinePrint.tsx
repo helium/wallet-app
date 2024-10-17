@@ -19,23 +19,23 @@ const FinePrint = (boxProps: Props) => {
   const onPressTOS = useCallback(() => Linking.openURL(TERMS_OF_SERVICE), [])
   return (
     <Box {...boxProps} flexDirection="row" flexWrap="wrap">
-      <Text variant="body2" color="secondaryText">
+      <Text variant="textSmRegular" color="secondaryText">
         {t('finePrint.body')}{' '}
       </Text>
       <TouchableOpacity onPress={onPressTOS}>
-        <Text color="blueBright500">
+        <Text variant="textSmRegular" color="blue.light-500">
           {t('settings.sections.finePrint.termsOfService')}{' '}
         </Text>
       </TouchableOpacity>
-      <Text variant="body2" color="secondaryText">
+      <Text variant="textSmRegular" color="secondaryText">
         {t('generic.and')}{' '}
       </Text>
       <TouchableOpacity onPress={onPressPrivacyPolicy}>
-        <Text color="blueBright500">
+        <Text variant="textSmRegular" color="blue.light-500">
           {t('settings.sections.finePrint.privacyPolicy')}
         </Text>
       </TouchableOpacity>
-      <Text variant="body2" color="secondaryText">
+      <Text variant="textSmRegular" color="secondaryText">
         {t('generic.period')}
       </Text>
     </Box>

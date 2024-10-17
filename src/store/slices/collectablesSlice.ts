@@ -3,55 +3,79 @@ import { Cluster, Connection, PublicKey } from '@solana/web3.js'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
-import { Collectable } from '../../types/solana'
+import { CompressedNFT } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 
 export type WalletCollectables = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   collectables: Record<string, any[]>
-  collectablesWithMeta: Record<string, Collectable[]>
   loading: boolean
 }
 
 export type CollectablesByWallet = Record<string, WalletCollectables>
-export type CollectablesByCluster = Record<Cluster, CollectablesByWallet>
+export type CollectablesByCluster = {
+  'mainnet-beta': CollectablesByWallet
+  devnet: CollectablesByWallet
+  testnet: CollectablesByWallet
+  approvedCollections: string[]
+}
 
 const initialState: CollectablesByCluster = {
   'mainnet-beta': {},
   devnet: {},
   testnet: {},
+  approvedCollections: solUtils.heliumNFTs(),
 }
 
 export const fetchCollectables = createAsyncThunk(
   'collectables/fetchCollectables',
-  async ({
-    account,
-    connection,
-  }: {
-    account: CSAccount
-    cluster: Cluster
-    connection: Connection
-  }) => {
+  async (
+    {
+      account,
+      connection,
+    }: {
+      account: CSAccount
+      cluster: Cluster
+      connection: Connection
+    },
+    { getState },
+  ) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
-
     const pubKey = new PublicKey(account.solanaAddress)
-    const fetchedCollectables = await solUtils.getNFTs(
-      pubKey,
-      connection as WrappedConnection,
-    )
-    const groupedCollectables = solUtils.groupNFTs(fetchedCollectables)
+    let page = 1
+    let isLastPage = false
+    let fetchedCollectables: CompressedNFT[] = []
 
-    const collectablesWithMetadata = await solUtils.getNFTsMetadata(
-      fetchedCollectables,
-    )
+    const { collectables } = (await getState()) as {
+      collectables: CollectablesByCluster
+    }
 
-    const groupedCollectablesWithMeta = solUtils.groupNFTsWithMetaData(
-      collectablesWithMetadata,
-    )
+    while (!isLastPage) {
+      const response = await solUtils.getNFTs(
+        pubKey,
+        connection as WrappedConnection,
+        page,
+      )
+      fetchedCollectables = fetchedCollectables.concat(response)
+      isLastPage = response.length === 0
+      page += 1
+    }
+
+    const approvedCollections =
+      collectables.approvedCollections || solUtils.heliumNFTs()
+
+    const filteredCollectables = fetchedCollectables.filter((collectable) => {
+      const collection = collectable?.grouping?.find(
+        (k) => k.group_key === 'collection',
+      )?.group_value
+
+      return approvedCollections.includes(collection)
+    })
+
+    const groupedCollectables = solUtils.groupNFTs(filteredCollectables)
 
     return {
       groupedCollectables,
-      groupedCollectablesWithMeta,
     }
   },
 )
@@ -73,6 +97,22 @@ const collectables = createSlice({
       }
       state[cluster][address] = { ...state[cluster][address], loading: false }
     },
+    toggleApprovedCollection: (
+      state,
+      action: PayloadAction<{ collection: string }>,
+    ) => {
+      if (!state.approvedCollections) {
+        state.approvedCollections = []
+      }
+
+      if (state.approvedCollections.includes(action.payload.collection)) {
+        state.approvedCollections = state.approvedCollections.filter(
+          (c) => c !== action.payload.collection,
+        )
+      } else {
+        state.approvedCollections.push(action.payload.collection)
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchCollectables.pending, (state, action) => {
@@ -81,7 +121,6 @@ const collectables = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[cluster][address] || {
-        collectablesWithMeta: {},
         collectables: {},
       }
       state[cluster][address] = {
@@ -92,14 +131,12 @@ const collectables = createSlice({
     builder.addCase(fetchCollectables.fulfilled, (state, action) => {
       if (!action.meta.arg?.account.solanaAddress) return state
       const { cluster } = action.meta.arg
-      const { groupedCollectables, groupedCollectablesWithMeta } =
-        action.payload
+      const { groupedCollectables } = action.payload
 
       const address = action.meta.arg.account.solanaAddress
 
       state[cluster][address] = {
         collectables: groupedCollectables,
-        collectablesWithMeta: groupedCollectablesWithMeta,
         loading: false,
       }
     })
@@ -109,7 +146,6 @@ const collectables = createSlice({
 
       const address = action.meta.arg.account.solanaAddress
       const prev = state[cluster][address] || {
-        collectablesWithMeta: {},
         collectables: {},
       }
       state[cluster][address] = {

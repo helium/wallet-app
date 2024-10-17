@@ -5,6 +5,7 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
 import * as React from 'react'
+import { useColors } from '@theme/themeHooks'
 import { OnboardingtackParamList } from '../navTypes'
 import AddGatewayBle from './AddGatewayBle'
 import ScanHotspots from './ScanHotspots'
@@ -16,12 +17,23 @@ import { IotBleOptionsProvider } from './optionsContext'
 
 const Stack = createNativeStackNavigator()
 
-const screenOptions = { headerShown: false } as NativeStackNavigationOptions
-
 type Route = RouteProp<OnboardingtackParamList, 'IotBle'>
 export default React.memo(function HotspotBLENav() {
+  const colors = useColors()
   const route = useRoute<Route>()
   const iotParams = route.params
+
+  const screenOptions = React.useMemo(
+    () =>
+      ({
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: colors.primaryBackground,
+        },
+      } as NativeStackNavigationOptions),
+    [colors],
+  )
+
   return (
     <IotBleOptionsProvider value={iotParams}>
       <HotspotBleProvider>

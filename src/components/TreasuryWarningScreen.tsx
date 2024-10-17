@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { ScrollView, View } from 'react-native'
+import { View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
@@ -24,6 +24,7 @@ import {
   parseSolanaStatus,
   useGetSolanaStatusQuery,
 } from '../store/slices/solanaStatusApi'
+import ScrollBox from './ScrollBox'
 
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
@@ -75,7 +76,7 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
       {children}
       {!animationComplete && (
         <Animated.View style={style}>
-          <ScrollView
+          <ScrollBox
             style={{
               backgroundColor: primaryBackground,
               flexGrow: 1,
@@ -89,18 +90,14 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
               backgroundColor="primaryBackground"
               flex={1}
               justifyContent="center"
-              paddingHorizontal="xl"
+              paddingHorizontal="8"
               height="100%"
             >
-              <Box
-                justifyContent="center"
-                alignItems="center"
-                marginBottom="xl"
-              >
+              <Box justifyContent="center" alignItems="center" marginBottom="8">
                 <InfoWarning height={80} width={80} />
               </Box>
               <Text
-                variant="h1"
+                variant="displayMdRegular"
                 textAlign="center"
                 fontSize={40}
                 adjustsFontSizeToFit
@@ -110,31 +107,31 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
               </Text>
 
               <Text
-                variant="subtitle1"
+                variant="textXlMedium"
                 color="secondaryText"
                 textAlign="center"
-                marginTop="m"
-                marginHorizontal="l"
+                marginTop="4"
+                marginHorizontal="6"
                 adjustsFontSizeToFit
               >
                 {t('swapsScreen.treasurySwapWarningBody')}
               </Text>
 
               <ButtonPressable
-                borderRadius="round"
+                borderRadius="full"
                 onPress={handleClose}
                 backgroundColor="primaryText"
                 backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabled="bg.tertiary"
                 backgroundColorDisabledOpacity={0.5}
-                titleColorDisabled="black500"
-                titleColor="primary"
+                titleColorDisabled="gray.800"
+                titleColor="primaryText"
                 fontWeight="500"
                 title={t('swapsScreen.understood')}
-                marginTop="l"
+                marginTop="6"
               />
             </Box>
-          </ScrollView>
+          </ScrollBox>
         </Animated.View>
       )}
     </View>

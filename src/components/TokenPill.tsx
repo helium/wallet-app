@@ -3,7 +3,7 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
-import { useCreateOpacity } from '@theme/themeHooks'
+import { useColors, useCreateOpacity } from '@theme/themeHooks'
 import React, { memo, useCallback } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
 import { Color } from '@theme/theme'
@@ -16,8 +16,9 @@ export const TokenPill = memo(
     isActive = false,
     isDisabled = false,
     onPress,
-    activeColor = 'black',
-    inactiveColor = 'secondary',
+    activeColor = 'secondaryBackground',
+    inactiveColor = 'primaryBackground',
+    hasTicker = true,
     ...rest
   }: {
     mint: PublicKey
@@ -28,8 +29,10 @@ export const TokenPill = memo(
     style?: ViewStyle | undefined
     activeColor?: Color
     inactiveColor?: Color
+    hasTicker?: boolean
   }) => {
     const { symbol, json } = useMetaplexMetadata(mint)
+    const colors = useColors()
     const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
 
     const getBackgroundColorStylePill = useCallback(
@@ -43,10 +46,10 @@ export const TokenPill = memo(
         disabled: boolean
       }) => {
         if (disabled) {
-          return generateBackgroundStyle('surfaceSecondary', 0.5)
+          return generateBackgroundStyle('bg.tertiary', 0.5)
         }
         if (pressed) {
-          return generateBackgroundStyle(activeColor || 'surfaceSecondary', 1.0)
+          return generateBackgroundStyle(activeColor || 'bg.tertiary', 1.0)
         }
         if (active) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -77,38 +80,40 @@ export const TokenPill = memo(
                 rest.style ? rest.style : {},
               ]}
               height={45}
-              borderRadius="round"
+              borderRadius="full"
               flexDirection="row"
               alignItems="center"
-              shadowColor="black"
+              shadowColor="base.black"
               shadowOpacity={0.2}
               shadowOffset={{ width: 0, height: 3 }}
               shadowRadius={3}
-              padding="s"
-              paddingRight="m"
+              padding="2"
+              paddingRight="4"
             >
               <Box
                 marginEnd="xs"
                 width={32}
                 height={32}
-                backgroundColor="black"
+                backgroundColor="base.black"
                 justifyContent="center"
                 alignItems="center"
-                borderRadius="round"
+                borderRadius="full"
               >
                 <TokenIcon img={json?.image} size={24} />
               </Box>
-              <Text
-                variant="subtitle4"
-                color="white"
-                flexGrow={1}
-                textAlign="center"
-              >
-                {symbol}
-              </Text>
+              {hasTicker && (
+                <Text
+                  variant="textSmSemibold"
+                  color="primaryText"
+                  flexGrow={1}
+                  textAlign="center"
+                >
+                  {symbol}
+                </Text>
+              )}
               {hasCarot && (
                 <Box marginStart="xs" justifyContent="center">
-                  <CarotDown color="white" width={9} />
+                  <CarotDown color={colors['fg.disabled']} width={9} />
                 </Box>
               )}
             </Box>

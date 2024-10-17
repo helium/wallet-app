@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native'
 import useHaptic from '@hooks/useHaptic'
 import useAlert from '@hooks/useAlert'
 import QrScanner from '@components/QrScanner'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { parsePaymentLink } from '../../utils/linking'
 import { solAddressIsValid } from '../../utils/accountUtils'
@@ -14,7 +14,7 @@ const AddressQrScanner = () => {
   const { setScannedAddress } = useAppStorage()
   const { showOKAlert } = useAlert()
   const { t } = useTranslation()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
 
   const handleBarCodeScanned = useCallback(
     async (data: string) => {

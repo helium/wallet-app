@@ -92,7 +92,7 @@ const AccountBalanceChart = ({
           ref={chartsRef}
           style={{
             flex: 1,
-            marginHorizontal: -spacing.s,
+            marginHorizontal: -spacing['0.5'],
             borderWidth: 0,
             maxHeight: CHART_HEIGHT,
           }}

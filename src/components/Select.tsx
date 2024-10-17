@@ -1,3 +1,4 @@
+import { useColors } from '@theme/themeHooks'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
@@ -26,15 +27,15 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const { t } = useTranslation()
+  const colors = useColors()
 
   return (
     <>
       <TouchableContainer
-        padding="m"
-        borderWidth={1}
-        borderColor="grey400"
-        backgroundColor="black"
-        borderRadius="l"
+        padding="4"
+        backgroundColor="cardBackground"
+        backgroundColorPressed="secondaryBackground"
+        borderRadius="2xl"
         flexDirection="row"
         justifyContent="space-between"
         alignItems="center"
@@ -43,31 +44,43 @@ export const Select: React.FC<SelectProps> = ({
       >
         <Box flexDirection="row" alignItems="center">
           {options.find((o) => o.value === value)?.icon}
-          <Text variant="body2" color="white" ml="s">
+          <Text variant="textSmRegular" color="primaryText" ml="2">
             {options.find((o) => o.value === value)?.label}
           </Text>
         </Box>
-        <ChevronDown color="gray" />
+        <ChevronDown color={colors.secondaryText} />
       </TouchableContainer>
       <BlurActionSheet
         title={t('gov.proposals.filterTitle')}
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
       >
-        <>
-          {options.map((option) => (
-            <ListItem
-              key={option.value}
-              title={option.label}
-              onPress={() => {
-                onValueChange(option.value)
-                setFiltersOpen(false)
-              }}
-              selected={value === option.value}
-              hasPressedState={false}
-            />
-          ))}
-        </>
+        <Box marginTop="6xl">
+          {options.map((option, index) => {
+            const borderTopStartRadius = index === 0 ? 'xl' : 'none'
+            const borderTopEndRadius = index === 0 ? 'xl' : 'none'
+            const borderBottomStartRadius =
+              index === options.length - 1 ? 'xl' : 'none'
+            const borderBottomEndRadius =
+              index === options.length - 1 ? 'xl' : 'none'
+
+            return (
+              <ListItem
+                key={option.value}
+                title={option.label}
+                onPress={() => {
+                  onValueChange(option.value)
+                  setFiltersOpen(false)
+                }}
+                selected={value === option.value}
+                borderTopStartRadius={borderTopStartRadius}
+                borderTopEndRadius={borderTopEndRadius}
+                borderBottomStartRadius={borderBottomStartRadius}
+                borderBottomEndRadius={borderBottomEndRadius}
+              />
+            )
+          })}
+        </Box>
       </BlurActionSheet>
     </>
   )

@@ -10,6 +10,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
 import { useBorderRadii } from '@theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -27,7 +28,7 @@ const CollectionScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
   const collectables = route.params.collection
-  const { lm: borderRadius } = useBorderRadii()
+  const borderRadii = useBorderRadii()
   const { triggerImpact } = useHaptic()
 
   const handleNavigateToCollectable = useCallback(
@@ -43,8 +44,6 @@ const CollectionScreen = () => {
   const renderCollectable = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Collectable }) => {
-      const { json } = item
-
       return (
         <ReAnimatedBox
           style={{ width: '50%' }}
@@ -52,50 +51,53 @@ const CollectionScreen = () => {
           exiting={FadeOut}
         >
           <TouchableOpacityBox
-            marginHorizontal="s"
-            marginVertical="s"
+            marginHorizontal="2"
+            marginVertical="2"
             alignItems="center"
-            backgroundColor="surfaceSecondary"
-            borderRadius="xxl"
+            backgroundColor="bg.tertiary"
+            borderRadius="4xl"
             onPress={() => handleNavigateToCollectable(item)}
           >
             <Image
-              borderRadius={borderRadius}
+              borderRadius={borderRadii['4xl']}
               style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
               source={{
-                uri: json?.image || '',
+                uri: item?.content?.files?.[0]?.uri || '',
               }}
             />
           </TouchableOpacityBox>
         </ReAnimatedBox>
       )
     },
-    [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
+    [COLLECTABLE_HEIGHT, borderRadii, handleNavigateToCollectable],
   )
 
   const keyExtractor = useCallback((item: Collectable) => item.id, [])
 
   return (
-    <BackScreen
-      padding="none"
-      headerBackgroundColor="primaryBackground"
-      title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
-      headerTopMargin="l"
-    >
-      <ReAnimatedBox
-        marginTop="s"
-        entering={DelayedFadeIn}
-        style={globalStyles.container}
+    <ScrollBox>
+      <BackScreen
+        padding="0"
+        headerBackgroundColor="primaryBackground"
+        title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
+        headerTopMargin="6xl"
+        edges={[]}
       >
-        <FlatList
-          scrollEnabled
-          data={collectables}
-          numColumns={2}
-          renderItem={renderCollectable}
-          keyExtractor={keyExtractor}
-        />
-      </ReAnimatedBox>
-    </BackScreen>
+        <ReAnimatedBox
+          marginTop="2"
+          entering={DelayedFadeIn}
+          style={globalStyles.container}
+        >
+          <FlatList
+            scrollEnabled
+            data={collectables}
+            numColumns={2}
+            renderItem={renderCollectable}
+            keyExtractor={keyExtractor}
+          />
+        </ReAnimatedBox>
+      </BackScreen>
+    </ScrollBox>
   )
 }
 

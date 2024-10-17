@@ -48,7 +48,10 @@
       "@theme/*": ["./src/theme/*"],
       "@utils/*": ["./src/utils/*"],
       "@storage/*": ["./src/storage/*"],
-      "@types/*": ["./src/types/*"]
+      "@types/*": ["./src/types/*"],
+      "@features/*": ["./src/features/*"],
+      "@services/*": ["./src/services/*"],
+      "@store/*": ["./src/store/*"]
     }
   },
   "exclude": [

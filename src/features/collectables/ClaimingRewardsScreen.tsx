@@ -22,7 +22,8 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
-import { TabBarNavigationProp } from '../../navigation/rootTypes'
+import { useColors } from '@theme/themeHooks'
+import { HotspotServiceNavigationProp } from '@services/HotspotService'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { RootState } from '../../store/rootReducer'
 import iotMobileTokens from './animations/iot-mobile-tokens.json'
@@ -31,7 +32,8 @@ import mobileTokens from './animations/mobile-tokens.json'
 
 const ClaimingRewardsScreen = () => {
   const { currentAccount } = useAccountStorage()
-  const navigation = useNavigation<TabBarNavigationProp>()
+  const colors = useColors()
+  const navigation = useNavigation<HotspotServiceNavigationProp>()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { bottom } = useSafeAreaInsets()
@@ -58,7 +60,7 @@ const ClaimingRewardsScreen = () => {
     // Reset Collectables stack to first screen
     navigation.reset({
       index: 0,
-      routes: [{ name: 'Collectables' }],
+      routes: [{ name: 'Hotspot' }],
     })
   }, [navigation])
 
@@ -78,7 +80,11 @@ const ClaimingRewardsScreen = () => {
   }
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1} backgroundColor="black">
+    <ReAnimatedBox
+      entering={DelayedFadeIn}
+      flex={1}
+      backgroundColor="primaryBackground"
+    >
       <Box
         backgroundColor="transparent"
         flex={1}
@@ -87,8 +93,8 @@ const ClaimingRewardsScreen = () => {
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
-            padding="m"
-            shadowColor="black"
+            padding="4"
+            shadowColor="primaryText"
             shadowOpacity={0.4}
             shadowOffset={{ width: 0, height: 10 }}
             shadowRadius={10}
@@ -102,13 +108,13 @@ const ClaimingRewardsScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Text variant="h1Medium" color="white" marginTop="xl">
+              <Text variant="displayMdMedium" color="primaryText" marginTop="8">
                 {t('collectablesScreen.claimComplete')}
               </Text>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 numberOfLines={2}
                 textAlign="center"
               >
@@ -125,14 +131,18 @@ const ClaimingRewardsScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Box padding="m">
-                <Text variant="h2Medium" color="white" textAlign="center">
+              <Box padding="4">
+                <Text
+                  variant="displaySmMedium"
+                  color="primaryText"
+                  textAlign="center"
+                >
                   {t('collectablesScreen.rewardsError')}
                 </Text>
                 <Text
-                  variant="body2"
+                  variant="textSmRegular"
                   color="secondaryText"
-                  marginTop="m"
+                  marginTop="4"
                   numberOfLines={2}
                   textAlign="center"
                 >
@@ -151,12 +161,12 @@ const ClaimingRewardsScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Box padding="m">
+              <Box padding="4">
                 <Text
                   textAlign="center"
-                  variant="h1Medium"
-                  color="white"
-                  marginTop="xl"
+                  variant="displayMdMedium"
+                  color="primaryText"
+                  marginTop="8"
                 >
                   {t('collectablesScreen.rewardsError')}
                 </Text>
@@ -170,15 +180,19 @@ const ClaimingRewardsScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Box paddingHorizontal="m" mb="m">
-                <Text variant="h2Medium" color="white" textAlign="center">
+              <Box paddingHorizontal="4" mb="4">
+                <Text
+                  variant="displaySmMedium"
+                  color="primaryText"
+                  textAlign="center"
+                >
                   {t('collectablesScreen.claimingRewards')}
                 </Text>
                 <Text
-                  variant="body1"
-                  color="grey50"
+                  variant="textMdRegular"
+                  color="secondaryText"
                   textAlign="center"
-                  marginTop="s"
+                  marginTop="2"
                 >
                   {t('collectablesScreen.claimingRewardsBody')}
                 </Text>
@@ -188,8 +202,8 @@ const ClaimingRewardsScreen = () => {
                 <Box
                   height={240}
                   flexDirection="row"
-                  marginHorizontal="xxl"
-                  marginTop="m"
+                  marginHorizontal="12"
+                  marginTop="4"
                 >
                   {typeof solanaPayment.progress !== 'undefined' ? (
                     <Box
@@ -201,16 +215,16 @@ const ClaimingRewardsScreen = () => {
                       <ProgressBar progress={solanaPayment.progress.percent} />
                       <Text
                         textAlign="center"
-                        variant="body2"
+                        variant="textSmRegular"
                         color="secondaryText"
-                        marginTop="s"
+                        marginTop="2"
                         numberOfLines={2}
                       >
                         {solanaPayment.progress.text}
                       </Text>
                     </Box>
                   ) : (
-                    <IndeterminateProgressBar paddingHorizontal="l" />
+                    <IndeterminateProgressBar paddingHorizontal="6" />
                   )}
                 </Box>
               ) : (
@@ -242,19 +256,20 @@ const ClaimingRewardsScreen = () => {
           style={{ marginBottom: bottom }}
         >
           <ButtonPressable
-            marginHorizontal="m"
-            marginBottom="m"
+            marginHorizontal="4"
+            marginBottom="4"
             height={65}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacity={0.1}
-            backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
+            borderRadius="full"
+            backgroundColor="primaryText"
             title={t('collectablesScreen.returnToCollectables')}
-            titleColor="white"
+            titleColor="primaryBackground"
             onPress={onReturn}
             LeadingComponent={
-              <BackArrow width={16} height={15} color="white" />
+              <BackArrow
+                width={16}
+                height={15}
+                color={colors.primaryBackground}
+              />
             }
           />
         </Box>

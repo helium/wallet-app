@@ -4,6 +4,8 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { PublicKey } from '@solana/web3.js'
 import React, { memo, useCallback, useMemo } from 'react'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@theme/theme'
 import { Activity } from '../../types/activity'
 import useTxn from './useTxn'
 
@@ -14,7 +16,14 @@ type Props = {
   isLast: boolean
   onPress: (item: Activity) => void
 }
-const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
+const TxnListItem = ({
+  mint,
+  item,
+  now,
+  isLast,
+  onPress,
+  ...rest
+}: Props & BoxProps<Theme>) => {
   const { listIcon, title, color, time, getAmount } = useTxn(mint, item, {
     now,
   })
@@ -27,12 +36,15 @@ const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
   return (
     <TouchableOpacityBox
       alignItems="center"
+      backgroundColor="cardBackground"
       borderBottomColor="primaryBackground"
-      borderBottomWidth={isLast ? 1 : 0}
+      borderBottomWidth={isLast ? 0 : 2}
       flexDirection="row"
       onPress={handlePress}
+      padding="4"
+      {...rest}
     >
-      <Box paddingRight="s">{listIcon}</Box>
+      <Box paddingRight="2">{listIcon}</Box>
       <Box flex={1} flexDirection="row">
         {item.pending && (
           <Box
@@ -46,14 +58,14 @@ const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
             <Pending />
           </Box>
         )}
-        <Box justifyContent="center" paddingVertical="m" flex={1}>
-          <Text variant="body2">{title}</Text>
-          <Text variant="body2" color="grey500">
+        <Box justifyContent="center" flex={1}>
+          <Text variant="textSmRegular">{title}</Text>
+          <Text variant="textSmRegular" color="gray.500">
             {time}
           </Text>
         </Box>
-        <Box paddingVertical="m" maxWidth="55%">
-          <Text variant="body2" color={color} textAlign="right">
+        <Box flex={1} justifyContent="center">
+          <Text variant="textSmRegular" color={color} textAlign="right">
             {amt}
           </Text>
         </Box>

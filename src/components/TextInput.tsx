@@ -8,7 +8,7 @@ import {
 import { TextInput, TextStyle } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { SvgProps } from 'react-native-svg'
-import { Color, theme, Theme } from '@theme/theme'
+import { Color, darkTheme, Theme } from '@theme/theme'
 import { useColors, useInputVariants, useTextVariants } from '@theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
@@ -49,8 +49,8 @@ const TI = forwardRef(
       TrailingIcon,
       onTrailingIconPress,
       TrailingIconOptions = {
-        paddingVertical: 'm',
-        paddingHorizontal: 's',
+        paddingVertical: '4',
+        paddingHorizontal: '2',
       },
       ...rest
     }: Props,
@@ -64,7 +64,7 @@ const TI = forwardRef(
       const findColor = () => {
         if (placeholderTextColor) return colors[placeholderTextColor]
 
-        return colors[theme.inputVariants.regular.color as Color]
+        return colors[darkTheme.inputVariants.regular.color as Color]
       }
 
       const color = findColor()
@@ -89,8 +89,8 @@ const TI = forwardRef(
           <Box flexDirection="row" alignItems="center">
             {floatingLabel && (
               <Text
-                variant="body2"
-                color="grey600"
+                variant="textSmRegular"
+                color="gray.600"
                 fontWeight={floatingLabelWeight}
               >
                 {floatingLabel}
@@ -98,7 +98,7 @@ const TI = forwardRef(
             )}
             {optional && (
               <Text
-                variant="body3"
+                variant="textXsRegular"
                 color="secondaryText"
                 justifyContent="center"
                 marginLeft="xs"
@@ -111,9 +111,9 @@ const TI = forwardRef(
             style={{
               color: getTextColor,
               fontSize: fontSize || inputVariants.regular.fontSize,
-              fontWeight: fontWeight || 'bold',
+              fontWeight: fontWeight || '500',
               fontFamily: floatingLabel
-                ? textVariants.subtitle4.fontFamily
+                ? textVariants.textSmRegular.fontFamily
                 : undefined,
             }}
             placeholderTextColor={getPlaceholderTextColor}
@@ -126,7 +126,7 @@ const TI = forwardRef(
             onPress={onTrailingIconPress}
             {...TrailingIconOptions}
           >
-            <TrailingIcon color="white" width={14} />
+            <TrailingIcon color="primaryText" width={14} />
           </TouchableOpacityBox>
         )}
       </BoxWrapper>

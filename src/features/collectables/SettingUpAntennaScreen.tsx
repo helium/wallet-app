@@ -53,13 +53,13 @@ const SettingUpAntennaScreen = () => {
       <Box
         backgroundColor="transparent"
         flex={1}
-        padding="m"
+        padding="4"
         alignItems="center"
         justifyContent="center"
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
-            shadowColor="black"
+            shadowColor="base.black"
             shadowOpacity={0.4}
             shadowOffset={{ width: 0, height: 10 }}
             shadowRadius={10}
@@ -76,13 +76,13 @@ const SettingUpAntennaScreen = () => {
               entering={FadeIn}
               exiting={FadeOut}
             >
-              <Text variant="h1Medium" color="white" marginTop="xl">
+              <Text variant="displayMdMedium" color="primaryText" marginTop="8">
                 {t('antennaSetupScreen.settingUpComplete')}
               </Text>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 numberOfLines={2}
                 textAlign="center"
               >
@@ -100,17 +100,17 @@ const SettingUpAntennaScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
+                variant="displayMdMedium"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('collectablesScreen.rewardsError')}
               </Text>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 numberOfLines={2}
                 textAlign="center"
               >
@@ -129,24 +129,24 @@ const SettingUpAntennaScreen = () => {
               exiting={FadeOut}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
+                variant="displayMdMedium"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('antennaSetupScreen.settingUp')}
               </Text>
               <Text
-                variant="body0"
-                color="grey600"
+                variant="textXlRegular"
+                color="gray.600"
                 textAlign="center"
-                marginBottom="m"
-                marginTop="s"
+                marginBottom="4"
+                marginTop="2"
               >
                 {t('antennaSetupScreen.settingUpBody')}
               </Text>
-              <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
-                <IndeterminateProgressBar paddingHorizontal="l" />
+              <Box flexDirection="row" marginHorizontal="12" marginTop="4">
+                <IndeterminateProgressBar paddingHorizontal="6" />
               </Box>
             </Animated.View>
           )}
@@ -157,20 +157,20 @@ const SettingUpAntennaScreen = () => {
           style={{ marginBottom: bottom }}
         >
           <ButtonPressable
-            marginHorizontal="m"
-            marginBottom="m"
+            marginHorizontal="4"
+            marginBottom="4"
             height={65}
-            borderRadius="round"
-            backgroundColor="white"
+            borderRadius="full"
+            backgroundColor="base.white"
             backgroundColorOpacity={0.1}
             backgroundColorOpacityPressed={0.05}
             titleColorPressedOpacity={0.3}
             title={t('collectablesScreen.returnToCollectables')}
-            titleColor="white"
+            titleColor="base.white"
             onPress={onReturn}
             disabled={solanaPayment && solanaPayment.loading}
             LeadingComponent={
-              <BackArrow width={16} height={15} color="white" />
+              <BackArrow width={16} height={15} color="primaryText" />
             }
           />
         </Box>

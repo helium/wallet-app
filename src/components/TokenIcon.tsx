@@ -22,10 +22,10 @@ const TokenIcon = ({ size = 40, img }: Props) => {
 
   return (
     <Box
-      backgroundColor="surface"
+      backgroundColor="cardBackground"
       height={size}
       width={size}
-      borderRadius="round"
+      borderRadius="full"
     />
   )
 }

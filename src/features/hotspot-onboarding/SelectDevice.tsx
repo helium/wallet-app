@@ -33,15 +33,15 @@ const SelectOnboardableDevice = () => {
             navigation.push(item.type, item.options)
           }}
           alignItems="center"
-          padding="s"
+          padding="2"
           flexDirection="row"
           borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="grey900"
+          borderColor="gray.900"
           borderBottomWidth={1}
         >
           {item.image && (
             <ImageBox
-              mr="s"
+              mr="2"
               height={50}
               width={50}
               source={{
@@ -51,7 +51,7 @@ const SelectOnboardableDevice = () => {
             />
           )}
           {item.icon && item.icon}
-          <Text color="secondaryText" variant="body1Medium">
+          <Text color="secondaryText" variant="textMdMedium">
             {item.name}
           </Text>
         </TouchableOpacityBox>
@@ -66,9 +66,13 @@ const SelectOnboardableDevice = () => {
   )
 
   return (
-    <BackScreen title={t('hotspotOnboarding.selectOnboardingMethod.title')}>
+    <BackScreen
+      title={t('hotspotOnboarding.selectOnboardingMethod.title')}
+      edges={[]}
+      headerTopMargin="6xl"
+    >
       <Text
-        variant="subtitle1"
+        variant="textXlMedium"
         color="secondaryText"
         textAlign="left"
         adjustsFontSizeToFit

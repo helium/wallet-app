@@ -32,4 +32,5 @@ export type BalanceInfo = {
   formattedMobileValue: string
   formattedSolValue: string
   formattedTotal: string
+  total: number
 }

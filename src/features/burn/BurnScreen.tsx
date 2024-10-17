@@ -43,6 +43,10 @@ import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
+import {
+  WalletNavigationProp,
+  WalletStackParamList,
+} from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
 import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
@@ -60,14 +64,13 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
-import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
 
 const FEE = new BN(TXN_FEE_IN_SOL)
 
-type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
+type Route = RouteProp<WalletStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
   const route = useRoute<Route>()
   const {
@@ -78,10 +81,10 @@ const BurnScreen = () => {
     defaultAccountAddress,
   } = useAccountStorage()
   const { top } = useSafeAreaInsets()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { submitDelegateDataCredits } = useSubmitTxn()
   const addressBookRef = useRef<AddressBookRef>(null)
@@ -298,237 +301,240 @@ const BurnScreen = () => {
   if (!amountBalance) return null
 
   return (
-    <HNTKeyboard
-      ref={hntKeyboardRef}
-      onConfirmBalance={onConfirmBalance}
-      mint={DC_MINT}
-      networkFee={FEE}
-      usePortal
-    >
+    <>
+      <AccountSelector ref={accountSelectorRef}>
+        <SafeAreaBox
+          backgroundColor="secondaryBackground"
+          flex={1}
+          style={containerStyle}
+          edges={['top'] as Edge[]}
+        >
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Box hitSlop={hitSlop} padding="2">
+              <IconPressedContainer
+                onPress={handleQrScan}
+                activeOpacity={0.75}
+                idleOpacity={1.0}
+              >
+                <QR color={primaryText} height={16} width={16} />
+              </IconPressedContainer>
+            </Box>
+            <Text
+              variant="textLgMedium"
+              flex={1}
+              textAlign="center"
+              color="primaryText"
+              maxFontSizeMultiplier={1}
+            >
+              {t(isDelegate ? 'delegate.title' : 'burn.title')}
+            </Text>
+            <TouchableOpacityBox
+              onPress={navigation.goBack}
+              width={64}
+              padding="6"
+              hitSlop={hitSlop}
+            >
+              <Close color={primaryText} height={16} width={16} />
+            </TouchableOpacityBox>
+          </Box>
+
+          <KeyboardAwareScrollView
+            enableOnAndroid
+            keyboardShouldPersistTaps="always"
+          >
+            <AccountButton
+              backgroundColor="secondaryBackground"
+              accountIconSize={41}
+              paddingTop="6"
+              title={formatAccountAlias(currentAccount)}
+              subtitle={t('payment.senderAccount')}
+              showChevron={sortedAccountsForNetType(networkType).length > 1}
+              address={currentAccount?.address}
+              onPress={handleShowAccounts}
+              showBubbleArrow
+              marginHorizontal="6"
+              marginBottom="xs"
+            />
+
+            <TokenButton
+              backgroundColor="secondaryBackground"
+              title={t('burn.subdao', { subdao: symbol })}
+              subtitle={t('burn.choooseSubDAO')}
+              address={currentAccount?.address}
+              onPress={handleTokenTypeSelected}
+              marginHorizontal="6"
+              mint={mint}
+            />
+
+            {isDelegate ? (
+              <Box>
+                <PaymentItem
+                  index={0}
+                  onAddressBookSelected={handleAddressBookSelected}
+                  onEditAmount={onTokenItemPressed}
+                  onEditMemo={({ memo: m }) => {
+                    setMemo(m)
+                  }}
+                  onEditAddress={({ address }) => {
+                    setDelegateAddress(address)
+                    handleAddressError({
+                      address,
+                    })
+                  }}
+                  handleAddressError={handleAddressError}
+                  mint={DC_MINT}
+                  address={delegateAddress}
+                  amount={amountBalance}
+                  memo={memo}
+                  hasError={hasError}
+                />
+              </Box>
+            ) : (
+              <>
+                <AccountButton
+                  backgroundColor="bg.tertiary"
+                  accountIconSize={41}
+                  subtitle={t('burn.recipient')}
+                  title={ellipsizeAddress(
+                    route.params.address || delegateAddress,
+                  )}
+                  showBubbleArrow
+                  showChevron={false}
+                  address={route.params.address}
+                  marginHorizontal="6"
+                />
+                <Box
+                  marginTop="xs"
+                  marginHorizontal="6"
+                  backgroundColor="secondaryBackground"
+                  borderRadius="4xl"
+                  paddingHorizontal="4"
+                  overflow="hidden"
+                >
+                  <Text
+                    variant="textXsRegular"
+                    color="secondaryText"
+                    marginTop="4"
+                  >
+                    {t('burn.amount')}
+                  </Text>
+                  <Text variant="textLgMedium" color="primaryText">
+                    {amountBalance.toString()}
+                  </Text>
+                  <Text
+                    variant="textXsRegular"
+                    marginBottom="4"
+                    color="secondaryText"
+                  >
+                    {t('payment.fee', {
+                      value: humanReadable(FEE, 9),
+                    })}
+                  </Text>
+
+                  <Box
+                    height={1}
+                    backgroundColor="primaryBackground"
+                    marginHorizontal="-4"
+                  />
+
+                  <Text
+                    variant="textXsRegular"
+                    color="secondaryText"
+                    marginTop="4"
+                  >
+                    {t('burn.equivalent')}
+                  </Text>
+                  <Text
+                    variant="textLgMedium"
+                    color="primaryText"
+                    marginBottom="4"
+                  >
+                    {amountInDc?.toString()}
+                  </Text>
+
+                  <Box
+                    height={1}
+                    backgroundColor="primaryBackground"
+                    marginHorizontal="-4"
+                  />
+                </Box>
+              </>
+            )}
+          </KeyboardAwareScrollView>
+          {submitError && (
+            <Box marginBottom="2">
+              <Text
+                marginTop="2"
+                marginHorizontal="4"
+                variant="textXsMedium"
+                color="error.500"
+                textAlign="center"
+              >
+                {submitError}
+              </Text>
+            </Box>
+          )}
+          <Box
+            borderTopLeftRadius="4xl"
+            borderTopRightRadius="4xl"
+            padding="6"
+            overflow="hidden"
+            minHeight={220}
+            backgroundColor="secondaryBackground"
+          >
+            <PaymentSummary
+              mint={DC_MINT}
+              totalBalance={amountBalance}
+              feeTokenBalance={FEE}
+              errors={errors}
+            />
+            <Box flex={1} justifyContent="flex-end">
+              <SubmitButton
+                disabled={
+                  amountBalance.isZero() ||
+                  hasError ||
+                  (!delegateAddress && isDelegate)
+                }
+                marginTop="6"
+                title={t(isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn')}
+                onSubmit={handleSubmit}
+              />
+            </Box>
+          </Box>
+        </SafeAreaBox>
+        <PaymentSubmit
+          mint={DC_MINT}
+          submitLoading={!!delegatePayment?.loading}
+          submitSucceeded={delegatePayment?.success}
+          submitError={delegatePayment?.error}
+          totalBalance={amountBalance}
+          feeTokenBalance={FEE}
+          onRetry={handleSubmit}
+          onSuccess={navigation.popToTop}
+          actionTitle={t('generic.ok')}
+        />
+      </AccountSelector>
+      <HNTKeyboard
+        ref={hntKeyboardRef}
+        onConfirmBalance={onConfirmBalance}
+        mint={DC_MINT}
+        networkFee={FEE}
+      />
       <TokenSelector
         ref={tokenSelectorRef}
         onTokenSelected={onMintSelected}
         tokenData={data}
-      >
-        <AccountSelector ref={accountSelectorRef}>
-          <AddressBookSelector
-            ref={addressBookRef}
-            onContactSelected={handleContactSelected}
-            hideCurrentAccount
-          >
-            <SafeAreaBox
-              backgroundColor="secondaryBackground"
-              flex={1}
-              style={containerStyle}
-              edges={['top'] as Edge[]}
-            >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Box hitSlop={hitSlop} padding="s">
-                  <IconPressedContainer
-                    onPress={handleQrScan}
-                    activeOpacity={0.75}
-                    idleOpacity={1.0}
-                  >
-                    <QR color={primaryText} height={16} width={16} />
-                  </IconPressedContainer>
-                </Box>
-                <Text
-                  variant="subtitle2"
-                  flex={1}
-                  textAlign="center"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1}
-                >
-                  {t(isDelegate ? 'delegate.title' : 'burn.title')}
-                </Text>
-                <TouchableOpacityBox
-                  onPress={navigation.goBack}
-                  width={64}
-                  padding="l"
-                  hitSlop={hitSlop}
-                >
-                  <Close color={primaryText} height={16} width={16} />
-                </TouchableOpacityBox>
-              </Box>
-
-              <KeyboardAwareScrollView
-                enableOnAndroid
-                keyboardShouldPersistTaps="always"
-              >
-                <AccountButton
-                  backgroundColor="secondary"
-                  accountIconSize={41}
-                  paddingTop="l"
-                  title={formatAccountAlias(currentAccount)}
-                  subtitle={t('payment.senderAccount')}
-                  showChevron={sortedAccountsForNetType(networkType).length > 1}
-                  address={currentAccount?.address}
-                  onPress={handleShowAccounts}
-                  showBubbleArrow
-                  marginHorizontal="l"
-                  marginBottom="xs"
-                />
-
-                <TokenButton
-                  backgroundColor="secondary"
-                  title={t('burn.subdao', { subdao: symbol })}
-                  subtitle={t('burn.choooseSubDAO')}
-                  address={currentAccount?.address}
-                  onPress={handleTokenTypeSelected}
-                  showBubbleArrow
-                  marginHorizontal="l"
-                  mint={mint}
-                />
-
-                {isDelegate ? (
-                  <Box>
-                    <PaymentItem
-                      index={0}
-                      onAddressBookSelected={handleAddressBookSelected}
-                      onEditAmount={onTokenItemPressed}
-                      onEditMemo={({ memo: m }) => {
-                        setMemo(m)
-                      }}
-                      onEditAddress={({ address }) => {
-                        setDelegateAddress(address)
-                        handleAddressError({
-                          address,
-                        })
-                      }}
-                      handleAddressError={handleAddressError}
-                      mint={DC_MINT}
-                      address={delegateAddress}
-                      amount={amountBalance}
-                      memo={memo}
-                      hasError={hasError}
-                    />
-                  </Box>
-                ) : (
-                  <>
-                    <AccountButton
-                      backgroundColor="surfaceSecondary"
-                      accountIconSize={41}
-                      subtitle={t('burn.recipient')}
-                      title={ellipsizeAddress(
-                        route.params.address || delegateAddress,
-                      )}
-                      showBubbleArrow
-                      showChevron={false}
-                      address={route.params.address}
-                      marginHorizontal="l"
-                    />
-                    <Box
-                      marginTop="xs"
-                      marginHorizontal="l"
-                      backgroundColor="secondary"
-                      borderRadius="xl"
-                      paddingHorizontal="m"
-                      overflow="hidden"
-                    >
-                      <Text variant="body3" color="secondaryText" marginTop="m">
-                        {t('burn.amount')}
-                      </Text>
-                      <Text variant="subtitle2" color="primaryText">
-                        {amountBalance.toString()}
-                      </Text>
-                      <Text
-                        variant="body3"
-                        marginBottom="m"
-                        color="secondaryText"
-                      >
-                        {t('payment.fee', {
-                          value: humanReadable(FEE, 9),
-                        })}
-                      </Text>
-
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
-                      />
-
-                      <Text variant="body3" color="secondaryText" marginTop="m">
-                        {t('burn.equivalent')}
-                      </Text>
-                      <Text
-                        variant="subtitle2"
-                        color="primaryText"
-                        marginBottom="m"
-                      >
-                        {amountInDc?.toString()}
-                      </Text>
-
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
-                      />
-                    </Box>
-                  </>
-                )}
-              </KeyboardAwareScrollView>
-              {submitError && (
-                <Box marginBottom="s">
-                  <Text
-                    marginTop="s"
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    color="red500"
-                    textAlign="center"
-                  >
-                    {submitError}
-                  </Text>
-                </Box>
-              )}
-              <Box
-                borderTopLeftRadius="xl"
-                borderTopRightRadius="xl"
-                padding="l"
-                overflow="hidden"
-                minHeight={220}
-                backgroundColor="secondary"
-              >
-                <PaymentSummary
-                  mint={DC_MINT}
-                  totalBalance={amountBalance}
-                  feeTokenBalance={FEE}
-                  errors={errors}
-                />
-                <Box flex={1} justifyContent="flex-end">
-                  <SubmitButton
-                    disabled={
-                      amountBalance.isZero() ||
-                      hasError ||
-                      (!delegateAddress && isDelegate)
-                    }
-                    marginTop="l"
-                    title={t(
-                      isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
-                    )}
-                    onSubmit={handleSubmit}
-                  />
-                </Box>
-              </Box>
-            </SafeAreaBox>
-            <PaymentSubmit
-              mint={DC_MINT}
-              submitLoading={!!delegatePayment?.loading}
-              submitSucceeded={delegatePayment?.success}
-              submitError={delegatePayment?.error}
-              totalBalance={amountBalance}
-              feeTokenBalance={FEE}
-              onRetry={handleSubmit}
-              onSuccess={navigation.popToTop}
-              actionTitle={t('generic.ok')}
-            />
-          </AddressBookSelector>
-        </AccountSelector>
-      </TokenSelector>
-    </HNTKeyboard>
+      />
+      <AddressBookSelector
+        ref={addressBookRef}
+        onContactSelected={handleContactSelected}
+        hideCurrentAccount
+      />
+    </>
   )
 }
 

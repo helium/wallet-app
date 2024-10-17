@@ -32,31 +32,31 @@ export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
       <Box
         flexDirection="row"
         justifyContent="space-between"
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        padding="m"
+        backgroundColor="bg.tertiary"
+        borderRadius="2xl"
+        padding="4"
         {...boxProps}
       >
         <Box flex={1}>
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('gov.votingPower.title')}
           </Text>
           <Box
             width={70}
             height={16}
             marginTop="xs"
-            backgroundColor="surface"
+            backgroundColor="fg.quinary-400"
           />
         </Box>
         <Box flex={1} alignItems="flex-end">
-          <Text variant="body1" color="secondaryText" textAlign="right">
+          <Text variant="textMdRegular" color="secondaryText" textAlign="right">
             {t('gov.votingPower.locked', { symbol })}
           </Text>
           <Box
             width={70}
             height={16}
             marginTop="xs"
-            backgroundColor="surface"
+            backgroundColor="fg.quinary-400"
           />
         </Box>
       </Box>
@@ -64,10 +64,10 @@ export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
         flex={1}
         borderTopColor="primaryBackground"
         borderTopWidth={2}
-        paddingVertical="m"
-        paddingHorizontal="m"
+        paddingVertical="4"
+        paddingHorizontal="4"
       >
-        <Box width={320} height={16} backgroundColor="surface" />
+        <Box width={320} height={16} backgroundColor="fg.quinary-400" />
       </Box>
     </FadeInOut>
   )
@@ -96,24 +96,24 @@ export const VotingPowerCard = ({
 
     return (
       <>
-        <Box padding="m">
+        <Box padding="4">
           {!compact && (
             <Box
               flexDirection="row"
               justifyContent="space-between"
-              marginBottom="m"
+              marginBottom="4"
             >
-              <Text variant="subtitle1" color="primaryText">
+              <Text variant="textXlMedium" color="primaryText">
                 {t('gov.votingPower.yourPower')}
               </Text>
-              <Text variant="subtitle1" color="primaryText">
+              <Text variant="textXlMedium" color="primaryText">
                 &gt;
               </Text>
             </Box>
           )}
           {!compact && noVotingPower && (
             <Box flexDirection="row" alignItems="center">
-              <Text variant="body1" color="primaryText">
+              <Text variant="textMdRegular" color="primaryText">
                 {t('gov.votingPower.noPower')}
               </Text>
             </Box>
@@ -122,11 +122,11 @@ export const VotingPowerCard = ({
             <>
               <Box flexDirection="row" justifyContent="space-between">
                 <Box flex={1}>
-                  <Text variant="body1" color="secondaryText">
+                  <Text variant="textMdRegular" color="secondaryText">
                     {t('gov.votingPower.title')}
                   </Text>
                   <Box flexDirection="row" alignItems="center">
-                    <Text variant="body1" color="primaryText">
+                    <Text variant="textMdRegular" color="primaryText">
                       {mintAcc &&
                         humanReadable(
                           votingPower || new BN(0),
@@ -141,16 +141,16 @@ export const VotingPowerCard = ({
                           flexDirection="row"
                           justifyContent="center"
                           alignItems="center"
-                          borderRadius="m"
-                          paddingHorizontal="s"
-                          paddingLeft="s"
+                          borderRadius="2xl"
+                          paddingHorizontal="2"
+                          paddingLeft="2"
                         >
                           <LightningBolt
-                            color={colors.blueBright500}
+                            color={colors['blue.light-500']}
                             width={20}
                             height={20}
                           />
-                          <Text variant="body3" color="primaryText">
+                          <Text variant="textXsRegular" color="primaryText">
                             {`${
                               votingPower &&
                               amountLocked &&
@@ -167,10 +167,18 @@ export const VotingPowerCard = ({
                   </Box>
                 </Box>
                 <Box flex={1}>
-                  <Text variant="body1" color="secondaryText" textAlign="right">
+                  <Text
+                    variant="textMdRegular"
+                    color="secondaryText"
+                    textAlign="right"
+                  >
                     {t('gov.votingPower.locked', { symbol })}
                   </Text>
-                  <Text variant="body1" color="primaryText" textAlign="right">
+                  <Text
+                    variant="textMdRegular"
+                    color="primaryText"
+                    textAlign="right"
+                  >
                     {mintAcc &&
                       humanReadable(
                         amountLocked || new BN(0),
@@ -185,10 +193,10 @@ export const VotingPowerCard = ({
         <Box
           borderTopColor="primaryBackground"
           borderTopWidth={2}
-          paddingVertical="ms"
-          paddingHorizontal="m"
+          paddingVertical="3"
+          paddingHorizontal="4"
         >
-          <Text variant="body2" color="secondaryText">
+          <Text variant="textSmRegular" color="secondaryText">
             {t('gov.votingPower.youHave', {
               amount:
                 mintAcc &&
@@ -207,8 +215,8 @@ export const VotingPowerCard = ({
   if (onPress)
     return (
       <ReAnimatedBox
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
+        backgroundColor="bg.tertiary"
+        borderRadius="2xl"
         entering={FadeIn}
         exiting={FadeOut}
         {...boxProps}
@@ -221,8 +229,8 @@ export const VotingPowerCard = ({
 
   return (
     <ReAnimatedBox
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
+      backgroundColor="bg.tertiary"
+      borderRadius="2xl"
       {...boxProps}
     >
       {renderCard(true)}

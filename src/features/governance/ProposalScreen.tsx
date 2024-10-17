@@ -40,8 +40,8 @@ import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import ScrollBox from '@components/ScrollBox'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -282,8 +282,8 @@ export const ProposalScreen = () => {
   return (
     <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
       <BackScreen
-        headerTopMargin="l"
-        padding="none"
+        headerTopMargin="6"
+        padding="0"
         title="Proposal Overview"
         edges={backEdges}
       >
@@ -291,16 +291,16 @@ export const ProposalScreen = () => {
           edges={safeEdges}
           backgroundColor="transparent"
           flex={1}
-          marginTop="l"
+          marginTop="6"
         >
-          <ScrollView>
-            <Box paddingHorizontal="m">
+          <ScrollBox>
+            <Box paddingHorizontal="4">
               <Box
                 flexGrow={1}
                 justifyContent="center"
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                padding="m"
+                backgroundColor="bg.tertiary"
+                borderRadius="2xl"
+                padding="4"
               >
                 <Box flexDirection="row">
                   {proposal?.tags
@@ -308,61 +308,61 @@ export const ProposalScreen = () => {
                     .map((tag, idx) => (
                       <Box
                         key={tag}
-                        marginLeft={idx > 0 ? 's' : 'none'}
-                        padding="s"
+                        marginLeft={idx > 0 ? '2' : 'none'}
+                        padding="2"
                         backgroundColor={
                           tag.toLowerCase().includes('temp check')
-                            ? 'orange500'
-                            : 'black600'
+                            ? 'orange.500'
+                            : 'secondaryBackground'
                         }
-                        borderRadius="m"
+                        borderRadius="2xl"
                       >
-                        <Text variant="body3" color="secondaryText">
+                        <Text variant="textXsRegular" color="secondaryText">
                           {tag.toUpperCase()}
                         </Text>
                       </Box>
                     ))}
                 </Box>
-                <Box flexShrink={1} marginTop="ms">
-                  <Text variant="subtitle3" color="primaryText">
+                <Box flexShrink={1} marginTop="3">
+                  <Text variant="textMdMedium" color="primaryText">
                     {proposal?.name}
                   </Text>
                 </Box>
-                <Box marginTop="ms">
+                <Box marginTop="3">
                   <Box flexDirection="row" justifyContent="space-between">
                     <Box>
                       {derivedState === 'active' && !completed && (
-                        <Text variant="body2" color="secondaryText">
+                        <Text variant="textSmRegular" color="secondaryText">
                           {t('gov.proposals.estTime')}
                         </Text>
                       )}
                       {derivedState === 'active' && completed && (
-                        <Text variant="body2" color="secondaryText">
+                        <Text variant="textSmRegular" color="secondaryText">
                           {t('gov.proposals.votingClosed')}
                         </Text>
                       )}
                       {derivedState === 'passed' && (
-                        <Text variant="body2" color="greenBright500">
+                        <Text variant="textSmRegular" color="success.500">
                           {t('gov.proposals.success')}
                         </Text>
                       )}
                       {derivedState === 'completed' && (
-                        <Text variant="body2" color="greenBright500">
+                        <Text variant="textSmRegular" color="success.500">
                           {t('gov.proposals.completed')}
                         </Text>
                       )}
                       {derivedState === 'failed' && (
-                        <Text variant="body2" color="error">
+                        <Text variant="textSmRegular" color="error.500">
                           {t('gov.proposals.failed')}
                         </Text>
                       )}
                       {derivedState === 'cancelled' && (
-                        <Text variant="body2" color="orange500">
+                        <Text variant="textSmRegular" color="orange.500">
                           {t('gov.proposals.cancelled')}
                         </Text>
                       )}
                       {derivedState !== 'cancelled' && (
-                        <Text variant="body2" color="primaryText">
+                        <Text variant="textSmRegular" color="primaryText">
                           {getTimeFromNowFmt(endTs || new BN(0))}
                         </Text>
                       )}
@@ -370,14 +370,14 @@ export const ProposalScreen = () => {
                     {derivedState !== 'cancelled' && (
                       <Box>
                         <Text
-                          variant="body2"
+                          variant="textSmRegular"
                           color="secondaryText"
                           textAlign="right"
                         >
                           {t('gov.proposals.votes')}
                         </Text>
                         <Text
-                          variant="body2"
+                          variant="textSmRegular"
                           color="primaryText"
                           textAlign="right"
                         >
@@ -390,9 +390,9 @@ export const ProposalScreen = () => {
                   {showVoteResults &&
                     votingResults?.totalVotes.gt(new BN(0)) && (
                       <Box
-                        backgroundColor="surfaceSecondary"
-                        borderRadius="l"
-                        paddingTop="m"
+                        backgroundColor="bg.tertiary"
+                        borderRadius="2xl"
+                        paddingTop="4"
                       >
                         {votingResults.results
                           ?.sort((a, b) => b.percent - a.percent)
@@ -400,10 +400,10 @@ export const ProposalScreen = () => {
                             <Box
                               key={r.name}
                               flex={1}
-                              marginTop={idx > 0 ? 's' : 'none'}
+                              marginTop={idx > 0 ? '2' : 'none'}
                             >
                               <Text
-                                variant="body2"
+                                variant="textSmRegular"
                                 color="primaryText"
                                 marginBottom="xs"
                               >
@@ -412,8 +412,8 @@ export const ProposalScreen = () => {
                               <Box
                                 flexDirection="row"
                                 flex={1}
-                                backgroundColor="grey900"
-                                borderRadius="m"
+                                backgroundColor="gray.900"
+                                borderRadius="2xl"
                                 overflow="hidden"
                                 marginBottom="xs"
                               >
@@ -429,13 +429,16 @@ export const ProposalScreen = () => {
                                 justifyContent="space-between"
                               >
                                 <Text
-                                  variant="body2"
+                                  variant="textSmRegular"
                                   color="secondaryText"
-                                  marginRight="ms"
+                                  marginRight="3"
                                 >
                                   {humanReadable(r.weight, decimals)}
                                 </Text>
-                                <Text variant="body2" color="primaryText">
+                                <Text
+                                  variant="textSmRegular"
+                                  color="primaryText"
+                                >
                                   {r.percent.toFixed(2)}%
                                 </Text>
                               </Box>
@@ -458,17 +461,17 @@ export const ProposalScreen = () => {
                     justifyContent="space-between"
                     alignItems="center"
                     flexGrow={1}
-                    backgroundColor="surfaceSecondary"
-                    borderRadius="l"
-                    padding="m"
-                    marginTop="m"
+                    backgroundColor="bg.tertiary"
+                    borderRadius="2xl"
+                    padding="4"
+                    marginTop="4"
                   >
-                    <Text variant="body2" color="flamenco">
+                    <Text variant="textSmRegular" color="orange.500">
                       {`${t('gov.votingPower.noPower')}, ${t(
                         'gov.votingPower.increase',
                       )}`}
                     </Text>
-                    <Text variant="subtitle1" color="primaryText">
+                    <Text variant="textXlMedium" color="primaryText">
                       &gt;
                     </Text>
                   </Box>
@@ -479,12 +482,12 @@ export const ProposalScreen = () => {
                   <Box
                     flexGrow={1}
                     justifyContent="center"
-                    backgroundColor="surfaceSecondary"
-                    borderRadius="l"
-                    padding="m"
-                    marginTop="m"
+                    backgroundColor="bg.tertiary"
+                    borderRadius="2xl"
+                    padding="4"
+                    marginTop="4"
                   >
-                    <Text variant="body2" color="primaryText">
+                    <Text variant="textSmRegular" color="primaryText">
                       {t('gov.proposals.toVote', {
                         maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
                         choicesLength: proposal?.choices.length,
@@ -492,59 +495,59 @@ export const ProposalScreen = () => {
                     </Text>
                     <Box flexDirection="row" alignItems="center">
                       <Box
-                        borderBottomColor="white"
+                        borderBottomColor="base.white"
                         opacity={0.5}
                         borderBottomWidth={1}
                         flex={1}
                       />
-                      <Text color="white" opacity={0.5} p="m" variant="body2">
+                      <Text
+                        color="primaryText"
+                        opacity={0.5}
+                        p="4"
+                        variant="textSmRegular"
+                      >
                         OR
                       </Text>
                       <Box
-                        borderBottomColor="white"
+                        borderBottomColor="base.white"
                         opacity={0.5}
                         borderBottomWidth={1}
                         flex={1}
                       />
                     </Box>
-                    <Text variant="body2" color="primaryText">
+                    <Text variant="textSmRegular" color="primaryText">
                       {t('gov.proposals.assignProxy')}
                     </Text>
                     <ButtonPressable
                       fontSize={16}
                       height={48}
-                      backgroundColor="black500"
+                      backgroundColor="gray.800"
                       LeadingComponent={<BrowseVoters width={18} height={18} />}
-                      borderRadius="round"
-                      mt="m"
+                      borderRadius="full"
+                      mt="4"
                       onPress={handleBrowseVoters}
-                      padding="s"
+                      padding="2"
                       title={t('gov.assignProxy.browseVoters')}
                     />
                   </Box>
-                  <Box
-                    flexGrow={1}
-                    justifyContent="center"
-                    mt="m"
-                    {...{ gap: 14 }}
-                  >
+                  <Box flexGrow={1} justifyContent="center" mt="4" gap="4">
                     {showError && (
                       <Box
                         flexDirection="row"
-                        backgroundColor="surfaceSecondary"
-                        borderRadius="l"
-                        padding="m"
+                        backgroundColor="bg.tertiary"
+                        borderRadius="2xl"
+                        padding="4"
                       >
-                        <Text variant="body3Medium" color="red500">
+                        <Text variant="textXsMedium" color="error.500">
                           {showError}
                         </Text>
                       </Box>
                     )}
-                    <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
+                    <Box flex={1} flexDirection="column" gap="4">
                       {votingResults.results?.map((r, index) => (
                         <Box
-                          backgroundColor="surfaceSecondary"
-                          borderRadius="l"
+                          backgroundColor="bg.tertiary"
+                          borderRadius="2xl"
                           padding="xs"
                         >
                           <VoteOption
@@ -570,16 +573,16 @@ export const ProposalScreen = () => {
                 <Box
                   flexGrow={1}
                   justifyContent="center"
-                  backgroundColor="surfaceSecondary"
-                  borderRadius="l"
-                  padding="m"
-                  marginTop="m"
+                  backgroundColor="bg.tertiary"
+                  borderRadius="2xl"
+                  padding="4"
+                  marginTop="4"
                 >
                   <Markdown markdown={markdown} />
                 </Box>
               )}
             </Box>
-          </ScrollView>
+          </ScrollBox>
         </SafeAreaBox>
       </BackScreen>
     </ReAnimatedBox>

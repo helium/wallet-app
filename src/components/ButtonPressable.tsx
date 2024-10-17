@@ -9,9 +9,9 @@ import { useCreateOpacity } from '@theme/themeHooks'
 import Box from './Box'
 import ButtonPressAnimation from './ButtonPressAnimation'
 import Text from './Text'
+import CircleLoader from './CircleLoader'
 
 type Props = BoxProps<Theme> & {
-  backgroundColor?: Color
   backgroundColorDisabled?: Color
   backgroundColorOpacity?: number
   backgroundColorDisabledOpacity?: number
@@ -34,6 +34,10 @@ type Props = BoxProps<Theme> & {
   style?: ViewStyle
   LeadingComponent?: React.ReactNode
   TrailingComponent?: React.ReactNode
+  iconProps?: SvgProps
+  loading?: boolean
+  customLoadingColor?: Color
+  customLoadingColorDisabled?: Color
 }
 
 const ButtonPressable = ({
@@ -61,6 +65,10 @@ const ButtonPressable = ({
   height = 60,
   LeadingComponent,
   TrailingComponent,
+  iconProps,
+  loading,
+  customLoadingColor = 'primaryText',
+  customLoadingColorDisabled = 'text.disabled',
   ...boxProps
 }: Props) => {
   const [pressed, setPressed] = useState(false)
@@ -116,12 +124,12 @@ const ButtonPressable = ({
     }
     if (pressed || selected) {
       return backgroundStyle(
-        backgroundColorPressed || backgroundColor || 'white',
+        backgroundColorPressed || (backgroundColor as Color) || 'primaryText',
         backgroundColorOpacityPressed,
       )
     }
     if (backgroundColor) {
-      return backgroundStyle(backgroundColor, backgroundColorOpacity)
+      return backgroundStyle(backgroundColor as Color, backgroundColorOpacity)
     }
   }, [
     backgroundStyle,
@@ -136,6 +144,12 @@ const ButtonPressable = ({
     backgroundColorOpacity,
   ])
 
+  const circleLoaderColor = useMemo(() => {
+    if (disabled) return customLoadingColorDisabled
+    if (loading) return customLoadingColor
+    return 'primaryText'
+  }, [disabled, loading, customLoadingColor, customLoadingColorDisabled])
+
   return (
     <ButtonPressAnimation
       overflow="hidden"
@@ -149,28 +163,39 @@ const ButtonPressable = ({
         height={height}
         minHeight={boxProps.minHeight}
         maxHeight={boxProps.maxHeight}
-        padding={height || boxProps.maxHeight || padding ? padding : 'l'}
+        padding={height || boxProps.maxHeight || padding ? padding : '6'}
         style={backgroundColorStyle}
         flexDirection="row"
-        justifyContent={Icon ? 'space-between' : 'center'}
+        justifyContent={Icon ? 'center' : 'center'}
         alignItems="center"
+        borderRadius="full"
         {...containerProps}
       >
-        {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
+        {loading ? (
+          <Box flexDirection="row" alignItems="center" padding="4">
+            <CircleLoader color={circleLoaderColor} loaderSize={20} />
+          </Box>
+        ) : (
+          <>
+            {LeadingComponent && <Box marginEnd="xs">{LeadingComponent}</Box>}
 
-        {title && (
-          <Text
-            variant="subtitle1"
-            fontSize={fontSize || 19}
-            fontWeight={fontWeight}
-            style={titleColorStyle}
-            marginHorizontal="xs"
-          >
-            {title}
-          </Text>
+            {title && (
+              <Text
+                variant="textXlMedium"
+                fontSize={fontSize || 19}
+                fontWeight={fontWeight}
+                style={titleColorStyle}
+                marginHorizontal="xs"
+              >
+                {title}
+              </Text>
+            )}
+            {Icon && <Icon color={iconColor} {...iconProps} />}
+            {TrailingComponent && (
+              <Box marginStart="xs">{TrailingComponent}</Box>
+            )}
+          </>
         )}
-        {Icon && <Icon color={iconColor} />}
-        {TrailingComponent && <Box marginStart="xs">{TrailingComponent}</Box>}
       </Box>
     </ButtonPressAnimation>
   )

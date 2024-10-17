@@ -33,11 +33,7 @@ import {
   updateRewardsDestinations,
 } from '../store/slices/solanaSlice'
 import { useAppDispatch } from '../store/store'
-import {
-  Collectable,
-  CompressedNFT,
-  HotspotWithPendingRewards,
-} from '../types/solana'
+import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
 
 export default () => {
   const { cluster, anchorProvider } = useSolana()
@@ -118,7 +114,7 @@ export default () => {
   )
 
   const submitCollectable = useCallback(
-    async (collectable: CompressedNFT | Collectable, payee: string) => {
+    async (collectable: CompressedNFT, payee: string) => {
       if (
         !currentAccount?.solanaAddress ||
         !anchorProvider ||
@@ -127,22 +123,17 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const compressedNFT = collectable as CompressedNFT
-      const nft = collectable as Collectable
-
-      const transferTxn = compressedNFT?.compression?.compressed
+      const transferTxn = collectable?.compression?.compressed
         ? await solUtils.transferCompressedCollectable(
             anchorProvider,
             currentAccount.solanaAddress,
-            currentAccount.address,
-            compressedNFT,
+            collectable,
             payee,
           )
         : await solUtils.transferCollectable(
             anchorProvider,
             currentAccount.solanaAddress,
-            currentAccount.address,
-            nft,
+            collectable,
             payee,
           )
 

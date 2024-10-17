@@ -16,17 +16,17 @@ const AddressExtra = ({
   onScanPress,
 }: AddressExtraProps) => {
   const colors = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
 
   if (addressLoading) {
-    return <ActivityIndicator color="black500" />
+    return <ActivityIndicator color="gray.800" />
   }
   if (isValidAddress) {
-    return <Checkmark color={colors.blueBright500} />
+    return <Checkmark color={colors['blue.500']} />
   }
   return (
     <TouchableOpacityBox onPress={onScanPress} hitSlop={hitSlop}>
-      <QR width={16} color={colors.white} />
+      <QR width={16} color={colors['base.white']} />
     </TouchableOpacityBox>
   )
 }

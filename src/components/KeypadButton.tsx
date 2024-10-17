@@ -16,10 +16,13 @@ type Props = {
 }
 
 const KeypadButton = ({ value, onPress }: Props) => {
-  const { backgroundStyle: goldBackgroundStyle } = useOpacity('gold', 0.29)
-  const { gold, surfaceSecondaryText } = useColors()
+  const { backgroundStyle: goldBackgroundStyle } = useOpacity(
+    'yellow.500',
+    0.29,
+  )
+  const colors = useColors()
   const { t } = useTranslation()
-  const hitSlop = useHitSlop('m')
+  const hitSlop = useHitSlop('4')
 
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
@@ -38,11 +41,11 @@ const KeypadButton = ({ value, onPress }: Props) => {
       if (typeof value === 'number') {
         return (
           <Text
-            variant="h1"
+            variant="displayMdRegular"
             minimumFontScale={0.7}
             adjustsFontSizeToFit
             numberOfLines={1}
-            color={pressed ? 'gold' : 'surfaceSecondaryText'}
+            color={pressed ? 'yellow.500' : 'secondaryText'}
           >
             {value}
           </Text>
@@ -59,16 +62,18 @@ const KeypadButton = ({ value, onPress }: Props) => {
               justifyContent="center"
               alignItems="center"
             >
-              <Backspace color={pressed ? gold : surfaceSecondaryText} />
+              <Backspace
+                color={pressed ? colors['yellow.500'] : colors.secondaryText}
+              />
             </Box>
           )
         case 'decimal':
           return (
             <Text
-              variant="h1"
+              variant="displayMdRegular"
               adjustsFontSizeToFit
               numberOfLines={1}
-              color={pressed ? 'gold' : 'surfaceSecondaryText'}
+              color={pressed ? 'yellow.500' : 'secondaryText'}
             >
               {decimalSeparator}
             </Text>
@@ -76,12 +81,12 @@ const KeypadButton = ({ value, onPress }: Props) => {
         case 'clear':
           return (
             <Text
-              variant="body1"
+              variant="textMdRegular"
               width="100%"
               textAlign="center"
               adjustsFontSizeToFit
               numberOfLines={1}
-              color={pressed ? 'gold' : 'surfaceSecondaryText'}
+              color={pressed ? 'yellow.500' : 'secondaryText'}
             >
               {t('generic.clear')}
             </Text>
@@ -89,17 +94,17 @@ const KeypadButton = ({ value, onPress }: Props) => {
         case 'cancel':
           return (
             <Text
-              variant="body1"
+              variant="textMdRegular"
               adjustsFontSizeToFit
               numberOfLines={1}
-              color={pressed ? 'gold' : 'surfaceSecondaryText'}
+              color={pressed ? 'yellow.500' : 'secondaryText'}
             >
               {t('generic.cancel')}
             </Text>
           )
       }
     },
-    [gold, surfaceSecondaryText, t, value],
+    [colors, t, value],
   )
   return (
     <Box flexBasis="33%" alignItems="center" justifyContent="center">
@@ -112,7 +117,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             height="100%"
             width="100%"
             aspectRatio={1}
-            borderRadius="round"
+            borderRadius="full"
             maxWidth={80}
             maxHeight={80}
             hitSlop={hitSlop}

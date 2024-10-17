@@ -36,9 +36,9 @@ const markdownParser = MarkdownIt()
 export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
   <ReAnimatedBox
     flex={1}
-    backgroundColor="black900"
-    borderRadius="l"
-    padding="xxxl"
+    backgroundColor="base.black"
+    borderRadius="2xl"
+    padding="15"
     entering={FadeIn}
     exiting={FadeOut}
     {...boxProps}
@@ -116,8 +116,8 @@ export const ProposalCard = ({
   if (isLoading) return null
   return (
     <ReAnimatedBox
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
+      backgroundColor="bg.tertiary"
+      borderRadius="2xl"
       position="relative"
       entering={FadeIn}
       exiting={FadeOut}
@@ -126,50 +126,60 @@ export const ProposalCard = ({
       <TouchableOpacityBox onPress={handleOnPress}>
         <Box
           position="relative"
-          paddingTop="ms"
-          padding="m"
-          paddingBottom={derivedState === 'active' ? 'm' : 's'}
+          paddingTop="3"
+          padding="4"
+          paddingBottom={derivedState === 'active' ? '4' : '2'}
         >
           <Box flexDirection="row" flexWrap="wrap">
             {!hasSeen && derivedState === 'active' && !completed && (
-              <Box marginRight="s" marginBottom="s">
+              <Box marginRight="2" marginBottom="2">
                 <Box
                   flexDirection="row"
-                  padding="s"
+                  padding="2"
                   alignItems="center"
-                  backgroundColor="black600"
-                  borderRadius="m"
+                  backgroundColor="cardBackground"
+                  borderRadius="2xl"
                 >
                   <Box
                     zIndex={2}
                     width={10}
                     height={10}
-                    backgroundColor="flamenco"
-                    borderRadius="round"
+                    backgroundColor="orange.500"
+                    borderRadius="full"
                   />
-                  <Text fontSize={10} color="secondaryText" marginLeft="s">
+                  <Text
+                    variant="textSmRegular"
+                    fontSize={10}
+                    color="secondaryText"
+                    marginLeft="2"
+                  >
                     UNSEEN
                   </Text>
                 </Box>
               </Box>
             )}
             {hasSeen && derivedState === 'active' && !completed && (
-              <Box marginRight="s" marginBottom="s">
+              <Box marginRight="2" marginBottom="2">
                 <Box
                   flexDirection="row"
-                  padding="s"
+                  padding="2"
                   alignItems="center"
-                  backgroundColor="black600"
-                  borderRadius="m"
+                  backgroundColor="cardBackground"
+                  borderRadius="2xl"
                 >
                   <Box
                     zIndex={2}
                     width={10}
                     height={10}
-                    backgroundColor="blueBright500"
-                    borderRadius="round"
+                    backgroundColor="blue.light-500"
+                    borderRadius="full"
                   />
-                  <Text fontSize={10} color="secondaryText" marginLeft="s">
+                  <Text
+                    variant="textSmRegular"
+                    fontSize={10}
+                    color="secondaryText"
+                    marginLeft="2"
+                  >
                     ACTIVE
                   </Text>
                 </Box>
@@ -182,15 +192,15 @@ export const ProposalCard = ({
             justifyContent="space-between"
             alignItems="center"
           >
-            <Text variant="subtitle3" color="primaryText" flexShrink={1}>
+            <Text variant="textMdSemibold" color="primaryText" flexShrink={1}>
               {proposal?.name}
             </Text>
           </Box>
           {derivedState === 'active' && (
             <Text
-              variant="body2"
+              variant="textSmRegular"
               marginTop="xs"
-              color="surfaceSecondaryText"
+              color="secondaryText"
               numberOfLines={2}
             >
               {!descError && desc ? desc : t('gov.proposals.noDescription')}
@@ -204,65 +214,73 @@ export const ProposalCard = ({
             borderTopWidth={2}
             borderBottomColor="primaryBackground"
             borderBottomWidth={2}
-            paddingHorizontal="m"
-            paddingVertical="s"
+            paddingHorizontal="4"
+            paddingVertical="2"
           >
-            <Text variant="body2" color="secondaryText">
+            <Text variant="textSmRegular" color="secondaryText">
               You Voted - Yes
             </Text>
           </Box>
         )} */}
         {}
         <Box
-          paddingHorizontal="m"
+          paddingHorizontal="4"
           /* TODO (gov): add back once we can derive what they voted easily */
-          /* paddingTop={derivedState === 'active' ? 'm' : 'none'} */
-          paddingBottom="ms"
+          /* paddingTop={derivedState === 'active' ? '4' : 'none'} */
+          paddingBottom="3"
         >
           <Box flexDirection="row" justifyContent="space-between">
             <Box>
               {derivedState === 'active' && !completed && (
-                <Text variant="body2" color="secondaryText">
+                <Text variant="textSmRegular" color="secondaryText">
                   {t('gov.proposals.estTime')}
                 </Text>
               )}
               {derivedState === 'active' && completed && (
-                <Text variant="body2" color="secondaryText">
+                <Text variant="textSmRegular" color="secondaryText">
                   {t('gov.proposals.votingClosed')}
                 </Text>
               )}
               {derivedState === 'passed' && (
-                <Text variant="body2" color="greenBright500">
+                <Text variant="textSmRegular" color="success.500">
                   {t('gov.proposals.success')}
                 </Text>
               )}
               {derivedState === 'completed' && (
-                <Text variant="body2" color="greenBright500">
+                <Text variant="textSmRegular" color="success.500">
                   {t('gov.proposals.completed')}
                 </Text>
               )}
               {derivedState === 'failed' && (
-                <Text variant="body2" color="error">
+                <Text variant="textSmRegular" color="error.500">
                   {t('gov.proposals.failed')}
                 </Text>
               )}
               {derivedState === 'cancelled' && (
-                <Text variant="body2" color="orange500">
+                <Text variant="textSmRegular" color="orange.500">
                   {t('gov.proposals.cancelled')}
                 </Text>
               )}
               {derivedState !== 'cancelled' && (
-                <Text variant="body2" color="primaryText">
+                <Text variant="textSmRegular" color="primaryText">
                   {getTimeFromNowFmt(endTs || new BN(0))}
                 </Text>
               )}
             </Box>
             {derivedState !== 'cancelled' && (
               <Box>
-                <Text variant="body2" color="secondaryText" textAlign="right">
+                <Text
+                  variant="textSmRegular"
+                  color="secondaryText"
+                  textAlign="right"
+                >
                   {t('gov.proposals.votes')}
                 </Text>
-                <Text variant="body2" color="primaryText" textAlign="right">
+                <Text
+                  variant="textSmRegular"
+                  color="primaryText"
+                  textAlign="right"
+                >
                   {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
                 </Text>
               </Box>
