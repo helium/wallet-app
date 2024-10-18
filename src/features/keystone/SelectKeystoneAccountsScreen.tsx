@@ -73,26 +73,15 @@ const SelectKeystoneAccountsScreen = () => {
 
   const onNext = useCallback(() => {
     storageSelectedAccounts()
-    if (hasAccounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace('TabBarNavigator', {
-        screen: 'Home',
-        params: {
-          screen: 'KeystoneAccountAssignScreen',
-        },
-      })
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace('OnboardingNavigator', {
-        screen: 'KeystoneNavigator',
-        params: {
-          screen: 'KeystoneAccountAssignScreen',
-        },
-      })
-    }
-  }, [hasAccounts, navigation, selected])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    navigation.replace('OnboardingNavigator', {
+      screen: 'KeystoneNavigator',
+      params: {
+        screen: 'KeystoneAccountAssignScreen',
+      },
+    })
+  }, [navigation, selected])
 
   const fetchBalance = async (publicKey: string) => {
     if (connection) {

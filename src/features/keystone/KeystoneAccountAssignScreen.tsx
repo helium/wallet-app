@@ -105,32 +105,34 @@ const KeystoneAccountAssignScreen = () => {
     <SafeAreaBox
       backgroundColor="secondaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      paddingHorizontal="8"
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.xl}
+        keyboardVerticalOffset={insets.top + spacing[6]}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
           <Text
-            color="primaryText"
-            variant="displayMdSemibold"
+            variant="displayMdRegular"
             textAlign="center"
             fontSize={44}
             lineHeight={44}
-            marginTop="xl"
+            marginTop="8"
+            color="primaryText"
           >
             {t('accountAssign.title')}
           </Text>
 
           <Box
-            backgroundColor="transparent10"
-            borderRadius="xl"
+            backgroundColor="cardBackground"
+            borderRadius="4xl"
             padding="4"
             width="100%"
-            marginTop="xl"
+            marginTop="8"
             flexDirection="row"
+            borderColor="border.primary"
+            borderWidth={1}
           >
             <AccountIcon
               size={40}
@@ -141,27 +143,30 @@ const KeystoneAccountAssignScreen = () => {
                 )
               }
             />
-            <TextInput
-              textColor="primaryText"
-              fontSize={24}
-              marginLeft="4"
-              marginRight="xl"
-              textInputProps={{
-                placeholder: t('accountAssign.AccountNamePlaceholder'),
-                autoCorrect: false,
-                autoComplete: 'off',
-                autoCapitalize: 'words',
-                onChangeText: setAlias,
-                value: alias,
-                autoFocus: true,
-              }}
-            />
+            <Box backgroundColor="cardBackground">
+              <TextInput
+                textColor="primaryText"
+                fontSize={24}
+                marginLeft="4"
+                marginRight="8"
+                variant="transparentSmall"
+                textInputProps={{
+                  placeholder: t('accountAssign.AccountNamePlaceholder'),
+                  autoCorrect: false,
+                  autoComplete: 'off',
+                  autoCapitalize: 'words',
+                  onChangeText: setAlias,
+                  value: alias,
+                  autoFocus: true,
+                }}
+              />
+            </Box>
           </Box>
 
           <Box
             flexDirection="row"
             alignItems="center"
-            marginTop="xl"
+            marginTop="8"
             opacity={hasAccounts ? 100 : 0}
           >
             <CheckBox
@@ -183,7 +188,7 @@ const KeystoneAccountAssignScreen = () => {
             />
 
             <Text
-              variant="textMdMedium"
+              variant="textMdRegular"
               color={setAsDefault ? 'primaryText' : 'secondaryText'}
               marginLeft="4"
             >
@@ -193,12 +198,12 @@ const KeystoneAccountAssignScreen = () => {
 
           <Box flex={1} />
           {!loading && existingNames?.has(alias) ? (
-            <Text mb="4" color="error.500">
+            <Text variant="textSmSemibold" mb="4" color="error.500">
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
           {loading ? (
-            <CircleLoader />
+            <CircleLoader color="primaryText" />
           ) : (
             <FabButton
               onPress={handlePress}
@@ -206,6 +211,8 @@ const KeystoneAccountAssignScreen = () => {
               iconColor="primaryBackground"
               disabled={!alias || existingNames?.has(alias)}
               backgroundColor="primaryText"
+              backgroundColorPressed="primaryBackground"
+              backgroundColorOpacityPressed={0.1}
             />
           )}
         </Box>
