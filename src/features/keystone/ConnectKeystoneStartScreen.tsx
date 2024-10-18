@@ -102,8 +102,8 @@ const WarningContent = () => {
         <Box alignItems="center">
           <WarningKeystone />
           <Text
-            color="primaryText"
             variant="textSmRegular"
+            color="secondaryText"
             textAlign="center"
             marginVertical="4"
           >
