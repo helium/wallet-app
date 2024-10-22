@@ -75,10 +75,13 @@ const SelectKeystoneAccountsScreen = () => {
     storageSelectedAccounts()
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    navigation.replace('OnboardingNavigator', {
-      screen: 'KeystoneNavigator',
+    navigation.replace('ServiceSheetNavigator', {
+      screen: 'AccountsService',
       params: {
-        screen: 'KeystoneAccountAssignScreen',
+        screen: 'KeystoneNavigator',
+        params: {
+          screen: 'KeystoneAccountAssignScreen',
+        },
       },
     })
   }, [navigation, selected])

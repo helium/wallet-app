@@ -9,6 +9,7 @@ import AddNewAccountNavigator from '@features/home/addNewAccount/AddNewAccountNa
 import AccountAssignScreen from '@features/onboarding/AccountAssignScreen'
 import { RouteAccount } from '@features/onboarding/create/createAccountNavTypes'
 import ImportAccountNavigator from '@features/onboarding/import/ImportAccountNavigator'
+import KeystoneNavigator from '@features/keystone/KeystoneNavigator'
 import YourWalletsPage from './pages/YourWalletsPage'
 
 export type AccountsServiceStackParamList = {
@@ -24,6 +25,12 @@ export type AccountsServiceStackParamList = {
           accountAddress?: string
         }
       }
+  KeystoneNavigator: {
+    screen: 'KeystoneNavigator'
+    params: {
+      screen: string
+    }
+  }
 }
 
 export type AccountsServiceNavigationProp =
@@ -59,6 +66,10 @@ const AccountsService = () => {
       <AccountsServiceStack.Screen
         name="ReImportAccountNavigator"
         component={ImportAccountNavigator}
+      />
+      <AccountsServiceStack.Screen
+        name="KeystoneNavigator"
+        component={KeystoneNavigator}
       />
     </AccountsServiceStack.Navigator>
   )
