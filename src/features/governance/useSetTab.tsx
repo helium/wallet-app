@@ -8,7 +8,8 @@ export function useSetTab() {
   const navigation = useNavigation<GovernanceNavigationProp>()
 
   return useCallback(
-    (tab: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (tab: any) => {
       switch (tab) {
         case 'proposals':
           navigation.navigate('ProposalsScreen', {

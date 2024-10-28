@@ -25,7 +25,7 @@ export const breakpoints = {
 }
 
 export const baseTheme = {
-  borderRadii: lightThemeTokens.borderRadii,
+  borderRadii: { ...lightThemeTokens.borderRadii, '6xl': 40 },
   breakpoints,
   Font: NovaFont,
   inputVariants: {

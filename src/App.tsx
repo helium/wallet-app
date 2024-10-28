@@ -2,7 +2,6 @@ import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
-import MapLibreGL from '@maplibre/maplibre-react-native'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
 import { ModalProvider } from '@storage/ModalsProvider'
@@ -12,6 +11,7 @@ import globalStyles from '@theme/globalStyles'
 import { darkTheme } from '@theme/theme'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
+import Mapbox from '@rnmapbox/maps'
 import { LogBox, Platform, StatusBar, UIManager } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
@@ -46,7 +46,8 @@ const App = () => {
   // Note that the Android SDK is slightly peculiar
   // in that it requires setting an access token,
   // even though it will be null for most users(only Mapbox authenticates this way)
-  MapLibreGL.setAccessToken(null)
+  // MapLibreGL.setAccessToken(null)
+  Mapbox.setAccessToken(Config.MAPBOX_ACCESS_TOKEN)
 
   LogBox.ignoreLogs([
     'Module iCloudStorage',

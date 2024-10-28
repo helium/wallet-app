@@ -29,7 +29,6 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSharedValue } from 'react-native-reanimated'
 import Animation from './Animation'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
@@ -70,8 +69,6 @@ const LedgerModal = forwardRef(
       | 'error'
       | 'enableBlindSign'
     >('loading')
-
-    const animatedContentHeight = useSharedValue(0)
 
     const openAppAndSign = useCallback(
       async ({
@@ -341,7 +338,6 @@ const LedgerModal = forwardRef(
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
             handleIndicatorStyle={handleIndicatorStyle}
-            contentHeight={animatedContentHeight}
             enableDynamicSizing
           >
             <BottomSheetScrollView>

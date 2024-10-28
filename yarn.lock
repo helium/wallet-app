@@ -2486,36 +2486,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/config-plugins@npm:^4.0.3":
-  version: 4.1.5
-  resolution: "@expo/config-plugins@npm:4.1.5"
-  dependencies:
-    "@expo/config-types": ^45.0.0
-    "@expo/json-file": 8.2.36
-    "@expo/plist": 0.0.18
-    "@expo/sdk-runtime-versions": ^1.0.0
-    "@react-native/normalize-color": ^2.0.0
-    chalk: ^4.1.2
-    debug: ^4.3.1
-    find-up: ~5.0.0
-    getenv: ^1.0.0
-    glob: 7.1.6
-    resolve-from: ^5.0.0
-    semver: ^7.3.5
-    slash: ^3.0.0
-    xcode: ^3.0.1
-    xml2js: 0.4.23
-  checksum: f631217251281b1e25949adbec175ef1362dd08d837ce676ed8350c1401b5764091ba100f76f42adb623e4cdcde5b270be77ad6606f978d419c07fd8c81b701c
-  languageName: node
-  linkType: hard
-
-"@expo/config-types@npm:^45.0.0":
-  version: 45.0.0
-  resolution: "@expo/config-types@npm:45.0.0"
-  checksum: 9b4866540654da61af0985ebfc975b3cb690625acf7742443a7e56263bf134b261e22719720982223407f8957d08a3646178c79f482861218882f0956d804021
-  languageName: node
-  linkType: hard
-
 "@expo/config-types@npm:^51.0.0-unreleased":
   version: 51.0.2
   resolution: "@expo/config-types@npm:51.0.2"
@@ -2594,17 +2564,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/json-file@npm:8.2.36":
-  version: 8.2.36
-  resolution: "@expo/json-file@npm:8.2.36"
-  dependencies:
-    "@babel/code-frame": ~7.10.4
-    json5: ^1.0.1
-    write-file-atomic: ^2.3.0
-  checksum: 37ce80b3472fef2a56136ebff5993d98ab4fbd45c4d7791ff47be80438dbeabd84bc699a401da0c314357ef65d8fff87a5a1241b3119db2d575878f9321bd1e7
-  languageName: node
-  linkType: hard
-
 "@expo/json-file@npm:^8.3.0, @expo/json-file@npm:~8.3.0":
   version: 8.3.3
   resolution: "@expo/json-file@npm:8.3.3"
@@ -2669,17 +2628,6 @@ __metadata:
     split: ^1.0.1
     sudo-prompt: 9.1.1
   checksum: 825e727106592bac98c82c69bf316b8b1ee20829f7f3e909cf374861b771cfa77d38b029f8b078341b2a9333004b4b90392f6f1a6a366c45ecf3f397798fb2a4
-  languageName: node
-  linkType: hard
-
-"@expo/plist@npm:0.0.18":
-  version: 0.0.18
-  resolution: "@expo/plist@npm:0.0.18"
-  dependencies:
-    "@xmldom/xmldom": ~0.7.0
-    base64-js: ^1.2.3
-    xmlbuilder: ^14.0.0
-  checksum: 42f5743fcd2a07b55a9f048d27cf0f273510ab35dde1f7030b22dc8c30ab2cfb65c6e68f8aa58fbcfa00177fdc7c9696d0004083c9a47c36fd4ac7fea27d6ccc
   languageName: node
   linkType: hard
 
@@ -2834,9 +2782,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gorhom/bottom-sheet@npm:4.6.4":
-  version: 4.6.4
-  resolution: "@gorhom/bottom-sheet@npm:4.6.4"
+"@gorhom/bottom-sheet@npm:5.0.4":
+  version: 5.0.4
+  resolution: "@gorhom/bottom-sheet@npm:5.0.4"
   dependencies:
     "@gorhom/portal": 1.0.14
     invariant: ^2.2.4
@@ -2845,14 +2793,14 @@ __metadata:
     "@types/react-native": "*"
     react: "*"
     react-native: "*"
-    react-native-gesture-handler: ">=1.10.1"
-    react-native-reanimated: ">=2.2.0"
+    react-native-gesture-handler: ">=2.16.1"
+    react-native-reanimated: ">=3.10.1"
   peerDependenciesMeta:
     "@types/react":
       optional: true
     "@types/react-native":
       optional: true
-  checksum: 2cea033c4f321b93fdbf61470b507b5efd51425a8ab927b49d7aaa1d9f0568cbcfb188e385311389dbffbafe47b941dbd3e60f74b1d663a1a2d73262e2719f85
+  checksum: 7ccfca84b0c9555efaa127ef17b6f2a16c15ec48f0db12bde146da9c86d599d126abb2cb8eecfb33811c26574a5ceddaee87d995d5e90ad7166770d6675c414b
   languageName: node
   linkType: hard
 
@@ -4551,50 +4499,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mapbox/geo-viewport@npm:>= 0.4.0":
-  version: 0.5.0
-  resolution: "@mapbox/geo-viewport@npm:0.5.0"
-  dependencies:
-    "@mapbox/sphericalmercator": ^1.2.0
-  checksum: 9cb990e177226acbdf7658f3367ed3158d8a77350afb0e1de71fa432e682a8aed4afe2f80d36872eb79666b54432fe6219797d50f2ab4152c51811235b7520a0
-  languageName: node
-  linkType: hard
-
-"@mapbox/sphericalmercator@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@mapbox/sphericalmercator@npm:1.2.0"
-  bin:
-    bbox: bin/bbox.js
-    to4326: bin/to4326.js
-    to900913: bin/to900913.js
-    xyz: bin/xyz.js
-  checksum: 515cd9fcadc6626d6352001f6d9dba073fcd10433ceee37d13d4be7fc9a48930b4163b79f53151b71ff9a4410da77bd11c5ff62e3b9d6119bce9031c4d7dabc1
-  languageName: node
-  linkType: hard
-
-"@maplibre/maplibre-react-native@npm:^9.1.0":
-  version: 9.1.0
-  resolution: "@maplibre/maplibre-react-native@npm:9.1.0"
-  dependencies:
-    "@expo/config-plugins": ^4.0.3
-    "@mapbox/geo-viewport": ">= 0.4.0"
-    "@turf/along": 6.5.0
-    "@turf/distance": 6.5.0
-    "@turf/helpers": 6.5.0
-    "@turf/length": 6.5.0
-    "@turf/nearest-point-on-line": 6.5.0
-    "@types/geojson": ^7946.0.7
-    "@types/node": ^18.11.18
-    debounce: ^1.2.0
-    deprecated-react-native-prop-types: ^4.1.0
-  peerDependencies:
-    prop-types: ^15.8.1
-    react: ">=16.6.1"
-    react-native: ">=0.59.9"
-  checksum: 288e177f83cec2db2ee055911090dacdf42ce862387d8e9ea3cbcb412ae7df40d41743b09912cf95479094c83a9f268dc5fcc5ebd82d690e55e093007d7b1fe9
-  languageName: node
-  linkType: hard
-
 "@metaplex-foundation/beet-solana@npm:0.4.0, @metaplex-foundation/beet-solana@npm:^0.4.0":
   version: 0.4.0
   resolution: "@metaplex-foundation/beet-solana@npm:0.4.0"
@@ -4930,10 +4834,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@novalabsxyz/mobile-theme@npm:2.0.0-y.25":
-  version: 2.0.0-y.25
-  resolution: "@novalabsxyz/mobile-theme@npm:2.0.0-y.25"
-  checksum: 54a01e1aef25c406fea2d7d4651dd0f94d62b884bc34dc3a5702e1cbab392969139b5ca9631adae95f8fff81822c34a0a08159cbcbd0a71c722f43d6704205b7
+"@novalabsxyz/mobile-theme@npm:2.0.0-y.26":
+  version: 2.0.0-y.26
+  resolution: "@novalabsxyz/mobile-theme@npm:2.0.0-y.26"
+  checksum: 48060226173468d998c55c5e75c15d0666a02e03893c94816acb72d514b6c18d0c9a7fd6d4f4f06ad62fc5cb9a7a823d025a6e797a93057716f23b1859b15ef9
   languageName: node
   linkType: hard
 
@@ -5665,7 +5569,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/normalize-color@npm:*, @react-native/normalize-color@npm:^2.0.0":
+"@react-native/normalize-color@npm:*":
   version: 2.1.0
   resolution: "@react-native/normalize-color@npm:2.1.0"
   checksum: 8ccbd40b3c7629f1dc97b3e9aadd95fd3507fcf2e37535a6299a70436ab891c34cbdc4240b07380553d6e85dd909e23d5773b5be1da2906b026312e0b0768838
@@ -5690,13 +5594,6 @@ __metadata:
   version: 0.74.87
   resolution: "@react-native/normalize-colors@npm:0.74.87"
   checksum: 903f9cd8a0fdcb26f4f621b260b9f48e703ca183ac4ee363b6dea4f424e23a254adebe36ce3d560e6e909f58b1c568bafe596e5858fadf51b5be080f401446c7
-  languageName: node
-  linkType: hard
-
-"@react-native/normalize-colors@npm:<0.73.0":
-  version: 0.72.0
-  resolution: "@react-native/normalize-colors@npm:0.72.0"
-  checksum: c8ec577663394a3390eb34c3cd531350521172bcfad7de309ab111e5f9e3d27c966d4a4387f00972302107be3d8cad584c5794ccfa30939aecc56162e4ddbe25
   languageName: node
   linkType: hard
 
@@ -5872,6 +5769,34 @@ __metadata:
     react-redux:
       optional: true
   checksum: e6700a0d45198ab525c96ff0425fa0125fbdc37ce514f0c77c30225837113279ceec9190ac3da35cb20e77553e56342021788bbf17465819068c4db34cb3d87f
+  languageName: node
+  linkType: hard
+
+"@rnmapbox/maps@npm:^10.1.31":
+  version: 10.1.31
+  resolution: "@rnmapbox/maps@npm:10.1.31"
+  dependencies:
+    "@turf/along": 6.5.0
+    "@turf/distance": 6.5.0
+    "@turf/helpers": 6.5.0
+    "@turf/length": 6.5.0
+    "@turf/nearest-point-on-line": 6.5.0
+    "@types/geojson": ^7946.0.7
+    debounce: ^1.2.0
+  peerDependencies:
+    expo: ">=47.0.0"
+    mapbox-gl: ^2.9.0
+    react: ">=16.6.1"
+    react-dom: ">= 17.0.0"
+    react-native: ">=0.59.9"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+    mapbox-gl:
+      optional: true
+    react-dom:
+      optional: true
+  checksum: f4ac56f9dbc3128b2bfeedd3980668f2c05e92b965297a0be1556b0059fcf15e7c84d9127b32383d6608d65b6986e5e3ed6ef08499091f0a31a6fbb72c0819fb
   languageName: node
   linkType: hard
 
@@ -7249,7 +7174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.0.0, @types/node@npm:^18.11.18":
+"@types/node@npm:^18.0.0":
   version: 18.19.43
   resolution: "@types/node@npm:18.19.43"
   dependencies:
@@ -8169,7 +8094,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:~0.7.0, @xmldom/xmldom@npm:~0.7.7":
+"@xmldom/xmldom@npm:~0.7.7":
   version: 0.7.13
   resolution: "@xmldom/xmldom@npm:0.7.13"
   checksum: b4054078530e5fa8ede9677425deff0fce6d965f4c477ca73f8490d8a089e60b8498a15560425a1335f5ff99ecb851ed2c734b0a9a879299a5694302f212f37a
@@ -11205,17 +11130,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deprecated-react-native-prop-types@npm:^4.1.0":
-  version: 4.2.3
-  resolution: "deprecated-react-native-prop-types@npm:4.2.3"
-  dependencies:
-    "@react-native/normalize-colors": <0.73.0
-    invariant: ^2.2.4
-    prop-types: ^15.8.1
-  checksum: 294752f9f15733b66473022d8258a14aac850e4a3db7e802ef189a09871236f5a110f8fe588468ae1df92f24641ae29de05943074dc54da02a5e4262935f913d
-  languageName: node
-  linkType: hard
-
 "des.js@npm:^1.0.0":
   version: 1.1.0
   resolution: "des.js@npm:1.1.0"
@@ -12651,6 +12565,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-location@npm:^17.0.1":
+  version: 17.0.1
+  resolution: "expo-location@npm:17.0.1"
+  peerDependencies:
+    expo: "*"
+  checksum: 1bfadaf16851cff26c14276aae7507daf159b2e62fc0c1e45c0f2288bb83be6314d55b4d4726317beff08d6582735a4b2c06cfdd4969b594a19321c735acdd1d
+  languageName: node
+  linkType: hard
+
 "expo-modules-autolinking@npm:1.11.1":
   version: 1.11.1
   resolution: "expo-modules-autolinking@npm:1.11.1"
@@ -13872,7 +13795,7 @@ __metadata:
     "@babel/runtime": 7.20.13
     "@bonfida/spl-name-service": ^1.1.1
     "@coral-xyz/anchor": ^0.28.0
-    "@gorhom/bottom-sheet": 4.6.4
+    "@gorhom/bottom-sheet": 5.0.4
     "@gorhom/portal": 1.0.14
     "@helium/account-fetch-cache": 0.9.14
     "@helium/account-fetch-cache-hooks": 0.9.14
@@ -13910,12 +13833,11 @@ __metadata:
     "@ledgerhq/react-native-hid": 6.30.0
     "@ledgerhq/react-native-hw-transport-ble": 6.29.5
     "@ledgerhq/types-devices": ^6.22.4
-    "@maplibre/maplibre-react-native": ^9.1.0
     "@metaplex-foundation/js": ^0.19.5
     "@metaplex-foundation/mpl-bubblegum": 0.6.0
     "@metaplex-foundation/mpl-token-metadata": 2.10.0
     "@ngraveio/bc-ur": ^1.1.13
-    "@novalabsxyz/mobile-theme": 2.0.0-y.25
+    "@novalabsxyz/mobile-theme": 2.0.0-y.26
     "@onsol/tldparser": ^0.5.3
     "@react-native-async-storage/async-storage": 1.18.1
     "@react-native-community/blur": 4.3.0
@@ -13934,6 +13856,7 @@ __metadata:
     "@react-navigation/native-stack": 6.7.0
     "@react-navigation/stack": 6.2.2
     "@reduxjs/toolkit": 1.9.1
+    "@rnmapbox/maps": ^10.1.31
     "@shopify/restyle": 2.4.2
     "@solana/spl-account-compression": 0.1.4
     "@solana/spl-memo": 0.2.3
@@ -14014,6 +13937,7 @@ __metadata:
     expo-haptics: 13.0.1
     expo-linking: 6.3.1
     expo-local-authentication: 14.0.1
+    expo-location: ^17.0.1
     expo-secure-store: 13.0.2
     expo-splash-screen: 0.27.5
     fuse.js: 6.6.2
@@ -14049,10 +13973,12 @@ __metadata:
     react-native-clean-project: ^4.0.3
     react-native-cli-bump-version: 1.5.0
     react-native-codegen: 0.0.7
+    react-native-compass-heading: ^1.5.0
     react-native-config: 1.4.6
     react-native-crypto: 2.2.0
     react-native-device-info: 8.7.1
     react-native-flash-message: 0.2.1
+    react-native-geocoding: ^0.5.0
     react-native-gesture-handler: 2.18.1
     react-native-get-random-values: 1.8.0
     react-native-icloudstore: 0.9.0
@@ -14088,6 +14014,7 @@ __metadata:
     react-native-udp: 2.7.0
     react-native-url-polyfill: ^2.0.0
     react-native-video: 5.2.1
+    react-native-vision-camera: ^4.5.3
     react-native-webview: 13.10.5
     react-redux: 8.0.4
     react-test-renderer: 17.0.2
@@ -16064,7 +15991,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json5@npm:^1.0.1, json5@npm:^1.0.2":
+"json5@npm:^1.0.2":
   version: 1.0.2
   resolution: "json5@npm:1.0.2"
   dependencies:
@@ -19553,6 +19480,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-compass-heading@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "react-native-compass-heading@npm:1.5.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 09dfa531c8498937b0cfc4c809cdf049232c85d204e32c1f8923843a8fb00c09efbc9f75e28bd92d7265669e0ae40c9b0b12b567232f1dc080a23ecd8b16145e
+  languageName: node
+  linkType: hard
+
 "react-native-config@npm:1.4.6":
   version: 1.4.6
   resolution: "react-native-config@npm:1.4.6"
@@ -19624,6 +19561,13 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-native: ">0.62.0"
   checksum: 8730d7349bec27a23558760320082bd89b07fb404a87bf039a8d852455f28e4d5419f093bb7900ff5f6d85488274cfb246278b6700878bcabe574d5aacd88dac
+  languageName: node
+  linkType: hard
+
+"react-native-geocoding@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "react-native-geocoding@npm:0.5.0"
+  checksum: a33e9dc87d104abe19206660e9fa0782090909ca8b58c70eae4690faa92194817724833086b29c57387500cdd9ecd0febd6ccbbd0f4eac0e11a93696429cf9d2
   languageName: node
   linkType: hard
 
@@ -20029,6 +19973,26 @@ __metadata:
     prop-types: ^15.7.2
     shaka-player: ^2.5.9
   checksum: efbc09a47e3080dde2986a3a1ea3f32b815317f99013c015522fd2e6ed937ed02244761f4dd5c8f5bf0260bf8a1d518315025cae499c16a6c3b1cd0fa6935d2d
+  languageName: node
+  linkType: hard
+
+"react-native-vision-camera@npm:^4.5.3":
+  version: 4.5.3
+  resolution: "react-native-vision-camera@npm:4.5.3"
+  peerDependencies:
+    "@shopify/react-native-skia": "*"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: "*"
+    react-native-worklets-core: "*"
+  peerDependenciesMeta:
+    "@shopify/react-native-skia":
+      optional: true
+    react-native-reanimated:
+      optional: true
+    react-native-worklets-core:
+      optional: true
+  checksum: 99d57a70f93134903ae25ef798947f79804ea00e3b58cbb21131115552e6f2950d2a3be9a6a237232ca6bab7b5031aa12d9ca2df659be39dc607d75997317abc
   languageName: node
   linkType: hard
 
@@ -23585,16 +23549,6 @@ __metadata:
     simple-plist: ^1.1.0
     uuid: ^7.0.3
   checksum: 908ff85851f81aec6e36ca24427db092e1cc068f052716e14de5e762196858039efabbe053a1abe8920184622501049e74a93618e8692b982f7604a9847db108
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:0.4.23":
-  version: 0.4.23
-  resolution: "xml2js@npm:0.4.23"
-  dependencies:
-    sax: ">=0.6.0"
-    xmlbuilder: ~11.0.0
-  checksum: ca0cf2dfbf6deeaae878a891c8fbc0db6fd04398087084edf143cdc83d0509ad0fe199b890f62f39c4415cf60268a27a6aed0d343f0658f8779bd7add690fa98
   languageName: node
   linkType: hard
 

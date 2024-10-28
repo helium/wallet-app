@@ -26,6 +26,7 @@ import Search from '@assets/images/search.svg'
 import Info from '@assets/images/info.svg'
 import QuestionMark from '@assets/images/questionMark.svg'
 import BrowseVoters from '@assets/images/browseVoters.svg'
+import Expand from '@assets/images/expand.svg'
 import Box from './Box'
 import Text from './Text'
 import ButtonPressAnimation from './ButtonPressAnimation'
@@ -49,6 +50,7 @@ type IconName =
   | 'info'
   | 'questionMark'
   | 'browseVoters'
+  | 'expand'
 
 type Props = BoxProps<Theme> & {
   backgroundColorOpacity?: number
@@ -287,6 +289,8 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <QuestionMark color={getIconColor()} />
     case 'browseVoters':
       return <BrowseVoters color={getIconColor()} />
+    case 'expand':
+      return <Expand color={getIconColor()} />
   }
 }
 

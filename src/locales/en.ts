@@ -1529,4 +1529,98 @@ export default {
   manageCollectables: {
     title: 'Manage collectable list',
   },
+  HotspotPage: {
+    metersAway: '{{meters}}m away',
+    amountOfHotspots: '{{amount}} Hotspots',
+    byDistance: 'By Distance',
+    byEarnings: 'By Earnings',
+    noHotspotsTitle: 'No Hotspots. Yet',
+    noHotspotsSubtitle:
+      'Hotspots create wireless coverage for millions of devices.',
+    learnMore: 'Learn More',
+    add: 'Add',
+  },
+  AddHotspotPage: {
+    title: 'Let’s get your Hotspot connected!',
+    subtitle: 'Got a good spot for your Hotspot?',
+    locationAndMountingTips: 'Location & Mounting Tips',
+    addHotspot: 'Add Hotspot',
+  },
+  SelectNetworkScreen: {
+    title: 'What Network?',
+    subtitle: 'What network does your Hotspot create coverage for?',
+    helpText: 'I’m not sure what I have',
+  },
+  SelectDeviceScreen: {
+    title: 'What Device?',
+    subtitle: 'Which device to do wish to deploy?',
+    indoor: 'Indoor Hotspot',
+    outdoor: 'Outdoor <quaternary>Hotspot</quaternary>',
+  },
+  KeepYourBoxScreen: {
+    title: 'Keep Your Box',
+    subtitle: 'You will need the QR Code on the box to deploy your Hotspot.',
+  },
+  ConnectEthernetScreen: {
+    title: 'Connect Ethernet',
+    titleIndoor: 'Connect Ethernet\n& Power',
+    subtitle: 'Connect the powered ethernet cable to the rear of the Hotspot.',
+    subtitleIndoor:
+      'Connect the powered ethernet cable to the rear of the Hotspot.',
+    helpText: 'The status light should turn blue.',
+    help: 'Help',
+  },
+  ConnectToHotspotScreen: {
+    title: 'Connect to Hotspot',
+    subtitle: 'We’ll use your camera to scan the QR code on the Hotspot box.',
+    requestCameraPermissions: 'Request Camera Permissions',
+    perissionsGranted: 'Camera Permissions Granted',
+    perissionsDenied: 'Camera Permissions Denied',
+    manualEntry: 'Manual Entry',
+  },
+  ScanQRCodeScreen: {
+    title: 'Scan QR Code',
+    subtitle: 'Scan the QR code on the box of the Helium Mobile Hotspot.',
+    manualEntry: 'Manual Entry',
+    validatingQRCode: 'Validating QR Code...',
+    tryAgain: 'There was an error, please check your network and try again.',
+  },
+  AcquireLocationScreen: {
+    title: 'Acquiring Location',
+    subtitle:
+      'Your Hotspot is waiting for a GPS signal to determine its location.',
+    gpsHelp: 'GPS Help',
+    isThisCorrect: 'Is this correct?',
+    locationDetermined:
+      'We’ve determined the following location via GPS. Does it look correct? Rescan, if not.',
+  },
+  SelectFloorScreen: {
+    title: 'What Floor?',
+    subtitle: 'What floor is your Hotspot on?',
+    selectPlaceholder: 'Select Floor',
+    approx: 'Approx. {{meters}}m',
+    floor: 'Floor {{floor}}',
+  },
+  SetDirectionScreen: {
+    title: 'Rotate dial to\nset direction',
+    subtitle:
+      'Your Hotspot should face the same direction. Point towards where you expect traffic.',
+  },
+  AddToWalletScreen: {
+    title: 'WELCOME',
+    addressDetails: 'Floor {{floor}} | Pointing {{direction}}',
+    addressDetailsIndoor: 'Floor {{floor}}',
+    errorOnboarding:
+      'There was an error onboarding your device. Please make sure your device is connected to the internet and try again.',
+  },
+  ManualEntryScreen: {
+    title: 'Manual Entry',
+    subtitle: 'Enter the network name and password from the Hotspot’s box.',
+    scanQRCode: 'Scan QR Code',
+    tryAgain:
+      'There was an error, please check your network name and password and try again.',
+  },
+  OnboardingSheet: {
+    addToWallet: 'Add to wallet',
+  },
 }

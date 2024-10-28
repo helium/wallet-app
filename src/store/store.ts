@@ -8,6 +8,7 @@ import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
 import { name as balancesSliceName } from './slices/balancesSlice'
 import { name as notificationsSliceName } from './slices/notificationsSlice'
+import { name as appSliceName } from './slices/appSlice'
 import Reactotron from '../../ReactotronConfig'
 
 const enhancers: StoreEnhancer[] = []
@@ -24,6 +25,7 @@ const persistConfig = {
     solanaSliceName,
     balancesSliceName,
     notificationsSliceName,
+    appSliceName,
   ],
 }
 

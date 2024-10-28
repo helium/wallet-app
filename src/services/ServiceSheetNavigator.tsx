@@ -2,6 +2,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { useBorderRadii, useColors } from '@theme/themeHooks'
 import { StackNavigationOptions } from '@react-navigation/stack'
+import { useAppDispatch } from '@store/store'
+import { appSlice } from '@store/slices/appSlice'
 import ServiceSheet from './ServiceSheet'
 import WalletService from './WalletService'
 import HotspotService from './HotspotService'
@@ -17,7 +19,7 @@ const ServiceSheetNavigator = () => {
   const colors = useColors()
   const borderRadii = useBorderRadii()
   const [currentService, setCurrentService] = useState('wallet')
-
+  const dispatch = useAppDispatch()
   const navigatorScreenOptions = useMemo(
     () =>
       ({
@@ -33,32 +35,36 @@ const ServiceSheetNavigator = () => {
     [borderRadii, colors],
   )
 
-  const onFocus = useCallback((target: string | undefined) => {
-    switch (target?.split('-')[0]) {
-      default:
-      case 'WalletService':
-        setCurrentService('wallet')
-        break
-      case 'HotspotService':
-        setCurrentService('hotspots')
-        break
-      case 'AccountsService':
-        setCurrentService('wallets')
-        break
-      case 'GovernanceService':
-        setCurrentService('governance')
-        break
-      case 'BrowserService':
-        setCurrentService('browser')
-        break
-      case 'NotificationsService':
-        setCurrentService('notifications')
-        break
-      case 'SettingsService':
-        setCurrentService('settings')
-        break
-    }
-  }, [])
+  const onFocus = useCallback(
+    (target: string | undefined) => {
+      dispatch(appSlice.actions.setRootSheetPosition(undefined))
+      switch (target?.split('-')[0]) {
+        default:
+        case 'WalletService':
+          setCurrentService('wallet')
+          break
+        case 'HotspotService':
+          setCurrentService('hotspots')
+          break
+        case 'AccountsService':
+          setCurrentService('wallets')
+          break
+        case 'GovernanceService':
+          setCurrentService('governance')
+          break
+        case 'BrowserService':
+          setCurrentService('browser')
+          break
+        case 'NotificationsService':
+          setCurrentService('notifications')
+          break
+        case 'SettingsService':
+          setCurrentService('settings')
+          break
+      }
+    },
+    [dispatch],
+  )
 
   return (
     <ServiceSheet currentService={currentService}>

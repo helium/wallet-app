@@ -8,7 +8,6 @@ import {
   DelayedFadeIn,
   FabButton,
   FadeInFast,
-  FadeInOut,
   ImageBox,
   ReAnimatedBlurBox,
   ReAnimatedBox,
@@ -16,45 +15,24 @@ import {
   Text,
   TextInput,
 } from '@components'
-import Map from '@components/map/Map'
-import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { NetworkType } from '@helium/onboarding'
-import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
-import useAlert from '@hooks/useAlert'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useEntityKey } from '@hooks/useEntityKey'
-import { useForwardGeo } from '@hooks/useForwardGeo'
-import { useImplicitBurn } from '@hooks/useImplicitBurn'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { useMobileInfo } from '@hooks/useMobileInfo'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
-import { useReverseGeo } from '@hooks/useReverseGeo'
-import useSubmitTxn from '@hooks/useSubmitTxn'
-import MapLibreGL from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
-import * as Logger from '@utils/logger'
-import BN from 'bn.js'
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Alert,
   Keyboard,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
 } from 'react-native'
 import 'text-encoding-polyfill'
-import { useDebounce } from 'use-debounce'
-import { useColors, useCreateOpacity, useSpacing } from '@theme/themeHooks'
+// import { useDebounce } from 'use-debounce'
+import { useColors, useSpacing } from '@theme/themeHooks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import CloseButton from '@components/CloseButton'
 import {
@@ -69,48 +47,22 @@ const AssertLocationScreen = () => {
   const { bottom } = useSafeAreaInsets()
   const spacing = useSpacing()
   const route = useRoute<Route>()
-  const { backgroundStyle } = useCreateOpacity()
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
   const { info: iotInfoAcc } = useIotInfo(entityKey)
   const { info: mobileInfoAcc } = useMobileInfo(entityKey)
-  const mapRef = useRef<MapLibreGL.MapView>(null)
-  const cameraRef = useRef<MapLibreGL.Camera>(null)
-  const { showOKAlert } = useAlert()
   const colors = useColors()
-  const [mapCenter, setMapCenter] = useState<number[]>()
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
   const [gain, setGain] = useState<string>()
   const [elevation, setElevation] = useState<string>()
-  const [asserting, setAsserting] = useState(false)
-  const [transactionError, setTransactionError] = useState<string>()
-  const reverseGeo = useReverseGeo(mapCenter)
-  const forwardGeo = useForwardGeo()
-  const { submitUpdateEntityInfo } = useSubmitTxn()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const {
-    maker,
-    makerDc,
-    myDcWithHnt,
-    loadingMyDc,
-    loadingMakerDc,
-    locationAssertDcRequirements,
-    loadingLocationAssertDcRequirements,
-  } = useOnboardingBalnces(entityKey)
-  const { implicitBurn } = useImplicitBurn()
-  const wallet = useCurrentWallet()
+  const { loadingMyDc, loadingMakerDc, loadingLocationAssertDcRequirements } =
+    useOnboardingBalnces(entityKey)
   const {
     content: { metadata },
   } = collectable
-
-  const iotLocation = useMemo(() => {
-    if (!iotInfoAcc?.location) {
-      return undefined
-    }
-    return parseH3BNLocation(iotInfoAcc.location).reverse()
-  }, [iotInfoAcc])
 
   const mobileLocation = useMemo(() => {
     if (!mobileInfoAcc?.location) {
@@ -120,55 +72,35 @@ const AssertLocationScreen = () => {
     return parseH3BNLocation(mobileInfoAcc.location).reverse()
   }, [mobileInfoAcc])
 
-  const sameLocation = useMemo(() => {
-    if (!iotLocation || !mobileLocation) {
-      return false
-    }
+  // const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
+  // const onUserLocationUpdate = useCallback(
+  //   (loc: MapLibreGL.Location) => {
+  //     setUserLocation(loc)
+  //   },
+  //   [setUserLocation],
+  // )
 
-    return JSON.stringify(iotLocation) === JSON.stringify(mobileLocation)
-  }, [iotLocation, mobileLocation])
+  // useEffect(() => {
+  //   const coords = userLocation?.coords
+  //   if (!initialUserLocation && coords) {
+  //     setInitialUserLocation([coords.longitude, coords.latitude])
+  //   }
+  // }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
 
-  const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
-  const [initialCenterSet, setInitalCenter] = useState(false)
-
-  const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
-  const onUserLocationUpdate = useCallback(
-    (loc: MapLibreGL.Location) => {
-      setUserLocation(loc)
-    },
-    [setUserLocation],
-  )
-
-  useEffect(() => {
-    const coords = userLocation?.coords
-    if (!initialUserLocation && coords) {
-      setInitialUserLocation([coords.longitude, coords.latitude])
-    }
-  }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
-
-  const initialCenter = useMemo(() => {
-    return (
-      iotLocation ||
-      mobileLocation ||
-      initialUserLocation ||
-      INITIAL_MAP_VIEW_STATE.centerCoordinate
-    )
-  }, [initialUserLocation, iotLocation, mobileLocation])
-
-  useEffect(() => {
-    if (
-      initialCenter &&
-      JSON.stringify(initialCenter) !==
-        JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
-      !initialCenterSet
-    ) {
-      setInitalCenter(true)
-      cameraRef.current?.setCamera({
-        centerCoordinate: initialCenter,
-        animationDuration: 0,
-      })
-    }
-  }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
+  // useEffect(() => {
+  //   if (
+  //     initialCenter &&
+  //     JSON.stringify(initialCenter) !==
+  //       JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
+  //     !initialCenterSet
+  //   ) {
+  //     setInitalCenter(true)
+  //     cameraRef.current?.setCamera({
+  //       centerCoordinate: initialCenter,
+  //       animationDuration: 0,
+  //     })
+  //   }
+  // }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
 
   useEffect(() => {
     if (!elevGainVisible) {
@@ -182,233 +114,221 @@ const AssertLocationScreen = () => {
     }
   }, [iotInfoAcc, elevGainVisible, setGain, setElevation])
 
-  const resetGain = useCallback(
-    () => setGain(iotInfoAcc?.gain ? `${iotInfoAcc.gain / 10}` : undefined),
-    [iotInfoAcc, setGain],
-  )
+  // const resetGain = useCallback(
+  //   () => setGain(iotInfoAcc?.gain ? `${iotInfoAcc.gain / 10}` : undefined),
+  //   [iotInfoAcc, setGain],
+  // )
 
-  const resetElevation = useCallback(
-    () =>
-      setElevation(
-        iotInfoAcc?.elevation ? `${iotInfoAcc.elevation}` : undefined,
-      ),
-    [iotInfoAcc, setElevation],
-  )
+  // const resetElevation = useCallback(
+  //   () =>
+  //     setElevation(
+  //       iotInfoAcc?.elevation ? `${iotInfoAcc.elevation}` : undefined,
+  //     ),
+  //   [iotInfoAcc, setElevation],
+  // )
 
   const handleSearchPress = useCallback(() => {
     setSearchVisible(!searchVisible)
   }, [searchVisible, setSearchVisible])
 
-  const hideSearch = useCallback(() => {
-    setSearchValue(undefined)
-    setSearchVisible(false)
-  }, [setSearchValue, setSearchVisible])
+  // const hideElevGain = useCallback(() => {
+  //   setElevGainVisible(false)
+  //   resetGain()
+  //   resetElevation()
+  // }, [setElevGainVisible, resetGain, resetElevation])
 
-  const hideElevGain = useCallback(() => {
-    setElevGainVisible(false)
-    resetGain()
-    resetElevation()
-  }, [setElevGainVisible, resetGain, resetElevation])
+  // const handleOnSearch = useCallback(async () => {
+  //   if (searchValue) {
+  //     try {
+  //       // const coords = await forwardGeo.execute(searchValue)
 
-  const handleOnSearch = useCallback(async () => {
-    if (searchValue) {
-      try {
-        const coords = await forwardGeo.execute(searchValue)
+  //       // if (cameraRef?.current && coords) {
+  //       //   cameraRef.current.setCamera({
+  //       //     animationDuration: 500,
+  //       //     centerCoordinate: coords,
+  //       //     zoomLevel: MAX_MAP_ZOOM / 1.2,
+  //       //   })
+  //       // }
+  //     } catch (error) {
+  //       const { message = '' } = error as Error
+  //       if (message === t('noData')) {
+  //         await showOKAlert({
+  //           title: t('generic.error'),
+  //           message: t('assertLocationScreen.locationNotFound'),
+  //         })
+  //       }
+  //     }
+  //   }
 
-        if (cameraRef?.current && coords) {
-          cameraRef.current.setCamera({
-            animationDuration: 500,
-            centerCoordinate: coords,
-            zoomLevel: MAX_MAP_ZOOM / 1.2,
-          })
-        }
-      } catch (error) {
-        const { message = '' } = error as Error
-        if (message === t('noData')) {
-          await showOKAlert({
-            title: t('generic.error'),
-            message: t('assertLocationScreen.locationNotFound'),
-          })
-        }
-      }
-    }
+  //   hideSearch()
+  // }, [cameraRef, t, hideSearch, searchValue, forwardGeo, showOKAlert])
 
-    hideSearch()
-  }, [cameraRef, t, hideSearch, searchValue, forwardGeo, showOKAlert])
+  // const handleRegionChanged = useCallback(async () => {
+  //   if (mapRef?.current) {
+  //     const center = await mapRef?.current.getCenter()
+  //     if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
+  //       setMapCenter(center)
+  //       setTransactionError(undefined)
+  //       hideSearch()
+  //     }
+  //   }
+  // }, [mapRef, mapCenter, setMapCenter, hideSearch])
 
-  const handleRegionChanged = useCallback(async () => {
-    if (mapRef?.current) {
-      const center = await mapRef?.current.getCenter()
-      if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
-        setMapCenter(center)
-        setTransactionError(undefined)
-        hideSearch()
-      }
-    }
-  }, [mapRef, mapCenter, setMapCenter, hideSearch])
+  // const handleUserLocationPress = useCallback(() => {
+  //   if (cameraRef?.current && userLocation?.coords) {
+  //     cameraRef.current.setCamera({
+  //       animationDuration: 500,
+  //       zoomLevel: MAX_MAP_ZOOM,
+  //       centerCoordinate: userLocation?.coords,
+  //     })
+  //   }
+  // }, [cameraRef, userLocation?.coords])
 
-  const handleUserLocationPress = useCallback(() => {
-    if (cameraRef?.current && userLocation?.coords) {
-      cameraRef.current.setCamera({
-        animationDuration: 500,
-        zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation?.coords,
-      })
-    }
-  }, [cameraRef, userLocation?.coords])
+  // const assertLocation = useCallback(
+  //   async (type: NetworkType) => {
+  //     if (
+  //       !entityKey ||
+  //       loadingMakerDc ||
+  //       loadingLocationAssertDcRequirements ||
+  //       !wallet
+  //     )
+  //       return
 
-  const assertLocation = useCallback(
-    async (type: NetworkType) => {
-      if (
-        !mapCenter ||
-        !entityKey ||
-        loadingMakerDc ||
-        loadingLocationAssertDcRequirements ||
-        !wallet
-      )
-        return
+  //     setTransactionError(undefined)
+  //     setAsserting(true)
+  //     try {
+  //       hideElevGain()
+  //       if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
+  //         throw new Error(t('assertLocationScreen.error.wrongOwner'))
+  //       }
+  //       const requiredDc =
+  //         locationAssertDcRequirements[
+  //           type === 'IOT' ? IOT_MINT.toBase58() : MOBILE_MINT.toBase58()
+  //         ]
+  //       const insufficientMakerDcBal = (makerDc || new BN(0)).lt(requiredDc)
+  //       const insufficientMyDcBal =
+  //         !loadingMyDc && (myDcWithHnt || new BN(0)).lt(requiredDc)
 
-      setTransactionError(undefined)
-      setAsserting(true)
-      try {
-        hideElevGain()
-        if (collectable.ownership.owner.toString() !== wallet.toBase58()) {
-          throw new Error(t('assertLocationScreen.error.wrongOwner'))
-        }
-        const requiredDc =
-          locationAssertDcRequirements[
-            type === 'IOT' ? IOT_MINT.toBase58() : MOBILE_MINT.toBase58()
-          ]
-        const insufficientMakerDcBal = (makerDc || new BN(0)).lt(requiredDc)
-        const insufficientMyDcBal =
-          !loadingMyDc && (myDcWithHnt || new BN(0)).lt(requiredDc)
+  //       let numLocationChanges = 0
+  //       if (type === 'IOT') {
+  //         numLocationChanges = iotInfoAcc?.numLocationAsserts || 0
+  //       } else {
+  //         numLocationChanges = mobileInfoAcc?.numLocationAsserts || 0
+  //       }
+  //       const isPayer =
+  //         insufficientMakerDcBal ||
+  //         !maker ||
+  //         numLocationChanges >= maker.locationNonceLimit
+  //       if (isPayer && insufficientMyDcBal) {
+  //         throw new Error(
+  //           t('assertLocationScreen.error.insufficientFunds', {
+  //             usd: requiredDc.toNumber() / 100000,
+  //           }),
+  //         )
+  //       }
+  //       if (isPayer) {
+  //         await implicitBurn(requiredDc.toNumber())
+  //       }
+  //       await submitUpdateEntityInfo({
+  //         type,
+  //         entityKey,
+  //         lng: mapCenter[0],
+  //         lat: mapCenter[1],
+  //         elevation,
+  //         decimalGain: gain,
+  //         payer: isPayer ? wallet.toBase58() : undefined,
+  //       })
+  //       setAsserting(false)
 
-        let numLocationChanges = 0
-        if (type === 'IOT') {
-          numLocationChanges = iotInfoAcc?.numLocationAsserts || 0
-        } else {
-          numLocationChanges = mobileInfoAcc?.numLocationAsserts || 0
-        }
-        const isPayer =
-          insufficientMakerDcBal ||
-          !maker ||
-          numLocationChanges >= maker.locationNonceLimit
-        if (isPayer && insufficientMyDcBal) {
-          throw new Error(
-            t('assertLocationScreen.error.insufficientFunds', {
-              usd: requiredDc.toNumber() / 100000,
-            }),
-          )
-        }
-        if (isPayer) {
-          await implicitBurn(requiredDc.toNumber())
-        }
-        await submitUpdateEntityInfo({
-          type,
-          entityKey,
-          lng: mapCenter[0],
-          lat: mapCenter[1],
-          elevation,
-          decimalGain: gain,
-          payer: isPayer ? wallet.toBase58() : undefined,
-        })
-        setAsserting(false)
+  //       await showOKAlert({
+  //         title: t('assertLocationScreen.success.title'),
+  //         message: t('assertLocationScreen.success.message'),
+  //       })
+  //       navigation.navigate('HotspotMapScreen', {
+  //         hotspot: collectable,
+  //         network: type,
+  //       })
+  //     } catch (error) {
+  //       setAsserting(false)
+  //       Logger.error(error)
+  //       setTransactionError((error as Error).message)
+  //     }
+  //   },
+  //   [
+  //     maker,
+  //     implicitBurn,
+  //     wallet,
+  //     entityKey,
+  //     loadingMakerDc,
+  //     loadingLocationAssertDcRequirements,
+  //     hideElevGain,
+  //     locationAssertDcRequirements,
+  //     makerDc,
+  //     loadingMyDc,
+  //     myDcWithHnt,
+  //     submitUpdateEntityInfo,
+  //     elevation,
+  //     gain,
+  //     showOKAlert,
+  //     t,
+  //     navigation,
+  //     collectable,
+  //     iotInfoAcc?.numLocationAsserts,
+  //     mobileInfoAcc?.numLocationAsserts,
+  //   ],
+  // )
 
-        await showOKAlert({
-          title: t('assertLocationScreen.success.title'),
-          message: t('assertLocationScreen.success.message'),
-        })
-        navigation.navigate('HotspotMapScreen', {
-          hotspot: collectable,
-          network: type,
-        })
-      } catch (error) {
-        setAsserting(false)
-        Logger.error(error)
-        setTransactionError((error as Error).message)
-      }
-    },
-    [
-      maker,
-      implicitBurn,
-      wallet,
-      mapCenter,
-      entityKey,
-      loadingMakerDc,
-      loadingLocationAssertDcRequirements,
-      hideElevGain,
-      locationAssertDcRequirements,
-      makerDc,
-      loadingMyDc,
-      myDcWithHnt,
-      submitUpdateEntityInfo,
-      elevation,
-      gain,
-      showOKAlert,
-      t,
-      navigation,
-      collectable,
-      iotInfoAcc?.numLocationAsserts,
-      mobileInfoAcc?.numLocationAsserts,
-    ],
-  )
+  // const handleAssertLocationPress = useCallback(async () => {
+  //   if (!elevGainVisible) {
+  //     Alert.alert(
+  //       t('assertLocationScreen.title'),
+  //       t('assertLocationScreen.whichLocation'),
+  //       [
+  //         {
+  //           text: 'Iot',
+  //           onPress: () => setElevGainVisible(true),
+  //         },
+  //         {
+  //           text: 'Mobile',
+  //           onPress: async () => assertLocation('MOBILE'),
+  //         },
+  //         {
+  //           text: t('generic.cancel'),
+  //           style: 'destructive',
+  //         },
+  //       ],
+  //     )
+  //   } else {
+  //     // elevGainVisible
+  //     // we can assume user is asserting location from elevGain UI
+  //     await assertLocation('IOT')
+  //   }
+  // }, [t, elevGainVisible, assertLocation])
 
-  const handleAssertLocationPress = useCallback(async () => {
-    if (!elevGainVisible) {
-      Alert.alert(
-        t('assertLocationScreen.title'),
-        t('assertLocationScreen.whichLocation'),
-        [
-          {
-            text: 'Iot',
-            onPress: () => setElevGainVisible(true),
-          },
-          {
-            text: 'Mobile',
-            onPress: async () => assertLocation('MOBILE'),
-          },
-          {
-            text: t('generic.cancel'),
-            style: 'destructive',
-          },
-        ],
-      )
-    } else {
-      // elevGainVisible
-      // we can assume user is asserting location from elevGain UI
-      await assertLocation('IOT')
-    }
-  }, [t, elevGainVisible, assertLocation])
+  // const showError = useMemo(() => {
+  //   if (transactionError) return transactionError
+  // }, [transactionError])
 
-  const showError = useMemo(() => {
-    if (transactionError) return transactionError
-  }, [transactionError])
-
-  const disabled = useMemo(
-    () =>
-      !mapCenter ||
-      reverseGeo.loading ||
-      asserting ||
-      loadingLocationAssertDcRequirements ||
-      loadingMakerDc ||
-      loadingMyDc,
-    [
-      asserting,
-      mapCenter,
-      reverseGeo.loading,
-      loadingLocationAssertDcRequirements,
-      loadingMakerDc,
-      loadingMyDc,
-    ],
-  )
+  // const disabled = useMemo(
+  //   () =>
+  //     asserting ||
+  //     loadingLocationAssertDcRequirements ||
+  //     loadingMakerDc ||
+  //     loadingMyDc,
+  //   [
+  //     asserting,
+  //     loadingLocationAssertDcRequirements,
+  //     loadingMakerDc,
+  //     loadingMyDc,
+  //   ],
+  // )
 
   const isLoading = useMemo(
     () => loadingMyDc || loadingMakerDc || loadingLocationAssertDcRequirements,
     [loadingMyDc, loadingMakerDc, loadingLocationAssertDcRequirements],
   )
 
-  const [debouncedDisabled] = useDebounce(disabled, 300)
-  const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 300)
+  // const [debouncedDisabled] = useDebounce(disabled, 300)
 
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
@@ -434,7 +354,7 @@ const AssertLocationScreen = () => {
               <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           </ReAnimatedBlurBox>
-          <Map
+          {/* <Map
             map={mapRef}
             camera={cameraRef}
             onUserLocationUpdate={onUserLocationUpdate}
@@ -502,7 +422,7 @@ const AssertLocationScreen = () => {
                 )
               })
               .filter(Boolean)}
-          </Map>
+          </Map> */}
           <Box
             flexDirection="row"
             alignItems="center"
@@ -551,42 +471,11 @@ const AssertLocationScreen = () => {
                 alignItems="center"
                 marginHorizontal="3"
               >
-                {reverseGeoLoading && (
-                  <Box>
-                    <CircleLoader
-                      loaderSize={20}
-                      color="primaryText"
-                      marginRight={reverseGeo.result ? '3' : 'none'}
-                    />
-                  </Box>
-                )}
-                {showError && (
+                {/* {showError && (
                   <Text variant="textXsMedium" color="error.500">
                     {showError}
                   </Text>
-                )}
-                {!reverseGeoLoading && !showError && reverseGeo.result && (
-                  <FadeInOut>
-                    <Box
-                      flexShrink={1}
-                      style={backgroundStyle('base.white', 0.3)}
-                      flexDirection="row"
-                      alignItems="center"
-                      paddingHorizontal="3"
-                      paddingVertical="1.5"
-                      borderRadius="full"
-                      minHeight={36}
-                    >
-                      <Text
-                        variant="textXsMedium"
-                        color="primaryText"
-                        numberOfLines={1}
-                      >
-                        {reverseGeo.result}
-                      </Text>
-                    </Box>
-                  </FadeInOut>
-                )}
+                )} */}
               </Box>
               <Box
                 flexShrink={0}
@@ -614,7 +503,7 @@ const AssertLocationScreen = () => {
                   width={36}
                   height={36}
                   justifyContent="center"
-                  onPress={handleUserLocationPress}
+                  // onPress={handleUserLocationPress}
                 />
               </Box>
             </Box>
@@ -624,7 +513,7 @@ const AssertLocationScreen = () => {
                 <SearchInput
                   placeholder={t('assertLocationScreen.searchLocation')}
                   onChangeText={setSearchValue}
-                  onEnter={handleOnSearch}
+                  // onEnter={handleOnSearch}
                   value={searchValue}
                   width="100%"
                   borderRadius="none"
@@ -709,26 +598,26 @@ const AssertLocationScreen = () => {
               backgroundColor="primaryText"
               borderRadius="full"
               paddingVertical="5"
-              disabled={disabled}
+              // disabled={disabled}
               height={65}
               alignItems="center"
               justifyContent="center"
-              onPress={handleAssertLocationPress}
+              // onPress={handleAssertLocationPress}
               style={{
                 marginBottom: bottom + spacing['0.5'],
               }}
             >
-              {debouncedDisabled || asserting ? (
+              {/* {debouncedDisabled ? (
                 <CircleLoader loaderSize={19} color="primaryBackground" />
-              ) : (
-                <Text
-                  variant="textLgMedium"
-                  marginHorizontal="xs"
-                  color="primaryBackground"
-                >
-                  {t('assertLocationScreen.title')}
-                </Text>
-              )}
+              ) : ( */}
+              <Text
+                variant="textLgMedium"
+                marginHorizontal="xs"
+                color="primaryBackground"
+              >
+                {t('assertLocationScreen.title')}
+              </Text>
+              {/* )} */}
             </TouchableOpacityBox>
           </Box>
         )}
@@ -829,9 +718,9 @@ const AssertLocationScreen = () => {
                     backgroundColorDisabled="base.white"
                     backgroundColorDisabledOpacity={0.0}
                     titleColorDisabled="gray.600"
-                    title={asserting ? '' : t('assertLocationScreen.title')}
+                    // title={asserting ? '' : t('assertLocationScreen.title')}
                     titleColor="primaryBackground"
-                    onPress={handleAssertLocationPress}
+                    // onPress={handleAssertLocationPress}
                   />
                 </Box>
               </Box>

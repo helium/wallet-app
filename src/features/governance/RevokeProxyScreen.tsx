@@ -219,8 +219,10 @@ export const RevokeProxyScreen = () => {
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
-              value={mint.toBase58()}
-              onValueChange={(m: string) => navigation.setParams({ mint: m })}
+              placeholder="Select Network"
+              initialValue={mint.toBase58()}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onValueChange={(m: any) => navigation.setParams({ mint: m })}
               options={networks}
             />
           </Box>

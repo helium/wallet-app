@@ -18,6 +18,7 @@ const getComponents = (variant?: ResponsiveValue<TextVariant, Theme>) => ({
   'green.light-500': <Text color="green.light-500" variant={variant} />,
   'blue.light-500': <Text color="blue.light-500" variant={variant} />,
   'green.400': <Text color="green.400" variant={variant} />,
+  quaternary: <Text color="text.quaternary-500" variant={variant} />,
   codeHighlight: (
     <Text
       color="gray.500"

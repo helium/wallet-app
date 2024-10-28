@@ -9,8 +9,6 @@ import FabButton from '@components/FabButton'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Map from '@components/map/Map'
-import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
@@ -27,24 +25,18 @@ import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
-import MapLibreGL, { OnPressEvent } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
-import { Polygon, feature, featureCollection } from '@turf/helpers'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
-import { parseH3BNLocation } from '@utils/h3'
 import {
   getCachedIotInfos,
   getCachedKeyToAssets,
   getCachedMobileInfos,
   toAsset,
 } from '@utils/solanaUtils'
-import { BN } from 'bn.js'
-import { cellToBoundary, latLngToCell } from 'h3-js'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert } from 'react-native'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
@@ -57,6 +49,7 @@ import {
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
+
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
@@ -64,12 +57,11 @@ const HotspotMapScreen = () => {
   const bottomSheetStyle = useBackgroundStyle('bg.tertiary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
-  const mapRef = useRef<MapLibreGL.MapView>(null)
-  const cameraRef = useRef<MapLibreGL.Camera>(null)
+  // const mapRef = useRef<MapLibreGL.MapView>(null)
+  // const cameraRef = useRef<MapLibreGL.Camera>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
-  const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
-  const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
+  // const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [hotspot, setHotspot] = useState(route.params?.hotspot)
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
     route.params?.network || 'IOT',
@@ -82,41 +74,41 @@ const HotspotMapScreen = () => {
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
   const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
-  const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
-  const [initialCenterSet, setInitalCenter] = useState(false)
-  const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
-  const onUserLocationUpdate = useCallback(
-    (loc: MapLibreGL.Location) => {
-      setUserLocation(loc)
-    },
-    [setUserLocation],
-  )
+  // const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
+  // const [initialCenterSet, setInitalCenter] = useState(false)
+  // const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
+  // const onUserLocationUpdate = useCallback(
+  //   (loc: MapLibreGL.Location) => {
+  //     setUserLocation(loc)
+  //   },
+  //   [setUserLocation],
+  // )
 
-  useEffect(() => {
-    const coords = userLocation?.coords
-    if (!initialUserLocation && coords) {
-      setInitialUserLocation([coords.longitude, coords.latitude])
-    }
-  }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
+  // useEffect(() => {
+  //   const coords = userLocation?.coords
+  //   if (!initialUserLocation && coords) {
+  //     setInitialUserLocation([coords.longitude, coords.latitude])
+  //   }
+  // }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
 
-  const initialCenter = useMemo(() => {
-    return initialUserLocation || INITIAL_MAP_VIEW_STATE.centerCoordinate
-  }, [initialUserLocation])
+  // const initialCenter = useMemo(() => {
+  //   return initialUserLocation || INITIAL_MAP_VIEW_STATE.centerCoordinate
+  // }, [initialUserLocation])
 
-  useEffect(() => {
-    if (
-      initialCenter &&
-      JSON.stringify(initialCenter) !==
-        JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
-      !initialCenterSet
-    ) {
-      setInitalCenter(true)
-      cameraRef.current?.setCamera({
-        centerCoordinate: initialCenter,
-        animationDuration: 0,
-      })
-    }
-  }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
+  // useEffect(() => {
+  //   if (
+  //     initialCenter &&
+  //     JSON.stringify(initialCenter) !==
+  //       JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
+  //     !initialCenterSet
+  //   ) {
+  //     setInitalCenter(true)
+  //     cameraRef.current?.setCamera({
+  //       centerCoordinate: initialCenter,
+  //       animationDuration: 0,
+  //     })
+  //   }
+  // }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
 
   // - fetch all hotspots
   useEffect(() => {
@@ -233,82 +225,82 @@ const HotspotMapScreen = () => {
   }, [loadingInfos, activeHex, hotspot, legendVisible, bottomSheetRef])
 
   // - center the map on the active hex
-  useAsync(async () => {
-    if (
-      activeHex &&
-      activeHex !== DEFAULT_HEX &&
-      mapRef?.current &&
-      bottomSheetHeight
-    ) {
-      const cords = parseH3BNLocation(new BN(activeHex)).reverse()
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const mapHeight = mapRef.current.state.height
+  // useAsync(async () => {
+  //   if (
+  //     activeHex &&
+  //     activeHex !== DEFAULT_HEX &&
+  //     mapRef?.current &&
+  //     bottomSheetHeight
+  //   ) {
+  //     const cords = parseH3BNLocation(new BN(activeHex)).reverse()
+  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //     // @ts-ignore
+  //     const mapHeight = mapRef.current.state.height
 
-      if (mapHeight - bottomSheetHeight > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        const zoomLevel = await mapRef.current.getZoom()
+  //     if (mapHeight - bottomSheetHeight > 0) {
+  //       // eslint-disable-next-line @typescript-eslint/no-shadow
+  //       const zoomLevel = await mapRef.current.getZoom()
 
-        // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
-        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
-        const centeringShift = bottomSheetHeight / 4
+  //       // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
+  //       // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
+  //       const centeringShift = bottomSheetHeight / 4
 
-        // Convert the latitude to radians for more accurate calculations
-        const latitudeRadians = (cords[1] * Math.PI) / 180
+  //       // Convert the latitude to radians for more accurate calculations
+  //       const latitudeRadians = (cords[1] * Math.PI) / 180
 
-        // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
-        // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
-        const metersPerPixel =
-          (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
-          (256 * 2 ** zoomLevel)
+  //       // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
+  //       // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
+  //       const metersPerPixel =
+  //         (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
+  //         (256 * 2 ** zoomLevel)
 
-        // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
-        const pixelShift = centeringShift
+  //       // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
+  //       const pixelShift = centeringShift
 
-        // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
-        const degreeShift = (pixelShift * metersPerPixel) / 111319.9
+  //       // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
+  //       const degreeShift = (pixelShift * metersPerPixel) / 111319.9
 
-        // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
-        // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
-        // viewable area above the bottom sheet.
-        cameraRef.current?.setCamera({
-          centerCoordinate: [cords[0], cords[1] - degreeShift],
-          animationDuration: 200,
-        })
-      }
-    }
-  }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
+  //       // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
+  //       // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
+  //       // viewable area above the bottom sheet.
+  //       cameraRef.current?.setCamera({
+  //         centerCoordinate: [cords[0], cords[1] - degreeShift],
+  //         animationDuration: 200,
+  //       })
+  //     }
+  //   }
+  // }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
-  const iconSize = useMemo(() => 0.17 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])
+  // const iconSize = useMemo(() => 0.17 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])
 
-  const hexsFeature = useMemo(
-    () =>
-      featureCollection(
-        Object.keys(hexInfoBuckets).map((h) => {
-          const center = parseH3BNLocation(new BN(h))
-          return feature(
-            {
-              type: 'Polygon',
-              coordinates: [
-                cellToBoundary(
-                  latLngToCell(
-                    center[0],
-                    center[1],
-                    networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8,
-                  ),
-                ).map((p) => p.reverse()),
-              ],
-            } as Polygon,
-            {
-              id: h,
-              color: networkType === 'MOBILE' ? '#009EF8' : '#26ED75',
-              opacity: h === activeHex ? 1 : 0.3,
-            },
-          )
-        }),
-      ),
-    [activeHex, hexInfoBuckets, networkType, zoomLevel],
-  )
+  // const hexsFeature = useMemo(
+  //   () =>
+  //     featureCollection(
+  //       Object.keys(hexInfoBuckets).map((h) => {
+  //         const center = parseH3BNLocation(new BN(h))
+  //         return feature(
+  //           {
+  //             type: 'Polygon',
+  //             coordinates: [
+  //               cellToBoundary(
+  //                 latLngToCell(
+  //                   center[0],
+  //                   center[1],
+  //                   networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8,
+  //                 ),
+  //               ).map((p) => p.reverse()),
+  //             ],
+  //           } as Polygon,
+  //           {
+  //             id: h,
+  //             color: networkType === 'MOBILE' ? '#009EF8' : '#26ED75',
+  //             opacity: h === activeHex ? 1 : 0.3,
+  //           },
+  //         )
+  //       }),
+  //     ),
+  //   [activeHex, hexInfoBuckets, networkType, zoomLevel],
+  // )
 
   const activeHexItem = useMemo(() => {
     if (!loadingInfos && activeHex) {
@@ -343,24 +335,24 @@ const HotspotMapScreen = () => {
     [loading, onEndReached, loadingInfos],
   )
 
-  const handleUserLocationPress = useCallback(() => {
-    if (cameraRef?.current && userLocation?.coords) {
-      cameraRef.current.setCamera({
-        animationDuration: 500,
-        zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation.coords,
-      })
-    }
-  }, [userLocation, cameraRef])
+  // const handleUserLocationPress = useCallback(() => {
+  //   if (cameraRef?.current && userLocation?.coords) {
+  //     cameraRef.current.setCamera({
+  //       animationDuration: 500,
+  //       zoomLevel: MAX_MAP_ZOOM,
+  //       centerCoordinate: userLocation.coords,
+  //     })
+  //   }
+  // }, [userLocation, cameraRef])
 
-  const handleRegionChanged = useCallback(async () => {
-    if (mapRef?.current) {
-      const zoom = await mapRef.current.getZoom()
-      if (zoomLevel !== zoom) {
-        setZoomLevel(zoom)
-      }
-    }
-  }, [mapRef, zoomLevel, setZoomLevel])
+  // const handleRegionChanged = useCallback(async () => {
+  //   if (mapRef?.current) {
+  //     const zoom = await mapRef.current.getZoom()
+  //     if (zoomLevel !== zoom) {
+  //       setZoomLevel(zoom)
+  //     }
+  //   }
+  // }, [mapRef, zoomLevel, setZoomLevel])
 
   const handleLegendPress = useCallback(() => {
     setLegendVisible(true)
@@ -371,28 +363,28 @@ const HotspotMapScreen = () => {
     setHotspot(undefined)
   }, [networkType, setNetworkType])
 
-  const handleHexClick = useCallback(
-    (event: OnPressEvent) => {
-      const hex = event.features[0]
-      setLegendVisible(false)
-      const id = hex.properties?.id
-      setActiveHex(id)
-      if (id && (hexInfoBuckets[id]?.length || 0) > 1) {
-        Alert.alert(
-          t('collectablesScreen.hotspots.selectActive.title'),
-          t('collectablesScreen.hotspots.selectActive.which'),
-          hexInfoBuckets[id].map((info, index) => ({
-            text: hotspots.find((h) => h.id === info.asset.toBase58())?.content
-              ?.metadata?.name,
-            onPress: () => {
-              setActiveHotspotIndex(index)
-            },
-          })),
-        )
-      }
-    },
-    [hexInfoBuckets, hotspots, t],
-  )
+  // const handleHexClick = useCallback(
+  //   (event: OnPressEvent) => {
+  //     const hex = event.features[0]
+  //     setLegendVisible(false)
+  //     const id = hex.properties?.id
+  //     setActiveHex(id)
+  //     if (id && (hexInfoBuckets[id]?.length || 0) > 1) {
+  //       Alert.alert(
+  //         t('collectablesScreen.hotspots.selectActive.title'),
+  //         t('collectablesScreen.hotspots.selectActive.which'),
+  //         hexInfoBuckets[id].map((info, index) => ({
+  //           text: hotspots.find((h) => h.id === info.asset.toBase58())?.content
+  //             ?.metadata?.name,
+  //           onPress: () => {
+  //             setActiveHotspotIndex(index)
+  //           },
+  //         })),
+  //       )
+  //     }
+  //   },
+  //   [hexInfoBuckets, hotspots, t],
+  // )
 
   return (
     <Box flex={1}>
@@ -417,9 +409,9 @@ const HotspotMapScreen = () => {
             <CircleLoader loaderSize={24} color="primaryText" />
           </Box>
         </ReAnimatedBlurBox>
-        <Map
-          map={mapRef}
-          camera={cameraRef}
+        {/* <Map
+          // map={mapRef}
+          // camera={cameraRef}
           onUserLocationUpdate={onUserLocationUpdate}
           centerCoordinate={initialCenter}
           mapProps={{
@@ -429,18 +421,18 @@ const HotspotMapScreen = () => {
               setLegendVisible(false)
             },
           }}
-        >
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-ignore */}
-          <MapLibreGL.Images
+        > */}
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        {/* <MapLibreGL.Images
             images={{
               iotHex: require('@assets/images/mapIotHex.png'),
               iotHexActive: require('@assets/images/mapIotHexActive.png'),
               mobileHex: require('@assets/images/mapMobileHex.png'),
               mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
             }}
-          />
-          <MapLibreGL.ShapeSource
+          /> */}
+        {/* <MapLibreGL.ShapeSource
             id="hexsFeature"
             shape={hexsFeature}
             onPress={handleHexClick}
@@ -454,8 +446,8 @@ const HotspotMapScreen = () => {
                 fillOpacity: ['get', 'opacity'],
               }}
             />
-          </MapLibreGL.ShapeSource>
-        </Map>
+          </MapLibreGL.ShapeSource> */}
+        {/* </Map> */}
         <Box
           flexDirection="row"
           alignItems="center"
@@ -545,7 +537,7 @@ const HotspotMapScreen = () => {
               width={36}
               height={36}
               justifyContent="center"
-              onPress={handleUserLocationPress}
+              // onPress={handleUserLocationPress}
             />
           </Box>
         </Box>
@@ -564,11 +556,7 @@ const HotspotMapScreen = () => {
           onChange={(idx) => setBottomSheetSnapIndex(idx)}
         >
           <BottomSheetScrollView>
-            <Box
-              onLayout={(e) =>
-                setBottomSheetHeight(e.nativeEvent.layout.height)
-              }
-            >
+            <Box>
               {legendVisible && <HotspotMapLegend network={networkType} />}
               {activeHexItem && (
                 <HotspotMapHotspotDetails

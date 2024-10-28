@@ -253,8 +253,10 @@ export const AssignProxyScreen = () => {
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
-              value={mint.toBase58()}
-              onValueChange={(pk) => navigation.setParams({ mint: pk })}
+              placeholder="Select Network"
+              initialValue={mint.toBase58()}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onValueChange={(pk: any) => navigation.setParams({ mint: pk })}
               options={networks}
             />
           </Box>

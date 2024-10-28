@@ -11,6 +11,8 @@ export const PUBLIC_API_TEST_URL = 'https://testnet-api.helium.wtf/v1'
 export const PRIVACY_POLICY = 'https://wallet.helium.com/privacy-policy'
 export const TERMS_OF_SERVICE = 'https://wallet.helium.com/terms-of-service'
 
+export const HOTSPOT_HELP = 'https://hardware.hellohelium.com/en/'
+
 type UrlType = 'block' | 'txn' | 'account' | 'validator' | 'hotspot'
 
 const useCreateExplorerUrl = () => {

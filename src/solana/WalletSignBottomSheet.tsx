@@ -16,7 +16,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useSharedValue } from 'react-native-reanimated'
 import { ThemeProvider } from '@shopify/restyle'
 import { darkTheme } from '@theme/theme'
 import { StyleProp, ViewStyle } from 'react-native'
@@ -38,7 +37,6 @@ const WalletSignBottomSheet = forwardRef(
       ((value: boolean | PromiseLike<boolean>) => void) | null
     >(null)
     useImperativeHandle(ref, () => ({ show, hide }))
-    const animatedContentHeight = useSharedValue(0)
     const borderRadii = useBorderRadii()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [simulated, setSimulated] = useState(false)
@@ -146,7 +144,6 @@ const WalletSignBottomSheet = forwardRef(
               elevation: 24,
             }}
             enableDynamicSizing
-            contentHeight={animatedContentHeight}
           >
             <ThemeProvider theme={darkTheme}>
               <BottomSheetScrollView>

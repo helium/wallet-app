@@ -1,13 +1,24 @@
 import React, { useMemo } from 'react'
 import Hotspot from '@assets/images/hotspot.svg'
+import Map from '@assets/images/map.svg'
+import Add from '@assets/images/add.svg'
+import Coin from '@assets/images/coin.svg'
 import ServiceSheetPage, {
   ServiceNavBarOption,
 } from '@components/ServiceSheetPage'
-import CollectablesNavigator from '@features/collectables/CollectablesNavigator'
 import { StackNavigationProp } from '@react-navigation/stack'
+import { PortalHost } from '@gorhom/portal'
+import Box from '@components/Box'
+import HotspotPage from './HotspotPage'
+import ExplorerPage from './ExplorerPage'
+import AddHotspotPage from './AddHotspotPage'
+import ClaimTokensPage from './ClaimTokensPage'
 
 export type HotspotServiceStackParamList = {
   Hotspot: undefined
+  Explorer: undefined
+  AddHotspot: undefined
+  ClaimTokens: undefined
 }
 
 export type HotspotServiceNavigationProp =
@@ -16,11 +27,21 @@ export type HotspotServiceNavigationProp =
 const HotspotService = () => {
   const options = useMemo((): Array<ServiceNavBarOption> => {
     return [
-      { name: 'Hotspot', Icon: Hotspot, component: CollectablesNavigator },
+      { name: 'Hotspot', Icon: Hotspot, component: HotspotPage },
+      { name: 'Explorer', Icon: Map, component: ExplorerPage },
+      { name: 'AddHotspot', Icon: Add, component: AddHotspotPage },
+      { name: 'ClaimTokens', Icon: Coin, component: ClaimTokensPage },
     ]
   }, [])
 
-  return <ServiceSheetPage options={options} />
+  return (
+    <Box flex={1}>
+      <Box flex={1}>
+        <ServiceSheetPage options={options} />
+      </Box>
+      <PortalHost name="hotspot-portal" />
+    </Box>
+  )
 }
 
 export default HotspotService

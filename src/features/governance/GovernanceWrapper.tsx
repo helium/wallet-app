@@ -102,7 +102,8 @@ export const GovernanceWrapper: React.FC<
               {header}
               <Select
                 mb="8"
-                value={selectedTab}
+                placeholder="Select Tab"
+                initialValue={selectedTab}
                 onValueChange={setSelectedTab}
                 options={['proposals', 'voters', 'positions'].map((o) => ({
                   label: o.charAt(0).toUpperCase() + o.slice(1),
