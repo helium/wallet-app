@@ -11,6 +11,7 @@ import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import {
   useHeliumVsrState,
   usePositions,
+  useRegistrarForMint,
 } from '@helium/voter-stake-registry-hooks'
 import { getPositionKeysForOwner } from '@helium/voter-stake-registry-sdk'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -179,17 +180,27 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     [govMint, mint],
   )
 
+  const { registrarKey } = useRegistrarForMint(mint)
+
   const args = useMemo(
     () =>
       wallet &&
       mint &&
-      connection && {
-        wallet,
-        mint,
-        provider: anchorProvider,
+      connection &&
+      registrarKey && {
+        registrar: registrarKey,
+        owner: wallet,
+        connection,
       },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [wallet?.toBase58(), mint.toBase58(), connection, anchorProvider],
+    [
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      registrarKey?.toBase58(),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      wallet?.toBase58(),
+      connection,
+      anchorProvider,
+    ],
   )
 
   const { result, loading: loadingPositionKeys } = useAsync(
