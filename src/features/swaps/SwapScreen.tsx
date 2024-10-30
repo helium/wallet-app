@@ -479,18 +479,29 @@ const SwapScreen = () => {
   )
 
   useEffect(() => {
+    setRecipient('')
+    setRecipientOpen(false)
+    setOutputAmount(0)
+  }, [
+    inputMint,
+    inputAmount,
+    outputMint,
+    setRecipient,
+    setRecipientOpen,
+    setOutputAmount,
+  ])
+
+  useEffect(() => {
     // if changing outputMint ensure we get new routes
     ;(async () => {
       if (
         !isDevnet &&
-        inputMintAcc &&
-        outputMintAcc &&
+        inputMintAcc?.address === inputMint &&
+        outputMintAcc?.address === outputMint &&
         typeof inputAmount !== 'undefined' &&
         inputAmount > 0 &&
         !outputMintAcc?.address.equals(DC_MINT)
       ) {
-        setRecipient('')
-        setRecipientOpen(false)
         await getOutputAmount({
           balance: toBN(inputAmount || 0, inputMintAcc.decimals),
         })
@@ -498,12 +509,12 @@ const SwapScreen = () => {
     })()
   }, [
     getOutputAmount,
+    inputMint,
     inputAmount,
     inputMintAcc,
+    outputMint,
     outputMintAcc,
     isDevnet,
-    setRecipient,
-    setRecipientOpen,
   ])
 
   const getInputAmount = useCallback(
