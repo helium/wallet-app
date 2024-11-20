@@ -931,7 +931,8 @@ export const getNFTs = async (
     page,
     '',
     '',
-    { showFungible: true, showCollectionMetadata: true },
+    // TODO: Update helium-program-library to support new options
+    { showFungible: true, showCollectionMetadata: true } as any,
   )
 
   return items

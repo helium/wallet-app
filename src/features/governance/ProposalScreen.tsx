@@ -42,6 +42,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
+import { useColors } from '@theme/themeHooks'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -54,7 +55,6 @@ import {
   VoteChoiceWithMeta,
   VotingResultColors,
 } from './governanceTypes'
-import { useColors } from '@theme/themeHooks'
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
@@ -527,7 +527,7 @@ export const ProposalScreen = () => {
                       titleColor="primaryBackground"
                       LeadingComponent={
                         <BrowseVoters
-                          color={colors['primaryBackground']}
+                          color={colors.primaryBackground}
                           width={18}
                           height={18}
                         />

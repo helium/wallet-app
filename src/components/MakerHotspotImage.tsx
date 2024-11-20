@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
-import { LayoutChangeEvent } from 'react-native'
 import ImageBox from './ImageBox'
 
 const MakerHotspotImage = ({

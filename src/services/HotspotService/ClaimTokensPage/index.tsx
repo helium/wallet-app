@@ -202,6 +202,7 @@ const ClaimTokensPage = () => {
         marginBottom="3xl"
         loading={claiming}
         customLoadingColorDisabled="primaryBackground"
+        backgroundColorDisabled="fg.disabled"
         disabled={claimingDisabled}
       />
       {claiming && (

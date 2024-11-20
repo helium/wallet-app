@@ -16,8 +16,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { useDebounce } from 'use-debounce'
-import { GovernanceNavigationProp } from './governanceTypes'
 import { useColors } from '@theme/themeHooks'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 export const ProxySearch: React.FC<{
   value: string
@@ -136,7 +136,7 @@ export const ProxySearch: React.FC<{
               backgroundColor="primaryText"
               titleColor="primaryBackground"
               Icon={BrowseVoters}
-              iconProps={{ color: colors['primaryBackground'] }}
+              iconProps={{ color: colors.primaryBackground }}
               borderRadius="2xl"
               ml="2"
               onPress={handleBrowseVoters}
