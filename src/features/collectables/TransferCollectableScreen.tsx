@@ -87,10 +87,6 @@ const TransferCollectableScreen = () => {
     [],
   )
 
-  const backgroundImageUri = useMemo(() => {
-    return metadata.image
-  }, [metadata])
-
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
     setRecipientName('')
@@ -130,7 +126,6 @@ const TransferCollectableScreen = () => {
         <BackScreen
           padding="xl"
           title={t('collectablesScreen.transferCollectable')}
-          backgroundImageUri={backgroundImageUri || ''}
           edges={[]}
           headerTopMargin="6xl"
         >

@@ -9,9 +9,15 @@ import Box from './Box'
 type SearchProps = BoxProps<Theme> & {
   placeholder: string
   onChangeText: (text: string) => void
+  onEnter?: () => void
 }
 
-export const Search = ({ placeholder, onChangeText, ...rest }: SearchProps) => {
+export const Search = ({
+  placeholder,
+  onChangeText,
+  onEnter,
+  ...rest
+}: SearchProps) => {
   const textVariants = useTextVariants()
   const colors = useColors()
   return (
@@ -31,6 +37,7 @@ export const Search = ({ placeholder, onChangeText, ...rest }: SearchProps) => {
         placeholder={placeholder}
         onChangeText={onChangeText}
         selectionColor={colors.primaryText}
+        onSubmitEditing={onEnter}
         style={{
           fontFamily: textVariants.textLgSemibold.fontFamily,
           fontWeight: 'bold',

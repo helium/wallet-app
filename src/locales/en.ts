@@ -25,8 +25,9 @@ export default {
   },
   hotspotOnboarding: {
     scan: {
-      title: 'Scan for Hotspots',
-      start: 'Start Scan',
+      title: 'Choose your Hotspot',
+      hotspotsFound: '{{count}} Hotspots were found',
+      start: 'Scan Again',
       stop: 'Stop Scan',
       notEnabled: 'Bluetooth is not enabled',
       scanning: 'Scanning for Hotspots',
@@ -42,13 +43,25 @@ export default {
       noneFound: 'No diagnostics found',
     },
     wifiSettings: {
-      title: 'Wifi Settings',
+      title: 'Share Wi-Fi',
+      subtitle:
+        'Choose the Wi-Fi network you’d like your Hotspot to connect to.',
       remove: 'Would you like to remove {{network}}?',
       available: 'Available Networks',
       configured: 'Configured Networks',
       setup: 'Setup Wifi',
     },
+    wifiSetup: {
+      title: 'Enter Password',
+      subtitle: 'Provide password for {{ network }}',
+      enterPassword: 'Enter Password',
+      setWifi: 'Set Wi-Fi',
+    },
     onboarding: {
+      hotspotConnected: 'Hotspot Connected',
+      hotspotConnectedBody:
+        'Awesome! Your Hotspot now has an internet connection.',
+      confirmLocation: 'Confirm Location',
       title: 'Onboarding',
       subtitle:
         'Onboard your Hotspot to the {{network}} network. After onboarding this Hotspot, you will be able to set the location and antenna details.',
@@ -1539,6 +1552,10 @@ export default {
       'Hotspots create wireless coverage for millions of devices.',
     learnMore: 'Learn More',
     add: 'Add',
+    filter: 'Filter Hotspots',
+    new: 'NEW',
+    nearby: 'Nearby',
+    distanceNotAvailable: 'Distance not available',
   },
   AddHotspotPage: {
     title: 'Let’s get your Hotspot connected!',
@@ -1622,5 +1639,16 @@ export default {
   },
   OnboardingSheet: {
     addToWallet: 'Add to wallet',
+  },
+  ClaimTokensPage: {
+    title: 'Unclaimed Tokens',
+    subtitle:
+      'Your Hotspots have earned the following tokens, that you need to claim.',
+    claimTokens: 'Claim Tokens',
+  },
+  HotspotDetails: {
+    heliumMobileHotspot: 'Helium Mobile Hotspot Mines MOBILE.',
+    heliumIoTHotspot: 'Helium IoT Hotspot Mines HNT.',
+    deployed: 'Deployed {{date}}',
   },
 }

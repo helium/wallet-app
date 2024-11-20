@@ -931,7 +931,7 @@ export const getNFTs = async (
     page,
     '',
     '',
-    { showFungible: true },
+    { showFungible: true, showCollectionMetadata: true },
   )
 
   return items

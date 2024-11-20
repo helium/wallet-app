@@ -57,7 +57,9 @@ const WalletButton = () => {
 
     if (result) {
       close()
-      navigation.navigate('Hotspot')
+      navigation.navigate('Hotspot', {
+        newHotspot: undefined,
+      })
     }
   }, [onboardDetails, onboardDevice, wallet, close, navigation])
 

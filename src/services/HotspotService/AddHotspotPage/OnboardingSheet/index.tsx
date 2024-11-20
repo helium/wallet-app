@@ -29,21 +29,27 @@ import { Portal } from '@gorhom/portal'
 import { ThemeProvider } from '@shopify/restyle'
 import { lightTheme } from '@theme/theme'
 import SelectNetworkScreen from './screens/SelectNetworkScreen'
-import SelectDeviceScreen from './screens/SelectDeviceScreen'
-import KeepYourBoxScreen from './screens/KeepYourBoxScreen'
-import ConnectEthernetScreen from './screens/ConnectEthernetScreen'
-import ConnectToHotspotScreen from './screens/ConnectToHotspotScreen'
-import ScanQRCodeScreen from './screens/ScanQRCodeScreen'
-import AcquireLocationScreen from './screens/AcquireLocationScreen'
+import SelectDeviceScreen from './screens/mobile/SelectDeviceScreen'
+import KeepYourBoxScreen from './screens/mobile/KeepYourBoxScreen'
+import ConnectEthernetScreen from './screens/mobile/ConnectEthernetScreen'
+import ConnectToHotspotScreen from './screens/mobile/ConnectToHotspotScreen'
+import ScanQRCodeScreen from './screens/mobile/ScanQRCodeScreen'
+import AcquireLocationScreen from './screens/mobile/AcquireLocationScreen'
 import SelectFloorScreen from './screens/SelectFloorScreen'
-import SetDirectionScreen from './screens/SetDirectionScreen'
-import AddToWalletScreen from './screens/AddToWalletScreen'
-import ManualEntryScreen from './screens/ManualEntryScreen'
+import SetDirectionScreen from './screens/mobile/SetDirectionScreen'
+import AddToWalletScreenMobile from './screens/mobile/AddToWalletScreen'
+import AddToWalletScreenIot from './screens/iot/AddToWalletScreen'
+import ManualEntryScreen from './screens/mobile/ManualEntryScreen'
 import OnboardingV3Client, {
   DeviceInfo,
   HmhOnboardParams,
   VendorSlugs,
 } from './OnboardingV3Client'
+import ScanHotspots from './screens/iot/ScanHotspots'
+import WifiSettings from './screens/iot/WifiSettings'
+import WifiSetup from './screens/iot/WifiSetup'
+import HotspotConnected from './screens/iot/HotspotConnected'
+import SelectLocationScreen from './screens/SelectLocationScreen'
 
 export type OnboardingSheetRef = {
   show: () => void
@@ -62,11 +68,18 @@ export type DeviceType = 'WifiIndoor' | 'WifiOutdoor'
 export type OnboardDetails = {
   network: Network
   deviceInfo: DeviceInfo
+  iotDetails: OnboardIotDetails
   latitude: number
   longitude: number
   height: number
   qrCode: string
   azimuth: number
+}
+
+export type OnboardIotDetails = {
+  network: string
+  onboardingAddress: string
+  animalName: string
 }
 
 type HotspotOnboarding = {
@@ -97,6 +110,11 @@ const useHotspotOnboardingHook = (): HotspotOnboarding => {
     height: 0,
     qrCode: '',
     azimuth: 0,
+    iotDetails: {
+      network: '',
+      onboardingAddress: '',
+      animalName: '',
+    },
     deviceInfo: {
       serialNumber: '',
       heliumPubKey: '',
@@ -200,6 +218,10 @@ const HotspotOnboardingProvider = forwardRef(
     const dispatch = useAppDispatch()
     const [currentIndex, setCurrentIndex] = useState(0)
 
+    const iotSelected = useMemo(() => {
+      return onboardDetails.network === 'iot'
+    }, [onboardDetails])
+
     const show = useCallback(() => {
       setVisible(true)
     }, [])
@@ -236,40 +258,76 @@ const HotspotOnboardingProvider = forwardRef(
         {
           Screen: SelectNetworkScreen,
         },
-        {
-          Screen: SelectDeviceScreen,
-        },
-        {
-          Screen: KeepYourBoxScreen,
-        },
-        {
-          Screen: ConnectEthernetScreen,
-        },
-        {
-          Screen: ConnectToHotspotScreen,
-        },
       ]
 
-      if (manualEntry) {
-        pages.push({
-          Screen: ManualEntryScreen,
-        })
-      } else {
-        pages.push({
-          Screen: ScanQRCodeScreen,
-        })
+      if (iotSelected) {
+        pages.push(
+          ...[
+            {
+              Screen: ScanHotspots,
+            },
+            {
+              Screen: WifiSettings,
+            },
+            {
+              Screen: WifiSetup,
+            },
+            {
+              Screen: HotspotConnected,
+            },
+            {
+              Screen: SelectLocationScreen,
+            },
+            {
+              Screen: SelectFloorScreen,
+            },
+          ],
+        )
       }
 
-      pages.push(
-        ...[
-          {
-            Screen: AcquireLocationScreen,
-          },
-          {
-            Screen: SelectFloorScreen,
-          },
-        ],
-      )
+      if (!iotSelected) {
+        pages.push(
+          ...[
+            {
+              Screen: SelectDeviceScreen,
+            },
+            {
+              Screen: KeepYourBoxScreen,
+            },
+            {
+              Screen: ConnectEthernetScreen,
+            },
+            {
+              Screen: ConnectToHotspotScreen,
+            },
+          ],
+        )
+      }
+
+      if (!iotSelected) {
+        if (manualEntry) {
+          pages.push({
+            Screen: ManualEntryScreen,
+          })
+        } else {
+          pages.push({
+            Screen: ScanQRCodeScreen,
+          })
+        }
+      }
+
+      if (!iotSelected) {
+        pages.push(
+          ...[
+            {
+              Screen: AcquireLocationScreen,
+            },
+            {
+              Screen: SelectFloorScreen,
+            },
+          ],
+        )
+      }
 
       if (onboardDetails.deviceInfo.deviceType === 'WifiOutdoor') {
         pages.push({
@@ -278,11 +336,11 @@ const HotspotOnboardingProvider = forwardRef(
       }
 
       pages.push({
-        Screen: AddToWalletScreen,
+        Screen: iotSelected ? AddToWalletScreenIot : AddToWalletScreenMobile,
       })
 
       return pages
-    }, [manualEntry, onboardDetails])
+    }, [manualEntry, onboardDetails, iotSelected])
 
     const renderCarouselItem = useCallback(
       // eslint-disable-next-line react/no-unused-prop-types

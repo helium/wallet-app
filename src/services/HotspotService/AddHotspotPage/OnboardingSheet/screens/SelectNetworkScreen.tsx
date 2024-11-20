@@ -23,6 +23,11 @@ const SelectNetworkScreen = () => {
     carouselRef?.current?.snapToNext()
   }, [setOnboardDetails, carouselRef])
 
+  const onIotSelected = useCallback(() => {
+    setOnboardDetails((o: OnboardDetails) => ({ ...o, network: 'iot' }))
+    carouselRef?.current?.snapToNext()
+  }, [setOnboardDetails, carouselRef])
+
   const onOpenHelp = useCallback(() => {
     Linking.openURL(HOTSPOT_HELP)
   }, [])
@@ -43,12 +48,14 @@ const SelectNetworkScreen = () => {
         marginTop="2xl"
         backgroundColor="bg.brand-secondary"
         backgroundColorPressed="blue.light-200"
+        opacity={0.3}
         padding="xl"
         paddingEnd="4xl"
         borderTopStartRadius="4xl"
         borderTopEndRadius="4xl"
         flexDirection="row"
         alignItems="center"
+        disabled
         onPress={onMobileSelected}
       >
         <MobileIcon />
@@ -73,6 +80,7 @@ const SelectNetworkScreen = () => {
         borderBottomEndRadius="4xl"
         flexDirection="row"
         alignItems="center"
+        onPress={onIotSelected}
       >
         <IotIcon />
         <Text

@@ -8,7 +8,8 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import ArrowDown from '@assets/images/downArrow.svg'
+import ArrowDown from '@assets/images/arrowDown.svg'
+import Settings from '@assets/images/settings.svg'
 import FatArrowUp from '@assets/images/arrowUp.svg'
 import Payment from '@assets/images/payment.svg'
 import Stake from '@assets/images/stake.svg'
@@ -51,7 +52,8 @@ type IconName =
   | 'questionMark'
   | 'browseVoters'
   | 'expand'
-
+  | 'settings'
+  | 'arrowLeft'
 type Props = BoxProps<Theme> & {
   backgroundColorOpacity?: number
   backgroundColorPressed?: Color
@@ -249,6 +251,13 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
           style={{ transform: [{ rotate: '270deg' }] }}
         />
       )
+    case 'arrowLeft':
+      return (
+        <ArrowDown
+          color={getIconColor()}
+          style={{ transform: [{ rotate: '90deg' }] }}
+        />
+      )
     case 'arrowDown':
       return <ArrowDown color={getIconColor()} />
     case 'fatArrowUp':
@@ -291,6 +300,8 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <BrowseVoters color={getIconColor()} />
     case 'expand':
       return <Expand color={getIconColor()} />
+    case 'settings':
+      return <Settings color={getIconColor()} />
   }
 }
 

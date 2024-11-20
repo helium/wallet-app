@@ -181,7 +181,7 @@ const ButtonPressable = ({
 
             {title && (
               <Text
-                variant="textXlMedium"
+                variant="textXlSemibold"
                 fontSize={fontSize || 19}
                 fontWeight={fontWeight}
                 style={titleColorStyle}

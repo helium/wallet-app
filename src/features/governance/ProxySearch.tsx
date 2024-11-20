@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
+import { useColors } from '@theme/themeHooks'
 
 export const ProxySearch: React.FC<{
   value: string
@@ -27,6 +28,7 @@ export const ProxySearch: React.FC<{
   const [focused, setFocused] = useState(false)
   const [debouncedInput] = useDebounce(input, 300)
   const { voteService, mint } = useGovernance()
+  const colors = useColors()
   const {
     data: resultPaged,
     isLoading: loading,
@@ -131,8 +133,10 @@ export const ProxySearch: React.FC<{
               }}
             />
             <ButtonPressable
-              backgroundColor="secondaryBackground"
+              backgroundColor="primaryText"
+              titleColor="primaryBackground"
               Icon={BrowseVoters}
+              iconProps={{ color: colors['primaryBackground'] }}
               borderRadius="2xl"
               ml="2"
               onPress={handleBrowseVoters}

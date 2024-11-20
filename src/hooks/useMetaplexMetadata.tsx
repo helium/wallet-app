@@ -106,17 +106,20 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
 
   const { result: json, loading: jsonLoading } = useAsync(async () => {
     if (!mint) return
-    const meta = await getMetadata(metadataAcc?.data.uri.trim())
+    let meta
+    try {
+      meta = await getMetadata(metadataAcc?.data.uri.trim())
+    } catch {}
 
     dispatch(
       tokensSlice.actions.setToken({
         mint: mint.toBase58(),
-        name: meta?.name,
-        symbol: meta?.symbol,
+        name: metadataAcc?.data?.name || meta?.name,
+        symbol: metadataAcc?.data?.symbol || meta?.symbol,
         img: meta?.image,
       }),
     )
-    return meta
+    return meta || metadataAcc
   }, [mint, dispatch, metadataAcc])
 
   if (mint?.equals(NATIVE_MINT)) {
@@ -151,7 +154,7 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
 
   if (cachedToken) {
     return {
-      metadata: undefined,
+      metadata: metadataAcc,
       loading: false,
       json: {
         name: cachedToken.name,

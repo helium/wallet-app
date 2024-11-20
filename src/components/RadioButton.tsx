@@ -27,7 +27,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
         width={20}
         borderRadius="full"
         borderWidth={2}
-        borderColor="blue.light-500"
+        borderColor="text.quaternary-500"
         alignItems="center"
         justifyContent="center"
         onPress={() => onClick()}
@@ -36,7 +36,7 @@ const RadioButton: React.FC<RadioButtonProps> = ({
           width={10}
           height={10}
           borderRadius="full"
-          backgroundColor={selected ? 'blue.light-500' : 'transparent'}
+          backgroundColor={selected ? 'base.black' : 'transparent'}
         />
       </TouchableOpacityBox>
       <Text

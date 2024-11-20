@@ -4,7 +4,7 @@ import {
 } from '@react-navigation/native-stack'
 import * as React from 'react'
 import { useColors } from '@theme/themeHooks'
-import HotspotBLENav from './iot-ble/HotspotBLENav'
+import HotspotBLENav from '../../services/HotspotService/AddHotspotPage/OnboardingSheet/screens/iot/HotspotBLENav'
 import SelectDevice from './SelectDevice'
 
 const Stack = createNativeStackNavigator()

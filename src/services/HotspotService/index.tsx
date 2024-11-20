@@ -9,13 +9,16 @@ import ServiceSheetPage, {
 import { StackNavigationProp } from '@react-navigation/stack'
 import { PortalHost } from '@gorhom/portal'
 import Box from '@components/Box'
+import { HotspotWithPendingRewards } from '../../types/solana'
 import HotspotPage from './HotspotPage'
 import ExplorerPage from './ExplorerPage'
 import AddHotspotPage from './AddHotspotPage'
 import ClaimTokensPage from './ClaimTokensPage'
 
 export type HotspotServiceStackParamList = {
-  Hotspot: undefined
+  Hotspot: {
+    newHotspot?: HotspotWithPendingRewards
+  }
   Explorer: undefined
   AddHotspot: undefined
   ClaimTokens: undefined

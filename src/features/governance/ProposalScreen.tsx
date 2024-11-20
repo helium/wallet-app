@@ -54,10 +54,12 @@ import {
   VoteChoiceWithMeta,
   VotingResultColors,
 } from './governanceTypes'
+import { useColors } from '@theme/themeHooks'
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
   const { t } = useTranslation()
+  const colors = useColors()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { upsertAccount, currentAccount } = useAccountStorage()
@@ -521,8 +523,15 @@ export const ProposalScreen = () => {
                     <ButtonPressable
                       fontSize={16}
                       height={48}
-                      backgroundColor="gray.800"
-                      LeadingComponent={<BrowseVoters width={18} height={18} />}
+                      backgroundColor="primaryText"
+                      titleColor="primaryBackground"
+                      LeadingComponent={
+                        <BrowseVoters
+                          color={colors['primaryBackground']}
+                          width={18}
+                          height={18}
+                        />
+                      }
                       borderRadius="full"
                       mt="4"
                       onPress={handleBrowseVoters}
