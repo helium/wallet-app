@@ -13,7 +13,6 @@ import { humanReadable } from '@helium/spl-utils'
 import BN from 'bn.js'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { RootNavigationProp, RootStackParamList } from 'src/app/rootTypes'
-import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
@@ -39,7 +38,6 @@ const SelectKeystoneAccountsScreen = () => {
   const colors = useColors()
   const route = useRoute<SelectKeystoneAccountsScreenRouteProp>()
   const { setKeystoneOnboardingData } = useKeystoneOnboarding()
-  const { hasAccounts } = useAccountStorage()
   const { derivationAccounts } = route.params
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set(derivationAccounts.map((item) => item.path)),
