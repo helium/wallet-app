@@ -277,7 +277,14 @@ const AddToWalletScreen = () => {
       const { solanaTransactions } = await getOnboardTransactions({
         hotspotAddress: onboardingAddress,
         payer,
-        networkDetails: [{ hotspotType: 'IOT' }],
+        networkDetails: [
+          {
+            hotspotType: 'IOT',
+            lat: latitude,
+            lng: longitude,
+            elevation: height,
+          },
+        ],
       })
 
       let solanaSignedTransactions: Transaction[] | undefined
@@ -338,12 +345,6 @@ const AddToWalletScreen = () => {
     navigation.navigate('Hotspot', {
       newHotspot: collectable,
     })
-
-    if (networkInfo) {
-      // collectNav.navigate('HotspotMapScreen', { hotspot: collectable, 'IOT' })
-    } else {
-      // collectNav.navigate('AssertLocationScreen', { collectable })
-    }
   })
   const error =
     onboardBalError ||
