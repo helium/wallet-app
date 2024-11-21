@@ -1,4 +1,4 @@
-import { useAppStorage } from '@storage/AppStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import * as Haptics from 'expo-haptics'
 
 export type FeedbackStyle = 'light' | 'medium' | 'heavy'

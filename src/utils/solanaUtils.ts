@@ -117,7 +117,7 @@ import {
   token,
   walletAdapterIdentity,
 } from '@metaplex-foundation/js'
-import { getSessionKey } from '../storage/secureStorage'
+import { getSessionKey } from '@config/storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,

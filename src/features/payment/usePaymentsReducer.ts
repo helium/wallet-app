@@ -3,7 +3,7 @@ import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useReducer } from 'react'
 import { NATIVE_MINT } from '@solana/spl-token'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
 

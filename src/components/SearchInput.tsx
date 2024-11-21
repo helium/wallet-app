@@ -1,8 +1,8 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import Search from '@assets/images/search.svg'
+import Search from '@assets/svgs/search.svg'
 import { BoxProps } from '@shopify/restyle'
-import { BorderRadii, Spacing, Theme } from '@theme/theme'
-import { useColors, useInputVariants } from '@theme/themeHooks'
+import { BorderRadii, Spacing, Theme } from '@config/theme/theme'
+import { useColors, useInputVariants } from '@config/theme/themeHooks'
 import React, { useCallback } from 'react'
 import { TextInputProps } from 'react-native'
 import Box from './Box'

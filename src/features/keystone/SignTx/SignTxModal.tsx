@@ -1,6 +1,6 @@
 import SafeAreaBox from '@components/SafeAreaBox'
 import React, { useEffect, useMemo, useState } from 'react'
-import Keystone from '@assets/images/keystoneLogo.svg'
+import Keystone from '@assets/svgs/keystoneLogo.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
@@ -19,7 +19,7 @@ import { useAsync } from 'react-async-hook'
 import EventEmitter from 'events'
 
 import CloseButton from '@components/CloseButton'
-import { useHitSlop } from '@theme/themeHooks'
+import { useHitSlop } from '@config/theme/themeHooks'
 import { CameraScannerLayout } from '../../../components/CameraScannerLayout'
 import { KeystoneSolSignRequest } from '../types/keystoneSolanaTxType'
 

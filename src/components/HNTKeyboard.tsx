@@ -1,4 +1,4 @@
-import PaymentArrow from '@assets/images/paymentArrow.svg'
+import PaymentArrow from '@assets/svgs/paymentArrow.svg'
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetModalProvider,
@@ -14,8 +14,8 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps, ThemeProvider } from '@shopify/restyle'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { Theme, lightTheme } from '@theme/theme'
-import { useSafeTopPaddingStyle } from '@theme/themeHooks'
+import { Theme, lightTheme } from '@config/theme/theme'
+import { useSafeTopPaddingStyle } from '@config/theme/themeHooks'
 import BN from 'bn.js'
 import React, {
   ReactNode,
@@ -31,8 +31,8 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { Payment } from '../features/payment/PaymentItem'
-import { CSAccount } from '../storage/cloudStorage'
+import { Payment } from '@features/payment/PaymentItem'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { decimalSeparator, groupSeparator } from '../utils/i18n'
 import { humanReadable } from '../utils/solanaUtils'
 import AccountIcon from './AccountIcon'

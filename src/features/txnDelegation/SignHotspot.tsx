@@ -14,7 +14,7 @@ import {
   verifyWalletLinkToken,
 } from '@helium/wallet-link'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import animalHash from 'angry-purple-tiger'
 import BN from 'bn.js'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
@@ -23,13 +23,10 @@ import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import Config from 'react-native-config'
 import Toast from 'react-native-simple-toast'
-import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
-import {
-  RootNavigationProp,
-  RootStackParamList,
-} from '../../navigation/rootTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { getKeypair } from '../../storage/secureStorage'
+import { ServiceSheetNavigationProp } from 'src/app/services/serviceSheetTypes'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { getKeypair } from '@config/storage/secureStorage'
+import { RootNavigationProp, RootStackParamList } from '../../app/rootTypes'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import * as Logger from '../../utils/logger'
 import useSolTxns from './useSolTxns'

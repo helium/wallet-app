@@ -2,9 +2,9 @@
 import React, { memo, useRef, useEffect } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import CircleLoaderSvg from '@assets/images/circleLoader.svg'
-import { Color, Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import CircleLoaderSvg from '@assets/svgs/circleLoader.svg'
+import { Color, Theme } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 

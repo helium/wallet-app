@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import { ActivityIndicator } from 'react-native'
-import QR from '@assets/images/qr.svg'
-import Checkmark from '@assets/images/checkmark.svg'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import QR from '@assets/svgs/qr.svg'
+import Checkmark from '@assets/svgs/checkmark.svg'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 
 type AddressExtraProps = {

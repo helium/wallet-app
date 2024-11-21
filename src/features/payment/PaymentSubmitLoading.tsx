@@ -7,7 +7,7 @@ import Text from '@components/Text'
 import Box from '@components/Box'
 import ActivityIndicator from '@components/ActivityIndicator'
 import FadeInOut from '@components/FadeInOut'
-import globalStyles from '@theme/globalStyles'
+import globalStyles from '@config/theme/globalStyles'
 
 type Props = {
   onVideoEnd: () => void

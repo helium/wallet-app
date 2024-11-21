@@ -11,9 +11,9 @@ import React, {
 import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent, LayoutChangeEvent } from 'react-native'
 import { SvgProps } from 'react-native-svg'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { Theme } from '../theme/theme'
+import { Theme } from '../config/theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
 

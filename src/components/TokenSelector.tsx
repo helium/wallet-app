@@ -7,8 +7,8 @@ import BottomSheet, {
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps, ThemeProvider } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Theme, lightTheme } from '@theme/theme'
-import { useSpacing } from '@theme/themeHooks'
+import { Theme, lightTheme } from '@config/theme/theme'
+import { useSpacing } from '@config/theme/themeHooks'
 import React, {
   Ref,
   forwardRef,

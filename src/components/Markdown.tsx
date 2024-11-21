@@ -1,5 +1,5 @@
 import { useTheme } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import React from 'react'
 import MarkdownDisplay from 'react-native-markdown-display'
 

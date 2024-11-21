@@ -8,14 +8,14 @@ import { sortBy, unionBy } from 'lodash'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import FabButton from '@components/FabButton'
 import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
-import { useSpacing } from '@theme/themeHooks'
+import { useSpacing } from '@config/theme/themeHooks'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 
 type Props = {
   onAddNew: () => void

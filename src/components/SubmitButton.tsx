@@ -1,9 +1,9 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import SwipeButton from 'rn-swipe-button'
-import SwipeIcon from '@assets/images/swipeIcon.svg'
-import { Font, Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import SwipeIcon from '@assets/svgs/swipeIcon.svg'
+import { Font, Theme } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
 import Box from './Box'
 
 type Props = {

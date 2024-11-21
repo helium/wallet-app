@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react'
-import { TextVariant } from '@theme/theme'
+import { TextVariant } from '@config/theme/theme'
 import Box from './Box'
 import Text from './Text'
 

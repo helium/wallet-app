@@ -13,7 +13,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
-import { useColors, useVerticalHitSlop } from '@theme/themeHooks'
+import { useColors, useVerticalHitSlop } from '@config/theme/themeHooks'
 import Box from './Box'
 import TouchableOpacityBox, {
   TouchableOpacityBoxProps,

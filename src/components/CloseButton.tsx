@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { memo } from 'react'
-import Close from '@assets/images/closeModal.svg'
+import Close from '@assets/svgs/closeModal.svg'
 import { GestureResponderEvent, Insets } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { useColors } from '@theme/themeHooks'
-import { Color, Theme } from '@theme/theme'
+import { useColors } from '@config/theme/themeHooks'
+import { Color, Theme } from '@config/theme/theme'
 import IconPressedContainer from './IconPressedContainer'
 import Box from './Box'
 

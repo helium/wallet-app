@@ -3,7 +3,7 @@ import { init } from '@helium/lazy-distributor-sdk'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useEffect, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '../utils/constants'
 import * as Logger from '../utils/logger'
 

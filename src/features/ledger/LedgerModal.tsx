@@ -13,9 +13,9 @@ import useBackHandler from '@hooks/useBackHandler'
 import useLedger from '@hooks/useLedger'
 import { DeviceModelId } from '@ledgerhq/types-devices'
 import { BoxProps } from '@shopify/restyle'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Theme } from '@theme/theme'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { Theme } from '@config/theme/theme'
+import { useColors, useOpacity } from '@config/theme/themeHooks'
 import { signLedgerMessage, signLedgerTransaction } from '@utils/heliumLedger'
 import React, {
   ReactNode,

@@ -9,8 +9,8 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CopyAddress from '@components/CopyAddress'
 import useAlert from '@hooks/useAlert'
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
-import { getSecureAccount } from '../../storage/secureStorage'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { getSecureAccount } from '@config/storage/secureStorage'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 
 const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()

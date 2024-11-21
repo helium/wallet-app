@@ -1,5 +1,5 @@
 import React from 'react'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import createText from './createText'
 
 const Text = createText<Theme>()

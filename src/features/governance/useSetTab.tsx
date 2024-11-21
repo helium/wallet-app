@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import { useCallback } from 'react'
 import { GovernanceNavigationProp } from './governanceTypes'
 

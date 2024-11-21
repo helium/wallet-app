@@ -4,8 +4,8 @@ import { useNavigation } from '@react-navigation/native'
 import useHaptic from '@hooks/useHaptic'
 import useAlert from '@hooks/useAlert'
 import QrScanner from '@components/QrScanner'
-import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
-import { SendNavigationProp } from '@services/WalletService/pages/SendPage/SentPageNavigator'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import { SendNavigationProp } from '@services/WalletService/pages/SendPage'
 import { parseBurn, parseDelegate, parsePaymentLink } from '../../utils/linking'
 
 const PaymentQrScanner = () => {

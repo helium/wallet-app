@@ -5,7 +5,7 @@ import {
 } from '@react-navigation/stack'
 import React, { memo, useMemo } from 'react'
 import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
+import { darkTheme } from '@config/theme/theme'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import CreateImportAccountScreen from './CreateImportAccountScreen'
 import CreateAccountNavigator from './create/CreateAccountNavigator'

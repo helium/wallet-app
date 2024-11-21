@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { useCallback } from 'react'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { BrowserDetails, browserSlice } from '../store/slices/browserSlice'
 import { useAppDispatch } from '../store/store'
 

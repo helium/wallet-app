@@ -1,6 +1,6 @@
 import { BoxProps } from '@shopify/restyle'
 import React from 'react'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Box from './Box'
 
 const ListSeparator = (props: BoxProps<Theme>) => (

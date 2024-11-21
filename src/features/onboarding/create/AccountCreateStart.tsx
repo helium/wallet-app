@@ -1,14 +1,14 @@
 import React, { memo, useCallback } from 'react'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import { useTranslation } from 'react-i18next'
-import CreateAccount from '@assets/images/createAccount.svg'
+import CreateAccount from '@assets/svgs/createAccount.svg'
 import { useNavigation } from '@react-navigation/native'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import CloseButton from '@components/CloseButton'
 import SafeAreaBox from '@components/SafeAreaBox'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
 
 type Props = { onCreate: () => void; inline?: boolean }

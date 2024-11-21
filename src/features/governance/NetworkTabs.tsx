@@ -4,9 +4,9 @@ import { PublicKey } from '@solana/web3.js'
 import React, { useCallback, useMemo } from 'react'
 import SegmentedControl from '@components/SegmentedControl'
 import { Mints } from '@utils/constants'
-import IOT from '@assets/images/iotSymbol.svg'
-import MOBILE from '@assets/images/mobileIcon.svg'
-import HNT from '@assets/images/tokenHNT.svg'
+import IOT from '@assets/svgs/iotSymbol.svg'
+import MOBILE from '@assets/svgs/mobileIcon.svg'
+import HNT from '@assets/svgs/tokenHNT.svg'
 import { GovernanceNavigationProp } from './governanceTypes'
 
 export const NetworkTabs: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import ImageBox from './ImageBox'
 
 const MakerHotspotImage = ({

@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react'
 import { View } from 'react-native'
-import InfoWarning from '@assets/images/warning.svg'
+import InfoWarning from '@assets/svgs/warning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
   runOnJS,
@@ -15,8 +15,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import globalStyles from '@theme/globalStyles'
-import { useColors } from '@theme/themeHooks'
+import globalStyles from '@config/theme/globalStyles'
+import { useColors } from '@config/theme/themeHooks'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'

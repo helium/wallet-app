@@ -10,13 +10,13 @@ import React, {
   useState,
 } from 'react'
 import { BoxProps } from '@shopify/restyle'
-import CarotDown from '@assets/images/carot-down.svg'
-import Kabob from '@assets/images/kabob.svg'
+import CarotDown from '@assets/svgs/carot-down.svg'
+import Kabob from '@assets/svgs/kabob.svg'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FlatList } from 'react-native-gesture-handler'
-import { Color, Theme } from '@theme/theme'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { Color, Theme } from '@config/theme/theme'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import HeliumActionSheetItem, {
   HeliumActionSheetItemHeight,
   HeliumActionSheetItemType,

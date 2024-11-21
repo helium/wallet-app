@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useCallback, useMemo } from 'react'
-import ChevronDown from '@assets/images/chevronDown.svg'
+import ChevronDown from '@assets/svgs/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { useColors, useHitSlop } from '@theme/themeHooks'
-import { Color, Theme } from '@theme/theme'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
+import { Color, Theme } from '@config/theme/theme'
 import useHaptic from '@hooks/useHaptic'
 import AccountIcon from './AccountIcon'
 import Box from './Box'

@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Box from '@components/Box'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
 
 type Props = {
   icon: React.ReactNode

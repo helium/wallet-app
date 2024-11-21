@@ -2,7 +2,7 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import React from 'react'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 
 export const VoterCardStat: React.FC<
   {

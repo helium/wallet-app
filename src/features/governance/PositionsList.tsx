@@ -1,4 +1,4 @@
-import LightningBolt from '@assets/images/transactions.svg'
+import LightningBolt from '@assets/svgs/transactions.svg'
 import Box from '@components/Box'
 import { CardSkeleton } from '@components/CardSkeleton'
 import Text from '@components/Text'
@@ -7,9 +7,9 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { BoxProps } from '@shopify/restyle'
-import { useGovernance } from '@storage/GovernanceProvider'
-import { Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import { useGovernance } from '@config/storage/GovernanceProvider'
+import { Theme } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
 import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'

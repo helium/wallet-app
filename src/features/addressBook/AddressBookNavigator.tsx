@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import {
   createStackNavigator,
   StackNavigationOptions,

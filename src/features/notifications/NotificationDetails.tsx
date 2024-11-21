@@ -8,14 +8,14 @@ import BackButton from '@components/BackButton'
 import usePrevious from '@hooks/usePrevious'
 import useMount from '@hooks/useMount'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import globalStyles from '@theme/globalStyles'
+import globalStyles from '@config/theme/globalStyles'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { NotificationsListStackParamList } from './notificationTypes'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationDetailBanner from './NotificationDetailBanner'
 import parseMarkup from '../../utils/parseMarkup'
 import { useAppDispatch } from '../../store/store'
 import { markNotificationRead } from '../../store/slices/notificationsSlice'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 

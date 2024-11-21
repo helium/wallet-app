@@ -1,5 +1,5 @@
 import { StackNavigationProp } from '@react-navigation/stack'
-import { LedgerDevice } from '../../storage/cloudStorage'
+import { LedgerDevice } from '@config/storage/cloudStorage'
 
 export type LedgerNavigatorStackParamList = {
   DeviceChooseType: undefined

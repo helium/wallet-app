@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import Close from '@assets/images/close.svg'
-import InfoIcon from '@assets/images/info.svg'
+import Close from '@assets/svgs/close.svg'
+import InfoIcon from '@assets/svgs/info.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
@@ -17,7 +17,7 @@ import { useMint } from '@helium/helium-react-hooks'
 import { HNT_MINT, toBN, toNumber } from '@helium/spl-utils'
 import { SubDaoWithMeta, useSubDaos } from '@helium/voter-stake-registry-hooks'
 import { PublicKey } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { getFormattedStringFromDays, yearsToDays } from '@utils/dateTools'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
 import { TXN_FEE_IN_LAMPORTS } from '@utils/solanaUtils'
@@ -30,9 +30,9 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import HntIcon from '@assets/images/helium.svg'
+import HntIcon from '@assets/svgs/helium.svg'
 import ScrollBox from '@components/ScrollBox'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [

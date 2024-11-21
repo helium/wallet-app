@@ -1,14 +1,14 @@
 import React, { memo, useCallback, useEffect } from 'react'
 import { BoxProps } from '@shopify/restyle'
-import Close from '@assets/images/close.svg'
+import Close from '@assets/svgs/close.svg'
 import { Modal } from 'react-native'
 import {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
-import { Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import { Theme } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
 import useDisappear from '@hooks/useDisappear'
 import Text from './Text'
 import Box from './Box'

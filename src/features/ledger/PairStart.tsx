@@ -1,13 +1,13 @@
 import React, { memo, useCallback } from 'react'
-import Ledger from '@assets/images/ledger.svg'
+import Ledger from '@assets/svgs/ledger.svg'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import Box from '@components/Box'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import Text from '@components/Text'
 import SafeAreaBox from '@components/SafeAreaBox'
 import ButtonPressable from '@components/ButtonPressable'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
 const PairStart = () => {

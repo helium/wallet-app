@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import ConfirmPinView from '@components/ConfirmPinView'
 import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { darkTheme } from '@config/theme/theme'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { SettingsNavigationProp, SettingsStackParamList } from './settingsTypes'
 
 type Route = RouteProp<SettingsStackParamList, 'SettingsConfirmPin'>

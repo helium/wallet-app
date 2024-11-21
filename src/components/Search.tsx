@@ -1,8 +1,8 @@
 import React from 'react'
-import SearchIcon from '@assets/images/searchIcon.svg'
+import SearchIcon from '@assets/svgs/searchIcon.svg'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
-import { useColors, useTextVariants } from '@theme/themeHooks'
+import { Theme } from '@config/theme/theme'
+import { useColors, useTextVariants } from '@config/theme/themeHooks'
 import { TextInput } from 'react-native'
 import Box from './Box'
 

@@ -6,22 +6,22 @@ import {
   TextInput as RNTextInput,
   TextInputSubmitEditingEventData,
 } from 'react-native'
-import CloseCircle from '@assets/images/CloseCircle.svg'
+import CloseCircle from '@assets/svgs/CloseCircle.svg'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import FadeInOut from '@components/FadeInOut'
 import TextInput from '@components/TextInput'
 import Box from '@components/Box'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '@config/theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
 import { useAsync } from 'react-async-hook'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
-import { useSolana } from '../../solana/SolanaProvider'
 import { getRecommendedDapps } from '../../utils/walletApiV2'
 
 const BrowserScreen = () => {

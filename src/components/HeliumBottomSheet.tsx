@@ -5,7 +5,7 @@ import {
   useBorderRadii,
   useColors,
   useSpacing,
-} from '@theme/themeHooks'
+} from '@config/theme/themeHooks'
 import { wh } from '@utils/layout'
 import { Platform, StyleProp, ViewStyle } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'

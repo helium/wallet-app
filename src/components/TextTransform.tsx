@@ -4,7 +4,7 @@
 import React, { useMemo } from 'react'
 import { Trans } from 'react-i18next'
 import { ResponsiveValue, TextProps } from '@shopify/restyle'
-import { TextVariant, Theme } from '@theme/theme'
+import { TextVariant, Theme } from '@config/theme/theme'
 import Text from './Text'
 
 const getComponents = (variant?: ResponsiveValue<TextVariant, Theme>) => ({

@@ -3,9 +3,9 @@ import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
-import { useAppStorage } from '@storage/AppStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import React, { memo, useMemo } from 'react'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import AssignProxyScreen from './AssignProxyScreen'
 import GovernanceTutorialScreen from './GovernanceTutorialScreen'
 import PositionsScreen from './PositionsScreen'

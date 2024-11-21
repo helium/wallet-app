@@ -6,7 +6,7 @@ import {
 } from '@gorhom/bottom-sheet'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
-import { useOpacity, useSpacing } from '@theme/themeHooks'
+import { useOpacity, useSpacing } from '@config/theme/themeHooks'
 import React, {
   ReactNode,
   Ref,
@@ -19,7 +19,7 @@ import React, {
   useState,
 } from 'react'
 import EventEmitter from 'events'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { KeystoneSolanaSDK } from '@keystonehq/keystone-sdk'
 import { uuid } from '@keystonehq/keystone-sdk/dist/utils'
 import SignTxModal from './SignTx/SignTxModal'

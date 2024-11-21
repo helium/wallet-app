@@ -9,13 +9,13 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import Lock from '@assets/images/lockClosed.svg'
+import Lock from '@assets/svgs/lockClosed.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { format } from 'date-fns'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import useDisappear from '@hooks/useDisappear'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Text from './Text'
 import Box from './Box'
 

@@ -8,19 +8,19 @@ import {
   toVersionedTx,
 } from '@helium/spl-utils'
 import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
 import { ellipsizeAddress } from '@utils/accountUtils'
-import { SwapPreview } from '../solana/SwapPreview'
-import { CollectablePreview } from '../solana/CollectablePreview'
-import { MessagePreview } from '../solana/MessagePreview'
-import { PaymentPreivew } from '../solana/PaymentPreview'
-import { useSolana } from '../solana/SolanaProvider'
-import { useWalletSign } from '../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
+import { SwapPreview } from '@features/solana/SwapPreview'
+import { CollectablePreview } from '@features/solana/CollectablePreview'
+import { MessagePreview } from '@features/solana/MessagePreview'
+import { PaymentPreivew } from '@features/solana/PaymentPreview'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import {
   claimAllRewards,
   claimRewards,

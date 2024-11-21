@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useMemo, useState } from 'react'
 import AnimatedNumbers from 'react-native-animated-numbers'
-import { useTextVariants } from '@theme/themeHooks'
+import { useTextVariants } from '@config/theme/themeHooks'
 import { Easing } from 'react-native-reanimated'
 import { useBalance } from '@utils/Balance'
 import { useTheme } from '@shopify/restyle'

@@ -9,7 +9,7 @@ import {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 

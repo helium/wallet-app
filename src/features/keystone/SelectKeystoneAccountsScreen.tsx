@@ -6,23 +6,20 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import { FlatList, RefreshControl } from 'react-native'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import CheckBox from '@react-native-community/checkbox'
 import TouchableContainer from '@components/TouchableContainer'
 import { humanReadable } from '@helium/spl-utils'
 import BN from 'bn.js'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import {
-  RootNavigationProp,
-  RootStackParamList,
-} from 'src/navigation/rootTypes'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { RootNavigationProp, RootStackParamList } from 'src/app/rootTypes'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
-import { useSolana } from '../../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
 export type KeystoneAccountType = {

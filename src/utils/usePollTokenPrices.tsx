@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useAppStorage } from '../storage/AppStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { useAppDispatch } from '../store/store'
 import { readTokenPrices } from '../store/slices/balancesSlice'

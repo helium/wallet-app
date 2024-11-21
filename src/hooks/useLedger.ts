@@ -8,8 +8,8 @@ import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { solAddressToHelium } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
-import { useSolana } from '../solana/SolanaProvider'
-import { LedgerDevice } from '../storage/cloudStorage'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { LedgerDevice } from '@config/storage/cloudStorage'
 import { runDerivationScheme } from '../utils/heliumLedger'
 
 export type LedgerAccount = {

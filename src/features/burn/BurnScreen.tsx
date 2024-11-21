@@ -1,5 +1,5 @@
-import Close from '@assets/images/close.svg'
-import QR from '@assets/images/qr.svg'
+import Close from '@assets/svgs/close.svg'
+import QR from '@assets/svgs/qr.svg'
 import AccountButton from '@components/AccountButton'
 import AccountSelector, {
   AccountSelectorRef,
@@ -28,7 +28,7 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import { BN } from 'bn.js'
 import React, {
   memo as reactMemo,
@@ -46,15 +46,15 @@ import { useSelector } from 'react-redux'
 import {
   WalletNavigationProp,
   WalletStackParamList,
-} from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+} from '@services/WalletService/pages/WalletPage'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { CSAccount } from '@config/storage/cloudStorage'
 import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import IconPressedContainer from '../../components/IconPressedContainer'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { useBalance } from '../../utils/Balance'
 import {

@@ -3,25 +3,25 @@ import { ActivityIndicator, Image, SectionList } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
-import Ledger from '@assets/images/ledger.svg'
-import ArrowRight from '@assets/images/arrowRight.svg'
+import Ledger from '@assets/svgs/ledger.svg'
+import ArrowRight from '@assets/svgs/arrowRight.svg'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import BackButton from '@components/BackButton'
-import { CSAccountVersion, CSAccounts } from '@storage/cloudStorage'
+import { CSAccountVersion, CSAccounts } from '@config/storage/cloudStorage'
 import useLedger, { LedgerAccount } from '@hooks/useLedger'
-import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import {
+  useAccountStorage,
+  MAX_ACCOUNTS,
+} from '@config/storage/AccountStorageProvider'
 import {
   LedgerNavigatorNavigationProp,
   LedgerNavigatorStackParamList,
 } from './ledgerNavigatorTypes'
-import {
-  useAccountStorage,
-  MAX_ACCOUNTS,
-} from '../../storage/AccountStorageProvider'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceShow'>

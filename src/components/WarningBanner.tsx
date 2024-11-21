@@ -7,10 +7,10 @@ import {
   initialWindowMetrics,
 } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
-import InfoWarning from '@assets/images/warning.svg'
-import CloseCircle from '@assets/images/closeCircleFilled.svg'
+import InfoWarning from '@assets/svgs/warning.svg'
+import CloseCircle from '@assets/svgs/closeCircleFilled.svg'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import { LayoutChangeEvent } from 'react-native'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { RootState } from '../store/rootReducer'

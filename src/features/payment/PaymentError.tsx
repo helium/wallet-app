@@ -1,4 +1,4 @@
-import FailureIcon from '@assets/images/paymentFailure.svg'
+import FailureIcon from '@assets/svgs/paymentFailure.svg'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'

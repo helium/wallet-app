@@ -7,8 +7,8 @@ import {
   usePositions,
 } from '@helium/voter-stake-registry-hooks'
 import { BN } from 'bn.js'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { useCurrentWallet } from './useCurrentWallet'
-import { useSolana } from '../solana/SolanaProvider'
 
 const useAmountLocked = (mint: PublicKey) => {
   const wallet = useCurrentWallet()

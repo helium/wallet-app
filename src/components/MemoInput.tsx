@@ -1,7 +1,7 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Box from './Box'
 import Text from './Text'
 import TextInput from './TextInput'

@@ -1,4 +1,4 @@
-import CopyAddress from '@assets/images/copyAddress.svg'
+import CopyAddress from '@assets/svgs/copyAddress.svg'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
 import React, { useCallback } from 'react'
