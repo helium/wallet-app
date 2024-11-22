@@ -35,6 +35,7 @@ import Visibility from '@assets/svgs/visibility.svg'
 import VisibilityOff from '@assets/svgs/visibilityOff.svg'
 import { useNavigation } from '@react-navigation/native'
 import Config from 'react-native-config'
+import Checkmark from '@assets/svgs/checkmark.svg'
 
 const MOCK = Config.MOCK_IOT === 'true'
 const MOCK_DEVICES = [
@@ -190,6 +191,11 @@ const ScanHotspots = ({
     return true
   }
 
+  const navNext = useCallback(
+    () => carouselRef?.current?.snapToNext(),
+    [carouselRef],
+  )
+
   const handleScanPress = useCallback(async () => {
     const shouldScan = !scanning
     setScanning(shouldScan)
@@ -224,16 +230,16 @@ const ScanHotspots = ({
         stopScan()
       }
     }
-  }, [scannedDevices.length, scanning, startScan, stopScan])
-
-  const navNext = useCallback(
-    () => carouselRef?.current?.snapToNext(),
-    [carouselRef],
-  )
+  }, [scannedDevices, scanning, startScan, stopScan])
 
   const [connecting, setConnecting] = useState(false)
   const connectDevice = useCallback(
     (d: Device) => async () => {
+      if (MOCK) {
+        navNext()
+        return
+      }
+
       try {
         setConnecting(true)
         await connect(d)
@@ -261,6 +267,7 @@ const ScanHotspots = ({
       const borderTopEndRadius = first ? '2xl' : 'none'
       const borderBottomStartRadius = last ? '2xl' : 'none'
       const borderBottomEndRadius = last ? '2xl' : 'none'
+
       return (
         <TouchableContainer
           onPress={connectDevice(item)}
@@ -499,6 +506,8 @@ const WifiSettings = ({
       const borderBottomEndRadius = last ? '2xl' : 'none'
       const borderTopEndRadius = first ? '2xl' : 'none'
 
+      const isConfigured = configuredNetworks?.includes(network)
+
       return (
         <TouchableContainer
           alignItems="center"
@@ -521,7 +530,10 @@ const WifiSettings = ({
           <Text color="secondaryText" variant="textMdSemibold" flex={1}>
             {network}
           </Text>
-          <CarotRight color={colors['text.quaternary-500']} />
+          {!isConfigured && (
+            <CarotRight color={colors['text.quaternary-500']} />
+          )}
+          {isConfigured && <Checkmark color={colors['success.500']} />}
         </TouchableContainer>
       )
     },

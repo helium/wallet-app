@@ -1,23 +1,20 @@
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useHotspotBle } from '@helium/react-native-sdk'
+import { Keypair } from '@solana/web3.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import {
-  Alert,
-  FlatList,
-  RefreshControl,
-  StyleProp,
-  ViewStyle,
-} from 'react-native'
+import { FlatList, RefreshControl, StyleProp, ViewStyle } from 'react-native'
 import ScrollBox from '@components/ScrollBox'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import Box from '@components/Box'
 import RightArrow from '@assets/svgs/rightArrow.svg'
+import Checkmark from '@assets/svgs/checkmark.svg'
 import TouchableContainer from '@components/TouchableContainer'
 import CarotRight from '@assets/svgs/carot-right.svg'
 import Config from 'react-native-config'
+import animalName from 'angry-purple-tiger'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 
 const MOCK = Config.MOCK_IOT === 'true'
@@ -30,7 +27,7 @@ const WifiSettings = () => {
   const [configuredNetworks, setConfiguredNetworks] = useState<string[]>()
   const [connected, setConnected] = useState(false)
 
-  const { isConnected, readWifiNetworks, removeConfiguredWifi } =
+  const { isConnected, readWifiNetworks, getOnboardingAddress } =
     useHotspotBle()
   const { carouselRef, setOnboardDetails } = useHotspotOnboarding()
 
@@ -81,38 +78,23 @@ const WifiSettings = () => {
           }))
           carouselRef?.current?.snapToNext()
         } else {
-          Alert.alert(
-            t('hotspotOnboarding.wifiSettings.title'),
-            t('hotspotOnboarding.wifiSettings.remove', { network }),
-            [
-              {
-                text: t('generic.cancel'),
-                style: 'default',
-              },
-              {
-                text: t('generic.remove'),
-                style: 'destructive',
-                onPress: async () => {
-                  setConfiguredNetworks(
-                    configuredNetworks?.filter((n) => n !== network),
-                  )
-                  await removeConfiguredWifi(network)
-                  readWifiNetworks(true).then(setConfiguredNetworks)
-                  readWifiNetworks(false).then(setNetworks)
-                },
-              },
-            ],
-          )
+          // DO something
+          const onboardingAddress = MOCK
+            ? Keypair.generate().publicKey.toBase58()
+            : await getOnboardingAddress()
+          setOnboardDetails((o) => ({
+            ...o,
+            iotDetails: {
+              ...o.iotDetails,
+              onboardingAddress,
+              network,
+              animalName: animalName(onboardingAddress),
+            },
+          }))
+          carouselRef?.current?.snapToItem(5)
         }
       },
-    [
-      configuredNetworks,
-      readWifiNetworks,
-      removeConfiguredWifi,
-      t,
-      carouselRef,
-      setOnboardDetails,
-    ],
+    [carouselRef, setOnboardDetails, getOnboardingAddress],
   )
 
   const data = useMemo(
@@ -134,6 +116,8 @@ const WifiSettings = () => {
       const borderBottomStartRadius = last ? '2xl' : 'none'
       const borderBottomEndRadius = last ? '2xl' : 'none'
       const borderTopEndRadius = first ? '2xl' : 'none'
+
+      const isConfigured = configuredNetworks?.includes(network)
 
       return (
         <TouchableContainer
@@ -157,7 +141,10 @@ const WifiSettings = () => {
           <Text color="secondaryText" variant="textMdSemibold" flex={1}>
             {network}
           </Text>
-          <CarotRight color={colors['text.quaternary-500']} />
+          {!isConfigured && (
+            <CarotRight color={colors['text.quaternary-500']} />
+          )}
+          {isConfigured && <Checkmark color={colors['success.500']} />}
         </TouchableContainer>
       )
     },

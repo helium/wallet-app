@@ -42,12 +42,27 @@ const WifiSetup = () => {
   }, [secureTextEntry])
 
   const handleSetWifi = useCallback(async () => {
+    if (MOCK) {
+      setLoading(true)
+
+      // wait 2 seconds
+      setTimeout(() => {
+        setLoading(false)
+      }, 2000)
+
+      const onboardingAddress = Keypair.generate().publicKey.toBase58()
+      setOnboardDetails((o) => ({
+        ...o,
+        iotDetails: { ...o.iotDetails, onboardingAddress },
+      }))
+      carouselRef?.current?.snapToNext()
+      return
+    }
+
     setLoading(true)
     try {
       await setWifi(network, password)
-      const onboardingAddress = MOCK
-        ? Keypair.generate().publicKey.toBase58()
-        : await getOnboardingAddress()
+      const onboardingAddress = await getOnboardingAddress()
       setOnboardDetails((o) => ({
         ...o,
         iotDetails: {

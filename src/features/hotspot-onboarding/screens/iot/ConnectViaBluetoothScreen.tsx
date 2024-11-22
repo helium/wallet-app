@@ -25,6 +25,7 @@ const ConnectViaBluetoothScreen = () => {
   const contentContainerStyle = useMemo(() => {
     return {
       padding: spacing['2xl'],
+      paddingBottom: spacing['4xl'],
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
@@ -33,30 +34,35 @@ const ConnectViaBluetoothScreen = () => {
   }, [spacing])
 
   return (
-    <ScrollBox
-      contentContainerStyle={contentContainerStyle as StyleProp<ViewStyle>}
-    >
-      <BluetoothIcon />
-      <Text variant="displayMdSemibold" color="primaryText" textAlign="center">
-        {t('ConnectViaBluetoothScreen.title')}
-      </Text>
-      <Text
-        variant="textLgRegular"
-        color="text.quaternary-500"
-        textAlign="center"
+    <>
+      <ScrollBox
+        contentContainerStyle={contentContainerStyle as StyleProp<ViewStyle>}
       >
-        {t('ConnectViaBluetoothScreen.subtitle')}
-      </Text>
-      <Text
-        variant="textLgSemibold"
-        color="primaryText"
-        textAlign="center"
-        mt="2xl"
-        marginHorizontal="2xl"
-      >
-        {t('ConnectViaBluetoothScreen.body')}
-      </Text>
-
+        <BluetoothIcon />
+        <Text
+          variant="displayMdSemibold"
+          color="primaryText"
+          textAlign="center"
+        >
+          {t('ConnectViaBluetoothScreen.title')}
+        </Text>
+        <Text
+          variant="textLgRegular"
+          color="text.quaternary-500"
+          textAlign="center"
+        >
+          {t('ConnectViaBluetoothScreen.subtitle')}
+        </Text>
+        <Text
+          variant="textLgSemibold"
+          color="primaryText"
+          textAlign="center"
+          mt="2xl"
+          marginHorizontal="2xl"
+        >
+          {t('ConnectViaBluetoothScreen.body')}
+        </Text>
+      </ScrollBox>
       <ReAnimatedBox
         entering={FadeIn}
         exiting={FadeOut}
@@ -92,7 +98,7 @@ const ConnectViaBluetoothScreen = () => {
           </Box>
         </TouchableContainer>
       </ReAnimatedBox>
-    </ScrollBox>
+    </>
   )
 }
 
