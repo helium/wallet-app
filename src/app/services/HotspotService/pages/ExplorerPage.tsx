@@ -66,7 +66,7 @@ const ExplorerPage = () => {
       <TotalHotspotPuckContainer />
       <Map onCameraChanged={handleCameraChanged}>
         <Camera
-          zoomLevel={1}
+          minZoomLevel={1}
           maxZoomLevel={22}
           pitch={0}
           centerCoordinate={[
@@ -87,7 +87,7 @@ const ExplorerPage = () => {
               userLocation?.coords.latitude || 0,
             ]}
           >
-            <ImageBox source={require('@assets/images/puck.png')} />
+            <ImageBox source={require('@assets/images/puckNoBearing.png')} />
           </MarkerView>
         </UserLocation>
         {hotspotsWithMeta.map((hotspot) => {

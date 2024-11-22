@@ -158,6 +158,11 @@ const ScanHotspots = () => {
     }
   }, [scannedDevices.length, scanning, startScan, stopScan])
 
+  useEffect(() => {
+    handleScanPress()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const navNext = useCallback(
     () => carouselRef?.current?.snapToNext(),
     [carouselRef],
@@ -166,6 +171,11 @@ const ScanHotspots = () => {
   const [connecting, setConnecting] = useState(false)
   const connectDevice = useCallback(
     (d: Device) => async () => {
+      if (MOCK) {
+        navNext()
+        return
+      }
+
       try {
         setConnecting(true)
         await connect(d)
