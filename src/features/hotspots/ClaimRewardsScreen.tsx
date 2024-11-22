@@ -33,7 +33,8 @@ const ClaimRewardsScreen = () => {
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
   const { submitClaimRewards } = useSubmitTxn()
 
-  const { createClaimMobileTx, createClaimIotTx } = useHotspot(mint)
+  const { createClaimMobileTx, createClaimIotTx, createClaimHntTx } =
+    useHotspot(mint)
 
   const pendingIotRewards = useMemo(
     () =>
@@ -48,6 +49,14 @@ const ClaimRewardsScreen = () => {
       hotspot &&
       hotspot.pendingRewards &&
       new BN(hotspot.pendingRewards[Mints.MOBILE]),
+    [hotspot],
+  )
+
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspot &&
+      hotspot.pendingRewards &&
+      new BN(hotspot.pendingRewards[Mints.HNT]),
     [hotspot],
   )
 
@@ -73,6 +82,11 @@ const ClaimRewardsScreen = () => {
         pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
           ? await createClaimMobileTx()
           : undefined
+      const claimHntTx =
+        pendingHntRewards && !pendingHntRewards.eq(new BN(0))
+          ? await createClaimHntTx()
+          : undefined
+
       const transactions: VersionedTransaction[] = []
 
       if (claimIotTx && pendingIotRewards) {
@@ -81,6 +95,10 @@ const ClaimRewardsScreen = () => {
 
       if (claimMobileTx && pendingMobileRewards) {
         transactions.push(claimMobileTx)
+      }
+
+      if (claimHntTx && pendingHntRewards) {
+        transactions.push(claimHntTx)
       }
 
       if (transactions.length > 0) {

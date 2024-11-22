@@ -1,6 +1,7 @@
 import CopyAddress from '@assets/svgs/copyAddress.svg'
 import Hex from '@assets/svgs/hex.svg'
 import IotSymbol from '@assets/svgs/iotSymbol.svg'
+import HntSymbol from '@assets/svgs/hntSymbol.svg'
 import MobileSymbol from '@assets/svgs/mobileSymbol.svg'
 import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
@@ -13,7 +14,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { makerApprovalKey } from '@helium/helium-entity-manager-sdk'
 import { useMint } from '@helium/helium-react-hooks'
 import { NetworkType } from '@helium/onboarding'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useEntityKey } from '@hooks/useEntityKey'
@@ -161,6 +162,7 @@ export const HotspotMapHotspotDetails = ({
   const streetAddress = useHotspotAddress(hotspotWithMeta)
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
+  const { info: hntMint } = useMint(HNT_MINT)
   // Use entity key from kta since it's a buffer
   const iotInfoAcc = useIotInfo(kta?.entityKey)
   const mobileInfoAcc = useMobileInfo(kta?.entityKey)
@@ -239,6 +241,21 @@ export const HotspotMapHotspotDetails = ({
     return formatLargeNumber(new BigNumber(num))
   }, [hotspotWithMeta, mobileMint])
 
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspotWithMeta?.pendingRewards &&
+      new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
+    [hotspotWithMeta],
+  )
+  const pendingHntRewardsString = useMemo(() => {
+    if (!hotspotWithMeta?.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
+      hntMint?.decimals || 6,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspotWithMeta, hntMint])
+
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
     [pendingIotRewards],
@@ -247,10 +264,14 @@ export const HotspotMapHotspotDetails = ({
     () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
     [pendingMobileRewards],
   )
+  const hasHntRewards = useMemo(
+    () => pendingHntRewards && pendingHntRewards.gt(new BN(0)),
+    [pendingHntRewards],
+  )
 
   const hasRewards = useMemo(
-    () => hasIotRewards || hasMobileRewards,
-    [hasIotRewards, hasMobileRewards],
+    () => hasIotRewards || hasMobileRewards || hasHntRewards,
+    [hasIotRewards, hasMobileRewards, hasHntRewards],
   )
 
   const mobileRecipient = useMemo(
@@ -263,6 +284,11 @@ export const HotspotMapHotspotDetails = ({
     [hotspotWithMeta],
   )
 
+  const hntRecipient = useMemo(
+    () => hotspotWithMeta?.rewardRecipients?.[Mints.HNT],
+    [hotspotWithMeta],
+  )
+
   const hasIotRecipient = useMemo(
     () =>
       iotRecipient?.destination &&
@@ -270,6 +296,15 @@ export const HotspotMapHotspotDetails = ({
       !new PublicKey(iotRecipient.destination).equals(wallet) &&
       !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
     [iotRecipient, wallet],
+  )
+
+  const hasHntRecipient = useMemo(
+    () =>
+      hntRecipient?.destination &&
+      wallet &&
+      !new PublicKey(hntRecipient.destination).equals(wallet) &&
+      !new PublicKey(hntRecipient.destination).equals(PublicKey.default),
+    [hntRecipient, wallet],
   )
 
   const hasMobileRecipient = useMemo(
@@ -282,8 +317,8 @@ export const HotspotMapHotspotDetails = ({
   )
 
   const hasRecipientSet = useMemo(
-    () => hasIotRecipient || hasMobileRecipient,
-    [hasIotRecipient, hasMobileRecipient],
+    () => hasIotRecipient || hasMobileRecipient || hasHntRecipient,
+    [hasIotRecipient, hasMobileRecipient, hasHntRecipient],
   )
 
   const isLoading = useMemo(
@@ -683,6 +718,31 @@ export const HotspotMapHotspotDetails = ({
                           color="iotGreen"
                         >
                           {pendingIotRewardsString}
+                        </Text>
+                      </Box>
+                    )}
+                    {!!hasHntRewards && (
+                      <Box
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        backgroundColor="iotDarkGreen"
+                        borderRadius="2xl"
+                        paddingVertical="xs"
+                        paddingLeft="xs"
+                        paddingRight="2"
+                      >
+                        <HntSymbol
+                          color={colors.hntBlue}
+                          width={20}
+                          height={20}
+                        />
+                        <Text
+                          variant="textXsMedium"
+                          marginLeft="2"
+                          color="hntBlue"
+                        >
+                          {pendingHntRewardsString}
                         </Text>
                       </Box>
                     )}

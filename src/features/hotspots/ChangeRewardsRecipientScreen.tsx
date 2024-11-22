@@ -26,7 +26,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
+import { HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
 import { PublicKey } from '@solana/web3.js'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -139,7 +139,7 @@ const ChangeRewardsRecipientScreen = () => {
     setUpdating(true)
     try {
       await submitUpdateRewardsDestination({
-        lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY, HNT_LAZY_KEY],
         destination: recipient,
         assetId: hotspot.id,
       })
@@ -157,7 +157,7 @@ const ChangeRewardsRecipientScreen = () => {
     setRemoving(true)
     try {
       await submitUpdateRewardsDestination({
-        lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        lazyDistributors: [IOT_LAZY_KEY, MOBILE_LAZY_KEY, HNT_LAZY_KEY],
         destination: PublicKey.default.toBase58(),
         assetId: hotspot.id,
       })

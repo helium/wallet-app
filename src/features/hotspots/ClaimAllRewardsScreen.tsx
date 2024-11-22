@@ -15,6 +15,7 @@ import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useNavigation } from '@react-navigation/native'
 import { useModal } from '@config/storage/ModalsProvider'
 import {
+  HNT_LAZY_KEY,
   IOT_LAZY_KEY,
   MIN_BALANCE_THRESHOLD,
   MOBILE_LAZY_KEY,
@@ -61,7 +62,7 @@ const ClaimAllRewardsScreen = () => {
       setRedeeming(true)
       const claim = async () => {
         await submitClaimAllRewards(
-          [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+          [IOT_LAZY_KEY, MOBILE_LAZY_KEY, HNT_LAZY_KEY],
           hotspotsWithMeta,
           totalHotspots,
         )

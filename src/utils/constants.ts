@@ -26,6 +26,7 @@ export const MOBILE_LAZY_KEY = lazyDistributorKey(
 )[0]
 
 export const IOT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.IOT))[0]
+export const HNT_LAZY_KEY = lazyDistributorKey(new PublicKey(Mints.HNT))[0]
 export const DAO_KEY = daoKey(HNT_MINT)[0]
 export const IOT_SUB_DAO_KEY = subDaoKey(IOT_MINT)[0]
 export const MOBILE_SUB_DAO_KEY = subDaoKey(MOBILE_MINT)[0]
