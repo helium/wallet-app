@@ -123,6 +123,7 @@ const ScanHotspots = () => {
   }
 
   const handleScanPress = useCallback(async () => {
+    setError(undefined)
     const shouldScan = !scanning
     setScanning(shouldScan)
     await checkPermission()
@@ -159,9 +160,12 @@ const ScanHotspots = () => {
   }, [scannedDevices.length, scanning, startScan, stopScan])
 
   useEffect(() => {
-    handleScanPress()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    // eslint-disable-next-line no-underscore-dangle
+    if (carouselRef?.current?._activeItem === 1) {
+      handleScanPress()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps, no-underscore-dangle
+  }, [carouselRef?.current?._activeItem])
 
   const navNext = useCallback(
     () => carouselRef?.current?.snapToNext(),
