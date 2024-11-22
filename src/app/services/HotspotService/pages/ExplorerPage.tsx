@@ -101,6 +101,7 @@ const ExplorerPage = () => {
 
           return (
             <MarkerView
+              key={hotspot.id}
               id={hotspot.id}
               coordinate={[long, lat]}
               allowOverlapWithPuck

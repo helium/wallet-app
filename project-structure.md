@@ -54,6 +54,8 @@ src/features/awesome-feature
 |
 +-- components  # components scoped to a specific feature
 |
++-- screens     # screens scoped to a specific feature
+|
 +-- hooks       # hooks scoped to a specific feature
 |
 +-- stores      # state stores for a specific feature

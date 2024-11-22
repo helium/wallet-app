@@ -1651,4 +1651,10 @@ export default {
     heliumIoTHotspot: 'Helium IoT Hotspot Mines HNT.',
     deployed: 'Deployed {{date}}',
   },
+  ConnectViaBluetoothScreen: {
+    title: 'Connect via Bluetooth',
+    subtitle: 'All supported Hotspots use Bluetooth for initial setup.',
+    body: 'Follow the manufacturer’s instructions to power up your device and enter Bluetooth pairing mode.',
+    scanForHotspots: 'Scan for Hotspots',
+  },
 }

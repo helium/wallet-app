@@ -223,7 +223,7 @@ const HotspotPage = () => {
 
       const { name } = item.content.metadata
 
-      const isActive = item?.content?.metadata?.hotspot_infos?.iot?.is_activ
+      const isActive = item?.content?.metadata?.hotspot_infos?.iot?.is_active
 
       const isNewHotspot = item.id === newHotspot?.id
 
@@ -242,6 +242,7 @@ const HotspotPage = () => {
 
       return (
         <TouchableContainer
+          key={item.id}
           borderTopStartRadius={borderTopStartRadius}
           borderTopEndRadius={borderTopEndRadius}
           borderBottomStartRadius={borderBottomStartRadius}

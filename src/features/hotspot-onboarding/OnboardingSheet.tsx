@@ -52,6 +52,7 @@ import WifiSettings from './screens/iot/WifiSettings'
 import WifiSetup from './screens/iot/WifiSetup'
 import HotspotConnected from './screens/iot/HotspotConnected'
 import SelectLocationScreen from './screens/SelectLocationScreen'
+import ConnectViaBluetoothScreen from './screens/iot/ConnectViaBluetoothScreen'
 
 export type OnboardingSheetRef = {
   show: () => void
@@ -265,6 +266,9 @@ const HotspotOnboardingProvider = forwardRef(
       if (iotSelected) {
         pages.push(
           ...[
+            {
+              Screen: ConnectViaBluetoothScreen,
+            },
             {
               Screen: ScanHotspots,
             },
