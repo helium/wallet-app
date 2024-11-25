@@ -4,6 +4,7 @@ import SwipeButton from 'rn-swipe-button'
 import SwipeIcon from '@assets/svgs/swipeIcon.svg'
 import { Font, Theme } from '@config/theme/theme'
 import { useColors } from '@config/theme/themeHooks'
+import { StyleProp, TextStyle } from 'react-native'
 import Box from './Box'
 
 type Props = {
@@ -37,6 +38,7 @@ const SubmitButton = ({
         color: disabled ? secondaryText : colorActual,
         fontSize: 19,
         paddingLeft: 30,
+        fontWeight: 600,
       },
       railStyles: {
         backgroundColor: rest['bg.tertiary'],
@@ -58,7 +60,7 @@ const SubmitButton = ({
         railBackgroundColor={backgroundActual}
         railStyles={styles.railStyles}
         railBorderColor={backgroundActual}
-        titleStyles={styles.titleStyles}
+        titleStyles={styles.titleStyles as StyleProp<TextStyle>}
         titleMaxFontScale={1}
         thumbIconBackgroundColor={backgroundActual}
         thumbIconBorderColor={colorActual}

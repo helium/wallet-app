@@ -177,7 +177,10 @@ const HNTKeyboardSelector = forwardRef(
             : undefined
         setValue(val || '0')
 
-        bottomSheetModalRef.current?.expand()
+        // wait 1 render cycle to expand
+        setTimeout(() => {
+          bottomSheetModalRef.current?.expand()
+        }, 100)
       },
       [handleVisible, decimals],
     )
