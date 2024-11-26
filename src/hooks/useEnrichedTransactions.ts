@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSolana } from '../solana/SolanaProvider'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { useAppDispatch } from '../store/store'
 import { EnrichedTransaction } from '../types/solana'
 import {

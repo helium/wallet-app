@@ -9,12 +9,12 @@ import ButtonPressable from '@components/ButtonPressable'
 import TextTransform from '@components/TextTransform'
 import SafeAreaBox from '@components/SafeAreaBox'
 import CloseButton from '@components/CloseButton'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { useOnboarding } from '../OnboardingProvider'
 import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigatorTypes'
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
-import { RootNavigationProp } from '../../../navigation/rootTypes'
+import { RootNavigationProp } from '../../../app/rootTypes'
 
 type Route = RouteProp<MultiAccountStackParamList, 'AccountImportStartScreen'>
 

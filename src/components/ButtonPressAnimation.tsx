@@ -1,6 +1,6 @@
 import useHaptic from '@hooks/useHaptic'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import React from 'react'
 import {
   GestureResponderEvent,

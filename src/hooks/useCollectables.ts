@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { WrappedConnection } from '@utils/WrappedConnection'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { CompressedNFT } from '../types/solana'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
   fetchCollectables,
@@ -16,7 +17,6 @@ import {
   onLogs,
   removeAccountChangeListener,
 } from '../utils/solanaUtils'
-import { useSolana } from '../solana/SolanaProvider'
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void

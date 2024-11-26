@@ -11,9 +11,9 @@ import React, {
 import { BoxProps } from '@shopify/restyle'
 import { GestureResponderEvent, LayoutChangeEvent } from 'react-native'
 import { SvgProps } from 'react-native-svg'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { Theme } from '../theme/theme'
+import { Theme } from '../config/theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
@@ -30,12 +30,14 @@ const SegmentedItem = ({
   onSelected,
   onSetWidth,
   fullWidth,
+  size,
 }: {
   option: Option
   selected: boolean
   onSelected: ((event: GestureResponderEvent) => void) | undefined
   onSetWidth: (width: number) => void
   fullWidth?: boolean
+  size?: 'sm' | 'md'
 }) => {
   const { primaryBackground, ...colors } = useColors()
   const [hasTouched, setHasTouched] = useState(false)
@@ -71,8 +73,8 @@ const SegmentedItem = ({
   return (
     <TouchableOpacityBox
       flex={fullWidth ? 1 : undefined}
-      paddingVertical="1.5"
-      paddingHorizontal="3"
+      paddingVertical={size === 'md' ? 'lg' : '1.5'}
+      paddingHorizontal={size === 'md' ? '2xl' : '3'}
       justifyContent="center"
       alignItems="center"
       onPress={onPressHandler}
@@ -107,11 +109,12 @@ type Props = {
   options: Option[]
   onItemSelected: (index: number) => void
   fullWidth?: boolean
+  size?: 'sm' | 'md'
 } & BoxProps<Theme>
 
 const SegmentedControl = forwardRef(
   (
-    { options, onItemSelected, fullWidth, ...boxProps }: Props,
+    { options, onItemSelected, fullWidth, size = 'sm', ...boxProps }: Props,
     ref: Ref<SegmentedControlRef>,
   ) => {
     const [selectedIndex, setSelectedIndex] = useState(0)
@@ -180,6 +183,7 @@ const SegmentedControl = forwardRef(
               selected={index === selectedIndex}
               onSelected={handleItemSelected(index)}
               onSetWidth={onSetWidth(index)}
+              size={size}
             />
           ))}
         </Box>

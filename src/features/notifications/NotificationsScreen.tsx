@@ -5,8 +5,8 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
 import AccountSlider from './AccountSlider'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationsList from './NotificationsList'
 
 const NotificationsScreen = () => {

@@ -1,9 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback } from 'react'
 import { Pressable } from 'react-native'
-import Backspace from '@assets/images/backspace.svg'
+import Backspace from '@assets/svgs/backspace.svg'
 import { useTranslation } from 'react-i18next'
-import { useColors, useHitSlop, useOpacity } from '@theme/themeHooks'
+import { useColors, useHitSlop, useOpacity } from '@config/theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
 import { decimalSeparator } from '../utils/i18n'

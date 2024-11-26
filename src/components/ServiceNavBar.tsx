@@ -13,7 +13,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
-import { useColors, useVerticalHitSlop } from '@theme/themeHooks'
+import { useColors, useVerticalHitSlop } from '@config/theme/themeHooks'
 import Box from './Box'
 import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
@@ -176,7 +176,7 @@ const NavServiceNavBar = ({
       {...containerProps}
       paddingHorizontal="2xl"
       flexDirection="row"
-      justifyContent="center"
+      flex={1}
       shadowColor="base.black"
       shadowOpacity={0.3}
       shadowOffset={{ width: 0, height: 6 }}
@@ -188,6 +188,7 @@ const NavServiceNavBar = ({
         backgroundColor="primaryText"
         borderRadius="full"
         padding="md"
+        flex={1}
         gap="2"
       >
         {items}

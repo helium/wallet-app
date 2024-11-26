@@ -17,9 +17,9 @@ import {
 import { useEcosystemTokenSolConvert } from '@hooks/useEcosystemTokensSolConvert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
-import { useAppStorage } from '@storage/AppStorageProvider'
-import { useModal } from '@storage/ModalsProvider'
-import { useVisibleTokens } from '@storage/TokensProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { useModal } from '@config/storage/ModalsProvider'
+import { useVisibleTokens } from '@config/storage/TokensProvider'
 import BN from 'bn.js'
 import React, {
   FC,
@@ -32,8 +32,8 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { Switch } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
-import { useSolana } from '../../solana/SolanaProvider'
-import * as Logger from '../../utils/logger'
+import { useSolana } from '@features/solana/SolanaProvider'
+import * as Logger from '@utils/logger'
 
 const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()

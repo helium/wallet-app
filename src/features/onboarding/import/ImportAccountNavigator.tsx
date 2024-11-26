@@ -3,13 +3,13 @@ import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { ImportAccountStackParamList } from './importAccountNavTypes'
 import AccountImportStartScreen from './AccountImportStartScreen'
 import AccountImportScreen from './AccountImportScreen'
 import AccountAssignScreen from '../AccountAssignScreen'
 import AccountCreatePinScreen from '../AccountCreatePinScreen'
 import AccountConfirmPinScreen from '../AccountConfirmPinScreen'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import CLIAccountNavigator from '../cli-import/CLIAccountNavigator'
 import ImportSubAccountsScreen from './ImportSubAccountsScreen'
 

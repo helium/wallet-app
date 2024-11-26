@@ -15,10 +15,10 @@ import {
   TextInput as RNTextInput,
   Platform,
 } from 'react-native'
-import Checkmark from '@assets/images/checkmark.svg'
+import Checkmark from '@assets/svgs/checkmark.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import TextInput from '@components/TextInput'
 import ButtonPressable from '@components/ButtonPressable'
 import AccountIcon from '@components/AccountIcon'
@@ -31,15 +31,15 @@ import BackScreen from '@components/BackScreen'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { CSAccount } from '@config/storage/cloudStorage'
+import { useSolana } from '@features/solana/SolanaProvider'
+import AddressExtra from './AddressExtra'
 import {
   AddressBookNavigationProp,
   AddressBookStackParamList,
 } from './addressBookTypes'
-import { useAppStorage } from '../../storage/AppStorageProvider'
-import AddressExtra from './AddressExtra'
-import { CSAccount } from '../../storage/cloudStorage'
-import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressToHelium } from '../../utils/accountUtils'
 
 const BUTTON_HEIGHT = 55

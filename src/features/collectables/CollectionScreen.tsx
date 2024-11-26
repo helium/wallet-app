@@ -8,8 +8,8 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
-import globalStyles from '@theme/globalStyles'
-import { useBorderRadii } from '@theme/themeHooks'
+import globalStyles from '@config/theme/globalStyles'
+import { useBorderRadii } from '@config/theme/themeHooks'
 import ScrollBox from '@components/ScrollBox'
 import {
   CollectableNavigationProp,

@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import Flag from '@assets/images/flag.svg'
-import LightningBolt from '@assets/images/lightningBolt.svg'
-import UserStar from '@assets/images/userStar.svg'
+import Flag from '@assets/svgs/flag.svg'
+import LightningBolt from '@assets/svgs/lightningBolt.svg'
+import UserStar from '@assets/svgs/userStar.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import { Select } from '@components/Select'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { Animated } from 'react-native'
 import { FadeIn } from 'react-native-reanimated'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
@@ -102,7 +102,8 @@ export const GovernanceWrapper: React.FC<
               {header}
               <Select
                 mb="8"
-                value={selectedTab}
+                placeholder="Select Tab"
+                initialValue={selectedTab}
                 onValueChange={setSelectedTab}
                 options={['proposals', 'voters', 'positions'].map((o) => ({
                   label: o.charAt(0).toUpperCase() + o.slice(1),

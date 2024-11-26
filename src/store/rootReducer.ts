@@ -29,6 +29,12 @@ const solanaConfig = {
   blacklist: ['payment'],
 }
 
+const appConfig = {
+  key: appSliceName,
+  storage: AsyncStorage,
+  blacklist: ['rootSheetPosition'],
+}
+
 const notificationsConfig = {
   key: notificationsSliceName,
   storage: AsyncStorage,
@@ -57,7 +63,7 @@ const reducer = combineReducers({
     notificationsReducer,
   ),
   [authSliceName]: authReducer,
-  [appSliceName]: appReducer,
+  [appSliceName]: persistReducer(appConfig, appReducer),
   [hotspotSliceName]: hotspotReducer,
   [browserSliceName]: browserReducer,
   [tokensSliceName]: persistReducer(tokensConfig, tokensReducer),

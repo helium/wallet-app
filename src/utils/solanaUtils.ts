@@ -117,7 +117,7 @@ import {
   token,
   walletAdapterIdentity,
 } from '@metaplex-foundation/js'
-import { getSessionKey } from '../storage/secureStorage'
+import { getSessionKey } from '@config/storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -931,7 +931,8 @@ export const getNFTs = async (
     page,
     '',
     '',
-    { showFungible: true },
+    // TODO: Update helium-program-library to support new options
+    { showFungible: true, showCollectionMetadata: true } as any,
   )
 
   return items

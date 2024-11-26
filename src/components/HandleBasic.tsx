@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
 import React from 'react'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Box from './Box'
 
 type Props = BoxProps<Theme>

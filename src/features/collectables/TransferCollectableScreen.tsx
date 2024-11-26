@@ -1,4 +1,4 @@
-import ArrowRight from '@assets/images/arrowRight.svg'
+import ArrowRight from '@assets/svgs/arrowRight.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
@@ -12,7 +12,7 @@ import ImageBox from '@components/ImageBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -27,10 +27,10 @@ import ScrollBox from '@components/ScrollBox'
 import { Asset } from '@helium/spl-utils'
 import { NavBarHeight } from '@components/ServiceNavBar'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import AddressIcon from '@assets/images/addressIcon.svg'
-import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
+import AddressIcon from '@assets/svgs/addressIcon.svg'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import { CSAccount } from '@config/storage/cloudStorage'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
-import { CSAccount } from '../../storage/cloudStorage'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { ww } from '../../utils/layout'
 import * as Logger from '../../utils/logger'
@@ -87,10 +87,6 @@ const TransferCollectableScreen = () => {
     [],
   )
 
-  const backgroundImageUri = useMemo(() => {
-    return metadata.image
-  }, [metadata])
-
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
     setRecipientName('')
@@ -130,7 +126,6 @@ const TransferCollectableScreen = () => {
         <BackScreen
           padding="xl"
           title={t('collectablesScreen.transferCollectable')}
-          backgroundImageUri={backgroundImageUri || ''}
           edges={[]}
           headerTopMargin="6xl"
         >

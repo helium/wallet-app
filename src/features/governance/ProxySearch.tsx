@@ -1,4 +1,4 @@
-import BrowseVoters from '@assets/images/browseVoters.svg'
+import BrowseVoters from '@assets/svgs/browseVoters.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -9,13 +9,14 @@ import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { shortenAddress } from '@utils/formatting'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { useDebounce } from 'use-debounce'
+import { useColors } from '@config/theme/themeHooks'
 import { GovernanceNavigationProp } from './governanceTypes'
 
 export const ProxySearch: React.FC<{
@@ -27,6 +28,7 @@ export const ProxySearch: React.FC<{
   const [focused, setFocused] = useState(false)
   const [debouncedInput] = useDebounce(input, 300)
   const { voteService, mint } = useGovernance()
+  const colors = useColors()
   const {
     data: resultPaged,
     isLoading: loading,
@@ -131,8 +133,10 @@ export const ProxySearch: React.FC<{
               }}
             />
             <ButtonPressable
-              backgroundColor="secondaryBackground"
+              backgroundColor="primaryText"
+              titleColor="primaryBackground"
               Icon={BrowseVoters}
+              iconProps={{ color: colors.primaryBackground }}
               borderRadius="2xl"
               ml="2"
               onPress={handleBrowseVoters}

@@ -14,12 +14,12 @@ import React, { memo, useCallback, useState } from 'react'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import RNSodium from 'react-native-sodium'
-import { RootNavigationProp } from '../../../navigation/rootTypes'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import {
   DEFAULT_DERIVATION_PATH,
   createKeypair,
-} from '../../../storage/secureStorage'
+} from '@config/storage/secureStorage'
+import { RootNavigationProp } from '../../../app/rootTypes'
 import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingStackParamList } from '../onboardingTypes'

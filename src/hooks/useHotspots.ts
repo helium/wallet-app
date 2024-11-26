@@ -1,8 +1,8 @@
 import BN from 'bn.js'
 import { useCallback, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { useSolana } from '../solana/SolanaProvider'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
   fetchAllHotspots,

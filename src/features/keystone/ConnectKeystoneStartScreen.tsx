@@ -4,7 +4,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { useNavigation } from '@react-navigation/native'
-import WarningKeystone from '@assets/images/warningKeystone.svg'
+import WarningKeystone from '@assets/svgs/warningKeystone.svg'
 import React, {
   forwardRef,
   ReactNode,
@@ -16,11 +16,11 @@ import React, {
 } from 'react'
 import useCamera from '@hooks/useCamera'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
-import { useOpacity, useSpacing } from '@theme/themeHooks'
+import { useOpacity, useSpacing } from '@config/theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
 import { t } from 'i18next'
-import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { RootNavigationProp } from 'src/app/rootTypes'
 import { Image, Linking, Platform } from 'react-native'
 
 type CameraPermissionBottomSheetAlertRef = {

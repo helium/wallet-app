@@ -18,14 +18,11 @@ import AccountSelector, {
 } from '@components/AccountSelector'
 import AccountButton from '@components/AccountButton'
 import useAlert from '@hooks/useAlert'
-import { ServiceSheetNavigationProp } from '@services/serviceSheetTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { ServiceSheetNavigationProp } from 'src/app/services/serviceSheetTypes'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { checkSecureAccount, getKeypair } from '@config/storage/secureStorage'
 import { formatAccountAlias } from '../../utils/accountUtils'
-import { checkSecureAccount, getKeypair } from '../../storage/secureStorage'
-import {
-  RootNavigationProp,
-  RootStackParamList,
-} from '../../navigation/rootTypes'
+import { RootNavigationProp, RootStackParamList } from '../../app/rootTypes'
 import sleep from '../../utils/sleep'
 
 type Route = RouteProp<RootStackParamList, 'LinkWallet'>

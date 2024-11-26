@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '@theme/themeHooks'
+import { useOpacity } from '@config/theme/themeHooks'
 import NotificationsScreen from './NotificationsScreen'
 import NotificationDetails from './NotificationDetails'
 

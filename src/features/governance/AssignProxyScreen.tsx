@@ -22,7 +22,7 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getBasePriorityFee } from '@utils/walletApiV2'
@@ -31,9 +31,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
 import {
@@ -253,8 +253,10 @@ export const AssignProxyScreen = () => {
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
-              value={mint.toBase58()}
-              onValueChange={(pk) => navigation.setParams({ mint: pk })}
+              placeholder="Select Network"
+              initialValue={mint.toBase58()}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onValueChange={(pk: any) => navigation.setParams({ mint: pk })}
               options={networks}
             />
           </Box>

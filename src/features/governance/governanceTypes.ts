@@ -1,7 +1,7 @@
 import { IdlAccounts } from '@coral-xyz/anchor'
 import { Proposal } from '@helium/modular-governance-idls/lib/types/proposal'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { Color } from '@theme/theme'
+import { Color } from 'src/config/theme/theme'
 
 export type ProposalV0 = IdlAccounts<Proposal>['proposalV0']
 export type VoteChoice = IdlAccounts<Proposal>['proposalV0']['choices'][0]

@@ -1,4 +1,4 @@
-import BrowseVoters from '@assets/images/browseVoters.svg'
+import BrowseVoters from '@assets/svgs/browseVoters.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
@@ -27,9 +27,9 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useGovernance } from '@storage/GovernanceProvider'
-import globalStyles from '@theme/globalStyles'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
+import globalStyles from '@config/theme/globalStyles'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
@@ -42,10 +42,11 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
-import { MessagePreview } from '../../solana/MessagePreview'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { useColors } from '@config/theme/themeHooks'
+import { MessagePreview } from '@features/solana/MessagePreview'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
 import {
   GovernanceNavigationProp,
@@ -58,6 +59,7 @@ import {
 type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
   const { t } = useTranslation()
+  const colors = useColors()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { upsertAccount, currentAccount } = useAccountStorage()
@@ -521,8 +523,15 @@ export const ProposalScreen = () => {
                     <ButtonPressable
                       fontSize={16}
                       height={48}
-                      backgroundColor="gray.800"
-                      LeadingComponent={<BrowseVoters width={18} height={18} />}
+                      backgroundColor="primaryText"
+                      titleColor="primaryBackground"
+                      LeadingComponent={
+                        <BrowseVoters
+                          color={colors.primaryBackground}
+                          width={18}
+                          height={18}
+                        />
+                      }
                       borderRadius="full"
                       mt="4"
                       onPress={handleBrowseVoters}

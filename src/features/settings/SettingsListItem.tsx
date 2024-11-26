@@ -1,16 +1,16 @@
 import React, { memo, ReactText, useCallback, useMemo, useRef } from 'react'
 import { Linking, Platform, Switch } from 'react-native'
-import CarotRight from '@assets/images/carot-right.svg'
-import LinkImg from '@assets/images/link.svg'
+import CarotRight from '@assets/svgs/carot-right.svg'
+import LinkImg from '@assets/svgs/link.svg'
 import { HeliumActionSheetItemType } from '@components/HeliumActionSheetItem'
 import Text, { TextProps } from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { Color } from '@theme/theme'
+import { Color } from '@config/theme/theme'
 import HeliumActionSheet, {
   HeliumActionSheetRef,
 } from '@components/HeliumActionSheet'
 import Box from '@components/Box'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import { hp } from '@utils/layout'
 import sleep from '@utils/sleep'
 

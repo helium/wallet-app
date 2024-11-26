@@ -3,7 +3,7 @@ import {
   createStackNavigator,
   StackNavigationOptions,
 } from '@react-navigation/stack'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import KeystoneNavigator from '../../keystone/KeystoneNavigator'
 import AddNewAccountScreen from './AddNewAccountScreen'
 import LedgerNavigator from '../../ledger/LedgerNavigator'

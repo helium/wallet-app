@@ -1,7 +1,7 @@
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useEffect } from 'react'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { balancesSlice } from '../store/slices/balancesSlice'
 import { useAppDispatch } from '../store/store'
 

@@ -1,17 +1,16 @@
-import React, { memo, useCallback, useMemo, useRef } from 'react'
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet'
-import { Edge } from 'react-native-safe-area-context'
+import React, { memo, useCallback, useRef } from 'react'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAsync } from 'react-async-hook'
 import { Portal } from '@gorhom/portal'
 import { ThemeProvider } from '@shopify/restyle'
-import { lightTheme } from '@theme/theme'
+import { lightTheme } from '@config/theme/theme'
 import { useTranslation } from 'react-i18next'
-import SafeAreaBox from './SafeAreaBox'
+import { useSpacing } from '@config/theme/themeHooks'
 import HeliumBottomSheet from './HeliumBottomSheet'
 import Text from './Text'
+import Box from './Box'
+import ScrollBox from './ScrollBox'
 
 type Props = {
   title: string
@@ -23,6 +22,8 @@ type Props = {
 const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const bottomSheetModalRef = useRef<BottomSheet>(null)
   const { t } = useTranslation()
+  const { top, bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
 
   const handleOnClose = useCallback(() => {
     if (onClose) {
@@ -48,7 +49,7 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
         opacity={1}
         {...props}
       >
-        <SafeAreaBox flex={1}>
+        <Box flex={1} style={{ marginTop: top }}>
           <Text
             variant="textLgSemibold"
             color="primaryText"
@@ -57,13 +58,11 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
           >
             {t('blurActionSheet.selectAnOption')}
           </Text>
-        </SafeAreaBox>
+        </Box>
       </BottomSheetBackdrop>
     ),
-    [handleOnClose, title, t],
+    [handleOnClose, title, top, t],
   )
-
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
   return (
     <Portal>
@@ -74,11 +73,25 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
         onClose={handleOnClose}
       >
         <ThemeProvider theme={lightTheme}>
-          <BottomSheetScrollView>
-            <SafeAreaBox edges={safeEdges} padding="xl" marginTop="xl">
+          <Box
+            flex={1}
+            flexDirection="column"
+            zIndex={100}
+            position="relative"
+            borderRadius="6xl"
+            overflow="hidden"
+            marginTop="1"
+          >
+            <ScrollBox
+              paddingHorizontal="2xl"
+              contentContainerStyle={{
+                paddingBottom: bottom + spacing['6xl'],
+                paddingTop: spacing['6xl'],
+              }}
+            >
               {children}
-            </SafeAreaBox>
-          </BottomSheetScrollView>
+            </ScrollBox>
+          </Box>
         </ThemeProvider>
       </HeliumBottomSheet>
     </Portal>

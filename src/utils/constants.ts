@@ -42,3 +42,9 @@ export const MIN_BALANCE_THRESHOLD = 0.02 * LAMPORTS_PER_SOL
 
 // Make a smaller batch for the sake of ledger.
 export const MAX_TRANSACTIONS_PER_SIGNATURE_BATCH = 5
+
+export const HELIUM_WORLD_POI =
+  'mapbox://styles/petermain/cm2lwnp6k00b701qhepzz65no'
+
+export const HELIUM_WORLD_NO_LABELS =
+  'mapbox://styles/petermain/cm2lwmt9k000a01nt3l29dhhu'

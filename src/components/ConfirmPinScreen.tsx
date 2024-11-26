@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import * as LocalAuthentication from 'expo-local-authentication'
-import { WalletStackParamList } from '@services/WalletService/pages/WalletPage/WalletPageNavigator'
-import { SendNavigationProp } from '@services/WalletService/pages/SendPage/SentPageNavigator'
+import { WalletStackParamList } from '@services/WalletService/pages/WalletPage'
+import { SendNavigationProp } from '@services/WalletService/pages/SendPage'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import ConfirmPinView from './ConfirmPinView'
-import { useAppStorage } from '../storage/AppStorageProvider'
 
 type Route = RouteProp<WalletStackParamList, 'ConfirmPin'>
 

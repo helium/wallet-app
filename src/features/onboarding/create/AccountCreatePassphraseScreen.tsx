@@ -1,14 +1,17 @@
-import Close from '@assets/images/close.svg'
-import InfoError from '@assets/images/infoError.svg'
+import Close from '@assets/svgs/close.svg'
+import InfoError from '@assets/svgs/infoError.svg'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import RevealWords from '@components/RevealWords'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DEFAULT_DERIVATION_PATH, createKeypair } from '@storage/secureStorage'
-import { useColors } from '@theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import {
+  DEFAULT_DERIVATION_PATH,
+  createKeypair,
+} from '@config/storage/secureStorage'
+import { useColors } from '@config/theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'

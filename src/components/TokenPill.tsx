@@ -3,11 +3,11 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
-import { useColors, useCreateOpacity } from '@theme/themeHooks'
+import { useColors, useCreateOpacity } from '@config/theme/themeHooks'
 import React, { memo, useCallback } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
-import { Color } from '@theme/theme'
-import CarotDown from '../assets/images/carotDownFull.svg'
+import { Color } from '@config/theme/theme'
+import CarotDown from '../assets/svgs/carotDownFull.svg'
 
 export const TokenPill = memo(
   ({

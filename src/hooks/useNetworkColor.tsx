@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { NetTypes } from '@helium/address'
-import { Color } from '@theme/theme'
+import { Color } from '@config/theme/theme'
 
 export default ({
   defaultColor,

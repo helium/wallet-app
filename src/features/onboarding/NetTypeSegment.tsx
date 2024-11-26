@@ -5,13 +5,13 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NetTypes as NetType } from '@helium/address'
 import { Platform, Switch } from 'react-native'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import Box from '@components/Box'
-import { useColors, useHitSlop, useSpacing } from '@theme/themeHooks'
+import { useColors, useHitSlop, useSpacing } from '@config/theme/themeHooks'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { useOnboarding } from './OnboardingProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = BoxProps<Theme>
 const NetTypeSegment = (boxProps: Props) => {

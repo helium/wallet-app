@@ -2,10 +2,10 @@ import axios from 'axios'
 import Config from 'react-native-config'
 import { Cluster } from '@solana/web3.js'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
-import { getSecureItem } from '../storage/secureStorage'
+import { getSecureItem } from '@config/storage/secureStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { AccountBalance, Prices } from '../types/balance'
 import makeApiToken from './makeApiToken'
-import { CSAccount } from '../storage/cloudStorage'
 
 export type Notification = {
   title: string

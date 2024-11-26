@@ -1,15 +1,15 @@
-import BackArrow from '@assets/images/backArrow.svg'
-import Bookmark from '@assets/images/bookmark.svg'
-import BookmarkFilled from '@assets/images/bookmarkFilled.svg'
-import Close from '@assets/images/close.svg'
-import Refresh from '@assets/images/refresh.svg'
+import BackArrow from '@assets/svgs/backArrow.svg'
+import Bookmark from '@assets/svgs/bookmark.svg'
+import BookmarkFilled from '@assets/svgs/bookmarkFilled.svg'
+import Close from '@assets/svgs/close.svg'
+import Refresh from '@assets/svgs/refresh.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import {
   SolanaSignAndSendTransactionInput,
   SolanaSignMessageInput,
 } from '@solana/wallet-standard-features'
 import { Transaction, VersionedTransaction } from '@solana/web3.js'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Platform, StyleSheet } from 'react-native'
@@ -19,18 +19,18 @@ import {
   WebViewMessageEvent,
   WebViewNavigation,
 } from 'react-native-webview'
+import SolanaProvider, { useSolana } from '@features/solana/SolanaProvider'
+import WalletSignBottomSheet from '@features/solana/WalletSignBottomSheet'
+import {
+  WalletSignBottomSheetRef,
+  WalletStandardMessageTypes,
+} from '@features/solana/walletSignBottomSheetTypes'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import useBrowser from '../../hooks/useBrowser'
-import SolanaProvider, { useSolana } from '../../solana/SolanaProvider'
-import WalletSignBottomSheet from '../../solana/WalletSignBottomSheet'
-import {
-  WalletSignBottomSheetRef,
-  WalletStandardMessageTypes,
-} from '../../solana/walletSignBottomSheetTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import * as Logger from '../../utils/logger'
 import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
 import injectWalletStandard from './walletStandard'

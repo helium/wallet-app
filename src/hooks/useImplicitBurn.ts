@@ -14,9 +14,9 @@ import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { useSolana } from '../solana/SolanaProvider'
-import { useWalletSign } from '../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 
 export function useImplicitBurn(): {
   implicitBurn: (requiredDc: number) => void

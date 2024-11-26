@@ -3,7 +3,7 @@ import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { AccountLayout, TOKEN_PROGRAM_ID, getMint } from '@solana/spl-token'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { PURGE } from 'redux-persist'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 

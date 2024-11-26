@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, Connection, PublicKey } from '@solana/web3.js'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import { PURGE } from 'redux-persist'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { CompressedNFT } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 

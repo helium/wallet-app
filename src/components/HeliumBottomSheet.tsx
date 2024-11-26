@@ -5,7 +5,7 @@ import {
   useBorderRadii,
   useColors,
   useSpacing,
-} from '@theme/themeHooks'
+} from '@config/theme/themeHooks'
 import { wh } from '@utils/layout'
 import { Platform, StyleProp, ViewStyle } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
@@ -33,7 +33,7 @@ const HeliumBottomSheet = forwardRef<BottomSheet, BottomSheetProps>(
       return {
         width: 90,
         height: 4,
-        backgroundColor: colors.secondaryText,
+        backgroundColor: colors['base.black'],
       }
     }, [colors])
 
@@ -44,7 +44,7 @@ const HeliumBottomSheet = forwardRef<BottomSheet, BottomSheetProps>(
           top: 0,
           left: 0,
           right: 0,
-          backgroundColor: 'transparent',
+          opacity: 0.1,
         } as StyleProp<ViewStyle>),
       [],
     )
@@ -64,6 +64,7 @@ const HeliumBottomSheet = forwardRef<BottomSheet, BottomSheetProps>(
       <BottomSheet
         ref={ref}
         index={-1}
+        enableDynamicSizing={false}
         snapPoints={snapPoints}
         backgroundStyle={backgroundStyle}
         animatedPosition={listAnimatedPos}

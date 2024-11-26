@@ -8,7 +8,7 @@ import {
   toNumber,
 } from '@helium/spl-utils'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
-import { useVisibleTokens } from '@storage/TokensProvider'
+import { useVisibleTokens } from '@config/storage/TokensProvider'
 import BN from 'bn.js'
 import React, {
   ReactNode,
@@ -21,10 +21,10 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import usePrevious from '../hooks/usePrevious'
-import { useSolana } from '../solana/SolanaProvider'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import { syncTokenAccounts } from '../store/slices/balancesSlice'
 import { useAppDispatch } from '../store/store'

@@ -3,9 +3,9 @@ import React, { memo, useCallback } from 'react'
 import { Linking, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Text from './Text'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../constants/urls'
+import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../utils/constants/urls'
 import Box from './Box'
 
 type Props = BoxProps<Theme>

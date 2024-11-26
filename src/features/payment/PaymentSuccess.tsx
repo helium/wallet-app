@@ -1,4 +1,4 @@
-import SuccessIcon from '@assets/images/paymentSuccess.svg'
+import SuccessIcon from '@assets/svgs/paymentSuccess.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'

@@ -8,7 +8,7 @@ import Box from '@components/Box'
 import { Edge } from 'react-native-safe-area-context'
 import AccountIcon from '@components/AccountIcon'
 import { useTranslation } from 'react-i18next'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { Status } from '@helium/spl-utils'
 import ProgressBar from '@components/ProgressBar'
 

@@ -1,5 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '@theme/themeHooks'
+import { useOpacity } from '@config/theme/themeHooks'
 import React, { memo } from 'react'
 import SecretKeyWarningScreen from '@components/SecretKeyWarningScreen'
 import SolanaMigration from '../migration/SolanaMigration'

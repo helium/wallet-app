@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
 import { useSelector } from 'react-redux'
-import { useAppStorage } from '../storage/AppStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { RootState } from '../store/rootReducer'
 import { useAppDispatch } from '../store/store'
 import { readBalanceHistory } from '../store/slices/balancesSlice'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useSolana } from '../solana/SolanaProvider'
 
 export const useBalanceHistory = () => {
   const { currentAccount } = useAccountStorage()

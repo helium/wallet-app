@@ -1,12 +1,12 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { Theme } from '@config/theme/theme'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import React, { useCallback, useState } from 'react'
 import { Image, Switch } from 'react-native'
 import { useDispatch } from 'react-redux'
-import VisibilityOff from '@assets/images/visibilityOff.svg'
+import VisibilityOff from '@assets/svgs/visibilityOff.svg'
 import { collectables as collectablesSli } from '@store/slices/collectablesSlice'
 
 export type Collection = {

@@ -10,7 +10,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 
 type OnboardingData = {
   account?: CSAccount

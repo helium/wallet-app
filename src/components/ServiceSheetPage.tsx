@@ -5,11 +5,11 @@ import {
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Color } from '@theme/theme'
+import { Color } from '@config/theme/theme'
 import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import ServiceNavBar from './ServiceNavBar'
 
 const Tab = createBottomTabNavigator()

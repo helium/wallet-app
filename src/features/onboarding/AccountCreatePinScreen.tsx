@@ -7,7 +7,7 @@ import Keypad from '@components/Keypad'
 import Box from '@components/Box'
 import { KeypadInput } from '@components/KeypadButton'
 import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
+import { darkTheme } from '@config/theme/theme'
 import {
   CreateAccountNavigationProp,
   CreateAccountStackParamList,

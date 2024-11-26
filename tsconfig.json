@@ -42,16 +42,15 @@
       "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
       "@assets": ["./src/assets"],
       "@components/*": ["./src/components/*"],
-      "@constants/*": ["./src/constants/*"],
       "@components": ["src/components/index"],
       "@hooks/*": ["./src/hooks/*"],
-      "@theme/*": ["./src/theme/*"],
       "@utils/*": ["./src/utils/*"],
-      "@storage/*": ["./src/storage/*"],
+      "@config/*": ["./src/config/*"],
       "@types/*": ["./src/types/*"],
       "@features/*": ["./src/features/*"],
-      "@services/*": ["./src/services/*"],
-      "@store/*": ["./src/store/*"]
+      "@services/*": ["src/app/services/*"],
+      "@store/*": ["./src/store/*"],
+      "@app/*": ["./src/app/*"]
     }
   },
   "exclude": [

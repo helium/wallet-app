@@ -4,6 +4,7 @@ import { Cluster } from '@solana/web3.js'
 export type AppState = {
   showBanner: boolean
   cluster?: Cluster
+  rootSheetPosition?: number
 }
 
 const initialState: AppState = {
@@ -19,6 +20,12 @@ const appSlice = createSlice({
     },
     setShowBanner: (state, action: PayloadAction<boolean>) => {
       state.showBanner = action.payload
+    },
+    setRootSheetPosition: (
+      state,
+      action: PayloadAction<number | undefined>,
+    ) => {
+      state.rootSheetPosition = action.payload
     },
   },
 })

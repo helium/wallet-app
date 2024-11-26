@@ -1,13 +1,13 @@
-import Hnt from '@assets/images/hnt.svg'
-import Iot from '@assets/images/iot.svg'
-import Mobile from '@assets/images/mobile.svg'
+import Hnt from '@assets/svgs/hnt.svg'
+import Iot from '@assets/svgs/iot.svg'
+import Mobile from '@assets/svgs/mobile.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableContainer, {
   ButtonPressAnimationProps,
 } from '@components/TouchableContainer'
 import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import { getMinDurationFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'

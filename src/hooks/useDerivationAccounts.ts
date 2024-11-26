@@ -13,7 +13,7 @@ import * as ed25519 from 'ed25519-hd-key'
 import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 
 export const solanaDerivation = (account = -1, change: number | undefined) => {
   if (account === -1) {

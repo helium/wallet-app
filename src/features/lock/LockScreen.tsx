@@ -9,14 +9,14 @@ import { useTranslation } from 'react-i18next'
 import useAppState from 'react-native-appstate-hook'
 import { FadeIn, FadeOutDown } from 'react-native-reanimated'
 import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@theme/theme'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { darkTheme } from '@config/theme/theme'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import {
   deleteSecureItem,
   getSecureItem,
   storeSecureItem,
-} from '../../storage/secureStorage'
+} from '@config/storage/secureStorage'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {

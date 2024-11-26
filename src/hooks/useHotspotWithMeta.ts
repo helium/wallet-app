@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import { getHotspotWithRewards } from '@utils/solanaUtils'
 import { useAsync } from 'react-async-hook'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { CompressedNFT } from '../types/solana'
 
 export const useHotspotWithMetaAndRewards = (hotspot: CompressedNFT) => {

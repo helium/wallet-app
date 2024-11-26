@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 
 function stringify(
   s: boolean | string | string[] | undefined,
