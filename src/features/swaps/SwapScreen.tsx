@@ -178,8 +178,8 @@ const SwapScreen = () => {
       return t('swapsScreen.insufficientTokensToSwap')
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
-    if (transactionError) return transactionError
     if (jupiterError) return jupiterError
+    if (transactionError) return transactionError
     if (routeNotFound) return t('swapsScreen.routeNotFound')
   }, [
     hasRecipientError,
