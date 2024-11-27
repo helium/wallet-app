@@ -1,7 +1,7 @@
 import useHaptic from '@hooks/useHaptic'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
-import { useCreateOpacity } from '@theme/themeHooks'
+import { Theme } from '@config/theme/theme'
+import { useCreateOpacity } from '@config/theme/themeHooks'
 import React, { useCallback } from 'react'
 import {
   GestureResponderEvent,
@@ -31,8 +31,8 @@ const TouchableContainer = ({
   pressableStyles,
   onLayout,
   hitSlop,
-  backgroundColor = 'surfaceSecondary',
-  backgroundColorPressed = 'black500',
+  backgroundColor = 'cardBackground',
+  backgroundColorPressed = 'gray.200',
   ...boxProps
 }: ButtonPressAnimationProps & {
   backgroundColorPressed?: BoxProps<Theme>['backgroundColor']

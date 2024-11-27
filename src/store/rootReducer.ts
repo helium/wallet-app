@@ -12,6 +12,7 @@ import notificationsReducer, {
 import balancesReducer, {
   name as balancesSliceName,
 } from './slices/balancesSlice'
+import tokensReducer, { name as tokensSliceName } from './slices/tokensSlice'
 import collectablesReducer, {
   name as collectablesSliceName,
 } from './slices/collectablesSlice'
@@ -28,6 +29,12 @@ const solanaConfig = {
   blacklist: ['payment'],
 }
 
+const appConfig = {
+  key: appSliceName,
+  storage: AsyncStorage,
+  blacklist: ['rootSheetPosition'],
+}
+
 const notificationsConfig = {
   key: notificationsSliceName,
   storage: AsyncStorage,
@@ -40,6 +47,12 @@ const balancesConfig = {
   blacklist: ['balancesLoading'],
 }
 
+const tokensConfig = {
+  key: tokensSliceName,
+  storage: AsyncStorage,
+  blacklist: [],
+}
+
 const reducer = combineReducers({
   [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [collectablesSliceName]: collectablesReducer,
@@ -50,9 +63,10 @@ const reducer = combineReducers({
     notificationsReducer,
   ),
   [authSliceName]: authReducer,
-  [appSliceName]: appReducer,
+  [appSliceName]: persistReducer(appConfig, appReducer),
   [hotspotSliceName]: hotspotReducer,
   [browserSliceName]: browserReducer,
+  [tokensSliceName]: persistReducer(tokensConfig, tokensReducer),
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {

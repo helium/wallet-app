@@ -1,5 +1,4 @@
-import SuccessIcon from '@assets/images/paymentSuccess.svg'
-import BackgroundFill from '@components/BackgroundFill'
+import SuccessIcon from '@assets/svgs/paymentSuccess.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -7,6 +6,8 @@ import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
 
@@ -28,21 +29,26 @@ const PaymentSuccess = ({
   mint,
 }: Props) => {
   const { t } = useTranslation()
+  const { bottom } = useSafeAreaInsets()
+
   return (
-    <Box flex={1} justifyContent="flex-end">
-      <Box padding="l" paddingBottom="none">
+    <Box flex={1} justifyContent="flex-end" backgroundColor="primaryBackground">
+      <Box padding="6" paddingBottom="0">
         <SuccessIcon />
       </Box>
-      <Text variant="h2" color="surfaceText" padding="l">
+      <Text variant="displaySmRegular" color="secondaryText" padding="6">
         {t('payment.submitSuccess')}
       </Text>
       <Box
-        borderTopLeftRadius="xl"
-        borderTopRightRadius="xl"
-        padding="l"
+        borderTopLeftRadius="4xl"
+        borderTopRightRadius="4xl"
+        padding="6"
         overflow="hidden"
+        style={{
+          paddingBottom: NavBarHeight + bottom,
+        }}
+        backgroundColor="cardBackground"
       >
-        <BackgroundFill backgroundColor="secondary" opacity={0.4} />
         <PaymentSummary
           mint={mint}
           totalBalance={totalBalance}
@@ -51,15 +57,15 @@ const PaymentSuccess = ({
           alwaysShowRecipients
         />
         <TouchableOpacityBox
-          marginTop="xxl"
-          marginBottom="m"
+          marginTop="12"
+          marginBottom="4"
           onPress={onSuccess}
-          backgroundColor="blueBright500"
-          paddingVertical="m"
-          borderRadius="round"
+          backgroundColor="primaryText"
+          paddingVertical="4"
+          borderRadius="full"
           alignItems="center"
         >
-          <Text variant="body1" color="black900">
+          <Text variant="textMdRegular" color="primaryBackground">
             {actionTitle}
           </Text>
         </TouchableOpacityBox>

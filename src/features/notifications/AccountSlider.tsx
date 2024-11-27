@@ -1,15 +1,15 @@
 import React, { memo, useCallback, useMemo, useRef } from 'react'
-import WalletUpdate from '@assets/images/walletUpdateIcon.svg'
-import HeliumUpdate from '@assets/images/heliumUpdateIcon.svg'
+import WalletUpdate from '@assets/svgs/walletUpdateIcon.svg'
+import HeliumUpdate from '@assets/svgs/heliumUpdateIcon.svg'
 import { Carousel } from 'react-native-snap-carousel'
 import { StyleSheet } from 'react-native'
 import { useAsync } from 'react-async-hook'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
 import { wp } from '../../utils/layout'
 import AccountSliderIcon from './AccountSliderIcon'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { HELIUM_UPDATES_ITEM, WALLET_UPDATES_ITEM } from './notificationTypes'
 import { isValidAccountHash } from '../../utils/accountUtils'
 
@@ -108,7 +108,7 @@ const AccountSlider = () => {
   const keyExtractor = useCallback((item) => item || '', [])
 
   return (
-    <Box marginBottom="l" marginTop="m">
+    <Box marginBottom="6" marginTop="4">
       <Carousel
         ref={carouselRef}
         firstItem={selectedList ? data.indexOf(selectedList) : 0}

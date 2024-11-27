@@ -18,15 +18,17 @@ const BrowserListItem = ({
 }: ActivityListItemProps) => {
   return (
     <TouchableContainer
-      backgroundColor="surfaceSecondary"
+      backgroundColor="cardBackground"
       flexDirection="row"
-      padding="m"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="black"
+      padding="4"
+      borderBottomWidth={hasDivider ? 2 : 0}
+      borderBottomColor="primaryBackground"
       {...rest}
     >
-      <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
-        <Text variant="subtitle4">{url}</Text>
+      <Box marginStart="2" flexGrow={1} flexBasis={0.5} justifyContent="center">
+        <Text variant="textSmMedium" color="primaryText">
+          {url}
+        </Text>
       </Box>
     </TouchableContainer>
   )

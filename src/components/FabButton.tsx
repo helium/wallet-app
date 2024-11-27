@@ -8,24 +8,26 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import ArrowDown from '@assets/images/downArrow.svg'
-import FatArrowUp from '@assets/images/arrowUp.svg'
-import Payment from '@assets/images/payment.svg'
-import Stake from '@assets/images/stake.svg'
-import Lock from '@assets/images/lock.svg'
-import Plus from '@assets/images/plus.svg'
-import Close from '@assets/images/close.svg'
-import Dots from '@assets/images/dots.svg'
-import Filter from '@assets/images/filter.svg'
-import { Color, FontWeight, Theme } from '@theme/theme'
-import { useColors, useCreateOpacity } from '@theme/themeHooks'
-import Swaps from '@assets/images/swaps.svg'
-import Airdrop from '@assets/images/airdrop.svg'
-import MapUserLocation from '@assets/images/mapUserLocation.svg'
-import Search from '@assets/images/search.svg'
-import Info from '@assets/images/info.svg'
-import QuestionMark from '@assets/images/questionMark.svg'
-import BrowseVoters from '@assets/images/browseVoters.svg'
+import ArrowDown from '@assets/svgs/arrowDown.svg'
+import Settings from '@assets/svgs/settings.svg'
+import FatArrowUp from '@assets/svgs/arrowUp.svg'
+import Payment from '@assets/svgs/payment.svg'
+import Stake from '@assets/svgs/stake.svg'
+import Lock from '@assets/svgs/lock.svg'
+import Plus from '@assets/svgs/plus.svg'
+import Close from '@assets/svgs/close.svg'
+import Dots from '@assets/svgs/dots.svg'
+import Filter from '@assets/svgs/filter.svg'
+import { Color, FontWeight, Theme } from '@config/theme/theme'
+import { useColors, useCreateOpacity } from '@config/theme/themeHooks'
+import Swaps from '@assets/svgs/swaps.svg'
+import Airdrop from '@assets/svgs/airdrop.svg'
+import MapUserLocation from '@assets/svgs/mapUserLocation.svg'
+import Search from '@assets/svgs/search.svg'
+import Info from '@assets/svgs/info.svg'
+import QuestionMark from '@assets/svgs/questionMark.svg'
+import BrowseVoters from '@assets/svgs/browseVoters.svg'
+import Expand from '@assets/svgs/expand.svg'
 import Box from './Box'
 import Text from './Text'
 import ButtonPressAnimation from './ButtonPressAnimation'
@@ -49,9 +51,10 @@ type IconName =
   | 'info'
   | 'questionMark'
   | 'browseVoters'
-
+  | 'expand'
+  | 'settings'
+  | 'arrowLeft'
 type Props = BoxProps<Theme> & {
-  backgroundColor?: Color
   backgroundColorOpacity?: number
   backgroundColorPressed?: Color
   backgroundColorOpacityPressed?: number
@@ -91,13 +94,13 @@ const ButtonPressable = ({
   const backgroundColorStyle = useMemo(() => {
     if (pressed) {
       return backgroundStyle(
-        backgroundColorPressed || backgroundColor || 'white',
+        backgroundColorPressed || (backgroundColor as Color) || 'primaryText',
         backgroundColorOpacityPressed,
       )
     }
 
     if (!pressed && backgroundColor) {
-      return backgroundStyle(backgroundColor, backgroundColorOpacity)
+      return backgroundStyle(backgroundColor as Color, backgroundColorOpacity)
     }
   }, [
     pressed,
@@ -110,7 +113,7 @@ const ButtonPressable = ({
 
   if (title) {
     return (
-      <Box visible={visible} marginHorizontal="s">
+      <Box visible={visible} marginHorizontal="2">
         <Pressable
           onPress={onPress}
           onPressIn={() => setPressed(true)}
@@ -124,8 +127,8 @@ const ButtonPressable = ({
             alignItems="center"
             justifyContent="center"
             flexDirection={reverse ? 'row-reverse' : 'row'}
-            paddingHorizontal="m"
-            borderRadius="round"
+            paddingHorizontal="4"
+            borderRadius="full"
             {...containerProps}
           >
             {icon && (
@@ -139,7 +142,7 @@ const ButtonPressable = ({
               </Box>
             )}
             <Text
-              variant="subtitle2"
+              variant="textLgMedium"
               color={iconColor}
               paddingHorizontal="xs"
               maxFontSizeMultiplier={1.1}
@@ -158,7 +161,7 @@ const ButtonPressable = ({
     <ButtonPressAnimation
       height={size}
       width={size}
-      borderRadius="round"
+      borderRadius="full"
       visible={visible}
       onPress={onPress}
       pressableStyles={styles.pressable}
@@ -248,6 +251,13 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
           style={{ transform: [{ rotate: '270deg' }] }}
         />
       )
+    case 'arrowLeft':
+      return (
+        <ArrowDown
+          color={getIconColor()}
+          style={{ transform: [{ rotate: '90deg' }] }}
+        />
+      )
     case 'arrowDown':
       return <ArrowDown color={getIconColor()} />
     case 'fatArrowUp':
@@ -288,6 +298,10 @@ const FabIcon = ({ icon, pressed, color, colorPressed }: IconProps) => {
       return <QuestionMark color={getIconColor()} />
     case 'browseVoters':
       return <BrowseVoters color={getIconColor()} />
+    case 'expand':
+      return <Expand color={getIconColor()} />
+    case 'settings':
+      return <Settings color={getIconColor()} />
   }
 }
 

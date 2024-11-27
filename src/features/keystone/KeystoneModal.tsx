@@ -6,7 +6,7 @@ import {
 } from '@gorhom/bottom-sheet'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
-import { useOpacity, useSpacing } from '@theme/themeHooks'
+import { useOpacity, useSpacing } from '@config/theme/themeHooks'
 import React, {
   ReactNode,
   Ref,
@@ -19,7 +19,7 @@ import React, {
   useState,
 } from 'react'
 import EventEmitter from 'events'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { KeystoneSolanaSDK } from '@keystonehq/keystone-sdk'
 import { uuid } from '@keystonehq/keystone-sdk/dist/utils'
 import SignTxModal from './SignTx/SignTxModal'
@@ -43,7 +43,7 @@ const KeystoneModal = forwardRef(
     useImperativeHandle(ref, () => ({ showKeystoneModal }))
     const eventEmitter = useMemo(() => new EventEmitter(), [])
     const { currentAccount } = useAccountStorage()
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('primaryBackground', 1)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [solSignRequest, setSolSignRequest] =
       useState<KeystoneSolSignRequest>()
@@ -114,9 +114,9 @@ const KeystoneModal = forwardRef(
       [],
     )
     const snapPoints = useMemo(() => ['100%'], [])
-    const { m } = useSpacing()
+    const { xl } = useSpacing()
     const { colors } = useTheme()
-    const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
+    const sheetHandleStyle = useMemo(() => ({ padding: xl }), [xl])
     const { handleDismiss } = useBackHandler(bottomSheetModalRef)
 
     const handleIndicatorStyle = useMemo(() => {
@@ -125,7 +125,7 @@ const KeystoneModal = forwardRef(
       }
     }, [colors.secondaryText])
     return (
-      <Box flex={1} backgroundColor="blue950">
+      <Box flex={1} backgroundColor="blue.950">
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}

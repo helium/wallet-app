@@ -1,118 +1,82 @@
-import React, { memo, useCallback, useEffect } from 'react'
-import { BoxProps } from '@shopify/restyle'
-import Close from '@assets/images/close.svg'
-import { Modal } from 'react-native'
+import React, { forwardRef, useMemo } from 'react'
+import BottomSheet, { BottomSheetProps } from '@gorhom/bottom-sheet'
 import {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated'
-import { Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
-import useDisappear from '@hooks/useDisappear'
-import Text from './Text'
-import Box from './Box'
-import TouchableOpacityBox from './TouchableOpacityBox'
-import BlurBox from './BlurBox'
-import { ReAnimatedBox } from './AnimatedBox'
+  useBackgroundStyle,
+  useBorderRadii,
+  useColors,
+  useSpacing,
+} from '@config/theme/themeHooks'
+import { wh } from '@utils/layout'
+import { Platform, StyleProp, ViewStyle } from 'react-native'
+import { useSharedValue } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-type Props = BoxProps<Theme> & {
-  children?: React.ReactNode
-  hideHeaderBorder?: boolean
-  isVisible: boolean
-  onClose: () => void
-  sheetHeight?: number
-  title?: string
-}
+const HeliumBottomSheet = forwardRef<BottomSheet, BottomSheetProps>(
+  (props, ref) => {
+    const { children, ...rest } = props
+    const { top } = useSafeAreaInsets()
+    const spacing = useSpacing()
+    const colors = useColors()
+    const borderRadii = useBorderRadii()
+    const bottomSheetStyle = useBackgroundStyle('primaryText')
+    const listAnimatedPos = useSharedValue<number>(wh - 100)
 
-const HeliumBottomSheet = ({
-  children,
-  hideHeaderBorder = false,
-  isVisible,
-  onClose,
-  sheetHeight = 260,
-  title,
-}: Props) => {
-  const colors = useColors()
-  const offset = useSharedValue(0)
+    const snapPoints = useMemo(() => {
+      if (Platform.OS === 'ios') {
+        return [wh - top - spacing[20]]
+      }
 
-  const animatedStyles = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: offset.value + sheetHeight }],
-    }
-  })
+      return [wh - top - spacing[20] - spacing[2]]
+    }, [top, spacing])
 
-  const animate = useCallback(
-    (val: number) => {
-      offset.value = withSpring(val, {
-        damping: 80,
-        overshootClamping: true,
-        restDisplacementThreshold: 0.1,
-        restSpeedThreshold: 0.1,
-        stiffness: 500,
-      })
-    },
-    [offset],
-  )
+    const handleIndicatorStyle = useMemo(() => {
+      return {
+        width: 90,
+        height: 4,
+        backgroundColor: colors['base.black'],
+      }
+    }, [colors])
 
-  const handleClose = useCallback(async () => {
-    onClose()
-  }, [onClose])
+    const handleStyle = useMemo(
+      () =>
+        ({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          opacity: 0.1,
+        } as StyleProp<ViewStyle>),
+      [],
+    )
 
-  useDisappear(handleClose)
+    const backgroundStyle = useMemo(
+      () =>
+        ({
+          ...bottomSheetStyle,
+          height: '100%',
+          borderRadius: borderRadii['4xl'] + borderRadii['4xl'],
+          backgroundColor: colors['fg.white'],
+        } as StyleProp<ViewStyle>),
+      [bottomSheetStyle, borderRadii, colors],
+    )
 
-  useEffect(() => {
-    if (isVisible) {
-      offset.value = 0
-      animate(-sheetHeight)
-    }
-  }, [animate, isVisible, offset, sheetHeight])
+    return (
+      <BottomSheet
+        ref={ref}
+        index={-1}
+        enableDynamicSizing={false}
+        snapPoints={snapPoints}
+        backgroundStyle={backgroundStyle}
+        animatedPosition={listAnimatedPos}
+        handleIndicatorStyle={handleIndicatorStyle}
+        handleStyle={handleStyle}
+        enablePanDownToClose
+        {...rest}
+      >
+        {children}
+      </BottomSheet>
+    )
+  },
+)
 
-  return (
-    <Modal
-      transparent
-      visible={isVisible}
-      onRequestClose={handleClose}
-      animationType="fade"
-    >
-      <BlurBox position="absolute" top={0} bottom={0} left={0} right={0} />
-      <Box flex={1}>
-        <TouchableOpacityBox flex={1} onPress={handleClose} />
-        <ReAnimatedBox
-          style={animatedStyles}
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
-          height={sheetHeight}
-          backgroundColor="surfaceSecondary"
-          paddingHorizontal="lx"
-        >
-          <Box
-            flexDirection="row"
-            borderBottomWidth={hideHeaderBorder ? 0 : 1}
-            borderBottomColor="secondaryText"
-            marginTop="s"
-            marginBottom="m"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Text color="secondaryText" variant="body2">
-              {title}
-            </Text>
-            <TouchableOpacityBox
-              onPress={handleClose}
-              height={50}
-              justifyContent="center"
-              paddingHorizontal="m"
-              marginEnd="n_m"
-            >
-              <Close color={colors.secondaryText} height={14} width={14} />
-            </TouchableOpacityBox>
-          </Box>
-          {children}
-        </ReAnimatedBox>
-      </Box>
-    </Modal>
-  )
-}
-
-export default memo(HeliumBottomSheet)
+export default HeliumBottomSheet

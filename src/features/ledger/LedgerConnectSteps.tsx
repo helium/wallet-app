@@ -1,11 +1,11 @@
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Check from '@assets/images/checkmark.svg'
+import Check from '@assets/svgs/checkmark.svg'
 import { LayoutChangeEvent } from 'react-native'
-import InfoError from '@assets/images/infoError.svg'
+import InfoError from '@assets/svgs/infoError.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 
 type Props = {
@@ -20,39 +20,43 @@ const LedgerConnectSteps = ({ onLayout, onRetry }: Props) => {
   const { primaryText } = useColors()
 
   return (
-    <Box onLayout={onLayout} marginHorizontal="l">
-      <Box alignSelf="center" marginVertical="l">
+    <Box onLayout={onLayout} marginHorizontal="6">
+      <Box alignSelf="center" marginVertical="6">
         <InfoError />
       </Box>
-      <Text variant="h1" color="primaryText" textAlign="center">
+      <Text variant="displayMdRegular" color="primaryText" textAlign="center">
         {t('ledger.connectError.title')}
       </Text>
-      <Text variant="subtitle1" color="grey300" textAlign="center">
+      <Text variant="textXlMedium" color="gray.300" textAlign="center">
         {t('ledger.connectError.subtitle')}
       </Text>
       {steps.map((step) => (
         <Box
           flexDirection="row"
           key={step}
-          marginVertical="m"
-          marginHorizontal="l"
+          marginVertical="4"
+          marginHorizontal="6"
           alignItems="center"
         >
           <Check color={primaryText} height={24} width={24} />
-          <Text variant="subtitle1" marginLeft="ms">
+          <Text variant="textXlMedium" marginLeft="3" color="primaryText">
             {step}
           </Text>
         </Box>
       ))}
       <TouchableOpacityBox
-        marginTop="s"
-        marginBottom="l"
+        marginTop="2"
+        marginBottom="6"
         onPress={onRetry}
-        backgroundColor="surface"
-        padding="l"
-        borderRadius="round"
+        backgroundColor="primaryText"
+        padding="6"
+        borderRadius="full"
       >
-        <Text variant="subtitle1" textAlign="center">
+        <Text
+          variant="textXlMedium"
+          textAlign="center"
+          color="primaryBackground"
+        >
           {t('generic.tryAgain')}
         </Text>
       </TouchableOpacityBox>

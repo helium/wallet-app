@@ -1,14 +1,17 @@
-import Close from '@assets/images/close.svg'
-import InfoError from '@assets/images/infoError.svg'
+import Close from '@assets/svgs/close.svg'
+import InfoError from '@assets/svgs/infoError.svg'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import RevealWords from '@components/RevealWords'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DEFAULT_DERIVATION_PATH, createKeypair } from '@storage/secureStorage'
-import { useColors } from '@theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import {
+  DEFAULT_DERIVATION_PATH,
+  createKeypair,
+} from '@config/storage/secureStorage'
+import { useColors } from '@config/theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -62,33 +65,39 @@ const AccountCreatePassphraseScreen = () => {
     return (
       <>
         <TouchableOpacityBox
-          padding="l"
+          padding="6"
           onPress={navToTop}
           alignItems="flex-end"
         >
           <Close color={colors.primaryText} height={16} width={16} />
         </TouchableOpacityBox>
-        <Box justifyContent="center" alignItems="center" marginBottom="xl">
+        <Box justifyContent="center" alignItems="center" marginBottom="8">
           <InfoError />
         </Box>
-        <Text variant="h1" textAlign="center" fontSize={40} lineHeight={40}>
+        <Text
+          variant="displayMdRegular"
+          textAlign="center"
+          fontSize={40}
+          lineHeight={40}
+          color="primaryText"
+        >
           {t('accountSetup.passphrase.title')}
         </Text>
         <Text
-          variant="subtitle1"
+          variant="textXlMedium"
           color="secondaryText"
           textAlign="center"
-          marginTop="m"
-          marginHorizontal="l"
+          marginTop="4"
+          marginHorizontal="6"
         >
           {t('accountSetup.passphrase.subtitle1')}
         </Text>
         <Text
-          variant="subtitle1"
-          color="red500"
+          variant="textXlMedium"
+          color="error.500"
           textAlign="center"
-          marginVertical="l"
-          marginHorizontal="xl"
+          marginVertical="6"
+          marginHorizontal="8"
         >
           {t('accountSetup.passphrase.subtitle2')}
         </Text>

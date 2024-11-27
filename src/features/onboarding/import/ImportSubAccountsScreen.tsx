@@ -9,16 +9,18 @@ import {
 } from '@hooks/useDerivationAccounts'
 import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DEFAULT_DERIVATION_PATH } from '@storage/secureStorage'
-import { useColors } from '@theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { DEFAULT_DERIVATION_PATH } from '@config/storage/secureStorage'
+import { useColors } from '@config/theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
-import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { RootNavigationProp } from 'src/app/rootTypes'
+import { AccountsServiceNavigationProp } from 'src/app/services/AccountsService/accountServiceTypes'
+import ScrollBox from '@components/ScrollBox'
 import { useOnboarding } from '../OnboardingProvider'
 
 export default () => {
@@ -71,6 +73,13 @@ export default () => {
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: ResolvedPath; index: number }) => {
+      const isFirst = index === 0
+      const isLast = index === derivationAccounts.length - 1
+      const borderTopStartRadius = isFirst ? 'xl' : 'none'
+      const borderTopEndRadius = isFirst ? 'xl' : 'none'
+      const borderBottomStartRadius = isLast ? 'xl' : 'none'
+      const borderBottomEndRadius = isLast ? 'xl' : 'none'
+
       const onSelect = () => {
         if (selected.has(item.derivationPath)) {
           selected.delete(item.derivationPath)
@@ -86,29 +95,33 @@ export default () => {
           flexDirection="row"
           minHeight={72}
           alignItems="center"
-          paddingHorizontal="m"
-          paddingVertical="m"
+          paddingHorizontal="4"
+          paddingVertical="4"
           borderBottomColor="primaryBackground"
-          borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 1}
+          borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 2}
+          borderTopStartRadius={borderTopStartRadius}
+          borderTopEndRadius={borderTopEndRadius}
+          borderBottomStartRadius={borderBottomStartRadius}
+          borderBottomEndRadius={borderBottomEndRadius}
         >
-          <Box flex={1} paddingHorizontal="m">
+          <Box flex={1} paddingHorizontal="4">
             <Box flexDirection="column" justifyContent="flex-start">
               <Text
-                variant="body1"
+                variant="textMdRegular"
                 color="primaryText"
                 maxFontSizeMultiplier={1.3}
               >
                 {item.derivationPath}
               </Text>
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 maxFontSizeMultiplier={1.3}
               >
                 {ellipsizeAddress(item.keypair.publicKey.toBase58())}
               </Text>
               <Text
-                variant="body2Medium"
+                variant="textSmMedium"
                 color="secondaryText"
                 maxFontSizeMultiplier={1.3}
               >
@@ -116,7 +129,7 @@ export default () => {
               </Text>
               {(item.tokens?.value.length || 0) > 0 ? (
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -125,7 +138,7 @@ export default () => {
               ) : null}
               {(item.nfts?.length || 0) > 0 ? (
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -136,7 +149,7 @@ export default () => {
               ) : null}
               {item.needsMigrated ? (
                 <Text
-                  variant="body2Medium"
+                  variant="textSmMedium"
                   color="secondaryText"
                   maxFontSizeMultiplier={1.3}
                 >
@@ -151,11 +164,11 @@ export default () => {
               style={{ height: 18, width: 18 }}
               tintColors={{
                 true: colors.primaryText,
-                false: colors.transparent10,
+                false: colors.primaryText,
               }}
-              onCheckColor={colors.secondary}
+              onCheckColor={colors.primaryBackground}
               onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
+              tintColor={colors.primaryText}
               onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
@@ -166,14 +179,7 @@ export default () => {
         </TouchableContainer>
       )
     },
-    [
-      colors.primaryText,
-      colors.secondary,
-      colors.transparent10,
-      derivationAccounts,
-      selected,
-      t,
-    ],
+    [colors, derivationAccounts, selected, t],
   )
 
   const keyExtractor = useCallback(
@@ -182,13 +188,13 @@ export default () => {
   )
 
   const navigation = useNavigation<RootNavigationProp>()
+  const accountsNavigation = useNavigation<AccountsServiceNavigationProp>()
 
   const onNext = useCallback(() => {
     if (hasAccounts) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      navigation.replace('TabBarNavigator', {
-        screen: 'Home',
+      accountsNavigation.navigate('AccountAssignScreen', {
         params: {
           screen: 'AccountAssignScreen',
           params: {
@@ -209,57 +215,81 @@ export default () => {
         },
       })
     }
-  }, [hasAccounts, navigation, words])
+  }, [hasAccounts, navigation, words, accountsNavigation])
 
   return (
-    <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
-      <Box flex={1} backgroundColor="secondaryBackground" height="100%">
-        <Text
-          variant="h1"
-          mt="xl"
-          textAlign="center"
-          fontSize={44}
-          lineHeight={44}
-          mb="s"
-        >
-          {t('accountImport.privateKey.selectAccounts')}
-        </Text>
-        <Text textAlign="center" p="s" variant="body1" mb="l">
-          {t('accountImport.privateKey.selectAccountsBody')}
-        </Text>
-        {error && <Text color="red500">{error.message}</Text>}
-        <FlatList
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={() => {}}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
-          data={derivationAccounts}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
+    <ScrollBox
+      backgroundColor="primaryBackground"
+      contentContainerStyle={{
+        backgroundColor: colors.primaryBackground,
+        flex: 1,
+      }}
+      refreshControl={
+        <RefreshControl
+          enabled
           refreshing={loading}
-          onEndReached={fetchMore}
+          onRefresh={() => {}}
+          title=""
+          tintColor={colors.primaryText}
         />
-        <ButtonPressable
-          marginTop="l"
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="black500"
-          disabled={selected.size === 0}
-          onPress={onNext}
-          title={t('generic.next')}
-          marginBottom="l"
-          marginHorizontal="l"
-        />
-      </Box>
-    </SafeAreaBox>
+      }
+    >
+      <SafeAreaBox backgroundColor="primaryBackground" flex={1}>
+        <Box
+          flex={1}
+          backgroundColor="primaryBackground"
+          height="100%"
+          paddingHorizontal="4"
+        >
+          <Text
+            color="primaryText"
+            variant="displayMdRegular"
+            mt="8"
+            textAlign="center"
+            fontSize={44}
+            lineHeight={44}
+            mb="2"
+          >
+            {t('accountImport.privateKey.selectAccounts')}
+          </Text>
+          <Text
+            textAlign="center"
+            p="2"
+            variant="textMdRegular"
+            mb="6"
+            color="secondaryText"
+          >
+            {t('accountImport.privateKey.selectAccountsBody')}
+          </Text>
+          {error && (
+            <Text variant="textSmRegular" color="error.500" textAlign="center">
+              {error.message}
+            </Text>
+          )}
+          <FlatList
+            data={derivationAccounts}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            refreshing={loading}
+            onEndReached={fetchMore}
+          />
+          <ButtonPressable
+            marginTop="6"
+            borderRadius="full"
+            backgroundColor="primaryText"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="bg.tertiary"
+            backgroundColorDisabledOpacity={0.5}
+            titleColorDisabled="gray.800"
+            titleColor="primaryBackground"
+            disabled={selected.size === 0}
+            onPress={onNext}
+            title={t('generic.next')}
+            marginBottom="6"
+            marginHorizontal="6"
+          />
+        </Box>
+      </SafeAreaBox>
+    </ScrollBox>
   )
 }

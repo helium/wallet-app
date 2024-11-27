@@ -11,17 +11,21 @@ export const ProposalTags: React.FC<{
         ? tags
             .filter((tag) => tag !== 'tags')
             .map((tag) => (
-              <Box key={tag} marginRight="s" marginBottom="s">
+              <Box key={tag} marginRight="2" marginBottom="2">
                 <Box
-                  padding="s"
+                  padding="2"
                   backgroundColor={
                     tag.toLowerCase().includes('temp check')
-                      ? 'orange500'
-                      : 'black600'
+                      ? 'orange.500'
+                      : 'fg.quinary-400'
                   }
-                  borderRadius="m"
+                  borderRadius="sm"
                 >
-                  <Text fontSize={10} color="secondaryText">
+                  <Text
+                    variant="textSmSemibold"
+                    fontSize={10}
+                    color="primaryBackground"
+                  >
                     {tag.toUpperCase()}
                   </Text>
                 </Box>

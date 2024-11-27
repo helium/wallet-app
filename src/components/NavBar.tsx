@@ -13,7 +13,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
-import { useColors, useVerticalHitSlop } from '@theme/themeHooks'
+import { useColors, useVerticalHitSlop } from '@config/theme/themeHooks'
 import Box from './Box'
 import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
@@ -59,7 +59,7 @@ const NavBarItem = ({
       key={value}
       onPress={onPress}
       onLayout={onLayout}
-      marginRight="none"
+      marginRight="0"
       hitSlop={hitSlop}
       alignItems="center"
       flexGrow={1}
@@ -67,10 +67,10 @@ const NavBarItem = ({
     >
       <Animated.View style={animatedStyles}>
         <Box
-          backgroundColor={selected ? 'white' : 'transparent'}
+          backgroundColor={selected ? 'primaryText' : 'transparent'}
           height={30}
           width={30}
-          borderRadius="round"
+          borderRadius="full"
           justifyContent="center"
           alignItems="center"
         />
@@ -79,7 +79,7 @@ const NavBarItem = ({
         <Icon
           height={30}
           width={30}
-          color={selected ? colors.black : colors.white}
+          color={selected ? colors.primaryBackground : colors.primaryText}
         />
         {hasBadge && (
           <Box
@@ -88,14 +88,14 @@ const NavBarItem = ({
             alignItems="center"
             top={6}
             right={2}
-            backgroundColor={selected ? 'white' : 'black'}
-            borderRadius="round"
+            backgroundColor={selected ? 'primaryText' : 'primaryBackground'}
+            borderRadius="full"
             height={10}
             width={10}
           >
             <Box
-              backgroundColor={selected ? 'black' : 'malachite'}
-              borderRadius="round"
+              backgroundColor={selected ? 'primaryBackground' : 'green.500'}
+              borderRadius="full"
               height={6}
               width={6}
             />
@@ -127,7 +127,7 @@ const NavBar = ({
   onItemLongPress,
   ...containerProps
 }: Props) => {
-  const hitSlop = useVerticalHitSlop('l')
+  const hitSlop = useVerticalHitSlop('6')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
 
   const offset = useSharedValue<number | null>(null)
@@ -189,8 +189,12 @@ const NavBar = ({
   ])
 
   return (
-    <Box {...containerProps}>
-      <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
+    <Box
+      {...containerProps}
+      borderTopColor="border.secondary"
+      borderTopWidth={1}
+    >
+      <Box flexDirection="row" justifyContent="center" paddingVertical="3">
         {items}
       </Box>
     </Box>

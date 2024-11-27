@@ -10,7 +10,6 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import SearchInput from '@components/SearchInput'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
-import Map from '@components/map/Map'
 
 export {
   ReAnimatedBlurBox,
@@ -28,5 +27,4 @@ export {
   SearchInput,
   Text,
   TextInput,
-  Map,
 }

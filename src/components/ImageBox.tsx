@@ -1,7 +1,7 @@
 import { createBox } from '@shopify/restyle'
 import { Image, ImageProps } from 'react-native'
 
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 
 const ImageBox = createBox<Theme, ImageProps>(Image)
 

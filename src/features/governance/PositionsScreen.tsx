@@ -23,17 +23,20 @@ import {
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { Keypair, TransactionInstruction } from '@solana/web3.js'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MessagePreview } from '../../solana/MessagePreview'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSpacing } from '@config/theme/themeHooks'
+import ScrollBox from '@components/ScrollBox'
+import { MessagePreview } from '@features/solana/MessagePreview'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
@@ -42,6 +45,8 @@ import { VotingPowerCard } from './VotingPowerCard'
 
 export const PositionsScreen = () => {
   const { t } = useTranslation()
+  const { bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
@@ -234,82 +239,83 @@ export const PositionsScreen = () => {
   }
 
   return (
-    <GovernanceWrapper selectedTab="positions">
-      <Box flexDirection="column" flex={1}>
-        <Box flex={1}>
-          <PositionsList header={<VotingPowerCard marginBottom="l" />} />
-        </Box>
-        {showError && (
+    <ScrollBox>
+      <GovernanceWrapper selectedTab="positions">
+        <Box flexDirection="column" flex={1}>
+          <Box flex={1}>
+            <PositionsList header={<VotingPowerCard marginBottom="6" />} />
+          </Box>
+          {showError && (
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              marginVertical="3"
+            >
+              <Text variant="textXsMedium" color="error.500">
+                {showError}
+              </Text>
+            </Box>
+          )}
           <Box
             flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
+            gap="4"
+            style={{
+              marginBottom: bottom + spacing['0.5'],
+            }}
           >
-            <Text variant="body3Medium" color="red500">
-              {showError}
-            </Text>
+            <ButtonPressable
+              flex={1}
+              fontSize={16}
+              borderRadius="full"
+              backgroundColorOpacityPressed={0.7}
+              backgroundColor="primaryText"
+              title={t('gov.transactions.lockTokens')}
+              titleColor="primaryBackground"
+              titleColorPressed="base.black"
+              onPress={() => setIsLockModalOpen(true)}
+              disabled={claimingAllRewards || loading}
+            />
+            {HNT_MINT.equals(mint) && (
+              <>
+                <ButtonPressable
+                  flex={1}
+                  fontSize={16}
+                  borderRadius="full"
+                  backgroundColor="primaryText"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="fg.disabled"
+                  backgroundColorDisabledOpacity={0.9}
+                  titleColorDisabled="text.disabled"
+                  title={
+                    claimingAllRewards ? '' : t('gov.transactions.claimRewards')
+                  }
+                  titleColor="primaryBackground"
+                  onPress={handleClaimRewards}
+                  disabled={
+                    !positionsWithRewards?.length ||
+                    claimingAllRewards ||
+                    loading
+                  }
+                />
+              </>
+            )}
           </Box>
-        )}
-        <Box flexDirection="row" padding="m">
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            borderWidth={2}
-            borderColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title={t('gov.transactions.lockTokens')}
-            titleColor="white"
-            titleColorPressed="black"
-            onPress={() => setIsLockModalOpen(true)}
-            disabled={claimingAllRewards || loading}
-          />
-          {HNT_MINT.equals(mint) && (
-            <>
-              <Box paddingHorizontal="s" />
-              <ButtonPressable
-                flex={1}
-                fontSize={16}
-                borderRadius="round"
-                borderWidth={2}
-                borderColor={
-                  // eslint-disable-next-line no-nested-ternary
-                  claimingAllRewards
-                    ? 'surfaceSecondary'
-                    : !positionsWithRewards?.length
-                    ? 'surfaceSecondary'
-                    : 'white'
-                }
-                backgroundColor="white"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
-                backgroundColorDisabledOpacity={0.9}
-                titleColorDisabled="secondaryText"
-                title={
-                  claimingAllRewards ? '' : t('gov.transactions.claimRewards')
-                }
-                titleColor="black"
-                onPress={handleClaimRewards}
-                disabled={
-                  !positionsWithRewards?.length || claimingAllRewards || loading
-                }
-              />
-            </>
+          {claimingAllRewards && (
+            <ClaimingRewardsModal status={statusOfClaim} />
+          )}
+          {isLockModalOpen && (
+            <LockTokensModal
+              mint={mint}
+              maxLockupAmount={maxLockupAmount}
+              calcMultiplierFn={handleCalcLockupMultiplier}
+              onClose={() => setIsLockModalOpen(false)}
+              onSubmit={handleLockTokens}
+            />
           )}
         </Box>
-        {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
-        {isLockModalOpen && (
-          <LockTokensModal
-            mint={mint}
-            maxLockupAmount={maxLockupAmount}
-            calcMultiplierFn={handleCalcLockupMultiplier}
-            onClose={() => setIsLockModalOpen(false)}
-            onSubmit={handleLockTokens}
-          />
-        )}
-      </Box>
-    </GovernanceWrapper>
+      </GovernanceWrapper>
+    </ScrollBox>
   )
 }
 

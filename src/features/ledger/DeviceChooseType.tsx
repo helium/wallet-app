@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import Ledger from '@assets/images/ledger.svg'
+import Ledger from '@assets/svgs/ledger.svg'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
 
@@ -32,50 +32,55 @@ const DeviceChooseType = () => {
     <SafeAreaBox
       flex={1}
       backgroundColor="primaryBackground"
-      marginTop="l"
-      paddingHorizontal="xl"
+      marginTop="6"
+      paddingHorizontal="8"
     >
-      <Text variant="h1" textAlign="center" lineHeight={38} marginVertical="xl">
+      <Text
+        variant="displayMdRegular"
+        textAlign="center"
+        lineHeight={38}
+        marginVertical="8"
+      >
         {t('ledger.chooseType.title')}
       </Text>
       <TouchableOpacityBox
         onPress={navNext('bluetooth')}
-        marginBottom="l"
+        marginBottom="6"
         flexDirection="row"
         alignItems="center"
       >
         <Ledger width={26} height={26} color={primaryText} />
-        <Box marginLeft="ms">
+        <Box marginLeft="3">
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             color="primaryText"
             fontSize={21}
             lineHeight={23}
           >
             {t('ledger.chooseType.bluetooth.title')}
           </Text>
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('ledger.chooseType.bluetooth.types')}
           </Text>
         </Box>
       </TouchableOpacityBox>
       <TouchableOpacityBox
         onPress={navNext('usb')}
-        marginBottom="l"
+        marginBottom="6"
         flexDirection="row"
         alignItems="center"
       >
         <Ledger width={26} height={26} color={primaryText} />
-        <Box marginLeft="ms">
+        <Box marginLeft="3">
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             color="primaryText"
             fontSize={21}
             lineHeight={23}
           >
             {t('ledger.chooseType.usb.title')}
           </Text>
-          <Text variant="body1" color="secondaryText">
+          <Text variant="textMdRegular" color="secondaryText">
             {t('ledger.chooseType.usb.types')}
           </Text>
         </Box>

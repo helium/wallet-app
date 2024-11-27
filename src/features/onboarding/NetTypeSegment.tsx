@@ -5,25 +5,25 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NetTypes as NetType } from '@helium/address'
 import { Platform, Switch } from 'react-native'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import Box from '@components/Box'
-import { useColors, useHitSlop, useSpacing } from '@theme/themeHooks'
+import { useColors, useHitSlop, useSpacing } from '@config/theme/themeHooks'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { useOnboarding } from './OnboardingProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Props = BoxProps<Theme>
 const NetTypeSegment = (boxProps: Props) => {
   const { t } = useTranslation()
   const { xs: switchMarginHorizontal } = useSpacing()
   const colors = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const { onboardingData, setOnboardingData } = useOnboarding()
   const { enableTestnet } = useAppStorage()
 
   const trackColor = useMemo(
-    () => ({ false: colors.secondaryText, true: colors.blueBright500 }),
+    () => ({ false: colors.secondaryText, true: colors['blue.light-500'] }),
     [colors],
   )
 
@@ -68,10 +68,10 @@ const NetTypeSegment = (boxProps: Props) => {
     <Box flexDirection="row" alignItems="center" {...boxProps}>
       <TouchableOpacityBox
         onPress={handleNetTypeChange(NetType.MAINNET)}
-        paddingVertical="s"
+        paddingVertical="2"
       >
         <Text
-          variant="subtitle2"
+          variant="textLgMedium"
           color={
             onboardingData.netType === NetType.MAINNET
               ? 'primaryText'
@@ -93,10 +93,10 @@ const NetTypeSegment = (boxProps: Props) => {
       </Box>
       <TouchableOpacityBox
         onPress={handleNetTypeChange(NetType.TESTNET)}
-        paddingVertical="s"
+        paddingVertical="2"
       >
         <Text
-          variant="subtitle2"
+          variant="textLgMedium"
           color={
             onboardingData.netType === NetType.TESTNET
               ? 'primaryText'

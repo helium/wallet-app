@@ -1,4 +1,4 @@
-import FailureIcon from '@assets/images/paymentFailure.svg'
+import FailureIcon from '@assets/svgs/paymentFailure.svg'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
 import Text from '@components/Text'
@@ -49,30 +49,30 @@ const PaymentError = ({
 
   return (
     <Box flex={1} justifyContent="flex-end">
-      <Box padding="l" paddingBottom="none">
+      <Box padding="6" paddingBottom="0">
         <FailureIcon />
       </Box>
-      <Text variant="h2" color="surfaceText" padding="l">
+      <Text variant="displaySmRegular" color="secondaryText" padding="6">
         {t('payment.submitFailed')}
       </Text>
       {!!errorMessage && (
         <Text
-          variant="body1"
-          color="error"
-          paddingHorizontal="l"
-          paddingTop="none"
-          paddingBottom="xxl"
+          variant="textMdRegular"
+          color="error.500"
+          paddingHorizontal="6"
+          paddingTop="0"
+          paddingBottom="12"
         >
           {errorMessage}
         </Text>
       )}
       <Box
-        borderTopLeftRadius="xl"
-        borderTopRightRadius="xl"
-        padding="l"
+        borderTopLeftRadius="4xl"
+        borderTopRightRadius="4xl"
+        padding="6"
         overflow="hidden"
       >
-        <BackgroundFill backgroundColor="secondary" opacity={0.4} />
+        <BackgroundFill backgroundColor="secondaryBackground" opacity={0.4} />
         <PaymentSummary
           mint={mint}
           totalBalance={totalBalance}
@@ -80,34 +80,34 @@ const PaymentError = ({
           payments={payments}
           alwaysShowRecipients
         />
-        <Box flexDirection="row" marginTop="xxl">
+        <Box flexDirection="row" marginTop="12">
           <TouchableOpacityBox
             flex={1}
             minHeight={66}
             justifyContent="center"
-            marginEnd="m"
-            borderRadius="round"
+            marginEnd="4"
+            borderRadius="full"
             onPress={navigation.goBack}
             overflow="hidden"
           >
-            <BackgroundFill backgroundColor="error" />
-            <Text variant="subtitle1" textAlign="center" color="error">
+            <BackgroundFill backgroundColor="error.500" />
+            <Text variant="textXlMedium" textAlign="center" color="error.500">
               {t('generic.cancel')}
             </Text>
           </TouchableOpacityBox>
           <TouchableOpacityBox
             flex={1}
             minHeight={66}
-            backgroundColor="secondary"
+            backgroundColor="secondaryBackground"
             justifyContent="center"
             alignItems="center"
-            borderRadius="round"
+            borderRadius="full"
             onPress={onRetry}
             flexDirection="row"
           >
             <Text
-              marginLeft="s"
-              variant="subtitle1"
+              marginLeft="2"
+              variant="textXlMedium"
               textAlign="center"
               color="primaryText"
             >

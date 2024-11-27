@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react'
 import { Image } from 'react-native'
 import Box from '@components/Box'
-import { useSpacing } from '@theme/themeHooks'
+import { useSpacing } from '@config/theme/themeHooks'
 import { ww } from '../../utils/layout'
 
 const NotificationDetailBanner = ({ icon }: { icon: string }) => {
@@ -34,7 +34,7 @@ const NotificationDetailBanner = ({ icon }: { icon: string }) => {
       <Image
         source={imageSrc}
         resizeMode="contain"
-        style={{ width: ww - spacing.m * 2 }}
+        style={{ width: ww - spacing[4] * 2 }}
       />
     </Box>
   )

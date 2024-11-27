@@ -5,10 +5,11 @@ import { FadeIn, FadeOut } from 'react-native-reanimated'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useBorderRadii } from '@theme/themeHooks'
 import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
+import { useBorderRadii } from '@config/theme/themeHooks'
+import useLayoutWidth from '@hooks/useLayoutWidth'
 import { ww } from '../../utils/layout'
 import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
@@ -21,10 +22,11 @@ const NftListItem = ({
   item: string
   collectables: Collectable[]
 }) => {
-  const { lm } = useBorderRadii()
-  const { json } = collectables[0]
+  const { content } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
   const { triggerImpact } = useHaptic()
+  const borderRadii = useBorderRadii()
+  const [height, setHeight] = useLayoutWidth()
 
   const handleCollectableNavigation = useCallback(
     (collection: Collectable[]) => () => {
@@ -33,54 +35,52 @@ const NftListItem = ({
         navigation.navigate('CollectionScreen', {
           collection,
         })
-      } else if (json) {
+      } else if (content?.metadata) {
         triggerImpact('light')
         navigation.navigate('NftDetailsScreen', {
           collectable: collection[0],
         })
       }
     },
-    [navigation, triggerImpact, json],
+    [navigation, triggerImpact, content],
   )
 
   return (
-    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
-      <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
+    <TouchableOpacityBox
+      alignItems="center"
+      flex={1}
+      backgroundColor="bg.tertiary"
+      borderRadius="4xl"
+      onPress={handleCollectableNavigation(collectables)}
+      onLayout={setHeight}
+    >
+      <Image
+        borderRadius={borderRadii['2xl']}
+        style={{ height: height || '100%', width: '100%' }}
+        source={{
+          uri: content?.files?.[0]?.uri || '',
+          cache: 'force-cache',
+        }}
+      />
+      <Box
+        padding="2"
+        position="absolute"
+        justifyContent="center"
         alignItems="center"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xxl"
-        onPress={handleCollectableNavigation(collectables)}
+        backgroundColor="base.white"
+        borderRadius="full"
+        bottom={20}
+        right={16}
+        flexDirection="row"
       >
-        <Image
-          borderRadius={lm}
-          style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
-          source={{
-            uri: json?.image || '',
-            cache: 'force-cache',
-          }}
-        />
-        <Box
-          padding="s"
-          position="absolute"
-          justifyContent="center"
-          alignItems="center"
-          backgroundColor="white"
-          borderRadius="round"
-          bottom={20}
-          right={16}
-          flexDirection="row"
-        >
-          <Text variant="subtitle4" color="black" marginRight="xs">
-            {item}
-          </Text>
-          <Text variant="body2" color="secondaryText">
-            {collectables?.length}
-          </Text>
-        </Box>
-      </TouchableOpacityBox>
-    </ReAnimatedBox>
+        <Text variant="textSmMedium" color="primaryText" marginRight="xs">
+          {item}
+        </Text>
+        <Text variant="textSmRegular" color="secondaryText">
+          {collectables?.length}
+        </Text>
+      </Box>
+    </TouchableOpacityBox>
   )
 }
 
@@ -88,13 +88,13 @@ export const NFTSkeleton = () => {
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
+        marginHorizontal="2"
+        marginVertical="2"
         alignItems="center"
       >
         <Box
-          backgroundColor="surface"
-          borderRadius="xl"
+          backgroundColor="cardBackground"
+          borderRadius="4xl"
           height={COLLECTABLE_HEIGHT}
           width="100%"
           justifyContent="center"

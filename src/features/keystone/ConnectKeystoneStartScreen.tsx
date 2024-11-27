@@ -4,7 +4,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { useNavigation } from '@react-navigation/native'
-import WarningKeystone from '@assets/images/warningKeystone.svg'
+import WarningKeystone from '@assets/svgs/warningKeystone.svg'
 import React, {
   forwardRef,
   ReactNode,
@@ -16,11 +16,11 @@ import React, {
 } from 'react'
 import useCamera from '@hooks/useCamera'
 import { BottomSheetBackdrop, BottomSheetModal } from '@gorhom/bottom-sheet'
-import { useOpacity, useSpacing } from '@theme/themeHooks'
+import { useOpacity, useSpacing } from '@config/theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
 import { t } from 'i18next'
-import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { RootNavigationProp } from 'src/app/rootTypes'
 import { Image, Linking, Platform } from 'react-native'
 
 type CameraPermissionBottomSheetAlertRef = {
@@ -43,11 +43,11 @@ const CameraPermissionBottomSheetAlert = forwardRef(
     }))
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-    const { m } = useSpacing()
+    const { backgroundStyle } = useOpacity('primaryBackground', 1)
+    const spacing = useSpacing()
     const { colors } = useTheme()
     const snapPoints = useMemo(() => ['40%'], [])
-    const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
+    const sheetHandleStyle = useMemo(() => ({ padding: spacing.xl }), [spacing])
     const { handleDismiss } = useBackHandler(bottomSheetModalRef)
     const handleIndicatorStyle = useMemo(() => {
       return {
@@ -95,29 +95,30 @@ const WarningContent = () => {
     <SafeAreaBox
       flex={1}
       justifyContent="center"
-      marginHorizontal="l"
+      marginHorizontal="4"
       edges={['bottom']}
     >
       <Box flex={1} justifyContent="center">
         <Box alignItems="center">
           <WarningKeystone />
-          <Text variant="body0" textAlign="center" marginVertical="l">
+          <Text
+            variant="textSmRegular"
+            color="secondaryText"
+            textAlign="center"
+            marginVertical="4"
+          >
             {t('keystone.connectKeystoneStart.warning') as string}
           </Text>
         </Box>
       </Box>
       <ButtonPressable
-        borderRadius="round"
+        borderRadius="full"
         onPress={handleOpenSettings}
         backgroundColor="primaryText"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        titleColor="primary"
+        titleColor="primaryBackground"
         fontWeight="500"
         title={t('keystone.connectKeystoneStart.ok')}
-        marginBottom="l"
+        marginBottom="4"
       />
     </SafeAreaBox>
   )
@@ -139,7 +140,7 @@ const ConnectKeystoneStart = () => {
     <SafeAreaBox
       flex={1}
       justifyContent="center"
-      marginHorizontal="l"
+      marginHorizontal="4"
       edges={['bottom']}
     >
       <Box flex={1} justifyContent="center">
@@ -147,10 +148,15 @@ const ConnectKeystoneStart = () => {
           <Image
             source={require('../../assets/images/connectKeystoneLogo.png')}
           />
-          <Text variant="h0" textAlign="center" marginVertical="l">
+          <Text
+            color="primaryText"
+            variant="displayMdSemibold"
+            textAlign="center"
+            marginVertical="4"
+          >
             {t('keystone.connectKeystoneStart.title') as string}
           </Text>
-          <Text variant="subtitle1" textAlign="center">
+          <Text variant="textLgMedium" textAlign="center" color="secondaryText">
             {t('keystone.connectKeystoneStart.subtitle') as string}
           </Text>
         </Box>
@@ -161,17 +167,13 @@ const ConnectKeystoneStart = () => {
         <WarningContent />
       </CameraPermissionBottomSheetAlert>
       <ButtonPressable
-        borderRadius="round"
+        borderRadius="full"
         onPress={handleStart}
         backgroundColor="primaryText"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        titleColor="primary"
+        titleColor="primaryBackground"
         fontWeight="500"
         title={t('keystone.connectKeystoneStart.scanQrCode')}
-        marginBottom="l"
+        marginBottom="4"
       />
     </SafeAreaBox>
   )

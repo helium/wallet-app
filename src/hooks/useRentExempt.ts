@@ -1,6 +1,6 @@
 import { useAsync } from 'react-async-hook'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import * as logger from '../utils/logger'
 
 export function useRentExempt(dataLength = 0) {

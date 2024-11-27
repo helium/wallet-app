@@ -3,8 +3,9 @@ import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
-import { useAppStorage } from '@storage/AppStorageProvider'
-import React, { memo } from 'react'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import React, { memo, useMemo } from 'react'
+import { useColors } from '@config/theme/themeHooks'
 import AssignProxyScreen from './AssignProxyScreen'
 import GovernanceTutorialScreen from './GovernanceTutorialScreen'
 import PositionsScreen from './PositionsScreen'
@@ -15,13 +16,18 @@ import VoterScreen from './VoterScreen'
 import VotersScreen from './VotersScreen'
 
 const GovernanceStack = createStackNavigator()
-const screenOptions: StackNavigationOptions = {
-  headerShown: false,
-  animationEnabled: false,
-}
-
 const GovernanceStackScreen = () => {
+  const colors = useColors()
   const { voteTutorialShown } = useAppStorage()
+
+  const screenOptions: StackNavigationOptions = useMemo(
+    () => ({
+      headerShown: false,
+      animationEnabled: false,
+      cardStyle: { backgroundColor: colors.primaryBackground },
+    }),
+    [colors],
+  )
 
   return (
     <>

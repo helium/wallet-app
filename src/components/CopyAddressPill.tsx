@@ -1,13 +1,13 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import useCopyText from '@hooks/useCopyText'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import useHaptic from '@hooks/useHaptic'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { ViewStyle } from 'react-native'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
-import CopyAddress from '@assets/images/copyAddress.svg'
+import { Theme } from '@config/theme/theme'
+import CopyAddress from '@assets/svgs/copyAddress.svg'
 import ButtonPressAnimation from './ButtonPressAnimation'
 import Text from './Text'
 import Box from './Box'
@@ -34,28 +34,30 @@ const CopyAddressPill = ({ ...rest }: BoxProps<Theme>) => {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: spacing.s,
-      paddingHorizontal: spacing.m,
+      paddingVertical: spacing[2],
+      paddingHorizontal: spacing[4],
     } as ViewStyle
   }, [spacing])
 
   return (
     <Box flexDirection="column" alignItems="center" {...rest}>
       <ButtonPressAnimation
-        backgroundColor="surfaceSecondary"
-        borderRadius="round"
-        marginBottom="l"
+        backgroundColor="cardBackground"
+        borderColor="border.primary"
+        borderWidth={1}
+        borderRadius="full"
+        marginBottom="6"
         onPress={handleCopyAddress}
         pressableStyles={CopyAddressStyles}
       >
         <Text
-          variant="body2"
+          variant="textSmRegular"
           color="secondaryText"
           numberOfLines={1}
           adjustsFontSizeToFit
           maxFontSizeMultiplier={1.2}
           textAlign="center"
-          marginEnd="s"
+          marginEnd="2"
         >
           {ellipsizeAddress(currentAccount?.solanaAddress || '', {
             numChars: 6,

@@ -1,13 +1,13 @@
-import CopyAddress from '@assets/images/copyAddress.svg'
+import CopyAddress from '@assets/svgs/copyAddress.svg'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
 import SafeAreaBox from './SafeAreaBox'
 import Text from './Text'
+import ScrollBox from './ScrollBox'
 
 export const GlobalError = ({
   error,
@@ -30,20 +30,25 @@ export const GlobalError = ({
   return (
     <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
       <Box flex={1} justifyContent="center" alignItems="center">
-        <Text variant="h1Medium" color="white">
+        <Text variant="displayMdMedium" color="primaryText">
           {t('crash.title')}
         </Text>
-        <Text variant="body1" color="white" marginBottom="l" marginTop="s">
+        <Text
+          variant="textMdRegular"
+          color="primaryText"
+          marginBottom="6"
+          marginTop="2"
+        >
           {t('crash.subTitle')}
         </Text>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <Text variant="body3Bold" color="red500">
+        <ScrollBox contentContainerStyle={{ flexGrow: 1 }}>
+          <Text variant="textXsBold" color="error.500">
             {error.message}
           </Text>
-          <Text variant="body3" color="red500">
+          <Text variant="textXsRegular" color="error.500">
             {error.stack}
           </Text>
-        </ScrollView>
+        </ScrollBox>
         <ButtonPressable
           innerContainerProps={{
             justifyContent: 'center',
@@ -51,11 +56,11 @@ export const GlobalError = ({
           width="100%"
           onPress={handleCopyError}
           backgroundColorOpacityPressed={0.7}
-          marginTop="m"
-          marginBottom="s"
-          borderColor="white"
+          marginTop="4"
+          marginBottom="2"
+          borderColor="base.white"
           borderWidth={1}
-          borderRadius="round"
+          borderRadius="full"
           Icon={CopyAddress}
           title={t('generic.copyToClipboard')}
         />
@@ -63,11 +68,11 @@ export const GlobalError = ({
           width="100%"
           title={t('crash.resetApp')}
           onPress={resetErrorBoundary}
-          borderRadius="round"
-          backgroundColor="white"
+          borderRadius="full"
+          backgroundColor="base.white"
           backgroundColorOpacityPressed={0.7}
           titleColorDisabled="secondaryText"
-          titleColor="black"
+          titleColor="base.black"
         />
       </Box>
     </SafeAreaBox>

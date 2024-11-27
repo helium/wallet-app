@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
 import { ActivityIndicator } from 'react-native'
-import QR from '@assets/images/qr.svg'
-import Checkmark from '@assets/images/checkmark.svg'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import QR from '@assets/svgs/qr.svg'
+import Checkmark from '@assets/svgs/checkmark.svg'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 
 type AddressExtraProps = {
@@ -16,17 +16,17 @@ const AddressExtra = ({
   onScanPress,
 }: AddressExtraProps) => {
   const colors = useColors()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
 
   if (addressLoading) {
-    return <ActivityIndicator color="black500" />
+    return <ActivityIndicator color="gray.800" />
   }
   if (isValidAddress) {
-    return <Checkmark color={colors.blueBright500} />
+    return <Checkmark color={colors['blue.500']} />
   }
   return (
     <TouchableOpacityBox onPress={onScanPress} hitSlop={hitSlop}>
-      <QR width={16} color={colors.white} />
+      <QR width={16} color={colors['base.white']} />
     </TouchableOpacityBox>
   )
 }

@@ -1,7 +1,7 @@
 import { IdlAccounts } from '@coral-xyz/anchor'
 import { Proposal } from '@helium/modular-governance-idls/lib/types/proposal'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { Color } from '@theme/theme'
+import { Color } from 'src/config/theme/theme'
 
 export type ProposalV0 = IdlAccounts<Proposal>['proposalV0']
 export type VoteChoice = IdlAccounts<Proposal>['proposalV0']['choices'][0]
@@ -36,18 +36,18 @@ const voteAccentColors = [] as Color[]
 
 export default voteAccentColors
 export const VotingResultColors: Color[] = [
-  'blueRibbon',
-  'aquaMarine',
-  'purple500',
-  'blueBright500',
-  'greenBright500',
-  'orange500',
-  'persianRose',
-  'gold',
-  'electricViolet',
-  'flamenco',
-  'malachite',
-  'turquoise',
-  'white',
-  'red500',
+  'success.500',
+  'error.500',
+  'purple.500',
+  'blue.light-500',
+  'green.light-500',
+  'orange.500',
+  'pink.500',
+  'yellow.500',
+  'fuchsia.500',
+  'orange.dark-500',
+  'green.500',
+  'cyan.500',
+  'base.white',
+  'fuchsia.500',
 ]

@@ -1,7 +1,6 @@
-import PaymentArrow from '@assets/images/paymentArrow.svg'
-import {
+import PaymentArrow from '@assets/svgs/paymentArrow.svg'
+import BottomSheet, {
   BottomSheetBackdrop,
-  BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
@@ -10,14 +9,13 @@ import {
   useOwnedAmount,
   useSolOwnedAmount,
 } from '@helium/helium-react-hooks'
-import useBackHandler from '@hooks/useBackHandler'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { BoxProps } from '@shopify/restyle'
+import { BoxProps, ThemeProvider } from '@shopify/restyle'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { Theme } from '@theme/theme'
-import { useOpacity, useSafeTopPaddingStyle } from '@theme/themeHooks'
+import { Theme, lightTheme } from '@config/theme/theme'
+import { useSafeTopPaddingStyle } from '@config/theme/themeHooks'
 import BN from 'bn.js'
 import React, {
   ReactNode,
@@ -33,8 +31,8 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { Payment } from '../features/payment/PaymentItem'
-import { CSAccount } from '../storage/cloudStorage'
+import { Payment } from '@features/payment/PaymentItem'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { decimalSeparator, groupSeparator } from '../utils/i18n'
 import { humanReadable } from '../utils/solanaUtils'
 import AccountIcon from './AccountIcon'
@@ -46,6 +44,7 @@ import { KeypadInput } from './KeypadButton'
 import SafeAreaBox from './SafeAreaBox'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
+import HeliumBottomSheet from './HeliumBottomSheet'
 
 type ShowOptions = {
   payer?: CSAccount | null
@@ -66,7 +65,6 @@ type Props = {
   networkFee?: BN
   // Ensure a minimum number of tokens, useful for swapping sol
   minTokens?: BN
-  children: ReactNode
   handleVisible?: (visible: boolean) => void
   onConfirmBalance: (opts: {
     balance: BN
@@ -74,7 +72,6 @@ type Props = {
     payee?: string
     index?: number
   }) => void
-  usePortal?: boolean
   allowOverdraft?: boolean
   // allow this keyboard to be used with BN values of a mint other
   // than just owned amount
@@ -84,24 +81,20 @@ const HNTKeyboardSelector = forwardRef(
   (
     {
       minTokens,
-      children,
       onConfirmBalance,
       handleVisible,
       mint,
       networkFee,
-      usePortal = false,
       allowOverdraft = false,
       actionableAmount,
-      ...boxProps
     }: Props,
     ref: Ref<HNTKeyboardRef>,
   ) => {
     useImperativeHandle(ref, () => ({ show, hide }))
     const decimals = useMint(mint)?.info?.decimals
     const { t } = useTranslation()
-    const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const bottomSheetModalRef = useRef<BottomSheet>(null)
     const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const [value, setValue] = useState('0')
     const [originalValue, setOriginalValue] = useState('')
     const [payee, setPayee] = useState<CSAccount | string | null | undefined>()
@@ -111,7 +104,6 @@ const HNTKeyboardSelector = forwardRef(
     const [containerHeight, setContainerHeight] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
     const containerStyle = useSafeTopPaddingStyle('android')
-    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const wallet = useCurrentWallet()
 
     const { amount: balanceForMintToken } = useOwnedAmount(wallet, mint)
@@ -185,14 +177,16 @@ const HNTKeyboardSelector = forwardRef(
             : undefined
         setValue(val || '0')
 
-        bottomSheetModalRef.current?.present()
-        setIsShowing(true)
+        // wait 1 render cycle to expand
+        setTimeout(() => {
+          bottomSheetModalRef.current?.expand()
+        }, 100)
       },
-      [handleVisible, setIsShowing, decimals],
+      [handleVisible, decimals],
     )
 
     const hide = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.close()
     }, [])
 
     const handleHeaderLayout = useCallback(
@@ -249,21 +243,13 @@ const HNTKeyboardSelector = forwardRef(
 
     const BackdropWrapper = useCallback(
       ({ children: backdropChildren }: { children: ReactNode }) => {
-        if (!usePortal) {
-          return (
-            <Box flex={1} style={containerStyle}>
-              {backdropChildren}
-            </Box>
-          )
-        }
-
         return (
           <SafeAreaBox edges={['top']} flex={1} style={containerStyle}>
             {backdropChildren}
           </SafeAreaBox>
         )
       },
-      [containerStyle, usePortal],
+      [containerStyle],
     )
 
     const renderBackdrop = useCallback(
@@ -276,9 +262,9 @@ const HNTKeyboardSelector = forwardRef(
           {...props}
         >
           <BackdropWrapper>
-            <Box padding="l" alignItems="center" onLayout={handleHeaderLayout}>
+            <Box padding="6" alignItems="center" onLayout={handleHeaderLayout}>
               {!loadingMeta && (
-                <Text variant="subtitle2">
+                <Text variant="textLgMedium">
                   {t('hntKeyboard.enterAmount', {
                     ticker: symbol || '',
                   })}
@@ -287,7 +273,7 @@ const HNTKeyboardSelector = forwardRef(
               <Box
                 flexDirection="row"
                 alignItems="center"
-                marginTop={{ smallPhone: 'm', phone: 'xxl' }}
+                marginTop={{ none: '4', sm: '12' }}
               >
                 {payer && (
                   <>
@@ -296,7 +282,7 @@ const HNTKeyboardSelector = forwardRef(
                       address={payer?.address || payer?.solanaAddress}
                     />
 
-                    <Box padding="s">
+                    <Box padding="2">
                       <PaymentArrow />
                     </Box>
                   </>
@@ -306,9 +292,9 @@ const HNTKeyboardSelector = forwardRef(
                 )}
               </Box>
               <Text
-                variant="body2"
-                marginTop="lm"
-                marginBottom={{ smallPhone: 'none', phone: 'lm' }}
+                variant="textSmRegular"
+                marginTop="5"
+                marginBottom={{ none: 'none', sm: '5' }}
               >
                 {payer && balanceForMint && typeof decimals !== 'undefined'
                   ? t('hntKeyboard.hntAvailable', {
@@ -340,33 +326,38 @@ const HNTKeyboardSelector = forwardRef(
 
     const renderHandle = useCallback(() => {
       if (!payer) {
-        return <HandleBasic marginTop="s" marginBottom="m" />
+        return <HandleBasic marginTop="2" marginBottom="4" />
       }
       return (
-        <Box flexDirection="row" margin="m" marginBottom="none">
+        <Box
+          flexDirection="row"
+          margin="4"
+          marginBottom="0"
+          paddingHorizontal="xl"
+        >
           <Box flex={1} />
           <Box
             width={58}
             height={5}
-            backgroundColor="black500"
-            borderRadius="round"
+            backgroundColor="gray.800"
+            borderRadius="full"
           />
           <Box flex={1} alignItems="flex-end">
             <TouchableOpacityBox
-              marginBottom="s"
+              marginBottom="2"
               onPress={handleSetMax}
-              backgroundColor={maxEnabled ? 'white' : 'transparent'}
-              borderColor={maxEnabled ? 'transparent' : 'surface'}
+              backgroundColor={maxEnabled ? 'primaryText' : 'transparent'}
+              borderColor={maxEnabled ? 'transparent' : 'border.primary'}
               borderWidth={1.5}
-              borderRadius="m"
+              borderRadius="2xl"
               paddingVertical="xs"
-              paddingHorizontal="ms"
+              paddingHorizontal="3"
             >
               <Text
-                variant="subtitle3"
+                variant="textMdSemibold"
                 textAlign="center"
                 alignSelf="flex-end"
-                color={maxEnabled ? 'black900' : 'secondaryText'}
+                color={maxEnabled ? 'primaryBackground' : 'primaryText'}
               >
                 {t('payment.max')}
               </Text>
@@ -389,7 +380,7 @@ const HNTKeyboardSelector = forwardRef(
     }, [networkFee, payer, valueAsBalance, balanceForMint])
 
     const handleConfirm = useCallback(() => {
-      bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.close()
 
       if (!valueAsBalance || typeof decimals === 'undefined') return
 
@@ -399,7 +390,7 @@ const HNTKeyboardSelector = forwardRef(
         max: maxEnabled,
         index: paymentIndex,
       })
-      bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.close()
     }, [
       valueAsBalance,
       maxEnabled,
@@ -411,7 +402,7 @@ const HNTKeyboardSelector = forwardRef(
 
     const handleCancel = useCallback(() => {
       setValue(originalValue)
-      bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.close()
     }, [originalValue])
 
     const handleDecimal = useCallback(() => {
@@ -464,58 +455,43 @@ const HNTKeyboardSelector = forwardRef(
 
     const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
-    const handleModalDismiss = useCallback(() => {
-      handleDismiss()
-      handleVisible?.(false)
-    }, [handleDismiss, handleVisible])
-
-    const PortalWrapper = useCallback(
-      ({ children: portalChildren }: { children: ReactNode }) => {
-        if (usePortal) {
-          return <Portal>{portalChildren}</Portal>
-        }
-        return <>{portalChildren}</>
-      },
-      [usePortal],
-    )
-
     return (
-      <Box flex={1} {...boxProps}>
-        <PortalWrapper>
+      <Portal>
+        <ThemeProvider theme={lightTheme}>
           <BottomSheetModalProvider>
-            <BottomSheetModal
+            <HeliumBottomSheet
+              handleComponent={renderHandle}
               onChange={handleChange}
               ref={bottomSheetModalRef}
-              index={0}
-              backgroundStyle={backgroundStyle}
+              index={-1}
               backdropComponent={renderBackdrop}
-              handleComponent={renderHandle}
               snapPoints={snapPoints}
-              onDismiss={handleModalDismiss}
             >
               <SafeAreaBox
                 flex={1}
                 edges={safeEdges}
                 flexDirection="column"
                 alignItems="center"
+                marginTop="6xl"
               >
                 <Text
-                  marginHorizontal="l"
-                  variant="h1"
+                  marginHorizontal="6"
+                  variant="displayMdRegular"
                   maxFontSizeMultiplier={1}
                   numberOfLines={1}
                   adjustsFontSizeToFit
+                  color="primaryText"
                 >
                   {`${value || '0'} ${symbol || ''}`}
                 </Text>
                 {payer && networkFee && (
                   <Text
-                    paddingHorizontal="m"
+                    paddingHorizontal="4"
                     maxFontSizeMultiplier={1}
                     numberOfLines={1}
-                    variant="body1"
+                    variant="textMdRegular"
                     color="secondaryText"
-                    marginBottom="l"
+                    marginBottom="6"
                   >
                     {t('hntKeyboard.fee', {
                       value: networkFee && humanReadable(networkFee, 9),
@@ -525,26 +501,26 @@ const HNTKeyboardSelector = forwardRef(
                 <Keypad
                   customButtonType="decimal"
                   onPress={handlePress}
-                  marginHorizontal="l"
+                  marginHorizontal="6"
                   flex={1}
                 />
                 <Box
                   flexDirection="row"
-                  marginHorizontal="l"
-                  marginVertical="l"
+                  marginHorizontal="6"
+                  marginVertical="6"
                 >
                   <TouchableOpacityBox
                     minHeight={66}
                     onPress={handleCancel}
-                    borderRadius="round"
+                    borderRadius="full"
                     alignItems="center"
                     justifyContent="center"
                     flex={1}
                     marginRight="xs"
                     overflow="hidden"
                   >
-                    <BackgroundFill backgroundColor="error" />
-                    <Text variant="subtitle2" color="error">
+                    <BackgroundFill backgroundColor="fg.quinary-400" />
+                    <Text variant="textLgMedium" color="primaryText">
                       {t('generic.cancel')}
                     </Text>
                   </TouchableOpacityBox>
@@ -554,25 +530,25 @@ const HNTKeyboardSelector = forwardRef(
                     minHeight={66}
                     alignItems="center"
                     justifyContent="center"
-                    borderRadius="round"
+                    borderRadius="full"
                     flex={1}
                     backgroundColor={
                       allowOverdraft || hasSufficientBalance
-                        ? 'surface'
-                        : 'grey300'
+                        ? 'primaryText'
+                        : 'gray.300'
                     }
                     disabled={!allowOverdraft ? !hasSufficientBalance : false}
                   >
-                    <Text variant="subtitle2">{t('generic.confirm')}</Text>
+                    <Text color="primaryBackground" variant="textLgMedium">
+                      {t('generic.confirm')}
+                    </Text>
                   </TouchableOpacityBox>
                 </Box>
               </SafeAreaBox>
-            </BottomSheetModal>
-            {!usePortal && children}
+            </HeliumBottomSheet>
           </BottomSheetModalProvider>
-        </PortalWrapper>
-        {usePortal && children}
-      </Box>
+        </ThemeProvider>
+      </Portal>
     )
   },
 )

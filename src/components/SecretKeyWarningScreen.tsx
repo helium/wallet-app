@@ -1,6 +1,6 @@
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
-import { ScrollView, View } from 'react-native'
-import InfoWarning from '@assets/images/customWarning.svg'
+import { View } from 'react-native'
+import InfoWarning from '@assets/svgs/customWarning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
   runOnJS,
@@ -8,20 +8,20 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import globalStyles from '@theme/globalStyles'
-import { useColors } from '@theme/themeHooks'
-import { useNavigation } from '@react-navigation/native'
+import globalStyles from '@config/theme/globalStyles'
+import { useColors } from '@config/theme/themeHooks'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
+import { BackScreen } from '.'
+import ScrollBox from './ScrollBox'
 
 const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
-  const navigation = useNavigation()
   const [secondsPassed, setSecondsPassed] = useState(0)
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const { primaryBackground, red500 } = useColors()
+  const { primaryBackground, ...colors } = useColors()
 
   useEffect(() => {
     // set interval to update text every second
@@ -33,10 +33,6 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
       clearInterval(interval)
     }
   }, [])
-
-  const goBack = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
 
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)
@@ -71,7 +67,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
       {children}
       {!animationComplete && (
         <Animated.View style={style}>
-          <ScrollView
+          <ScrollBox
             style={{
               backgroundColor: primaryBackground,
               flexGrow: 1,
@@ -81,83 +77,70 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
               justifyContent: 'center',
             }}
           >
-            <Box
-              backgroundColor="primaryBackground"
-              flex={1}
-              justifyContent="center"
-              paddingHorizontal="xl"
-              height="100%"
-            >
+            <BackScreen edges={[]} headerTopMargin="6xl" padding="6">
               <Box
+                backgroundColor="primaryBackground"
+                flex={1}
                 justifyContent="center"
-                alignItems="center"
-                marginBottom="xl"
+                height="100%"
+                gap="4"
               >
-                <InfoWarning color={red500} height={80} width={80} />
+                <Box justifyContent="center" alignItems="center">
+                  <InfoWarning
+                    color={colors['error.500']}
+                    height={80}
+                    width={80}
+                  />
+                </Box>
+                <Text
+                  variant="displayMdRegular"
+                  textAlign="center"
+                  fontSize={40}
+                  adjustsFontSizeToFit
+                  lineHeight={42}
+                >
+                  {t('secretKeyWarningScreen.title')}
+                </Text>
+
+                <Text
+                  variant="textXlMedium"
+                  color="secondaryText"
+                  textAlign="center"
+                  adjustsFontSizeToFit
+                >
+                  {t('secretKeyWarningScreen.body')}
+                </Text>
+
+                <ButtonPressable
+                  disabled={secondsPassed < 5}
+                  borderRadius="full"
+                  onPress={handleClose}
+                  backgroundColor="primaryText"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="bg.tertiary"
+                  backgroundColorDisabledOpacity={0.5}
+                  titleColorDisabled="text.disabled"
+                  titleColor="primaryBackground"
+                  fontWeight="500"
+                  title={t('secretKeyWarningScreen.proceed')}
+                  marginTop="4"
+                  marginBottom="6xl"
+                />
+
+                <Text
+                  variant="textSmMedium"
+                  color="secondaryText"
+                  marginTop="4"
+                  textAlign="center"
+                  visible={secondsPassed < 5}
+                >
+                  {t('secretKeyWarningScreen.youMayContinueInSeconds', {
+                    seconds: 5 - secondsPassed,
+                  })}
+                </Text>
               </Box>
-              <Text
-                variant="h1"
-                textAlign="center"
-                fontSize={40}
-                adjustsFontSizeToFit
-                lineHeight={42}
-              >
-                {t('secretKeyWarningScreen.title')}
-              </Text>
-
-              <Text
-                variant="subtitle1"
-                color="secondaryText"
-                textAlign="center"
-                marginTop="m"
-                marginHorizontal="l"
-                adjustsFontSizeToFit
-              >
-                {t('secretKeyWarningScreen.body')}
-              </Text>
-
-              <ButtonPressable
-                borderRadius="round"
-                onPress={goBack}
-                borderWidth={2}
-                borderColor="white"
-                backgroundColor="transparent"
-                backgroundColorOpacityPressed={0.7}
-                titleColorDisabled="secondaryText"
-                titleColor="white"
-                fontWeight="500"
-                title={t('secretKeyWarningScreen.goBack')}
-                marginTop="l"
-              />
-
-              <ButtonPressable
-                disabled={secondsPassed < 5}
-                borderRadius="round"
-                onPress={handleClose}
-                backgroundColor="primaryText"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
-                backgroundColorDisabledOpacity={0.5}
-                titleColorDisabled="black500"
-                titleColor="primary"
-                fontWeight="500"
-                title={t('secretKeyWarningScreen.proceed')}
-                marginTop="m"
-              />
-
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                marginTop="m"
-                textAlign="center"
-                visible={secondsPassed < 5}
-              >
-                {t('secretKeyWarningScreen.youMayContinueInSeconds', {
-                  seconds: 5 - secondsPassed,
-                })}
-              </Text>
-            </Box>
-          </ScrollView>
+            </BackScreen>
+          </ScrollBox>
         </Animated.View>
       )}
     </View>

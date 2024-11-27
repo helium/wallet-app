@@ -7,9 +7,9 @@ import FlashMessage, {
 import { Linking } from 'react-native'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import Close from '@assets/images/closeModal.svg'
+import Close from '@assets/svgs/closeModal.svg'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import useStatusPage from './useStatusPage'
 import { HELIUM_STATUS_URL } from './statusPageTypes'
 import shortLocale from '../../utils/formatDistance'
@@ -21,7 +21,7 @@ const onTapStatusBanner = async () => {
 const StatusBanner = () => {
   const { t } = useTranslation()
   const incidents = useStatusPage()
-  const hitSlop = useHitSlop('m')
+  const hitSlop = useHitSlop('4')
   const { primaryText } = useColors()
 
   const getAlertDescription = useCallback(
@@ -53,7 +53,7 @@ const StatusBanner = () => {
     return (
       <TouchableOpacityBox
         onPress={hideMessage}
-        padding="s"
+        padding="2"
         hitSlop={hitSlop}
         alignItems="flex-end"
         flex={1}

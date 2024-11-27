@@ -6,8 +6,8 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CloseButton from '@components/CloseButton'
-import { Color } from '@theme/theme'
-import { useColors, usePaddingStyle } from '@theme/themeHooks'
+import { Color } from '@config/theme/theme'
+import { useColors, usePaddingStyle } from '@config/theme/themeHooks'
 import { upperCase } from 'lodash'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import useHaptic from '@hooks/useHaptic'
@@ -15,18 +15,18 @@ import { CreateAccountNavigationProp } from './createAccountNavTypes'
 import PassphraseAutocomplete from '../import/PassphraseAutocomplete'
 
 const accentColors = [
-  'purple500',
-  'blueBright500',
-  'greenBright500',
-  'orange500',
-  'persianRose',
-  'grey350',
-  'flamenco',
-  'electricViolet',
-  'malachite',
-  'turquoise',
-  'white',
-  'red500',
+  'purple.500',
+  'blue.light-500',
+  'green.light-500',
+  'orange.500',
+  'pink.500',
+  'gray.500',
+  'orange.500',
+  'violet.200',
+  'green.500',
+  'cyan.500',
+  'base.white',
+  'error.500',
 ] as Color[]
 
 type Props = {
@@ -49,7 +49,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
   const navigation = useNavigation<CreateAccountNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
   const colors = useColors()
-  const flatListStyle = usePaddingStyle('m', ['left', 'right'])
+  const flatListStyle = usePaddingStyle('4', ['left', 'right'])
   const wordCount = mnemonic.length
   const [words, setWords] = useState<(string | null)[]>(
     new Array(wordCount).fill(null),
@@ -138,13 +138,13 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     ({ index, item: w }: { item: string | null; index: number }) => {
       return (
         <TouchableOpacityBox
-          paddingHorizontal="s"
+          paddingHorizontal="2"
           onPress={handleWordSelectedAtIndex(index)}
-          paddingVertical="lm"
+          paddingVertical="5"
           alignItems="center"
         >
           <Text
-            variant="body1"
+            variant="textMdRegular"
             color={
               w || wordIndex === index ? getAccent(index).key : 'secondaryText'
             }
@@ -206,19 +206,20 @@ const ConfirmWordsScreen: React.FC<Props> = ({
           style={{ transform: [{ translateX: shakeAnim.current }] }}
         >
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             color="secondaryText"
             textAlign="center"
-            marginTop="m"
+            marginTop="4"
           >
             {title || t('accountSetup.confirm.title')}
           </Text>
           <Text
-            variant="h1"
+            variant="displayMdRegular"
             textAlign="center"
-            marginTop="m"
+            marginTop="4"
             fontSize={40}
             lineHeight={40}
+            color="primaryText"
           >
             {t('accountSetup.confirm.subtitleOrdinal', {
               ordinal: wordIndex + 1,
@@ -248,9 +249,9 @@ const ConfirmWordsScreen: React.FC<Props> = ({
           />
         </Animated.View>
         <Box flex={1} justifyContent="center" alignItems="center">
-          <TouchableOpacityBox onPress={onPressForgot} paddingVertical="xxxl">
+          <TouchableOpacityBox onPress={onPressForgot} paddingVertical="15">
             <Text
-              variant="h4"
+              variant="textXlRegular"
               adjustsFontSizeToFit
               maxFontSizeMultiplier={1}
               textAlign="center"
@@ -262,7 +263,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
           {__DEV__ && (
             <TouchableOpacityBox onPress={onSkip}>
               <Text
-                variant="h4"
+                variant="textXlRegular"
                 adjustsFontSizeToFit
                 maxFontSizeMultiplier={1}
                 textAlign="center"

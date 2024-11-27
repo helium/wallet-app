@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useCallback, useMemo } from 'react'
-import ChevronDown from '@assets/images/chevronDown.svg'
+import ChevronDown from '@assets/svgs/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
-import { useColors, useHitSlop } from '@theme/themeHooks'
-import { Color, Theme } from '@theme/theme'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
+import { Color, Theme } from '@config/theme/theme'
 import useHaptic from '@hooks/useHaptic'
 import AccountIcon from './AccountIcon'
 import Box from './Box'
@@ -34,7 +34,7 @@ const AccountButton = ({
   backgroundColor: backgroundColorProps,
   ...boxProps
 }: Props) => {
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('6')
   const colors = useColors()
   const { triggerImpact } = useHaptic()
 
@@ -58,21 +58,26 @@ const AccountButton = ({
     >
       <Box
         backgroundColor={backgroundColorProps as Color}
-        borderRadius="xl"
+        borderRadius="4xl"
         alignItems="center"
         flexDirection="row"
-        paddingHorizontal={innerBoxProps?.paddingHorizontal || 'l'}
-        paddingVertical={innerBoxProps?.paddingVertical || 'm'}
+        paddingHorizontal={innerBoxProps?.paddingHorizontal || '6'}
+        paddingVertical={innerBoxProps?.paddingVertical || '4'}
         {...innerBoxProps}
       >
         <AccountIcon size={accountIconSize} address={address} />
         <Box flex={1}>
           {!!subtitle && (
-            <Text marginLeft="ms" variant="body3" color={textColor}>
+            <Text marginLeft="3" variant="textXsRegular" color={textColor}>
               {subtitle}
             </Text>
           )}
-          <Text marginLeft="ms" marginRight="xs" variant="subtitle2">
+          <Text
+            marginLeft="3"
+            marginRight="xs"
+            variant="textLgMedium"
+            color="primaryText"
+          >
             {title}
           </Text>
         </Box>

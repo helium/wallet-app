@@ -8,13 +8,15 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAppState from 'react-native-appstate-hook'
 import { FadeIn, FadeOutDown } from 'react-native-reanimated'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@config/theme/theme'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import {
   deleteSecureItem,
   getSecureItem,
   storeSecureItem,
-} from '../../storage/secureStorage'
+} from '@config/storage/secureStorage'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -125,4 +127,12 @@ const LockScreen = ({ children }: Props) => {
   )
 }
 
-export default memo(LockScreen)
+const LockScreenWrapper = ({ children }: Props) => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <LockScreen>{children}</LockScreen>
+    </ThemeProvider>
+  )
+}
+
+export default memo(LockScreenWrapper)

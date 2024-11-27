@@ -9,13 +9,13 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import Lock from '@assets/images/lockClosed.svg'
+import Lock from '@assets/svgs/lockClosed.svg'
 import { LayoutChangeEvent } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import { format } from 'date-fns'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import useDisappear from '@hooks/useDisappear'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Text from './Text'
 import Box from './Box'
 
@@ -88,12 +88,12 @@ const CountdownTimer = forwardRef(
         {...boxProps}
       >
         <Box
-          paddingVertical="xxs"
-          paddingLeft="ms"
+          paddingVertical="0.5"
+          paddingLeft="3"
           alignSelf="flex-end"
-          margin="m"
-          backgroundColor="surfaceSecondary"
-          borderRadius="round"
+          margin="4"
+          backgroundColor="bg.tertiary"
+          borderRadius="full"
           width={timerWidth || undefined}
           flexDirection="row"
           alignItems="center"
@@ -101,8 +101,8 @@ const CountdownTimer = forwardRef(
         >
           <Lock color={primaryText} />
           <Text
-            paddingRight="ms"
-            variant="body2"
+            paddingRight="3"
+            variant="textSmRegular"
             color="primaryText"
             marginLeft="xs"
             textAlign="right"

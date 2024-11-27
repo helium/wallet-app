@@ -4,20 +4,20 @@ import { useNavigation } from '@react-navigation/native'
 import { ActivityIndicator, Alert, Platform } from 'react-native'
 import { useAsync } from 'react-async-hook'
 import useAlert from '@hooks/useAlert'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import Box from '@components/Box'
-import ConfirmWordsScreen from '../onboarding/create/ConfirmWordsScreen'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { getSecureAccount } from '@config/storage/secureStorage'
 import { SettingsNavigationProp } from './settingsTypes'
-import { getSecureAccount } from '../../storage/secureStorage'
-import { RootNavigationProp } from '../../navigation/rootTypes'
+import ConfirmWordsScreen from '../onboarding/create/ConfirmWordsScreen'
+import { RootNavigationProp } from '../../app/rootTypes'
 
 const ConfirmSignoutScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<
-    HomeNavigationProp & SettingsNavigationProp
+    WalletNavigationProp & SettingsNavigationProp
   >()
   const rootNav = useNavigation<RootNavigationProp>()
   const { showOKCancelAlert } = useAlert()
@@ -109,7 +109,7 @@ const ConfirmSignoutScreen = () => {
   if (!mnemonic) return null
 
   return (
-    <Box padding="none" flex={1}>
+    <Box padding="0" flex={1}>
       {mnemonic ? (
         <ConfirmWordsScreen
           title={t('settings.confirmSignout.title')}

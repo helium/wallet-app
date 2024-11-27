@@ -1,7 +1,7 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Box from './Box'
 import Text from './Text'
 import TextInput from './TextInput'
@@ -76,7 +76,11 @@ const MemoInput = ({ onChangeText, value, ...boxProps }: Props) => {
         }}
       />
       <Box position="absolute" top={0} right={0}>
-        <Text variant="body3" color={valid ? 'white' : 'error'} marginRight="m">
+        <Text
+          variant="textXsRegular"
+          color={valid ? 'primaryText' : 'error.500'}
+          marginRight="4"
+        >
           {t('payment.memoBytes', {
             used: bytesUsed,
             total: MEMO_MAX_BYTES,

@@ -1,4 +1,4 @@
-import { useAppStorage } from '@storage/AppStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { getExplorers, Explorer } from '@utils/walletApiV2'
 import { useMemo } from 'react'
 import { useAsync } from 'react-async-hook'

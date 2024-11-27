@@ -1,23 +1,30 @@
-import React, { memo } from 'react'
-import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '@theme/themeHooks'
+import React, { memo, useMemo } from 'react'
+import { useColors } from '@config/theme/themeHooks'
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+} from '@react-navigation/stack'
 import AddressBook from './AddressBook'
 import AddNewContact from './AddNewContact'
 import EditContact from './EditContact'
 import AddressQrScanner from './AddressQrScanner'
 
-const AddressBookStack = createNativeStackNavigator()
+const AddressBookStack = createStackNavigator()
 
 const AddressBookNavigator = () => {
-  const { backgroundStyle } = useOpacity('primaryBackground', 0.98)
-  return (
-    <AddressBookStack.Navigator
-      screenOptions={{
+  const colors = useColors()
+
+  const navigatorScreenOptions = useMemo(
+    () =>
+      ({
         headerShown: false,
-        contentStyle: backgroundStyle,
-        presentation: 'modal',
-      }}
-    >
+        cardStyle: { backgroundColor: colors.primaryBackground },
+      } as StackNavigationOptions),
+    [colors],
+  )
+
+  return (
+    <AddressBookStack.Navigator screenOptions={navigatorScreenOptions}>
       <AddressBookStack.Screen name="AddressBook" component={AddressBook} />
       <AddressBookStack.Screen name="AddNewContact" component={AddNewContact} />
       <AddressBookStack.Screen name="EditContact" component={EditContact} />

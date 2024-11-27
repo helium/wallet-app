@@ -4,7 +4,7 @@ import * as RNLocalize from 'react-native-localize'
 import { useCallback, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAsync } from 'react-async-hook'
-import en from '../locales/en'
+import en from '@config/locales/en'
 
 const locales = RNLocalize.getLocales()
 
@@ -17,6 +17,7 @@ export const usesMetricSystem = RNLocalize.usesMetricSystem()
 
 let phoneLang = 'en'
 let phoneLocale = 'en-US'
+
 if (Array.isArray(locales)) {
   phoneLang = locales[0].languageCode
   phoneLocale = locales[0].languageTag

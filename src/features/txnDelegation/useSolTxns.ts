@@ -21,8 +21,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import { IdlInstruction } from '@coral-xyz/anchor/dist/cjs/idl'
-import { useSolana } from '../../solana/SolanaProvider'
-import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { getKeypair, getSolanaKeypair } from '@config/storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
 
 const ValidTxnKeys = [

@@ -13,9 +13,9 @@ import useBackHandler from '@hooks/useBackHandler'
 import useLedger from '@hooks/useLedger'
 import { DeviceModelId } from '@ledgerhq/types-devices'
 import { BoxProps } from '@shopify/restyle'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Theme } from '@theme/theme'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { Theme } from '@config/theme/theme'
+import { useColors, useOpacity } from '@config/theme/themeHooks'
 import { signLedgerMessage, signLedgerTransaction } from '@utils/heliumLedger'
 import React, {
   ReactNode,
@@ -29,7 +29,6 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSharedValue } from 'react-native-reanimated'
 import Animation from './Animation'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
@@ -54,9 +53,9 @@ const LedgerModal = forwardRef(
 
     const { currentAccount } = useAccountStorage()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
     const { setIsShowing } = useBackHandler(bottomSheetModalRef)
-    const { secondaryText } = useColors()
+    const { primaryText } = useColors()
     const { t } = useTranslation()
     const { getTransport, openSolanaApp } = useLedger()
     const [transactionBuffer, setTransactionBuffer] = useState<Buffer>()
@@ -70,8 +69,6 @@ const LedgerModal = forwardRef(
       | 'error'
       | 'enableBlindSign'
     >('loading')
-
-    const animatedContentHeight = useSharedValue(0)
 
     const openAppAndSign = useCallback(
       async ({
@@ -216,9 +213,9 @@ const LedgerModal = forwardRef(
 
     const handleIndicatorStyle = useMemo(() => {
       return {
-        backgroundColor: secondaryText,
+        backgroundColor: primaryText,
       }
-    }, [secondaryText])
+    }, [primaryText])
 
     const deviceModelId = useMemo(() => {
       let model = DeviceModelId.nanoX
@@ -271,7 +268,7 @@ const LedgerModal = forwardRef(
           return null
         case 'openApp':
           return (
-            <Text variant="h4Medium" color="primaryText">
+            <Text variant="textXlMedium" color="primaryText">
               {t('ledger.openTheSolanaApp', {
                 device: currentAccount?.ledgerDevice?.name,
               })}
@@ -279,7 +276,7 @@ const LedgerModal = forwardRef(
           )
         case 'sign':
           return (
-            <Text variant="h4Medium" color="primaryText">
+            <Text variant="textXlMedium" color="primaryText">
               {t('ledger.pleaseConfirmTransaction', {
                 device: currentAccount?.ledgerDevice?.name,
               })}
@@ -288,19 +285,19 @@ const LedgerModal = forwardRef(
         case 'enterPinCode':
           return (
             <Box>
-              <Text variant="h4Medium" color="primaryText">
+              <Text variant="textXlMedium" color="primaryText">
                 {t('ledger.pleaseEnterPinCode', {
                   device: currentAccount?.ledgerDevice?.name,
                 })}
               </Text>
               <TouchableOpacityBox
-                marginTop="s"
+                marginTop="2"
                 onPress={handleRetry}
-                backgroundColor="surface"
-                padding="l"
-                borderRadius="round"
+                backgroundColor="cardBackground"
+                padding="6"
+                borderRadius="full"
               >
-                <Text variant="subtitle1" textAlign="center">
+                <Text variant="textXlMedium" textAlign="center">
                   {t('generic.tryAgain')}
                 </Text>
               </TouchableOpacityBox>
@@ -309,17 +306,17 @@ const LedgerModal = forwardRef(
         case 'enableBlindSign':
           return (
             <Box>
-              <Text variant="h4Medium" color="primaryText">
+              <Text variant="textXlMedium" color="primaryText">
                 {t('ledger.enableBlindSign')}
               </Text>
               <TouchableOpacityBox
-                marginTop="s"
+                marginTop="2"
                 onPress={handleRetry}
-                backgroundColor="surface"
-                padding="l"
-                borderRadius="round"
+                backgroundColor="cardBackground"
+                padding="6"
+                borderRadius="full"
               >
-                <Text variant="subtitle1" textAlign="center">
+                <Text variant="textXlMedium" textAlign="center">
                   {t('generic.tryAgain')}
                 </Text>
               </TouchableOpacityBox>
@@ -335,19 +332,16 @@ const LedgerModal = forwardRef(
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
-          {/* <Box flex={1} {...boxProps}> */}
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
-            // onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
-            contentHeight={animatedContentHeight}
             enableDynamicSizing
           >
             <BottomSheetScrollView>
-              <Box paddingHorizontal="l">
+              <Box paddingHorizontal="6">
                 <Box flex={1} alignItems="flex-end">
                   <CloseButton onPress={onDismiss} />
                 </Box>

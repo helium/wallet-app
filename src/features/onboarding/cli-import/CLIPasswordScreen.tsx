@@ -1,4 +1,4 @@
-import Terminal from '@assets/images/terminal.svg'
+import Terminal from '@assets/svgs/terminal.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CloseButton from '@components/CloseButton'
@@ -8,7 +8,7 @@ import TextInput from '@components/TextInput'
 import useAlert from '@hooks/useAlert'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { createKeypair } from '@storage/secureStorage'
+import { createKeypair } from '@config/storage/secureStorage'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextStyle } from 'react-native'
@@ -41,7 +41,11 @@ const CLIPasswordScreen = () => {
   const [password, setPassword] = useState('')
 
   const inputStyle = useMemo(() => {
-    return { color: 'white', fontSize: 24, textAlign: 'center' } as TextStyle
+    return {
+      color: 'base.white',
+      fontSize: 24,
+      textAlign: 'center',
+    } as TextStyle
   }, [])
 
   const handleNext = useCallback(async () => {
@@ -98,21 +102,26 @@ const CLIPasswordScreen = () => {
   ])
 
   return (
-    <SafeAreaBox marginHorizontal="l" flex={1} edges={edges}>
-      <Box width="100%" alignItems="flex-end" paddingVertical="l">
+    <SafeAreaBox marginHorizontal="6" flex={1} edges={edges}>
+      <Box width="100%" alignItems="flex-end" paddingVertical="6">
         <CloseButton onPress={onClose} />
       </Box>
       <Box flexGrow={1} alignItems="center">
         <Terminal width={98} height={98} />
 
-        <Text variant="h2" color="white" marginTop="l" textAlign="center">
+        <Text
+          variant="displaySmRegular"
+          color="primaryText"
+          marginTop="6"
+          textAlign="center"
+        >
           {t('accountImport.cli.password.title')}
         </Text>
 
         <Text
-          variant="subtitle1"
-          color="grey500"
-          marginTop="l"
+          variant="textXlMedium"
+          color="gray.500"
+          marginTop="6"
           textAlign="center"
         >
           {t('accountImport.cli.password.body')}
@@ -122,7 +131,7 @@ const CLIPasswordScreen = () => {
           variant="transparent"
           textInputProps={{
             onChangeText: setPassword,
-            placeholderTextColor: 'grey500',
+            placeholderTextColor: 'gray.500',
             value: password,
             placeholder: 'password',
             autoCorrect: false,
@@ -131,19 +140,19 @@ const CLIPasswordScreen = () => {
             style: inputStyle,
             secureTextEntry: true,
           }}
-          marginTop="xl"
+          marginTop="8"
           width="100%"
         />
       </Box>
 
       <Box width="100%">
         <ButtonPressable
-          borderRadius="round"
-          backgroundColor="blueBright500"
+          borderRadius="full"
+          backgroundColor="blue.light-500"
           backgroundColorOpacityPressed={0.7}
           onPress={handleNext}
           title={t('accountImport.cli.password.buttonText')}
-          marginBottom="m"
+          marginBottom="4"
         />
       </Box>
     </SafeAreaBox>

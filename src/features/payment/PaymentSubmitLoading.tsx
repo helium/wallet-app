@@ -7,7 +7,7 @@ import Text from '@components/Text'
 import Box from '@components/Box'
 import ActivityIndicator from '@components/ActivityIndicator'
 import FadeInOut from '@components/FadeInOut'
-import globalStyles from '@theme/globalStyles'
+import globalStyles from '@config/theme/globalStyles'
 
 type Props = {
   onVideoEnd: () => void
@@ -45,10 +45,10 @@ const PaymentSubmitLoading = ({ onVideoEnd }: Props) => {
       </Box>
       <Box flex={1} justifyContent="flex-end">
         <Text
-          variant="subtitle2"
+          variant="textLgMedium"
           textAlign="center"
           color="secondaryText"
-          padding="xl"
+          padding="8"
         >
           {t('payment.sending')}
         </Text>

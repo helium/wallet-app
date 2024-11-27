@@ -1,4 +1,4 @@
-import Alert from '@assets/images/alert.svg'
+import Alert from '@assets/svgs/alert.svg'
 import React, { memo } from 'react'
 import { Pill } from './Pill'
 

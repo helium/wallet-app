@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { FlatList, LayoutChangeEvent } from 'react-native'
 import { Device } from 'react-native-ble-plx'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import CarotRight from '@assets/images/carot-right.svg'
-import LedgerCircle from '@assets/images/ledger-circle.svg'
-import Ledger from '@assets/images/ledger.svg'
+import CarotRight from '@assets/svgs/carot-right.svg'
+import LedgerCircle from '@assets/svgs/ledger-circle.svg'
+import Ledger from '@assets/svgs/ledger.svg'
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -16,7 +16,7 @@ import BackButton from '@components/BackButton'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { useColors, useOpacity } from '@config/theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
 import useLedgerDeviceScan from '@hooks/useLedgerDeviceScan'
 import LedgerConnectSteps from './LedgerConnectSteps'
@@ -32,7 +32,7 @@ const DeviceScan = () => {
   const route = useRoute<Route>()
   const { primaryText } = useColors()
 
-  const { backgroundStyle } = useOpacity('secondary', 1)
+  const { backgroundStyle } = useOpacity('bg.tertiary', 1)
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
@@ -108,21 +108,21 @@ const DeviceScan = () => {
       return (
         <TouchableOpacityBox
           onPress={onSelectDevice(device)}
-          paddingHorizontal="s"
-          paddingVertical="m"
+          paddingHorizontal="2"
+          paddingVertical="4"
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
         >
           <Box flexDirection="row" alignItems="center">
             <Box
-              marginRight="ms"
-              backgroundColor="secondary"
-              borderRadius="round"
+              marginRight="3"
+              backgroundColor="secondaryBackground"
+              borderRadius="full"
             >
               <LedgerCircle width={40} height={40} color={primaryText} />
             </Box>
-            <Text variant="body1" color="primaryText">
+            <Text variant="textMdRegular" color="primaryText">
               {device.name}
             </Text>
           </Box>
@@ -135,29 +135,30 @@ const DeviceScan = () => {
 
   return (
     <BottomSheetModalProvider>
-      <Box flex={1} backgroundColor="secondary" paddingHorizontal="l">
+      <Box flex={1} backgroundColor="secondaryBackground" paddingHorizontal="6">
         <BackButton
-          marginTop="m"
-          paddingHorizontal="s"
+          marginTop="4"
+          paddingHorizontal="2"
           onPress={navigation.goBack}
         />
         <Box
           flex={1}
           justifyContent="flex-end"
           alignItems="center"
-          marginBottom="l"
+          marginBottom="6"
         >
           <Ledger width={61} height={61} color={primaryText} />
           <Text
-            variant="h1"
-            marginVertical="l"
+            variant="displayMdRegular"
+            marginVertical="6"
             textAlign="center"
             lineHeight={38}
+            color="primaryText"
           >
             {t('ledger.scan.title')}
           </Text>
           <Text
-            variant="subtitle1"
+            variant="textXlMedium"
             color="secondaryText"
             textAlign="center"
             fontSize={21}
@@ -166,7 +167,7 @@ const DeviceScan = () => {
             {t('ledger.scan.subtitle')}
           </Text>
         </Box>
-        <Box flex={1} marginTop="l">
+        <Box flex={1} marginTop="6">
           <FlatList
             data={devices}
             renderItem={renderItem}

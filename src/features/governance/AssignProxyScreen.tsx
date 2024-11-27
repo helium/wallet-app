@@ -22,7 +22,7 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
-import { useGovernance } from '@storage/GovernanceProvider'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getBasePriorityFee } from '@utils/walletApiV2'
@@ -31,9 +31,9 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
 import {
@@ -110,7 +110,7 @@ export const AssignProxyScreen = () => {
     return (
       <PositionPreview
         borderWidth={selected ? 2 : 0}
-        borderColor={selected ? 'blue500' : undefined}
+        borderColor={selected ? 'blue.500' : undefined}
         position={item}
         onPress={() => {
           setSelectedPositions((sel) => {
@@ -229,17 +229,17 @@ export const AssignProxyScreen = () => {
     <BackScreen
       edges={safeEdges}
       height="100%"
-      padding="s"
+      padding="2"
       title={t('gov.assignProxy.title')}
     >
       <Box flex={1} flexDirection="column">
-        <Box mb="m">
-          <Text variant="body2" color="white" opacity={0.5}>
+        <Box mb="4">
+          <Text variant="textSmRegular" color="primaryText" opacity={0.5}>
             {t('gov.assignProxy.description')}
           </Text>
         </Box>
 
-        <Box mb="m">
+        <Box mb="4">
           <ProxySearch
             value={proxyWallet || ''}
             onValueChange={setProxyWallet}
@@ -248,24 +248,26 @@ export const AssignProxyScreen = () => {
 
         {/* Don't show network when position already defined */}
         {position ? null : (
-          <Box mb="m">
-            <Text variant="body3" color="secondaryText" mb="xs">
+          <Box mb="4">
+            <Text variant="textXsRegular" color="secondaryText" mb="xs">
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
-              value={mint.toBase58()}
-              onValueChange={(pk) => navigation.setParams({ mint: pk })}
+              placeholder="Select Network"
+              initialValue={mint.toBase58()}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onValueChange={(pk: any) => navigation.setParams({ mint: pk })}
               options={networks}
             />
           </Box>
         )}
         <Box flexDirection="row" justifyContent="space-between">
-          <Text variant="body1" color="white" opacity={0.5}>
+          <Text variant="textMdRegular" color="primaryText" opacity={0.5}>
             {t('gov.assignProxy.assignPositions')}
           </Text>
           <Text
-            variant="body1"
-            color="white"
+            variant="textMdRegular"
+            color="primaryText"
             opacity={0.5}
             onPress={handleSelectAll}
           >
@@ -274,7 +276,7 @@ export const AssignProxyScreen = () => {
               : t('gov.assignProxy.selectAll')}
           </Text>
         </Box>
-        <Box flex={1} mb="m">
+        <Box flex={1} mb="4">
           <FlatList data={unproxiedPositions} renderItem={renderPosition} />
         </Box>
         {error && (
@@ -282,15 +284,15 @@ export const AssignProxyScreen = () => {
             flexDirection="row"
             justifyContent="center"
             alignItems="center"
-            paddingTop="ms"
+            paddingTop="3"
           >
-            <Text variant="body3Medium" color="red500">
+            <Text variant="textXsMedium" color="error.500">
               {error.toString()}
             </Text>
           </Box>
         )}
         <Box flexDirection="column">
-          <Text variant="body1" color="white" opacity={0.5}>
+          <Text variant="textMdRegular" color="primaryText" opacity={0.5}>
             {t('gov.assignProxy.expiryDate')}
           </Text>
           <Slider
@@ -301,7 +303,7 @@ export const AssignProxyScreen = () => {
             step={1}
           />
           <Box flexDirection="row" justifyContent="flex-end">
-            <Text variant="body3" color="secondaryText">
+            <Text variant="textXsRegular" color="secondaryText">
               {selectedDays} {t('gov.assignProxy.days')}
             </Text>
           </Box>
@@ -309,20 +311,20 @@ export const AssignProxyScreen = () => {
         <ButtonPressable
           width="100%"
           fontSize={16}
-          borderRadius="round"
-          backgroundColor="white"
+          borderRadius="full"
+          backgroundColor="base.white"
           backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
+          backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.9}
           titleColorDisabled="secondaryText"
           title={isSubmitting ? undefined : t('gov.assignProxy.title')}
-          titleColor="black"
+          titleColor="base.black"
           onPress={handleSubmit}
           disabled={
             isSubmitting || selectedPositions.size === 0 || !proxyWallet
           }
           TrailingComponent={
-            isSubmitting ? <CircleLoader color="white" /> : undefined
+            isSubmitting ? <CircleLoader color="primaryText" /> : undefined
           }
         />
       </Box>

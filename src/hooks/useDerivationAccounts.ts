@@ -1,6 +1,5 @@
 import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
-import { Asset, getAssetsByOwner, truthy } from '@helium/spl-utils'
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { Asset, truthy } from '@helium/spl-utils'
 import {
   AccountInfo,
   Keypair,
@@ -14,7 +13,7 @@ import * as ed25519 from 'ed25519-hd-key'
 import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 
 export const solanaDerivation = (account = -1, change: number | undefined) => {
   if (account === -1) {
@@ -132,27 +131,27 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
 
                     if (keypair) {
                       let needsMigrated = false
-                      const [balance, tokens, nfts] = await Promise.all([
+                      const [balance] = await Promise.all([
                         retryWithBackoff(() =>
                           connection.getBalance(keypair.publicKey),
                         ),
-                        retryWithBackoff(() =>
-                          connection.getTokenAccountsByOwner(
-                            keypair.publicKey,
-                            {
-                              programId: TOKEN_PROGRAM_ID,
-                            },
-                          ),
-                        ),
-                        retryWithBackoff(() =>
-                          getAssetsByOwner(
-                            connection.rpcEndpoint,
-                            keypair.publicKey.toBase58(),
-                            {
-                              limit: 10,
-                            },
-                          ),
-                        ),
+                        // retryWithBackoff(() =>
+                        //   connection.getTokenAccountsByOwner(
+                        //     keypair.publicKey,
+                        //     {
+                        //       programId: TOKEN_PROGRAM_ID,
+                        //     },
+                        //   ),
+                        // ),
+                        // retryWithBackoff(() =>
+                        //   getAssetsByOwner(
+                        //     connection.rpcEndpoint,
+                        //     keypair.publicKey.toBase58(),
+                        //     {
+                        //       limit: 10,
+                        //     },
+                        //   ),
+                        // ),
                       ])
 
                       if (derivationPath === heliumDerivation(-1)) {
@@ -168,9 +167,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                         derivationPath,
                         keypair,
                         balance,
-                        tokens,
                         needsMigrated,
-                        nfts,
                       } as ResolvedPath
                     }
                   }),

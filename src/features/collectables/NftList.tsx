@@ -1,35 +1,51 @@
-import React, { useCallback, useMemo, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
 import { RefreshControl } from 'react-native'
 import Box from '@components/Box'
 import useCollectables from '@hooks/useCollectables'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import { useNavigation } from '@react-navigation/native'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import Config from '@assets/svgs/config.svg'
+import Text from '@components/Text'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import ScrollBox from '@components/ScrollBox'
+import { useSelector } from 'react-redux'
+import { RootState } from '@store/rootReducer'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
-import { CollectableNavigationProp } from './collectablesTypes'
 
 const NftList = () => {
   const spacing = useSpacing()
-  const navigation = useNavigation<CollectableNavigationProp>()
+  const { bottom } = useSafeAreaInsets()
+  const navigation = useNavigation<WalletNavigationProp>()
+  const approvedCollections = useSelector(
+    (state: RootState) => state.collectables.approvedCollections,
+  )
 
   const {
     collectables,
-    collectablesWithMeta,
     loading: loadingCollectables,
     refresh,
   } = useCollectables()
   const { primaryText } = useColors()
 
   useEffect(() => {
-    return navigation.addListener('focus', () => {
+    if (approvedCollections?.length > 0) {
       refresh()
-    })
-  }, [navigation, refresh])
+    }
+  }, [refresh, approvedCollections])
 
   const flatListItems = useMemo(() => {
-    return collectablesWithMeta ? Object.keys(collectablesWithMeta) : []
-  }, [collectablesWithMeta])
+    // always return an even number of items, if odd add an empty string
+    if (Object.keys(collectables || []).length % 2 === 0) {
+      return Object.keys(collectables || [])
+    }
+
+    return collectables ? Object.keys(collectables || []).concat(['']) : []
+  }, [collectables])
 
   const renderItem = useCallback(
     ({
@@ -38,14 +54,17 @@ const NftList = () => {
       // eslint-disable-next-line react/no-unused-prop-types
       item: string
     }) => {
+      if (token === '') {
+        return <Box flex={1} />
+      }
       return (
         <NFTListItem
-          item={collectablesWithMeta[token][0]?.content?.metadata?.symbol}
-          collectables={collectablesWithMeta[token]}
+          item={collectables[token][0]?.content?.metadata?.symbol}
+          collectables={collectables[token]}
         />
       )
     },
-    [collectablesWithMeta],
+    [collectables],
   )
 
   const renderEmptyComponent = useCallback(() => {
@@ -64,22 +83,42 @@ const NftList = () => {
     return null
   }, [collectables, loadingCollectables])
 
+  const onManageNftList = useCallback(() => {
+    navigation.navigate('ManageCollectables')
+  }, [navigation])
+
+  const renderFooterComponent = useCallback(() => {
+    return (
+      <TouchableOpacityBox
+        onPress={onManageNftList}
+        flexDirection="row"
+        justifyContent="center"
+        marginVertical="4"
+      >
+        <Config />
+        <Text variant="textSmRegular" ml="2" fontWeight="500" color="gray.400">
+          Manage NFTs
+        </Text>
+      </TouchableOpacityBox>
+    )
+  }, [onManageNftList])
+
   const keyExtractor = useCallback((item: string) => {
     return item
   }, [])
 
   const contentContainerStyle = useMemo(
     () => ({
-      marginTop: spacing.m,
+      marginTop: spacing[4],
+      paddingBottom: NavBarHeight + bottom + spacing['6xl'],
+      paddingHorizontal: spacing[5],
+      gap: spacing[4],
     }),
-    [spacing.m],
+    [spacing, bottom],
   )
 
   return (
-    <FlatList
-      enabled
-      data={flatListItems}
-      numColumns={2}
+    <ScrollBox
       refreshControl={
         <RefreshControl
           refreshing={loadingCollectables}
@@ -88,14 +127,22 @@ const NftList = () => {
           tintColor={primaryText}
         />
       }
-      columnWrapperStyle={{
-        flexDirection: 'row',
-      }}
-      contentContainerStyle={contentContainerStyle}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      keyExtractor={keyExtractor}
-    />
+    >
+      <FlatList
+        enabled
+        data={flatListItems}
+        numColumns={2}
+        columnWrapperStyle={{
+          flexDirection: 'row',
+          gap: spacing[4],
+        }}
+        contentContainerStyle={contentContainerStyle}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        keyExtractor={keyExtractor}
+        ListFooterComponent={renderFooterComponent}
+      />
+    </ScrollBox>
   )
 }
 

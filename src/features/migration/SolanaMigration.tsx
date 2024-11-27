@@ -15,15 +15,15 @@ import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import BackScreen from '@components/BackScreen'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import Config from 'react-native-config'
 import SafeAreaBox from '@components/SafeAreaBox'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
 import { useAppDispatch } from '../../store/store'
 import { fetchHotspots } from '../../store/slices/hotspotsSlice'
-import { useSolana } from '../../solana/SolanaProvider'
 
 async function migrateWallet(
   provider: Provider,
@@ -155,7 +155,7 @@ const SolanaMigration = ({
     const boxProps = {
       backgroundColor: 'transparent',
       flex: 1,
-      padding: 'm',
+      padding: '4',
       alignItems: 'center',
       justifyContent: 'center',
     } as BoxProps<Theme>
@@ -176,7 +176,7 @@ const SolanaMigration = ({
       <Wrapper>
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
-            shadowColor="black"
+            shadowColor="base.black"
             shadowOpacity={0.4}
             shadowOffset={{ width: 0, height: 10 }}
             shadowRadius={10}
@@ -191,18 +191,18 @@ const SolanaMigration = ({
               exiting={FadeOut}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
+                variant="displayMdMedium"
+                color="primaryText"
+                marginTop="8"
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migrationComplete')}
               </Text>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 numberOfLines={2}
                 textAlign="center"
                 adjustsFontSizeToFit
@@ -219,17 +219,17 @@ const SolanaMigration = ({
               exiting={FadeOut}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
+                variant="displayMdMedium"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
               >
                 {t('solanaMigrationScreen.error')}
               </Text>
               <Text
-                variant="body2"
+                variant="textSmRegular"
                 color="secondaryText"
-                marginTop="xl"
+                marginTop="8"
                 numberOfLines={2}
                 textAlign="center"
               >
@@ -245,9 +245,9 @@ const SolanaMigration = ({
               exiting={FadeOut}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
+                variant="displayMdMedium"
+                color="primaryText"
+                marginTop="8"
                 textAlign="center"
                 numberOfLines={2}
                 adjustsFontSizeToFit
@@ -255,26 +255,26 @@ const SolanaMigration = ({
                 {t('solanaMigrationScreen.migrating')}
               </Text>
               <Text
-                variant="body0"
-                color="grey600"
+                variant="textXlRegular"
+                color="gray.600"
                 textAlign="center"
-                marginBottom="m"
-                marginTop="s"
+                marginBottom="4"
+                marginTop="2"
                 numberOfLines={2}
                 adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migratingBody')}
               </Text>
-              <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
-                <IndeterminateProgressBar paddingHorizontal="l" />
+              <Box flexDirection="row" marginHorizontal="12" marginTop="4">
+                <IndeterminateProgressBar paddingHorizontal="6" />
               </Box>
               {total > 200 && (
                 <Text
-                  variant="body0"
-                  color="grey600"
+                  variant="textXlRegular"
+                  color="gray.600"
                   textAlign="center"
-                  marginBottom="m"
-                  marginTop="s"
+                  marginBottom="4"
+                  marginTop="2"
                 >
                   {progress} / {total}
                 </Text>
@@ -286,8 +286,8 @@ const SolanaMigration = ({
         {(error || migrationError) && (
           <Box
             flexDirection="row"
-            marginBottom="l"
-            marginHorizontal="m"
+            marginBottom="6"
+            marginHorizontal="4"
             position="absolute"
             bottom={0}
             left={0}
@@ -298,31 +298,31 @@ const SolanaMigration = ({
             {retry > 0 && (
               <ButtonPressable
                 flex={1}
-                marginStart="m"
-                marginBottom="m"
+                marginStart="4"
+                marginBottom="4"
                 height={65}
-                borderRadius="round"
-                backgroundColor="white"
+                borderRadius="full"
+                backgroundColor="base.white"
                 backgroundColorOpacity={0.1}
                 backgroundColorOpacityPressed={0.05}
                 titleColorPressedOpacity={0.3}
                 title={t('solanaMigrationScreen.migrateLater')}
-                titleColor="white"
+                titleColor="base.white"
                 onPress={handleManualMigration}
               />
             )}
             <ButtonPressable
               flex={1}
-              marginStart="m"
-              marginBottom="m"
+              marginStart="4"
+              marginBottom="4"
               height={65}
-              borderRadius="round"
-              backgroundColor="white"
+              borderRadius="full"
+              backgroundColor="base.white"
               backgroundColorOpacity={0.1}
               backgroundColorOpacityPressed={0.05}
               titleColorPressedOpacity={0.3}
               title={t('solanaMigrationScreen.retry')}
-              titleColor="white"
+              titleColor="base.white"
               onPress={handleUpdateRetry}
             />
           </Box>

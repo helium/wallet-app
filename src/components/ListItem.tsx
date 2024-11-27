@@ -1,11 +1,11 @@
 import React from 'react'
-import CheckMarkFill from '@assets/images/checkmarkFill.svg'
-import { useColors } from '@theme/themeHooks'
-import { Color } from '@theme/theme'
+import CheckMarkFill from '@assets/svgs/checkmarkFill.svg'
+import { useColors } from '@config/theme/themeHooks'
+import { Color, Theme } from '@config/theme/theme'
 import { Insets } from 'react-native'
+import { BoxProps } from '@shopify/restyle'
 import Box from './Box'
 import Text from './Text'
-import { TouchableOpacityBoxProps } from './TouchableOpacityBox'
 import TouchableContainer from './TouchableContainer'
 
 export const LIST_ITEM_HEIGHT = 70
@@ -21,7 +21,7 @@ export type ListItemProps = {
   hasDivider?: boolean
   hasPressedState?: boolean
   hitSlop?: Insets
-} & TouchableOpacityBoxProps
+} & BoxProps<Theme>
 
 const ListItem = ({
   Icon,
@@ -49,26 +49,28 @@ const ListItem = ({
       alignItems="center"
       flex={1}
       flexDirection="row"
-      paddingVertical="m"
-      borderBottomColor="black900"
+      paddingVertical="4"
+      borderBottomColor="primaryBackground"
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
       hasPressedState={hasPressedState}
       {...rest}
     >
       {Icon && Icon}
-      <Box flex={1} justifyContent="center" marginHorizontal="m">
-        <Text variant="subtitle3">{title}</Text>
+      <Box flex={1} justifyContent="center" marginHorizontal="4">
+        <Text variant="textMdMedium" color="primaryText">
+          {title}
+        </Text>
         {subtitle && (
-          <Text marginTop="xs" color={subtitleColor}>
+          <Text variant="textSmMedium" marginTop="xs" color={subtitleColor}>
             {subtitle}
           </Text>
         )}
       </Box>
-      <Box marginEnd="l">
+      <Box marginEnd="6">
         {selected ? (
           <CheckMarkFill
-            color={colors.white}
+            color={colors.primaryText}
             opacity={disabled ? 0.6 : 1.0}
             height={20}
             width={20}

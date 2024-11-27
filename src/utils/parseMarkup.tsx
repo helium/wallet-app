@@ -15,18 +15,18 @@ import Bullet from '@components/Bullet'
 import * as Logger from './logger'
 
 const symbols: Record<string, React.JSX.Element> = {
-  b: <Text fontWeight="700" variant="body2" />,
-  light: <Text fontWeight="200" variant="body2" />,
-  blue: <Text color="blueBright500" variant="body2" />,
-  green: <Text color="greenBright500" variant="body2" />,
-  purple: <Text color="purple500" variant="body2" />,
-  red: <Text color="red500" variant="body2" />,
-  orange: <Text color="orange500" variant="body2" />,
-  gray: <Text color="grey500" variant="body2" />,
-  center: <Text textAlign="center" variant="body2" />,
+  b: <Text fontWeight="700" variant="textSmRegular" />,
+  light: <Text fontWeight="200" variant="textSmRegular" />,
+  blue: <Text color="blue.light-500" variant="textSmRegular" />,
+  green: <Text color="green.light-500" variant="textSmRegular" />,
+  purple: <Text color="purple.500" variant="textSmRegular" />,
+  red: <Text color="error.500" variant="textSmRegular" />,
+  orange: <Text color="orange.500" variant="textSmRegular" />,
+  gray: <Text color="gray.500" variant="textSmRegular" />,
+  center: <Text textAlign="center" variant="textSmRegular" />,
   a: <Link />,
   bullet: <Bullet />,
-  default: <Text variant="body2" color="primaryText" />,
+  default: <Text variant="textSmRegular" color="primaryText" />,
 }
 
 const parseMarkup = (

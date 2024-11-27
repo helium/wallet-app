@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { WrappedConnection } from '@utils/WrappedConnection'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { CompressedNFT } from '../types/solana'
 import { RootState } from '../store/rootReducer'
 import {
   fetchCollectables,
@@ -8,11 +11,16 @@ import {
   collectables as collectablesSli,
 } from '../store/slices/collectablesSlice'
 import { useAppDispatch } from '../store/store'
-import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
-import { useSolana } from '../solana/SolanaProvider'
+import {
+  getNFTs,
+  groupNFTs,
+  onLogs,
+  removeAccountChangeListener,
+} from '../utils/solanaUtils'
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
+  fetchAllCollectablesByGroup: () => Promise<Record<string, CompressedNFT[]>>
 } => {
   const { cluster, anchorProvider } = useSolana()
   const dispatch = useAppDispatch()
@@ -58,6 +66,29 @@ const useCollectables = (): WalletCollectables & {
     accountSubscriptionId.current = subId
   }, [anchorProvider, currentAccount, dispatch, refresh])
 
+  const fetchAllCollectablesByGroup = useCallback(async () => {
+    if (!anchorProvider) return {}
+
+    let page = 1
+    let isLastPage = false
+    let fetchedCollectables: CompressedNFT[] = []
+
+    while (!isLastPage) {
+      const response = await getNFTs(
+        anchorProvider?.publicKey,
+        anchorProvider?.connection as WrappedConnection,
+        page,
+      )
+      fetchedCollectables = fetchedCollectables.concat(response)
+      isLastPage = response.length === 0
+      page += 1
+    }
+
+    const groupedCollectablesWithMeta = await groupNFTs(fetchedCollectables)
+
+    return groupedCollectablesWithMeta
+  }, [anchorProvider])
+
   if (
     !currentAccount?.solanaAddress ||
     !collectables[cluster]?.[currentAccount?.solanaAddress]
@@ -65,14 +96,15 @@ const useCollectables = (): WalletCollectables & {
     return {
       loading: false,
       collectables: {},
-      collectablesWithMeta: {},
       refresh,
+      fetchAllCollectablesByGroup,
     }
   }
 
   return {
     ...collectables[cluster][currentAccount?.solanaAddress],
     refresh,
+    fetchAllCollectablesByGroup,
   }
 }
 export default useCollectables

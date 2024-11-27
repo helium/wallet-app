@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 
 export type BrowserDetails = {
   favorites: string[]

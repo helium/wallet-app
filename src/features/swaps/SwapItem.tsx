@@ -4,11 +4,11 @@ import TokenPill from '@components/TokenPill'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Theme } from '@theme/theme'
-import { useCreateOpacity } from '@theme/themeHooks'
+import { Theme } from '@config/theme/theme'
+import { useCreateOpacity } from '@config/theme/themeHooks'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { GestureResponderEvent, Pressable, StyleSheet } from 'react-native'
+import { GestureResponderEvent, Pressable } from 'react-native'
 
 export type SwapItemProps = {
   isPaying: boolean
@@ -38,9 +38,9 @@ const SwapItem = ({
   const getBackgroundColorStyle = useCallback(
     (pressed: boolean) => {
       if (pressed) {
-        return generateBackgroundStyle('black500', 1.0)
+        return generateBackgroundStyle('cardBackground', 0.7)
       }
-      return generateBackgroundStyle('surfaceSecondary', 1.0)
+      return generateBackgroundStyle('cardBackground', 1.0)
     },
     [generateBackgroundStyle],
   )
@@ -49,50 +49,45 @@ const SwapItem = ({
     <Pressable onPress={onPress} disabled={disabled}>
       {({ pressed }) => (
         <Box
-          height={120}
           style={getBackgroundColorStyle(pressed)}
-          borderRadius="xl"
+          borderRadius="4xl"
+          padding="xl"
           {...rest}
         >
-          <Box flex={1} justifyContent="center" alignItems="center">
-            <Box position="absolute" top={-22.5}>
+          <Box flexDirection="row" gap="2.5">
+            <Box>
               <TokenPill
                 mint={mintSelected}
                 hasCarot
                 onPress={onCurrencySelect}
+                hasTicker={false}
               />
             </Box>
-            <Text variant="body3" color="secondaryText" marginBottom="xs">
-              {isPaying ? t('swapsScreen.youPay') : t('swapsScreen.youReceive')}
-            </Text>
-            <Box flexDirection="row">
-              <Text marginEnd="s" variant="h4">
-                {!loading ? amount.toString() : t('generic.loading')}
+            <Box>
+              <Text variant="textSmRegular" color="text.quaternary-500">
+                {isPaying
+                  ? t('swapsScreen.youPay')
+                  : t('swapsScreen.youReceive')}
               </Text>
-              <Text variant="h4" color="secondaryText">{`${symbol}`}</Text>
+              <Box flexDirection="row">
+                <Text
+                  marginEnd="1"
+                  variant="textLgSemibold"
+                  color="text.placeholder"
+                >
+                  {!loading ? amount.toString() : t('generic.loading')}
+                </Text>
+                <Text
+                  variant="textLgSemibold"
+                  color="primaryText"
+                >{`${symbol}`}</Text>
+              </Box>
             </Box>
           </Box>
-          {isPaying && (
-            <Box
-              position="absolute"
-              bottom={0}
-              alignSelf="center"
-              style={[styles.rotatedBox, getBackgroundColorStyle(pressed)]}
-            />
-          )}
         </Box>
       )}
     </Pressable>
   )
 }
-
-const styles = StyleSheet.create({
-  rotatedBox: {
-    height: 18,
-    width: 18,
-    margin: -9,
-    transform: [{ rotate: '45deg' }],
-  },
-})
 
 export default memo(SwapItem)

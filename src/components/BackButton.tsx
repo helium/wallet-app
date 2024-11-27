@@ -2,9 +2,9 @@
 import React from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Insets } from 'react-native'
-import BackArrow from '@assets/images/backArrow.svg'
-import { Color, Spacing, Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import BackArrow from '@assets/svgs/backArrow.svg'
+import { Color, Spacing, Theme } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
 import Box from './Box'
 import IconPressedContainer from './IconPressedContainer'
 
@@ -18,7 +18,7 @@ type Props = BoxProps<Theme> & {
 const BackButton = ({
   color = 'primaryText',
   onPress,
-  paddingHorizontal = 'lx',
+  paddingHorizontal = '7',
   hitSlop,
   ...props
 }: Props) => {

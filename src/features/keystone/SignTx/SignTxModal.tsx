@@ -1,6 +1,6 @@
 import SafeAreaBox from '@components/SafeAreaBox'
 import React, { useEffect, useMemo, useState } from 'react'
-import Keystone from '@assets/images/keystoneLogo.svg'
+import Keystone from '@assets/svgs/keystoneLogo.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
@@ -19,7 +19,7 @@ import { useAsync } from 'react-async-hook'
 import EventEmitter from 'events'
 
 import CloseButton from '@components/CloseButton'
-import { useHitSlop } from '@theme/themeHooks'
+import { useHitSlop } from '@config/theme/themeHooks'
 import { CameraScannerLayout } from '../../../components/CameraScannerLayout'
 import { KeystoneSolSignRequest } from '../types/keystoneSolanaTxType'
 
@@ -83,9 +83,9 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
         bottom="15%"
         width="95%"
         alignSelf="center"
-        paddingHorizontal="s"
+        paddingHorizontal="1"
       >
-        <Text variant="subtitle3" marginTop="xl" textAlign="center">
+        <Text variant="textLgSemibold" marginTop="xl" textAlign="center">
           {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
         </Text>
       </Box>
@@ -134,7 +134,7 @@ const ScanTxQrcodeScreen = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, progress])
 
-  const hitSlop = useHitSlop('l')
+  const hitSlop = useHitSlop('4')
   return (
     <SafeAreaBox flex={1} edges={['bottom']}>
       {openQrCodeScanner && (
@@ -146,22 +146,22 @@ const ScanTxQrcodeScreen = ({
       <Box
         flexDirection="row"
         width="100%"
-        paddingHorizontal="l"
-        marginTop="l"
+        paddingHorizontal="4"
+        marginTop="4"
         position="absolute"
         justifyContent="space-between"
         alignItems="center"
       >
-        <Box paddingHorizontal="lx" />
+        <Box paddingHorizontal="6" />
         {openQrCodeScanner && (
-          <Text variant="h4" textAlign="center">
+          <Text variant="displayXsSemibold" textAlign="center">
             {t('keystone.scanQrCode')}
           </Text>
         )}
         <CloseButton
-          paddingHorizontal="lx"
+          paddingHorizontal="6"
           hitSlop={hitSlop}
-          marginEnd="n_lx"
+          marginEnd="-6"
           onPress={() => {
             eventEmitter.emit('closeKeystoneSignatureModal', '')
           }}
@@ -172,16 +172,20 @@ const ScanTxQrcodeScreen = ({
           flex={1}
           alignItems="center"
           justifyContent="space-between"
-          padding="l"
+          padding="4"
           marginTop="xl"
         >
           <Box flex={1} justifyContent="center">
-            <Box alignItems="center" paddingVertical="l">
+            <Box alignItems="center" paddingVertical="4">
               <Keystone width={48} height={48} />
-              <Text variant="h0" textAlign="center" marginVertical="lm">
+              <Text
+                variant="displayXsSemibold"
+                textAlign="center"
+                marginVertical="6"
+              >
                 {t('keystone.payment.scanTxQrcodeScreenTitle')}
               </Text>
-              <Text variant="subtitle1" textAlign="center">
+              <Text variant="textLgRegular" textAlign="center">
                 {t('keystone.payment.scanTxQrcodeScreenSubtitle1')}
               </Text>
               {/* show the sol sign request qrcode  */}
@@ -191,24 +195,20 @@ const ScanTxQrcodeScreen = ({
                   cborData={solSignRequestUr.cbor.toString('hex')}
                 />
               )}
-              <Text variant="subtitle1" textAlign="center">
+              <Text variant="textLgRegular" textAlign="center">
                 {t('keystone.payment.scanTxQrcodeScreenSubtitle2')}
               </Text>
             </Box>
           </Box>
           <ButtonPressable
             width="100%"
-            borderRadius="round"
+            borderRadius="full"
             onPress={handleGetSignature}
             backgroundColor="primaryText"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="black500"
-            titleColor="primary"
+            titleColor="primaryBackground"
             fontWeight="500"
             title={t('keystone.payment.getSignature')}
-            marginBottom="l"
+            marginBottom="4"
           />
         </Box>
       )}

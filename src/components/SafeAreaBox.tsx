@@ -1,7 +1,7 @@
 import { createBox } from '@shopify/restyle'
 import { Platform } from 'react-native'
 import { Edge, SafeAreaView } from 'react-native-safe-area-context'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 
 const SafeAreaBox = createBox<Theme, React.ComponentProps<typeof SafeAreaView>>(
   SafeAreaView,

@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import {
   NativeSyntheticEvent,
@@ -7,34 +6,32 @@ import {
   TextInput as RNTextInput,
   TextInputSubmitEditingEventData,
 } from 'react-native'
-import CloseCircle from '@assets/images/CloseCircle.svg'
+import CloseCircle from '@assets/svgs/CloseCircle.svg'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import FadeInOut from '@components/FadeInOut'
-import SafeAreaBox from '@components/SafeAreaBox'
 import TextInput from '@components/TextInput'
 import Box from '@components/Box'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '@config/theme/themeHooks'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
 import { useAsync } from 'react-async-hook'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
-import { useSolana } from '../../solana/SolanaProvider'
 import { getRecommendedDapps } from '../../utils/walletApiV2'
 
 const BrowserScreen = () => {
   const DEFAULT_URL = ''
   const { cluster } = useSolana()
-  const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
   const spacing = useSpacing()
   const textInputRef = useRef<RNTextInput | null>(null)
-  const { top } = useSafeAreaInsets()
   const colors = useColors()
+  const { alphaColor } = useOpacity('primaryBackground', 0.8)
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, recents, addRecent } = useBrowser()
   const { t } = useTranslation()
@@ -51,7 +48,12 @@ const BrowserScreen = () => {
     const sections = [
       {
         title: t('browserScreen.topPicks'),
-        data: recommendedDappsData ? recommendedDappsData[cluster] : [],
+        data: recommendedDappsData
+          ? [
+              'https://anza-xyz.github.io/wallet-adapter/example/',
+              ...recommendedDappsData[cluster],
+            ]
+          : [],
       },
       {
         title: t('browserScreen.myFavorites'),
@@ -79,7 +81,7 @@ const BrowserScreen = () => {
     if (inputFocused) {
       // Animate margin end
       return {
-        marginEnd: withTiming(spacing.xxl, {
+        marginEnd: withTiming(spacing[12], {
           duration: 100,
         }),
       }
@@ -115,14 +117,13 @@ const BrowserScreen = () => {
   const BrowserHeader = useCallback(() => {
     return (
       <Box
-        backgroundColor="black900"
-        padding="s"
+        backgroundColor="primaryBackground"
+        paddingHorizontal="6"
         flexDirection={inputFocused ? 'row' : 'column'}
       >
         <ReAnimatedBox
-          backgroundColor="surfaceSecondary"
-          borderRadius="l"
-          marginHorizontal="s"
+          backgroundColor="fg.quinary-400"
+          borderRadius="2xl"
           style={headerStyles}
         >
           <TextInput
@@ -133,8 +134,9 @@ const BrowserScreen = () => {
             TrailingIcon={inputFocused ? CloseCircle : undefined}
             onTrailingIconPress={onClearPressed}
             TrailingIconOptions={{
-              paddingStart: 's',
+              paddingStart: '2',
             }}
+            textColor="primaryBackground"
             textInputProps={{
               placeholder: 'Search or type URL',
               autoFocus: false,
@@ -150,17 +152,18 @@ const BrowserScreen = () => {
               autoCorrect: false,
               textAlign: inputFocused ? 'left' : 'center',
               keyboardAppearance: 'dark',
+              placeholderTextColor: alphaColor,
             }}
           />
         </ReAnimatedBox>
         {inputFocused && (
           <TouchableOpacityBox
-            marginStart="n_xxl"
+            marginStart="-12"
             justifyContent="center"
-            width={spacing.xxxl + spacing.l}
+            width={spacing['15'] + spacing[6]}
             onPress={onCancelPressed}
           >
-            <Text textAlign="center" variant="body1Medium">
+            <Text textAlign="center" variant="textMdMedium" color="primaryText">
               {t('generic.cancel')}
             </Text>
           </TouchableOpacityBox>
@@ -179,6 +182,7 @@ const BrowserScreen = () => {
     colors,
     spacing,
     onSubmitEditing,
+    alphaColor,
   ])
 
   const renderSectionHeader = useCallback(({ section: { title } }) => {
@@ -187,13 +191,13 @@ const BrowserScreen = () => {
       <Box
         flexDirection="row"
         alignItems="center"
-        paddingTop={firstSection ? 's' : 'xl'}
-        paddingBottom="m"
-        paddingHorizontal="l"
+        paddingTop={firstSection ? '2' : 'xl'}
+        paddingBottom="4"
+        paddingHorizontal="6"
         backgroundColor="primaryBackground"
         justifyContent="center"
       >
-        <Text variant="body3" textAlign="center" color="secondaryText">
+        <Text variant="textXsRegular" textAlign="center" color="secondaryText">
           {title}
         </Text>
       </Box>
@@ -222,7 +226,7 @@ const BrowserScreen = () => {
             borderBottomStartRadius={lastItem ? 'xl' : undefined}
             borderBottomEndRadius={lastItem ? 'xl' : undefined}
             hasDivider={!lastItem || (firstItem && section.data?.length !== 1)}
-            marginHorizontal="m"
+            marginHorizontal="4"
             url={item}
             onPress={handleBrowserListItemPress(item)}
           />
@@ -240,12 +244,12 @@ const BrowserScreen = () => {
 
       return (
         <Box
-          backgroundColor="surfaceSecondary"
-          padding="m"
-          marginHorizontal="m"
-          borderRadius="xl"
+          backgroundColor="cardBackground"
+          padding="4"
+          marginHorizontal="4"
+          borderRadius="4xl"
         >
-          <Text variant="body2Medium" color="white" textAlign="center">
+          <Text variant="textSmMedium" color="primaryText" textAlign="center">
             {title === t('browserScreen.myFavorites')
               ? t('browserScreen.myFavoritesEmpty')
               : t('browserScreen.recentlyVisitedEmpty')}
@@ -258,37 +262,27 @@ const BrowserScreen = () => {
 
   const contentContainer = useMemo(
     () => ({
-      paddingTop: spacing.m,
+      paddingTop: spacing['6xl'],
+      backgroundColor: colors.primaryBackground,
+      flex: 1,
     }),
-    [spacing.m],
+    [spacing, colors],
   )
 
   const keyExtractor = useCallback((item, index) => item + index, [])
 
   return (
-    <Box flex={1}>
-      <Box
-        backgroundColor="black900"
-        height={top}
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-      />
-      <SafeAreaBox flex={1} edges={edges}>
-        <BrowserHeader />
-        <SectionList
-          contentContainerStyle={contentContainer}
-          sections={SectionData}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          onEndReachedThreshold={0.05}
-          renderSectionFooter={renderSectionFooter}
-        />
-        <Box />
-      </SafeAreaBox>
-    </Box>
+    <SectionList
+      style={{ backgroundColor: colors.primaryBackground }}
+      ListHeaderComponent={BrowserHeader}
+      contentContainerStyle={contentContainer}
+      sections={SectionData}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      renderSectionHeader={renderSectionHeader}
+      onEndReachedThreshold={0.05}
+      renderSectionFooter={renderSectionFooter}
+    />
   )
 }
 

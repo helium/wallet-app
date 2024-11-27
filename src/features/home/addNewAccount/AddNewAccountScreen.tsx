@@ -1,13 +1,13 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import TabBar from '@components/TabBar'
-import Text from '@components/Text'
-import globalStyles from '@theme/globalStyles'
+import globalStyles from '@config/theme/globalStyles'
+import ScrollBox from '@components/ScrollBox'
+import BackScreen from '@components/BackScreen'
 import ConnectKeystoneStart from '../../keystone/ConnectKeystoneStartScreen'
 import PairStart from '../../ledger/PairStart'
 import AccountCreateStart from '../../onboarding/create/AccountCreateStart'
@@ -48,45 +48,47 @@ const AddNewAccountScreen = () => {
   }, [navigation])
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      <Box backgroundColor="surfaceSecondary">
-        <Box flexDirection="row" paddingVertical="m">
-          <Box flex={1} />
-          <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
-          <Box flex={1} />
+    <BackScreen
+      padding="0"
+      headerTopMargin="6xl"
+      edges={[]}
+      title={t('addNewAccount.title')}
+    >
+      <Box flex={1} backgroundColor="primaryBackground">
+        <Box>
+          <TabBar
+            tabBarOptions={tabData}
+            selectedValue={selectedOption}
+            onItemSelected={handleItemSelected}
+          />
         </Box>
-        <TabBar
-          tabBarOptions={tabData}
-          selectedValue={selectedOption}
-          onItemSelected={handleItemSelected}
-        />
-      </Box>
 
-      <ScrollView contentContainerStyle={contentContainerStyle}>
-        <Box flex={1}>
-          {selectedOption === 'create' && (
-            <FadeInOut style={globalStyles.container}>
-              <AccountCreateStart onCreate={handleCreate} inline />
-            </FadeInOut>
-          )}
-          {selectedOption === 'import' && (
-            <FadeInOut style={globalStyles.container}>
-              <AccountImportStartScreen inline />
-            </FadeInOut>
-          )}
-          {selectedOption === 'ledger' && (
-            <FadeInOut style={globalStyles.container}>
-              <PairStart />
-            </FadeInOut>
-          )}
-          {selectedOption === 'keystone' && (
-            <FadeInOut style={globalStyles.container}>
-              <ConnectKeystoneStart />
-            </FadeInOut>
-          )}
-        </Box>
-      </ScrollView>
-    </Box>
+        <ScrollBox contentContainerStyle={contentContainerStyle}>
+          <Box flex={1}>
+            {selectedOption === 'create' && (
+              <FadeInOut style={globalStyles.container}>
+                <AccountCreateStart onCreate={handleCreate} inline />
+              </FadeInOut>
+            )}
+            {selectedOption === 'import' && (
+              <FadeInOut style={globalStyles.container}>
+                <AccountImportStartScreen inline />
+              </FadeInOut>
+            )}
+            {selectedOption === 'ledger' && (
+              <FadeInOut style={globalStyles.container}>
+                <PairStart />
+              </FadeInOut>
+            )}
+            {selectedOption === 'keystone' && (
+              <FadeInOut style={globalStyles.container}>
+                <ConnectKeystoneStart />
+              </FadeInOut>
+            )}
+          </Box>
+        </ScrollBox>
+      </Box>
+    </BackScreen>
   )
 }
 

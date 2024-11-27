@@ -1,32 +1,23 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import Flag from '@assets/images/flag.svg'
-import LightningBolt from '@assets/images/lightningBolt.svg'
-import UserStar from '@assets/images/userStar.svg'
+import Flag from '@assets/svgs/flag.svg'
+import LightningBolt from '@assets/svgs/lightningBolt.svg'
+import UserStar from '@assets/svgs/userStar.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
 import { Select } from '@components/Select'
-import Text from '@components/Text'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useGovernance } from '@storage/GovernanceProvider'
-import globalStyles from '@theme/globalStyles'
+import { useGovernance } from '@config/storage/GovernanceProvider'
 import React, { useEffect, useMemo, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Animated } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { FadeIn } from 'react-native-reanimated'
+import { useColors } from '@config/theme/themeHooks'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
 import { useSetTab } from './useSetTab'
 import { NetworkTabs } from './NetworkTabs'
-
-const icons: { [key: string]: React.ReactElement } = {
-  proposals: <Flag width={16} height={16} color="white" />,
-  voters: <LightningBolt width={16} height={16} color="white" />,
-  positions: <UserStar width={16} height={16} color="white" />,
-}
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalsScreen'>
 export const GovernanceWrapper: React.FC<
@@ -35,13 +26,23 @@ export const GovernanceWrapper: React.FC<
     header?: React.ReactElement
   }>
 > = ({ selectedTab, children, header }) => {
-  const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { loading, hasUnseenProposals } = useGovernance()
   const anim = useRef(new Animated.Value(1))
   const setSelectedTab = useSetTab()
+  const colors = useColors()
+
+  const icons: { [key: string]: React.ReactElement } = useMemo(
+    () => ({
+      proposals: <Flag width={16} height={16} color={colors.primaryText} />,
+      voters: (
+        <LightningBolt width={16} height={16} color={colors.primaryText} />
+      ),
+      positions: <UserStar width={16} height={16} color={colors.primaryText} />,
+    }),
+    [colors],
+  )
 
   useEffect(() => {
     // if we have a mint and proposal, navigate to the proposal screen
@@ -86,25 +87,23 @@ export const GovernanceWrapper: React.FC<
   }, [loading, hasUnseenProposals])
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
-      <SafeAreaBox edges={safeEdges} flex={1}>
+    <ReAnimatedBox entering={FadeIn} paddingHorizontal="5">
+      <Box flex={1}>
         <Box flexDirection="column" height="100%">
-          <Text marginTop="m" alignSelf="center" variant="h4">
-            {t('gov.title')}
-          </Text>
-          <Box mt="xl" mb="l">
+          <Box mt="6xl">
             <NetworkTabs />
           </Box>
           {loading ? (
-            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
-              <CircleLoader loaderSize={24} color="white" />
+            <Box mt="12" flexDirection="column" flex={1}>
+              <CircleLoader loaderSize={24} color="primaryText" />
             </Box>
           ) : (
-            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
+            <Box mt="4" flexDirection="column" flex={1}>
               {header}
               <Select
-                mb="xl"
-                value={selectedTab}
+                mb="8"
+                placeholder="Select Tab"
+                initialValue={selectedTab}
                 onValueChange={setSelectedTab}
                 options={['proposals', 'voters', 'positions'].map((o) => ({
                   label: o.charAt(0).toUpperCase() + o.slice(1),
@@ -117,7 +116,7 @@ export const GovernanceWrapper: React.FC<
             </Box>
           )}
         </Box>
-      </SafeAreaBox>
+      </Box>
     </ReAnimatedBox>
   )
 }

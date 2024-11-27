@@ -1,4 +1,4 @@
-import ShareAddress from '@assets/images/shareAddress.svg'
+import ShareAddress from '@assets/svgs/shareAddress.svg'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import CopyAddress from '@components/CopyAddress'
@@ -6,9 +6,9 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Spacing } from '@theme/theme'
-import { useSpacing } from '@theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { Spacing } from '@config/theme/theme'
+import { useSpacing } from '@config/theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import React, { memo, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +22,7 @@ const ShareAddressScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { triggerNavHaptic } = useHaptic()
   const spacing = useSpacing()
-  const padding = useMemo(() => 'l' as Spacing, [])
+  const padding = useMemo(() => 'xl' as Spacing, [])
   const { t } = useTranslation()
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
@@ -82,13 +82,13 @@ const ShareAddressScreen = () => {
           flex={1}
           justifyContent="center"
           alignItems="center"
-          marginBottom="xxxl"
+          marginBottom="15"
         >
           <Text
-            variant="h2"
+            variant="displaySmRegular"
             color="primaryText"
             textAlign="center"
-            marginBottom="s"
+            marginBottom="2"
           >
             {currentAccount.alias}
           </Text>
@@ -101,10 +101,10 @@ const ShareAddressScreen = () => {
             }
           >
             <Text
-              variant="h4"
+              variant="textXlRegular"
               color="secondaryText"
               textAlign="center"
-              marginBottom="xxl"
+              marginBottom="12"
             >
               {ellipsizeAddress(address)}
             </Text>
@@ -112,9 +112,9 @@ const ShareAddressScreen = () => {
           <Box
             height={QR_CONTAINER_SIZE}
             width={QR_CONTAINER_SIZE}
-            backgroundColor="white"
+            backgroundColor="base.white"
             padding={padding}
-            borderRadius="xxl"
+            borderRadius="4xl"
           >
             <QRCode
               size={QR_CONTAINER_SIZE - 2 * spacing[padding]}
@@ -129,9 +129,9 @@ const ShareAddressScreen = () => {
           <CopyAddress address={address} flex={1} />
           <TouchableOpacityBox
             flexDirection="row"
-            padding="m"
-            backgroundColor="purple500"
-            borderRadius="round"
+            padding="4"
+            backgroundColor="purple.500"
+            borderRadius="full"
             onPress={handleShare}
             flex={1}
             alignItems="center"
@@ -139,8 +139,8 @@ const ShareAddressScreen = () => {
           >
             <ShareAddress />
             <Text
-              marginLeft="s"
-              variant="body1"
+              marginLeft="2"
+              variant="textMdRegular"
               fontSize={17}
               color="primaryText"
               fontWeight="500"

@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react'
 import { SvgProps } from 'react-native-svg'
-import { Color } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import { Color } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
 import Text from './Text'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
@@ -33,9 +33,9 @@ const HeliumActionSheetItem = ({
   const colors = useColors()
 
   const color = useMemo((): Color => {
-    if (selected) return 'purple500'
+    if (selected) return 'purple.500'
     if (disabled) return 'secondaryText'
-    return 'surfaceSecondaryText'
+    return 'secondaryText'
   }, [disabled, selected])
 
   return (
@@ -48,7 +48,8 @@ const HeliumActionSheetItem = ({
     >
       {!!Icon && <Icon color={colors[color]} height={16} width={16} />}
       <Text
-        marginLeft={Icon ? 'ms' : 'none'}
+        variant="textSmRegular"
+        marginLeft={Icon ? '3' : 'none'}
         color={color}
         fontWeight={selected ? '500' : 'normal'}
         fontSize={18}

@@ -3,11 +3,11 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
-import { useAppStorage } from '@storage/AppStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import BrowserScreen from './BrowserScreen'
 import { BrowserWrapper } from './BrowserWebViewScreen'
 import DAppTutorial from './DAppTutorial'
-import { useSolana } from '../../solana/SolanaProvider'
 
 const BrowserStack = createNativeStackNavigator()
 

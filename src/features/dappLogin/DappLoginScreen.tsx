@@ -1,23 +1,20 @@
-import Close from '@assets/images/close.svg'
+import Close from '@assets/svgs/close.svg'
 import SafeAreaBox from '@components/SafeAreaBox'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { TokenBurnV1 } from '@helium/transactions'
 import useAlert from '@hooks/useAlert'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import { useDebouncedCallback } from 'use-debounce'
-import {
-  RootNavigationProp,
-  RootStackParamList,
-} from '../../navigation/rootTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { getKeypair } from '../../storage/secureStorage'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { getKeypair } from '@config/storage/secureStorage'
+import { RootNavigationProp, RootStackParamList } from '../../app/rootTypes'
 import DappAccount from './DappAccount'
 import DappConnect from './DappConnect'
 import { useWalletConnect } from './WalletConnectProvider'
@@ -57,7 +54,7 @@ const makeBurnTxn = async (opts: { payerB58: string }) => {
 type Route = RouteProp<RootStackParamList, 'DappLoginScreen'>
 const DappLoginScreen = () => {
   const route = useRoute<Route>()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { params } = route
   const {
@@ -102,7 +99,7 @@ const DappLoginScreen = () => {
     } else {
       rootNav.reset({
         index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
+        routes: [{ name: 'ServiceSheetNavigator' }],
       })
     }
   }, [disconnect, navigation, rootNav])
@@ -224,17 +221,17 @@ const DappLoginScreen = () => {
   return (
     <SafeAreaBox
       backgroundColor="primaryBackground"
-      paddingHorizontal="l"
+      paddingHorizontal="6"
       flex={1}
     >
       <TouchableOpacityBox
         onPress={goBack}
         alignSelf="flex-end"
         justifyContent="center"
-        paddingHorizontal="m"
-        marginEnd="n_m"
+        paddingHorizontal="4"
+        marginEnd="-4"
       >
-        <Close color={colors.white} height={21} width={21} />
+        <Close color={colors['base.white']} height={21} width={21} />
       </TouchableOpacityBox>
       {body}
     </SafeAreaBox>

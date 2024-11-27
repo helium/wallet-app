@@ -4,9 +4,10 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { PURGE } from 'redux-persist'
 import { CompressedNFT } from 'src/types/solana'
-import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
-import { CSAccount } from '../../storage/cloudStorage'
+import { CSAccount } from '@config/storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
+
+const DEFAULT_PAGE_AMOUNT = 20
 
 export type WalletHotspots = {
   loading: boolean

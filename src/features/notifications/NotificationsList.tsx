@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { SectionList } from 'react-native'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import { useSpacing } from '@theme/themeHooks'
+import { useSpacing } from '@config/theme/themeHooks'
 import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
+import ScrollBox from '@components/ScrollBox'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
 import { NotificationsListNavigationProp } from './notificationTypes'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationListItem from './NotificationListItem'
 import { Notification } from '../../utils/walletApiV2'
 
@@ -29,9 +30,9 @@ const NotificationsList = ({
 
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xxxl,
+      paddingBottom: spacing['15'],
     }),
-    [spacing.xxxl],
+    [spacing],
   )
 
   const SectionData = useMemo((): {
@@ -79,7 +80,7 @@ const NotificationsList = ({
       return (
         <FadeInOut>
           <NotificationListItem
-            marginHorizontal="m"
+            marginHorizontal="4"
             borderTopStartRadius={isFirst ? 'xl' : undefined}
             borderTopEndRadius={isFirst ? 'xl' : undefined}
             borderBottomStartRadius={isLast ? 'xl' : undefined}
@@ -99,7 +100,7 @@ const NotificationsList = ({
     () => (
       <FadeInOut>
         <Box alignItems="center">
-          <Text color="primaryText" marginTop="xl">
+          <Text variant="textSmRegular" color="primaryText" marginTop="8">
             {t('notifications.emptyTitle')}
           </Text>
         </Box>
@@ -114,13 +115,17 @@ const NotificationsList = ({
         <Box
           flexDirection="row"
           alignItems="center"
-          paddingTop="xl"
-          paddingBottom="m"
-          paddingHorizontal="l"
+          paddingTop="8"
+          paddingBottom="4"
+          paddingHorizontal="6"
           backgroundColor="primaryBackground"
           justifyContent="center"
         >
-          <Text variant="body2" textAlign="center" color="secondaryText">
+          <Text
+            variant="textSmRegular"
+            textAlign="center"
+            color="secondaryText"
+          >
             {sectionTitle}
           </Text>
         </Box>
@@ -132,7 +137,7 @@ const NotificationsList = ({
   const keyExtractor = useCallback((item, index) => item.time + index, [])
 
   return (
-    <Box flex={1}>
+    <ScrollBox flex={1}>
       {HeaderComponent}
       <SectionList
         keyExtractor={keyExtractor}
@@ -143,7 +148,7 @@ const NotificationsList = ({
         renderItem={renderItem}
         ListEmptyComponent={EmptyListView}
       />
-    </Box>
+    </ScrollBox>
   )
 }
 

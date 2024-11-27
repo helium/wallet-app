@@ -2,12 +2,14 @@ import ConfirmPinView from '@components/ConfirmPinView'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
-import { toSecureAccount } from '@storage/secureStorage'
+import { toSecureAccount } from '@config/storage/secureStorage'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RootNavigationProp } from '../../navigation/rootTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { useAppStorage } from '../../storage/AppStorageProvider'
+import { ThemeProvider } from '@shopify/restyle'
+import { darkTheme } from '@config/theme/theme'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { RootNavigationProp } from '../../app/rootTypes'
 import { useOnboarding } from './OnboardingProvider'
 import { CreateAccountStackParamList } from './create/createAccountNavTypes'
 import { ImportAccountStackParamList } from './import/importAccountNavTypes'
@@ -56,7 +58,7 @@ const AccountConfirmPinScreen = () => {
         index: 0,
         routes: [
           {
-            name: 'TabBarNavigator',
+            name: 'ServiceSheetNavigator',
           },
         ],
       })
@@ -86,4 +88,12 @@ const AccountConfirmPinScreen = () => {
   )
 }
 
-export default AccountConfirmPinScreen
+const AccountConfirmPinScreenWrapper = () => {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <AccountConfirmPinScreen />
+    </ThemeProvider>
+  )
+}
+
+export default AccountConfirmPinScreenWrapper

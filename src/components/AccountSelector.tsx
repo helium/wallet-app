@@ -16,12 +16,12 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
 import { GestureResponderEvent } from 'react-native'
-import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
+import { useColors, useOpacity, useSpacing } from '@config/theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { CSAccount } from '@config/storage/cloudStorage'
 import { AccountNetTypeOpt } from '../utils/accountUtils'
 import AccountListItem from './AccountListItem'
-import { CSAccount } from '../storage/cloudStorage'
 
 export type AccountSelectorRef = {
   show: (_type?: AccountNetTypeOpt | GestureResponderEvent) => void
@@ -38,14 +38,17 @@ const AccountSelector = forwardRef(
     useImperativeHandle(ref, () => ({ show, showAccountTypes }))
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-    const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-    const { m, xl } = useSpacing()
+    const { backgroundStyle } = useOpacity('bg.tertiary', 1)
+    const spacing = useSpacing()
     const [accountsType, setAccountsTypes] = useState<AccountNetTypeOpt>('all')
     const snapPoints = useMemo(() => ['60%', '80%'], [])
     const colors = useColors()
 
-    const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
-    const flatListContainerStyle = useMemo(() => ({ paddingBottom: xl }), [xl])
+    const sheetHandleStyle = useMemo(() => ({ padding: spacing[4] }), [spacing])
+    const flatListContainerStyle = useMemo(
+      () => ({ paddingBottom: spacing[8] }),
+      [spacing],
+    )
 
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 

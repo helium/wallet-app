@@ -1,9 +1,8 @@
-import RewardBG from '@assets/images/rewardBg.svg'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useMemo } from 'react'
@@ -28,29 +27,27 @@ const RewardItem = ({ mint, amount, hasMore, ...rest }: RewardItemProps) => {
 
   return (
     <Box
-      paddingVertical="l"
-      paddingHorizontal="xl"
+      backgroundColor="cardBackground"
+      borderRadius="2xl"
+      paddingVertical="6"
+      paddingHorizontal="8"
       justifyContent="center"
       alignItems="center"
       height={197}
       width={167}
       {...rest}
     >
-      <Box position="absolute" top={0} right={0} bottom={0} left={0}>
-        <RewardBG />
-      </Box>
-
       <TokenIcon img={json?.image} size={70} />
 
       <Text
-        marginTop="m"
-        variant="h3Medium"
+        marginTop="4"
+        variant="displayXsMedium"
         adjustsFontSizeToFit
         numberOfLines={1}
       >
         {pendingRewardsString}
       </Text>
-      <Text variant="subtitle3" color="secondaryText">
+      <Text variant="textMdMedium" color="secondaryText">
         {symbol}
       </Text>
     </Box>

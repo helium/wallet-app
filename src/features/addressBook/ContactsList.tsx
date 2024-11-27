@@ -8,11 +8,14 @@ import { sortBy, unionBy } from 'lodash'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import FabButton from '@components/FabButton'
 import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
-import { CSAccount } from '../../storage/cloudStorage'
+import { useSpacing } from '@config/theme/themeHooks'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { CSAccount } from '@config/storage/cloudStorage'
 
 type Props = {
   onAddNew: () => void
@@ -34,6 +37,8 @@ const ContactsList = ({
     useAccountStorage()
 
   const { t } = useTranslation()
+  const spacing = useSpacing()
+  const { bottom } = useSafeAreaInsets()
   const [searchTerm, setSearchTerm] = useState('')
   const handleContactPressed = useCallback(
     (item: CSAccount) => {
@@ -41,56 +46,6 @@ const ContactsList = ({
     },
     [handleContactSelected],
   )
-
-  const renderFlatlistItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
-    ({ item: account }: { item: CSAccount; index: number }) => {
-      return (
-        <AccountListItem
-          selected={address === account.address}
-          account={account}
-          onPress={handleContactPressed}
-        />
-      )
-    },
-    [address, handleContactPressed],
-  )
-
-  const header = useMemo(() => {
-    return (
-      <Box>
-        <SearchInput
-          placeholder={t('addressBook.searchContacts')}
-          marginHorizontal="lx"
-          marginTop="xl"
-          onChangeText={setSearchTerm}
-          value={searchTerm}
-        />
-        <TouchableOpacityBox
-          flexDirection="row"
-          alignItems="center"
-          padding="xl"
-          onPress={onAddNew}
-        >
-          <FabButton
-            icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
-            size={40}
-            disabled
-            marginRight="ms"
-          />
-          <Text variant="body1" color="secondaryText">
-            {t('addressBook.addNext')}
-          </Text>
-        </TouchableOpacityBox>
-      </Box>
-    )
-  }, [onAddNew, searchTerm, t])
-
-  const keyExtractor = useCallback((item: CSAccount) => {
-    return item.address
-  }, [])
 
   const allContacts = useMemo(() => {
     const contacts = contactsForNetType()
@@ -142,6 +97,74 @@ const ContactsList = ({
     searchTerm,
   ])
 
+  const renderFlatlistItem = useCallback(
+    // eslint-disable-next-line react/no-unused-prop-types
+    ({ item: account, index }: { item: CSAccount; index: number }) => {
+      const borderTopStartRadius = index === 0 ? '2xl' : undefined
+      const borderTopEndRadius = index === 0 ? '2xl' : undefined
+      const borderBottomStartRadius =
+        data.length - 1 === index ? '4xl' : undefined
+      const borderBottomEndRadius =
+        data.length - 1 === index ? '4xl' : undefined
+
+      return (
+        <AccountListItem
+          selected={address === account.address}
+          account={account}
+          onPress={handleContactPressed}
+          borderTopStartRadius={borderTopStartRadius}
+          borderTopEndRadius={borderTopEndRadius}
+          borderBottomStartRadius={borderBottomStartRadius}
+          borderBottomEndRadius={borderBottomEndRadius}
+        />
+      )
+    },
+    [address, handleContactPressed, data],
+  )
+
+  const header = useMemo(() => {
+    return (
+      <Box>
+        <SearchInput
+          placeholder={t('addressBook.searchContacts')}
+          marginTop="8"
+          onChangeText={setSearchTerm}
+          value={searchTerm}
+        />
+        <TouchableOpacityBox
+          flexDirection="row"
+          alignItems="center"
+          padding="8"
+          paddingHorizontal="0"
+          onPress={onAddNew}
+        >
+          <FabButton
+            icon="add"
+            backgroundColor="primaryText"
+            iconColor="primaryBackground"
+            size={40}
+            disabled
+            marginRight="3"
+          />
+          <Text variant="textMdRegular" color="secondaryText">
+            {t('addressBook.addNext')}
+          </Text>
+        </TouchableOpacityBox>
+      </Box>
+    )
+  }, [onAddNew, searchTerm, t])
+
+  const keyExtractor = useCallback((item: CSAccount) => {
+    return item.address
+  }, [])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      padding: spacing['5'],
+      paddingBottom: NavBarHeight + bottom,
+    }
+  }, [spacing, bottom])
+
   if (insideBottomSheet) {
     return (
       <BottomSheetFlatList
@@ -149,6 +172,7 @@ const ContactsList = ({
         data={data}
         renderItem={renderFlatlistItem}
         keyExtractor={keyExtractor}
+        contentContainerStyle={contentContainerStyle}
       />
     )
   }
@@ -159,6 +183,7 @@ const ContactsList = ({
       data={data}
       renderItem={renderFlatlistItem}
       keyExtractor={keyExtractor}
+      contentContainerStyle={contentContainerStyle}
     />
   )
 }

@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo } from 'react'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Box from '@components/Box'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
 
 type Props = {
   icon: React.ReactNode
@@ -38,18 +38,18 @@ const AccountSliderIcon = ({
       <TouchableOpacityBox
         onPress={selectIcon}
         flexDirection="column"
-        borderRadius="round"
+        borderRadius="full"
         borderWidth={selected ? 2 : 0}
-        borderColor="white"
+        borderColor="base.white"
         width={64}
         height={64}
         justifyContent="center"
         alignItems="center"
       >
         <Box
-          backgroundColor="black"
-          borderRadius="round"
-          padding="xxs"
+          backgroundColor="base.black"
+          borderRadius="full"
+          padding="0.5"
           justifyContent="center"
           alignItems="center"
         >
@@ -64,8 +64,8 @@ const AccountSliderIcon = ({
         width={15}
         borderWidth={2}
         borderColor="primaryBackground"
-        borderRadius="round"
-        backgroundColor="malachite"
+        borderRadius="full"
+        backgroundColor="green.500"
       />
     </>
   )

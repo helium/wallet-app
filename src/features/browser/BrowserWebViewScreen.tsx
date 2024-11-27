@@ -1,15 +1,15 @@
-import BackArrow from '@assets/images/backArrow.svg'
-import Bookmark from '@assets/images/bookmark.svg'
-import BookmarkFilled from '@assets/images/bookmarkFilled.svg'
-import Close from '@assets/images/close.svg'
-import Refresh from '@assets/images/refresh.svg'
+import BackArrow from '@assets/svgs/backArrow.svg'
+import Bookmark from '@assets/svgs/bookmark.svg'
+import BookmarkFilled from '@assets/svgs/bookmarkFilled.svg'
+import Close from '@assets/svgs/close.svg'
+import Refresh from '@assets/svgs/refresh.svg'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import {
   SolanaSignAndSendTransactionInput,
   SolanaSignMessageInput,
 } from '@solana/wallet-standard-features'
 import { Transaction, VersionedTransaction } from '@solana/web3.js'
-import { useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Platform, StyleSheet } from 'react-native'
@@ -19,18 +19,18 @@ import {
   WebViewMessageEvent,
   WebViewNavigation,
 } from 'react-native-webview'
+import SolanaProvider, { useSolana } from '@features/solana/SolanaProvider'
+import WalletSignBottomSheet from '@features/solana/WalletSignBottomSheet'
+import {
+  WalletSignBottomSheetRef,
+  WalletStandardMessageTypes,
+} from '@features/solana/walletSignBottomSheetTypes'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import Box from '../../components/Box'
 import SafeAreaBox from '../../components/SafeAreaBox'
 import Text from '../../components/Text'
 import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import useBrowser from '../../hooks/useBrowser'
-import SolanaProvider, { useSolana } from '../../solana/SolanaProvider'
-import WalletSignBottomSheet from '../../solana/WalletSignBottomSheet'
-import {
-  WalletSignBottomSheetRef,
-  WalletStandardMessageTypes,
-} from '../../solana/walletSignBottomSheetTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import * as Logger from '../../utils/logger'
 import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
 import injectWalletStandard from './walletStandard'
@@ -67,6 +67,7 @@ const BrowserWebViewScreen = () => {
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
   const spacing = useSpacing()
   const [isScriptInjected, setIsScriptInjected] = useState(false)
+  const { ...colors } = useColors()
 
   const isFavorite = useMemo(() => {
     return favorites.some((favorite) => favorite === currentUrl)
@@ -421,30 +422,31 @@ const BrowserWebViewScreen = () => {
   const BrowserHeader = useCallback(() => {
     return (
       <Box
-        backgroundColor="black900"
-        paddingBottom="m"
-        paddingStart="m"
+        backgroundColor="base.black"
+        paddingBottom="4"
+        paddingStart="4"
         flexDirection="row"
         alignItems="center"
         justifyContent="center"
       >
-        <Box width={14 + spacing.m} height={14} />
+        <Box width={14 + spacing[4]} height={14} />
         <Box flex={1}>
           <Text
             textAlign="center"
-            variant="body2Medium"
-            color="secondaryText"
+            variant="textSmMedium"
+            color="base.white"
+            opacity={0.6}
             adjustsFontSizeToFit
           >
             {currentUrl}
           </Text>
         </Box>
-        <TouchableOpacityBox onPress={closeModal} paddingHorizontal="m">
-          <Close color="white" width={14} height={14} />
+        <TouchableOpacityBox onPress={closeModal} paddingHorizontal="4">
+          <Close color={colors['base.white']} width={14} height={14} />
         </TouchableOpacityBox>
       </Box>
     )
-  }, [currentUrl, closeModal, spacing])
+  }, [currentUrl, closeModal, spacing, colors])
 
   const onBack = useCallback(() => {
     webview.current?.goBack()
@@ -464,23 +466,27 @@ const BrowserWebViewScreen = () => {
 
   const BrowserFooter = useCallback(() => {
     return (
-      <Box padding="m" flexDirection="row" backgroundColor="black900">
+      <Box padding="4" flexDirection="row" backgroundColor="base.black">
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onBack}>
-            <BackArrow width={20} height={20} />
+            <BackArrow width={20} height={20} color={colors['base.white']} />
           </TouchableOpacityBox>
         </Box>
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox style={styles.rotatedArrow} onPress={onForward}>
-            <BackArrow width={20} height={20} />
+            <BackArrow width={20} height={20} color={colors['base.white']} />
           </TouchableOpacityBox>
         </Box>
         <Box flexGrow={1} alignItems="center">
           <TouchableOpacityBox onPress={onFavorite}>
             {isFavorite ? (
-              <BookmarkFilled color="white" width={20} height={20} />
+              <BookmarkFilled
+                color={colors['base.white']}
+                width={20}
+                height={20}
+              />
             ) : (
-              <Bookmark color="white" width={20} height={20} />
+              <Bookmark color={colors['base.white']} width={20} height={20} />
             )}
           </TouchableOpacityBox>
         </Box>
@@ -491,13 +497,13 @@ const BrowserWebViewScreen = () => {
         </Box>
       </Box>
     )
-  }, [onBack, onForward, isFavorite, onFavorite, onRefresh])
+  }, [onBack, onForward, isFavorite, onFavorite, onRefresh, colors])
 
   return (
     <Box position="absolute" top={0} left={0} right={0} bottom={0}>
       <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
         <Box
-          backgroundColor="black900"
+          backgroundColor="base.black"
           height={top}
           position="absolute"
           top={0}
@@ -524,7 +530,7 @@ const BrowserWebViewScreen = () => {
           <BrowserFooter />
         </SafeAreaBox>
         <Box
-          backgroundColor="black900"
+          backgroundColor="base.black"
           height={bottom}
           position="absolute"
           bottom={0}

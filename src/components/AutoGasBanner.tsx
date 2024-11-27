@@ -1,5 +1,5 @@
-import CloseCircle from '@assets/images/closeCircleFilled.svg'
-import Warning from '@assets/images/warning.svg'
+import CloseCircle from '@assets/svgs/closeCircleFilled.svg'
+import Warning from '@assets/svgs/warning.svg'
 import {
   useMint,
   useOwnedAmount,
@@ -13,8 +13,8 @@ import {
   VersionedTransaction,
   sendAndConfirmRawTransaction,
 } from '@solana/web3.js'
-import { useAppStorage } from '@storage/AppStorageProvider'
-import { Theme } from '@theme/theme'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { Theme } from '@config/theme/theme'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import axios from 'axios'
 import BN from 'bn.js'
@@ -29,9 +29,9 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
-import { useSolana } from '../solana/SolanaProvider'
-import { useWalletSign } from '../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useWalletSign } from '@features/solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import { appSlice } from '../store/slices/appSlice'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
@@ -168,15 +168,15 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   return (
     <ReAnimatedBox
       visible={swapping}
-      backgroundColor="black650"
+      backgroundColor="gray.900"
       style={bannerAnimatedStyles}
       onLayout={onLayout}
       {...rest}
     >
       <Box
         minHeight={MIN_HEIGHT}
-        padding="s"
-        paddingHorizontal="m"
+        padding="2"
+        paddingHorizontal="4"
         flexDirection="row"
         alignItems="center"
       >
@@ -188,8 +188,8 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
           )}
         </Box>
         <Text
-          variant="body2"
-          marginStart="s"
+          variant="textSmRegular"
+          marginStart="2"
           flex={1}
           adjustsFontSizeToFit
           textAlign="center"

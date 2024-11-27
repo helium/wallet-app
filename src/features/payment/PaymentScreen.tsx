@@ -1,15 +1,8 @@
-import Close from '@assets/images/close.svg'
-import QR from '@assets/images/qr.svg'
-import AccountButton from '@components/AccountButton'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
 import Box from '@components/Box'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import IconPressedContainer from '@components/IconPressedContainer'
 import Text from '@components/Text'
 import TokenButton from '@components/TokenButton'
 import TokenSelector, {
@@ -17,7 +10,7 @@ import TokenSelector, {
   TokenSelectorRef,
 } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Address, { NetTypes } from '@helium/address'
+import Address from '@helium/address'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, truthy } from '@helium/spl-utils'
 import useDisappear from '@hooks/useDisappear'
@@ -26,8 +19,7 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { useVisibleTokens } from '@storage/TokensProvider'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useVisibleTokens } from '@config/storage/TokensProvider'
 import { Mints } from '@utils/constants'
 import { fetchDomainOwner } from '@utils/getDomainOwner'
 import {
@@ -45,31 +37,31 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Keyboard, Platform } from 'react-native'
+import { Image, Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import { PaymentRouteParam } from 'src/app/services/WalletService'
+import ScrollBox from '@components/ScrollBox'
+import {
+  SendNavigationProp,
+  SendStackParamList,
+} from '@services/WalletService/pages/SendPage'
+import { useAsyncCallback } from 'react-async-hook'
+import { useSolana } from '@features/solana/SolanaProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { CSAccount } from '@config/storage/cloudStorage'
+import { RootNavigationProp } from '../../app/rootTypes'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
-import { RootNavigationProp } from '../../navigation/rootTypes'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { CSAccount } from '../../storage/cloudStorage'
 import { RootState } from '../../store/rootReducer'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import { useAppDispatch } from '../../store/store'
-import {
-  accountNetType,
-  formatAccountAlias,
-  solAddressIsValid,
-} from '../../utils/accountUtils'
+import { accountNetType, solAddressIsValid } from '../../utils/accountUtils'
 import { SendDetails } from '../../utils/linking'
 import * as logger from '../../utils/logger'
-import {
-  HomeNavigationProp,
-  HomeStackParamList,
-  PaymentRouteParam,
-} from '../home/homeTypes'
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
@@ -105,16 +97,18 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   return []
 }
 
-type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
+type Route = RouteProp<SendStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
+  const { bottom } = useSafeAreaInsets()
   const addressBookRef = useRef<AddressBookRef>(null)
-  const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const { visibleTokens } = useVisibleTokens()
   const inputMint = usePublicKey(route.params?.mint)
+
   const [mint, setMint] = useState<PublicKey>(inputMint || HNT_MINT)
+
   const {
     currentAccount,
     currentNetworkAddress,
@@ -138,15 +132,20 @@ const PaymentScreen = () => {
   const { anchorProvider, connection } = useSolana()
 
   const appDispatch = useAppDispatch()
-  const navigation = useNavigation<HomeNavigationProp>()
+  const navigation = useNavigation<WalletNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
+  const sendNav = useNavigation<SendNavigationProp>()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
 
   useDisappear(() => {
     appDispatch(solanaSlice.actions.resetPayment())
   })
+
+  useEffect(() => {
+    if (!inputMint) return
+    appDispatch(solanaSlice.actions.resetPayment())
+    setMint(inputMint)
+  }, [inputMint, appDispatch])
 
   const navBack = useCallback(() => {
     if (navigation.canGoBack()) {
@@ -156,7 +155,7 @@ const PaymentScreen = () => {
     } else {
       rootNav.reset({
         index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
+        routes: [{ name: 'ServiceSheetNavigator' }],
       })
     }
   }, [navigation, rootNav])
@@ -268,9 +267,9 @@ const PaymentScreen = () => {
     [currentAccount?.address, dispatch],
   )
 
-  const handleQrScan = useCallback(() => {
-    navigation.navigate('PaymentQrScanner')
-  }, [navigation])
+  // const handleQrScan = useCallback(() => {
+  // navigation.navigate('PaymentQrScanner')
+  // }, [navigation])
 
   const canAddPayee = useMemo(() => {
     if (currentAccount?.ledgerDevice) {
@@ -302,25 +301,27 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
-  const handleSubmit = useCallback(async () => {
-    try {
-      await submitPayment(
-        paymentState.payments
-          .filter((p) => p.address && p.amount)
-          .map((payment) => ({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            payee: payment.address!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            balanceAmount: payment.amount!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            max: payment.max!,
-          })),
-        paymentState.mint,
-      )
-    } catch (e) {
-      logger.error(e)
-    }
-  }, [submitPayment, paymentState.mint, paymentState.payments])
+  const { execute: handleSubmit, loading: submitLoading } = useAsyncCallback(
+    async () => {
+      try {
+        await submitPayment(
+          paymentState.payments
+            .filter((p) => p.address && p.amount)
+            .map((payment) => ({
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              payee: payment.address!,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              balanceAmount: payment.amount!,
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              max: payment.max!,
+            })),
+          paymentState.mint,
+        )
+      } catch (e) {
+        logger.error(e)
+      }
+    },
+  )
 
   const insufficientFunds = useMemo((): [
     value: boolean,
@@ -640,22 +641,14 @@ const PaymentScreen = () => {
     }
   }, [navigation, top])
 
-  const handleShowAccounts = useCallback(() => {
-    if (!accountSelectorRef?.current) return
-
-    let accts = [] as CSAccount[]
-    accts = sortedAccountsForNetType(NetTypes.MAINNET)
-    if (accts.length < 2) return
-
-    const netType = NetTypes.MAINNET
-
-    accountSelectorRef?.current.showAccountTypes(netType)()
-  }, [sortedAccountsForNetType])
-
   const decimals = useMint(mint)?.info?.decimals
   const tokenButtonBalance = useMemo(() => {
     return humanReadable(balance, decimals)
   }, [balance, decimals])
+
+  const onSuccess = useCallback(() => {
+    sendNav.replace('PaymentScreen')
+  }, [sendNav])
 
   const data = useMemo((): TokenListItem[] => {
     const tokens = [...visibleTokens]
@@ -669,174 +662,148 @@ const PaymentScreen = () => {
   }, [mint, visibleTokens])
 
   return (
-    <>
-      <HNTKeyboard
-        ref={hntKeyboardRef}
-        onConfirmBalance={handleBalance}
-        mint={mint}
-        networkFee={paymentState.networkFee}
+    <ScrollBox>
+      <KeyboardAwareScrollView
+        enableOnAndroid
+        enableResetScrollToCoords={false}
+        keyboardShouldPersistTaps="always"
       >
-        <AccountSelector ref={accountSelectorRef}>
-          <AddressBookSelector
-            ref={addressBookRef}
-            onContactSelected={handleContactSelected}
-            hideCurrentAccount
-          >
-            <TokenSelector
-              ref={tokenSelectorRef}
-              onTokenSelected={onTokenSelected}
-              tokenData={data}
-            >
-              <Box
-                flex={1}
-                style={containerStyle}
-                borderTopStartRadius="xl"
-                borderTopEndRadius="xl"
-                backgroundColor="secondaryBackground"
+        <Box
+          flex={1}
+          borderTopStartRadius="4xl"
+          borderTopEndRadius="4xl"
+          backgroundColor="primaryBackground"
+          style={{
+            ...containerStyle,
+            paddingBottom: NavBarHeight + bottom,
+          }}
+        >
+          {/* <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                borderTopStartRadius="4xl"
+                borderTopEndRadius="4xl"
               >
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderTopStartRadius="xl"
-                  borderTopEndRadius="xl"
-                >
-                  <Box hitSlop={hitSlop} padding="s">
-                    <IconPressedContainer
-                      onPress={handleQrScan}
-                      activeOpacity={0.75}
-                      idleOpacity={1.0}
-                    >
-                      <QR color={primaryText} height={16} width={16} />
-                    </IconPressedContainer>
-                  </Box>
-                  <Text
-                    variant="subtitle2"
-                    textAlign="center"
-                    color="primaryText"
-                    maxFontSizeMultiplier={1}
+                <Box hitSlop={hitSlop} padding="2">
+                  <IconPressedContainer
+                    onPress={handleQrScan}
+                    activeOpacity={0.75}
+                    idleOpacity={1.0}
                   >
-                    {t('payment.send')}
-                  </Text>
-                  <Box hitSlop={hitSlop} padding="s">
-                    <IconPressedContainer
-                      onPress={navBack}
-                      activeOpacity={0.75}
-                      idleOpacity={1.0}
-                    >
-                      <Close color={primaryText} height={16} width={16} />
-                    </IconPressedContainer>
-                  </Box>
+                    <QR color={primaryText} height={16} width={16} />
+                  </IconPressedContainer>
                 </Box>
+              </Box> */}
 
-                <KeyboardAwareScrollView
-                  enableOnAndroid
-                  enableResetScrollToCoords={false}
-                  keyboardShouldPersistTaps="always"
-                >
-                  <AccountButton
-                    backgroundColor="secondary"
-                    accountIconSize={41}
-                    paddingTop="l"
-                    title={formatAccountAlias(currentAccount)}
-                    subtitle={t('payment.senderAccount')}
-                    showChevron={
-                      sortedAccountsForNetType(networkType).length > 1
-                    }
-                    address={currentAccount?.address}
-                    onPress={handleShowAccounts}
-                    showBubbleArrow
-                    marginHorizontal="l"
-                    marginBottom="xs"
-                  />
+          <Box alignItems="center" gap="2.5" marginBottom="4xl" marginTop="6xl">
+            <Image source={require('@assets/images/sendIcon.png')} />
+            <Text variant="displaySmSemibold" color="primaryText">
+              {t('payment.send')}
+            </Text>
+            <Text
+              variant="textLgMedium"
+              color="secondaryText"
+              textAlign="center"
+              paddingHorizontal="8"
+            >
+              {t('payment.sendTokensToAnyAddress')}
+            </Text>
+          </Box>
 
-                  <TokenButton
-                    backgroundColor="secondary"
-                    title={t('payment.title', { ticker: symbol })}
-                    subtitle={tokenButtonBalance}
-                    address={currentAccount?.address}
-                    onPress={handleTokenTypeSelected}
-                    showBubbleArrow
-                    marginHorizontal="l"
-                    mint={mint}
-                  />
+          <TokenButton
+            backgroundColor="cardBackground"
+            title={t('payment.title', { ticker: symbol })}
+            subtitle={tokenButtonBalance}
+            address={currentAccount?.address}
+            onPress={handleTokenTypeSelected}
+            marginHorizontal="6"
+            mint={mint}
+          />
 
-                  {paymentState.payments.map((p, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
-                    <React.Fragment key={index}>
-                      <PaymentItem
-                        {...p}
-                        hideMemo
-                        marginTop={index === 0 ? 'xs' : 'none'}
-                        marginBottom="l"
-                        hasError={
-                          p.address === currentAccount?.address || p.hasError
-                        }
-                        index={index}
-                        onAddressBookSelected={handleAddressBookSelected}
-                        onEditAmount={handleEditAmount}
-                        onToggleMax={handleToggleMax}
-                        onEditAddress={handleEditAddress}
-                        handleAddressError={handleAddressError}
-                        onUpdateError={handleSetPaymentError}
-                        mint={mint}
-                        onRemove={
-                          paymentState.payments.length > 1
-                            ? handleRemove
-                            : undefined
-                        }
-                        netType={networkType}
-                        showAmount
-                      />
-                    </React.Fragment>
-                  ))}
-                  {canAddPayee && (
-                    <TouchableOpacityBox
-                      minHeight={75}
-                      onPress={handleAddPayee}
-                      borderRadius="xl"
-                      overflow="hidden"
-                      marginHorizontal="l"
-                      marginBottom="l"
-                      alignItems="center"
-                      justifyContent="center"
-                      backgroundColor="secondary"
-                    >
-                      <Text variant="body1" color="surfaceSecondaryText">
-                        {t('payment.addRecipient')}
-                      </Text>
-                    </TouchableOpacityBox>
-                  )}
-                </KeyboardAwareScrollView>
-
-                <PaymentCard
-                  mint={mint}
-                  totalBalance={paymentState.totalAmount}
-                  feeTokenBalance={paymentState.networkFee}
-                  disabled={!isFormValid}
-                  onSubmit={handleSubmit}
-                  payments={payments}
-                  errors={errors}
-                  handleCancel={navBack}
-                />
-              </Box>
-            </TokenSelector>
-          </AddressBookSelector>
-        </AccountSelector>
-      </HNTKeyboard>
-      <PaymentSubmit
-        mint={mint}
-        submitLoading={!!solanaPayment?.loading}
-        submitSucceeded={!!solanaPayment?.success}
-        submitError={solanaPayment?.error}
-        totalBalance={paymentState.totalAmount}
-        payments={paymentState.payments}
-        feeTokenBalance={paymentState.networkFee}
-        onRetry={handleSubmit}
-        onSuccess={navigation.popToTop}
-        actionTitle={t('payment.backToAccounts')}
-      />
-    </>
+          {paymentState.payments.map((p, index) => (
+            // eslint-disable-next-line react/no-array-index-key
+            <React.Fragment key={index}>
+              <PaymentItem
+                {...p}
+                hideMemo
+                marginTop={index === 0 ? 'xs' : 'none'}
+                marginBottom="6"
+                hasError={p.address === currentAccount?.address || p.hasError}
+                index={index}
+                onAddressBookSelected={handleAddressBookSelected}
+                onEditAmount={handleEditAmount}
+                onToggleMax={handleToggleMax}
+                onEditAddress={handleEditAddress}
+                handleAddressError={handleAddressError}
+                onUpdateError={handleSetPaymentError}
+                mint={mint}
+                onRemove={
+                  paymentState.payments.length > 1 ? handleRemove : undefined
+                }
+                netType={networkType}
+                showAmount
+              />
+            </React.Fragment>
+          ))}
+          {canAddPayee && (
+            <TouchableOpacityBox
+              minHeight={75}
+              onPress={handleAddPayee}
+              borderRadius="4xl"
+              overflow="hidden"
+              marginHorizontal="6"
+              marginBottom="6"
+              alignItems="center"
+              justifyContent="center"
+              backgroundColor="cardBackground"
+            >
+              <Text variant="textMdRegular" color="secondaryText">
+                {t('payment.addRecipient')}
+              </Text>
+            </TouchableOpacityBox>
+          )}
+          <PaymentCard
+            mint={mint}
+            totalBalance={paymentState.totalAmount}
+            feeTokenBalance={paymentState.networkFee}
+            disabled={!isFormValid}
+            onSubmit={handleSubmit}
+            payments={payments}
+            errors={errors}
+            loading={submitLoading}
+          />
+        </Box>
+        <HNTKeyboard
+          ref={hntKeyboardRef}
+          onConfirmBalance={handleBalance}
+          mint={mint}
+          networkFee={paymentState.networkFee}
+        />
+        <TokenSelector
+          ref={tokenSelectorRef}
+          onTokenSelected={onTokenSelected}
+          tokenData={data}
+        />
+        <AddressBookSelector
+          ref={addressBookRef}
+          onContactSelected={handleContactSelected}
+          hideCurrentAccount
+        />
+        <PaymentSubmit
+          mint={mint}
+          submitLoading={!!solanaPayment?.loading}
+          submitSucceeded={!!solanaPayment?.success}
+          submitError={solanaPayment?.error}
+          totalBalance={paymentState.totalAmount}
+          payments={paymentState.payments}
+          feeTokenBalance={paymentState.networkFee}
+          onRetry={handleSubmit}
+          onSuccess={onSuccess}
+          actionTitle={t('payment.backToAccounts')}
+        />
+      </KeyboardAwareScrollView>
+    </ScrollBox>
   )
 }
 

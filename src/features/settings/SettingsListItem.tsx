@@ -1,16 +1,16 @@
 import React, { memo, ReactText, useCallback, useMemo, useRef } from 'react'
 import { Linking, Platform, Switch } from 'react-native'
-import CarotRight from '@assets/images/carot-right.svg'
-import LinkImg from '@assets/images/link.svg'
+import CarotRight from '@assets/svgs/carot-right.svg'
+import LinkImg from '@assets/svgs/link.svg'
 import { HeliumActionSheetItemType } from '@components/HeliumActionSheetItem'
 import Text, { TextProps } from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { Color } from '@theme/theme'
+import { Color } from '@config/theme/theme'
 import HeliumActionSheet, {
   HeliumActionSheetRef,
 } from '@components/HeliumActionSheet'
 import Box from '@components/Box'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import { hp } from '@utils/layout'
 import sleep from '@utils/sleep'
 
@@ -74,7 +74,7 @@ const SettingsListItem = ({
   }
 
   const trackColor = useMemo(
-    () => ({ false: colors.grey900, true: colors.greenBright500 }),
+    () => ({ false: colors['gray.900'], true: colors['green.light-500'] }),
     [colors],
   )
 
@@ -88,9 +88,9 @@ const SettingsListItem = ({
   const actionSheetTextProps = useMemo(
     () =>
       ({
-        variant: 'regular',
+        variant: 'textMdRegular',
         fontSize: 16,
-        color: 'surfaceSecondaryText',
+        color: 'secondaryText',
       } as TextProps),
     [],
   )
@@ -107,9 +107,9 @@ const SettingsListItem = ({
   )
 
   let textColor: Color = 'primaryText'
-  if (destructive && !disabled) textColor = 'red300'
-  if (destructive && disabled) textColor = 'red400'
-  if (!destructive && disabled) textColor = 'grey400'
+  if (destructive && !disabled) textColor = 'error.500'
+  if (destructive && disabled) textColor = 'error.300'
+  if (!destructive && disabled) textColor = 'gray.400'
 
   const handleSelect = useCallback(
     async (itemValue: string | number, itemIndex: number) => {
@@ -127,41 +127,41 @@ const SettingsListItem = ({
       justifyContent="space-between"
       alignItems="center"
       minHeight={56}
-      paddingHorizontal="l"
-      marginBottom="xxxs"
+      paddingHorizontal="6"
+      marginBottom="0.25"
       onPress={handlePress}
       disabled={disabled || !(onPress || openUrl || select)}
-      borderBottomColor="black"
+      borderBottomColor="border.secondary"
       borderBottomWidth={1}
-      borderTopColor="black"
+      borderTopColor="border.secondary"
       borderTopWidth={isTop ? 1 : 0}
     >
       {renderModal && renderModal()}
       <Box flexDirection="column" paddingVertical="xs">
         <Text
-          variant="body3"
-          color="surfaceSecondaryText"
-          marginBottom="xxs"
+          variant="textXsRegular"
+          color="secondaryText"
+          marginBottom="0.5"
           visible={label !== undefined}
         >
           {label}
         </Text>
-        <Text variant="body1" color={textColor}>
+        <Text variant="textMdRegular" color={textColor}>
           {title}
         </Text>
         <Text
-          variant="body3"
-          color="surfaceSecondaryText"
-          marginBottom="xxs"
+          variant="textXsRegular"
+          color="secondaryText"
+          marginBottom="0.5"
           visible={helperText !== undefined}
         >
           {helperText}
         </Text>
       </Box>
       {!onToggle && !select && onPress && (
-        <CarotRight color={colors.surfaceSecondaryText} />
+        <CarotRight color={colors.secondaryText} />
       )}
-      {openUrl && <LinkImg color={colors.surfaceSecondaryText} />}
+      {openUrl && <LinkImg color={colors.secondaryText} />}
       {onToggle && (
         <Switch
           style={switchStyle}
@@ -185,7 +185,7 @@ const SettingsListItem = ({
         />
       )}
       {staticText && (
-        <Text fontWeight="bold" color="surfaceSecondaryText">
+        <Text variant="textSmSemibold" fontWeight="bold" color="secondaryText">
           {value}
         </Text>
       )}

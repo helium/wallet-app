@@ -1,19 +1,18 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Carousel, Pagination } from 'react-native-snap-carousel'
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
 import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextTransform from '@components/TextTransform'
-import { useAppStorage } from '@storage/AppStorageProvider'
-import { Spacing } from '@theme/theme'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
+import { Spacing } from '@config/theme/theme'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import { wp } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
+import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import { GovernanceNavigationProp } from './governanceTypes'
 
 type CarouselItem = {
@@ -28,7 +27,7 @@ const slides: Array<CarouselItem> = [
     titleKey: 'gov.tutorial.slides.0.title',
     bodyKey: 'gov.tutorial.slides.0.body',
     image: require('@assets/images/voteSlide0.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-12',
   },
   {
     titleKey: 'gov.tutorial.slides.1.title',
@@ -39,19 +38,19 @@ const slides: Array<CarouselItem> = [
     titleKey: 'gov.tutorial.slides.2.title',
     bodyKey: 'gov.tutorial.slides.2.body',
     image: require('@assets/images/voteSlide2.png'),
-    imageVerticalOffset: 'xxl',
+    imageVerticalOffset: '12',
   },
   {
     titleKey: 'gov.tutorial.slides.3.title',
     bodyKey: 'gov.tutorial.slides.3.body',
     image: require('@assets/images/voteSlide3.png'),
-    imageVerticalOffset: 'xxl',
+    imageVerticalOffset: '12',
   },
   {
     titleKey: 'gov.tutorial.slides.4.title',
     bodyKey: 'gov.tutorial.slides.4.body',
     image: require('@assets/images/voteSlide4.png'),
-    imageVerticalOffset: 'xxl',
+    imageVerticalOffset: '12',
   },
 ]
 
@@ -64,7 +63,7 @@ export const GovernanceTutorialScreen = () => {
   const colors = useColors()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { setVoteTutorialCompleted } = useAppStorage()
-  const edges = useMemo(() => ['top'] as Edge[], [])
+  const { bottom } = useSafeAreaInsets()
 
   const handleVotePressed = useCallback(() => {
     setVoteTutorialCompleted()
@@ -82,26 +81,27 @@ export const GovernanceTutorialScreen = () => {
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: CarouselItem }) => {
       return (
-        <Box flex={1}>
+        <Box flex={1} justifyContent="center">
           <ImageBox
             flexShrink={1}
             source={item.image}
             resizeMode="contain"
             alignSelf="center"
+            width={150}
           />
           <Text
-            variant="h1"
+            variant="displayMdSemibold"
             textAlign="center"
             marginTop={item.imageVerticalOffset}
+            color="primaryText"
           >
             {t(item.titleKey)}
           </Text>
           <TextTransform
-            variant="body1"
-            colorTextVariant="bold"
+            variant="textMdRegular"
             textAlign="center"
             color="secondaryText"
-            marginTop="m"
+            marginTop="4"
             i18nKey={t(item.bodyKey)}
           />
         </Box>
@@ -115,30 +115,28 @@ export const GovernanceTutorialScreen = () => {
       width: 6,
       height: 6,
       borderRadius: 3,
-      marginHorizontal: spacing.s,
-      backgroundColor: colors.white,
+      marginHorizontal: spacing['0.5'],
+      backgroundColor: colors.primaryText,
     }),
-    [colors.white, spacing.s],
+    [colors, spacing],
   )
 
   return (
-    <SafeAreaBox flex={1} edges={edges}>
-      <CloseButton
-        alignSelf="flex-end"
-        padding="l"
-        onPress={navigation.goBack}
-      />
-      <Box flexGrow={1} justifyContent="center">
-        <Carousel
-          ref={carouselRef}
-          layout="default"
-          vertical={false}
-          data={slides}
-          renderItem={renderCarouselItem}
-          sliderWidth={wp(100)}
-          itemWidth={wp(90)}
-          onSnapToItem={onSnapToItem}
-        />
+    <Box flex={1}>
+      <Box flexGrow={1} justifyContent="center" paddingTop="6">
+        <NativeViewGestureHandler disallowInterruption>
+          <Carousel
+            ref={carouselRef}
+            layout="default"
+            vertical={false}
+            data={slides}
+            renderItem={renderCarouselItem}
+            sliderWidth={wp(100)}
+            itemWidth={wp(90)}
+            onSnapToItem={onSnapToItem}
+          />
+        </NativeViewGestureHandler>
+
         <Box>
           <Pagination
             dotsLength={slides.length}
@@ -148,23 +146,30 @@ export const GovernanceTutorialScreen = () => {
             inactiveDotScale={1}
           />
 
-          <Box flexDirection="row" marginHorizontal="lx" marginVertical="m">
+          <Box
+            flexDirection="row"
+            marginHorizontal="7"
+            style={{
+              marginBottom: bottom + spacing['0.5'],
+            }}
+          >
             <ButtonPressable
               flex={1}
               fontSize={16}
-              borderRadius="round"
-              borderWidth={2}
-              backgroundColor={viewedSlides ? 'white' : undefined}
+              borderRadius="full"
+              title={t('gov.tutorial.goToVote')}
+              titleColor="primaryBackground"
+              backgroundColor="primaryText"
               backgroundColorOpacityPressed={0.7}
-              titleColorDisabled="secondaryText"
-              title={viewedSlides ? t('gov.tutorial.goToVote') : ' '}
-              titleColor="black"
+              backgroundColorDisabled="bg.disabled"
+              titleColorDisabled="text.disabled"
               onPress={handleVotePressed}
+              disabled={!viewedSlides}
             />
           </Box>
         </Box>
       </Box>
-    </SafeAreaBox>
+    </Box>
   )
 }
 

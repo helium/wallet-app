@@ -7,20 +7,20 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import base58 from 'bs58'
-import { CSAccountVersion } from '@storage/cloudStorage'
+import { CSAccountVersion } from '@config/storage/cloudStorage'
 import { hex } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { PublicKey } from '@solana/web3.js'
 import Address from '@helium/address'
 import { ED25519_KEY_TYPE } from '@helium/address/build/KeyTypes'
-import { RootNavigationProp } from '../../navigation/rootTypes'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { RootNavigationProp } from '../../app/rootTypes'
 import { ImportAccountNavigationProp } from '../onboarding/import/importAccountNavTypes'
 import { CreateAccountNavigationProp } from '../onboarding/create/createAccountNavTypes'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
@@ -82,7 +82,7 @@ const KeystoneAccountAssignScreen = () => {
     if (hasAccounts) {
       rootNav.reset({
         index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
+        routes: [{ name: 'ServiceSheetNavigator' }],
       })
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -105,31 +105,34 @@ const KeystoneAccountAssignScreen = () => {
     <SafeAreaBox
       backgroundColor="secondaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      paddingHorizontal="8"
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.l}
+        keyboardVerticalOffset={insets.top + spacing[6]}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
         style={styles.container}
       >
         <Box alignItems="center" flex={1}>
           <Text
-            variant="h1"
+            variant="displayMdRegular"
             textAlign="center"
             fontSize={44}
             lineHeight={44}
-            marginTop="xl"
+            marginTop="8"
+            color="primaryText"
           >
             {t('accountAssign.title')}
           </Text>
 
           <Box
-            backgroundColor="transparent10"
-            borderRadius="xl"
-            padding="m"
+            backgroundColor="cardBackground"
+            borderRadius="4xl"
+            padding="4"
             width="100%"
-            marginTop="xl"
+            marginTop="8"
             flexDirection="row"
+            borderColor="border.primary"
+            borderWidth={1}
           >
             <AccountIcon
               size={40}
@@ -140,27 +143,30 @@ const KeystoneAccountAssignScreen = () => {
                 )
               }
             />
-            <TextInput
-              textColor="primaryText"
-              fontSize={24}
-              marginLeft="m"
-              marginRight="xl"
-              textInputProps={{
-                placeholder: t('accountAssign.AccountNamePlaceholder'),
-                autoCorrect: false,
-                autoComplete: 'off',
-                autoCapitalize: 'words',
-                onChangeText: setAlias,
-                value: alias,
-                autoFocus: true,
-              }}
-            />
+            <Box backgroundColor="cardBackground">
+              <TextInput
+                textColor="primaryText"
+                fontSize={24}
+                marginLeft="4"
+                marginRight="8"
+                variant="transparentSmall"
+                textInputProps={{
+                  placeholder: t('accountAssign.AccountNamePlaceholder'),
+                  autoCorrect: false,
+                  autoComplete: 'off',
+                  autoCapitalize: 'words',
+                  onChangeText: setAlias,
+                  value: alias,
+                  autoFocus: true,
+                }}
+              />
+            </Box>
           </Box>
 
           <Box
             flexDirection="row"
             alignItems="center"
-            marginTop="xl"
+            marginTop="8"
             opacity={hasAccounts ? 100 : 0}
           >
             <CheckBox
@@ -169,11 +175,11 @@ const KeystoneAccountAssignScreen = () => {
               style={{ height: 20, width: 20 }}
               tintColors={{
                 true: colors.primaryText,
-                false: colors.transparent10,
+                false: colors.secondaryText,
               }}
-              onCheckColor={colors.secondary}
+              onCheckColor={colors.primaryBackground}
               onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
+              tintColor={colors.secondaryText}
               onFillColor={colors.primaryText}
               onAnimationType="fill"
               offAnimationType="fill"
@@ -182,9 +188,9 @@ const KeystoneAccountAssignScreen = () => {
             />
 
             <Text
-              variant="body1"
+              variant="textMdRegular"
               color={setAsDefault ? 'primaryText' : 'secondaryText'}
-              marginLeft="m"
+              marginLeft="4"
             >
               {t('accountAssign.setDefault')}
             </Text>
@@ -192,20 +198,20 @@ const KeystoneAccountAssignScreen = () => {
 
           <Box flex={1} />
           {!loading && existingNames?.has(alias) ? (
-            <Text mb="m" color="red500">
+            <Text variant="textSmSemibold" mb="4" color="error.500">
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
           {loading ? (
-            <CircleLoader />
+            <CircleLoader color="primaryText" />
           ) : (
             <FabButton
               onPress={handlePress}
               icon="arrowRight"
-              iconColor="primary"
+              iconColor="primaryBackground"
               disabled={!alias || existingNames?.has(alias)}
               backgroundColor="primaryText"
-              backgroundColorPressed="surfaceContrast"
+              backgroundColorPressed="primaryBackground"
               backgroundColorOpacityPressed={0.1}
             />
           )}

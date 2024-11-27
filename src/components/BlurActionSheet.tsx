@@ -1,17 +1,16 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet'
-import { LayoutChangeEvent } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import React, { memo, useCallback, useRef } from 'react'
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAsync } from 'react-async-hook'
 import { Portal } from '@gorhom/portal'
-import { useOpacity } from '@theme/themeHooks'
-import CustomBlurBackdrop from './CustomBlurBackdrop'
-import SafeAreaBox from './SafeAreaBox'
-import { wh } from '../utils/layout'
+import { ThemeProvider } from '@shopify/restyle'
+import { lightTheme } from '@config/theme/theme'
+import { useTranslation } from 'react-i18next'
+import { useSpacing } from '@config/theme/themeHooks'
+import HeliumBottomSheet from './HeliumBottomSheet'
+import Text from './Text'
+import Box from './Box'
+import ScrollBox from './ScrollBox'
 
 type Props = {
   title: string
@@ -21,9 +20,10 @@ type Props = {
 }
 
 const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const [contentHeight, setContentHeight] = useState(0)
-  const { backgroundStyle } = useOpacity('black400', 0.4)
+  const bottomSheetModalRef = useRef<BottomSheet>(null)
+  const { t } = useTranslation()
+  const { top, bottom } = useSafeAreaInsets()
+  const spacing = useSpacing()
 
   const handleOnClose = useCallback(() => {
     if (onClose) {
@@ -33,59 +33,67 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
 
   useAsync(async () => {
     if (open) {
-      await bottomSheetModalRef.current?.present()
+      await bottomSheetModalRef.current?.expand()
     } else {
-      await bottomSheetModalRef.current?.dismiss()
+      await bottomSheetModalRef.current?.close()
     }
   }, [open])
 
-  const snapPoints = useMemo(() => {
-    let maxHeight: number | string = '75%'
-    if (contentHeight > 0) {
-      maxHeight = Math.min(wh * 0.75, contentHeight)
-    }
-
-    return [maxHeight]
-  }, [contentHeight])
-
   const renderBackdrop = useCallback(
     (props) => (
-      <CustomBlurBackdrop
+      <BottomSheetBackdrop
         onPress={handleOnClose}
         title={title}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        opacity={0.6}
+        opacity={1}
         {...props}
-      />
+      >
+        <Box flex={1} style={{ marginTop: top }}>
+          <Text
+            variant="textLgSemibold"
+            color="primaryText"
+            marginTop="xl"
+            textAlign="center"
+          >
+            {t('blurActionSheet.selectAnOption')}
+          </Text>
+        </Box>
+      </BottomSheetBackdrop>
     ),
-    [handleOnClose, title],
+    [handleOnClose, title, top, t],
   )
-
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-
-  const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
-    setContentHeight(e.nativeEvent.layout.height + 40)
-  }, [])
 
   return (
     <Portal>
-      <BottomSheetModalProvider>
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          index={0}
-          snapPoints={snapPoints}
-          backdropComponent={renderBackdrop}
-          backgroundStyle={backgroundStyle}
-          onDismiss={handleOnClose}
-        >
-          <BottomSheetScrollView>
-            <SafeAreaBox edges={safeEdges} onLayout={handleContentLayout}>
+      <HeliumBottomSheet
+        ref={bottomSheetModalRef}
+        index={-1}
+        backdropComponent={renderBackdrop}
+        onClose={handleOnClose}
+      >
+        <ThemeProvider theme={lightTheme}>
+          <Box
+            flex={1}
+            flexDirection="column"
+            zIndex={100}
+            position="relative"
+            borderRadius="6xl"
+            overflow="hidden"
+            marginTop="1"
+          >
+            <ScrollBox
+              paddingHorizontal="2xl"
+              contentContainerStyle={{
+                paddingBottom: bottom + spacing['6xl'],
+                paddingTop: spacing['6xl'],
+              }}
+            >
               {children}
-            </SafeAreaBox>
-          </BottomSheetScrollView>
-        </BottomSheetModal>
-      </BottomSheetModalProvider>
+            </ScrollBox>
+          </Box>
+        </ThemeProvider>
+      </HeliumBottomSheet>
     </Portal>
   )
 }

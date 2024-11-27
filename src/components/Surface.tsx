@@ -2,8 +2,8 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import { Color, Theme } from '@theme/theme'
-import { useColorScheme, useCreateOpacity } from '@theme/themeHooks'
+import { Color, Theme } from '@config/theme/theme'
+import { useColorScheme, useCreateOpacity } from '@config/theme/themeHooks'
 import Box from './Box'
 
 type Props = BoxProps<Theme> & {
@@ -12,7 +12,7 @@ type Props = BoxProps<Theme> & {
 }
 
 const Surface = ({
-  backgroundColor = 'surface',
+  backgroundColor = 'cardBackground',
   children,
   style,
   ...boxProps
@@ -31,7 +31,7 @@ const Surface = ({
 
   return (
     <Box
-      borderRadius="xl"
+      borderRadius="4xl"
       overflow="hidden"
       {...boxProps}
       style={style ? [style, backgroundStyle] : backgroundStyle}

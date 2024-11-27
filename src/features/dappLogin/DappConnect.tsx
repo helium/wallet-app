@@ -1,11 +1,11 @@
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Crowdspot from '@assets/images/crowdspot.svg'
-import AddDapp from '@assets/images/addDapp.svg'
+import Crowdspot from '@assets/svgs/crowdspot.svg'
+import AddDapp from '@assets/svgs/addDapp.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 
 type Props = { appName: string; onApprove: () => void; onDeny: () => void }
 const DappConnect = ({ appName, onApprove, onDeny }: Props) => {
@@ -25,49 +25,49 @@ const DappConnect = ({ appName, onApprove, onDeny }: Props) => {
       ) : (
         <AddDapp color={primaryText} height={145} width={145} />
       )}
-      <Text variant="h0" textAlign="center" marginTop="l">
+      <Text variant="displayLgRegular" textAlign="center" marginTop="6">
         {t('dappLogin.connect.title', { appName })}
       </Text>
       <Text
-        variant="subtitle1"
+        variant="textXlMedium"
         textAlign="center"
-        marginTop="s"
+        marginTop="2"
         color="secondaryText"
       >
         {t('dappLogin.connect.subtitle', { appName })}
       </Text>
 
       <Box flex={1} />
-      <Box flexDirection="row" marginTop="l">
+      <Box flexDirection="row" marginTop="6">
         <TouchableOpacityBox
           flex={1}
           minHeight={66}
           justifyContent="center"
-          marginEnd="m"
-          borderRadius="round"
+          marginEnd="4"
+          borderRadius="full"
           overflow="hidden"
-          backgroundColor="secondaryIcon"
+          backgroundColor="secondaryText"
           onPress={onDeny}
         >
-          <Text variant="subtitle1" textAlign="center" color="primaryText">
+          <Text variant="textXlMedium" textAlign="center" color="primaryText">
             {t('generic.cancel')}
           </Text>
         </TouchableOpacityBox>
         <TouchableOpacityBox
           flex={1}
           minHeight={66}
-          backgroundColor="surfaceContrast"
+          backgroundColor="primaryBackground"
           justifyContent="center"
           alignItems="center"
           onPress={onApprove}
-          borderRadius="round"
+          borderRadius="full"
           flexDirection="row"
         >
           <Text
-            marginLeft="s"
-            variant="subtitle1"
+            marginLeft="2"
+            variant="textXlMedium"
             textAlign="center"
-            color="secondary"
+            color="secondaryText"
           >
             {t('dappLogin.connect.continue')}
           </Text>

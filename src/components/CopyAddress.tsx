@@ -4,10 +4,10 @@ import { BoxProps } from '@shopify/restyle'
 import { useTranslation } from 'react-i18next'
 import Clipboard from '@react-native-community/clipboard'
 import Toast from 'react-native-simple-toast'
-import CopyAddressIcon from '@assets/images/copyAddress.svg'
-import { Theme } from '@theme/theme'
+import CopyAddressIcon from '@assets/svgs/copyAddress.svg'
+import { Theme } from '@config/theme/theme'
 import useHaptic from '@hooks/useHaptic'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import Text from './Text'
 import { ellipsizeAddress } from '../utils/accountUtils'
@@ -40,21 +40,21 @@ const CopyAddress = ({ address, ...boxProps }: Props) => {
     <TouchableOpacityBox
       {...boxProps}
       flexDirection="row"
-      backgroundColor="greenBright500"
-      borderRadius="round"
+      backgroundColor="primaryText"
+      borderRadius="full"
       alignItems="center"
-      padding="m"
+      padding="4"
       justifyContent="center"
       onPress={copyAddress}
-      marginRight="ms"
+      marginRight="3"
     >
-      <CopyAddressIcon color={colors.primaryIcon} />
+      <CopyAddressIcon color={colors.primaryBackground} />
       <Text
-        marginLeft="s"
-        variant="body1"
+        marginLeft="2"
+        variant="textMdRegular"
         fontWeight="500"
         fontSize={17}
-        color="primaryIcon"
+        color="primaryBackground"
       >
         {t('generic.copy')}
       </Text>

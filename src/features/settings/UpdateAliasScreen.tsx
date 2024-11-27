@@ -5,12 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import Box from '@components/Box'
 import TextInput from '@components/TextInput'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import FabButton from '@components/FabButton'
-import { useSpacing } from '@theme/themeHooks'
+import { useSpacing } from '@config/theme/themeHooks'
 import AccountIcon from '@components/AccountIcon'
 import BackScreen from '@components/BackScreen'
-import Text from '@components/Text'
 import { SettingsNavigationProp } from './settingsTypes'
 
 const UpdateAliasScreen = () => {
@@ -36,27 +35,30 @@ const UpdateAliasScreen = () => {
     <BackScreen
       backgroundColor="primaryBackground"
       flex={1}
-      paddingHorizontal="xl"
+      title={t('accountAssign.title')}
+      padding="0"
+      paddingHorizontal="5"
+      edges={[]}
+      headerTopMargin="6xl"
     >
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.xxxl + spacing.xxl}
+        keyboardVerticalOffset={insets.top + spacing[12] + spacing[12]}
         behavior={Platform.OS === 'android' ? 'height' : 'padding'}
         style={styles.container}
       >
-        <Box alignItems="center" flex={1}>
-          <Text variant="h1" textAlign="center" fontSize={44} lineHeight={44}>
-            {t('accountAssign.title')}
-          </Text>
+        <Box alignItems="center" flex={1} marginTop="6xl">
           <Box
-            backgroundColor="transparent10"
-            borderRadius="xl"
-            padding="m"
-            width="100%"
-            marginTop="xl"
+            backgroundColor="cardBackground"
             flexDirection="row"
+            alignItems="center"
+            borderRadius="2xl"
+            padding="4"
+            gap="2"
           >
             <AccountIcon size={40} address={currentAccount?.address || ''} />
             <TextInput
+              flex={1}
+              variant="transparent"
               textColor="primaryText"
               textInputProps={{
                 onChangeText: setAlias,
@@ -67,20 +69,19 @@ const UpdateAliasScreen = () => {
                 autoCapitalize: 'words',
               }}
               fontSize={24}
-              marginLeft="m"
-              marginRight="xl"
             />
           </Box>
 
           <Box flex={1} />
 
           <FabButton
+            marginBottom="6xl"
             onPress={handlePress}
             icon="arrowRight"
             disabled={!alias}
             backgroundColor="primaryText"
-            iconColor="primary"
-            backgroundColorPressed="surfaceContrast"
+            iconColor="primaryBackground"
+            backgroundColorPressed="primaryBackground"
             backgroundColorOpacityPressed={0.1}
           />
         </Box>

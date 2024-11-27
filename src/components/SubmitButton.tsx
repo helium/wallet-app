@@ -1,9 +1,10 @@
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
 import SwipeButton from 'rn-swipe-button'
-import SwipeIcon from '@assets/images/swipeIcon.svg'
-import { Font, Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import SwipeIcon from '@assets/svgs/swipeIcon.svg'
+import { Font, Theme } from '@config/theme/theme'
+import { useColors } from '@config/theme/themeHooks'
+import { StyleProp, TextStyle } from 'react-native'
 import Box from './Box'
 
 type Props = {
@@ -15,14 +16,14 @@ type Props = {
 } & BoxProps<Theme>
 
 const SubmitButton = ({
-  color = 'blueBright500',
+  color = 'primaryBackground',
   onSubmit,
   title,
   disabled = false,
-  backgroundColor = 'secondaryIcon',
+  backgroundColor = 'primaryText',
   ...boxProps
 }: Props) => {
-  const { surfaceSecondary, secondaryText, ...rest } = useColors()
+  const { secondaryText, ...rest } = useColors()
   const colorActual = rest[color as keyof typeof rest]
   const backgroundActual = rest[backgroundColor as keyof typeof rest]
   const icon = useMemo(
@@ -37,20 +38,21 @@ const SubmitButton = ({
         color: disabled ? secondaryText : colorActual,
         fontSize: 19,
         paddingLeft: 30,
+        fontWeight: 600,
       },
       railStyles: {
-        backgroundColor: surfaceSecondary,
-        borderColor: surfaceSecondary,
+        backgroundColor: rest['bg.tertiary'],
+        borderColor: rest['bg.tertiary'],
         paddingLeft: 8,
       },
     }),
-    [colorActual, disabled, secondaryText, surfaceSecondary],
+    [colorActual, disabled, secondaryText, rest],
   )
 
   return (
     <Box
       backgroundColor={backgroundColor as any}
-      borderRadius="round"
+      borderRadius="full"
       {...boxProps}
     >
       <SwipeButton
@@ -58,7 +60,7 @@ const SubmitButton = ({
         railBackgroundColor={backgroundActual}
         railStyles={styles.railStyles}
         railBorderColor={backgroundActual}
-        titleStyles={styles.titleStyles}
+        titleStyles={styles.titleStyles as StyleProp<TextStyle>}
         titleMaxFontScale={1}
         thumbIconBackgroundColor={backgroundActual}
         thumbIconBorderColor={colorActual}
@@ -69,8 +71,8 @@ const SubmitButton = ({
         thumbIconComponent={icon}
         disableResetOnTap
         disabled={disabled}
-        disabledRailBackgroundColor={surfaceSecondary}
-        disabledThumbIconBackgroundColor={surfaceSecondary}
+        disabledRailBackgroundColor={rest['bg.tertiary']}
+        disabledThumbIconBackgroundColor={rest['bg.tertiary']}
         disabledThumbIconBorderColor={secondaryText}
       />
     </Box>

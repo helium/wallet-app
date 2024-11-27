@@ -6,10 +6,10 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
-import globalStyles from '@theme/globalStyles'
-import { useColors } from '@theme/themeHooks'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useAppStorage } from '../storage/AppStorageProvider'
+import globalStyles from '@config/theme/globalStyles'
+import { useColors } from '@config/theme/themeHooks'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { ReAnimatedBox } from './AnimatedBox'
 
 const SplashScreen = ({ children }: { children: ReactNode }) => {

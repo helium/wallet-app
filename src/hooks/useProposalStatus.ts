@@ -7,7 +7,7 @@ import { PublicKey } from '@solana/web3.js'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import BN from 'bn.js'
 import { useMemo } from 'react'
-import { ProposalV0 } from '../features/governance/governanceTypes'
+import { ProposalV0 } from '@features/governance/governanceTypes'
 
 function usePublicKey(
   key: string | PublicKey | undefined,

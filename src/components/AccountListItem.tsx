@@ -1,11 +1,13 @@
 import React, { memo, useCallback, useMemo } from 'react'
-import Checkmark from '@assets/images/checkIco.svg'
-import { useColors } from '@theme/themeHooks'
+import Checkmark from '@assets/svgs/checkIco.svg'
+import { useColors } from '@config/theme/themeHooks'
+import { BoxProps } from '@shopify/restyle'
+import { Theme } from '@config/theme/theme'
+import { CSAccount } from '@config/storage/cloudStorage'
 import Text from './Text'
 import Box from './Box'
 import AccountIcon from './AccountIcon'
 import { ellipsizeAddress, formatAccountAlias } from '../utils/accountUtils'
-import { CSAccount } from '../storage/cloudStorage'
 import TouchableContainer from './TouchableContainer'
 
 type Props = {
@@ -14,8 +16,14 @@ type Props = {
   onPress?: (account: CSAccount) => void
   disabled?: boolean
 }
-const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
-  const { primary } = useColors()
+const AccountListItem = ({
+  selected,
+  account,
+  onPress,
+  disabled,
+  ...rest
+}: Props & BoxProps<Theme>) => {
+  const { primaryText } = useColors()
 
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
 
@@ -26,34 +34,35 @@ const AccountListItem = ({ selected, account, onPress, disabled }: Props) => {
   return (
     <TouchableContainer
       minHeight={52}
-      paddingVertical="m"
-      paddingHorizontal="xl"
+      paddingVertical="4"
+      paddingHorizontal="4"
       flexDirection="row"
       alignItems="center"
-      borderBottomWidth={1}
-      borderColor="primary"
+      borderBottomWidth={2}
+      borderColor="primaryBackground"
       onPress={handlePress}
       disabled={disabled}
+      {...rest}
     >
       <AccountIcon size={40} address={address} />
       <Box flexDirection="column" justifyContent="center" flex={1}>
-        <Text variant="body1" marginLeft="ms">
+        <Text variant="textMdRegular" marginLeft="3" color="primaryText">
           {formatAccountAlias(account)}
         </Text>
-        <Text variant="body3" marginLeft="ms" color="secondaryText">
+        <Text variant="textXsRegular" marginLeft="3" color="secondaryText">
           {ellipsizeAddress(address || '')}
         </Text>
       </Box>
       {selected && (
         <Box
-          backgroundColor="surfaceContrast"
+          backgroundColor="primaryBackground"
           height={27}
           width={27}
-          borderRadius="round"
+          borderRadius="full"
           justifyContent="center"
           alignItems="center"
         >
-          <Checkmark color={primary} />
+          <Checkmark color={primaryText} />
         </Box>
       )}
     </TouchableContainer>

@@ -3,7 +3,7 @@ import DynamicQrScanner from '@components/DynamicQrScanner'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { URDecoder } from '@ngraveio/bc-ur'
 import KeystoneSDK, { MultiAccounts, UR } from '@keystonehq/keystone-sdk'
-import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { RootNavigationProp } from 'src/app/rootTypes'
 import { useNavigation } from '@react-navigation/native'
 import { Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
@@ -67,7 +67,7 @@ const ScanQrCodeScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isScanQrCodeComplete])
   return (
-    <SafeAreaBox flex={1}>
+    <SafeAreaBox flex={1} backgroundColor="primaryBackground">
       <DynamicQrScanner
         onBarCodeScanned={handleBarCodeScanned}
         progress={progress}

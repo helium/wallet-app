@@ -2,7 +2,7 @@ import { WrappedConnection } from '@utils/WrappedConnection'
 import { useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { useSolana } from '../solana/SolanaProvider'
+import { useSolana } from '@features/solana/SolanaProvider'
 import { getCurrentTPS } from '../utils/solanaUtils'
 
 let lastUpdated = 0

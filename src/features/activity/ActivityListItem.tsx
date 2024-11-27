@@ -1,13 +1,13 @@
-import Send from '@assets/images/send.svg'
-import Receive from '@assets/images/receive.svg'
-import Error from '@assets/images/error.svg'
+import Send from '@assets/svgs/send.svg'
+import Receive from '@assets/svgs/receive.svg'
+import Error from '@assets/svgs/error.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
 import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import { useColors } from '@theme/themeHooks'
+import { useColors } from '@config/theme/themeHooks'
 import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -95,26 +95,26 @@ const ActivityListItem = ({
 
   return (
     <TouchableContainer
-      backgroundColor="surfaceSecondary"
+      backgroundColor="cardBackground"
       flexDirection="row"
       alignItems="center"
-      padding="m"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="black"
+      padding="4"
+      borderBottomWidth={hasDivider ? 2 : 0}
+      borderBottomColor="primaryBackground"
       {...rest}
     >
       {!transactionFailed ? (
         userSignedTransaction ? (
-          <Send width={25} height={25} color={colors.green500} />
+          <Send width={20} height={20} color={colors['green.500']} />
         ) : (
-          <Receive width={25} height={25} color={colors.blue500} />
+          <Receive width={20} height={20} color={colors['blue.500']} />
         )
       ) : (
-        <Error width={25} height={25} color={colors.error} />
+        <Error width={20} height={20} color={colors['error.500']} />
       )}
-      <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
-        <Text variant="subtitle4">{title}</Text>
-        <Text variant="body3" color="secondaryText">
+      <Box marginStart="2" flexGrow={1} flexBasis={0.5} justifyContent="center">
+        <Text variant="textSmMedium">{title}</Text>
+        <Text variant="textXsRegular" color="secondaryText">
           {subtitle}
         </Text>
       </Box>

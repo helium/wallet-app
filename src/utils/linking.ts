@@ -5,9 +5,10 @@ import BN from 'bn.js'
 import * as Linking from 'expo-linking'
 import qs from 'qs'
 import queryString from 'query-string'
-import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
-import { RootStackParamList } from '../navigation/rootTypes'
-import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { BurnRouteParam } from '@services/WalletService/pages/WalletPage'
+import { PaymentRouteParam } from 'src/app/services/WalletService'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { RootStackParamList } from '../app/rootTypes'
 import { solAddressIsValid } from './accountUtils'
 
 export const APP_LINK_SCHEME = Linking.createURL('')
@@ -29,7 +30,7 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       PaymentScreen: 'payment',
       DappLoginScreen: 'dapp_login',
       ImportPrivateKey: 'import_key/:key',
-      TabBarNavigator: {
+      ServiceSheetNavigator: {
         screens: {
           Governance: {
             screens: {

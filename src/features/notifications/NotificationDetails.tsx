@@ -2,21 +2,20 @@ import React, { memo, useEffect, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import Animated from 'react-native-reanimated'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import BackButton from '@components/BackButton'
 import usePrevious from '@hooks/usePrevious'
 import useMount from '@hooks/useMount'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import globalStyles from '@theme/globalStyles'
+import globalStyles from '@config/theme/globalStyles'
+import { useNotificationStorage } from '@config/storage/NotificationStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { NotificationsListStackParamList } from './notificationTypes'
-import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationDetailBanner from './NotificationDetailBanner'
 import parseMarkup from '../../utils/parseMarkup'
 import { useAppDispatch } from '../../store/store'
 import { markNotificationRead } from '../../store/slices/notificationsSlice'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 
@@ -67,42 +66,46 @@ const NotificationDetails = () => {
 
   return (
     <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
-      <SafeAreaBox
+      <Box
         backgroundColor="primaryBackground"
         flex={1}
-        paddingHorizontal="l"
-        paddingTop="m"
+        paddingHorizontal="6"
+        paddingTop="6xl"
       >
         <BackButton
           onPress={navigation.goBack}
-          color="surfaceSecondaryText"
-          paddingHorizontal="none"
-          marginBottom="m"
+          color="secondaryText"
+          paddingHorizontal="0"
+          marginBottom="4"
         />
 
-        <Box marginHorizontal="m">
+        <Box marginHorizontal="4">
           <NotificationDetailBanner icon={notification.icon} />
           <Text
-            variant="h3"
-            marginTop="m"
+            variant="displayXsRegular"
+            marginTop="4"
             adjustsFontSizeToFit
             numberOfLines={2}
           >
             {notification.title}
           </Text>
-          <Text variant="body2" paddingVertical="m" color="greenBright500">
+          <Text
+            variant="textSmRegular"
+            paddingVertical="4"
+            color="green.light-500"
+          >
             {time}
           </Text>
           <Text
-            variant="body2"
-            color="surfaceSecondaryText"
+            variant="textSmRegular"
+            color="secondaryText"
             style={bodyStyle}
-            marginBottom="xl"
+            marginBottom="8"
           >
             {parseMarkup(notification.body)}
           </Text>
         </Box>
-      </SafeAreaBox>
+      </Box>
     </Animated.View>
   )
 }

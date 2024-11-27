@@ -1,4 +1,4 @@
-import { getKeypair } from '../storage/secureStorage'
+import { getKeypair } from '@config/storage/secureStorage'
 
 const makeSignature = async (token: { address: string; time: number }) => {
   const stringifiedToken = JSON.stringify(token)

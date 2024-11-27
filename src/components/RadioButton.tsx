@@ -16,18 +16,18 @@ const RadioButton: React.FC<RadioButtonProps> = ({
 }) => {
   return (
     <Box
-      mt="l"
+      mt="6"
       flexDirection="row"
       alignItems="flex-start"
       justifyContent="flex-start"
     >
       <TouchableOpacityBox
-        mr="s"
+        mr="2"
         height={20}
         width={20}
-        borderRadius="round"
+        borderRadius="full"
         borderWidth={2}
-        borderColor="blueBright500"
+        borderColor="text.quaternary-500"
         alignItems="center"
         justifyContent="center"
         onPress={() => onClick()}
@@ -35,11 +35,16 @@ const RadioButton: React.FC<RadioButtonProps> = ({
         <Box
           width={10}
           height={10}
-          borderRadius="round"
-          backgroundColor={selected ? 'blueBright500' : 'transparent'}
+          borderRadius="full"
+          backgroundColor={selected ? 'base.black' : 'transparent'}
         />
       </TouchableOpacityBox>
-      <Text width="90%" onPress={() => onClick()} color="white">
+      <Text
+        variant="textSmRegular"
+        width="90%"
+        onPress={() => onClick()}
+        color="primaryText"
+      >
         {label}
       </Text>
     </Box>

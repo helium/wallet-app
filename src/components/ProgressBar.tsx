@@ -1,19 +1,21 @@
 import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { Theme } from '@config/theme/theme'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
+  withTiming,
 } from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
+import Text from './Text'
 
 const ProgressBar = ({
   progress: progressIn,
+  withLabel = false,
   ...rest
-}: BoxProps<Theme> & { progress: number }) => {
+}: BoxProps<Theme> & { progress: number; withLabel?: boolean }) => {
   const HEIGHT = 15
 
   const [progressRect, setProgressRect] = useState<LayoutRectangle>()
@@ -33,7 +35,7 @@ const ProgressBar = ({
 
   useEffect(() => {
     // withRepeat to repeat the animation
-    width.value = withSpring((progressIn / 100) * PROGRESS_WIDTH)
+    width.value = withTiming((progressIn / 100) * PROGRESS_WIDTH)
   }, [PROGRESS_WIDTH, width, progressIn])
 
   const progress = useAnimatedStyle(() => {
@@ -46,21 +48,30 @@ const ProgressBar = ({
     <Box
       onLayout={handleLayout}
       {...rest}
-      borderRadius="round"
+      borderRadius="full"
       width="100%"
-      height={HEIGHT}
-      backgroundColor="transparent10"
-      overflow="hidden"
-      flexDirection="row"
+      flexDirection="column"
       justifyContent="flex-start"
+      gap="2"
     >
-      <ReAnimatedBox style={progress}>
-        <Box
-          height={HEIGHT - 1}
-          borderRadius="round"
-          backgroundColor="lightGrey"
-        />
-      </ReAnimatedBox>
+      <Box
+        height={HEIGHT}
+        backgroundColor="bg.secondary-hover"
+        borderRadius="full"
+      >
+        <ReAnimatedBox style={progress}>
+          <Box
+            height={HEIGHT}
+            borderRadius="full"
+            backgroundColor="primaryText"
+          />
+        </ReAnimatedBox>
+      </Box>
+      {withLabel && (
+        <Text variant="textSmMedium" color="secondaryText" ms="2">
+          {`Progress: ${progressIn}%`}
+        </Text>
+      )}
     </Box>
   )
 }

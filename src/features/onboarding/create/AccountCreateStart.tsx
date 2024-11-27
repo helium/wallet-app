@@ -1,13 +1,14 @@
 import React, { memo, useCallback } from 'react'
+import { useColors } from '@config/theme/themeHooks'
 import { useTranslation } from 'react-i18next'
-import CreateAccount from '@assets/images/createAccount.svg'
+import CreateAccount from '@assets/svgs/createAccount.svg'
 import { useNavigation } from '@react-navigation/native'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import CloseButton from '@components/CloseButton'
 import SafeAreaBox from '@components/SafeAreaBox'
-import { useAccountStorage } from '../../../storage/AccountStorageProvider'
+import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
 
 type Props = { onCreate: () => void; inline?: boolean }
@@ -15,6 +16,7 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   const { t } = useTranslation()
   const { reachedAccountLimit } = useAccountStorage()
   const navigation = useNavigation<CreateAccountNavigationProp>()
+  const colors = useColors()
 
   const onClose = useCallback(() => {
     navigation.goBack()
@@ -23,35 +25,36 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   return (
     <SafeAreaBox
       flex={1}
-      backgroundColor="secondaryBackground"
-      paddingHorizontal="l"
+      backgroundColor="primaryBackground"
+      paddingHorizontal="6"
     >
       <Box width="100%" alignItems="flex-end" visible={!inline}>
         <CloseButton onPress={onClose} />
       </Box>
       <Box justifyContent="center" alignItems="center" flex={1}>
-        <CreateAccount />
+        <CreateAccount color={colors['green.light-500']} />
         <Text
-          variant="h1"
+          variant="displayMdRegular"
           fontSize={44}
           textAlign="center"
           lineHeight={44}
-          marginTop="l"
+          marginTop="6"
+          color="primaryText"
         >
           {t('accountSetup.title')}
         </Text>
         <Text
-          variant="subtitle1"
+          variant="textXlMedium"
           textAlign="center"
           color="secondaryText"
-          marginVertical="m"
+          marginVertical="4"
         >
           {t('accountSetup.subtitle1')}
         </Text>
         <Text
-          variant="subtitle1"
+          variant="textXlMedium"
           textAlign="center"
-          color="greenBright500"
+          color="green.light-500"
           visible={!reachedAccountLimit}
         >
           {t('accountSetup.subtitle2')}
@@ -59,26 +62,26 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
       </Box>
       <Text
         visible={reachedAccountLimit}
-        variant="body1"
+        variant="textMdRegular"
         textAlign="center"
-        color="error"
+        color="error.500"
         fontWeight="500"
-        marginBottom="l"
+        marginBottom="6"
       >
         {t('accountImport.accountLimit')}
       </Text>
       <ButtonPressable
         disabled={reachedAccountLimit}
-        borderRadius="round"
-        titleColor="secondary"
+        borderRadius="full"
+        titleColor="base.black"
         fontWeight="500"
         title={t('accountSetup.createButtonTitle')}
-        backgroundColor="greenBright500"
+        backgroundColor="green.light-500"
         backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
+        backgroundColorDisabled="bg.tertiary"
         backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        marginBottom="l"
+        titleColorDisabled="gray.800"
+        marginBottom="6"
         onPress={onCreate}
       />
     </SafeAreaBox>
