@@ -436,6 +436,7 @@ export const PositionCard = ({
       onInstructions: async (ixs, sigs) => {
         await decideAndExecute({
           header: t('gov.transactions.splitPosition'),
+          sequentially: true,
           message: t('gov.positions.splitMessage', {
             amount: values.amount,
             symbol,
