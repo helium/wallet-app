@@ -1,5 +1,5 @@
 import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
-import { Asset, truthy } from '@helium/spl-utils'
+import { Asset, getAssetsByOwner, truthy } from '@helium/spl-utils'
 import {
   AccountInfo,
   Keypair,
@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
 export const solanaDerivation = (account = -1, change: number | undefined) => {
   if (account === -1) {

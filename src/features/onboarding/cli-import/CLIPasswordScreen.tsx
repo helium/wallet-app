@@ -1,42 +1,32 @@
-import Terminal from '@assets/svgs/terminal.svg'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CloseButton from '@components/CloseButton'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import useAlert from '@hooks/useAlert'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { createKeypair } from '@config/storage/secureStorage'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TextStyle } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { KeyboardAvoidingView, TextStyle } from 'react-native'
 import RNSodium from 'react-native-sodium'
+import ForwardButton from '@components/ForwardButton'
 import { useOnboarding } from '../OnboardingProvider'
-import {
-  CLIAccountNavigationProp,
-  CLIAccountStackParamList,
-} from './CLIAccountNavigatorTypes'
-
-type Route = RouteProp<CLIAccountStackParamList, 'CLIPasswordScreen'>
+import { useOnboardingSheet } from '../OnboardingSheet'
 
 const CLIPasswordScreen = () => {
-  const navigation = useNavigation<CLIAccountNavigationProp>()
-  const edges = useMemo((): Edge[] => ['bottom'], [])
-  const route = useRoute<Route>()
   const { showOKAlert } = useAlert()
   const { t } = useTranslation()
-  const { setOnboardingData } = useOnboarding()
-
   const {
-    seed: { ciphertext, nonce, salt },
-  } = route.params
+    setOnboardingData,
+    onboardingData: { encryptedAccount },
+  } = useOnboarding()
+  const { carouselRef } = useOnboardingSheet()
 
-  const onClose = useCallback(() => {
-    navigation.getParent()?.goBack()
-  }, [navigation])
+  const ciphertext = useMemo(
+    () => encryptedAccount?.seed?.ciphertext,
+    [encryptedAccount],
+  )
+  const nonce = useMemo(() => encryptedAccount?.seed?.nonce, [encryptedAccount])
+  const salt = useMemo(() => encryptedAccount?.seed?.salt, [encryptedAccount])
 
   const [password, setPassword] = useState('')
 
@@ -49,6 +39,9 @@ const CLIPasswordScreen = () => {
   }, [])
 
   const handleNext = useCallback(async () => {
+    if (!salt || !ciphertext || !nonce) {
+      return
+    }
     // Derive key using password and salt.
     const key = await RNSodium.crypto_pwhash(
       32,
@@ -83,7 +76,7 @@ const CLIPasswordScreen = () => {
           },
         ],
       }))
-      navigation.navigate('AccountAssignScreen')
+      carouselRef?.current?.snapToNext()
     } catch (error) {
       await showOKAlert({
         title: t('accountImport.cli.alert.title'),
@@ -92,70 +85,65 @@ const CLIPasswordScreen = () => {
     }
   }, [
     ciphertext,
-    navigation,
     nonce,
     password,
     salt,
     setOnboardingData,
     showOKAlert,
     t,
+    carouselRef,
   ])
 
   return (
-    <SafeAreaBox marginHorizontal="6" flex={1} edges={edges}>
-      <Box width="100%" alignItems="flex-end" paddingVertical="6">
-        <CloseButton onPress={onClose} />
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <Box padding="2xl" flex={1}>
+        <Box flexGrow={1} alignItems="center" justifyContent="center">
+          <Text
+            variant="displayMdSemibold"
+            color="primaryText"
+            marginTop="6"
+            textAlign="center"
+          >
+            {t('accountImport.cli.password.title')}
+          </Text>
+
+          <Text
+            variant="textXlMedium"
+            color="text.quaternary-500"
+            marginTop="6"
+            textAlign="center"
+          >
+            {t('accountImport.cli.password.body')}
+          </Text>
+
+          <Box
+            width="100%"
+            backgroundColor="cardBackground"
+            borderRadius="2xl"
+            padding="xl"
+            marginTop="xl"
+          >
+            <TextInput
+              variant="transparentSmall"
+              textInputProps={{
+                onChangeText: setPassword,
+                placeholderTextColor: 'gray.500',
+                value: password,
+                placeholder: 'password',
+                autoCorrect: false,
+                autoComplete: 'off',
+                keyboardAppearance: 'dark',
+                style: inputStyle,
+                secureTextEntry: true,
+              }}
+              width="100%"
+            />
+          </Box>
+        </Box>
+
+        <ForwardButton onPress={handleNext} />
       </Box>
-      <Box flexGrow={1} alignItems="center">
-        <Terminal width={98} height={98} />
-
-        <Text
-          variant="displaySmRegular"
-          color="primaryText"
-          marginTop="6"
-          textAlign="center"
-        >
-          {t('accountImport.cli.password.title')}
-        </Text>
-
-        <Text
-          variant="textXlMedium"
-          color="gray.500"
-          marginTop="6"
-          textAlign="center"
-        >
-          {t('accountImport.cli.password.body')}
-        </Text>
-
-        <TextInput
-          variant="transparent"
-          textInputProps={{
-            onChangeText: setPassword,
-            placeholderTextColor: 'gray.500',
-            value: password,
-            placeholder: 'password',
-            autoCorrect: false,
-            autoComplete: 'off',
-            keyboardAppearance: 'dark',
-            style: inputStyle,
-            secureTextEntry: true,
-          }}
-          marginTop="8"
-          width="100%"
-        />
-      </Box>
-
-      <Box width="100%">
-        <ButtonPressable
-          borderRadius="full"
-          backgroundColor="blue.light-500"
-          backgroundColorOpacityPressed={0.7}
-          onPress={handleNext}
-          title={t('accountImport.cli.password.buttonText')}
-          marginBottom="4"
-        />
-      </Box>
-    </SafeAreaBox>
+    </KeyboardAvoidingView>
   )
 }
 

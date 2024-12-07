@@ -15,7 +15,8 @@ import ImportPrivateKey from '@features/onboarding/import/ImportPrivateKey'
 import PaymentScreen from '@features/payment/PaymentScreen'
 import LinkWallet from '@features/txnDelegation/LinkWallet'
 import SignHotspot from '@features/txnDelegation/SignHotspot'
-import { RootStackParamList } from './rootTypes'
+import { useNavigation } from '@react-navigation/native'
+import { RootNavigationProp, RootStackParamList } from './rootTypes'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
 
@@ -23,6 +24,7 @@ const RootNavigator = () => {
   const { currentAccount } = useAccountStorage()
   const colors = useColors()
   const RootStack = createStackNavigator<RootStackParamList>()
+  const rootNav = useNavigation<RootNavigationProp>()
 
   useEffect(() => {
     if (currentAccount) {
@@ -35,6 +37,18 @@ const RootNavigator = () => {
   const initialRouteName = useMemo(() => {
     return currentAccount ? 'ServiceSheetNavigator' : 'OnboardingNavigator'
   }, [currentAccount])
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const firstRoute = (rootNav as any).getRootState().routes[0].key || ''
+    if (currentAccount && firstRoute.includes('OnboardingNavigator')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(rootNav as any).reset({
+        index: 0,
+        routes: [{ name: 'ServiceSheetNavigator' }],
+      })
+    }
+  }, [currentAccount, initialRouteName, rootNav])
 
   return (
     <RootStack.Navigator

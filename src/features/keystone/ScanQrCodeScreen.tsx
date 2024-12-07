@@ -1,22 +1,23 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import DynamicQrScanner from '@components/DynamicQrScanner'
-import SafeAreaBox from '@components/SafeAreaBox'
 import { URDecoder } from '@ngraveio/bc-ur'
 import KeystoneSDK, { MultiAccounts, UR } from '@keystonehq/keystone-sdk'
-import { RootNavigationProp } from 'src/app/rootTypes'
-import { useNavigation } from '@react-navigation/native'
 import { Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useOnboardingSheet } from '@features/onboarding/OnboardingSheet'
 import { KeystoneAccountType } from './SelectKeystoneAccountsScreen'
+import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
 const ScanQrCodeScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<RootNavigationProp>()
   const [multiAccounts, setMultiAccounts] = useState<MultiAccounts>()
   const decoder = useMemo(() => new URDecoder(), [])
   const [isScanQrCodeComplete, setIsScanQrCodeComplete] = useState(false)
   const [progress, setProgress] = useState<number>(0)
   const [isUnexpectedQrCode, setIsUnexpectedQrCode] = useState(false)
+  const { setKeystoneOnboardingData } = useKeystoneOnboarding()
+  const { carouselRef } = useOnboardingSheet()
+
   const handleBarCodeScanned = (qrString: string) => {
     // fix unexpected qrcode string
     try {
@@ -60,19 +61,19 @@ const ScanQrCodeScreen = () => {
       })
       setProgress(0)
       setIsScanQrCodeComplete(false)
-      navigation.navigate('SelectKeystoneAccounts', {
+      setKeystoneOnboardingData((o) => ({
+        ...o,
         derivationAccounts,
-      })
+      }))
+      carouselRef?.current?.snapToNext()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScanQrCodeComplete])
+  }, [isScanQrCodeComplete, setKeystoneOnboardingData, carouselRef])
   return (
-    <SafeAreaBox flex={1} backgroundColor="primaryBackground">
-      <DynamicQrScanner
-        onBarCodeScanned={handleBarCodeScanned}
-        progress={progress}
-      />
-    </SafeAreaBox>
+    <DynamicQrScanner
+      onBarCodeScanned={handleBarCodeScanned}
+      progress={progress}
+    />
   )
 }
 

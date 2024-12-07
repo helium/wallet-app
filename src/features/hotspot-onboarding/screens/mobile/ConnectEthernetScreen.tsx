@@ -7,7 +7,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import InfoIcon from '@assets/svgs/infoIcon.svg'
 import { Linking } from 'react-native'
 import { HOTSPOT_HELP } from '@utils/constants/urls'
-import CheckButton from '../../components/CheckButton'
+import CheckButton from '../../../../components/CheckButton'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 
 export const ConnectEthernetScreen = () => {

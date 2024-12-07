@@ -11,7 +11,7 @@ import { degToCompass } from '@utils/degree'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import { HELIUM_WORLD_POI } from '@utils/constants'
-import CheckButton from '../../components/CheckButton'
+import CheckButton from '../../../../components/CheckButton'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 
 const SetDirectionScreen = () => {

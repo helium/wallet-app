@@ -138,16 +138,17 @@ export default {
     title: 'Import\nWallet',
     wordEntry: {
       changeWordAmount: 'Change to a {{totalWords}}-word recovery phrase',
-      placeholder: '{{ordinal}} word',
-      title: "Enter your\nwallet's 12 or 24\nsecurity words.",
+      placeholder: 'Type word {{ordinal}}...',
+      title: 'Secret Phrase',
+      enterYourSecurityWords: 'Enter your security words',
       word: 'Word {{ordinal}}',
     },
     privateKey: {
       title: 'Import Private Key',
       needsMigration: 'Helium L1 Wallet, needs to be migrated to Solana',
-      selectAccounts: 'Select Accounts',
-      selectAccountsBody:
-        'A secret phrase can be used to generate multiple wallets by using derivation paths. The following derivation paths have been automatically detected. Select the wallets you would like to import.',
+      walletFound: '1 Wallet Found',
+      walletsFound: '{{count}} Wallets Found',
+      selectAccountsBody: 'It will be added to your wallet list.',
       paste: 'Copy and paste your private key.',
       inputPlaceholder: 'Your private key...',
       error: 'Invalid Private Key',
@@ -158,6 +159,8 @@ export default {
       action: 'Import Wallet',
       passwordError: 'You must enter a password to decrypt your private key',
       passwordPlaceholder: 'Enter Password',
+      findingWallet: 'Finding Wallet',
+      thisWontTakeLong: "This won't take long.",
     },
   },
   accountSetup: {
@@ -192,6 +195,8 @@ export default {
         'These words represent your private key. Write them down and never share with anyone.',
       subtitle2: 'No one can recover these words',
       title: 'Keep these\nwords safe',
+      generatingWallet: 'Generating Your Wallet',
+      thisWontTakeLong: "This won't take long.",
     },
     subtitle1:
       'Your 24-word seed phrase can be used to generate multiple sub-wallets.',
@@ -1656,5 +1661,55 @@ export default {
     subtitle: 'All supported Hotspots use Bluetooth for initial setup.',
     body: 'Follow the manufacturer’s instructions to power up your device and enter Bluetooth pairing mode.',
     scanForHotspots: 'Scan for Hotspots',
+  },
+  CreateSeedPhrasePage: {
+    title: 'Create a Seed Phrase',
+    subtitle:
+      'Your 24-word seed phrase can be used to generate multiple wallets.',
+    disclaimer:
+      'It’s important seed phrases are written down, kept safe, and never shared.',
+    createSeedPhrase: 'Create Seed Phrase',
+  },
+  AddExistingWalletPage: {
+    title: 'Add Existing Wallet',
+    subtitle: 'Choose your method for importing wallet.',
+    secretPhrase: 'Secret Phrase',
+    twelveOrTwentyFourWords: '12 or 24 words',
+    privateKey: 'Private Key',
+    aStringOfCharacters: 'A string of characters',
+    commandLine: 'Command Line',
+    scanCli: 'Scan a CLI-generated QR',
+    connectKeystone: 'Connect Keystone',
+    scanKeystone: 'Scan a Keystone-generated QR',
+    pairLedger: 'Pair Ledger',
+    tapAButtonToScan: 'Tap a button to scan',
+  },
+  PairLedgerPage: {
+    title: 'Pair Ledger',
+    subtitle: 'Tap the button to scan for nearby Ledger wallets to pair with.',
+    scanForLedger: 'Scan for Ledger',
+  },
+  ConnectKeystonePage: {
+    title: 'Connect Keystone',
+    subtitle: 'Connect your Keystone by scanning the QR Code displayed',
+    scanQR: 'Scan QR',
+  },
+  WelcomeToHeliumScreen: {
+    title: 'Welcome to Helium',
+    subtitle:
+      'Helium enables the next-generation of infrastructures and services for billions of devices.',
+    createNewAccount: 'Create New Account',
+    loginIntoExistingAccount: 'Login into Existing Account',
+  },
+  CreateImportAccountScreen: {
+    title: 'Login Options',
+    subtitle: 'What method of logging in do you need?',
+    logIn: 'Log In',
+  },
+  NewAccountScreen: {
+    title: 'Wallet Security',
+    subtitle: 'Generate a 24-word passkey to secure your account.',
+    generateAPasskey: 'Generate a Passkey',
+    newAccount: 'New Account',
   },
 }

@@ -15,8 +15,8 @@ import { Keypair } from '@solana/web3.js'
 import animalName from 'angry-purple-tiger'
 import Config from 'react-native-config'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
-import CheckButton from '../../components/CheckButton'
-import Loading from '../../components/Loading'
+import CheckButton from '../../../../components/CheckButton'
+import Loading from '../../../../components/LoadingButton'
 
 const MOCK = Config.MOCK_IOT === 'true'
 

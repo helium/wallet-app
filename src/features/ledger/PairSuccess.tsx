@@ -1,44 +1,23 @@
-import { useNavigation } from '@react-navigation/native'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import Ledger from '@assets/svgs/ledger.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
 import { useColors } from '@config/theme/themeHooks'
-import { useAccountStorage } from '@config/storage/AccountStorageProvider'
-import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
-import { RootNavigationProp } from '../../app/rootTypes'
+import { useBottomSheet } from '@gorhom/bottom-sheet'
+import CheckButton from '@components/CheckButton'
 
 const PairSuccess = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<LedgerNavigatorNavigationProp>()
-  const rootNav = useNavigation<RootNavigationProp>()
   const { primaryText } = useColors()
-  const { hasAccounts } = useAccountStorage()
+  const { close } = useBottomSheet()
 
   const next = useCallback(() => {
-    if (hasAccounts) {
-      rootNav.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'ServiceSheetNavigator',
-          },
-        ],
-      })
-    } else {
-      navigation.navigate('DeviceScan')
-    }
-  }, [hasAccounts, rootNav, navigation])
+    close()
+  }, [close])
 
   return (
-    <Box
-      flex={1}
-      backgroundColor="primaryBackground"
-      marginTop="6"
-      paddingHorizontal="6"
-    >
+    <Box flex={1} marginTop="6" paddingHorizontal="6">
       <Box flex={1} justifyContent="center">
         <Box alignItems="center">
           <Ledger width={62} height={62} color={primaryText} />
@@ -50,15 +29,7 @@ const PairSuccess = () => {
           </Text>
         </Box>
       </Box>
-      <ButtonPressable
-        borderRadius="full"
-        backgroundColor="blue.light-500"
-        backgroundColorOpacityPressed={0.8}
-        onPress={next}
-        title={t('ledger.success.next')}
-        titleColor="base.black"
-        marginBottom="4"
-      />
+      <CheckButton onPress={next} />
     </Box>
   )
 }

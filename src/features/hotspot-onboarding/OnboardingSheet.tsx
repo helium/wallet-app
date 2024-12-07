@@ -151,7 +151,8 @@ const useHotspotOnboardingHook = (): HotspotOnboarding => {
     error: getDeviceInfoError,
   } = useAsyncCallback(async (qrCode: string) => {
     const client = await lazyGetClient()
-    const deviceInfo = await client.getDeviceInfo(qrCode)
+    const qrCodeB64 = Buffer.from(qrCode).toString('base64')
+    const deviceInfo = await client.getDeviceInfo(qrCodeB64)
 
     setOnboardDetails((o) => ({
       ...o,

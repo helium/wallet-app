@@ -1,26 +1,17 @@
 import React, { useCallback } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import {
-  CreateAccountNavigationProp,
-  CreateAccountStackParamList,
-} from './createAccountNavTypes'
 import ConfirmWordsScreen from './ConfirmWordsScreen'
 import { useOnboarding } from '../OnboardingProvider'
+import { useOnboardingSheet } from '../OnboardingSheet'
 
-type Route = RouteProp<
-  CreateAccountStackParamList,
-  'AccountEnterPassphraseScreen'
->
 const AccountEnterPassphraseScreen = () => {
-  const navigation = useNavigation<CreateAccountNavigationProp>()
-  const { params } = useRoute<Route>()
   const {
     onboardingData: { words },
   } = useOnboarding()
+  const { carouselRef } = useOnboardingSheet()
 
   const onWordsConfirmed = useCallback(() => {
-    navigation.navigate('AccountAssignScreen', params)
-  }, [navigation, params])
+    carouselRef?.current?.snapToNext()
+  }, [carouselRef])
 
   return (
     <ConfirmWordsScreen mnemonic={words || []} onComplete={onWordsConfirmed} />

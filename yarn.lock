@@ -5316,6 +5316,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:^8.0.6, @ledgerhq/devices@npm:^8.4.4":
+  version: 8.4.4
+  resolution: "@ledgerhq/devices@npm:8.4.4"
+  dependencies:
+    "@ledgerhq/errors": ^6.19.1
+    "@ledgerhq/logs": ^6.12.0
+    rxjs: ^7.8.1
+    semver: ^7.3.5
+  checksum: 370fb38d484665c92165580e285cc792e7af0bf114a5d1e855aec602c6e39592090d0de7a43addeb4c13622f734ddd4f25be82f07507e14550753ce5473eea66
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/devices@npm:^8.0.7":
   version: 8.0.7
   resolution: "@ledgerhq/devices@npm:8.0.7"
@@ -5328,6 +5340,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/errors@npm:^6.13.1, @ledgerhq/errors@npm:^6.19.1":
+  version: 6.19.1
+  resolution: "@ledgerhq/errors@npm:6.19.1"
+  checksum: f4e1cf0d6a5808c58235c54e2a1565556de8e683552bd94d97609f790e8c25226114bfa2af9914bb329c3e7c314585b60c66ddac8d8f8f1d072b7e791a889ad8
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/errors@npm:^6.14.0":
   version: 6.14.0
   resolution: "@ledgerhq/errors@npm:6.14.0"
@@ -5335,15 +5354,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-app-solana@npm:7.0.13":
-  version: 7.0.13
-  resolution: "@ledgerhq/hw-app-solana@npm:7.0.13"
+"@ledgerhq/hw-app-solana@npm:7.2.4":
+  version: 7.2.4
+  resolution: "@ledgerhq/hw-app-solana@npm:7.2.4"
   dependencies:
-    "@ledgerhq/errors": ^6.14.0
-    "@ledgerhq/hw-transport": ^6.28.8
-    "@ledgerhq/logs": ^6.10.1
+    "@ledgerhq/errors": ^6.19.1
+    "@ledgerhq/hw-transport": ^6.31.4
     bip32-path: ^0.4.2
-  checksum: 79ed44206d85c2332c92118ef97963bea02316209d3c02bfba806ca3a0a63f7269f9d925db5890cdaf8b54bb2baa4a8f60dd187a7e28ed7386bf210a30b88d78
+  checksum: 35b16aee49aa1394b793aeac07ea257c66c0a60f2b2e995c740a360a8c7f60912af37e075149926608add2eeddfb48b154c0ce39b40a9647ebb8b45bf7d786ce
   languageName: node
   linkType: hard
 
@@ -5357,7 +5375,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.27.2, @ledgerhq/hw-transport@npm:^6.28.8":
+"@ledgerhq/hw-transport@npm:^6.27.2":
   version: 6.28.8
   resolution: "@ledgerhq/hw-transport@npm:6.28.8"
   dependencies:
@@ -5368,6 +5386,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:^6.28.7, @ledgerhq/hw-transport@npm:^6.31.4":
+  version: 6.31.4
+  resolution: "@ledgerhq/hw-transport@npm:6.31.4"
+  dependencies:
+    "@ledgerhq/devices": ^8.4.4
+    "@ledgerhq/errors": ^6.19.1
+    "@ledgerhq/logs": ^6.12.0
+    events: ^3.3.0
+  checksum: bb5204513f2df3dbb646265954d1539bf6117cc08e73a4d1761ec10cb5f8255fe2b30112debc2433608de7260ee8878340c9f67690f5f62447a1466daa241ea7
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/logs@npm:^6.10.0, @ledgerhq/logs@npm:^6.10.1":
   version: 6.10.1
   resolution: "@ledgerhq/logs@npm:6.10.1"
@@ -5375,41 +5405,48 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/react-native-hid@npm:6.30.0":
-  version: 6.30.0
-  resolution: "@ledgerhq/react-native-hid@npm:6.30.0"
-  dependencies:
-    "@ledgerhq/devices": ^8.0.7
-    "@ledgerhq/errors": ^6.14.0
-    "@ledgerhq/hw-transport": ^6.28.8
-    "@ledgerhq/logs": ^6.10.1
-    rxjs: 6
-  peerDependencies:
-    react-native: "*"
-  checksum: 2f1eddc87a5549d2b8c92c870955ced3fb0a1ea0feb43ef94f58a411a7bab91966bd2f619fd1d941afb54277db56af363f8c9d882aee37e58b9ea0222894aa22
+"@ledgerhq/logs@npm:^6.12.0":
+  version: 6.12.0
+  resolution: "@ledgerhq/logs@npm:6.12.0"
+  checksum: 53fb9ceaf26b2a9fd6e7639b19119f4fef2f814d465fdd910e69c9486dce78137a1790e24f019a03bfabc87e19b2e6683f4da93a7fd203a61117a709fdf6484c
   languageName: node
   linkType: hard
 
-"@ledgerhq/react-native-hw-transport-ble@npm:6.29.5":
-  version: 6.29.5
-  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.29.5"
+"@ledgerhq/react-native-hid@npm:6.32.4":
+  version: 6.32.4
+  resolution: "@ledgerhq/react-native-hid@npm:6.32.4"
   dependencies:
-    "@ledgerhq/devices": ^8.0.7
-    "@ledgerhq/errors": ^6.14.0
-    "@ledgerhq/hw-transport": ^6.28.8
+    "@ledgerhq/devices": ^8.4.4
+    "@ledgerhq/errors": ^6.19.1
+    "@ledgerhq/hw-transport": ^6.31.4
+    "@ledgerhq/logs": ^6.12.0
+    rxjs: ^7.8.1
+  peerDependencies:
+    react-native: "*"
+  checksum: fd4597377fd70a19b43fdac03d6b90fbd7b5fa85f2bd5981556ea7161102dc1a16c4c90bb9efd6b8390ad8d35ad1e1614eb902720287a41ab525ae4f7b886904
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/react-native-hw-transport-ble@npm:6.29.4":
+  version: 6.29.4
+  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.29.4"
+  dependencies:
+    "@ledgerhq/devices": ^8.0.6
+    "@ledgerhq/errors": ^6.13.1
+    "@ledgerhq/hw-transport": ^6.28.7
     "@ledgerhq/logs": ^6.10.1
     invariant: ^2.2.4
     react-native-ble-plx: 2.0.3
     rxjs: 6
     uuid: ^3.4.0
-  checksum: afcf63412f6100691265b56e093bf292f3793b4caf98467a7c1bdae2d0a4154f1444b74b5243ce9238bec52c96b9990f2a3e92478863d64f51bb534cd26cfb67
+  checksum: a50e9e27746f55c968fc6571b6e93309aad8ad215ab093cab1c1a1cdc51bfb8f5ea73df205dfedf25915280b1823c462520d97b4afe8cea26125372ff3a77848
   languageName: node
   linkType: hard
 
-"@ledgerhq/types-devices@npm:^6.22.4":
-  version: 6.22.4
-  resolution: "@ledgerhq/types-devices@npm:6.22.4"
-  checksum: 37d1b7460210fabc57d034d8ee56c0699f2f1c59b0a4c2cd70eb9fadf8b6d80b8fb92ccfc37e574e258b20bd4b6d20a1faacb22c814dd0e01a68412a4f943f9e
+"@ledgerhq/types-devices@npm:^6.25.3":
+  version: 6.25.3
+  resolution: "@ledgerhq/types-devices@npm:6.25.3"
+  checksum: 1bfe60ed14752f0f8daabd7af8c0b4daa26182b29aac7329f5510c1cd5f0dcb3592133a3e331277cf48440a5236373c50e473597a715f9ab54bb0b3c540ac260
   languageName: node
   linkType: hard
 
@@ -6780,6 +6817,27 @@ __metadata:
     component-type: ^1.2.1
     join-component: ^1.1.0
   checksum: 8c4aacc903fb717619b69ca7eecf8d4a7b928661b0e835c9cd98f1b858a85ce62c348369ad9a52cb2df8df02578c0525a73fce4c69a42ac414d9554cc6be7117
+  languageName: node
+  linkType: hard
+
+"@shopify/react-native-skia@npm:^1.5.10":
+  version: 1.5.10
+  resolution: "@shopify/react-native-skia@npm:1.5.10"
+  dependencies:
+    canvaskit-wasm: 0.39.1
+    react-reconciler: 0.27.0
+  peerDependencies:
+    react: ">=18.0"
+    react-native: ">=0.64"
+    react-native-reanimated: ">=2.0.0"
+  peerDependenciesMeta:
+    react-native:
+      optional: true
+    react-native-reanimated:
+      optional: true
+  bin:
+    setup-skia-web: ./scripts/setup-canvaskit.js
+  checksum: fd91e642fad4624a93222fd2500f9cf5c079eab3485c84d768380924c5b5cd789cd295062904664243ec1c9c5ae88c6d1098b96f09e29569ab2989f32fcc3167
   languageName: node
   linkType: hard
 
@@ -9034,6 +9092,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@webgpu/types@npm:0.1.21":
+  version: 0.1.21
+  resolution: "@webgpu/types@npm:0.1.21"
+  checksum: b16ddc4d46a3c507a7f243f14b08b96ebbdb4495f9ea703441ad3525dd5e7e4a5f743f2879e51d74c78846f950e7d60c1349670f75cb7ca03ac3ddf51d46aabe
+  languageName: node
+  linkType: hard
+
 "@whatwg-node/fetch@npm:^0.10.0":
   version: 0.10.1
   resolution: "@whatwg-node/fetch@npm:0.10.1"
@@ -10981,6 +11046,15 @@ __metadata:
   version: 1.0.30001680
   resolution: "caniuse-lite@npm:1.0.30001680"
   checksum: 2641d2b18c5ab0a6663cb350c5adc81e5ede1a7677d1c7518a8053ada87bf6f206419e1820a2608f76fa5e4f7bea327cbe47df423783e571569a88c0ea645270
+  languageName: node
+  linkType: hard
+
+"canvaskit-wasm@npm:0.39.1":
+  version: 0.39.1
+  resolution: "canvaskit-wasm@npm:0.39.1"
+  dependencies:
+    "@webgpu/types": 0.1.21
+  checksum: da62926fc81f424a781e148b4d76bb5fc9b0188f136090b3b287522dc653cb002bfb406e2eff45b55fcc1cafbc7629f988e20ad6c777bab85c1bb09e1091a5e2
   languageName: node
   linkType: hard
 
@@ -15128,11 +15202,11 @@ __metadata:
     "@helium/wallet-link": 4.11.0
     "@jup-ag/api": ^6.0.6
     "@keystonehq/keystone-sdk": ^0.8.0
-    "@ledgerhq/hw-app-solana": 7.0.13
+    "@ledgerhq/hw-app-solana": 7.2.4
     "@ledgerhq/hw-transport-mocker": 6.27.2
-    "@ledgerhq/react-native-hid": 6.30.0
-    "@ledgerhq/react-native-hw-transport-ble": 6.29.5
-    "@ledgerhq/types-devices": ^6.22.4
+    "@ledgerhq/react-native-hid": 6.32.4
+    "@ledgerhq/react-native-hw-transport-ble": 6.29.4
+    "@ledgerhq/types-devices": ^6.25.3
     "@metaplex-foundation/js": ^0.19.5
     "@metaplex-foundation/mpl-bubblegum": 0.6.0
     "@metaplex-foundation/mpl-token-metadata": 2.10.0
@@ -15158,6 +15232,7 @@ __metadata:
     "@react-navigation/stack": 6.2.2
     "@reduxjs/toolkit": 1.9.1
     "@rnmapbox/maps": ^10.1.31
+    "@shopify/react-native-skia": ^1.5.10
     "@shopify/restyle": 2.4.2
     "@solana/spl-account-compression": 0.1.4
     "@solana/spl-memo": 0.2.3
@@ -21642,6 +21717,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-reconciler@npm:0.27.0":
+  version: 0.27.0
+  resolution: "react-reconciler@npm:0.27.0"
+  dependencies:
+    loose-envify: ^1.1.0
+    scheduler: ^0.21.0
+  peerDependencies:
+    react: ^18.0.0
+  checksum: c2ae111f150c2a46970182df12ea8254719fdfec5e26574711b1838fc37863c63671460a351570fd359c088d891e7bb0ff89023c2f7c1582393b57dd517b92c2
+  languageName: node
+  linkType: hard
+
 "react-redux@npm:8.0.4":
   version: 8.0.4
   resolution: "react-redux@npm:8.0.4"
@@ -22485,7 +22572,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.5.5":
+"rxjs@npm:^7.5.5, rxjs@npm:^7.8.1":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
   dependencies:
@@ -22607,6 +22694,15 @@ __metadata:
     loose-envify: ^1.1.0
     object-assign: ^4.1.1
   checksum: c4b35cf967c8f0d3e65753252d0f260271f81a81e427241295c5a7b783abf4ea9e905f22f815ab66676f5313be0a25f47be582254db8f9241b259213e999b8fc
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.21.0":
+  version: 0.21.0
+  resolution: "scheduler@npm:0.21.0"
+  dependencies:
+    loose-envify: ^1.1.0
+  checksum: 4f8285076041ed2c81acdd1faa987f1655fdbd30554bc667c1ea64743fc74fb3a04ca7d27454b3d678735df5a230137a3b84756061b43dc5796e80701b66d124
   languageName: node
   linkType: hard
 

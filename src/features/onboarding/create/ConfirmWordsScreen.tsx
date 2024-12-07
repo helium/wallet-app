@@ -1,68 +1,47 @@
-import React, { memo, useCallback, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
-import { Animated, FlatList } from 'react-native'
-import Box from '@components/Box'
+import { Animated, ScrollView } from 'react-native'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import CloseButton from '@components/CloseButton'
-import { Color } from '@config/theme/theme'
-import { useColors, usePaddingStyle } from '@config/theme/themeHooks'
+import { useSpacing } from '@config/theme/themeHooks'
 import { upperCase } from 'lodash'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import useHaptic from '@hooks/useHaptic'
-import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import ScrollBox from '@components/ScrollBox'
+import TouchableContainer from '@components/TouchableContainer'
+import Box from '@components/Box'
+import CheckButton from '@components/CheckButton'
 import PassphraseAutocomplete from '../import/PassphraseAutocomplete'
-
-const accentColors = [
-  'purple.500',
-  'blue.light-500',
-  'green.light-500',
-  'orange.500',
-  'pink.500',
-  'gray.500',
-  'orange.500',
-  'violet.200',
-  'green.500',
-  'cyan.500',
-  'base.white',
-  'error.500',
-] as Color[]
 
 type Props = {
   title?: string
   onComplete: () => void
-  onForgotWords?: () => void
   mnemonic: string[]
 }
 
 const ConfirmWordsScreen: React.FC<Props> = ({
   title,
   onComplete,
-  onForgotWords,
   mnemonic,
 }) => {
   const { triggerImpact } = useHaptic()
   const [wordIndex, setWordIndex] = useState(0)
   const shakeAnim = useRef(new Animated.Value(0))
   const { t } = useTranslation()
-  const navigation = useNavigation<CreateAccountNavigationProp>()
-  const flatlistRef = useRef<FlatList>(null)
-  const colors = useColors()
-  const flatListStyle = usePaddingStyle('4', ['left', 'right'])
-  const wordCount = mnemonic.length
+  const wordCount = useMemo(() => mnemonic.length, [mnemonic])
+
+  const spacing = useSpacing()
+  const scrollViewRef = useRef<ScrollView>(null)
+
   const [words, setWords] = useState<(string | null)[]>(
     new Array(wordCount).fill(null),
-  )
-
-  const getAccent = useCallback(
-    (idx) => {
-      return {
-        key: accentColors[idx % 12],
-        value: colors[accentColors[idx % 12]],
-      }
-    },
-    [colors],
   )
 
   const findTargetWord = useCallback(
@@ -114,18 +93,6 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     [wordCount, wordIndex, findTargetWord, wordFailure],
   )
 
-  const handleContentSizeChanged = useCallback(() => {
-    flatlistRef.current?.scrollToIndex({
-      index:
-        wordIndex === words.length - 1 || wordIndex < 2
-          ? wordIndex
-          : wordIndex - 1,
-      animated: true,
-    })
-  }, [wordIndex, words.length])
-
-  const keyExtractor = useCallback((_item, index) => index, [])
-
   const handleWordSelectedAtIndex = useCallback(
     (index: number) => () => {
       setWordIndex(index)
@@ -133,30 +100,67 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     [],
   )
 
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({
+      x: wordIndex * 83,
+      animated: true,
+    })
+  }, [wordIndex])
+
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: w }: { item: string | null; index: number }) => {
+      const relativeIndex = Math.max(0, index - wordIndex)
+
+      let opacity = 0.05
+
+      switch (relativeIndex) {
+        case 0:
+          opacity = 1
+          break
+        case 1:
+          opacity = 0.4
+          break
+        case 2:
+          opacity = 0.3
+          break
+        case 3:
+          opacity = 0.2
+          break
+        case 4:
+          opacity = 0.1
+          break
+        default:
+          opacity = 0.05
+      }
+
       return (
-        <TouchableOpacityBox
-          paddingHorizontal="2"
+        <TouchableContainer
           onPress={handleWordSelectedAtIndex(index)}
-          paddingVertical="5"
+          paddingVertical="1.5"
+          paddingHorizontal="3"
           alignItems="center"
+          backgroundColor={w ? 'primaryText' : 'primaryBackground'}
+          borderRadius="full"
+          marginStart={index === 0 ? '2xl' : undefined}
+          marginEnd={index === words.length - 1 ? '2xl' : undefined}
+          opacity={opacity}
+          marginBottom="xl"
+          minWidth={83}
+          pressableStyles={{ flex: undefined }}
         >
           <Text
-            variant="textMdRegular"
-            color={
-              w || wordIndex === index ? getAccent(index).key : 'secondaryText'
-            }
+            variant="textMdSemibold"
+            color={w ? 'primaryBackground' : 'secondaryText'}
           >
             {upperCase(
               w || t('accountImport.wordEntry.word', { ordinal: index + 1 }),
             )}
           </Text>
-        </TouchableOpacityBox>
+        </TouchableContainer>
       )
     },
-    [getAccent, handleWordSelectedAtIndex, t, wordIndex],
+    [handleWordSelectedAtIndex, t, wordIndex, words],
   )
 
   const handleOnPaste = useCallback((copiedContent: string) => {
@@ -169,21 +173,6 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     }
   }, [onComplete])
 
-  const onClose = useCallback(() => {
-    if (!navigation.canGoBack()) return
-
-    navigation.goBack()
-  }, [navigation])
-
-  const onPressForgot = useCallback(() => {
-    if (onForgotWords) {
-      onForgotWords()
-      return
-    }
-
-    onClose()
-  }, [onClose, onForgotWords])
-
   const handleOnComplete = useCallback(() => {
     if (words.every((w, idx) => mnemonic[idx] === w)) {
       onComplete()
@@ -193,63 +182,68 @@ const ConfirmWordsScreen: React.FC<Props> = ({
   }, [words, mnemonic, wordFailure, onComplete])
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      <Box width="100%" alignItems="flex-end">
-        <CloseButton onPress={onClose} />
-      </Box>
+    <ScrollBox contentContainerStyle={{ flex: 1 }}>
       <KeyboardAwareScrollView
         extraScrollHeight={80}
         enableOnAndroid
         keyboardShouldPersistTaps="always"
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flex: 1,
+          justifyContent: 'center',
+        }}
       >
+        <Text
+          variant="textXlMedium"
+          color="text.quaternary-500"
+          textAlign="center"
+          marginBottom="xl"
+        >
+          {title || t('accountSetup.confirm.title')}
+        </Text>
+        <Text
+          variant="displayMdSemibold"
+          textAlign="center"
+          marginBottom="xl"
+          fontSize={40}
+          lineHeight={40}
+          color="primaryText"
+        >
+          {t('accountSetup.confirm.subtitleOrdinal', {
+            ordinal: wordIndex + 1,
+          })}
+        </Text>
+        <Box marginTop="xl" flexDirection="row">
+          <ScrollBox
+            ref={scrollViewRef}
+            scrollEnabled
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              flexDirection: 'row',
+              overflow: 'visible',
+              gap: spacing.md,
+            }}
+          >
+            {words.map((w, i) => (
+              <Box key={w}>{renderItem({ item: w, index: i })}</Box>
+            ))}
+          </ScrollBox>
+        </Box>
         <Animated.View
           style={{ transform: [{ translateX: shakeAnim.current }] }}
         >
-          <Text
-            variant="textXlMedium"
-            color="secondaryText"
-            textAlign="center"
-            marginTop="4"
-          >
-            {title || t('accountSetup.confirm.title')}
-          </Text>
-          <Text
-            variant="displayMdRegular"
-            textAlign="center"
-            marginTop="4"
-            fontSize={40}
-            lineHeight={40}
-            color="primaryText"
-          >
-            {t('accountSetup.confirm.subtitleOrdinal', {
-              ordinal: wordIndex + 1,
-            })}
-          </Text>
-          <FlatList
-            data={words}
-            contentContainerStyle={flatListStyle}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            horizontal
-            ref={flatlistRef}
-            showsHorizontalScrollIndicator={false}
-            initialScrollIndex={wordIndex}
-            onContentSizeChange={handleContentSizeChanged}
-          />
           <PassphraseAutocomplete
             word={words[wordIndex]}
             complete={words.findIndex((w) => !w) === -1}
             onSelectWord={handleSelectWord}
             wordIdx={wordIndex}
-            totalWords={wordCount}
             onSubmit={handleOnComplete}
-            accentKey={getAccent(wordIndex).key}
-            accentValue={getAccent(wordIndex).value}
             onPaste={handleOnPaste}
           />
         </Animated.View>
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <TouchableOpacityBox onPress={onPressForgot} paddingVertical="15">
+        {__DEV__ && (
+          <TouchableOpacityBox onPress={onSkip}>
             <Text
               variant="textXlRegular"
               adjustsFontSizeToFit
@@ -257,25 +251,15 @@ const ConfirmWordsScreen: React.FC<Props> = ({
               textAlign="center"
               color="secondaryText"
             >
-              {t('accountSetup.confirm.forgot')}
+              {t('generic.skip')}
             </Text>
           </TouchableOpacityBox>
-          {__DEV__ && (
-            <TouchableOpacityBox onPress={onSkip}>
-              <Text
-                variant="textXlRegular"
-                adjustsFontSizeToFit
-                maxFontSizeMultiplier={1}
-                textAlign="center"
-                color="secondaryText"
-              >
-                {t('generic.skip')}
-              </Text>
-            </TouchableOpacityBox>
-          )}
-        </Box>
+        )}
       </KeyboardAwareScrollView>
-    </Box>
+      {words.every((w) => w !== null) && words.length === wordCount && (
+        <CheckButton onPress={handleOnComplete} />
+      )}
+    </ScrollBox>
   )
 }
 

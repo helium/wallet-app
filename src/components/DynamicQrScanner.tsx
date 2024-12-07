@@ -6,10 +6,8 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
-import { useColors } from '@config/theme/themeHooks'
 import { CameraScannerLayout } from './CameraScannerLayout'
 import Box from './Box'
-import BackScreen from './BackScreen'
 import ProgressBar from './ProgressBar'
 import Text from './Text'
 
@@ -21,7 +19,6 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const [hasPermission, setHasPermission] = useState<boolean>()
   const navigation = useNavigation()
   const { showOKCancelAlert } = useAlert()
-  const colors = useColors()
   const { t } = useTranslation()
 
   useEffect(() => {
@@ -62,7 +59,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   }
 
   return (
-    <BackScreen padding="none" edges={[]}>
+    <Box flex={1}>
       {/* if permission is not granted, show a black screen and notice alert modal */}
       {hasPermission !== true && <Box />}
 
@@ -73,7 +70,9 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
             barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
             style={{
               ...StyleSheet.absoluteFillObject,
-              backgroundColor: colors.primaryBackground,
+              backgroundColor: 'white',
+              borderTopStartRadius: 40,
+              borderTopEndRadius: 40,
             }}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
@@ -103,7 +102,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
           </Box>
         </Box>
       )}
-    </BackScreen>
+    </Box>
   )
 }
 export default DynamicQrScanner
