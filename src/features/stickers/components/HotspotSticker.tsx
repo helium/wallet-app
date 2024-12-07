@@ -1,13 +1,6 @@
 /* eslint-disable max-len */
 import React from 'react'
-import {
-  Group,
-  ImageSVG,
-  Shadow,
-  Circle,
-  Skia,
-  rect,
-} from '@shopify/react-native-skia'
+import { Group, ImageSVG, Skia } from '@shopify/react-native-skia'
 import type { StickerProps } from './Sticker'
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -45,18 +38,9 @@ const svg = Skia.SVG.MakeFromString(
 
 const size = { width: 213, height: 209 }
 
-const src = rect(0, 0, svg.width(), svg.height())
-const dst = rect(0, 0, size.width, size.height)
-
-const Sticker = ({ matrix, dragged }: StickerProps) => {
+const Sticker = ({ matrix }: StickerProps) => {
   return (
     <Group matrix={matrix}>
-      {/* {dragged?.value && ( */}
-      {/* <Circle cx={size.width / 2} cy={size.height / 2} r={size.width / 3}>
-        <Shadow dx={0} dy={0} blur={24} color="black" />
-        <Shadow dx={0} dy={0} blur={24} color="black" />
-      </Circle> */}
-      {/* )} */}
       <ImageSVG svg={svg} width={size.width} height={size.height} x={0} y={0} />
     </Group>
   )
