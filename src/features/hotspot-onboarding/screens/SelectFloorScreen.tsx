@@ -4,7 +4,7 @@ import Text from '@components/Text'
 import ImageBox from '@components/ImageBox'
 import { useTranslation } from 'react-i18next'
 import { Select } from '@components/Select'
-import CheckButton from '../components/CheckButton'
+import CheckButton from '../../../components/CheckButton'
 import { useHotspotOnboarding } from '../OnboardingSheet'
 
 export const SelectFloorScreen = () => {

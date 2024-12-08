@@ -1,14 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import { ActivityIndicator, Alert, Platform } from 'react-native'
 import { useAsync } from 'react-async-hook'
-import useAlert from '@hooks/useAlert'
 import { useColors } from '@config/theme/themeHooks'
 import Box from '@components/Box'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
-import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { getSecureAccount } from '@config/storage/secureStorage'
 import { SettingsNavigationProp } from './settingsTypes'
 import ConfirmWordsScreen from '../onboarding/create/ConfirmWordsScreen'
@@ -20,9 +18,7 @@ const ConfirmSignoutScreen = () => {
     WalletNavigationProp & SettingsNavigationProp
   >()
   const rootNav = useNavigation<RootNavigationProp>()
-  const { showOKCancelAlert } = useAlert()
   const { currentAccount, signOut, accounts } = useAccountStorage()
-  const { pin } = useAppStorage()
   const colors = useColors()
 
   const [mnemonic, setMnemonic] = useState<string[]>()
@@ -32,11 +28,6 @@ const ConfirmSignoutScreen = () => {
     const secureAccount = await getSecureAccount(currentAccount.address)
     setMnemonic(secureAccount?.mnemonic)
   }, [currentAccount])
-
-  const isPinRequired = useMemo(
-    () => pin !== undefined && pin.status !== 'off',
-    [pin],
-  )
 
   const onWordsConfirmed = useCallback(() => {
     navigation.goBack()
@@ -88,24 +79,6 @@ const ConfirmSignoutScreen = () => {
     )
   }, [accounts, currentAccount, navigation, rootNav, signOut, t])
 
-  const onForgotWords = useCallback(async () => {
-    navigation.goBack()
-    const decision = await showOKCancelAlert({
-      title: t('settings.confirmSignout.forgotAlert.title'),
-      message: t('settings.confirmSignout.forgotAlert.body'),
-    })
-    if (!decision) return
-
-    if (isPinRequired) {
-      navigation.push('SettingsConfirmPin', {
-        pin: pin?.value || '',
-        action: 'revealWords',
-      })
-    } else {
-      navigation.push('RevealWords')
-    }
-  }, [isPinRequired, navigation, pin, showOKCancelAlert, t])
-
   if (!mnemonic) return null
 
   return (
@@ -115,7 +88,6 @@ const ConfirmSignoutScreen = () => {
           title={t('settings.confirmSignout.title')}
           mnemonic={mnemonic}
           onComplete={onWordsConfirmed}
-          onForgotWords={onForgotWords}
         />
       ) : (
         <Box flex={1} justifyContent="center" alignItems="center">

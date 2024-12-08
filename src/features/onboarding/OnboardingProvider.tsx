@@ -10,13 +10,16 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { CSAccount } from '@config/storage/cloudStorage'
+import { CSAccount, LedgerDevice } from '@config/storage/cloudStorage'
+import { EncyptedAccountRouteParam } from './cli-import/CLIAccountNavigatorTypes'
 
 type OnboardingData = {
   account?: CSAccount
   words?: string[]
   netType: NetType.NetType
   paths: ResolvedPath[]
+  encryptedAccount?: EncyptedAccountRouteParam
+  ledgerDevice?: LedgerDevice
 }
 
 const useOnboardingHook = ({ baseUrl }: { baseUrl: string }) => {

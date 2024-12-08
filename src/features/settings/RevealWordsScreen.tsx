@@ -1,7 +1,6 @@
 import React, { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
-import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import Box from '@components/Box'
 import BackScreen from '@components/BackScreen'
@@ -13,7 +12,6 @@ import ScrollBox from '@components/ScrollBox'
 const RevealWordsScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { t } = useTranslation()
-  const navigation = useNavigation()
   const [mnemonic, setMnemonic] = useState<string[]>()
 
   useAsync(async () => {
@@ -58,7 +56,6 @@ const RevealWordsScreen = () => {
         <RevealWords
           mnemonic={mnemonic || []}
           ListHeaderComponent={ListHeaderComponent}
-          onDone={navigation.goBack}
         />
       </BackScreen>
     </ScrollBox>

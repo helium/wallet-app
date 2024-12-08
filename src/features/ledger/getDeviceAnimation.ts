@@ -21,6 +21,7 @@ export type Animations = {
   [modelId in DeviceModelId]: Record<string, Record<string, AnimationRecord>>
 }
 
+// @ts-expect-error Halp
 const animations: Animations = {
   nanoS: {
     plugAndPinCode: {

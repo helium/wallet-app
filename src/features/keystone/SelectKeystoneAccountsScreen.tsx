@@ -1,24 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-restricted-syntax */
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
 import { FlatList, RefreshControl } from 'react-native'
-import { useColors } from '@config/theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import CheckBox from '@react-native-community/checkbox'
 import TouchableContainer from '@components/TouchableContainer'
 import { humanReadable } from '@helium/spl-utils'
 import BN from 'bn.js'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { RootNavigationProp, RootStackParamList } from 'src/app/rootTypes'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { useOnboardingSheet } from '@features/onboarding/OnboardingSheet'
+import ForwardButton from '@components/ForwardButton'
+import ScrollBox from '@components/ScrollBox'
+import { NavBarHeight } from '@components/ServiceNavBar'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
 export type KeystoneAccountType = {
@@ -29,22 +30,21 @@ export type KeystoneAccountType = {
   balanceSol?: string
 }
 
-type SelectKeystoneAccountsScreenRouteProp = RouteProp<
-  RootStackParamList,
-  'SelectKeystoneAccounts'
->
-
 const SelectKeystoneAccountsScreen = () => {
+  const { bottom } = useSafeAreaInsets()
   const colors = useColors()
-  const route = useRoute<SelectKeystoneAccountsScreenRouteProp>()
-  const { setKeystoneOnboardingData } = useKeystoneOnboarding()
-  const { derivationAccounts } = route.params
-  const [selected, setSelected] = React.useState<Set<string>>(
-    new Set(derivationAccounts.map((item) => item.path)),
+  const spacing = useSpacing()
+  const {
+    setKeystoneOnboardingData,
+    keystoneOnboardingData: { derivationAccounts },
+  } = useKeystoneOnboarding()
+  const [selected, setSelected] = React.useState<string[]>(
+    derivationAccounts.map((item) => item.path).slice(0, 1),
   )
   const { t } = useTranslation()
   const [loading, setLoading] = useState<boolean>(true)
   const { connection } = useSolana()
+  const { carouselRef } = useOnboardingSheet()
   // storage the selected accounts
   const storageSelectedAccounts = () => {
     const selectedAccounts: KeystoneAccountType[] = Array.from(selected).map(
@@ -59,27 +59,18 @@ const SelectKeystoneAccountsScreen = () => {
         }
       },
     )
-    setKeystoneOnboardingData({
+    setKeystoneOnboardingData((o) => ({
+      ...o,
       accounts: selectedAccounts,
-    })
+    }))
   }
-  // next page
-  const navigation = useNavigation<RootNavigationProp>()
 
   const onNext = useCallback(() => {
     storageSelectedAccounts()
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    navigation.replace('ServiceSheetNavigator', {
-      screen: 'AccountsService',
-      params: {
-        screen: 'KeystoneNavigator',
-        params: {
-          screen: 'KeystoneAccountAssignScreen',
-        },
-      },
-    })
-  }, [navigation, selected])
+    carouselRef?.current?.snapToNext()
+  }, [selected, carouselRef])
 
   const fetchBalance = async (publicKey: string) => {
     if (connection) {
@@ -105,22 +96,30 @@ const SelectKeystoneAccountsScreen = () => {
     })
   }, [derivationAccounts])
 
+  const onSelect = useCallback(
+    (item: KeystoneAccountType) => () => {
+      if (selected.includes(item.path)) {
+        setSelected((s) => s.filter((path) => path !== item.path))
+      } else {
+        setSelected((s) => [...s, item.path])
+      }
+    },
+    [selected],
+  )
+
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: KeystoneAccountType; index: number }) => {
-      const onSelect = () => {
-        if (selected.has(item.path as string)) {
-          selected.delete(item.path as string)
-          setSelected(selected)
-        } else {
-          selected.add(item.path as string)
-          setSelected(selected)
-        }
-      }
+      const isFirstItem = index === 0
+      const isLastItem = index === derivationAccounts.length - 1
+      const borderTopStartRadius = isFirstItem ? '2xl' : 'none'
+      const borderTopEndRadius = isFirstItem ? '2xl' : 'none'
+      const borderBottomStartRadius = isLastItem ? '2xl' : 'none'
+      const borderBottomEndRadius = isLastItem ? '2xl' : 'none'
 
       return (
         <TouchableContainer
-          onPress={onSelect}
+          onPress={onSelect(item)}
           flexDirection="row"
           minHeight={72}
           alignItems="center"
@@ -128,6 +127,10 @@ const SelectKeystoneAccountsScreen = () => {
           paddingVertical="4"
           borderBottomColor="primaryBackground"
           borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 1}
+          borderTopStartRadius={borderTopStartRadius}
+          borderTopEndRadius={borderTopEndRadius}
+          borderBottomStartRadius={borderBottomStartRadius}
+          borderBottomEndRadius={borderBottomEndRadius}
         >
           <Box flex={1} paddingHorizontal="4">
             <Box flexDirection="column" justifyContent="flex-start">
@@ -161,7 +164,7 @@ const SelectKeystoneAccountsScreen = () => {
           </Box>
           <Box justifyContent="center" alignItems="center" marginEnd="xs">
             <CheckBox
-              value={selected.has(item.path as string)}
+              value={selected.includes(item.path)}
               style={{ height: 18, width: 18 }}
               tintColors={{
                 true: colors.primaryText,
@@ -182,62 +185,66 @@ const SelectKeystoneAccountsScreen = () => {
     },
     [colors, derivationAccounts, selected],
   )
-  return (
-    <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
-      <Box flex={1} backgroundColor="secondaryBackground" height="100%">
+
+  const Header = useCallback(() => {
+    return (
+      <Box gap="xl" mb="2xl">
         <Text
           color="primaryText"
           variant="displayMdSemibold"
-          mt="xl"
+          mt="2xl"
           textAlign="center"
-          fontSize={44}
-          lineHeight={44}
           mb="1"
         >
           {t('keystone.selectKeystoneAccounts.title')}
         </Text>
         <Text
           textAlign="center"
-          p="1"
-          variant="textSmRegular"
-          mb="xl"
-          color="secondaryText"
+          paddingHorizontal="2xl"
+          variant="textMdRegular"
+          color="text.quaternary-500"
         >
           {t('keystone.selectKeystoneAccounts.subtitle')}
         </Text>
+      </Box>
+    )
+  }, [t])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      padding: spacing['2xl'],
+      flex: 1,
+      paddingBottom: bottom + NavBarHeight + spacing.xl,
+    }
+  }, [spacing, bottom])
+
+  return (
+    <>
+      <ScrollBox
+        flex={1}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={loading}
+            onRefresh={() => {}}
+            title=""
+            tintColor={colors.primaryText}
+          />
+        }
+      >
         <FlatList
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={() => {}}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
+          contentContainerStyle={contentContainerStyle}
           data={derivationAccounts}
           renderItem={renderItem}
           keyExtractor={(item) => item.path as string}
           refreshing={loading}
+          ListHeaderComponent={Header}
           onEndReached={() => {}}
         />
-
-        <ButtonPressable
-          marginTop="xl"
-          borderRadius="full"
-          backgroundColor="primaryText"
-          backgroundColorDisabled="bg.disabled"
-          titleColorDisabled="text.disabled"
-          titleColor="primaryBackground"
-          disabled={selected.size === 0}
-          onPress={onNext}
-          title="Next"
-          marginBottom="4"
-          marginHorizontal="4"
-        />
-      </Box>
-    </SafeAreaBox>
+      </ScrollBox>
+      {selected.length > 0 && <ForwardButton onPress={onNext} />}
+    </>
   )
 }
 
-export default React.memo(SelectKeystoneAccountsScreen)
+export default SelectKeystoneAccountsScreen

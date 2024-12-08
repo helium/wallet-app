@@ -135,6 +135,8 @@ const HotspotDetails = () => {
   const deployedDate = useMemo(() => {
     const subDaoInfo = hotspot?.content?.metadata?.hotspot_infos[subDao]
 
+    if (!subDaoInfo?.created_at) return ''
+
     const date = new Date(subDaoInfo?.created_at)
 
     return t('HotspotDetails.deployed', {

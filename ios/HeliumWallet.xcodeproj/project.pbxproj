@@ -18,10 +18,10 @@
 		7AA19242A2DE47E8AFC56882 /* Figtree-Italic-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3440BC62530D461681D28DD7 /* Figtree-Italic-VariableFont_wght.ttf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */; };
-		962862712BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
-		962862722BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
-		962862732BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
-		962862742BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		962862712BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862722BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862732BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862742BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		96E4147327BEE4C300CE6EC1 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E4147227BEE4C300CE6EC1 /* NotificationService.swift */; };
 		96E4147727BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 96E4147027BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9D05C88528527DF0008198FC /* HeliumWalletWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D05C88428527DF0008198FC /* HeliumWalletWidgetProvider.swift */; };
@@ -45,6 +45,7 @@
 		9D7DB3B82850EC15004D9409 /* HeliumWalletWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 9D7DB3B42850EC14004D9409 /* HeliumWalletWidget.intentdefinition */; };
 		9D7DB3B92850EC15004D9409 /* HeliumWalletWidget.intentdefinition in Sources */ = {isa = PBXBuildFile; fileRef = 9D7DB3B42850EC14004D9409 /* HeliumWalletWidget.intentdefinition */; };
 		9D7DB3BC2850EC15004D9409 /* HeliumWalletWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 9D7DB3AE2850EC14004D9409 /* HeliumWalletWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9D932A5B2D052F67002F924E /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 9D932A5A2D052F67002F924E /* BootSplash.storyboard */; };
 		9DB500B5285D341D009C8341 /* HeliumBalanceWidgetSmallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B1285D341D009C8341 /* HeliumBalanceWidgetSmallView.swift */; };
 		9DB500B7285D341D009C8341 /* HeliumBalanceWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B3285D341D009C8341 /* HeliumBalanceWidget.swift */; };
 		9DB500B8285D341D009C8341 /* HeliumBalanceWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */; };
@@ -168,6 +169,7 @@
 		9D7DB3B52850EC15004D9409 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9D7DB3B72850EC15004D9409 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		9D8E25E5285CE4810079494A /* HeliumWalletWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HeliumWalletWidgetExtension.entitlements; sourceTree = "<group>"; };
+		9D932A5A2D052F67002F924E /* BootSplash.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = BootSplash.storyboard; path = ../assets/bootsplash/ios/BootSplash.storyboard; sourceTree = "<group>"; };
 		9DB500B1285D341D009C8341 /* HeliumBalanceWidgetSmallView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumBalanceWidgetSmallView.swift; sourceTree = "<group>"; };
 		9DB500B3285D341D009C8341 /* HeliumBalanceWidget.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumBalanceWidget.swift; sourceTree = "<group>"; };
 		9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumBalanceWidgetProvider.swift; sourceTree = "<group>"; };
@@ -195,7 +197,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DEC730E2CAB265100DA649B /* Mapbox in Frameworks */,
-				962862742BDCCAF70073839C /* BuildFile in Frameworks */,
+				962862742BDCCAF70073839C /* (null) in Frameworks */,
 				B3469F859005A4F164D08293 /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -205,7 +207,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DEC730B2CAB265100DA649B /* Mapbox in Frameworks */,
-				962862712BDCCAF70073839C /* BuildFile in Frameworks */,
+				962862712BDCCAF70073839C /* (null) in Frameworks */,
 				31B6D29CFC726A9C37946D71 /* libPods-HeliumWallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -215,7 +217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DEC730C2CAB265100DA649B /* Mapbox in Frameworks */,
-				962862722BDCCAF70073839C /* BuildFile in Frameworks */,
+				962862722BDCCAF70073839C /* (null) in Frameworks */,
 				C4EB4BD0A9AAABC0002181CC /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,7 +227,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9DEC730D2CAB265100DA649B /* Mapbox in Frameworks */,
-				962862732BDCCAF70073839C /* BuildFile in Frameworks */,
+				962862732BDCCAF70073839C /* (null) in Frameworks */,
 				9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */,
 				9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */,
 				9DCA365F28E6781D000F2A66 /* Charts in Frameworks */,
@@ -263,6 +265,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+				9D932A5A2D052F67002F924E /* BootSplash.storyboard */,
 				13B07FB71A68108700A75B9A /* main.mm */,
 				508E6F6B26FA22F400774B67 /* HeliumWallet-Bridging-Header.h */,
 				9609CFFE27F4DE6200CE3F93 /* RCTDateModule.h */,
@@ -634,6 +637,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				AB02F1297F7F91A0FD2532BD /* PrivacyInfo.xcprivacy in Resources */,
+				9D932A5B2D052F67002F924E /* BootSplash.storyboard in Resources */,
 				7AA19242A2DE47E8AFC56882 /* Figtree-Italic-VariableFont_wght.ttf in Resources */,
 				117516811AB44418A8ACF34F /* Figtree-VariableFont_wght.ttf in Resources */,
 			);
@@ -1200,10 +1204,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -1264,10 +1265,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

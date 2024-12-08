@@ -32,6 +32,8 @@ import { Platform, StyleProp, ViewStyle } from 'react-native'
 import { wh } from '@utils/layout'
 import { useSelector } from 'react-redux'
 import { RootState } from '@store/rootReducer'
+import StickersPage from '@features/stickers/StickersPage'
+import { StickerProvider } from '@features/stickers/StickerContext'
 import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
@@ -192,13 +194,16 @@ const ServiceSheet = ({
         onClose={onCloseSheet}
       />
       <ReAnimatedBox flexGrow={1} style={[sheetStyle]}>
+        <StickerProvider>
+          <StickersPage />
+        </StickerProvider>
         <HeliumBottomSheet
           ref={bottomSheetRef}
           onChange={onChangeSheet}
           index={0}
           snapPoints={snapPoints}
           backgroundStyle={backgroundStyle}
-          // TODO: Bring this back once we have the stickers page
+          // // TODO: Bring this back once we have the stickers page
           enablePanDownToClose={false}
         >
           <ThemeProvider theme={lightTheme}>

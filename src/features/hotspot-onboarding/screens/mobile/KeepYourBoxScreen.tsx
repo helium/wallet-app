@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import ImageBox from '@components/ImageBox'
 
 import { useHotspotOnboarding } from '../../OnboardingSheet'
-import ForwardButton from '../../components/ForwardButton'
+import ForwardButton from '../../../../components/ForwardButton'
 
 export const KeepYourBoxScreen = () => {
   const { t } = useTranslation()

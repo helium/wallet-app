@@ -3,9 +3,9 @@ import Text from '@components/Text'
 import Box from '@components/Box'
 import { useTranslation } from 'react-i18next'
 import TextInputNew from '@components/TextInputNew'
-import CheckButton from '../../components/CheckButton'
+import CheckButton from '../../../../components/CheckButton'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
-import Loading from '../../components/Loading'
+import Loading from '../../../../components/LoadingButton'
 
 const ManualEntryScreen = () => {
   const { t } = useTranslation()

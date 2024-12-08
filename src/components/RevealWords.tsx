@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import Text from '@components/Text'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import { FlatList } from 'react-native'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import CopyAddress from '@assets/svgs/copyAddress.svg'
@@ -16,10 +15,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 type Props = {
   mnemonic: string[]
-  onDone: () => void
   ListHeaderComponent?: React.ReactElement
 }
-const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
+const RevealWords = ({ mnemonic, ListHeaderComponent }: Props) => {
   const { t } = useTranslation()
   const spacing = useSpacing()
   const { secondaryText } = useColors()
@@ -40,28 +38,27 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
     ({ item, index }: { item: string; index: number }) => {
       return (
         <Box
-          borderRadius="xl"
-          padding="2"
+          borderRadius="full"
+          paddingHorizontal="3"
+          paddingVertical="2"
           marginHorizontal="2"
           marginBottom="4"
           flex={1}
           overflow="hidden"
-          backgroundColor="cardBackground"
+          backgroundColor="blue.dark-50"
           alignItems="center"
           justifyContent="center"
           flexDirection="row"
         >
           <Text
-            variant="textSmRegular"
-            fontSize={16}
-            color="primaryText"
+            variant="textLgSemibold"
+            color="blue.dark-500"
             maxFontSizeMultiplier={1}
             adjustsFontSizeToFit
           >{`${index + 1}. `}</Text>
           <Text
-            variant="textSmRegular"
-            fontSize={16}
-            color="primaryText"
+            variant="textLgSemibold"
+            color="blue.dark-500"
             maxFontSizeMultiplier={1}
             adjustsFontSizeToFit
           >
@@ -106,18 +103,9 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
           </Text>
         </TouchableOpacityBox>
         <Box flex={1} />
-        <ButtonPressable
-          height={60}
-          borderRadius="full"
-          backgroundColor="primaryText"
-          titleColor="primaryBackground"
-          title={t('settings.revealWords.next')}
-          marginBottom="4"
-          onPress={onDone}
-        />
       </Box>
     )
-  }, [handleCopySeedPhrase, secondaryText, t, onDone])
+  }, [handleCopySeedPhrase, secondaryText, t])
 
   return (
     <ReAnimatedBox flex={1} entering={FadeIn.delay(300)}>
@@ -135,7 +123,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
         ListFooterComponentStyle={{
           flexGrow: 1,
           justifyContent: 'flex-end',
-          paddingBottom: bottom,
+          paddingBottom: bottom + spacing['4xl'],
         }}
         renderItem={renderItem}
         contentContainerStyle={contentContainerStyle}

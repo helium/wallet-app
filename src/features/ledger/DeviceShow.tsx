@@ -1,30 +1,23 @@
-import React, { useCallback, memo, useState, useMemo, useEffect } from 'react'
-import { ActivityIndicator, Image, SectionList } from 'react-native'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import React, { useCallback, useState, useMemo, useEffect } from 'react'
+import { RefreshControl, SectionList } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useAsync } from 'react-async-hook'
 import Ledger from '@assets/svgs/ledger.svg'
-import ArrowRight from '@assets/svgs/arrowRight.svg'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
-import BackButton from '@components/BackButton'
 import { CSAccountVersion, CSAccounts } from '@config/storage/cloudStorage'
 import useLedger, { LedgerAccount } from '@hooks/useLedger'
-import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
 import {
   useAccountStorage,
   MAX_ACCOUNTS,
 } from '@config/storage/AccountStorageProvider'
-import {
-  LedgerNavigatorNavigationProp,
-  LedgerNavigatorStackParamList,
-} from './ledgerNavigatorTypes'
+import { useOnboarding } from '@features/onboarding/OnboardingProvider'
+import ScrollBox from '@components/ScrollBox'
+import { useOnboardingSheet } from '@features/onboarding/OnboardingSheet'
+import CheckButton from '@components/CheckButton'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
-
-type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceShow'>
 
 type SectionData = {
   section: {
@@ -33,10 +26,11 @@ type SectionData = {
   }
 }
 const DeviceShow = () => {
-  const homeNav = useNavigation<WalletNavigationProp>()
-  const navigation = useNavigation<LedgerNavigatorNavigationProp>()
-  const route = useRoute<Route>()
-  const { ledgerDevice } = route.params
+  const { onboardingData } = useOnboarding()
+  const ledgerDevice = useMemo(
+    () => onboardingData?.ledgerDevice,
+    [onboardingData],
+  )
   const { t } = useTranslation()
   const { accounts, upsertAccounts } = useAccountStorage()
   const {
@@ -55,6 +49,7 @@ const DeviceShow = () => {
     Record<string, boolean>
   >({})
 
+  const { carouselRef } = useOnboardingSheet()
   const spacing = useSpacing()
   const colors = useColors()
   const accountsToAdd = useMemo(
@@ -84,11 +79,6 @@ const DeviceShow = () => {
     return length + selectedCount > MAX_ACCOUNTS
   }, [accounts, selectedAccounts])
 
-  const canAddAccounts = useMemo(
-    () => !reachedAccountLimit && accountsToAdd.length,
-    [accountsToAdd.length, reachedAccountLimit],
-  )
-
   const SectionData = useMemo((): {
     title: string
     index: number
@@ -116,9 +106,9 @@ const DeviceShow = () => {
 
   const contentContainer = useMemo(
     () => ({
-      paddingBottom: spacing.xl,
+      padding: spacing['2xl'],
     }),
-    [spacing.xl],
+    [spacing],
   )
 
   const keyExtractor = useCallback(
@@ -144,30 +134,21 @@ const DeviceShow = () => {
   const PageHeader = useCallback(() => {
     return (
       <>
-        <BackButton
-          marginVertical="4"
-          paddingHorizontal="4"
-          marginHorizontal="2"
-          onPress={navigation.goBack}
-        />
         <Box
+          marginTop="2xl"
           marginBottom="8"
           flexDirection="row"
           justifyContent="center"
           alignItems="center"
         >
           <Ledger width={62} height={62} color={colors.primaryText} />
-          <Box marginHorizontal="4">
-            <ArrowRight color="primaryText" />
-          </Box>
-          <Image source={require('@assets/images/fingerprintGreen.png')} />
         </Box>
-        <Text variant="displaySmRegular" textAlign="center">
+        <Text variant="displayMdSemibold" textAlign="center">
           {t('ledger.show.title')}
         </Text>
         <Text
-          variant="textXlMedium"
-          color="green.light-500"
+          variant="textXlRegular"
+          color="text.quaternary-500"
           marginTop="6"
           textAlign="center"
         >
@@ -183,37 +164,20 @@ const DeviceShow = () => {
         >
           {t('accountImport.accountLimitLedger')}
         </Text>
-        {isScanning && (
-          <Box marginVertical="6" backgroundColor="primaryBackground">
-            <ActivityIndicator />
-          </Box>
-        )}
       </>
     )
-  }, [
-    colors.primaryText,
-    isScanning,
-    navigation.goBack,
-    t,
-    reachedAccountLimit,
-  ])
+  }, [colors, reachedAccountLimit, t])
 
   const renderSectionHeader = useCallback(
-    ({ section: { title, index } }: SectionData) => (
-      <Box backgroundColor="primaryBackground">
+    ({ section: { index } }: SectionData) => (
+      <Box>
         {index === 0 && PageHeader()}
         <Box
-          marginHorizontal="2"
           flexDirection="row"
           alignItems="center"
           paddingTop="8"
           paddingBottom="4"
-          paddingHorizontal="6"
         >
-          <Text flexGrow={1} variant="textSmRegular" fontWeight="bold">
-            {title}
-          </Text>
-
           {index === 0 && (
             <TouchableOpacity onPress={onSelectAll}>
               <Text variant="textSmRegular" fontWeight="bold">
@@ -254,16 +218,17 @@ const DeviceShow = () => {
     [existingLedgerAccounts, isScanning, ledgerAccounts, newLedgerAccounts, t],
   )
 
-  useAsync(async () => {
+  const { execute: scanLedger } = useAsync(async () => {
+    if (!ledgerDevice) return
     try {
       await updateLedgerAccounts(ledgerDevice)
     } catch (error) {
       // in this case, user is likely not on Helium app
 
       console.error(error)
-      navigation.navigate('DeviceScan', { error: error as Error })
+      carouselRef?.current?.snapToPrev()
     }
-  }, [])
+  }, [ledgerDevice, carouselRef])
 
   useEffect(() => {
     const accountAddresses = Object.keys(accounts || {})
@@ -292,12 +257,8 @@ const DeviceShow = () => {
 
     await upsertAccounts(accs)
 
-    navigation.navigate('PairSuccess')
-  }, [accountsToAdd, ledgerDevice, navigation, upsertAccounts])
-
-  const handleClose = useCallback(() => {
-    homeNav.navigate('TokensTabs')
-  }, [homeNav])
+    carouselRef?.current?.snapToNext()
+  }, [accountsToAdd, carouselRef, ledgerDevice, upsertAccounts])
 
   const onCheckboxToggled = useCallback(
     (account: LedgerAccount, value: boolean) => {
@@ -308,25 +269,23 @@ const DeviceShow = () => {
     [],
   )
 
-  if (!ledgerAccounts) {
-    return (
-      <Box
-        flex={1}
-        backgroundColor="primaryBackground"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <ActivityIndicator />
-      </Box>
-    )
-  }
-
   return (
-    <Box flex={1} backgroundColor="primaryBackground">
-      <Box height="89%">
+    <>
+      <ScrollBox
+        flex={1}
+        contentContainerStyle={contentContainer}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={isScanning}
+            onRefresh={scanLedger}
+            title=""
+            tintColor={colors.primaryText}
+          />
+        }
+      >
         <SectionList
           stickySectionHeadersEnabled={false}
-          contentContainerStyle={contentContainer}
           sections={SectionData}
           keyExtractor={keyExtractor}
           renderItem={(vals) => (
@@ -340,35 +299,10 @@ const DeviceShow = () => {
           renderSectionFooter={renderSectionFooter}
           initialNumToRender={100}
         />
-      </Box>
-      <Box
-        backgroundColor="primaryBackground"
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        borderTopColor="secondaryText"
-        borderTopWidth={1}
-        height="11%"
-      >
-        <ButtonPressable
-          marginTop="4"
-          borderRadius="full"
-          backgroundColor="bg.tertiary"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="bg.tertiary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="gray.800"
-          onPress={canAddAccounts ? handleNext : handleClose}
-          title={
-            canAddAccounts ? t('ledger.show.next') : t('ledger.show.close')
-          }
-          marginBottom="xs"
-          marginHorizontal="6"
-        />
-      </Box>
-    </Box>
+      </ScrollBox>
+      <CheckButton onPress={handleNext} />
+    </>
   )
 }
 
-export default memo(DeviceShow)
+export default DeviceShow

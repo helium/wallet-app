@@ -7,13 +7,12 @@ import TouchableOpacityBox, {
 
 type WordProps = {
   fullWord: string
-  matchingText: string
   onPress: (fullWord: string) => void
 }
 
 type Props = Omit<TouchableOpacityBoxProps, 'children' | 'onPress'> & WordProps
 
-const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
+const MatchingWord = ({ fullWord, onPress }: Props) => {
   const handlePress = useCallback(
     (selectedWord: string) => () => onPress(selectedWord),
     [onPress],
@@ -22,26 +21,14 @@ const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
     <TouchableOpacityBox
       justifyContent="center"
       alignContent="center"
-      marginLeft={{ none: '4', sm: '3' }}
-      paddingHorizontal={{ none: '4', sm: '3' }}
-      paddingVertical="4"
+      paddingHorizontal="4"
+      paddingVertical="1.5"
       onPress={handlePress(fullWord)}
+      backgroundColor="blue.dark-50"
+      borderRadius="full"
     >
-      <Text
-        variant="textMdRegular"
-        justifyContent="center"
-        alignContent="center"
-        color="primaryText"
-      >
-        {upperCase(matchingText)}
-        <Text
-          variant="textMdRegular"
-          alignContent="center"
-          justifyContent="center"
-          color="secondaryText"
-        >
-          {upperCase(fullWord.slice(matchingText.length))}
-        </Text>
+      <Text variant="textLgSemibold" color="blue.dark-500">
+        {upperCase(fullWord)}
       </Text>
     </TouchableOpacityBox>
   )

@@ -9,11 +9,9 @@ import TokensProvider from '@config/storage/TokensProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import globalStyles from '@config/theme/globalStyles'
 import { darkTheme } from '@config/theme/theme'
-import * as SplashLib from 'expo-splash-screen'
-import React, { useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Mapbox from '@rnmapbox/maps'
 import { LogBox, Platform, StatusBar, UIManager } from 'react-native'
-import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { OneSignal } from 'react-native-onesignal'
@@ -27,20 +25,15 @@ import { useNotificationStorage } from '@config/storage/NotificationStorageProvi
 import { BalanceProvider } from '@utils/Balance'
 import { useDeepLinking } from '@utils/linking'
 import KeystoneOnboardingProvider from '@features/keystone/KeystoneOnboardingProvider'
-import SplashScreen from '../components/SplashScreen'
+import BootSplash from 'react-native-bootsplash'
 import WalletConnectProvider from '../features/dappLogin/WalletConnectProvider'
 import LockScreen from '../features/lock/LockScreen'
 import InsufficientSolConversionModal from '../features/modals/InsufficientSolConversionModal'
 import WalletOnboardingProvider from '../features/onboarding/OnboardingProvider'
-import SecurityScreen from '../features/security/SecurityScreen'
 import useMount from '../hooks/useMount'
 import { navigationRef } from './NavigationHelper'
 import RootNavigator from './RootNavigator'
 import '../polyfill'
-
-SplashLib.preventAutoHideAsync().catch(() => {
-  /* reloading the app might trigger some race conditions, ignore them */
-})
 
 const App = () => {
   // Note that the Android SDK is slightly peculiar
@@ -66,15 +59,31 @@ const App = () => {
     'VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other functionality - use another VirtualizedList-backed container instead.',
   ])
 
-  const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
   const { setOpenedNotification } = useNotificationStorage()
+  const [navReady, setNavReady] = useState(false)
+  const splashHidden = useRef(false)
 
   const linking = useDeepLinking()
 
   const themeObject = useMemo(() => {
     return darkTheme
   }, [])
+
+  const onReady = useCallback(async () => {
+    setNavReady(true)
+  }, [])
+
+  useEffect(() => {
+    if (splashHidden.current) {
+      return
+    }
+
+    if (navReady) {
+      splashHidden.current = true
+      BootSplash.hide({ fade: true })
+    }
+  }, [navReady, splashHidden])
 
   if (Platform.OS === 'android') {
     if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -125,53 +134,44 @@ const App = () => {
             <PortalProvider>
               <BottomSheetModalProvider>
                 <SolanaProvider>
-                  <SplashScreen>
-                    <WalletOnboardingProvider
-                      baseUrl={Config.ONBOARDING_API_URL}
-                    >
-                      <KeystoneOnboardingProvider>
-                        <WalletConnectProvider>
-                          <HotspotOnboardingProvider
-                            baseUrl={Config.ONBOARDING_API_URL}
-                          >
-                            <LockScreen>
-                              {accountsRestored && (
-                                <>
-                                  <NavigationContainer
-                                    theme={navTheme}
-                                    linking={linking}
-                                    ref={navigationRef}
-                                  >
-                                    <BalanceProvider>
-                                      <TokensProvider>
-                                        <ModalProvider>
-                                          <WalletSignProvider>
-                                            <GovernanceProvider>
-                                              <AutoGasBanner />
-                                              <RootNavigator />
+                  <WalletOnboardingProvider baseUrl={Config.ONBOARDING_API_URL}>
+                    <KeystoneOnboardingProvider>
+                      <WalletConnectProvider>
+                        <HotspotOnboardingProvider
+                          baseUrl={Config.ONBOARDING_API_URL}
+                        >
+                          <LockScreen>
+                            {accountsRestored && (
+                              <>
+                                <NavigationContainer
+                                  theme={navTheme}
+                                  linking={linking}
+                                  ref={navigationRef}
+                                  onReady={onReady}
+                                >
+                                  <BalanceProvider>
+                                    <TokensProvider>
+                                      <ModalProvider>
+                                        <WalletSignProvider>
+                                          <GovernanceProvider>
+                                            <AutoGasBanner />
+                                            <RootNavigator />
 
-                                              {/* place app specific modals here */}
-                                              <InsufficientSolConversionModal />
-                                            </GovernanceProvider>
-                                          </WalletSignProvider>
-                                        </ModalProvider>
-                                      </TokensProvider>
-                                    </BalanceProvider>
-                                  </NavigationContainer>
-                                  <SecurityScreen
-                                    visible={
-                                      appState !== 'active' &&
-                                      appState !== 'unknown'
-                                    }
-                                  />
-                                </>
-                              )}
-                            </LockScreen>
-                          </HotspotOnboardingProvider>
-                        </WalletConnectProvider>
-                      </KeystoneOnboardingProvider>
-                    </WalletOnboardingProvider>
-                  </SplashScreen>
+                                            {/* place app specific modals here */}
+                                            <InsufficientSolConversionModal />
+                                          </GovernanceProvider>
+                                        </WalletSignProvider>
+                                      </ModalProvider>
+                                    </TokensProvider>
+                                  </BalanceProvider>
+                                </NavigationContainer>
+                              </>
+                            )}
+                          </LockScreen>
+                        </HotspotOnboardingProvider>
+                      </WalletConnectProvider>
+                    </KeystoneOnboardingProvider>
+                  </WalletOnboardingProvider>
                 </SolanaProvider>
               </BottomSheetModalProvider>
             </PortalProvider>
