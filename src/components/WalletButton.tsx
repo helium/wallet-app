@@ -12,9 +12,9 @@ import { useTranslation } from 'react-i18next'
 import { useBottomSheet } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import { HotspotServiceNavigationProp } from 'src/app/services/HotspotService'
-import Loading from './Loading'
-import { useHotspotOnboarding } from '../OnboardingSheet'
-import { HmhOnboardParams } from '../OnboardingV3Client'
+import Loading from './LoadingButton'
+import { useHotspotOnboarding } from '../features/hotspot-onboarding/OnboardingSheet'
+import { HmhOnboardParams } from '../features/hotspot-onboarding/OnboardingV3Client'
 
 const WalletButton = () => {
   const colors = useColors()

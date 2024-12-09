@@ -1,6 +1,5 @@
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import { View } from 'react-native'
-import * as SplashLib from 'expo-splash-screen'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -44,7 +43,7 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
 
   const onImageLoaded = useCallback(async () => {
     setImageReady(true)
-    SplashLib.hideAsync()
+    // SplashLib.hideAsync()
   }, [])
 
   useEffect(() => {

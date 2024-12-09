@@ -1,46 +1,40 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { upperCase } from 'lodash'
 import wordlist from '@utils/constants/wordlists/english.json'
 import TextInput from '@components/TextInput'
 import Box from '@components/Box'
-import FabButton from '@components/FabButton'
 import usePrevious from '@hooks/usePrevious'
-import { Color } from '@config/theme/theme'
 import Clipboard from '@react-native-community/clipboard'
 import ScrollBox from '@components/ScrollBox'
 import { ScrollView } from 'react-native-gesture-handler'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import MatchingWord from './MatchingWord'
 
 type Props = {
   onSelectWord: (fullWord: string, idx: number) => void
   wordIdx: number
-  totalWords: number
   onSubmit: () => void
   complete: boolean
   word: string | null
-  accentKey: Color
-  accentValue: string
   onPaste: (copiedContent: string) => void
 }
 
 const PassphraseAutocomplete = ({
   onSelectWord,
   wordIdx,
-  totalWords,
   onSubmit,
   complete,
   word: propsWord,
-  accentKey,
-  accentValue,
   onPaste,
 }: Props) => {
   const [word, setWord] = useState('')
   const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
-  const ordinal = wordIdx < totalWords ? t(`ordinals.${wordIdx}`) : ''
   const matchingListRef = useRef<ScrollView>(null)
   const prevIndex = usePrevious(wordIdx)
+  const colors = useColors()
+  const spacing = useSpacing()
 
   useEffect(() => {
     if (wordIdx === prevIndex && !complete) return
@@ -97,65 +91,58 @@ const PassphraseAutocomplete = ({
     handleWordSelect(matchingWords[0])
   }, [complete, handleWordSelect, matchingWords, onSubmit, word])
 
-  const inputStyle = useMemo(() => {
-    return { color: accentValue, borderBottomColor: accentValue }
-  }, [accentValue])
-
   return (
     <>
-      <Box marginHorizontal="6">
-        <TextInput
-          textInputProps={{
-            placeholder: t('accountImport.wordEntry.placeholder', {
-              ordinal,
-            }),
-            onChangeText,
-            onSubmitEditing: handleSubmit,
-            value: word,
-            keyboardAppearance: 'dark',
-            autoCorrect: false,
-            autoComplete: 'off',
-            blurOnSubmit: false,
-            returnKeyType: 'next',
-            autoFocus: true,
-            autoCapitalize: 'characters',
-          }}
-          variant="underline"
-          marginBottom="2"
-          style={inputStyle}
-        />
-
-        {complete && (
-          <Box position="absolute" right={0}>
-            <FabButton
-              size={36}
-              onPress={onSubmit}
-              icon="arrowRight"
-              backgroundColor={accentKey}
-              backgroundColorPressed="primaryBackground"
-              iconColor="primaryBackground"
-              backgroundColorOpacityPressed={0.1}
-            />
-          </Box>
-        )}
+      <Box marginHorizontal="2xl">
+        <Box
+          backgroundColor="cardBackground"
+          paddingVertical="xl"
+          paddingEnd="3xl"
+          borderRadius="2xl"
+        >
+          <TextInput
+            fontWeight="600"
+            textInputProps={{
+              placeholder: t('accountImport.wordEntry.placeholder', {
+                ordinal: wordIdx + 1,
+              }),
+              onChangeText,
+              onSubmitEditing: handleSubmit,
+              value: word,
+              keyboardAppearance: 'dark',
+              autoCorrect: false,
+              autoComplete: 'off',
+              blurOnSubmit: false,
+              returnKeyType: 'next',
+              autoFocus: false,
+              autoCapitalize: 'characters',
+              placeholderTextColor: colors['text.placeholder'],
+            }}
+            variant="transparentSmall"
+          />
+        </Box>
       </Box>
-      <Box minHeight={53}>
+      <Box marginTop="xl">
         <ScrollBox
           ref={matchingListRef}
           horizontal
           keyboardShouldPersistTaps="always"
           keyboardDismissMode="none"
           showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: spacing.md,
+          }}
         >
           {matchingWords.length <= 20 &&
             matchingWords.map((matchingWord, idx) => (
-              <MatchingWord
-                // eslint-disable-next-line react/no-array-index-key
-                key={`${matchingWord}.${idx}`}
-                fullWord={matchingWord}
-                matchingText={word.toLowerCase()}
-                onPress={handleWordSelect}
-              />
+              <Box paddingStart={idx === 0 ? '2xl' : '0'}>
+                <MatchingWord
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`${matchingWord}.${idx}`}
+                  fullWord={matchingWord}
+                  onPress={handleWordSelect}
+                />
+              </Box>
             ))}
         </ScrollBox>
       </Box>

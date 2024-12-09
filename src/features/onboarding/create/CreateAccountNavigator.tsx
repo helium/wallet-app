@@ -4,19 +4,15 @@ import {
   StackNavigationOptions,
 } from '@react-navigation/stack'
 import { memo } from 'react'
-import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import AccountCreatePassphraseScreen from './AccountCreatePassphraseScreen'
 import AccountEnterPassphraseScreen from './AccountEnterPassphraseScreen'
 import { CreateAccountStackParamList } from './createAccountNavTypes'
 import AccountAssignScreen from '../AccountAssignScreen'
 import AccountCreatePinScreen from '../AccountCreatePinScreen'
 import AccountConfirmPinScreen from '../AccountConfirmPinScreen'
-import AccountCreateStartScreen from './AccountCreateStartScreen'
 
 const CreateAccountStack = createStackNavigator<CreateAccountStackParamList>()
 const CreateAccountNavigator = () => {
-  const { sortedAccounts } = useAccountStorage()
-
   const screenOptions = React.useMemo(
     () =>
       ({
@@ -26,12 +22,6 @@ const CreateAccountNavigator = () => {
   )
   return (
     <CreateAccountStack.Navigator screenOptions={screenOptions}>
-      {sortedAccounts.length === 0 && (
-        <CreateAccountStack.Screen
-          name="AccountCreateStartScreen"
-          component={AccountCreateStartScreen}
-        />
-      )}
       <CreateAccountStack.Screen
         name="AccountCreatePassphraseScreen"
         component={AccountCreatePassphraseScreen}

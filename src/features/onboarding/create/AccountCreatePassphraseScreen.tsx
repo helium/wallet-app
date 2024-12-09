@@ -1,43 +1,30 @@
-import Close from '@assets/svgs/close.svg'
 import InfoError from '@assets/svgs/infoError.svg'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import RevealWords from '@components/RevealWords'
 import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useNavigation } from '@react-navigation/native'
-import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import {
   DEFAULT_DERIVATION_PATH,
   createKeypair,
 } from '@config/storage/secureStorage'
 import { useColors } from '@config/theme/themeHooks'
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
+import ForwardButton from '@components/ForwardButton'
 import { useOnboarding } from '../OnboardingProvider'
-import { OnboardingNavigationProp } from '../onboardingTypes'
-import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import { useOnboardingSheet } from '../OnboardingSheet'
 
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
-  const { hasAccounts } = useAccountStorage()
   const colors = useColors()
   const { setOnboardingData } = useOnboarding()
-  const parentNav = useNavigation<OnboardingNavigationProp>()
-  const navigation = useNavigation<CreateAccountNavigationProp>()
-  const { result: defaultKeypair, loading } = useAsync(
-    async () => createKeypair({ use24Words: true }),
-    [],
-  )
-
-  const navToTop = useCallback(() => {
-    if (hasAccounts) {
-      parentNav.popToTop()
-    } else {
-      parentNav.navigate('CreateImport')
-    }
-  }, [hasAccounts, parentNav])
+  const { carouselRef } = useOnboardingSheet()
+  const { result: defaultKeypair, loading } = useAsync(async () => {
+    // wait 0.5 seconds because creating keypair will freeze the UI and we want to show the loading state
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    return createKeypair({ use24Words: true })
+  }, [])
 
   const navNext = useCallback(() => {
     if (!defaultKeypair) return
@@ -52,30 +39,24 @@ const AccountCreatePassphraseScreen = () => {
         },
       ],
     }))
-    navigation.navigate('AccountEnterPassphraseScreen', {
-      secretKey: Buffer.from(defaultKeypair.keypair.secretKey).toString(
-        'base64',
-      ),
-      words: defaultKeypair.words,
-      derivationPath: DEFAULT_DERIVATION_PATH,
-    })
-  }, [defaultKeypair, navigation, setOnboardingData])
+    // navigation.navigate('AccountEnterPassphraseScreen', {
+    //   secretKey: Buffer.from(defaultKeypair.keypair.secretKey).toString(
+    //     'base64',
+    //   ),
+    //   words: defaultKeypair.words,
+    //   derivationPath: DEFAULT_DERIVATION_PATH,
+    // })
+    carouselRef?.current?.snapToNext()
+  }, [defaultKeypair, carouselRef, setOnboardingData])
 
   const ListHeaderComponent = useMemo(() => {
     return (
-      <>
-        <TouchableOpacityBox
-          padding="6"
-          onPress={navToTop}
-          alignItems="flex-end"
-        >
-          <Close color={colors.primaryText} height={16} width={16} />
-        </TouchableOpacityBox>
+      <Box marginTop="6xl">
         <Box justifyContent="center" alignItems="center" marginBottom="8">
-          <InfoError />
+          <InfoError color={colors['blue.dark-500']} />
         </Box>
         <Text
-          variant="displayMdRegular"
+          variant="displayMdSemibold"
           textAlign="center"
           fontSize={40}
           lineHeight={40}
@@ -84,8 +65,8 @@ const AccountCreatePassphraseScreen = () => {
           {t('accountSetup.passphrase.title')}
         </Text>
         <Text
-          variant="textXlMedium"
-          color="secondaryText"
+          variant="textXlRegular"
+          color="text.quaternary-500"
           textAlign="center"
           marginTop="4"
           marginHorizontal="6"
@@ -94,37 +75,54 @@ const AccountCreatePassphraseScreen = () => {
         </Text>
         <Text
           variant="textXlMedium"
-          color="error.500"
+          color="blue.dark-500"
           textAlign="center"
           marginVertical="6"
           marginHorizontal="8"
         >
           {t('accountSetup.passphrase.subtitle2')}
         </Text>
-      </>
+      </Box>
     )
-  }, [colors.primaryText, navToTop, t])
+  }, [t, colors])
+
+  if (loading) {
+    return (
+      <Box
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+        gap="xl"
+        padding="2xl"
+      >
+        <CircleLoader type="blue" loaderSize={60} />
+        <Text
+          variant="displayMdSemibold"
+          color="primaryText"
+          textAlign="center"
+        >
+          {t('accountSetup.passphrase.generatingWallet')}
+        </Text>
+        <Text
+          variant="textXlRegular"
+          color="text.quaternary-500"
+          textAlign="center"
+        >
+          {t('accountSetup.passphrase.thisWontTakeLong')}
+        </Text>
+      </Box>
+    )
+  }
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      {loading ? (
-        <Box
-          height="100%"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <CircleLoader />
-        </Box>
-      ) : (
-        <RevealWords
-          ListHeaderComponent={ListHeaderComponent}
-          mnemonic={defaultKeypair?.words || []}
-          onDone={navNext}
-        />
-      )}
+    <Box flex={1}>
+      <RevealWords
+        ListHeaderComponent={ListHeaderComponent}
+        mnemonic={defaultKeypair?.words || []}
+      />
+      <ForwardButton onPress={navNext} />
     </Box>
   )
 }
 
-export default memo(AccountCreatePassphraseScreen)
+export default AccountCreatePassphraseScreen

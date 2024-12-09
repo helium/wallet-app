@@ -1,14 +1,11 @@
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import FabButton from '@components/FabButton'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import CheckBox from '@react-native-community/checkbox'
-import { useNavigation } from '@react-navigation/native'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
@@ -20,16 +17,12 @@ import { PublicKey } from '@solana/web3.js'
 import Address from '@helium/address'
 import { ED25519_KEY_TYPE } from '@helium/address/build/KeyTypes'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
-import { RootNavigationProp } from '../../app/rootTypes'
-import { ImportAccountNavigationProp } from '../onboarding/import/importAccountNavTypes'
-import { CreateAccountNavigationProp } from '../onboarding/create/createAccountNavTypes'
+import { useBottomSheet } from '@gorhom/bottom-sheet'
+import LoadingButton from '@components/LoadingButton'
+import CheckButton from '@components/CheckButton'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
 const KeystoneAccountAssignScreen = () => {
-  const onboardingNav = useNavigation<
-    ImportAccountNavigationProp & CreateAccountNavigationProp
-  >()
-  const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const [alias, setAlias] = useState('')
   const { keystoneOnboardingData } = useKeystoneOnboarding()
@@ -37,6 +30,7 @@ const KeystoneAccountAssignScreen = () => {
   const spacing = useSpacing()
   const colors = useColors()
   const { hasAccounts, accounts } = useAccountStorage()
+  const { close } = useBottomSheet()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
   const existingNames = useMemo(
@@ -78,22 +72,7 @@ const KeystoneAccountAssignScreen = () => {
       }),
     )
     accountStorage.upsertAccounts(accountBulk)
-
-    if (hasAccounts) {
-      rootNav.reset({
-        index: 0,
-        routes: [{ name: 'ServiceSheetNavigator' }],
-      })
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      onboardingNav.replace('CreateAccount', {
-        screen: 'AccountCreatePinScreen',
-        params: {
-          pinReset: true,
-        },
-      })
-    }
+    close()
   })
 
   const onCheckboxToggled = useCallback(
@@ -102,11 +81,7 @@ const KeystoneAccountAssignScreen = () => {
   )
 
   return (
-    <SafeAreaBox
-      backgroundColor="secondaryBackground"
-      flex={1}
-      paddingHorizontal="8"
-    >
+    <SafeAreaBox flex={1} paddingHorizontal="8">
       <KeyboardAvoidingView
         keyboardVerticalOffset={insets.top + spacing[6]}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
@@ -114,7 +89,7 @@ const KeystoneAccountAssignScreen = () => {
       >
         <Box alignItems="center" flex={1}>
           <Text
-            variant="displayMdRegular"
+            variant="displayMdSemibold"
             textAlign="center"
             fontSize={44}
             lineHeight={44}
@@ -131,8 +106,6 @@ const KeystoneAccountAssignScreen = () => {
             width="100%"
             marginTop="8"
             flexDirection="row"
-            borderColor="border.primary"
-            borderWidth={1}
           >
             <AccountIcon
               size={40}
@@ -202,21 +175,10 @@ const KeystoneAccountAssignScreen = () => {
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
-          {loading ? (
-            <CircleLoader color="primaryText" />
-          ) : (
-            <FabButton
-              onPress={handlePress}
-              icon="arrowRight"
-              iconColor="primaryBackground"
-              disabled={!alias || existingNames?.has(alias)}
-              backgroundColor="primaryText"
-              backgroundColorPressed="primaryBackground"
-              backgroundColorOpacityPressed={0.1}
-            />
-          )}
         </Box>
       </KeyboardAvoidingView>
+      {loading && <LoadingButton />}
+      {!loading && alias && <CheckButton onPress={handlePress} />}
     </SafeAreaBox>
   )
 }
@@ -225,4 +187,4 @@ const styles = StyleSheet.create({
   container: { width: '100%', flex: 1 },
 })
 
-export default memo(KeystoneAccountAssignScreen)
+export default KeystoneAccountAssignScreen

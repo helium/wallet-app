@@ -45,7 +45,7 @@ import { useBottomSheet } from '@gorhom/bottom-sheet'
 import { useNavigation } from '@react-navigation/native'
 import { HotspotServiceNavigationProp } from 'src/app/services/HotspotService'
 import { useSolana } from '@features/solana/SolanaProvider'
-import Loading from '../../components/Loading'
+import Loading from '../../../../components/LoadingButton'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 
 const REQUIRED_SOL = new BN((0.00089088 + 0.00001) * LAMPORTS_PER_SOL)

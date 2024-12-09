@@ -1,16 +1,12 @@
-import BackButton from '@components/BackButton'
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import { Mnemonic } from '@helium/crypto-react-native'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
-import React, { memo, useCallback, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import RNSodium from 'react-native-sodium'
@@ -19,23 +15,24 @@ import {
   DEFAULT_DERIVATION_PATH,
   createKeypair,
 } from '@config/storage/secureStorage'
-import { RootNavigationProp } from '../../../app/rootTypes'
+import CheckButton from '@components/CheckButton'
+import LoadingButton from '@components/LoadingButton'
+import { KeyboardAvoidingView } from 'react-native'
+import PrivateKey from '@assets/svgs/privateKey.svg'
 import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
-import { OnboardingStackParamList } from '../onboardingTypes'
-
-type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
+import { useOnboardingSheet } from '../OnboardingSheet'
 
 const ImportPrivateKey = () => {
-  const { hasAccounts, accounts } = useAccountStorage()
-  const navigation = useNavigation<RootNavigationProp>()
-  const route = useRoute<Route>()
+  const { accounts } = useAccountStorage()
   const { t } = useTranslation()
-  const encodedKey = route.params.key
   const { setOnboardingData, onboardingData } = useOnboarding()
+  const { carouselRef } = useOnboardingSheet()
   const [publicKey, setPublicKey] = useState<string>()
   const [password, setPassword] = useState<string>()
   const [error, setError] = useState<string>()
+  // TODO: Get from onboardingData or just delete
+  const encodedKey = undefined
 
   const createAccount = useCallback(
     async ({ keypair, words }: { keypair: Keypair; words?: string[] }) => {
@@ -136,53 +133,13 @@ const ImportPrivateKey = () => {
     await decodePrivateKey()
   }, [decodePrivateKey])
 
-  const onBack = useCallback(() => {
-    if (navigation.canGoBack()) {
-      navigation.goBack()
-    } else if (hasAccounts) {
-      navigation.replace('ServiceSheetNavigator')
-    } else {
-      navigation.replace('OnboardingNavigator')
-    }
-  }, [hasAccounts, navigation])
-
   const onImportAccount = useCallback(() => {
-    function getRoute(subRoute: string) {
-      if (hasAccounts) {
-        return [
-          'ServiceSheetNavigator',
-          {
-            screen: 'AccountsService',
-            params: {
-              screen: 'ReImportAccountNavigator',
-              params: {
-                screen: subRoute,
-              },
-            },
-          },
-        ]
-      }
-
-      return [
-        'OnboardingNavigator',
-        {
-          screen: 'ImportAccount',
-          params: {
-            screen: subRoute,
-          },
-        },
-      ]
-    }
     if (onboardingData.words) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace(...getRoute('ImportSubAccounts'))
+      carouselRef?.current?.snapToNext()
     } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace(...getRoute('AccountAssignScreen'))
+      carouselRef?.current?.snapToItem(3)
     }
-  }, [onboardingData.words, hasAccounts, navigation])
+  }, [onboardingData.words, carouselRef])
 
   const onChangePassword = useCallback((text: string) => {
     setPassword(text)
@@ -196,98 +153,106 @@ const ImportPrivateKey = () => {
   )
 
   return (
-    <SafeAreaBox paddingHorizontal="6" flex={1}>
-      <BackButton onPress={onBack} paddingHorizontal="0" />
-      <Text variant="displayMdRegular" marginTop="4" color="primaryText">
-        {t('accountImport.privateKey.title')}
-      </Text>
-      <Text
-        color="secondaryText"
-        variant="textMdRegular"
-        marginTop="8"
-        marginBottom="8"
-        visible={!publicKey && !encodedKey}
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <Box
+        padding="2xl"
+        justifyContent="center"
+        alignItems="center"
+        flex={1}
+        marginBottom="4xl"
       >
-        {t('accountImport.privateKey.paste')}
-      </Text>
-      <TextInput
-        visible={!publicKey && !encodedKey}
-        textInputProps={{
-          placeholder: t('accountImport.privateKey.inputPlaceholder'),
-          autoCapitalize: 'none',
-          keyboardAppearance: 'dark',
-          autoCorrect: false,
-          onChangeText,
-          autoComplete: 'off',
-          returnKeyType: 'done',
-        }}
-        variant="underline"
-      />
-      <Text
-        variant="textMdRegular"
-        marginTop="8"
-        marginBottom="8"
-        visible={!!encodedKey}
-        color="secondaryText"
-      >
-        Enter the password you set for your private key.
-      </Text>
-      <TextInput
-        visible={!!encodedKey}
-        textInputProps={{
-          placeholder: t('accountImport.privateKey.passwordPlaceholder'),
-          autoCapitalize: 'none',
-          keyboardAppearance: 'dark',
-          autoCorrect: false,
-          onChangeText: onChangePassword,
-          autoComplete: 'off',
-          returnKeyType: 'done',
-        }}
-        textColor="primaryText"
-        variant="underline"
-      />
-      <Text
-        variant="textMdRegular"
-        marginTop="4"
-        marginBottom="4"
-        visible={!!error}
-        color="error.500"
-      >
-        {error}
-      </Text>
-      <Text
-        variant="textMdRegular"
-        color="primaryText"
-        marginTop="8"
-        visible={!!publicKey}
-      >
-        {t('accountImport.privateKey.body')}
-      </Text>
-      <Text
-        variant="textMdRegular"
-        color="secondaryText"
-        fontWeight="bold"
-        marginTop="8"
-        textAlign="center"
-        visible={!!publicKey}
-      >
-        {publicKey}
-      </Text>
-      <Box flex={1} />
-      <ButtonPressable
-        onPress={onImportAccount}
-        title={t('accountImport.privateKey.action')}
-        borderRadius="full"
-        backgroundColor="primaryText"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="bg.tertiary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColor="primaryBackground"
-        disabled={!!error || publicKey === undefined}
-        loading={decodingPrivateKey}
-      />
-    </SafeAreaBox>
+        <PrivateKey width={60} height={60} />
+        <Text variant="displayMdSemibold" marginTop="4" color="primaryText">
+          {t('accountImport.privateKey.title')}
+        </Text>
+        <Text
+          color="text.quaternary-500"
+          variant="textXlRegular"
+          marginTop="8"
+          marginBottom="8"
+          visible={!publicKey && !encodedKey}
+        >
+          {t('accountImport.privateKey.paste')}
+        </Text>
+        <Box
+          visible={!publicKey && !encodedKey}
+          padding="xl"
+          width="100%"
+          backgroundColor="cardBackground"
+          borderRadius="2xl"
+        >
+          <TextInput
+            visible={!publicKey && !encodedKey}
+            textInputProps={{
+              placeholder: t('accountImport.privateKey.inputPlaceholder'),
+              autoCapitalize: 'none',
+              keyboardAppearance: 'dark',
+              autoCorrect: false,
+              onChangeText,
+              autoComplete: 'off',
+              returnKeyType: 'done',
+            }}
+            variant="transparentSmall"
+            fontWeight="600"
+          />
+        </Box>
+        <Text
+          variant="textMdRegular"
+          marginTop="8"
+          marginBottom="8"
+          visible={!!encodedKey}
+          color="secondaryText"
+        >
+          Enter the password you set for your private key.
+        </Text>
+        <TextInput
+          visible={!!encodedKey}
+          textInputProps={{
+            placeholder: t('accountImport.privateKey.passwordPlaceholder'),
+            autoCapitalize: 'none',
+            keyboardAppearance: 'dark',
+            autoCorrect: false,
+            onChangeText: onChangePassword,
+            autoComplete: 'off',
+            returnKeyType: 'done',
+          }}
+          textColor="primaryText"
+          variant="transparentSmall"
+        />
+        <Text
+          variant="textMdRegular"
+          marginTop="4"
+          marginBottom="4"
+          visible={!!error}
+          color="error.500"
+        >
+          {error}
+        </Text>
+        <Text
+          variant="textMdRegular"
+          color="primaryText"
+          marginTop="8"
+          visible={!!publicKey}
+        >
+          {t('accountImport.privateKey.body')}
+        </Text>
+        <Text
+          variant="textMdRegular"
+          color="secondaryText"
+          fontWeight="bold"
+          marginTop="8"
+          textAlign="center"
+          visible={!!publicKey}
+        >
+          {publicKey}
+        </Text>
+      </Box>
+      {!!publicKey && !decodingPrivateKey && (
+        <CheckButton onPress={onImportAccount} />
+      )}
+      {decodingPrivateKey && <LoadingButton />}
+    </KeyboardAvoidingView>
   )
 }
 
-export default memo(ImportPrivateKey)
+export default ImportPrivateKey

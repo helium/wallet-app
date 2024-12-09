@@ -13,6 +13,8 @@ import ImportAccountNavigator from './import/ImportAccountNavigator'
 import ImportPrivateKey from './import/ImportPrivateKey'
 import { OnboardingStackParamList } from './onboardingTypes'
 import KeystoneNavigator from '../keystone/KeystoneNavigator'
+import WelcomeToHeliumScreen from './WelcomeToHeliumScreen'
+import NewAccountScreen from './NewAccountScreen'
 
 const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
 
@@ -35,6 +37,14 @@ const OnboardingNavigator = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <OnboardingStack.Navigator screenOptions={screenOptions}>
+        <OnboardingStack.Screen
+          name="WelcomeToHelium"
+          component={WelcomeToHeliumScreen}
+        />
+        <OnboardingStack.Screen
+          name="NewAccount"
+          component={NewAccountScreen}
+        />
         <OnboardingStack.Screen
           name="CreateImport"
           component={CreateImportAccountScreen}
