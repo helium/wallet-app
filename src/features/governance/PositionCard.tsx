@@ -142,11 +142,11 @@ export const PositionCard = ({
   const hasActiveVotes = position.numActiveVotes > 0
   const decayedEpoch = lockup.endTs.div(new BN(EPOCH_LENGTH))
   const currentEpoch = new BN(unixNow).div(new BN(EPOCH_LENGTH))
-  const lockupExpired =
+  const isDecayed =
     !isConstant &&
     (isDelegated
       ? currentEpoch.gt(decayedEpoch)
-      : lockup.endTs.sub(new BN(unixNow || 0)).lt(new BN(0)))
+      : lockup.endTs.lte(new BN(unixNow)))
 
   const lockedTokens =
     mintAcc && humanReadable(position.amountDepositedNative, mintAcc.decimals)
@@ -606,7 +606,7 @@ export const PositionCard = ({
           </>
         ) : (
           <>
-            {lockupExpired ? (
+            {isDecayed ? (
               <ListItem
                 key="close"
                 title={t('gov.positions.close')}
