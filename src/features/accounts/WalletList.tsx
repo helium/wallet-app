@@ -6,7 +6,6 @@ import { FadeIn } from 'react-native-reanimated'
 import Box from '@components/Box'
 import { Image, SectionList } from 'react-native'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
-import { NetTypes } from '@helium/address'
 import { CSAccount } from '@config/storage/cloudStorage'
 import TouchableContainer from '@components/TouchableContainer'
 import AccountIcon from '@components/AccountIcon'
@@ -35,6 +34,8 @@ import {
 import { NavBarHeight } from '@components/ServiceNavBar'
 import { AccountsServiceNavigationProp } from './accountServiceTypes'
 
+const ACCOUNT_LIMIT = 100
+
 const WalletList = () => {
   const { t } = useTranslation()
   const [switchingAccounts, setSwitchingAccounts] = useState<
@@ -55,8 +56,9 @@ const WalletList = () => {
     async (acc: CSAccount) => {
       onboardingSheetRef?.current?.show('sub-wallet')
 
-      // wait 1 second
+      // wait 1 second so that we can update the UI loading state before bip39.mnemonicToSeedSync takes up the UI thread
       await new Promise((resolve) => setTimeout(resolve, 1000))
+
       try {
         if (!currentAccount) {
           throw new Error('No current account')
@@ -81,15 +83,15 @@ const WalletList = () => {
         let derivationPath = solanaDerivation(currentAccountNum, 0)
         let keypair = await keypairFromSeed(seed, derivationPath)
         while (
-          currentAccountNum < 100 &&
+          currentAccountNum < ACCOUNT_LIMIT &&
           (!keypair || takenAddresses.has(keypair.publicKey.toBase58()))
         ) {
           currentAccountNum += 1
           derivationPath = solanaDerivation(currentAccountNum, 0)
           keypair = await keypairFromSeed(seed, derivationPath)
         }
-        if (currentAccountNum >= 100) {
-          throw new Error('More than 100 accounts are not supported')
+        if (currentAccountNum >= ACCOUNT_LIMIT) {
+          throw new Error('More than ACCOUNT_LIMIT accounts are not supported')
         }
         if (keypair) {
           const words = (await getSecureAccount(acc.address))?.mnemonic
@@ -109,8 +111,6 @@ const WalletList = () => {
         // @ts-ignore
       } catch (e: any) {
         Toast.show(e.message || e.toString())
-      } finally {
-        // setAddingSubAccount(false)
       }
     },
     [
@@ -123,15 +123,13 @@ const WalletList = () => {
   )
 
   const filteredAccounts = useMemo(() => {
-    const grouped = sortedAccounts
-      .filter((a) => a.netType !== NetTypes.TESTNET)
-      .reduce((acc, account) => {
-        acc[account.mnemonicHash || 'none'] = [
-          ...(acc[account.mnemonicHash || 'none'] || []),
-          account,
-        ]
-        return acc
-      }, {} as { [key: string]: CSAccount[] })
+    const grouped = sortedAccounts.reduce((acc, account) => {
+      acc[account.mnemonicHash || 'none'] = [
+        ...(acc[account.mnemonicHash || 'none'] || []),
+        account,
+      ]
+      return acc
+    }, {} as { [key: string]: CSAccount[] })
 
     const { none, ...rest } = grouped
     const ret = Object.values(rest).map((accs, index) => ({

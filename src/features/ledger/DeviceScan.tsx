@@ -23,7 +23,6 @@ import LedgerConnectSteps from './LedgerConnectSteps'
 
 const DeviceScan = () => {
   const { t } = useTranslation()
-  // const route = useRoute<Route>()
   const { primaryText } = useColors()
 
   const { backgroundStyle } = useOpacity('bg.tertiary', 1)
@@ -33,13 +32,6 @@ const DeviceScan = () => {
   const { refreshing, error, devices, setError, reload } = useLedgerDeviceScan()
   const { setOnboardingData } = useOnboarding()
   const { carouselRef } = useOnboardingSheet()
-  // useEffect(() => {
-  //   if (!route.params?.error) {
-  //     return
-  //   }
-
-  //   setError(route.params.error)
-  // }, [route, setError])
 
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '90%'

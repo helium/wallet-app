@@ -1697,7 +1697,7 @@ export default {
   WelcomeToHeliumScreen: {
     title: 'Welcome to Helium',
     subtitle:
-      'Helium enables the next-generation of infrastructures and services for billions of devices.',
+      'Helium enables the next-generation of infrastructure and services for billions of devices.',
     createNewAccount: 'Create New Account',
     loginIntoExistingAccount: 'Login into Existing Account',
   },
