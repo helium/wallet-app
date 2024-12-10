@@ -58,6 +58,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { EPOCH_LENGTH } from '@helium/helium-sub-daos-sdk'
 import { MessagePreview } from '@features/solana/MessagePreview'
 import { useSolana } from '@features/solana/SolanaProvider'
 import { useWalletSign } from '@features/solana/WalletSignProvider'
@@ -126,7 +127,7 @@ export const PositionCard = ({
     })
   }, [position, unixNow, positions])
 
-  const { lockup, hasGenesisMultiplier, votingMint } = position
+  const { lockup, isDelegated, hasGenesisMultiplier, votingMint } = position
   const { info: mintAcc } = useMint(votingMint.mint)
   const {
     loading: loadingMetadata,
@@ -139,8 +140,13 @@ export const PositionCard = ({
     ? t('gov.positions.constant')
     : t('gov.positions.decaying')
   const hasActiveVotes = position.numActiveVotes > 0
-  const lockupExpired =
-    !isConstant && lockup.endTs.sub(new BN(unixNow || 0)).lt(new BN(0))
+  const decayedEpoch = lockup.endTs.div(new BN(EPOCH_LENGTH))
+  const currentEpoch = new BN(unixNow).div(new BN(EPOCH_LENGTH))
+  const isDecayed =
+    !isConstant &&
+    (isDelegated
+      ? currentEpoch.gt(decayedEpoch)
+      : lockup.endTs.lte(new BN(unixNow)))
 
   const lockedTokens =
     mintAcc && humanReadable(position.amountDepositedNative, mintAcc.decimals)
@@ -584,7 +590,7 @@ export const PositionCard = ({
       )
     return (
       <>
-        {position.isDelegated ? (
+        {isDelegated ? (
           <>
             <ListItem
               key="undelegate"
@@ -600,7 +606,7 @@ export const PositionCard = ({
           </>
         ) : (
           <>
-            {lockupExpired ? (
+            {isDecayed ? (
               <ListItem
                 key="close"
                 title={t('gov.positions.close')}
@@ -691,7 +697,7 @@ export const PositionCard = ({
                     />
                   </>
                 )}
-                {canDelegate && !position.isDelegated && (
+                {canDelegate && !isDelegated && (
                   <ListItem
                     key="delegate"
                     title={t('gov.positions.delegate')}
@@ -879,11 +885,12 @@ export const PositionCard = ({
                     </Text>
                     <Text variant="textSmRegular" color="primaryText">
                       {isConstant
-                        ? getMinDurationFmt(
-                            position.lockup.startTs,
-                            position.lockup.endTs,
+                        ? getMinDurationFmt(lockup.startTs, lockup.endTs)
+                        : isDelegated
+                        ? getTimeLeftFromNowFmt(
+                            lockup.endTs.add(new BN(EPOCH_LENGTH)),
                           )
-                        : getTimeLeftFromNowFmt(position.lockup.endTs)}
+                        : getTimeLeftFromNowFmt(lockup.endTs)}
                     </Text>
                   </Box>
                   {hasGenesisMultiplier && (
