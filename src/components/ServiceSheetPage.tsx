@@ -18,6 +18,7 @@ export type ServiceNavBarOption = {
   name: string
   component: React.FC
   Icon: FC<SvgProps>
+  IconActive?: FC<SvgProps>
   iconProps?: SvgProps
 }
 
@@ -39,12 +40,14 @@ function CustomTabBar({
   const tabData = useMemo((): Array<{
     value: string
     Icon: FC<SvgProps>
+    IconActive?: FC<SvgProps>
     iconColor: Color
   }> => {
     return options.map((option) => {
       return {
         value: option.name,
         Icon: option.Icon,
+        IconActive: option.IconActive,
         iconColor: 'primaryText',
         iconProps: option.iconProps,
       }

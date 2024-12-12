@@ -68,7 +68,7 @@ const LedgerAccountListItem = ({
   )
 
   return (
-    <Box paddingHorizontal="6">
+    <Box>
       <Surface
         flexDirection="row"
         alignItems="center"
@@ -78,7 +78,7 @@ const LedgerAccountListItem = ({
         borderTopStartRadius={borderTopStartRadius}
         borderBottomEndRadius={borderBottomEndRadius}
         borderBottomStartRadius={borderBottomStartRadius}
-        backgroundColor="secondaryBackground"
+        backgroundColor="cardBackground"
       >
         <AccountIcon size={40} address={account.address} />
         <Box marginRight="6" marginLeft="6" flexGrow={1}>
@@ -106,10 +106,10 @@ const LedgerAccountListItem = ({
               true: colors['purple.500'],
               false: colors.cardBackground,
             }}
-            onFillColor={colors['base.white']}
-            onCheckColor={colors.cardBackground}
-            onTintColor={colors['base.white']}
-            tintColor={colors['base.white']}
+            onFillColor={colors.primaryText}
+            onCheckColor={colors.primaryBackground}
+            onTintColor={colors.primaryText}
+            tintColor={colors.primaryText}
             onAnimationType="fill"
             offAnimationType="fill"
             boxType="circle"

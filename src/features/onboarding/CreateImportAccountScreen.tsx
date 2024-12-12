@@ -1,117 +1,204 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import Plus from '@assets/svgs/plus.svg'
-import DownArrow from '@assets/svgs/importIcon.svg'
-import Ledger from '@assets/svgs/ledger.svg'
-import Keystone from '@assets/svgs/keystoneLogo.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
 import { useColors } from '@config/theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BackgroundFill from '@components/BackgroundFill'
 import FinePrint from '@components/FinePrint'
-import NetTypeSegment from './NetTypeSegment'
+import TouchableContainer from '@components/TouchableContainer'
+import SecretPhrase from '@assets/svgs/secretPhrase.svg'
+import PrivateKey from '@assets/svgs/privateKey.svg'
+import CarotRight from '@assets/svgs/carot-right.svg'
+import CommandLine from '@assets/svgs/commandLine.svg'
+import LedgerCircle from '@assets/svgs/ledgerCircle.svg'
+import KeystoneCircle from '@assets/svgs/keystoneCircle.svg'
+import BackArrow from '@assets/svgs/backArrow.svg'
+import ImageBox from '@components/ImageBox'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import ScrollBox from '@components/ScrollBox'
 import { OnboardingNavigationProp } from './onboardingTypes'
+import {
+  OnboardingSheetRef,
+  OnboardingSheetWrapper,
+  FlowType,
+} from './OnboardingSheet'
 
 const CreateImportAccountScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingNavigationProp>()
   const colors = useColors()
-  const { bottom } = useSafeAreaInsets()
+  const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
 
-  const createAccount = useCallback(() => {
-    navigation.navigate('CreateAccount')
+  const goBack = useCallback(() => {
+    navigation.goBack()
   }, [navigation])
 
-  const importAccount = useCallback(() => {
-    navigation.navigate('ImportAccount')
-  }, [navigation])
-
-  const connectLedger = useCallback(() => {
-    navigation.navigate('LedgerNavigator')
-  }, [navigation])
-
-  const connectKeystone = useCallback(() => {
-    navigation.navigate('KeystoneNavigator')
-  }, [navigation])
+  const onAddExistingWallet = useCallback(
+    (type: FlowType) => () => {
+      onboardingSheetRef.current?.show(type)
+    },
+    [],
+  )
 
   return (
-    <SafeAreaBox flex={1} paddingHorizontal="6" justifyContent="center">
-      <NetTypeSegment marginBottom="6" marginTop="-12" />
-      <Text variant="displayLgRegular" color="primaryText">
-        {t('accountSetup.createImport.title')}
-      </Text>
-      <Box marginVertical="6" borderRadius="4xl" overflow="hidden">
-        <BackgroundFill backgroundColor="primaryBackground" opacity={0.06} />
-        <TouchableOpacityBox
-          onPress={importAccount}
-          padding="5"
-          backgroundColor="cardBackground"
-        >
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="textXlMedium" color="blue.light-500" flex={1}>
-              {t('accountSetup.createImport.import')}
-            </Text>
-            <DownArrow
-              height={20}
-              width={20}
-              color={colors['blue.light-500']}
-            />
-          </Box>
+    <ScrollBox
+      flex={1}
+      padding="2xl"
+      contentContainerStyle={{ flex: 1, justifyContent: 'center' }}
+    >
+      <Box
+        flexDirection="row"
+        justifyContent="center"
+        paddingHorizontal="2xl"
+        marginTop="4xl"
+        marginBottom="6xl"
+      >
+        <TouchableOpacityBox position="absolute" left={0} onPress={goBack}>
+          <BackArrow color={colors['text.quaternary-500']} />
         </TouchableOpacityBox>
-        <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox
-          onPress={createAccount}
-          padding="5"
-          backgroundColor="cardBackground"
+        <Text variant="textMdSemibold" color="text.quaternary-500">
+          {t('CreateImportAccountScreen.logIn')}
+        </Text>
+      </Box>
+      <Box alignItems="center" gap="xl" marginBottom="4xl">
+        <ImageBox source={require('@assets/images/login.png')} />
+        <Text
+          variant="displayMdSemibold"
+          color="primaryText"
+          textAlign="center"
         >
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="textXlMedium" color="green.light-500" flex={1}>
-              {t('accountSetup.createImport.create')}
-            </Text>
-            <Plus height={20} width={20} color={colors['green.light-500']} />
-          </Box>
-        </TouchableOpacityBox>
-        <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox
-          onPress={connectKeystone}
-          padding="5"
-          backgroundColor="cardBackground"
+          {t('CreateImportAccountScreen.title')}
+        </Text>
+        <Text
+          variant="textXlRegular"
+          color="text.quaternary-500"
+          textAlign="center"
         >
-          <Box flexDirection="row" alignItems="center">
-            <Text color="primaryText" variant="textXlMedium" flex={1}>
-              {t('accountSetup.createImport.keystone')}
-            </Text>
-            <Keystone height={20} width={20} color={colors.primaryText} />
-          </Box>
-        </TouchableOpacityBox>
-        <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox
-          onPress={connectLedger}
-          padding="5"
-          backgroundColor="cardBackground"
+          {t('CreateImportAccountScreen.subtitle')}
+        </Text>
+      </Box>
+      <Box
+        backgroundColor="cardBackground"
+        borderRadius="2xl"
+        flexDirection="column"
+        overflow="hidden"
+      >
+        <TouchableContainer
+          flexDirection="row"
+          gap="2.5"
+          alignItems="center"
+          borderBottomWidth={2}
+          borderColor="primaryBackground"
+          backgroundColorPressed="gray.900"
+          padding="xl"
+          paddingEnd="3xl"
+          onPress={onAddExistingWallet('secret-phrase')}
         >
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="textXlMedium" flex={1} color="primaryText">
-              {t('accountSetup.createImport.ledger')}
+          <SecretPhrase />
+          <Box flex={1}>
+            <Text variant="textLgSemibold" color="primaryText">
+              {t('AddExistingWalletPage.secretPhrase')}
             </Text>
-            <Ledger height={20} width={20} color={colors.primaryText} />
+            <Text variant="textSmRegular" color="text.quaternary-500">
+              {t('AddExistingWalletPage.twelveOrTwentyFourWords')}
+            </Text>
           </Box>
-        </TouchableOpacityBox>
+          <CarotRight color={colors['text.quaternary-500']} />
+        </TouchableContainer>
+        <TouchableContainer
+          flexDirection="row"
+          gap="2.5"
+          alignItems="center"
+          padding="xl"
+          borderBottomWidth={2}
+          borderColor="primaryBackground"
+          backgroundColorPressed="gray.900"
+          paddingEnd="3xl"
+          onPress={onAddExistingWallet('private-key')}
+        >
+          <PrivateKey />
+          <Box flex={1}>
+            <Text variant="textLgSemibold" color="primaryText">
+              {t('AddExistingWalletPage.privateKey')}
+            </Text>
+            <Text variant="textSmRegular" color="text.quaternary-500">
+              {t('AddExistingWalletPage.aStringOfCharacters')}
+            </Text>
+          </Box>
+          <CarotRight color={colors['text.quaternary-500']} />
+        </TouchableContainer>
+        <TouchableContainer
+          flexDirection="row"
+          gap="2.5"
+          alignItems="center"
+          backgroundColorPressed="gray.900"
+          padding="xl"
+          borderBottomWidth={2}
+          borderColor="primaryBackground"
+          paddingEnd="3xl"
+          onPress={onAddExistingWallet('command-line')}
+        >
+          <CommandLine />
+          <Box flex={1}>
+            <Text variant="textLgSemibold" color="primaryText">
+              {t('AddExistingWalletPage.commandLine')}
+            </Text>
+            <Text variant="textSmRegular" color="text.quaternary-500">
+              {t('AddExistingWalletPage.scanCli')}
+            </Text>
+          </Box>
+          <CarotRight color={colors['text.quaternary-500']} />
+        </TouchableContainer>
+        <TouchableContainer
+          flexDirection="row"
+          gap="2.5"
+          alignItems="center"
+          backgroundColorPressed="gray.900"
+          padding="xl"
+          borderBottomWidth={2}
+          borderColor="primaryBackground"
+          paddingEnd="3xl"
+          onPress={onAddExistingWallet('keystone')}
+        >
+          <KeystoneCircle />
+          <Box flex={1}>
+            <Text variant="textLgSemibold" color="primaryText">
+              {t('AddExistingWalletPage.connectKeystone')}
+            </Text>
+            <Text variant="textSmRegular" color="text.quaternary-500">
+              {t('AddExistingWalletPage.scanKeystone')}
+            </Text>
+          </Box>
+          <CarotRight color={colors['text.quaternary-500']} />
+        </TouchableContainer>
+        <TouchableContainer
+          flexDirection="row"
+          gap="2.5"
+          alignItems="center"
+          backgroundColorPressed="gray.900"
+          padding="xl"
+          paddingEnd="3xl"
+          onPress={onAddExistingWallet('ledger')}
+        >
+          <LedgerCircle />
+          <Box flex={1}>
+            <Text variant="textLgSemibold" color="primaryText">
+              {t('AddExistingWalletPage.pairLedger')}
+            </Text>
+            <Text variant="textSmRegular" color="text.quaternary-500">
+              {t('AddExistingWalletPage.tapAButtonToScan')}
+            </Text>
+          </Box>
+          <CarotRight color={colors['text.quaternary-500']} />
+        </TouchableContainer>
       </Box>
       <FinePrint
-        position="absolute"
+        marginTop="xl"
+        paddingHorizontal="4xl"
         justifyContent="center"
-        paddingBottom="6"
-        paddingHorizontal="12"
-        bottom={bottom}
-        left={0}
-        right={0}
       />
-    </SafeAreaBox>
+      <OnboardingSheetWrapper ref={onboardingSheetRef} />
+    </ScrollBox>
   )
 }
 

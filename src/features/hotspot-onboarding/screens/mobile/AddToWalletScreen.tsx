@@ -7,7 +7,7 @@ import Map from '@components/Map'
 import { Camera } from '@rnmapbox/maps'
 import { getAddressFromLatLng } from '@utils/location'
 import { useAsync } from 'react-async-hook'
-import AddToWalletButton from '../../components/WalletButton'
+import AddToWalletButton from '../../../../components/WalletButton'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 
 export const AddToWalletScreen = () => {

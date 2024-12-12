@@ -24,6 +24,7 @@ export const NavBarHeight = 76
 export type ServiceNavBarOption = {
   value: string
   Icon: FC<SvgProps>
+  IconActive?: FC<SvgProps>
   iconProps?: SvgProps
 }
 
@@ -36,6 +37,7 @@ const NavBarItem = ({
   Icon,
   value,
   iconProps,
+  IconActive,
 }: {
   selected: boolean
   onPress: () => void
@@ -86,10 +88,14 @@ const NavBarItem = ({
         top={0}
         bottom={0}
       >
-        <Icon
-          color={selected ? colors.primaryText : colors['fg.tertiary-600']}
-          {...iconProps}
-        />
+        {selected && IconActive ? (
+          <IconActive color={colors['base.black']} {...iconProps} />
+        ) : (
+          <Icon
+            color={selected ? colors['base.black'] : colors['fg.tertiary-600']}
+            {...iconProps}
+          />
+        )}
       </Box>
     </TouchableOpacityBox>
   )

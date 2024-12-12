@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
+import { useSpacing } from '@config/theme/themeHooks'
 import Box from './Box'
 import BackScreen from './BackScreen'
 
@@ -13,6 +14,7 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
   const [hasPermission, setHasPermission] = useState<boolean>()
   const [scanned, setScanned] = useState(false)
   const navigation = useNavigation()
+  const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
   const { t } = useTranslation()
 
@@ -62,18 +64,23 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
   }
 
   return (
-    <BackScreen>
+    <Box flex={1}>
       <CameraView
         onBarcodeScanned={handleBarCodeScanned}
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-        style={StyleSheet.absoluteFillObject}
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          overflow: 'hidden',
+          borderTopStartRadius: spacing['6xl'],
+          borderTopEndRadius: spacing['6xl'],
+        }}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         ratio="16:9"
       />
-    </BackScreen>
+    </Box>
   )
 }
 export default QrScanner

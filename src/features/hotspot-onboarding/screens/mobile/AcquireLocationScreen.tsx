@@ -10,7 +10,7 @@ import { getAddressFromLatLng } from '@utils/location'
 import { useAsync } from 'react-async-hook'
 import * as Location from 'expo-location'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
-import CheckButton from '../../components/CheckButton'
+import CheckButton from '../../../../components/CheckButton'
 
 export const AcquireLocationScreen = () => {
   const [lat, setLat] = useState<number | null>(null)

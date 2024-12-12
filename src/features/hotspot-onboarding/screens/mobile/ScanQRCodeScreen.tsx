@@ -15,9 +15,10 @@ import useAppear from '@hooks/useAppear'
 import useDisappear from '@hooks/useDisappear'
 import useHaptic from '@hooks/useHaptic'
 import { useAsync } from 'react-async-hook'
+import Config from 'react-native-config'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
-import CheckButton from '../../components/CheckButton'
-import Loading from '../../components/Loading'
+import CheckButton from '../../../../components/CheckButton'
+import Loading from '../../../../components/LoadingButton'
 
 const ScanQRCodeScreen = () => {
   const { t } = useTranslation()
@@ -51,7 +52,7 @@ const ScanQRCodeScreen = () => {
     setIsActive(false)
   })
   const onNext = useCallback(async () => {
-    if (__DEV__) {
+    if (__DEV__ && Config.MOCK_HMH === 'true') {
       // Make sure MOCK_HMH is set to true in .env
       await getDeviceInfo('MOCK_QR')
       carouselRef?.current?.snapToNext()

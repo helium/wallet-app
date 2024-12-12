@@ -19,7 +19,7 @@ import {
 } from '@rnmapbox/maps'
 import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@utils/mapUtils'
 import { Search } from '@components/Search'
-import CheckButton from '../components/CheckButton'
+import CheckButton from '../../../components/CheckButton'
 import { useHotspotOnboarding } from '../OnboardingSheet'
 
 const SelectLocationScreen = () => {

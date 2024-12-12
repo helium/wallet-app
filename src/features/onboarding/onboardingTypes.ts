@@ -10,6 +10,8 @@ export type OnboardingStackParamList = {
   ImportPrivateKey: { key?: string }
   OnboardingStackParamList: undefined
   KeystoneNavigator: undefined
+  WelcomeToHelium: undefined
+  NewAccount: undefined
 }
 
 export type OnboardingNavigationProp =

@@ -3,6 +3,7 @@ import React, { memo, useRef, useEffect } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import CircleLoaderSvg from '@assets/svgs/circleLoader.svg'
+import BlueCircleLoaderSvg from '@assets/svgs/blueCircleLoader.svg'
 import { Color, Theme } from '@config/theme/theme'
 import { useColors } from '@config/theme/themeHooks'
 import Box from './Box'
@@ -12,12 +13,14 @@ type Props = BoxProps<Theme> & {
   text?: string
   loaderSize?: number
   color?: Color
+  type?: 'blue' | 'white'
 }
 const CircleLoader = ({
   text,
   loaderSize = 30,
   minHeight,
   color = 'primaryText',
+  type = 'white',
   ...props
 }: Props) => {
   const rotateAnim = useRef(new Animated.Value(0))
@@ -74,11 +77,20 @@ const CircleLoader = ({
           ],
         }}
       >
-        <CircleLoaderSvg
-          color={colors[color]}
-          height={loaderSize}
-          width={loaderSize}
-        />
+        {type === 'white' && (
+          <CircleLoaderSvg
+            color={colors[color]}
+            height={loaderSize}
+            width={loaderSize}
+          />
+        )}
+        {type === 'blue' && (
+          <BlueCircleLoaderSvg
+            color={colors[color]}
+            height={loaderSize}
+            width={loaderSize}
+          />
+        )}
       </Animated.View>
       {text && (
         <Text

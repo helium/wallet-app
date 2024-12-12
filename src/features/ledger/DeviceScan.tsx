@@ -2,7 +2,6 @@ import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, LayoutChangeEvent } from 'react-native'
 import { Device } from 'react-native-ble-plx'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import CarotRight from '@assets/svgs/carot-right.svg'
 import LedgerCircle from '@assets/svgs/ledger-circle.svg'
 import Ledger from '@assets/svgs/ledger.svg'
@@ -12,24 +11,18 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import BackButton from '@components/BackButton'
 import Text from '@components/Text'
 import Box from '@components/Box'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors, useOpacity } from '@config/theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
 import useLedgerDeviceScan from '@hooks/useLedgerDeviceScan'
+import { useOnboarding } from '@features/onboarding/OnboardingProvider'
+import { useOnboardingSheet } from '@features/onboarding/OnboardingSheet'
 import LedgerConnectSteps from './LedgerConnectSteps'
-import {
-  LedgerNavigatorNavigationProp,
-  LedgerNavigatorStackParamList,
-} from './ledgerNavigatorTypes'
 
-type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceScan'>
 const DeviceScan = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<LedgerNavigatorNavigationProp>()
-  const route = useRoute<Route>()
   const { primaryText } = useColors()
 
   const { backgroundStyle } = useOpacity('bg.tertiary', 1)
@@ -37,14 +30,8 @@ const DeviceScan = () => {
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
   const { refreshing, error, devices, setError, reload } = useLedgerDeviceScan()
-
-  useEffect(() => {
-    if (!route.params?.error) {
-      return
-    }
-
-    setError(route.params.error)
-  }, [route, setError])
+  const { setOnboardingData } = useOnboarding()
+  const { carouselRef } = useOnboardingSheet()
 
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '90%'
@@ -84,15 +71,17 @@ const DeviceScan = () => {
 
   const onSelectDevice = useCallback(
     (device: Device) => () => {
-      navigation.navigate('DeviceShow', {
+      setOnboardingData((o) => ({
+        ...o,
         ledgerDevice: {
           id: device.id,
           name: device.localName || device.name || '',
           type: 'bluetooth',
         },
-      })
+      }))
+      carouselRef?.current?.snapToNext()
     },
-    [navigation],
+    [setOnboardingData, carouselRef],
   )
 
   const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
@@ -135,12 +124,7 @@ const DeviceScan = () => {
 
   return (
     <BottomSheetModalProvider>
-      <Box flex={1} backgroundColor="secondaryBackground" paddingHorizontal="6">
-        <BackButton
-          marginTop="4"
-          paddingHorizontal="2"
-          onPress={navigation.goBack}
-        />
+      <Box flex={1} paddingHorizontal="6">
         <Box
           flex={1}
           justifyContent="flex-end"
@@ -149,7 +133,7 @@ const DeviceScan = () => {
         >
           <Ledger width={61} height={61} color={primaryText} />
           <Text
-            variant="displayMdRegular"
+            variant="displayMdSemibold"
             marginVertical="6"
             textAlign="center"
             lineHeight={38}
@@ -158,11 +142,9 @@ const DeviceScan = () => {
             {t('ledger.scan.title')}
           </Text>
           <Text
-            variant="textXlMedium"
-            color="secondaryText"
+            variant="textXlRegular"
+            color="text.quaternary-500"
             textAlign="center"
-            fontSize={21}
-            lineHeight={23}
           >
             {t('ledger.scan.subtitle')}
           </Text>

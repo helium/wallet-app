@@ -1,5 +1,4 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
@@ -8,8 +7,6 @@ import {
   useDerivationAccounts,
 } from '@hooks/useDerivationAccounts'
 import CheckBox from '@react-native-community/checkbox'
-import { useNavigation } from '@react-navigation/native'
-import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { DEFAULT_DERIVATION_PATH } from '@config/storage/secureStorage'
 import { useColors } from '@config/theme/themeHooks'
 import { ellipsizeAddress } from '@utils/accountUtils'
@@ -17,21 +14,23 @@ import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, RefreshControl } from 'react-native'
-import { RootNavigationProp } from 'src/app/rootTypes'
-import { AccountsServiceNavigationProp } from 'src/app/services/AccountsService/accountServiceTypes'
+import { FlatList } from 'react-native'
 import ScrollBox from '@components/ScrollBox'
+import CircleLoader from '@components/CircleLoader'
+import ForwardButton from '@components/ForwardButton'
 import { useOnboarding } from '../OnboardingProvider'
+import { useOnboardingSheet } from '../OnboardingSheet'
 
 export default () => {
   const { t } = useTranslation()
-  const { hasAccounts } = useAccountStorage()
   const { onboardingData, setOnboardingData } = useOnboarding()
+  const { carouselRef } = useOnboardingSheet()
   const { words } = onboardingData
+
   const mnemonic = useMemo(() => words?.join(' '), [words])
+
   const {
     error,
-    loading,
     derivationAccounts: foundAccounts,
     fetchMore,
   } = useDerivationAccounts({ mnemonic })
@@ -187,109 +186,79 @@ export default () => {
     [],
   )
 
-  const navigation = useNavigation<RootNavigationProp>()
-  const accountsNavigation = useNavigation<AccountsServiceNavigationProp>()
-
   const onNext = useCallback(() => {
-    if (hasAccounts) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      accountsNavigation.navigate('AccountAssignScreen', {
-        params: {
-          screen: 'AccountAssignScreen',
-          params: {
-            words,
-          },
-        },
-      })
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      navigation.replace('OnboardingNavigator', {
-        screen: 'CreateAccount',
-        params: {
-          screen: 'AccountAssignScreen',
-          params: {
-            words,
-          },
-        },
-      })
-    }
-  }, [hasAccounts, navigation, words, accountsNavigation])
+    carouselRef?.current?.snapToNext()
+  }, [carouselRef])
+
+  if (error) {
+    return (
+      <Box flex={1} justifyContent="center" alignItems="center" gap="xl">
+        <Text variant="displayMdSemibold" color="primaryText">
+          {t('accountImport.privateKey.error')}
+        </Text>
+        <Text variant="textXlRegular" color="error.500">
+          {error.message}
+        </Text>
+      </Box>
+    )
+  }
+
+  if (foundAccounts?.length === 0) {
+    return (
+      <Box flex={1} justifyContent="center" alignItems="center" gap="xl">
+        <CircleLoader type="blue" loaderSize={60} />
+        <Text variant="displayMdSemibold" color="primaryText">
+          {t('accountImport.privateKey.findingWallet')}
+        </Text>
+        <Text variant="textXlRegular" color="text.quaternary-500">
+          {t('accountImport.privateKey.thisWontTakeLong')}
+        </Text>
+      </Box>
+    )
+  }
 
   return (
     <ScrollBox
-      backgroundColor="primaryBackground"
+      backgroundColor="transparent"
       contentContainerStyle={{
-        backgroundColor: colors.primaryBackground,
         flex: 1,
       }}
-      refreshControl={
-        <RefreshControl
-          enabled
-          refreshing={loading}
-          onRefresh={() => {}}
-          title=""
-          tintColor={colors.primaryText}
-        />
-      }
     >
-      <SafeAreaBox backgroundColor="primaryBackground" flex={1}>
-        <Box
-          flex={1}
-          backgroundColor="primaryBackground"
-          height="100%"
-          paddingHorizontal="4"
-        >
+      <SafeAreaBox flex={1}>
+        <Box flex={1} paddingHorizontal="4">
           <Text
             color="primaryText"
-            variant="displayMdRegular"
+            variant="displayMdSemibold"
             mt="8"
             textAlign="center"
             fontSize={44}
             lineHeight={44}
             mb="2"
           >
-            {t('accountImport.privateKey.selectAccounts')}
+            {derivationAccounts?.length > 1
+              ? t('accountImport.privateKey.walletsFound', {
+                  count: derivationAccounts?.length,
+                })
+              : t('accountImport.privateKey.walletFound')}
           </Text>
           <Text
             textAlign="center"
             p="2"
-            variant="textMdRegular"
+            variant="textXlRegular"
             mb="6"
-            color="secondaryText"
+            color="text.quaternary-500"
           >
             {t('accountImport.privateKey.selectAccountsBody')}
           </Text>
-          {error && (
-            <Text variant="textSmRegular" color="error.500" textAlign="center">
-              {error.message}
-            </Text>
-          )}
           <FlatList
             data={derivationAccounts}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
-            refreshing={loading}
             onEndReached={fetchMore}
-          />
-          <ButtonPressable
-            marginTop="6"
-            borderRadius="full"
-            backgroundColor="primaryText"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="bg.tertiary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="gray.800"
-            titleColor="primaryBackground"
-            disabled={selected.size === 0}
-            onPress={onNext}
-            title={t('generic.next')}
-            marginBottom="6"
-            marginHorizontal="6"
           />
         </Box>
       </SafeAreaBox>
+      <ForwardButton onPress={onNext} />
     </ScrollBox>
   )
 }

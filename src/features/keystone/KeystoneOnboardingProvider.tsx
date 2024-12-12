@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+import { KeystoneAccountType } from './SelectKeystoneAccountsScreen'
 
 type KeystoneResolvedPath = {
   path: string
@@ -15,6 +16,7 @@ type KeystoneResolvedPath = {
 }
 
 type KeystoneOnboardingData = {
+  derivationAccounts: KeystoneAccountType[]
   accounts: KeystoneResolvedPath[]
 }
 
@@ -22,6 +24,7 @@ const useKeystoneOnboardingHook = () => {
   const initialState = useMemo(() => {
     return {
       accounts: [],
+      derivationAccounts: [],
     } as KeystoneOnboardingData
   }, [])
   const [keystoneOnboardingData, setKeystoneOnboardingData] =
@@ -37,6 +40,7 @@ const initialState = {
   keystoneOnboardingData: {
     netType: NetType.MAINNET,
     accounts: [] as KeystoneResolvedPath[],
+    derivationAccounts: [] as KeystoneAccountType[],
   },
   setNetType: () => undefined,
   setKeystoneOnboardingData: () => undefined,

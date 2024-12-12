@@ -1,64 +1,71 @@
-import Close from '@assets/svgs/close.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useAlert from '@hooks/useAlert'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Color } from '@config/theme/theme'
-import { useColors, usePaddingStyle } from '@config/theme/themeHooks'
+import { useNavigation } from '@react-navigation/native'
+import { useSpacing } from '@config/theme/themeHooks'
 import { upperCase } from 'lodash'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { ScrollView } from 'react-native'
 import { MAIN_DERIVATION_PATHS } from '@hooks/useDerivationAccounts'
 import { Keypair } from '@solana/web3.js'
 import { CSAccount } from '@config/storage/cloudStorage'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { createKeypair, toSecureAccount } from '@config/storage/secureStorage'
+import SegmentedControl from '@components/SegmentedControl'
+import SecretPhrase from '@assets/svgs/secretPhrase.svg'
+import TouchableContainer from '@components/TouchableContainer'
+import ScrollBox from '@components/ScrollBox'
+import CheckButton from '@components/CheckButton'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useOnboarding } from '../OnboardingProvider'
-import { OnboardingNavigationProp } from '../onboardingTypes'
 import PassphraseAutocomplete from './PassphraseAutocomplete'
-import {
-  ImportAccountNavigationProp,
-  ImportAccountStackParamList,
-} from './importAccountNavTypes'
+import { ImportAccountNavigationProp } from './importAccountNavTypes'
+import { useOnboardingSheet } from '../OnboardingSheet'
 
-const accentColors = [
-  'purple.500',
-  'blue.light-500',
-  'green.light-500',
-  'orange.500',
-  'pink.500',
-  'fuchsia.500',
-  'orange.500',
-  'violet.500',
-  'green.500',
-  'ros.500',
-  'cyan.500',
-  'error.500',
-] as Color[]
-
-type Route = RouteProp<ImportAccountStackParamList, 'AccountImportScreen'>
 const AccountImportScreen = () => {
   const { setOnboardingData, reset } = useOnboarding()
-  const { upsertAccount, hasAccounts, accounts } = useAccountStorage()
+  const { upsertAccount, accounts } = useAccountStorage()
   const navigation = useNavigation<ImportAccountNavigationProp>()
-  const parentNav = useNavigation<OnboardingNavigationProp>()
-  const flatlistRef = useRef<FlatList>(null)
-  const {
-    params: { restoringAccount, accountAddress },
-  } = useRoute<Route>()
+  const scrollViewRef = useRef<ScrollView>(null)
+  const { carouselRef } = useOnboardingSheet()
+
+  const restoringAccount = undefined
+  const accountAddress = undefined
   const [wordCount, setWordCount] = useState(12)
-  const colors = useColors()
   const { t } = useTranslation()
-  const flatListStyle = usePaddingStyle('4', ['left', 'right'])
+  const spacing = useSpacing()
 
   const [wordIndex, setWordIndex] = useState(0)
   const [words, setWords] = useState<(string | null)[]>(
     new Array(wordCount).fill(null),
   )
   const { showOKAlert } = useAlert()
+
+  const options = useMemo(
+    () => [
+      {
+        label: '12 Words',
+        value: 12,
+        Icon: undefined,
+        iconProps: undefined,
+      },
+      {
+        label: '24 Words',
+        value: 24,
+        Icon: undefined,
+        iconProps: undefined,
+      },
+    ],
+    [],
+  )
+
+  useEffect(() => {
+    scrollViewRef.current?.scrollTo({
+      x: wordIndex * 83,
+      animated: true,
+    })
+  }, [wordIndex])
 
   useEffect(() => {
     return navigation.addListener('focus', () => {
@@ -68,51 +75,44 @@ const AccountImportScreen = () => {
     })
   }, [navigation, setOnboardingData])
 
-  const getAccent = useCallback(
-    (idx) => {
-      return {
-        key: accentColors[idx % 12],
-        value: colors[accentColors[idx % 12]],
-      }
-    },
-    [colors],
-  )
+  const onWordAmountClicked = useCallback(
+    (newWordCountIndex: number) => {
+      const newWordCount = options[newWordCountIndex].value
+      setWordCount(newWordCount)
 
-  const onWordAmountClicked = useCallback(() => {
-    const newWordCount = wordCount === 12 ? 24 : 12
-    setWordCount(newWordCount)
+      let newIndex = 0
 
-    let newIndex = 0
+      // Set index if new word count is smaller
+      if (newWordCount < wordCount && wordIndex > newWordCount - 1) {
+        const lastWordIndex = [...words]
+          .splice(0, newWordCount)
+          .reverse()
+          .findIndex((w) => w !== null)
 
-    // Set index if new word count is smaller
-    if (newWordCount < wordCount) {
-      const lastWordIndex = [...words]
-        .splice(0, newWordCount)
-        .reverse()
-        .findIndex((w) => w !== null)
-
-      if (lastWordIndex !== -1) {
-        newIndex = newWordCount - 1 - lastWordIndex
-      }
-    } else if (words.every((w) => w !== null)) {
-      // Set index to next word if all words are filled
-      newIndex = wordCount
-    }
-
-    setWordIndex(newIndex)
-
-    // Keep existing words if they fit within the bounds
-    setWords((w) => {
-      let fill = new Array(newWordCount).fill(null)
-      fill = fill.map((word, index) => {
-        if (index < newWordCount) {
-          return w[index]
+        if (lastWordIndex !== -1) {
+          newIndex = newWordCount - 1 - lastWordIndex
         }
-        return word
+      } else if (words.every((w) => w !== null && w !== undefined)) {
+        // Set index to next word if all words are filled
+        newIndex = wordCount
+      }
+
+      setWordIndex(newIndex)
+
+      // Keep existing words if they fit within the bounds
+      setWords((w) => {
+        let fill = new Array(newWordCount).fill(null)
+        fill = fill.map((word, index) => {
+          if (index < newWordCount) {
+            return w[index]
+          }
+          return word
+        })
+        return [...fill]
       })
-      return [...fill]
-    })
-  }, [wordCount, words])
+    },
+    [options, wordCount, words, wordIndex],
+  )
 
   const handleSelectWord = useCallback(
     (selectedWord: string) => {
@@ -127,24 +127,6 @@ const AccountImportScreen = () => {
     },
     [wordCount, wordIndex],
   )
-
-  const handleContentSizeChanged = useCallback(() => {
-    flatlistRef.current?.scrollToIndex({
-      index:
-        wordIndex === words.length - 1 || wordIndex < 2
-          ? wordIndex
-          : wordIndex - 1,
-      animated: true,
-    })
-  }, [wordIndex, words.length])
-
-  const navToTop = useCallback(() => {
-    if (hasAccounts) {
-      parentNav.popToTop()
-    } else {
-      parentNav.navigate('CreateImport')
-    }
-  }, [hasAccounts, parentNav])
 
   const handleNext = useCallback(async () => {
     try {
@@ -224,8 +206,8 @@ const AccountImportScreen = () => {
         reset()
         navigation.popToTop()
       } else {
+        carouselRef?.current?.snapToNext()
         setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
-        navigation.navigate('ImportSubAccounts')
       }
     } catch (error) {
       await showOKAlert({
@@ -234,6 +216,7 @@ const AccountImportScreen = () => {
       })
     }
   }, [
+    carouselRef,
     words,
     restoringAccount,
     accounts,
@@ -246,8 +229,6 @@ const AccountImportScreen = () => {
     setOnboardingData,
   ])
 
-  const keyExtractor = useCallback((_item, index) => index, [])
-
   const handleWordSelectedAtIndex = useCallback(
     (index: number) => () => {
       setWordIndex(index)
@@ -258,27 +239,60 @@ const AccountImportScreen = () => {
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: w }: { item: string | null; index: number }) => {
+      // index after selected
+      const relativeIndex = Math.max(0, index - wordIndex)
+
+      let opacity = 0.05
+
+      switch (relativeIndex) {
+        case 0:
+          opacity = 1
+          break
+        case 1:
+          opacity = 0.4
+          break
+        case 2:
+          opacity = 0.3
+          break
+        case 3:
+          opacity = 0.2
+          break
+        case 4:
+          opacity = 0.1
+          break
+        default:
+          opacity = 0.05
+      }
+
       return (
-        <TouchableOpacityBox
-          paddingHorizontal="2"
+        <TouchableContainer
           onPress={handleWordSelectedAtIndex(index)}
-          paddingVertical="5"
+          paddingVertical="1.5"
+          paddingHorizontal="3"
           alignItems="center"
+          backgroundColor={
+            wordIndex === index ? 'primaryText' : 'primaryBackground'
+          }
+          borderRadius="full"
+          marginStart={index === 0 ? '2xl' : undefined}
+          marginEnd={index === wordCount - 1 ? '2xl' : undefined}
+          opacity={opacity}
+          marginBottom="xl"
+          minWidth={83}
+          pressableStyles={{ flex: undefined }}
         >
           <Text
-            variant="textMdRegular"
-            color={
-              w || wordIndex === index ? getAccent(index).key : 'secondaryText'
-            }
+            variant="textLgSemibold"
+            color={wordIndex === index ? 'primaryBackground' : 'primaryText'}
           >
             {upperCase(
               w || t('accountImport.wordEntry.word', { ordinal: index + 1 }),
             )}
           </Text>
-        </TouchableOpacityBox>
+        </TouchableContainer>
       )
     },
-    [getAccent, handleWordSelectedAtIndex, t, wordIndex],
+    [handleWordSelectedAtIndex, t, wordCount, wordIndex],
   )
 
   const handleOnPaste = useCallback((copiedContent: string) => {
@@ -289,64 +303,73 @@ const AccountImportScreen = () => {
     }
   }, [])
 
+  const showCheckButton = useMemo(() => {
+    return words.every((w) => w !== null && w !== undefined)
+  }, [words])
+
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      <TouchableOpacityBox padding="6" onPress={navToTop} alignItems="flex-end">
-        <Close color={colors.primaryText} height={16} width={16} />
-      </TouchableOpacityBox>
+    <ScrollBox flex={1} contentContainerStyle={{ flex: 1 }}>
       <KeyboardAwareScrollView
-        extraScrollHeight={80}
         enableOnAndroid
+        enableResetScrollToCoords
         keyboardShouldPersistTaps="always"
       >
-        <Text
-          color="primaryText"
-          variant="displayMdRegular"
-          lineHeight={33}
-          numberOfLines={3}
-          maxFontSizeMultiplier={1}
-          marginHorizontal="6"
-          adjustsFontSizeToFit
-          paddingTop="15"
-          paddingBottom="4"
-        >
-          {t('accountImport.wordEntry.title', { totalWords: wordCount })}
-        </Text>
-        <FlatList
-          data={words}
-          contentContainerStyle={flatListStyle}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          horizontal
-          ref={flatlistRef}
-          showsHorizontalScrollIndicator={false}
-          initialScrollIndex={wordIndex}
-          onContentSizeChange={handleContentSizeChanged}
+        <SegmentedControl
+          options={options}
+          onItemSelected={onWordAmountClicked}
+          paddingTop="4xl"
+          paddingBottom="8xl"
         />
+        <Box alignItems="center" gap="xl">
+          <SecretPhrase width={60} height={60} />
+          <Text
+            color="primaryText"
+            variant="displayMdSemibold"
+            maxFontSizeMultiplier={1}
+            marginHorizontal="6"
+            adjustsFontSizeToFit
+            textAlign="center"
+          >
+            {t('accountImport.wordEntry.title', { totalWords: wordCount })}
+          </Text>
+
+          <Text
+            color="text.quaternary-500"
+            variant="textXlRegular"
+            maxFontSizeMultiplier={1}
+            marginHorizontal="6"
+            adjustsFontSizeToFit
+            textAlign="center"
+          >
+            {t('accountImport.wordEntry.enterYourSecurityWords')}
+          </Text>
+        </Box>
+        <Box marginTop="5xl" flexDirection="row">
+          <ScrollBox
+            ref={scrollViewRef}
+            scrollEnabled
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              flexDirection: 'row',
+              overflow: 'visible',
+              gap: spacing.md,
+            }}
+          >
+            {words.map((w, i) => renderItem({ item: w, index: i }))}
+          </ScrollBox>
+        </Box>
         <PassphraseAutocomplete
           word={words[wordIndex]}
           complete={words.findIndex((w) => !w) === -1}
           onSelectWord={handleSelectWord}
           wordIdx={wordIndex}
-          totalWords={wordCount}
           onSubmit={handleNext}
-          accentKey={getAccent(wordIndex).key}
-          accentValue={getAccent(wordIndex).value}
           onPaste={handleOnPaste}
         />
-        <TouchableOpacityBox
-          onPress={onWordAmountClicked}
-          flex={1}
-          alignItems="center"
-        >
-          <Text variant="textMdRegular" color="secondaryText">
-            {t('accountImport.wordEntry.changeWordAmount', {
-              totalWords: wordCount === 12 ? 24 : 12,
-            })}
-          </Text>
-        </TouchableOpacityBox>
       </KeyboardAwareScrollView>
-    </Box>
+      {showCheckButton && <CheckButton onPress={handleNext} />}
+    </ScrollBox>
   )
 }
 

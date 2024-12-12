@@ -13,7 +13,7 @@ import { requestCameraPermission } from '@utils/camera'
 import { PermissionStatus } from 'react-native-permissions'
 import { Color } from '@config/theme/theme'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
-import CheckButton from '../../components/CheckButton'
+import CheckButton from '../../../../components/CheckButton'
 
 export const ConnectToHotspotScreen = () => {
   const {
