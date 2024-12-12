@@ -107,7 +107,7 @@ export const SignMessage = () => {
         )
 
         const [nonce, encryptedPayload] = encryptPayload(
-          JSON.stringify({ signature }),
+          JSON.stringify({ signature: bs58.encode(signature) }),
           sharedSecret,
         )
 
@@ -130,7 +130,7 @@ export const SignMessage = () => {
 
   const onCancel = useCallback(() => {
     if (navigation.canGoBack()) {
-      navigation.goBack()
+      navigation.popToTop()
     } else {
       navigation.reset({
         index: 0,
@@ -181,6 +181,7 @@ export const SignMessage = () => {
             titleColor="primaryBackground"
             onPress={onSignMessage}
             loading={signing}
+            customLoadingColor="primaryBackground"
           />
           <ButtonPressable
             flex={1}

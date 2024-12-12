@@ -175,7 +175,7 @@ export const SignAndSendTransaction = () => {
 
   const onCancel = useCallback(() => {
     if (navigation.canGoBack()) {
-      navigation.goBack()
+      navigation.popToTop()
     } else {
       navigation.reset({
         index: 0,
@@ -226,6 +226,7 @@ export const SignAndSendTransaction = () => {
             titleColor="primaryBackground"
             onPress={onSignAndSendTransaction}
             loading={signing}
+            customLoadingColor="primaryBackground"
           />
           <ButtonPressable
             flex={1}

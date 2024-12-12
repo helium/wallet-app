@@ -86,7 +86,7 @@ export const Disconnect = () => {
 
   const onCancel = useCallback(() => {
     if (navigation.canGoBack()) {
-      navigation.goBack()
+      navigation.popToTop()
     } else {
       navigation.reset({
         index: 0,
@@ -135,6 +135,7 @@ export const Disconnect = () => {
             backgroundColor="primaryText"
             titleColor="primaryBackground"
             onPress={onDisconnect}
+            customLoadingColor="primaryBackground"
           />
           <ButtonPressable
             flex={1}

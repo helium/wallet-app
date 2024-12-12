@@ -17,7 +17,7 @@ import React, {
   useState,
 } from 'react'
 import { ThemeProvider } from '@shopify/restyle'
-import { darkTheme } from '@config/theme/theme'
+import { darkTheme, lightTheme } from '@config/theme/theme'
 import { StyleProp, ViewStyle } from 'react-native'
 import {
   WalletSignBottomSheetProps,
@@ -47,6 +47,7 @@ const WalletSignBottomSheet = forwardRef(
       serializedTxs: undefined,
       header: undefined,
       suppressWarnings: false,
+      theme: 'dark',
     })
 
     const hasRenderer = walletSignOpts.renderer !== undefined
@@ -128,7 +129,10 @@ const WalletSignBottomSheet = forwardRef(
             ref={bottomSheetModalRef}
             index={0}
             backgroundStyle={{
-              backgroundColor: darkTheme.colors.primaryBackground,
+              backgroundColor:
+                walletSignOpts.theme === 'light'
+                  ? lightTheme.colors.primaryBackground
+                  : darkTheme.colors.primaryBackground,
               borderRadius: borderRadii['4xl'] + borderRadii['4xl'],
             }}
             backdropComponent={renderBackdrop}
@@ -145,7 +149,9 @@ const WalletSignBottomSheet = forwardRef(
             }}
             enableDynamicSizing
           >
-            <ThemeProvider theme={darkTheme}>
+            <ThemeProvider
+              theme={walletSignOpts.theme === 'light' ? lightTheme : darkTheme}
+            >
               <BottomSheetScrollView>
                 {hasRenderer && !simulated ? (
                   <WalletSignBottomSheetCompact

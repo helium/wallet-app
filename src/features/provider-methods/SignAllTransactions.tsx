@@ -137,7 +137,9 @@ export const SignAllTransactions = () => {
 
         const [nonce, encryptedPayload] = encryptPayload(
           JSON.stringify({
-            transactions: signedTransactions?.map((tx) => tx.serialize()),
+            transactions: signedTransactions?.map((tx) =>
+              bs58.encode(tx.serialize()),
+            ),
           }),
           sharedSecret,
         )
@@ -161,7 +163,7 @@ export const SignAllTransactions = () => {
 
   const onCancel = useCallback(() => {
     if (navigation.canGoBack()) {
-      navigation.goBack()
+      navigation.popToTop()
     } else {
       navigation.reset({
         index: 0,
@@ -212,6 +214,7 @@ export const SignAllTransactions = () => {
             titleColor="primaryBackground"
             onPress={onSignAllTransactions}
             loading={signing}
+            customLoadingColor="primaryBackground"
           />
           <ButtonPressable
             flex={1}

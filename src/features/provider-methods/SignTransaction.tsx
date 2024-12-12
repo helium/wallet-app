@@ -134,6 +134,7 @@ export const SignTransaction = () => {
               requireAllSignatures: false,
             }),
           ],
+          theme: 'light',
         })
 
         if (!decision) {
@@ -165,7 +166,9 @@ export const SignTransaction = () => {
         )
 
         const [nonce, encryptedPayload] = encryptPayload(
-          JSON.stringify({ transaction: signedTransaction.serialize() }),
+          JSON.stringify({
+            transaction: bs58.encode(signedTransaction.serialize()),
+          }),
           sharedSecret,
         )
 
@@ -175,7 +178,7 @@ export const SignTransaction = () => {
         })
 
         Linking.openURL(`${params.redirect_link}?${searchParams.toString()}`)
-      } catch {
+      } catch (e) {
         const errorParams = new URLSearchParams({
           errorCode: '-32603',
           errorMessage: 'Failed to connect to the provider',
@@ -188,7 +191,7 @@ export const SignTransaction = () => {
 
   const onCancel = useCallback(() => {
     if (navigation.canGoBack()) {
-      navigation.goBack()
+      navigation.popToTop()
     } else {
       navigation.reset({
         index: 0,
@@ -239,6 +242,7 @@ export const SignTransaction = () => {
             titleColor="primaryBackground"
             onPress={onSignTransaction}
             loading={signing}
+            customLoadingColor="primaryBackground"
           />
           <ButtonPressable
             flex={1}

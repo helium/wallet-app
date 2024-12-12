@@ -16,6 +16,7 @@ export type WalletSignOpts = {
   warning?: string
   serializedTxs?: Buffer[]
   renderer?: () => ReactNode
+  theme?: 'light' | 'dark'
 }
 
 export type WalletSignBottomSheetRef = {

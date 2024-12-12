@@ -263,7 +263,7 @@ const useSession = () => {
 
       setCurrentAccount(account)
 
-      return payload
+      return payloadData
     },
     [accounts, setCurrentAccount, decryptPayload],
   )
@@ -274,7 +274,7 @@ const useSession = () => {
       payload: string,
       nonce: string,
     ) => {
-      const signTxnPayload: string | undefined = await getSignPayload(
+      const signTxnPayload: SignTransactionPayload = await getSignPayload(
         dapp_encryption_public_key,
         payload,
         nonce,
@@ -284,9 +284,7 @@ const useSession = () => {
         throw new Error('Sign transaction payload not found')
       }
 
-      const parsedPayload: SignTransactionPayload = JSON.parse(signTxnPayload)
-
-      return parsedPayload
+      return signTxnPayload
     },
     [getSignPayload],
   )

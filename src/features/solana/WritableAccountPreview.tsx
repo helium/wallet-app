@@ -118,7 +118,7 @@ export const WritableAccountPreview = ({
           flexDirection="row"
           justifyContent="space-between"
           alignItems="stretch"
-          backgroundColor="gray.900"
+          backgroundColor="cardBackground"
           borderTopLeftRadius="2xl"
           borderTopRightRadius="2xl"
           padding="2"
@@ -127,7 +127,7 @@ export const WritableAccountPreview = ({
             {t('browserScreen.estimatedAccountChanges')}
           </Text>
         </Box>
-        <Box pt="0.5" backgroundColor="base.black" />
+        <Box pt="0.5" backgroundColor="primaryBackground" />
         <Box
           p="2"
           mb="2"
@@ -135,7 +135,7 @@ export const WritableAccountPreview = ({
           alignItems="stretch"
           borderBottomLeftRadius="2xl"
           borderBottomRightRadius="2xl"
-          backgroundColor="gray.900"
+          backgroundColor="cardBackground"
         >
           {writableAccount.pre.account && !writableAccount.post.account && (
             <Text variant="textXsMedium" color="primaryText" alignSelf="center">
@@ -188,7 +188,7 @@ export const WritableAccountPreview = ({
           flexDirection="row"
           justifyContent="space-between"
           alignItems="stretch"
-          backgroundColor="gray.900"
+          backgroundColor="cardBackground"
           borderTopLeftRadius="2xl"
           borderTopRightRadius="2xl"
           padding="2"
@@ -197,14 +197,14 @@ export const WritableAccountPreview = ({
             {t('browserScreen.instructionsAndPrograms')}
           </Text>
         </Box>
-        <Box pt="0.5" backgroundColor="base.black" />
+        <Box pt="0.5" backgroundColor="primaryBackground" />
         <Box
           p="2"
           flexDirection="column"
           alignItems="stretch"
           borderBottomLeftRadius="2xl"
           borderBottomRightRadius="2xl"
-          backgroundColor="gray.900"
+          backgroundColor="cardBackground"
         >
           {instructions.map(({ parsed, raw }, index) => (
             <Box

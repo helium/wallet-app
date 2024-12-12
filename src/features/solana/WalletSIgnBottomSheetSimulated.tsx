@@ -410,11 +410,11 @@ export const WalletSignBottomSheetSimulated = ({
                       <ButtonPressable
                         width="100%"
                         borderRadius="full"
-                        backgroundColor="base.white"
+                        backgroundColor="primaryText"
                         backgroundColorOpacity={0.1}
                         backgroundColorOpacityPressed={0.05}
                         titleColorPressedOpacity={0.3}
-                        titleColor="base.white"
+                        titleColor="primaryBackground"
                         title={t('generic.loadMore')}
                         onPress={handleLoadMore}
                       />
@@ -493,7 +493,7 @@ export const WalletSignBottomSheetSimulated = ({
           <Box flex={1}>
             <SubmitButton
               color="error.500"
-              backgroundColor="base.white"
+              backgroundColor="cardBackground"
               title={
                 type === WalletStandardMessageTypes.connect
                   ? t('browserScreen.connect')
@@ -510,7 +510,7 @@ export const WalletSignBottomSheetSimulated = ({
               justifyContent: 'center',
             }}
             borderRadius="full"
-            backgroundColor="gray.true-700"
+            backgroundColor="primaryText"
             Icon={CancelIcon}
             onPress={onCancel}
           />
@@ -524,7 +524,7 @@ export const WalletSignBottomSheetSimulated = ({
           <ButtonPressable
             width="48%"
             borderRadius="full"
-            backgroundColor="secondaryBackground"
+            backgroundColor="cardBackground"
             backgroundColorOpacityPressed={0.05}
             backgroundColorPressed="fg.secondary-hover"
             titleColor="primaryText"
@@ -536,7 +536,7 @@ export const WalletSignBottomSheetSimulated = ({
           <ButtonPressable
             width="48%"
             borderRadius="full"
-            backgroundColor="base.white"
+            backgroundColor="primaryText"
             backgroundColorOpacityPressed={0.7}
             backgroundColorDisabled="bg.tertiary"
             backgroundColorDisabledOpacity={0.5}
@@ -546,7 +546,7 @@ export const WalletSignBottomSheetSimulated = ({
                 ? t('browserScreen.connect')
                 : t('browserScreen.approve')
             }
-            titleColor="base.black"
+            titleColor="primaryBackground"
             onPress={onAccept}
           />
         </Box>

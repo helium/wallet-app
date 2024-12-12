@@ -1,7 +1,7 @@
 {
-  "name": "HeliumWallet",
-  "displayName": "Helium Wallet",
+  "displayName": "Helium",
   "expo": {
     "scheme": "heliumwallet"
-  }
+  },
+  "name": "HeliumWallet"
 }

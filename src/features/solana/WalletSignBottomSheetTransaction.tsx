@@ -123,7 +123,7 @@ const WalletSignBottomSheetTransaction = ({
     <Box flexDirection="column" marginBottom="4">
       <Box
         flexDirection="column"
-        backgroundColor="gray.800"
+        backgroundColor="cardBackground"
         borderTopLeftRadius="2xl"
         borderTopRightRadius="2xl"
         padding="2"
@@ -208,7 +208,7 @@ const WalletSignBottomSheetTransaction = ({
           alignItems="stretch"
           borderBottomLeftRadius="2xl"
           borderBottomRightRadius="2xl"
-          backgroundColor="gray.800"
+          backgroundColor="cardBackground"
           mt="0.5"
         >
           <WarningBox
@@ -231,7 +231,7 @@ const WalletSignBottomSheetTransaction = ({
           alignItems="stretch"
           borderBottomLeftRadius="2xl"
           borderBottomRightRadius="2xl"
-          backgroundColor="gray.800"
+          backgroundColor="cardBackground"
         >
           {uncollapsedAccounts.map((writableAccount) => (
             <CollapsibleWritableAccountPreview
