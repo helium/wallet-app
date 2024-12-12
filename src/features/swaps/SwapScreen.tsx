@@ -303,13 +303,23 @@ const SwapScreen = () => {
       }
 
       if (selectorMode === SelectorMode.youReceive) {
+        setRecipient('')
+        setRecipientOpen(false)
+
         if (mint.equals(inputMint)) {
           setInputMint(outputMint)
         }
         setOutputMint(mint)
       }
     },
-    [selectorMode, refresh, inputMint, outputMint],
+    [
+      selectorMode,
+      inputMint,
+      outputMint,
+      refresh,
+      setRecipient,
+      setRecipientOpen,
+    ],
   )
 
   const tokenData = useMemo(() => {
@@ -358,49 +368,54 @@ const SwapScreen = () => {
   const getOutputAmount = useCallback(
     async ({ balance }: { balance: BN }) => {
       setRouteNotFound(false)
-      if (outputMintAcc && inputMintAcc) {
-        const { address: input, decimals: inputDecimals } = inputMintAcc
-        const { address: output, decimals: outputDecimals } = outputMintAcc
+      if (!outputMintAcc || !inputMintAcc) return
 
-        if (!isDevnet && !output.equals(DC_MINT)) {
-          const route = await getRoute({
-            amount: balance.toNumber(),
-            inputMint: input.toBase58(),
-            outputMint: output.toBase58(),
-            slippageBps,
-          })
-          if (!route) {
-            setRouteNotFound(true)
-          }
-          setPriceImpact(Number(route?.priceImpactPct || '0') * 100)
-
-          return setOutputAmount(
-            toNumber(new BN(Number(route?.outAmount || 0)), outputDecimals),
-          )
+      const { address: input, decimals: inputDecimals } = inputMintAcc
+      const { address: output, decimals: outputDecimals } = outputMintAcc
+      const handleDevnetPrice = () => {
+        if (price && !input.equals(HNT_MINT)) {
+          return setOutputAmount(price)
         }
-        if (output.equals(DC_MINT)) {
-          if (input.equals(HNT_MINT)) {
-            return setOutputAmount(
-              toNumber(
-                networkTokensToDc(toBN(balance, inputDecimals)) || new BN(0),
-                inputDecimals,
-              ),
-            )
-          }
+        return setOutputAmount(0)
+      }
+
+      const handleJupiterRoute = async () => {
+        const route = await getRoute({
+          amount: balance.toNumber(),
+          inputMint: input.toBase58(),
+          outputMint: output.toBase58(),
+          slippageBps,
+        })
+
+        if (!route) {
+          setRouteNotFound(true)
+          setPriceImpact(0)
+          return setOutputAmount(0)
+        }
+
+        setPriceImpact(Number(route?.priceImpactPct || '0') * 100)
+        return setOutputAmount(
+          toNumber(new BN(Number(route?.outAmount || 0)), outputDecimals),
+        )
+      }
+
+      const handleDCConversion = () => {
+        if (!input.equals(HNT_MINT)) {
           setRouteNotFound(true)
           return setOutputAmount(0)
         }
 
-        if (isDevnet) {
-          if (price && !input.equals(HNT_MINT)) {
-            return setOutputAmount(price)
-          }
-
-          return setOutputAmount(0)
-        }
-
-        return setOutputAmount(0)
+        return setOutputAmount(
+          toNumber(
+            networkTokensToDc(toBN(balance, inputDecimals)) || new BN(0),
+            inputDecimals,
+          ),
+        )
       }
+
+      if (isDevnet) return handleDevnetPrice()
+      if (output.equals(DC_MINT)) return handleDCConversion()
+      return handleJupiterRoute()
     },
     [
       getRoute,
@@ -414,34 +429,18 @@ const SwapScreen = () => {
   )
 
   useEffect(() => {
-    setRecipient('')
-    setRecipientOpen(false)
-    setOutputAmount(0)
-  }, [
-    inputMint,
-    inputAmount,
-    outputMint,
-    setRecipient,
-    setRecipientOpen,
-    setOutputAmount,
-  ])
+    if (
+      !inputMintAcc?.address?.equals(inputMint) ||
+      !outputMintAcc?.address?.equals(outputMint) ||
+      typeof inputAmount === 'undefined' ||
+      inputAmount <= 0
+    ) {
+      return
+    }
 
-  useEffect(() => {
-    // if changing outputMint ensure we get new routes
-    ;(async () => {
-      if (
-        !isDevnet &&
-        inputMintAcc?.address === inputMint &&
-        outputMintAcc?.address === outputMint &&
-        typeof inputAmount !== 'undefined' &&
-        inputAmount > 0 &&
-        !outputMintAcc?.address.equals(DC_MINT)
-      ) {
-        await getOutputAmount({
-          balance: toBN(inputAmount || 0, inputMintAcc.decimals),
-        })
-      }
-    })()
+    getOutputAmount({
+      balance: toBN(inputAmount, inputMintAcc.decimals),
+    })
   }, [
     getOutputAmount,
     inputMint,
@@ -449,53 +448,58 @@ const SwapScreen = () => {
     inputMintAcc,
     outputMint,
     outputMintAcc,
-    isDevnet,
   ])
 
   const getInputAmount = useCallback(
     async ({ balance }: { balance: BN }) => {
-      if (outputMintAcc && inputMintAcc) {
-        const { address: input, decimals: inputDecimals } = inputMintAcc
-        const { address: output, decimals: outputDecimals } = outputMintAcc
+      setRouteNotFound(false)
+      if (!outputMintAcc || !inputMintAcc) return
 
-        if (!isDevnet && !output.equals(DC_MINT)) {
-          const route = await getRoute({
-            amount: balance.toNumber(),
-            inputMint: output.toBase58(),
-            outputMint: input.toBase58(),
-            slippageBps,
-          })
+      const { address: input, decimals: inputDecimals } = inputMintAcc
+      const { address: output, decimals: outputDecimals } = outputMintAcc
 
-          if (!route) {
-            setRouteNotFound(true)
-            return setInputAmount(0)
-          }
-
-          return setInputAmount(
-            toNumber(new BN(Number(route?.outAmount || 0)), inputDecimals),
-          )
+      const handleDevnetPrice = () => {
+        if (price && !input.equals(HNT_MINT)) {
+          return setInputAmount(price)
         }
-        if (output.equals(DC_MINT)) {
-          if (input.equals(HNT_MINT)) {
-            return setInputAmount(
-              toNumber(
-                dcToNetworkTokens(toBN(balance, outputDecimals)) || new BN(0),
-                inputDecimals,
-              ),
-            )
-          }
+        return setInputAmount(0)
+      }
+
+      const handleJupiterRoute = async () => {
+        const route = await getRoute({
+          amount: balance.toNumber(),
+          inputMint: output.toBase58(),
+          outputMint: input.toBase58(),
+          slippageBps,
+        })
+
+        if (!route) {
           setRouteNotFound(true)
-        }
-        if (isDevnet) {
-          if (price && !input.equals(HNT_MINT)) {
-            return setInputAmount(price)
-          }
-
           return setInputAmount(0)
         }
 
+        return setInputAmount(
+          toNumber(new BN(Number(route?.outAmount || 0)), inputDecimals),
+        )
+      }
+
+      const handleDCConversion = () => {
+        if (input.equals(HNT_MINT)) {
+          return setInputAmount(
+            toNumber(
+              dcToNetworkTokens(toBN(balance, outputDecimals)) || new BN(0),
+              inputDecimals,
+            ),
+          )
+        }
+
+        setRouteNotFound(true)
         return setInputAmount(0)
       }
+
+      if (isDevnet) return handleDevnetPrice()
+      if (output.equals(DC_MINT)) return handleDCConversion()
+      return handleJupiterRoute()
     },
     [
       dcToNetworkTokens,
