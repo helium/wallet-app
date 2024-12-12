@@ -2,6 +2,14 @@ import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeystoneAccountType } from 'src/features/keystone/SelectKeystoneAccountsScreen'
 import { PaymentRouteParam } from 'src/app/services/WalletService'
+import {
+  SignAllTransactionsMethod,
+  ConnectMethod,
+  DisconnectMethod,
+  SignMessageMethod,
+  SignTransactionMethod,
+  SignAndSendTransactionMethod,
+} from '@features/provider-methods/utils'
 
 export type RootStackParamList = {
   OnboardingNavigator: undefined
@@ -14,6 +22,12 @@ export type RootStackParamList = {
   ImportPrivateKey: { key?: string }
   SelectKeystoneAccounts: { derivationAccounts: KeystoneAccountType[] }
   ScanQrCode: undefined
+  Connect: ConnectMethod
+  Disconnect: DisconnectMethod
+  SignTransaction: SignTransactionMethod
+  SignMessage: SignMessageMethod
+  SignAndSendTransaction: SignAndSendTransactionMethod
+  SignAllTransactions: SignAllTransactionsMethod
 }
 
 export type TabBarStackParamList = {
