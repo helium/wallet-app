@@ -16,6 +16,12 @@ import PaymentScreen from '@features/payment/PaymentScreen'
 import LinkWallet from '@features/txnDelegation/LinkWallet'
 import SignHotspot from '@features/txnDelegation/SignHotspot'
 import { useNavigation } from '@react-navigation/native'
+import SignTransaction from '@features/provider-methods/SignTransaction'
+import SignMessage from '@features/provider-methods/SignMessage'
+import Connect from '@features/provider-methods/Connect'
+import Disconnect from '@features/provider-methods/Disconnect'
+import SignAndSendTransaction from '@features/provider-methods/SignAndSendTransaction'
+import SignAllTransactions from '@features/provider-methods/SignAllTransactions'
 import { RootNavigationProp, RootStackParamList } from './rootTypes'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
@@ -101,6 +107,36 @@ const RootNavigator = () => {
       <RootStack.Screen
         name="ScanQrCode"
         component={ScanQrCodeScreen}
+        options={screenOptions}
+      />
+      <RootStack.Screen
+        name="Connect"
+        component={Connect}
+        options={screenOptions}
+      />
+      <RootStack.Screen
+        name="Disconnect"
+        component={Disconnect}
+        options={screenOptions}
+      />
+      <RootStack.Screen
+        name="SignTransaction"
+        component={SignTransaction}
+        options={screenOptions}
+      />
+      <RootStack.Screen
+        name="SignMessage"
+        component={SignMessage}
+        options={screenOptions}
+      />
+      <RootStack.Screen
+        name="SignAndSendTransaction"
+        component={SignAndSendTransaction}
+        options={screenOptions}
+      />
+      <RootStack.Screen
+        name="SignAllTransactions"
+        component={SignAllTransactions}
         options={screenOptions}
       />
     </RootStack.Navigator>

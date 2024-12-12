@@ -133,17 +133,29 @@ const LinkWallet = () => {
   }, [])
 
   return (
-    <AccountSelector ref={accountSelectorRef}>
+    <>
       <SafeAreaBox
         backgroundColor="primaryBackground"
         flex={1}
-        padding="6"
+        padding="2xl"
         justifyContent="center"
       >
-        <Text variant="textMdRegular" fontSize={32} marginTop="4">
+        <Text
+          variant="displayMdSemibold"
+          marginTop="4"
+          color="primaryText"
+          textAlign="center"
+          paddingHorizontal="2xl"
+        >
           {t('linkWallet.title', { appName })}
         </Text>
-        <Text variant="textMdRegular" marginVertical="4">
+        <Text
+          variant="textXlRegular"
+          marginVertical="4"
+          color="text.quaternary-500"
+          textAlign="center"
+          paddingHorizontal="2xl"
+        >
           {t('linkWallet.body', { appName })}
         </Text>
 
@@ -158,12 +170,16 @@ const LinkWallet = () => {
         <TouchableOpacityBox
           marginTop="3"
           minHeight={56}
-          backgroundColor="primaryBackground"
+          backgroundColor="primaryText"
           justifyContent="center"
           borderRadius="full"
           onPress={handleLink}
         >
-          <Text variant="textXlMedium" color="primaryText" textAlign="center">
+          <Text
+            variant="textXlMedium"
+            color="primaryBackground"
+            textAlign="center"
+          >
             {t('linkWallet.yes')}
           </Text>
         </TouchableOpacityBox>
@@ -181,7 +197,8 @@ const LinkWallet = () => {
           </Text>
         </TouchableOpacityBox>
       </SafeAreaBox>
-    </AccountSelector>
+      <AccountSelector ref={accountSelectorRef} />
+    </>
   )
 }
 

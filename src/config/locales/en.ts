@@ -707,6 +707,7 @@ export default {
     body: 'By continuing, you agree to the',
   },
   generic: {
+    anApp: 'An App',
     dBi: 'dBi',
     gain: 'Gain',
     maker: 'Maker',
@@ -1711,5 +1712,45 @@ export default {
     subtitle: 'Generate a 24-word passkey to secure your account.',
     generateAPasskey: 'Generate a Passkey',
     newAccount: 'New Account',
+  },
+  Connect: {
+    title: 'Connect',
+    subtitle:
+      '{{appName}} is requesting a connection to your wallet. Only connect to apps you trust.',
+    connect: 'Connect',
+  },
+  Disconnect: {
+    title: 'Disconnect',
+    subtitle: '{{appName}} is requesting a disconnection from your wallet.',
+    disconnect: 'Disconnect',
+  },
+  SignTransaction: {
+    title: 'Sign Transaction',
+    subtitle:
+      '{{appName}} is requesting a transaction to be signed. Only sign transactions from apps you trust.',
+    sign: 'Sign Transaction',
+  },
+  SignMessage: {
+    title: 'Sign Message',
+    subtitle:
+      '{{appName}} is requesting a message to be signed. Only sign messages from apps you trust.',
+    sign: 'Sign Message',
+  },
+  SignAllTransactions: {
+    title: 'Sign Transactions',
+    subtitle:
+      '{{appName}} is requesting for transactions to be signed. Only sign transactions from apps you trust.',
+    sign: 'Sign Transactions',
+  },
+  SignAndSendTransaction: {
+    title: 'Sign and Send Transaction',
+    subtitle:
+      '{{appName}} is requesting a transaction to be signed and sent. Only sign transactions from apps you trust.',
+    sign: 'Sign and Send',
+  },
+  ErrorDetected: {
+    title: 'Error',
+    subtitle:
+      'There was an error with the app attempting to deep link. Please contact the app provider.',
   },
 }
