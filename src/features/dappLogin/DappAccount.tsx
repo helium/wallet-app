@@ -53,7 +53,7 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
   }, [currentAccount, setCurrentAccount, sortedMainnetAccounts])
 
   return (
-    <AccountSelector ref={accountSelectorRef}>
+    <>
       <Box flex={1}>
         <Box flex={1} />
         <Box
@@ -132,7 +132,8 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
           </TouchableOpacityBox>
         </Box>
       </Box>
-    </AccountSelector>
+      <AccountSelector ref={accountSelectorRef} />
+    </>
   )
 }
 

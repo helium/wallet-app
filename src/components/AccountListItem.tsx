@@ -23,7 +23,7 @@ const AccountListItem = ({
   disabled,
   ...rest
 }: Props & BoxProps<Theme>) => {
-  const { primaryText } = useColors()
+  const { primaryBackground } = useColors()
 
   const handlePress = useCallback(() => onPress?.(account), [account, onPress])
 
@@ -55,14 +55,14 @@ const AccountListItem = ({
       </Box>
       {selected && (
         <Box
-          backgroundColor="primaryBackground"
+          backgroundColor="primaryText"
           height={27}
           width={27}
           borderRadius="full"
           justifyContent="center"
           alignItems="center"
         >
-          <Checkmark color={primaryText} />
+          <Checkmark color={primaryBackground} />
         </Box>
       )}
     </TouchableContainer>

@@ -6,18 +6,17 @@ import { BoxProps } from '@shopify/restyle'
 import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import { Color, Theme } from '@config/theme/theme'
 import useHaptic from '@hooks/useHaptic'
+import { ellipsizeAddress } from '@utils/accountUtils'
 import AccountIcon from './AccountIcon'
 import Box from './Box'
 import Text from './Text'
-import TouchableOpacityBox from './TouchableOpacityBox'
+import TouchableContainer from './TouchableContainer'
 
 type Props = {
   onPress?: (address?: string) => void
   address?: string
   title?: string
-  subtitle?: string
   showBubbleArrow?: boolean
-  innerBoxProps?: BoxProps<Theme>
   showChevron?: boolean
   accountIconSize?: number
 } & BoxProps<Theme>
@@ -26,9 +25,7 @@ const AccountButton = ({
   onPress,
   address,
   title,
-  subtitle,
   showBubbleArrow,
-  innerBoxProps,
   showChevron = true,
   accountIconSize = 28,
   backgroundColor: backgroundColorProps,
@@ -45,40 +42,39 @@ const AccountButton = ({
   }, [address, onPress, triggerImpact])
 
   const textColor = useMemo((): Color => {
-    return 'secondaryText'
+    return 'text.quaternary-500'
   }, [])
 
   return (
-    <TouchableOpacityBox
+    <TouchableContainer
+      borderRadius="2xl"
       hitSlop={hitSlop}
       alignItems="center"
+      backgroundColor="cardBackground"
+      backgroundColorPressed="gray.900"
+      padding="xl"
       onPress={handlePress}
       disabled={!onPress}
       {...boxProps}
     >
       <Box
         backgroundColor={backgroundColorProps as Color}
-        borderRadius="4xl"
         alignItems="center"
         flexDirection="row"
-        paddingHorizontal={innerBoxProps?.paddingHorizontal || '6'}
-        paddingVertical={innerBoxProps?.paddingVertical || '4'}
-        {...innerBoxProps}
       >
         <AccountIcon size={accountIconSize} address={address} />
         <Box flex={1}>
-          {!!subtitle && (
-            <Text marginLeft="3" variant="textXsRegular" color={textColor}>
-              {subtitle}
-            </Text>
-          )}
-          <Text
-            marginLeft="3"
-            marginRight="xs"
-            variant="textLgMedium"
-            color="primaryText"
-          >
+          <Text marginLeft="2.5" variant="textLgSemibold" color="primaryText">
             {title}
+          </Text>
+          <Text
+            marginLeft="2.5"
+            variant="textMdRegular"
+            color="text.quaternary-500"
+          >
+            {ellipsizeAddress(address || '', {
+              numChars: 4,
+            })}
           </Text>
         </Box>
         {showChevron && <ChevronDown color={colors[textColor]} />}
@@ -92,7 +88,7 @@ const AccountButton = ({
           />
         </Box>
       )}
-    </TouchableOpacityBox>
+    </TouchableContainer>
   )
 }
 
