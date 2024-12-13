@@ -6,6 +6,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.zoontek.rnbootsplash.RNBootSplash
 import expo.modules.ReactActivityDelegateWrapper
+import android.os.Bundle
 
 class MainActivity : ReactActivity() {
 

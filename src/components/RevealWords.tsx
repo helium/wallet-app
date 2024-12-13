@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import Text from '@components/Text'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
-import { FlatList } from 'react-native'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import CopyAddress from '@assets/svgs/copyAddress.svg'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -12,6 +11,7 @@ import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
 import { FadeIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { FlatList } from 'react-native-gesture-handler'
 
 type Props = {
   mnemonic: string[]
