@@ -56,8 +56,11 @@ target 'HeliumWallet' do
   permissions_path = '../node_modules/react-native-permissions/ios'
   setup_permissions(['BluetoothPeripheral'])
 
-  $RNMapboxMapsImpl = 'mapbox'
-  $RNMapboxMapsVersion = '= 11.4.0'
+  $RNMapboxMapsVersion = '= 11.8.0'
+
+  pre_install do |installer|
+    $RNMapboxMaps.pre_install(installer)
+  end
 
   post_install do |installer|
     $RNMapboxMaps.post_install(installer)

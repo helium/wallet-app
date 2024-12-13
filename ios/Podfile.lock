@@ -24,17 +24,17 @@ PODS:
     - React-Core
   - EXLocation (17.0.1):
     - ExpoModulesCore
-  - Expo (51.0.24):
+  - Expo (51.0.39):
     - ExpoModulesCore
   - ExpoAsset (10.0.10):
     - ExpoModulesCore
-  - ExpoCamera (15.0.14):
+  - ExpoCamera (15.0.16):
     - ExpoModulesCore
     - ZXingObjC/OneD
     - ZXingObjC/PDF417
   - ExpoFileSystem (17.0.1):
     - ExpoModulesCore
-  - ExpoFont (12.0.9):
+  - ExpoFont (12.0.10):
     - ExpoModulesCore
   - ExpoHaptics (13.0.1):
     - ExpoModulesCore
@@ -42,7 +42,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLocalAuthentication (14.0.1):
     - ExpoModulesCore
-  - ExpoModulesCore (1.12.20):
+  - ExpoModulesCore (1.12.26):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -98,13 +98,13 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - MapboxCommon (24.4.0)
-  - MapboxCoreMaps (11.4.0):
-    - MapboxCommon (~> 24.4)
-  - MapboxMaps (11.4.0):
-    - MapboxCommon (= 24.4.0)
-    - MapboxCoreMaps (= 11.4.0)
-    - Turf (= 2.8.0)
+  - MapboxCommon (24.8.0)
+  - MapboxCoreMaps (11.8.0):
+    - MapboxCommon (~> 24.8)
+  - MapboxMaps (11.8.0):
+    - MapboxCommon (= 24.8.0)
+    - MapboxCoreMaps (= 11.8.0)
+    - Turf (= 3.0.0)
   - MultiplatformBleAdapter (0.1.9)
   - OneSignalXCFramework (5.2.2):
     - OneSignalXCFramework/OneSignalComplete (= 5.2.2)
@@ -1096,7 +1096,7 @@ PODS:
   - react-native-config/App (1.4.6):
     - React-Core
   - react-native-config/Extension (1.4.6)
-  - react-native-get-random-values (1.8.0):
+  - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-mail (6.1.1):
     - React-Core
@@ -1107,8 +1107,27 @@ PODS:
   - react-native-onesignal (5.2.2):
     - OneSignalXCFramework (= 5.2.2)
     - React (< 1.0.0, >= 0.13.0)
-  - react-native-pager-view (6.1.2):
+  - react-native-pager-view (6.3.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-randombytes (3.6.1):
     - React-Core
   - react-native-safe-area-context (4.10.8):
@@ -1421,7 +1440,7 @@ PODS:
     - React-utils (= 0.74.5)
   - RNBootSplash (6.3.2):
     - React-Core
-  - RNCAsyncStorage (1.18.1):
+  - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCCheckbox (0.5.17):
     - BEMCheckBox (~> 1.4)
@@ -1476,14 +1495,14 @@ PODS:
     - React
   - RNLocalize (2.2.3):
     - React-Core
-  - rnmapbox-maps (10.1.31):
-    - MapboxMaps (= 11.4.0)
+  - rnmapbox-maps (10.1.33):
+    - MapboxMaps (= 11.8.0)
     - React
     - React-Core
-    - rnmapbox-maps/DynamicLibrary (= 10.1.31)
+    - rnmapbox-maps/DynamicLibrary (= 10.1.33)
     - Turf
-  - rnmapbox-maps/DynamicLibrary (10.1.31):
-    - MapboxMaps (= 11.4.0)
+  - rnmapbox-maps/DynamicLibrary (10.1.33):
+    - MapboxMaps (= 11.8.0)
     - React
     - React-Core
     - Turf
@@ -1548,7 +1567,7 @@ PODS:
   - TcpSockets (3.3.2):
     - React
   - Toast (4.0.0)
-  - Turf (2.8.0)
+  - Turf (3.0.0)
   - VisionCamera (4.5.3):
     - VisionCamera/Core (= 4.5.3)
     - VisionCamera/React (= 4.5.3)
@@ -1939,15 +1958,15 @@ SPEC CHECKSUMS:
   EXConstants: 409690fbfd5afea964e5e9d6c4eb2c2b59222c59
   EXImageLoader: ab589d67d6c5f2c33572afea9917304418566334
   EXLocation: 43e9b582ca63a23c6f0a18d8cbe2145b3a388b55
-  Expo: 798848eae1daf13363d69790986146b08d0cf92f
+  Expo: 8c995afb875c15bf8439af0b20bcb9ed8f90d0bd
   ExpoAsset: 323700f291684f110fb55f0d4022a3362ea9f875
-  ExpoCamera: a5d000b22cd7dfd2c5904ed960e549de42c96da0
+  ExpoCamera: 929be541d1c1319fcf32f9f5d9df8b97804346b5
   ExpoFileSystem: 80bfe850b1f9922c16905822ecbf97acd711dc51
-  ExpoFont: e7f2275c10ca8573c991e007329ad6bf98086485
+  ExpoFont: 00756e6c796d8f7ee8d211e29c8b619e75cbf238
   ExpoHaptics: 5a3a88971af384255baf2504f38b41189cec6984
   ExpoKeepAwake: 3b8815d9dd1d419ee474df004021c69fdd316d08
   ExpoLocalAuthentication: 9e02a56a4cf9868f0052656a93d4c94101a42ed7
-  ExpoModulesCore: 5440e96a8ee014f4fd88e77264985fd0a65f5f8c
+  ExpoModulesCore: 831ece8311a489418746925820bbffdda587d6f4
   ExpoSecureStore: 060cebcb956b80ddae09821610ac1aa9e1ac74cd
   FBLazyVector: ac12dc084d1c8ec4cc4d7b3cf1b0ebda6dab85af
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
@@ -1956,9 +1975,9 @@ SPEC CHECKSUMS:
   hermes-engine: 8c1577f3fdb849cbe7729c2e7b5abc4b845e88f8
   lottie-ios: e047b1d2e6239b787cc5e9755b988869cf190494
   lottie-react-native: f851c0e235f171d99083c803f728f644be1dcf65
-  MapboxCommon: 6acbd8ff41d66abf498e1558b0739f25c562945a
-  MapboxCoreMaps: f306bb1b10ebe995a2247b40e99322ab7f9b8071
-  MapboxMaps: 82044383ae19ec124ff444ec4b5d3ce82cb36ba5
+  MapboxCommon: 95fe03b74d0d0ca39dc646ca14862deb06875151
+  MapboxCoreMaps: f2a82182c5f6c6262220b81547c6df708012932b
+  MapboxMaps: dbe1869006c5918d62efc6b475fb884947ea2ecd
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: f06edd9b146c7ac5935136a117ce2a5fdd6420f6
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
@@ -1990,12 +2009,12 @@ SPEC CHECKSUMS:
   react-native-charts-wrapper: 4268219d67a6fd7e94453d77d31b38ef1cd23860
   react-native-compass-heading: 1b4403d1c99dfd8311073ca8fc52bfc8e365cfac
   react-native-config: 7cd105e71d903104e8919261480858940a6b9c0e
-  react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
+  react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-mail: 8fdcd3aef007c33a6877a18eb4cf7447a1d4ce4a
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
   react-native-network-info: d1290ffc0bd0709e11436f5b8d7f605dcc5c4530
   react-native-onesignal: 592184d34780d04ebbea2b9844d5b6088606cb30
-  react-native-pager-view: 54bed894cecebe28cede54c01038d9d1e122de43
+  react-native-pager-view: c1e29e1a6105a02807392ba822ad322447a72f55
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: b7daa1a8df36095a032dff095a1ea8963cb48371
   react-native-simple-toast: 8ee5d23f0b92b935ab7434cdb65159ce12dfb4b7
@@ -2029,7 +2048,7 @@ SPEC CHECKSUMS:
   React-utils: f242eb7e7889419d979ca0e1c02ccc0ea6e43b29
   ReactCommon: f7da14a8827b72704169a48c929bcde802698361
   RNBootSplash: 3a44c2c3ebfce98254de887ceed22c4941c8c6c5
-  RNCAsyncStorage: b90b71f45b8b97be43bc4284e71a6af48ac9f547
+  RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNCMaskedView: da52ec927af4b4c3f3f6b5b5e816a69be62fe642
@@ -2037,7 +2056,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: efed690b8493a00b99654043daeb1335276ac4a2
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
-  rnmapbox-maps: 961b998761de9672c448aa17144b987410890992
+  rnmapbox-maps: e215d3fe420ef53090d65ecdda5cf8bf4af19c66
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: 2af759cf053542b2b4b3c4cf9f43874796106f2c
   RNReactNativeSharedGroupPreferences: 29092869fc2e40d5baca5e15d82fa5c24a668977
@@ -2051,11 +2070,11 @@ SPEC CHECKSUMS:
   SwiftyJSON: 36413e04c44ee145039d332b4f4e2d3e8d6c4db7
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
-  Turf: aa2ede4298009639d10db36aba1a7ebaad072a5e
+  Turf: a1604e74adce15c58462c9ae2acdbf049d5be35e
   VisionCamera: cb84d0d8485b3e67c91b62931d3aa88f49747c92
-  Yoga: 950bbfd7e6f04790fdb51149ed51df41f329fcc8
+  Yoga: 2246eea72aaf1b816a68a35e6e4b74563653ae09
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: af8e0f0904c0f9cc43a95eef4e1feb504870ee6e
+PODFILE CHECKSUM: 51a354c5ff94b58e8c8bd1903d2326a93a17b4d0
 
-COCOAPODS: 1.16.1
+COCOAPODS: 1.16.2

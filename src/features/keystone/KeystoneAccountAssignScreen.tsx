@@ -106,6 +106,7 @@ const KeystoneAccountAssignScreen = () => {
             width="100%"
             marginTop="8"
             flexDirection="row"
+            alignItems="center"
           >
             <AccountIcon
               size={40}
