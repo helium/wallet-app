@@ -1568,12 +1568,6 @@ PODS:
     - React
   - Toast (4.0.0)
   - Turf (3.0.0)
-  - VisionCamera (4.5.3):
-    - VisionCamera/Core (= 4.5.3)
-    - VisionCamera/React (= 4.5.3)
-  - VisionCamera/Core (4.5.3)
-  - VisionCamera/React (4.5.3):
-    - React-Core
   - Yoga (0.0.0)
   - ZXingObjC/Core (3.6.9)
   - ZXingObjC/OneD (3.6.9):
@@ -1697,7 +1691,6 @@ DEPENDENCIES:
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNTestFlight (from `../node_modules/react-native-test-flight`)
   - TcpSockets (from `../node_modules/react-native-tcp`)
-  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1941,8 +1934,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-test-flight"
   TcpSockets:
     :path: "../node_modules/react-native-tcp"
-  VisionCamera:
-    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2071,7 +2062,6 @@ SPEC CHECKSUMS:
   TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   Turf: a1604e74adce15c58462c9ae2acdbf049d5be35e
-  VisionCamera: cb84d0d8485b3e67c91b62931d3aa88f49747c92
   Yoga: 2246eea72aaf1b816a68a35e6e4b74563653ae09
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 

@@ -1,31 +1,28 @@
 import Box from '@components/Box'
-import React, { useCallback, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Linking, Platform, StyleSheet } from 'react-native'
 import Text from '@components/Text'
 import { useTranslation } from 'react-i18next'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors } from '@config/theme/themeHooks'
 import RightArrow from '@assets/svgs/rightArrow.svg'
-import {
-  Camera,
-  useCameraDevice,
-  useCodeScanner,
-} from 'react-native-vision-camera'
-import useAppear from '@hooks/useAppear'
-import useDisappear from '@hooks/useDisappear'
 import useHaptic from '@hooks/useHaptic'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
+import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
+import useAlert from '@hooks/useAlert'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 import CheckButton from '../../../../components/CheckButton'
 import Loading from '../../../../components/LoadingButton'
 
 const ScanQRCodeScreen = () => {
-  const { t } = useTranslation()
   const colors = useColors()
-  const [isActive, setIsActive] = useState(false)
   const { triggerImpact } = useHaptic()
   const [qrCode, setQrCode] = useState<string | null>(null)
+  const [scanned, setScanned] = useState(false)
+  const [hasPermission, setHasPermission] = useState<boolean>()
+  const { showOKCancelAlert } = useAlert()
+  const { t } = useTranslation()
 
   const {
     carouselRef,
@@ -33,24 +30,40 @@ const ScanQRCodeScreen = () => {
     getDeviceInfo,
     getDeviceInfoLoading,
     getDeviceInfoError,
-    onboardDetails,
   } = useHotspotOnboarding()
+
+  useEffect(() => {
+    Camera.requestCameraPermissionsAsync().then(
+      ({ status }: { status: string }) => {
+        setHasPermission(status === 'granted')
+      },
+    )
+  }, [])
+
+  useAsync(async () => {
+    if (hasPermission !== false) return
+
+    // if permission is not granted, show alert to open settings
+    const decision = await showOKCancelAlert({
+      title: t('qrScanner.deniedAlert.title'),
+      message: t('qrScanner.deniedAlert.message'),
+      ok: t('qrScanner.deniedAlert.ok'),
+    })
+
+    // if user clicks ok, open settings
+    if (decision) {
+      if (Platform.OS === 'ios') {
+        await Linking.openURL('app-settings:')
+      } else {
+        await Linking.openSettings()
+      }
+    }
+  }, [hasPermission, showOKCancelAlert])
 
   const onManualEntry = useCallback(() => {
     setManualEntry(true)
   }, [setManualEntry])
 
-  const device = useCameraDevice('back', {
-    physicalDevices: ['ultra-wide-angle-camera'],
-  })
-
-  useAppear(() => {
-    setIsActive(true)
-  })
-
-  useDisappear(() => {
-    setIsActive(false)
-  })
   const onNext = useCallback(async () => {
     if (__DEV__ && Config.MOCK_HMH === 'true') {
       // Make sure MOCK_HMH is set to true in .env
@@ -68,14 +81,15 @@ const ScanQRCodeScreen = () => {
     }
   }, [carouselRef, getDeviceInfo, qrCode])
 
-  const codeScanner = useCodeScanner({
-    codeTypes: ['qr'],
-    onCodeScanned: (codes) => {
-      if (!codes.length || !codes[0].value || onboardDetails.qrCode) return
+  const handleBarCodeScanned = useCallback(
+    async (result: BarcodeScanningResult) => {
+      if (scanned) return
 
-      setQrCode(codes[0].value)
+      setScanned(true)
+      setQrCode(result.data)
     },
-  })
+    [scanned],
+  )
 
   useAsync(async () => {
     if (!qrCode) return
@@ -105,16 +119,12 @@ const ScanQRCodeScreen = () => {
             borderRadius: 24,
           }}
         >
-          {device ? (
-            <Camera
-              style={{ ...StyleSheet.absoluteFillObject }}
-              device={device}
-              isActive={isActive}
-              codeScanner={codeScanner}
-            />
-          ) : (
-            <Box flex={1} backgroundColor="primaryText" />
-          )}
+          <CameraView
+            onBarcodeScanned={handleBarCodeScanned}
+            barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+            style={StyleSheet.absoluteFillObject}
+            ratio="16:9"
+          />
         </Box>
       </Box>
       <Text variant="displayMdSemibold" color="primaryText" marginBottom="2.5">

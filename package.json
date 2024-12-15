@@ -214,7 +214,6 @@
     "react-native-udp": "2.7.0",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-video": "5.2.1",
-    "react-native-vision-camera": "^4.5.3",
     "react-native-webview": "13.10.5",
     "react-redux": "8.0.4",
     "readable-stream": "3.6.0",
