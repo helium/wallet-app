@@ -21,7 +21,6 @@ import {
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import ScrollBox from '@components/ScrollBox'
 import { Asset } from '@helium/spl-utils'
