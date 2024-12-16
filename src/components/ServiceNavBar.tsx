@@ -180,7 +180,7 @@ const NavServiceNavBar = ({
   return (
     <Box
       {...containerProps}
-      paddingHorizontal="2xl"
+      paddingHorizontal={{ xs: '2', lg: '2xl' }}
       flexDirection="row"
       flex={1}
       shadowColor="base.black"

@@ -20,8 +20,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import ScrollBox from '@components/ScrollBox'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
 import { RootState } from '../../store/rootReducer'
 import { CompressedNFT } from '../../types/solana'
@@ -38,7 +37,7 @@ const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
   const colors = useColors()
   const spacing = useSpacing()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const navigation = useNavigation<WalletNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
   const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
@@ -193,7 +192,7 @@ const TransferCollectableScreen = () => {
               width="100%"
               justifyContent="flex-end"
               style={{
-                paddingBottom: NavBarHeight + bottom + spacing.xl,
+                paddingBottom: bottomSpacing,
               }}
             >
               <ButtonPressable

@@ -23,9 +23,24 @@ const WelcomeToHeliumScreen = () => {
 
   return (
     <Box flex={1} padding="2xl">
-      <Box gap="xl" flex={1} justifyContent="center" alignItems="center">
+      <Box
+        gap={{
+          xs: '1',
+          lg: 'xl',
+        }}
+        flex={1}
+        justifyContent="center"
+        alignItems="center"
+      >
         <ImageBox
-          width={width - spacing['2xl'] * 2}
+          width={{
+            xs: width - spacing['6xl'] * 2,
+            lg: width - spacing['2xl'] * 2,
+          }}
+          height={{
+            xs: width - spacing['6xl'] * 2,
+            lg: width - spacing['2xl'] * 2,
+          }}
           source={require('@assets/images/welcomeToHelium.png')}
           resizeMode="contain"
         />
@@ -38,7 +53,10 @@ const WelcomeToHeliumScreen = () => {
           {t('WelcomeToHeliumScreen.title')}
         </Text>
         <Text
-          variant="textXlRegular"
+          variant={{
+            xs: 'textLgRegular',
+            lg: 'textXlRegular',
+          }}
           color="text.quaternary-500"
           textAlign="center"
           adjustsFontSizeToFit
@@ -46,7 +64,15 @@ const WelcomeToHeliumScreen = () => {
           {t('WelcomeToHeliumScreen.subtitle')}
         </Text>
       </Box>
-      <Box flexDirection="column" width="100%" gap="lg" marginBottom="xl">
+      <Box
+        flexDirection="column"
+        width="100%"
+        gap="lg"
+        marginBottom={{
+          xs: '0',
+          lg: 'xl',
+        }}
+      >
         <ButtonPressable
           title={t('WelcomeToHeliumScreen.createNewAccount')}
           backgroundColor="primaryText"

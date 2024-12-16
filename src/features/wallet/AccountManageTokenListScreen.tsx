@@ -23,8 +23,8 @@ import BackScreen from '@components/BackScreen'
 import ScrollBox from '@components/ScrollBox'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@config/theme/theme'
-import { NavBarHeight } from '@components/ServiceNavBar'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
@@ -114,6 +114,8 @@ const CheckableTokenListItem = ({
 const AccountManageTokenListScreen: React.FC = () => {
   const { visibleTokens, setVisibleTokens } = useVisibleTokens()
   const { tokenAccounts } = useBalance()
+  const bottomSpacing = useBottomSpacing()
+
   const mints = useMemo(() => {
     return tokenAccounts
       ?.filter(
@@ -185,7 +187,7 @@ const AccountManageTokenListScreen: React.FC = () => {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           contentContainerStyle={{
-            paddingBottom: NavBarHeight,
+            paddingBottom: bottomSpacing,
           }}
         />
       </BackScreen>

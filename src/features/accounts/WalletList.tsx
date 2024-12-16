@@ -23,7 +23,6 @@ import { getSecureAccount } from '@config/storage/secureStorage'
 import * as bip39 from 'bip39'
 import { useOnboarding } from '@features/onboarding/OnboardingProvider'
 import Toast from 'react-native-simple-toast'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ServiceSheetNavigationProp } from 'src/app/services/serviceSheetTypes'
 import CircleLoader from '@components/CircleLoader'
 import ScrollBox from '@components/ScrollBox'
@@ -31,7 +30,7 @@ import {
   OnboardingSheetRef,
   OnboardingSheetWrapper,
 } from '@features/onboarding/OnboardingSheet'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { AccountsServiceNavigationProp } from './accountServiceTypes'
 
 const ACCOUNT_LIMIT = 100
@@ -49,7 +48,7 @@ const WalletList = () => {
   >()
   const { sortedAccounts, currentAccount, setCurrentAccount, accounts } =
     useAccountStorage()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
 
   const handleAddSub = useCallback(
@@ -322,7 +321,7 @@ const WalletList = () => {
         <SectionList
           contentContainerStyle={{
             padding: spacing['2xl'],
-            paddingBottom: NavBarHeight + bottom + spacing['6xl'],
+            paddingBottom: bottomSpacing,
           }}
           keyExtractor={keyExtractor}
           sections={filteredAccounts}

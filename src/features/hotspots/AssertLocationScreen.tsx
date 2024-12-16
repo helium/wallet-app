@@ -50,7 +50,6 @@ import {
 import 'text-encoding-polyfill'
 import { useDebounce } from 'use-debounce'
 import { useColors, useCreateOpacity } from '@config/theme/themeHooks'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Map from '@components/Map'
 import {
   Camera,
@@ -64,7 +63,7 @@ import {
   INITIAL_MAP_VIEW_STATE,
   MAX_MAP_ZOOM,
 } from '@utils/mapUtils'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { Search } from '@components/Search'
 import {
   CollectableNavigationProp,
@@ -75,7 +74,7 @@ type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
 const AssertLocationScreen = () => {
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const route = useRoute<Route>()
   const { backgroundStyle } = useCreateOpacity()
   const { collectable } = route.params
@@ -737,7 +736,7 @@ const AssertLocationScreen = () => {
               justifyContent="center"
               onPress={handleAssertLocationPress}
               style={{
-                marginBottom: bottom + NavBarHeight,
+                marginBottom: bottomSpacing,
               }}
             >
               {debouncedDisabled || asserting ? (
@@ -847,7 +846,7 @@ const AssertLocationScreen = () => {
                 <Box
                   padding="3"
                   style={{
-                    marginBottom: bottom + NavBarHeight,
+                    marginBottom: bottomSpacing,
                   }}
                 >
                   <ButtonPressable

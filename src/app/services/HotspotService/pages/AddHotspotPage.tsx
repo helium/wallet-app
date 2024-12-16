@@ -8,19 +8,18 @@ import Add from '@assets/svgs/add.svg'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import RightArrow from '@assets/svgs/rightArrow.svg'
 import ScrollBox from '@components/ScrollBox'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   OnboardingSheetWrapper,
   OnboardingSheetRef,
 } from '@features/hotspot-onboarding/OnboardingSheet'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const AddHotspotPage = () => {
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
   const colors = useColors()
   const spacing = useSpacing()
   const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
+  const bottomSpacing = useBottomSpacing()
 
   const showOnboardingSheet = useCallback(() => {
     onboardingSheetRef.current?.show()
@@ -88,7 +87,7 @@ const AddHotspotPage = () => {
             gap="sm"
             justifyContent="center"
             style={{
-              marginBottom: NavBarHeight + bottom + spacing['2xl'],
+              marginBottom: bottomSpacing,
             }}
           >
             <Text variant="textMdMedium" color="text.quaternary-500">

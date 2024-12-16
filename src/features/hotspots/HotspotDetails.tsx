@@ -22,6 +22,11 @@ import { useTranslation } from 'react-i18next'
 import { formatDistanceToNow } from 'date-fns'
 import MiniMap from '@components/MiniMap'
 import { HotspotNavigationProp } from '@services/HotspotService/pages/HotspotPage'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
+import { useIotInfo } from '@hooks/useIotInfo'
+import { useMobileInfo } from '@hooks/useMobileInfo'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { parseH3BNLocation } from '@utils/h3'
 import { HotspotWithPendingRewards } from '../../types/solana'
 
 const MINI_MAP_HEIGHT = 310
@@ -32,8 +37,11 @@ const HotspotDetails = () => {
     hotspot: HotspotWithPendingRewards
   }
   const spacing = useSpacing()
+  const bottomSpacing = useBottomSpacing()
   const navigation = useNavigation<HotspotNavigationProp>()
-
+  const entityKey = useEntityKey(hotspot)
+  const iotInfoAcc = useIotInfo(entityKey)
+  const mobileInfoAcc = useMobileInfo(entityKey)
   const colors = useColors()
   const borderRadii = useBorderRadii()
 
@@ -60,12 +68,27 @@ const HotspotDetails = () => {
   }, [hotspot])
 
   const { result: hotspotAddress } = useAsync(async () => {
-    const subDaoInfo = hotspot?.content?.metadata?.hotspot_infos[subDao]
+    let address:
+      | {
+          city: string | undefined
+          postalCode: string | undefined
+          country: string | undefined
+          street: string | undefined
+          state: string | undefined
+        }
+      | undefined
 
-    const lat = subDaoInfo?.lat
-    const long = subDaoInfo?.long
+    if (iotInfoAcc) {
+      const loc = await parseH3BNLocation(iotInfoAcc.info.location).reverse()
+      address = await getAddressFromLatLng(loc[1], loc[0])
+    }
 
-    const address = await getAddressFromLatLng(lat, long)
+    if (mobileInfoAcc) {
+      const loc = await parseH3BNLocation(mobileInfoAcc.info.location).reverse()
+      address = await getAddressFromLatLng(loc[1], loc[0])
+    }
+
+    if (!address) return undefined
 
     return `${address.street}, ${address.city}, ${address.state}`
   }, [hotspot, subDao])
@@ -201,7 +224,12 @@ const HotspotDetails = () => {
   )
 
   return (
-    <ScrollBox contentContainerStyle={{ padding: spacing['2xl'] }}>
+    <ScrollBox
+      contentContainerStyle={{
+        padding: spacing['2xl'],
+        paddingBottom: bottomSpacing,
+      }}
+    >
       <HeaderButtons />
       <MiniMap
         hasExpandButton={false}

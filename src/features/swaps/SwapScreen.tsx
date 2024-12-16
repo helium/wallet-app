@@ -67,13 +67,13 @@ import {
   Keyboard,
   Image,
 } from 'react-native'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { Edge } from 'react-native-safe-area-context'
 import SegmentedControl from '@components/SegmentedControl'
 import { Portal } from '@gorhom/portal'
 import ScrollBox from '@components/ScrollBox'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
@@ -88,7 +88,7 @@ enum SelectorMode {
 
 const SwapScreen = () => {
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const spacing = useSpacing()
   const { currentAccount } = useAccountStorage()
   const { isDevnet, anchorProvider, connection } = useSolana()
@@ -704,9 +704,7 @@ const SwapScreen = () => {
           flex={1}
           paddingHorizontal="5"
           style={{
-            marginBottom: slippageInfoVisible
-              ? 0
-              : NavBarHeight + bottom + spacing['2xl'],
+            marginBottom: slippageInfoVisible ? 0 : bottomSpacing,
           }}
         >
           <KeyboardAvoidingView behavior="position" keyboardVerticalOffset={60}>

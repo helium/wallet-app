@@ -318,7 +318,7 @@ const AccountImportScreen = () => {
           options={options}
           onItemSelected={onWordAmountClicked}
           paddingTop="4xl"
-          paddingBottom="8xl"
+          paddingBottom={{ xs: '4xl', lg: '8xl' }}
         />
         <Box alignItems="center" gap="xl">
           <SecretPhrase width={60} height={60} />

@@ -5,13 +5,12 @@ import TouchableContainer from '@components/TouchableContainer'
 import useHotspots from '@hooks/useHotspots'
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import SegmentedControl from '@components/SegmentedControl'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { Search } from '@components/Search'
 import { Location, MarkerView } from '@rnmapbox/maps'
 import ImageBox from '@components/ImageBox'
@@ -23,7 +22,7 @@ import { toNumber } from 'lodash'
 import MiniMap from '@components/MiniMap'
 import { HotspotNavigationProp } from '@services/HotspotService/pages/HotspotPage'
 import { HotspotWithPendingRewards } from '../../types/solana'
-import EmptyState from './EmptyState'
+import EmptyState from './components/EmptyState'
 
 const HotspotPage = () => {
   const {
@@ -35,11 +34,16 @@ const HotspotPage = () => {
     onEndReached,
   } = useHotspots()
 
+  // Refresh the hotspots when the page is loaded
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
   const isFocused = useIsFocused()
   const colors = useColors()
   const { t } = useTranslation()
   const spacing = useSpacing()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const navigation = useNavigation<HotspotNavigationProp>()
   const [filterText, setFilterText] = useState('')
   const [userLocation, setUserLocation] = useState<Location>()
@@ -310,9 +314,9 @@ const HotspotPage = () => {
   const contentContainerStyle = useMemo(() => {
     return {
       paddingHorizontal: spacing['2xl'],
-      paddingBottom: bottom + NavBarHeight + spacing.xl,
+      paddingBottom: bottomSpacing,
     }
-  }, [spacing, bottom])
+  }, [spacing, bottomSpacing])
 
   return (
     <>

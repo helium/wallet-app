@@ -23,7 +23,7 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useColors, useHitSlop, useSpacing } from '@config/theme/themeHooks'
+import { useColors, useHitSlop } from '@config/theme/themeHooks'
 import { BN } from 'bn.js'
 import React, {
   memo as reactMemo,
@@ -44,7 +44,7 @@ import {
 } from '@services/WalletService/pages/WalletPage'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { CSAccount } from '@config/storage/cloudStorage'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import ScrollBox from '@components/ScrollBox'
 import AddressBookSelector, {
   AddressBookRef,
@@ -72,8 +72,8 @@ const BurnScreen = () => {
     setCurrentAccount,
     defaultAccountAddress,
   } = useAccountStorage()
-  const spacing = useSpacing()
-  const { top, bottom } = useSafeAreaInsets()
+  const { top } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const navigation = useNavigation<WalletNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
@@ -105,10 +105,10 @@ const BurnScreen = () => {
   const containerStyle = useMemo(
     () => ({
       marginTop: Platform.OS === 'android' ? top : undefined,
-      paddingBottom: NavBarHeight + spacing['2xl'] + bottom,
+      paddingBottom: bottomSpacing,
       flex: 1,
     }),
-    [top, spacing, bottom],
+    [top, bottomSpacing],
   )
 
   const networkType = useMemo(

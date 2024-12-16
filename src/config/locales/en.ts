@@ -1653,7 +1653,7 @@ export default {
     claimTokens: 'Claim Tokens',
   },
   HotspotDetails: {
-    heliumMobileHotspot: 'Helium Mobile Hotspot Mines MOBILE.',
+    heliumMobileHotspot: 'Helium Mobile Hotspot Mines HNT.',
     heliumIoTHotspot: 'Helium IoT Hotspot Mines HNT.',
     deployed: 'Deployed {{date}}',
   },
@@ -1721,7 +1721,7 @@ export default {
   },
   Disconnect: {
     title: 'Disconnect',
-    subtitle: '{{appName}} is requesting a disconnection from your wallet.',
+    subtitle: '{{appName}} is requesting to disconnect from your wallet.',
     disconnect: 'Disconnect',
   },
   SignTransaction: {

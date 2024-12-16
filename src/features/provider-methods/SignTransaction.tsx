@@ -9,12 +9,7 @@ import { Linking, ViewStyle } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import ImageBox from '@components/ImageBox'
 import ButtonPressable from '@components/ButtonPressable'
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-} from '@solana/web3.js'
+import { Transaction } from '@solana/web3.js'
 import { useWalletSign } from '@features/solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
 import { useSolana } from '@features/solana/SolanaProvider'
@@ -24,28 +19,6 @@ import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import useSession, { Session, SignTransactionPayload } from './hooks/useSession'
 import ErrorDetected from './components/ErrorDetected'
 import extractWebMetadata from './utils'
-
-export const generateMockTxn = async (
-  publicKey: PublicKey,
-  connection: Connection,
-) => {
-  const {
-    value: { blockhash },
-  } = await connection.getLatestBlockhashAndContext()
-
-  const transaction = new Transaction({
-    feePayer: publicKey,
-    recentBlockhash: blockhash,
-  }).add(
-    new TransactionInstruction({
-      data: Buffer.from('Hello, from the Solana Wallet Adapter example app!'),
-      keys: [],
-      programId: new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
-    }),
-  )
-
-  return transaction
-}
 
 type Route = RouteProp<RootStackParamList, 'SignTransaction'>
 export const SignTransaction = () => {

@@ -18,8 +18,7 @@ import { useSolana } from '@features/solana/SolanaProvider'
 import { useOnboardingSheet } from '@features/onboarding/OnboardingSheet'
 import ForwardButton from '@components/ForwardButton'
 import ScrollBox from '@components/ScrollBox'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
 export type KeystoneAccountType = {
@@ -31,7 +30,7 @@ export type KeystoneAccountType = {
 }
 
 const SelectKeystoneAccountsScreen = () => {
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const colors = useColors()
   const spacing = useSpacing()
   const {
@@ -214,9 +213,9 @@ const SelectKeystoneAccountsScreen = () => {
     return {
       padding: spacing['2xl'],
       flex: 1,
-      paddingBottom: bottom + NavBarHeight + spacing.xl,
+      paddingBottom: bottomSpacing,
     }
-  }, [spacing, bottom])
+  }, [spacing, bottomSpacing])
 
   return (
     <>

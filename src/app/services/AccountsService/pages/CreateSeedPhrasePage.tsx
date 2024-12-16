@@ -8,30 +8,29 @@ import React, { useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { StyleProp, ViewStyle } from 'react-native'
 import Add from '@assets/svgs/add.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NavBarHeight } from '@components/ServiceNavBar'
 import {
   OnboardingSheetRef,
   OnboardingSheetWrapper,
 } from '@features/onboarding/OnboardingSheet'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const CreateSeedPhrasePage = () => {
   const { t } = useTranslation()
   const spacing = useSpacing()
   const colors = useColors()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
+
   const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
 
   const contentContainerStyle = useMemo(
     () => ({
-      paddingHorizontal: spacing['2xl'],
-      flex: 1,
+      padding: spacing['2xl'],
       justifyContent: 'center',
       alignItems: 'center',
       gap: spacing.xl,
-      paddingBottom: bottom + spacing['2xl'] + NavBarHeight,
+      paddingBottom: bottomSpacing,
     }),
-    [spacing, bottom],
+    [spacing, bottomSpacing],
   )
 
   const showBottomSheet = useCallback(() => {
@@ -40,10 +39,11 @@ const CreateSeedPhrasePage = () => {
 
   return (
     <ScrollBox
+      flex={1}
       contentContainerStyle={contentContainerStyle as StyleProp<ViewStyle>}
     >
-      <ImageBox source={require('@assets/images/acorn.png')} />
-      <Text variant="displayMdSemibold" color="primaryText">
+      <ImageBox marginTop="2xl" source={require('@assets/images/acorn.png')} />
+      <Text variant="displayMdSemibold" color="primaryText" textAlign="center">
         {t('CreateSeedPhrasePage.title')}
       </Text>
       <Text

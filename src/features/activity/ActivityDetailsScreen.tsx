@@ -18,9 +18,8 @@ import { useColors } from '@config/theme/themeHooks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { useCreateExplorerUrl } from '../../utils/constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
@@ -82,13 +81,13 @@ function ScamWarningImageBox(props: any): React.ReactElement<any> {
 }
 
 const ActivityDetailsScreen = () => {
-  const { bottom } = useSafeAreaInsets()
   const route = useRoute<Route>()
   const colors = useColors()
   const { t, i18n } = useTranslation()
   const createExplorerUrl = useCreateExplorerUrl()
   const copyText = useCopyText()
   const { triggerImpact } = useHaptic()
+  const bottomSpacing = useBottomSpacing()
 
   const { transaction } = route.params
 
@@ -398,7 +397,7 @@ const ActivityDetailsScreen = () => {
               titleColor="base.black"
               onPress={handleOpenExplorer}
               style={{
-                marginBottom: NavBarHeight + bottom,
+                marginBottom: bottomSpacing,
               }}
             />
           </Box>
