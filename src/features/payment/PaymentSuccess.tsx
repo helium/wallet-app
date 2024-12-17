@@ -6,8 +6,7 @@ import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
 
@@ -29,7 +28,7 @@ const PaymentSuccess = ({
   mint,
 }: Props) => {
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
 
   return (
     <Box flex={1} justifyContent="flex-end" backgroundColor="primaryBackground">
@@ -45,7 +44,7 @@ const PaymentSuccess = ({
         padding="6"
         overflow="hidden"
         style={{
-          paddingBottom: NavBarHeight + bottom,
+          paddingBottom: bottomSpacing,
         }}
         backgroundColor="cardBackground"
       >

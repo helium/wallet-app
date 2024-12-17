@@ -15,6 +15,12 @@ import { useSpacing } from '@config/theme/themeHooks'
 import Text from '@components/Text'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useAsync } from 'react-async-hook'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { useIotInfo } from '@hooks/useIotInfo'
+import { useMobileInfo } from '@hooks/useMobileInfo'
+import { parseH3BNLocation } from '@utils/h3'
+import { HotspotWithPendingRewards } from '../../../../types/solana'
 
 const ExplorerPage = () => {
   const { hotspotsWithMeta } = useHotspots()
@@ -90,30 +96,40 @@ const ExplorerPage = () => {
             <ImageBox source={require('@assets/images/puckNoBearing.png')} />
           </MarkerView>
         </UserLocation>
-        {hotspotsWithMeta.map((hotspot) => {
-          const subDao = hotspot?.content?.metadata?.hotspot_infos?.iot
-            ?.device_type
-            ? 'iot'
-            : 'mobile'
-          const { long, lat } = hotspot.content.metadata.hotspot_infos[subDao]
-
-          if (!long || !lat) return null
-
-          return (
-            <MarkerView
-              key={hotspot.id}
-              id={hotspot.id}
-              coordinate={[long, lat]}
-              allowOverlapWithPuck
-            >
-              <ImageBox
-                source={require('@assets/images/hotspotBlackMarker.png')}
-              />
-            </MarkerView>
-          )
-        })}
+        {hotspotsWithMeta.map((hotspot) => (
+          <HotspotMarker key={hotspot.id} hotspot={hotspot} />
+        ))}
       </Map>
     </Box>
+  )
+}
+
+const HotspotMarker = ({ hotspot }: { hotspot: HotspotWithPendingRewards }) => {
+  const entityKey = useEntityKey(hotspot)
+  const iotInfoAcc = useIotInfo(entityKey)
+  const mobileInfoAcc = useMobileInfo(entityKey)
+
+  const { result } = useAsync(async () => {
+    if (iotInfoAcc) {
+      return parseH3BNLocation(iotInfoAcc.info.location).reverse()
+    }
+
+    if (mobileInfoAcc) {
+      return parseH3BNLocation(mobileInfoAcc.info.location).reverse()
+    }
+  }, [hotspot])
+
+  if (!result) return null
+
+  return (
+    <MarkerView
+      key={hotspot.id}
+      id={hotspot.id}
+      coordinate={result}
+      allowOverlapWithPuck
+    >
+      <ImageBox source={require('@assets/images/hotspotBlackMarker.png')} />
+    </MarkerView>
   )
 }
 

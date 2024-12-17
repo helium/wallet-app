@@ -6,30 +6,28 @@ import { useColors, useSpacing } from '@config/theme/themeHooks'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Bluetooth from '@assets/svgs/bluetooth.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NavBarHeight } from '@components/ServiceNavBar'
 import { StyleProp, ViewStyle } from 'react-native'
 import {
   OnboardingSheetRef,
   OnboardingSheetWrapper,
 } from '@features/onboarding/OnboardingSheet'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const PairLedgerPage = () => {
   const { t } = useTranslation()
   const spacing = useSpacing()
   const colors = useColors()
   const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
 
   const contentContainerStyle = useMemo(
     () => ({
-      paddingHorizontal: spacing['2xl'],
-      flex: 1,
+      padding: spacing['2xl'],
       justifyContent: 'center',
       alignItems: 'center',
-      paddingBottom: bottom + spacing['2xl'] + NavBarHeight,
+      paddingBottom: bottomSpacing,
     }),
-    [spacing, bottom],
+    [spacing, bottomSpacing],
   )
 
   const openOnboardingSheet = useCallback(() => {

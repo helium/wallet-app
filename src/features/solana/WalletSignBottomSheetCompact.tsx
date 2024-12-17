@@ -129,24 +129,24 @@ export const WalletSignBottomSheetCompact = ({
         <ButtonPressable
           width="48%"
           borderRadius="full"
-          backgroundColor="base.white"
+          backgroundColor="primaryText"
           backgroundColorOpacity={0.1}
           backgroundColorOpacityPressed={0.05}
           titleColorPressedOpacity={0.3}
-          titleColor="base.white"
+          titleColor="primaryBackground"
           title={t('browserScreen.cancel')}
           onPress={onCancel}
         />
         <ButtonPressable
           width="48%"
           borderRadius="full"
-          backgroundColor="base.white"
+          backgroundColor="primaryText"
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="bg.tertiary"
           backgroundColorDisabledOpacity={0.5}
           titleColorDisabled="secondaryText"
           title={t('browserScreen.approve')}
-          titleColor="base.black"
+          titleColor="primaryBackground"
           onPress={onAccept}
         />
       </Box>

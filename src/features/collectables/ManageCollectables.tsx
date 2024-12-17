@@ -1,6 +1,6 @@
 import BackScreen from '@components/BackScreen'
 import ScrollBox from '@components/ScrollBox'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import useCollectables from '@hooks/useCollectables'
 import { RootState } from '@store/rootReducer'
 import { useColors } from '@config/theme/themeHooks'
@@ -9,13 +9,12 @@ import React, { useCallback } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FlatList, RefreshControl } from 'react-native'
 import { useSelector } from 'react-redux'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import CollectionItem, { Collection } from './CollectionItem'
 
 const ManageCollectables = () => {
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const colors = useColors()
   const { fetchAllCollectablesByGroup } = useCollectables()
   const approvedCollections = useSelector(
@@ -118,7 +117,7 @@ const ManageCollectables = () => {
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           contentContainerStyle={{
-            paddingBottom: NavBarHeight + bottom,
+            paddingBottom: bottomSpacing,
           }}
         />
       </BackScreen>

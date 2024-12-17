@@ -17,8 +17,6 @@ import {
 import { GovMints } from '@utils/constants'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import WalletAlertBanner from '@components/WalletAlertBanner'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { useAppDispatch } from '@store/store'
@@ -42,6 +40,7 @@ import { useNotificationStorage } from '@config/storage/NotificationStorageProvi
 import { ServiceSheetNavigationProp } from 'src/app/services/serviceSheetTypes'
 import { useSolana } from '@features/solana/SolanaProvider'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const TokensScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -50,7 +49,7 @@ const TokensScreen = () => {
   const { visibleTokens } = useVisibleTokens()
   const colors = useColors()
   const spacing = useSpacing()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const { currentAccount, sortedAccounts, defaultAccountAddress } =
     useAccountStorage()
   const dispatch = useAppDispatch()
@@ -212,9 +211,9 @@ const TokensScreen = () => {
     () => ({
       backgroundColor: colors['base.white'],
       paddingTop: spacing['4'],
-      paddingBottom: NavBarHeight + bottom,
+      paddingBottom: bottomSpacing,
     }),
-    [colors, spacing, bottom],
+    [colors, spacing, bottomSpacing],
   )
 
   useEffect(() => {

@@ -12,6 +12,7 @@ import useHaptic from '@hooks/useHaptic'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import CarotRight from '@assets/svgs/carot-right.svg'
 import { HotspotNavigationProp } from '@services/HotspotService/pages/HotspotPage'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { HotspotWithPendingRewards } from '../../types/solana'
 
 type HotspotConfigItem = {
@@ -38,7 +39,7 @@ export const HotspotConfig = () => {
   const navigation = useNavigation<HotspotNavigationProp>()
   const copyText = useCopyText()
   const { triggerImpact } = useHaptic()
-
+  const bottomSpacing = useBottomSpacing()
   const data = useMemo(() => {
     return [
       {
@@ -170,12 +171,6 @@ export const HotspotConfig = () => {
     [data, colors],
   )
 
-  const contentContainerStyle = useMemo(() => {
-    return {
-      // paddingBottom: spacing['2xl'],
-    }
-  }, [])
-
   const renderHeader = useCallback(() => {
     return (
       <Box marginVertical="6xl">
@@ -191,9 +186,13 @@ export const HotspotConfig = () => {
   }, [onBack])
 
   return (
-    <ScrollBox contentContainerStyle={{ padding: spacing['2xl'] }}>
+    <ScrollBox
+      contentContainerStyle={{
+        padding: spacing['2xl'],
+        paddingBottom: bottomSpacing,
+      }}
+    >
       <FlatList
-        contentContainerStyle={contentContainerStyle}
         data={data}
         renderItem={renderItem}
         keyExtractor={keyExtractor}

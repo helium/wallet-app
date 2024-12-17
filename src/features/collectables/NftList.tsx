@@ -6,8 +6,7 @@ import Box from '@components/Box'
 import useCollectables from '@hooks/useCollectables'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import { useNavigation } from '@react-navigation/native'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Config from '@assets/svgs/config.svg'
 import Text from '@components/Text'
@@ -19,7 +18,7 @@ import NFTListItem, { NFTSkeleton } from './NftListItem'
 
 const NftList = () => {
   const spacing = useSpacing()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const navigation = useNavigation<WalletNavigationProp>()
   const approvedCollections = useSelector(
     (state: RootState) => state.collectables.approvedCollections,
@@ -110,11 +109,11 @@ const NftList = () => {
   const contentContainerStyle = useMemo(
     () => ({
       marginTop: spacing[4],
-      paddingBottom: NavBarHeight + bottom + spacing['6xl'],
+      paddingBottom: bottomSpacing,
       paddingHorizontal: spacing[5],
       gap: spacing[4],
     }),
-    [spacing, bottom],
+    [spacing, bottomSpacing],
   )
 
   return (

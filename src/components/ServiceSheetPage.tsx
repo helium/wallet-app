@@ -9,7 +9,7 @@ import { Color } from '@config/theme/theme'
 import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
-import { useColors } from '@config/theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import ServiceNavBar from './ServiceNavBar'
 
 const Tab = createBottomTabNavigator()
@@ -35,6 +35,7 @@ function CustomTabBar({
 }) {
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { triggerImpact } = useHaptic()
+  const spacing = useSpacing()
   const { bottom } = useSafeAreaInsets()
 
   const tabData = useMemo((): Array<{
@@ -118,7 +119,7 @@ function CustomTabBar({
     >
       <Box
         style={{
-          marginBottom: bottom,
+          marginBottom: bottom === 0 ? spacing['2xl'] : bottom,
         }}
       >
         <ServiceNavBar

@@ -3,7 +3,7 @@ import React, { memo, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Box from '@components/Box'
 import Text from '@components/Text'
-import { useColors } from '@config/theme/themeHooks'
+import { useColors, useSpacing } from '@config/theme/themeHooks'
 import FinePrint from '@components/FinePrint'
 import TouchableContainer from '@components/TouchableContainer'
 import SecretPhrase from '@assets/svgs/secretPhrase.svg'
@@ -28,6 +28,7 @@ const CreateImportAccountScreen = () => {
   const navigation = useNavigation<OnboardingNavigationProp>()
   const colors = useColors()
   const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
+  const spacing = useSpacing()
 
   const goBack = useCallback(() => {
     navigation.goBack()
@@ -43,8 +44,10 @@ const CreateImportAccountScreen = () => {
   return (
     <ScrollBox
       flex={1}
-      padding="2xl"
-      contentContainerStyle={{ flex: 1, justifyContent: 'center' }}
+      contentContainerStyle={{
+        justifyContent: 'center',
+        padding: spacing['2xl'],
+      }}
     >
       <Box
         flexDirection="row"

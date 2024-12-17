@@ -21,11 +21,10 @@ import {
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
 } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import ScrollBox from '@components/ScrollBox'
 import { Asset } from '@helium/spl-utils'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import AddressIcon from '@assets/svgs/addressIcon.svg'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
@@ -46,7 +45,7 @@ const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<WalletNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const { t } = useTranslation()
 
   const { collectable } = route.params
@@ -222,7 +221,7 @@ const TransferCollectableScreen = () => {
                   flexDirection="row"
                   marginTop="4"
                   style={{
-                    marginBottom: NavBarHeight + bottom,
+                    marginBottom: bottomSpacing,
                   }}
                 >
                   <ButtonPressable

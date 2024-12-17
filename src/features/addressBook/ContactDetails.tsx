@@ -28,13 +28,12 @@ import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { useDebounce } from 'use-debounce'
 import { fetchDomainOwner } from '@utils/getDomainOwner'
 import BackScreen from '@components/BackScreen'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { useAppStorage } from '@config/storage/AppStorageProvider'
 import { CSAccount } from '@config/storage/cloudStorage'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import AddressExtra from './AddressExtra'
 import {
   AddressBookNavigationProp,
@@ -55,7 +54,6 @@ const ContactDetails = ({ action, contact }: Props) => {
   const { t } = useTranslation()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
-  const { bottom } = useSafeAreaInsets()
   const { addContact, editContact, deleteContact } = useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
   const [address, setAddress] = useState('')
@@ -67,6 +65,7 @@ const ContactDetails = ({ action, contact }: Props) => {
   const { connection } = useSolana()
   // debounce is needed to avoid unneccessary rpc calls
   const [debouncedAddress] = useDebounce(address, 800)
+  const bottomSpacing = useBottomSpacing()
 
   useEffect(() => {
     if (route.params?.address) {
@@ -185,7 +184,7 @@ const ContactDetails = ({ action, contact }: Props) => {
           paddingHorizontal="0"
           padding="4"
           style={{
-            paddingBottom: NavBarHeight + bottom + spacing.xl,
+            paddingBottom: bottomSpacing,
           }}
         >
           <Box flex={1}>

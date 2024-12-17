@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, memo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import Face from '@assets/svgs/face.svg'
@@ -18,7 +17,7 @@ import {
   WalletNavigationProp,
   WalletStackParamList,
 } from '@services/WalletService/pages/WalletPage'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import ButtonPressable from '@components/ButtonPressable'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import NftMetadata from './NftMetadata'
@@ -31,7 +30,7 @@ const NftDetailsScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<WalletNavigationProp>()
   const COLLECTABLE_HEIGHT = ww
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const { editAvatar } = useAccountStorage()
 
   const { t } = useTranslation()
@@ -182,7 +181,7 @@ const NftDetailsScreen = () => {
               <Box
                 flex={1}
                 marginTop="2xl"
-                style={{ marginBottom: NavBarHeight + bottom }}
+                style={{ marginBottom: bottomSpacing }}
               >
                 <NftMetadata metadata={content?.metadata} />
               </Box>

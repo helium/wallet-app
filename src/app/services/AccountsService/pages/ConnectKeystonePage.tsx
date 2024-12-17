@@ -6,29 +6,27 @@ import { useColors, useSpacing } from '@config/theme/themeHooks'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Scan from '@assets/svgs/scan.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { NavBarHeight } from '@components/ServiceNavBar'
 import { StyleProp, ViewStyle } from 'react-native'
 import {
   OnboardingSheetRef,
   OnboardingSheetWrapper,
 } from '@features/onboarding/OnboardingSheet'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const ConnectKeystonePage = () => {
   const { t } = useTranslation()
   const spacing = useSpacing()
   const colors = useColors()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const onboardingSheetRef = useRef<OnboardingSheetRef>(null)
   const contentContainerStyle = useMemo(
     () => ({
-      paddingHorizontal: spacing['2xl'],
-      flex: 1,
+      padding: spacing['2xl'],
       justifyContent: 'center',
       alignItems: 'center',
-      paddingBottom: bottom + spacing['2xl'] + NavBarHeight,
+      paddingBottom: bottomSpacing,
     }),
-    [spacing, bottom],
+    [spacing, bottomSpacing],
   )
 
   const openOnboarding = useCallback(() => {
@@ -40,6 +38,7 @@ const ConnectKeystonePage = () => {
       contentContainerStyle={contentContainerStyle as StyleProp<ViewStyle>}
     >
       <ImageBox
+        marginTop="2xl"
         source={require('@assets/images/keystone.png')}
         marginBottom="3xl"
       />

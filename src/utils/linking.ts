@@ -30,6 +30,12 @@ export const authenticatedLinking: LinkingOptions<RootStackParamList> = {
       PaymentScreen: 'payment',
       DappLoginScreen: 'dapp_login',
       ImportPrivateKey: 'import_key/:key',
+      Connect: 'ul/v1/connect',
+      Disconnect: 'ul/v1/disconnect',
+      SignTransaction: 'ul/v1/signTransaction',
+      SignMessage: 'ul/v1/signMessage',
+      SignAllTransactions: 'ul/v1/signAllTransactions',
+      SignAndSendTransaction: 'ul/v1/signAndSendTransaction',
       ServiceSheetNavigator: {
         screens: {
           Governance: {

@@ -23,16 +23,15 @@ import {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import ScrollBox from '@components/ScrollBox'
 import HNT from '@assets/svgs/hnt.svg'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { NavBarHeight } from '@components/ServiceNavBar'
 import {
   WalletNavigationProp,
   WalletStackParamList,
 } from 'src/app/services/WalletService/pages/WalletPage'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const DROP_HEIGHT = 79
 
@@ -40,7 +39,7 @@ type Route = RouteProp<WalletStackParamList, 'AirdropScreen'>
 
 const AirdropScreen = () => {
   const navigation = useNavigation<WalletNavigationProp>()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
   const { t } = useTranslation()
@@ -192,7 +191,7 @@ const AirdropScreen = () => {
           </Text>
           <ButtonPressable
             style={{
-              marginBottom: NavBarHeight + bottom,
+              marginBottom: bottomSpacing,
             }}
             borderRadius="full"
             onPress={onAirdrop}

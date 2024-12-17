@@ -42,7 +42,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
-import { NavBarHeight } from '@components/ServiceNavBar'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
 import { PaymentRouteParam } from 'src/app/services/WalletService'
 import ScrollBox from '@components/ScrollBox'
@@ -100,7 +100,7 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
 type Route = RouteProp<SendStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
   const route = useRoute<Route>()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const addressBookRef = useRef<AddressBookRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
@@ -675,7 +675,7 @@ const PaymentScreen = () => {
           backgroundColor="primaryBackground"
           style={{
             ...containerStyle,
-            paddingBottom: NavBarHeight + bottom,
+            paddingBottom: bottomSpacing,
           }}
         >
           {/* <Box

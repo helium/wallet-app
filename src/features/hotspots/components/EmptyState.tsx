@@ -1,9 +1,8 @@
 import Box from '@components/Box'
-import { NavBarHeight } from '@components/ServiceNavBar'
-import { useColors, useSpacing } from '@config/theme/themeHooks'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
+import { useColors } from '@config/theme/themeHooks'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import AddIcon from '@assets/svgs/add.svg'
@@ -12,10 +11,9 @@ import { useNavigation } from '@react-navigation/native'
 import { HotspotServiceNavigationProp } from 'src/app/services/HotspotService'
 
 const EmptyState = () => {
-  const spacing = useSpacing()
   const colors = useColors()
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
+  const bottomSpacing = useBottomSpacing()
   const navigation = useNavigation<HotspotServiceNavigationProp>()
 
   const onLearnMore = useCallback(() => {
@@ -30,7 +28,7 @@ const EmptyState = () => {
     <Box
       backgroundColor="transparent"
       position="absolute"
-      bottom={bottom + NavBarHeight + spacing.xs}
+      bottom={bottomSpacing}
       left={0}
       right={0}
       paddingHorizontal="2xl"
@@ -41,7 +39,7 @@ const EmptyState = () => {
         backgroundColor="primaryText"
         borderRadius="6xl"
         alignItems="center"
-        paddingTop="8xl"
+        paddingTop={{ xs: '2xl', lg: '8xl' }}
       >
         <Image source={require('@assets/images/mobileHotspot.png')} />
         <Text
@@ -55,7 +53,7 @@ const EmptyState = () => {
           variant="textXlMedium"
           color="text.quaternary-500"
           marginTop="2.5"
-          marginBottom="8xl"
+          marginBottom={{ xs: '2xl', lg: '8xl' }}
           textAlign="center"
           paddingHorizontal="2"
         >

@@ -48,14 +48,12 @@ const SelectNetworkScreen = () => {
         marginTop="2xl"
         backgroundColor="bg.brand-secondary"
         backgroundColorPressed="blue.light-200"
-        opacity={0.3}
         padding="xl"
         paddingEnd="4xl"
         borderTopStartRadius="4xl"
         borderTopEndRadius="4xl"
         flexDirection="row"
         alignItems="center"
-        disabled
         onPress={onMobileSelected}
       >
         <MobileIcon />

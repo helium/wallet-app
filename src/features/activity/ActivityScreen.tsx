@@ -4,7 +4,6 @@ import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
@@ -12,8 +11,8 @@ import CircleLoader from '@components/CircleLoader'
 import FadeInOut from '@components/FadeInOut'
 import useHaptic from '@hooks/useHaptic'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
-import { NavBarHeight } from '@components/ServiceNavBar'
 import ScrollBox from '@components/ScrollBox'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
 
@@ -22,17 +21,17 @@ const ActivityScreen = () => {
     useEnrichedTransactions()
   const { t } = useTranslation()
   const spacing = useSpacing()
-  const { bottom } = useSafeAreaInsets()
   const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
   const { triggerImpact } = useHaptic()
+  const bottomSpacing = useBottomSpacing()
 
   const contentContainer = useMemo(
     () => ({
       paddingTop: spacing['6xl'],
-      paddingBottom: NavBarHeight + bottom + spacing['6xl'],
+      paddingBottom: bottomSpacing,
     }),
-    [spacing, bottom],
+    [spacing, bottomSpacing],
   )
 
   const SectionData = useMemo((): {

@@ -14,7 +14,7 @@ export const WarningBox = ({
     <Box
       p="2"
       mb="2"
-      backgroundColor="gray.900"
+      backgroundColor="secondaryBackground"
       borderRadius="2xl"
       flexDirection="column"
       alignItems="stretch"
@@ -27,7 +27,7 @@ export const WarningBox = ({
           {header}
         </Text>
       </Box>
-      <Text variant="textXsRegular" color="gray.50">
+      <Text variant="textXsRegular" color="text.quaternary-500">
         {body}
       </Text>
     </Box>

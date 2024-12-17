@@ -1080,6 +1080,7 @@
 				ENABLE_BITCODE = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				INFOPLIST_FILE = HeliumWallet/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Helium;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1118,6 +1119,7 @@
 				DEVELOPMENT_TEAM = PVM9KJZ2AD;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;
 				INFOPLIST_FILE = HeliumWallet/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Helium;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
