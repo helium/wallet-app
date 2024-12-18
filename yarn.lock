@@ -15868,7 +15868,6 @@ __metadata:
     react-native-udp: 2.7.0
     react-native-url-polyfill: 2.0.0
     react-native-video: 5.2.1
-    react-native-vision-camera: 4.5.3
     react-native-webview: 13.10.5
     react-redux: 8.0.4
     react-test-renderer: 17.0.2
@@ -22297,26 +22296,6 @@ __metadata:
     prop-types: ^15.7.2
     shaka-player: ^2.5.9
   checksum: efbc09a47e3080dde2986a3a1ea3f32b815317f99013c015522fd2e6ed937ed02244761f4dd5c8f5bf0260bf8a1d518315025cae499c16a6c3b1cd0fa6935d2d
-  languageName: node
-  linkType: hard
-
-"react-native-vision-camera@npm:4.5.3":
-  version: 4.5.3
-  resolution: "react-native-vision-camera@npm:4.5.3"
-  peerDependencies:
-    "@shopify/react-native-skia": "*"
-    react: "*"
-    react-native: "*"
-    react-native-reanimated: "*"
-    react-native-worklets-core: "*"
-  peerDependenciesMeta:
-    "@shopify/react-native-skia":
-      optional: true
-    react-native-reanimated:
-      optional: true
-    react-native-worklets-core:
-      optional: true
-  checksum: 99d57a70f93134903ae25ef798947f79804ea00e3b58cbb21131115552e6f2950d2a3be9a6a237232ca6bab7b5031aa12d9ca2df659be39dc607d75997317abc
   languageName: node
   linkType: hard
 
