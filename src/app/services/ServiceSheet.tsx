@@ -28,12 +28,18 @@ import HeliumBottomSheet from '@components/HeliumBottomSheet'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
-import { Platform, StyleProp, ViewStyle } from 'react-native'
+import {
+  GestureResponderEvent,
+  Platform,
+  StyleProp,
+  ViewStyle,
+} from 'react-native'
 import { wh } from '@utils/layout'
 import { useSelector } from 'react-redux'
 import { RootState } from '@store/rootReducer'
 import StickersPage from '@features/stickers/StickersPage'
 import { StickerProvider } from '@features/stickers/StickerContext'
+import { useSwipe } from '@hooks/useSwipe'
 import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
@@ -58,6 +64,12 @@ const ServiceSheet = ({
   const borderRadii = useBorderRadii()
 
   const { rootSheetPosition } = useSelector((state: RootState) => state.app)
+
+  const onSwipeRight = useCallback((_: GestureResponderEvent) => {
+    setIsExpanded(true)
+  }, [])
+
+  const { onTouchStart, onTouchEnd } = useSwipe(undefined, onSwipeRight, 6)
 
   const onRoute = useCallback(
     (value: string) => {
@@ -179,6 +191,7 @@ const ServiceSheet = ({
       ),
     }
   }, [isChild, rootSheetPosition])
+
   return (
     <Box flex={1} style={{ paddingTop: top }}>
       <SideDrawer
@@ -205,6 +218,7 @@ const ServiceSheet = ({
           backgroundStyle={backgroundStyle}
           // // TODO: Bring this back once we have the stickers page
           enablePanDownToClose={false}
+          enableContentPanningGesture={false}
         >
           <ThemeProvider theme={lightTheme}>
             <Box
@@ -213,6 +227,9 @@ const ServiceSheet = ({
               flexDirection="column"
               zIndex={100}
               position="relative"
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+              onTouchEndCapture={onTouchEnd}
             >
               {children}
             </Box>
