@@ -16,7 +16,7 @@ import { Location, MarkerView } from '@rnmapbox/maps'
 import ImageBox from '@components/ImageBox'
 import CarotRight from '@assets/svgs/carot-right.svg'
 import { getDistance } from 'geolib'
-import { MOBILE_MINT, toNumber as heliumToNumber } from '@helium/spl-utils'
+import { HNT_MINT, MOBILE_MINT, toNumber as heliumToNumber } from '@helium/spl-utils'
 import { BN } from '@coral-xyz/anchor'
 import { toNumber } from 'lodash'
 import MiniMap from '@components/MiniMap'
@@ -138,11 +138,11 @@ const HotspotPage = () => {
       }
       return (
         (heliumToNumber(
-          new BN(b?.pendingRewards?.[MOBILE_MINT?.toBase58()] ?? 0),
+          new BN(b?.pendingRewards?.[HNT_MINT?.toBase58()] ?? 0),
           6,
         ) ?? 0) -
         (heliumToNumber(
-          new BN(a?.pendingRewards?.[MOBILE_MINT?.toBase58()] ?? 0),
+          new BN(a?.pendingRewards?.[HNT_MINT?.toBase58()] ?? 0),
           6,
         ) ?? 0)
       )

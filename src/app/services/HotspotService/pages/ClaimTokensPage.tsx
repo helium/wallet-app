@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { Image, RefreshControl } from 'react-native'
 import MobileIcon from '@assets/svgs/mobileIconNew.svg'
 import IotIcon from '@assets/svgs/iotIconNew.svg'
+import HntIcon from '@assets/svgs/hnt.svg'
 import TouchableContainer from '@components/TouchableContainer'
 import BalanceText from '@components/BalanceText'
 import useHotspots from '@hooks/useHotspots'
@@ -15,6 +16,7 @@ import { toNumber } from '@helium/spl-utils'
 import {
   MOBILE_LAZY_KEY,
   IOT_LAZY_KEY,
+  HNT_LAZY_KEY,
   MIN_BALANCE_THRESHOLD,
 } from '@utils/constants'
 import useSubmitTxn from '@hooks/useSubmitTxn'
@@ -44,11 +46,12 @@ const ClaimTokensPage = () => {
 
   const {
     pendingIotRewards,
+    pendingHntRewards,
     pendingMobileRewards,
     hotspotsWithMeta,
     totalHotspots,
     loading: hotspotsLoading,
-    fetchAll,
+    refresh,
   } = useHotspots()
 
   const contentContainerStyle = useMemo(() => {
@@ -61,6 +64,11 @@ const ClaimTokensPage = () => {
     if (!pendingIotRewards) return 0
     return toNumber(pendingIotRewards, 6)
   }, [pendingIotRewards])
+
+  const totalPendingHnt = useMemo(() => {
+    if (!pendingHntRewards) return 0
+    return toNumber(pendingHntRewards, 6)
+  }, [pendingHntRewards])
 
   const totalPendingMobile = useMemo(() => {
     if (!pendingMobileRewards) return 0
@@ -83,15 +91,23 @@ const ClaimTokensPage = () => {
     return (
       claiming ||
       !hasEnoughSol ||
-      (totalPendingIot === 0 && totalPendingMobile === 0)
+      (totalPendingIot === 0 &&
+        totalPendingMobile === 0 &&
+        totalPendingHnt === 0)
     )
-  }, [claiming, hasEnoughSol, totalPendingIot, totalPendingMobile])
+  }, [
+    claiming,
+    hasEnoughSol,
+    totalPendingIot,
+    totalPendingMobile,
+    totalPendingHnt,
+  ])
 
   const onClaim = useCallback(async () => {
     try {
       const claim = async () => {
         await submitClaimAllRewards(
-          [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+          [IOT_LAZY_KEY, MOBILE_LAZY_KEY, HNT_LAZY_KEY],
           hotspotsWithMeta,
           totalHotspots,
         )
@@ -122,7 +138,7 @@ const ClaimTokensPage = () => {
         <RefreshControl
           enabled
           refreshing={hotspotsLoading}
-          onRefresh={fetchAll}
+          onRefresh={refresh}
           title=""
           tintColor={colors.primaryText}
         />
@@ -154,25 +170,48 @@ const ClaimTokensPage = () => {
         gap="1"
         marginTop="4xl"
       >
-        <TouchableContainer
-          padding="xl"
-          gap="2.5"
-          backgroundColor="bg.brand-secondary"
-          backgroundColorPressed="blue.light-200"
-          pressableStyles={{
-            flex: 1,
-          }}
-        >
-          <Box flexDirection="row" gap="2.5" alignItems="center">
-            <MobileIcon />
-            <Box flexDirection="column">
-              <BalanceText amount={totalPendingMobile} />
-              <Text variant="textXsMedium" color="blue.dark-500">
-                MOBILE
-              </Text>
+        {totalPendingMobile > 0 && (
+          <TouchableContainer
+            padding="xl"
+            gap="2.5"
+            backgroundColor="bg.brand-secondary"
+            backgroundColorPressed="blue.light-200"
+            pressableStyles={{
+              flex: 1,
+            }}
+          >
+            <Box flexDirection="row" gap="2.5" alignItems="center">
+              <MobileIcon />
+              <Box flexDirection="column">
+                <BalanceText amount={totalPendingMobile} />
+                <Text variant="textXsMedium" color="blue.dark-500">
+                  MOBILE
+                </Text>
+              </Box>
             </Box>
-          </Box>
-        </TouchableContainer>
+          </TouchableContainer>
+        )}
+        {totalPendingIot > 0 && (
+          <TouchableContainer
+            padding="xl"
+            gap="2.5"
+            backgroundColor="bg.success-primary"
+            backgroundColorPressed="success.100"
+            pressableStyles={{
+              flex: 1,
+            }}
+          >
+            <Box flexDirection="row" gap="2.5" alignItems="center">
+              <IotIcon />
+              <Box flexDirection="column">
+                <BalanceText amount={totalPendingIot} />
+                <Text variant="textXsMedium" color="success.500">
+                  IOT
+                </Text>
+              </Box>
+            </Box>
+          </TouchableContainer>
+        )}
         <TouchableContainer
           padding="xl"
           gap="2.5"
@@ -183,11 +222,11 @@ const ClaimTokensPage = () => {
           }}
         >
           <Box flexDirection="row" gap="2.5" alignItems="center">
-            <IotIcon />
+            <HntIcon width={50} height={50} />
             <Box flexDirection="column">
-              <BalanceText amount={totalPendingIot} />
+              <BalanceText amount={totalPendingHnt} />
               <Text variant="textXsMedium" color="success.500">
-                IOT
+                HNT
               </Text>
             </Box>
           </Box>

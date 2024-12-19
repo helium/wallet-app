@@ -16,6 +16,7 @@ import { Mints } from '../utils/constants'
 const useHotspots = (): {
   totalHotspots: number | undefined
   pendingIotRewards: BN | undefined
+  pendingHntRewards: BN | undefined
   pendingMobileRewards: BN | undefined
   hotspots: CompressedNFT[]
   hotspotsWithMeta: HotspotWithPendingRewards[]
@@ -191,6 +192,18 @@ const useHotspots = (): {
     [hotspotsWithMeta],
   )
 
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspotsWithMeta?.reduce((acc, hotspot) => {
+        if (hotspot.pendingRewards) {
+          return acc.add(new BN(hotspot.pendingRewards[Mints.HNT] || '0'))
+        }
+
+        return acc
+      }, new BN(0)),
+    [hotspotsWithMeta],
+  )
+
   const pendingMobileRewards = useMemo(
     () =>
       hotspotsWithMeta?.reduce((acc, hotspot) => {
@@ -210,6 +223,7 @@ const useHotspots = (): {
     return {
       totalHotspots,
       pendingIotRewards,
+      pendingHntRewards,
       pendingMobileRewards,
       loading: false,
       hotspots: [],
@@ -225,6 +239,7 @@ const useHotspots = (): {
   return {
     totalHotspots,
     pendingIotRewards,
+    pendingHntRewards,
     pendingMobileRewards,
     hotspots,
     hotspotsWithMeta,
