@@ -6,6 +6,7 @@ import {
   withTiming,
 } from 'react-native-reanimated'
 import { ww } from '@utils/layout'
+import useHaptic from '@hooks/useHaptic'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import { Box, ReAnimatedBox, SafeAreaBox, Text } from '.'
 import MenuButton from './MenuButton'
@@ -18,6 +19,7 @@ type SideDrawerProps = {
 
 const SideDrawer = ({ isExpanded, onRoute, onClose }: SideDrawerProps) => {
   const { t } = useTranslation()
+  const { triggerImpact } = useHaptic()
 
   const routes: { title: string; value: string }[] = useMemo(
     () =>
@@ -42,9 +44,10 @@ const SideDrawer = ({ isExpanded, onRoute, onClose }: SideDrawerProps) => {
 
   const onRoutePressed = useCallback(
     (route: string) => () => {
+      triggerImpact('light')
       onRoute(route)
     },
-    [onRoute],
+    [onRoute, triggerImpact],
   )
 
   return (

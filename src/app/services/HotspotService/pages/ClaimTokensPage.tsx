@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { Image, RefreshControl } from 'react-native'
 import MobileIcon from '@assets/svgs/mobileIconNew.svg'
 import IotIcon from '@assets/svgs/iotIconNew.svg'
-import HntIcon from '@assets/svgs/hnt.svg'
+import HntIcon from '@assets/svgs/hntIconNew.svg'
 import TouchableContainer from '@components/TouchableContainer'
 import BalanceText from '@components/BalanceText'
 import useHotspots from '@hooks/useHotspots'
@@ -30,6 +30,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { RootState } from '@store/rootReducer'
 import { useSelector } from 'react-redux'
+import { useBottomSpacing } from '@hooks/useBottomSpacing'
 
 const ClaimTokensPage = () => {
   const { t } = useTranslation()
@@ -39,6 +40,7 @@ const ClaimTokensPage = () => {
   const { showModal } = useModal()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const colors = useColors()
+  const bottomSpacing = useBottomSpacing()
 
   const hasEnoughSol = useMemo(() => {
     return (solBalance || new BN(0)).gt(new BN(MIN_BALANCE_THRESHOLD))
@@ -57,8 +59,9 @@ const ClaimTokensPage = () => {
   const contentContainerStyle = useMemo(() => {
     return {
       padding: spacing['2xl'],
+      paddingBottom: bottomSpacing,
     }
-  }, [spacing])
+  }, [spacing, bottomSpacing])
 
   const totalPendingIot = useMemo(() => {
     if (!pendingIotRewards) return 0
@@ -67,7 +70,7 @@ const ClaimTokensPage = () => {
 
   const totalPendingHnt = useMemo(() => {
     if (!pendingHntRewards) return 0
-    return toNumber(pendingHntRewards, 6)
+    return toNumber(pendingHntRewards, 8)
   }, [pendingHntRewards])
 
   const totalPendingMobile = useMemo(() => {
@@ -164,12 +167,31 @@ const ClaimTokensPage = () => {
         {t('ClaimTokensPage.subtitle')}
       </Text>
       <Box
-        flexDirection="row"
+        flexDirection="column"
         borderRadius="4xl"
         overflow="hidden"
         gap="1"
         marginTop="4xl"
       >
+        <TouchableContainer
+          padding="xl"
+          gap="2.5"
+          backgroundColor="purple.100"
+          backgroundColorPressed="purple.200"
+          pressableStyles={{
+            flex: 1,
+          }}
+        >
+          <Box flexDirection="row" gap="2.5" alignItems="center">
+            <HntIcon width={50} height={50} />
+            <Box flexDirection="column">
+              <BalanceText amount={totalPendingHnt} />
+              <Text variant="textXsMedium" color="purple.600">
+                HNT
+              </Text>
+            </Box>
+          </Box>
+        </TouchableContainer>
         {totalPendingMobile > 0 && (
           <TouchableContainer
             padding="xl"
@@ -212,25 +234,6 @@ const ClaimTokensPage = () => {
             </Box>
           </TouchableContainer>
         )}
-        <TouchableContainer
-          padding="xl"
-          gap="2.5"
-          backgroundColor="bg.success-primary"
-          backgroundColorPressed="success.100"
-          pressableStyles={{
-            flex: 1,
-          }}
-        >
-          <Box flexDirection="row" gap="2.5" alignItems="center">
-            <HntIcon width={50} height={50} />
-            <Box flexDirection="column">
-              <BalanceText amount={totalPendingHnt} />
-              <Text variant="textXsMedium" color="success.500">
-                HNT
-              </Text>
-            </Box>
-          </Box>
-        </TouchableContainer>
       </Box>
       <ButtonPressable
         marginTop="2xl"

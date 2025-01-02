@@ -13,6 +13,7 @@ import { GestureResponderEvent, LayoutChangeEvent } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 import { useColors } from '@config/theme/themeHooks'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import useHaptic from '@hooks/useHaptic'
 import { Theme } from '../config/theme/theme'
 import { Box, ReAnimatedBox, Text } from '.'
 import TouchableOpacityBox from './TouchableOpacityBox'
@@ -119,6 +120,7 @@ const SegmentedControl = forwardRef(
   ) => {
     const [selectedIndex, setSelectedIndex] = useState(0)
     const [hasTouched, setHasTouched] = useState(false)
+    const { triggerImpact } = useHaptic()
 
     useImperativeHandle(ref, () => ({ selectedIndex }))
 
@@ -133,11 +135,12 @@ const SegmentedControl = forwardRef(
 
     const handleItemSelected = useCallback(
       (index: number) => () => {
+        triggerImpact('light')
         setHasTouched(true)
         setSelectedIndex(index)
         onItemSelected(index)
       },
-      [onItemSelected],
+      [onItemSelected, triggerImpact],
     )
 
     const leftPosition = useMemo(() => {

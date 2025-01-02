@@ -127,7 +127,13 @@ import {
 } from '../types/solana'
 import { WrappedConnection } from './WrappedConnection'
 import { solAddressIsValid } from './accountUtils'
-import { DAO_KEY, HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY, Mints } from './constants'
+import {
+  DAO_KEY,
+  HNT_LAZY_KEY,
+  IOT_LAZY_KEY,
+  MOBILE_LAZY_KEY,
+  Mints,
+} from './constants'
 import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
@@ -1050,16 +1056,20 @@ export const getHotspotPendingRewards = async (
     'b58',
     true,
   )
-  const hntRewards = await getPendingRewards(
-    program,
-    HNT_LAZY_KEY,
-    dao,
-    entityKeys,
-    'b58',
-    true,
-  )
+  let hntRewards: Record<string, string> = {}
 
-  return hotspots.map((hotspot, index) => {
+  try {
+    hntRewards = await getPendingRewards(
+      program,
+      HNT_LAZY_KEY,
+      dao,
+      entityKeys,
+      'b58',
+      true,
+    )
+  } catch {}
+
+  const hots = hotspots.map((hotspot, index) => {
     const entityKey = entityKeys[index]
 
     return {
@@ -1071,6 +1081,8 @@ export const getHotspotPendingRewards = async (
       },
     }
   })
+
+  return hots
 }
 
 export const getHotspotRecipients = async (
@@ -1323,14 +1335,18 @@ export async function annotateWithPendingRewards(
     true,
   )
 
-  const hntRewards = await getPendingRewards(
-    program,
-    HNT_LAZY_KEY,
-    dao,
-    entityKeys,
-    'b58',
-    true,
-  )
+  let hntRewards: Record<string, string> = {}
+
+  try {
+    hntRewards = await getPendingRewards(
+      program,
+      HNT_LAZY_KEY,
+      dao,
+      entityKeys,
+      'b58',
+      true,
+    )
+  } catch {}
 
   const rewardRecipients = await getHotspotRecipients(provider, hotspots)
   const rewardRecipientsById: {
@@ -1342,9 +1358,7 @@ export async function annotateWithPendingRewards(
     }),
     {},
   )
-  console.log('hntRewards', hntRewards)
-
-  return hotspots.map((hotspot, index) => {
+  const hots = hotspots.map((hotspot, index) => {
     const entityKey = entityKeys[index]
 
     return {
@@ -1357,6 +1371,8 @@ export async function annotateWithPendingRewards(
       rewardRecipients: rewardRecipientsById[hotspot.id] || {},
     } as HotspotWithPendingRewards
   })
+
+  return hots
 }
 
 /**

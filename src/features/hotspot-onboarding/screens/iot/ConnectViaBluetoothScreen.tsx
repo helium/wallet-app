@@ -6,7 +6,7 @@ import { useHotspotOnboarding } from '@features/hotspot-onboarding/OnboardingShe
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import RightArrow from '@assets/svgs/rightArrow.svg'
-import BluetoothIcon from '@assets/svgs/bluetooth.svg'
+import BluetoothIcon from '@assets/svgs/bluetoothOnboard.svg'
 import { useColors, useSpacing } from '@config/theme/themeHooks'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { ReAnimatedBox } from '@components/AnimatedBox'
@@ -38,7 +38,7 @@ const ConnectViaBluetoothScreen = () => {
       <ScrollBox
         contentContainerStyle={contentContainerStyle as StyleProp<ViewStyle>}
       >
-        <BluetoothIcon />
+        <BluetoothIcon color="#0A3D91" />
         <Text
           variant="displayMdSemibold"
           color="primaryText"

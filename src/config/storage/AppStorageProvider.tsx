@@ -33,9 +33,7 @@ const useAppStorageHook = () => {
   )
   const [currency, setCurrency] = useState('USD')
   const [explorer, setExplorer] = useState<string | undefined>(undefined)
-  const [enableHaptic, setEnableHaptic] = useState<boolean | undefined>(
-    undefined,
-  )
+  const [enableHaptic, setEnableHaptic] = useState<boolean | undefined>(true)
   const [locked, setLocked] = useState<boolean>()
   const [convertToCurrency, setConvertToCurrency] = useState(false)
   const [enableTestnet, setEnableTestnet] = useState(false)

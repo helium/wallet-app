@@ -14,6 +14,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
 import { useColors, useVerticalHitSlop } from '@config/theme/themeHooks'
+import useHaptic from '@hooks/useHaptic'
 import Box from './Box'
 import TouchableOpacityBox, {
   TouchableOpacityBoxProps,
@@ -118,6 +119,7 @@ const NavServiceNavBar = ({
 }: NavServiceBarProps) => {
   const hitSlop = useVerticalHitSlop('6')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
+  const { triggerImpact } = useHaptic()
 
   const offset = useSharedValue<number | null>(null)
 
@@ -132,9 +134,10 @@ const NavServiceNavBar = ({
 
   const handlePress = useCallback(
     (value: string) => () => {
+      triggerImpact('light')
       onItemSelected(value)
     },
-    [onItemSelected],
+    [onItemSelected, triggerImpact],
   )
 
   const handleLongPress = useCallback(

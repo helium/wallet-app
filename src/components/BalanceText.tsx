@@ -12,22 +12,17 @@ const BalanceText = ({
 }) => {
   const integral = useMemo(() => Math.floor(amount || 0), [amount])
 
-  const firstFractional = useMemo(() => {
+  const fractional = useMemo(() => {
     if (amount === undefined) return 0
     const decimal = amount - integral
-    const fraction = decimal.toString().split('.')[1]
-    // Fraction with max length of decimals
-    const fractionWithMaxDecimals = fraction?.slice(0, 1)
-    return fraction ? Number(fractionWithMaxDecimals) : 0
-  }, [amount, integral])
-
-  const secondFractional = useMemo(() => {
-    if (amount === undefined) return 0
-    const decimal = amount - integral
-    const fraction = decimal.toString().split('.')[1]
-    // Fraction with max length of decimals
-    const fractionWithMaxDecimals = fraction?.slice(1, 2)
-    return fraction ? Number(fractionWithMaxDecimals) : 0
+    const decimalFixed = decimal.toFixed(9)
+    const fraction = decimalFixed.toString().split('.')[1]
+    const decimalWithoutTrailingZeroes = decimalFixed.replace(/0+$/, '')
+    const decimalsLength = decimalWithoutTrailingZeroes
+      .toString()
+      .split('.')[1].length
+    const fractionWithMaxDecimals = fraction?.slice(1, decimalsLength)
+    return fraction ? fractionWithMaxDecimals : 0
   }, [amount, integral])
 
   return (
@@ -37,7 +32,7 @@ const BalanceText = ({
           {`${integral.toLocaleString()}`}
         </Text>
         <Text adjustsFontSizeToFit variant={variant} color="text.placeholder">
-          {`.${firstFractional}${secondFractional}`}
+          {`.${fractional}`}
         </Text>
       </Box>
     </Box>

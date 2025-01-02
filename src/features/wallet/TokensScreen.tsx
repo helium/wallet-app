@@ -41,6 +41,7 @@ import { ServiceSheetNavigationProp } from 'src/app/services/serviceSheetTypes'
 import { useSolana } from '@features/solana/SolanaProvider'
 import { WalletNavigationProp } from '@services/WalletService/pages/WalletPage'
 import { useBottomSpacing } from '@hooks/useBottomSpacing'
+import UnclaimedRewardsBanner from './components/UnclaimedRewardsBanner'
 
 const TokensScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -202,6 +203,9 @@ const TokensScreen = () => {
         <WalletAlertBanner />
         <Box alignItems="center" width="100%">
           <TotalFiatBalance />
+        </Box>
+        <Box paddingHorizontal="2xl" marginTop="xl">
+          <UnclaimedRewardsBanner />
         </Box>
       </Box>
     )

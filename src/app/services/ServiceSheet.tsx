@@ -40,6 +40,7 @@ import { RootState } from '@store/rootReducer'
 import StickersPage from '@features/stickers/StickersPage'
 import { StickerProvider } from '@features/stickers/StickerContext'
 import { useSwipe } from '@hooks/useSwipe'
+import useHaptic from '@hooks/useHaptic'
 import { ServiceSheetNavigationProp } from './serviceSheetTypes'
 
 type ServiceSheetProps = {
@@ -62,6 +63,7 @@ const ServiceSheet = ({
   const spacing = useSpacing()
   const bottomSheetStyle = useBackgroundStyle('primaryText')
   const borderRadii = useBorderRadii()
+  const { triggerImpact } = useHaptic()
 
   const { rootSheetPosition } = useSelector((state: RootState) => state.app)
 
@@ -69,7 +71,7 @@ const ServiceSheet = ({
     setIsExpanded(true)
   }, [])
 
-  const { onTouchStart, onTouchEnd } = useSwipe(undefined, onSwipeRight, 6)
+  const { onTouchStart, onTouchEnd } = useSwipe(undefined, onSwipeRight, 2.5)
 
   const onRoute = useCallback(
     (value: string) => {
@@ -108,13 +110,14 @@ const ServiceSheet = ({
   )
 
   const onDrawerPress = useCallback(() => {
+    triggerImpact('light')
     setIsExpanded((s) => !s)
     changeNavigationBarColor(
       isExpanded ? colors.primaryText : colors.primaryBackground,
       undefined,
       true,
     )
-  }, [colors, isExpanded])
+  }, [colors, isExpanded, triggerImpact])
 
   const onWalletIconPress = useCallback(() => {
     if (currentService === 'wallets' && bottomSheetOpen) {
@@ -123,9 +126,16 @@ const ServiceSheet = ({
       return
     }
 
+    triggerImpact('light')
     serviceNav.replace('AccountsService')
     bottomSheetRef.current?.expand()
-  }, [currentService, serviceNav, bottomSheetRef, bottomSheetOpen])
+  }, [
+    currentService,
+    serviceNav,
+    bottomSheetRef,
+    bottomSheetOpen,
+    triggerImpact,
+  ])
 
   const onCloseSheet = useCallback(() => {
     // if (currentService === '') return
