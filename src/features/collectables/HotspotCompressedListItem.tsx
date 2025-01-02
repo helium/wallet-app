@@ -1,12 +1,13 @@
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
+import HntSymbol from '@assets/images/hnt.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
@@ -44,7 +45,7 @@ const HotspotListItem = ({
 
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
-
+  const { info: hntMint } = useMint(HNT_MINT)
   const pendingIotRewards = useMemo(
     () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
     [hotspot],
@@ -65,6 +66,12 @@ const HotspotListItem = ({
     [hotspot.pendingRewards],
   )
 
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT]),
+    [hotspot.pendingRewards],
+  )
+
   const pendingMobileRewardsString = useMemo(() => {
     if (!hotspot.pendingRewards) return
     const num = toNumber(
@@ -73,6 +80,15 @@ const HotspotListItem = ({
     )
     return formatLargeNumber(new BigNumber(num))
   }, [hotspot, mobileMint])
+
+  const pendingHntRewardsString = useMemo(() => {
+    if (!hotspot.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspot.pendingRewards[Mints.HNT]),
+      hntMint?.decimals || 8,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspot, hntMint])
 
   const eccCompact = useMemo(() => {
     if (!metadata || !metadata?.attributes?.length) {
@@ -92,6 +108,10 @@ const HotspotListItem = ({
     () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
     [pendingMobileRewards],
   )
+  const hasHntRewards = useMemo(
+    () => pendingHntRewards && pendingHntRewards.gt(new BN(0)),
+    [pendingHntRewards],
+  )
 
   const mobileRecipient = useMemo(
     () => hotspot?.rewardRecipients?.[Mints.MOBILE],
@@ -100,6 +120,11 @@ const HotspotListItem = ({
 
   const iotRecipient = useMemo(
     () => hotspot?.rewardRecipients?.[Mints.IOT],
+    [hotspot],
+  )
+
+  const hntRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.HNT],
     [hotspot],
   )
 
@@ -121,9 +146,18 @@ const HotspotListItem = ({
     [mobileRecipient, wallet],
   )
 
+  const hasHntRecipient = useMemo(
+    () =>
+      hntRecipient?.destination &&
+      wallet &&
+      !new PublicKey(hntRecipient.destination).equals(wallet) &&
+      !new PublicKey(hntRecipient.destination).equals(PublicKey.default),
+    [hntRecipient, wallet],
+  )
+
   const hasRecipientSet = useMemo(
-    () => hasIotRecipient || hasMobileRecipient,
-    [hasIotRecipient, hasMobileRecipient],
+    () => hasIotRecipient || hasMobileRecipient || hasHntRecipient,
+    [hasIotRecipient, hasMobileRecipient, hasHntRecipient],
   )
 
   return (
@@ -198,6 +232,24 @@ const HotspotListItem = ({
             </Text>
           </Box>
           <Box marginLeft="ms">
+            {!!hasHntRewards && (
+              <Box
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems="center"
+                backgroundColor="hntDarkBlue"
+                borderRadius="m"
+                paddingVertical="xs"
+                paddingLeft="xs"
+                paddingRight="s"
+                marginBottom="xs"
+              >
+                <HntSymbol color={colors.hntBlue} width={20} height={20} />
+                <Text variant="body3Medium" marginLeft="xs" color="hntBlue">
+                  {pendingHntRewardsString}
+                </Text>
+              </Box>
+            )}
             {!!hasMobileRewards && (
               <Box
                 flexDirection="row"

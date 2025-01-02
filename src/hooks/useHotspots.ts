@@ -17,6 +17,7 @@ const useHotspots = (): {
   totalHotspots: number | undefined
   pendingIotRewards: BN | undefined
   pendingMobileRewards: BN | undefined
+  pendingHntRewards: BN | undefined
   hotspots: CompressedNFT[]
   hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
@@ -203,6 +204,14 @@ const useHotspots = (): {
     [hotspotsWithMeta],
   )
 
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspotsWithMeta?.reduce((acc, hotspot) => {
+        return acc.add(new BN(hotspot.pendingRewards[Mints.HNT] || '0'))
+      }, new BN(0)),
+    [hotspotsWithMeta],
+  )
+
   if (
     !currentAccount?.solanaAddress ||
     !hotspotsState[currentAccount?.solanaAddress]
@@ -211,6 +220,7 @@ const useHotspots = (): {
       totalHotspots,
       pendingIotRewards,
       pendingMobileRewards,
+      pendingHntRewards,
       loading: false,
       hotspots: [],
       hotspotsWithMeta: [],
@@ -226,6 +236,7 @@ const useHotspots = (): {
     totalHotspots,
     pendingIotRewards,
     pendingMobileRewards,
+    pendingHntRewards,
     hotspots,
     hotspotsWithMeta,
     loading: hotspotsState[currentAccount?.solanaAddress].loading,

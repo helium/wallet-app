@@ -1,5 +1,6 @@
 import CopyAddress from '@assets/images/copyAddress.svg'
 import Hex from '@assets/images/hex.svg'
+import HntSymbol from '@assets/images/hnt.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import { ReAnimatedBlurBox } from '@components/AnimatedBox'
@@ -13,7 +14,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { makerApprovalKey } from '@helium/helium-entity-manager-sdk'
 import { useMint } from '@helium/helium-react-hooks'
 import { NetworkType } from '@helium/onboarding'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import useCopyText from '@hooks/useCopyText'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useEntityKey } from '@hooks/useEntityKey'
@@ -160,6 +161,7 @@ export const HotspotMapHotspotDetails = ({
   const streetAddress = useHotspotAddress(hotspotWithMeta)
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
+  const { info: hntMint } = useMint(HNT_MINT)
   // Use entity key from kta since it's a buffer
   const iotInfoAcc = useIotInfo(kta?.entityKey)
   const mobileInfoAcc = useMobileInfo(kta?.entityKey)
@@ -238,6 +240,22 @@ export const HotspotMapHotspotDetails = ({
     return formatLargeNumber(new BigNumber(num))
   }, [hotspotWithMeta, mobileMint])
 
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspotWithMeta?.pendingRewards &&
+      new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
+    [hotspotWithMeta],
+  )
+
+  const pendingHntRewardsString = useMemo(() => {
+    if (!hotspotWithMeta?.pendingRewards) return
+    const num = toNumber(
+      new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
+      hntMint?.decimals || 6,
+    )
+    return formatLargeNumber(new BigNumber(num))
+  }, [hotspotWithMeta, hntMint])
+
   const hasIotRewards = useMemo(
     () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
     [pendingIotRewards],
@@ -247,9 +265,14 @@ export const HotspotMapHotspotDetails = ({
     [pendingMobileRewards],
   )
 
+  const hasHntRewards = useMemo(
+    () => pendingHntRewards && pendingHntRewards.gt(new BN(0)),
+    [pendingHntRewards],
+  )
+
   const hasRewards = useMemo(
-    () => hasIotRewards || hasMobileRewards,
-    [hasIotRewards, hasMobileRewards],
+    () => hasIotRewards || hasMobileRewards || hasHntRewards,
+    [hasIotRewards, hasMobileRewards, hasHntRewards],
   )
 
   const mobileRecipient = useMemo(
@@ -259,6 +282,11 @@ export const HotspotMapHotspotDetails = ({
 
   const iotRecipient = useMemo(
     () => hotspotWithMeta?.rewardRecipients?.[Mints.IOT],
+    [hotspotWithMeta],
+  )
+
+  const hntRecipient = useMemo(
+    () => hotspotWithMeta?.rewardRecipients?.[Mints.HNT],
     [hotspotWithMeta],
   )
 
@@ -280,8 +308,17 @@ export const HotspotMapHotspotDetails = ({
     [mobileRecipient, wallet],
   )
 
+  const hasHntRecipient = useMemo(
+    () =>
+      hntRecipient?.destination &&
+      wallet &&
+      !new PublicKey(hntRecipient.destination).equals(wallet) &&
+      !new PublicKey(hntRecipient.destination).equals(PublicKey.default),
+    [hntRecipient, wallet],
+  )
+
   const hasRecipientSet = useMemo(
-    () => hasIotRecipient || hasMobileRecipient,
+    () => hasIotRecipient || hasMobileRecipient || hasHntRecipient,
     [hasIotRecipient, hasMobileRecipient],
   )
 
@@ -626,6 +663,31 @@ export const HotspotMapHotspotDetails = ({
                     // @ts-ignore
                     gap={4}
                   >
+                    {!!hasHntRewards && (
+                      <Box
+                        flexDirection="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        backgroundColor="hntDarkBlue"
+                        borderRadius="m"
+                        paddingVertical="xs"
+                        paddingLeft="xs"
+                        paddingRight="s"
+                      >
+                        <HntSymbol
+                          color={colors.hntBlue}
+                          width={20}
+                          height={20}
+                        />
+                        <Text
+                          variant="body3Medium"
+                          marginLeft="s"
+                          color="hntBlue"
+                        >
+                          {pendingHntRewardsString}
+                        </Text>
+                      </Box>
+                    )}
                     {!!hasMobileRewards && (
                       <Box
                         flexDirection="row"

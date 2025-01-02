@@ -273,7 +273,7 @@ export default {
       manage: 'Manage',
       hotspotActions: 'Hotspot Actions',
       pendingRewards: '{{ amount }} {{ ticker }}',
-      claimAllRewards: 'Claim all Rewards',
+      claimAllRewards: 'Claim All Rewards',
       hotspotClaimMessage:
         'Since your last claim, \nyour Hotspot has earned...',
       hotspotsClaimMessage:

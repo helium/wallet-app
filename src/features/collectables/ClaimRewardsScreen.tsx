@@ -6,7 +6,7 @@ import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
-import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useHotspot } from '@hooks/useHotspot'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
@@ -33,7 +33,7 @@ const ClaimRewardsScreen = () => {
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
   const { submitClaimRewards } = useSubmitTxn()
 
-  const { createClaimMobileTx, createClaimIotTx } = useHotspot(mint)
+  const { createClaimHntTx, createClaimMobileTx, createClaimIotTx } = useHotspot(mint)
 
   const pendingIotRewards = useMemo(
     () =>
@@ -48,6 +48,14 @@ const ClaimRewardsScreen = () => {
       hotspot &&
       hotspot.pendingRewards &&
       new BN(hotspot.pendingRewards[Mints.MOBILE]),
+    [hotspot],
+  )
+
+  const pendingHntRewards = useMemo(
+    () =>
+      hotspot &&
+      hotspot.pendingRewards &&
+      new BN(hotspot.pendingRewards[Mints.HNT]),
     [hotspot],
   )
 
@@ -73,6 +81,10 @@ const ClaimRewardsScreen = () => {
         pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
           ? await createClaimMobileTx()
           : undefined
+      const claimHntTx =
+        pendingHntRewards && !pendingHntRewards.eq(new BN(0))
+          ? await createClaimHntTx()
+          : undefined
       const transactions: VersionedTransaction[] = []
 
       if (claimIotTx && pendingIotRewards) {
@@ -81,6 +93,10 @@ const ClaimRewardsScreen = () => {
 
       if (claimMobileTx && pendingMobileRewards) {
         transactions.push(claimMobileTx)
+      }
+
+      if (claimHntTx && pendingHntRewards) {
+        transactions.push(claimHntTx)
       }
 
       if (transactions.length > 0) {
@@ -103,9 +119,11 @@ const ClaimRewardsScreen = () => {
       pendingIotRewards &&
       pendingIotRewards.eq(new BN(0)) &&
       pendingMobileRewards &&
-      pendingMobileRewards.eq(new BN(0))
+      pendingMobileRewards.eq(new BN(0)) &&
+      pendingHntRewards &&
+      pendingHntRewards.eq(new BN(0))
     )
-  }, [pendingIotRewards, pendingMobileRewards])
+  }, [pendingIotRewards, pendingMobileRewards, pendingHntRewards])
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -134,6 +152,14 @@ const ClaimRewardsScreen = () => {
             justifyContent="center"
             flexDirection="row"
           >
+            {!!pendingHntRewards && pendingHntRewards.gt(new BN(0)) && (
+              <RewardItem
+                mint={HNT_MINT}
+                amount={pendingHntRewards}
+                marginStart="s"
+                hasMore={false}
+              />
+            )}
             {!!pendingMobileRewards && pendingMobileRewards.gt(new BN(0)) && (
               <RewardItem
                 mint={MOBILE_MINT}

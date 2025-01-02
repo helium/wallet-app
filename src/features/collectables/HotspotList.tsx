@@ -6,7 +6,7 @@ import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import { useMint } from '@helium/helium-react-hooks'
-import { IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import useHaptic from '@hooks/useHaptic'
 import useHotspots from '@hooks/useHotspots'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
@@ -82,6 +82,7 @@ const HotspotList = () => {
     fetchingMore,
     pendingIotRewards,
     pendingMobileRewards,
+    pendingHntRewards,
     onEndReached,
     totalHotspots,
   } = useHotspots()
@@ -265,6 +266,11 @@ const HotspotList = () => {
       >
         <Box flexDirection="row" justifyContent="space-evenly">
           <RewardItem
+            mint={HNT_MINT}
+            amount={pendingHntRewards}
+            hasMore={hotspots.length < (totalHotspots || 0)}
+          />
+          <RewardItem
             mint={MOBILE_MINT}
             amount={pendingMobileRewards}
             hasMore={hotspots.length < (totalHotspots || 0)}
@@ -291,6 +297,8 @@ const HotspotList = () => {
               pendingIotRewards.eq(new BN('0')) &&
               pendingMobileRewards &&
               pendingMobileRewards.eq(new BN('0')) &&
+              pendingHntRewards &&
+              pendingHntRewards.eq(new BN('0')) &&
               hotspotsWithMeta.length === (totalHotspots || 0)) ||
             hotspotsWithMeta?.length === 0
           }
