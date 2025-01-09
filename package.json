@@ -31,6 +31,7 @@
     "@babel/preset-typescript": "7.21.0",
     "@bonfida/spl-name-service": "1.1.1",
     "@coral-xyz/anchor": "0.28.0",
+    "@dflow-protocol/swap-api-utils": "^0.1.0",
     "@gorhom/bottom-sheet": "5.0.4",
     "@gorhom/portal": "1.0.14",
     "@graphql-codegen/cli": "5.0.0",

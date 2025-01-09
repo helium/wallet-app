@@ -38,6 +38,7 @@ import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
+import { useDFlow } from '@config/storage/DFlowProvider'
 import { useJupiter } from '@config/storage/JupiterProvider'
 import { useVisibleTokens } from '@config/storage/TokensProvider'
 import { CSAccount } from '@config/storage/cloudStorage'
@@ -125,6 +126,7 @@ const SwapScreen = () => {
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
   const { loading, error: jupiterError, getRoute, getSwapTx } = useJupiter()
+  const { getQuote } = useDFlow()
   const { price, loading: loadingPrice } = useTreasuryPrice(
     inputMint,
     inputAmount,
@@ -372,6 +374,7 @@ const SwapScreen = () => {
 
       const { address: input, decimals: inputDecimals } = inputMintAcc
       const { address: output, decimals: outputDecimals } = outputMintAcc
+
       const handleDevnetPrice = () => {
         if (price && !input.equals(HNT_MINT)) {
           return setOutputAmount(price)
@@ -379,23 +382,23 @@ const SwapScreen = () => {
         return setOutputAmount(0)
       }
 
-      const handleJupiterRoute = async () => {
-        const route = await getRoute({
-          amount: balance.toNumber(),
+      const handleDFlowQuote = async () => {
+        const intent = await getQuote({
           inputMint: input.toBase58(),
           outputMint: output.toBase58(),
+          amount: balance.toString(),
           slippageBps,
         })
 
-        if (!route) {
+        if (!intent) {
           setRouteNotFound(true)
           setPriceImpact(0)
           return setOutputAmount(0)
         }
 
-        setPriceImpact(Number(route?.priceImpactPct || '0') * 100)
+        setPriceImpact(Number(intent.priceImpactPct))
         return setOutputAmount(
-          toNumber(new BN(Number(route?.outAmount || 0)), outputDecimals),
+          toNumber(new BN(intent.outAmount), outputDecimals),
         )
       }
 
@@ -415,10 +418,10 @@ const SwapScreen = () => {
 
       if (isDevnet) return handleDevnetPrice()
       if (output.equals(DC_MINT)) return handleDCConversion()
-      return handleJupiterRoute()
+      return handleDFlowQuote()
     },
     [
-      getRoute,
+      getQuote,
       inputMintAcc,
       isDevnet,
       networkTokensToDc,
