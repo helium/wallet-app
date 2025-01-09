@@ -16,6 +16,7 @@ import TextInput from '@components/TextInput'
 import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { SwapPreview } from '@features/solana/SwapPreview'
 import {
   useMint,
   useOwnedAmount,
@@ -32,19 +33,22 @@ import {
 } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useTreasuryPrice } from '@hooks/useTreasuryPrice'
 import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@config/storage/AccountStorageProvider'
 import { useDFlow } from '@config/storage/DFlowProvider'
-import { useJupiter } from '@config/storage/JupiterProvider'
 import { useVisibleTokens } from '@config/storage/TokensProvider'
 import { CSAccount } from '@config/storage/cloudStorage'
 import { useColors, useHitSlop, useSpacing } from '@config/theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
+import * as Logger from '@utils/logger'
+import {
+  WalletSignBottomSheetRef,
+  WalletStandardMessageTypes,
+} from '@features/solana/walletSignBottomSheetTypes'
 import {
   TXN_FEE_IN_LAMPORTS,
   getAtaAccountCreationFee,
@@ -75,7 +79,6 @@ import ScrollBox from '@components/ScrollBox'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import { useSolana } from '@features/solana/SolanaProvider'
 import { useBottomSpacing } from '@hooks/useBottomSpacing'
-import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { SwapNavigationProp } from './swapTypes'
 
@@ -96,8 +99,6 @@ const SwapScreen = () => {
   const wallet = useCurrentWallet()
   const colors = useColors()
   const navigation = useNavigation<SwapNavigationProp>()
-  const { submitJupiterSwap, submitTreasurySwap, submitMintDataCredits } =
-    useSubmitTxn()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [inputMint, setInputMint] = useState<PublicKey>(MOBILE_MINT)
@@ -125,12 +126,12 @@ const SwapScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [isRecipientOpen, setRecipientOpen] = useState(false)
   const { visibleTokens } = useVisibleTokens()
-  const { loading, error: jupiterError, getRoute, getSwapTx } = useJupiter()
-  const { getQuote } = useDFlow()
+  const { loading, error, getQuote, signIntent, submitIntent } = useDFlow()
   const { price, loading: loadingPrice } = useTreasuryPrice(
     inputMint,
     inputAmount,
   )
+  const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef>(null)
 
   const inputMintAcc = useMint(inputMint)?.info
   const outputMintAcc = useMint(outputMint)?.info
@@ -187,7 +188,7 @@ const SwapScreen = () => {
       return t('swapsScreen.insufficientTokensToSwap')
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
-    if (jupiterError) return jupiterError
+    if (error) return error
     if (transactionError) return transactionError
     if (routeNotFound) return t('swapsScreen.routeNotFound')
   }, [
@@ -197,7 +198,7 @@ const SwapScreen = () => {
     hasInsufficientBalance,
     networkError,
     transactionError,
-    jupiterError,
+    error,
     routeNotFound,
   ])
 
@@ -468,22 +469,21 @@ const SwapScreen = () => {
         return setInputAmount(0)
       }
 
-      const handleJupiterRoute = async () => {
-        const route = await getRoute({
-          amount: balance.toNumber(),
+      const handleDFlowQuote = async () => {
+        const intent = await getQuote({
           inputMint: output.toBase58(),
           outputMint: input.toBase58(),
+          amount: balance.toString(),
           slippageBps,
         })
 
-        if (!route) {
+        if (!intent) {
           setRouteNotFound(true)
           return setInputAmount(0)
         }
 
-        return setInputAmount(
-          toNumber(new BN(Number(route?.outAmount || 0)), inputDecimals),
-        )
+        setPriceImpact(Number(intent.priceImpactPct))
+        return setInputAmount(toNumber(new BN(intent.inAmount), inputDecimals))
       }
 
       const handleDCConversion = () => {
@@ -502,11 +502,11 @@ const SwapScreen = () => {
 
       if (isDevnet) return handleDevnetPrice()
       if (output.equals(DC_MINT)) return handleDCConversion()
-      return handleJupiterRoute()
+      return handleDFlowQuote()
     },
     [
       dcToNetworkTokens,
-      getRoute,
+      getQuote,
       inputMintAcc,
       isDevnet,
       outputMintAcc,
@@ -545,78 +545,85 @@ const SwapScreen = () => {
   )
 
   const handleSwapTokens = useCallback(async () => {
-    if (connection && currentAccount?.solanaAddress && inputMint) {
-      try {
-        setSwapping(true)
+    if (!currentAccount || !anchorProvider) return
 
-        if (!currentAccount?.solanaAddress) throw new Error('No account found')
+    try {
+      setSwapping(true)
+      setTransactionError(undefined)
 
-        if (recipient && !solAddressIsValid(recipient)) {
-          setSwapping(false)
-          setHasRecipientError(true)
-          return
-        }
+      const quoteResponse = await getQuote({
+        inputMint: inputMint.toBase58(),
+        outputMint: outputMint.toBase58(),
+        amount: toBN(inputAmount, inputMintAcc?.decimals || 0).toString(),
+        slippageBps,
+      })
 
-        const recipientAddr = recipient
-          ? new PublicKey(recipient)
-          : new PublicKey(currentAccount.solanaAddress)
-
-        if (
-          inputMint.equals(HNT_MINT) &&
-          outputMint.equals(DC_MINT) &&
-          outputAmount
-        ) {
-          await submitMintDataCredits({
-            dcAmount: new BN(outputAmount),
-            recipient: recipientAddr,
-          })
-        } else if (isDevnet) {
-          await submitTreasurySwap(inputMint, inputAmount, recipientAddr)
-        } else {
-          const swapTxn = await getSwapTx()
-
-          if (!swapTxn) {
-            throw new Error(t('errors.swap.tx'))
-          }
-
-          await submitJupiterSwap({
-            inputMint,
-            inputAmount,
-            outputMint,
-            outputAmount,
-            minReceived,
-            swapTxn,
-          })
-        }
-
-        setSwapping(false)
-
-        navigation.push('SwappingScreen', {
-          tokenA: inputMint.toBase58(),
-          tokenB: outputMint.toBase58(),
-        })
-      } catch (error) {
-        setSwapping(false)
-        setTransactionError((error as Error).message)
+      if (!quoteResponse) {
+        throw new Error('Failed to get quote')
       }
+
+      // Sign the intent
+      const openTransaction = await signIntent(quoteResponse)
+
+      // Get user approval and sign transaction
+      const decision = await walletSignBottomSheetRef?.current?.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('swapsScreen.swapTokens'),
+        message: t('transactions.signSwapTxn'),
+        serializedTxs: [Buffer.from(openTransaction.serialize())],
+        suppressWarnings: true,
+        renderer: () => (
+          <SwapPreview
+            inputMint={inputMint}
+            inputAmount={inputAmount}
+            outputMint={outputMint}
+            outputAmount={outputAmount}
+            minReceived={minReceived}
+          />
+        ),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Submit the intent
+      const submitResponse = await submitIntent({
+        quoteResponse,
+        signedOpenTransaction: openTransaction,
+      })
+
+      if (!submitResponse) {
+        throw new Error('Failed to submit swap intent')
+      }
+
+      // Navigate to swapping screen
+      navigation.navigate('SwappingScreen', {
+        tokenA: inputMint.toBase58(),
+        tokenB: outputMint.toBase58(),
+      })
+    } catch (e) {
+      Logger.error(e)
+      setTransactionError((e as Error).message)
+    } finally {
+      setSwapping(false)
     }
   }, [
-    connection,
-    currentAccount?.solanaAddress,
-    recipient,
+    currentAccount,
+    anchorProvider,
+    getQuote,
     inputMint,
-    inputAmount,
     outputMint,
+    inputAmount,
+    inputMintAcc?.decimals,
+    slippageBps,
+    signIntent,
+    t,
+    submitIntent,
+    navigation,
     outputAmount,
     minReceived,
-    navigation,
-    submitTreasurySwap,
-    submitMintDataCredits,
-    submitJupiterSwap,
-    setHasRecipientError,
-    isDevnet,
-    t,
-    getSwapTx,
   ])
 
   const isLoading = useMemo(() => {
