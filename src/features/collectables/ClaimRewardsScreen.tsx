@@ -33,7 +33,8 @@ const ClaimRewardsScreen = () => {
   const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
   const { submitClaimRewards } = useSubmitTxn()
 
-  const { createClaimHntTx, createClaimMobileTx, createClaimIotTx } = useHotspot(mint)
+  const { createClaimHntTx, createClaimMobileTx, createClaimIotTx } =
+    useHotspot(mint)
 
   const pendingIotRewards = useMemo(
     () =>

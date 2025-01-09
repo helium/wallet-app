@@ -59,8 +59,7 @@ const HotspotListItem = ({
     [hotspot.pendingRewards],
   )
   const pendingHntRewards = useMemo(
-    () =>
-      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT]),
+    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT]),
     [hotspot.pendingRewards],
   )
 

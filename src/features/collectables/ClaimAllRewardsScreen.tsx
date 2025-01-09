@@ -23,8 +23,8 @@ import {
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CollectableNavigationProp } from './collectablesTypes'
 import { ScrollView } from 'react-native'
+import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
   const { t } = useTranslation()
@@ -122,34 +122,34 @@ const ClaimAllRewardsScreen = () => {
             <Box
               flexGrow={1}
               alignItems="center"
-            justifyContent="center"
-            flexDirection="row"
-          >
-            {hasMore ||
-            (pendingHntRewards && pendingHntRewards.gt(new BN(0))) ? (
-              <RewardItem
-                mint={HNT_MINT}
-                amount={pendingHntRewards || new BN(0)}
-                marginEnd="s"
-                hasMore={hasMore}
-              />
-            ) : null}
-            {hasMore ||
-            (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) ? (
-              <RewardItem
-                mint={MOBILE_MINT}
-                amount={pendingMobileRewards || new BN(0)}
-                marginEnd="s"
-                hasMore={hasMore}
-              />
-            ) : null}
-            {hasMore ||
-            (pendingIotRewards && pendingIotRewards.gt(new BN(0))) ? (
-              <RewardItem
-                mint={IOT_MINT}
-                amount={pendingIotRewards || new BN(0)}
-                hasMore={hasMore}
-              />
+              justifyContent="center"
+              flexDirection="row"
+            >
+              {hasMore ||
+              (pendingHntRewards && pendingHntRewards.gt(new BN(0))) ? (
+                <RewardItem
+                  mint={HNT_MINT}
+                  amount={pendingHntRewards || new BN(0)}
+                  marginEnd="s"
+                  hasMore={hasMore}
+                />
+              ) : null}
+              {hasMore ||
+              (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) ? (
+                <RewardItem
+                  mint={MOBILE_MINT}
+                  amount={pendingMobileRewards || new BN(0)}
+                  marginEnd="s"
+                  hasMore={hasMore}
+                />
+              ) : null}
+              {hasMore ||
+              (pendingIotRewards && pendingIotRewards.gt(new BN(0))) ? (
+                <RewardItem
+                  mint={IOT_MINT}
+                  amount={pendingIotRewards || new BN(0)}
+                  hasMore={hasMore}
+                />
               ) : null}
             </Box>
           </ScrollView>

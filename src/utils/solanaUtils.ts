@@ -121,7 +121,13 @@ import {
 } from '../types/solana'
 import { WrappedConnection } from './WrappedConnection'
 import { solAddressIsValid } from './accountUtils'
-import { DAO_KEY, HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY, Mints } from './constants'
+import {
+  DAO_KEY,
+  HNT_LAZY_KEY,
+  IOT_LAZY_KEY,
+  MOBILE_LAZY_KEY,
+  Mints,
+} from './constants'
 import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
@@ -1123,19 +1129,19 @@ export const getHotspotRecipients = async (
   const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const assetKeys = ktaAccs.map((kta) => kta.asset)
-  const [hntRecipientKeys, mobileRecipientKeys, iotRecipientKeys] = assetKeys.reduce(
-    (acc: PublicKey[][], asset) => [
-      [...(acc[0] || []), recipientKey(HNT_LAZY_KEY, asset)[0]],
-      [...(acc[1] || []), recipientKey(MOBILE_LAZY_KEY, asset)[0]],
-      [...(acc[2] || []), recipientKey(IOT_LAZY_KEY, asset)[0]],
-    ],
-    [],
-  )
+  const [hntRecipientKeys, mobileRecipientKeys, iotRecipientKeys] =
+    assetKeys.reduce(
+      (acc: PublicKey[][], asset) => [
+        [...(acc[0] || []), recipientKey(HNT_LAZY_KEY, asset)[0]],
+        [...(acc[1] || []), recipientKey(MOBILE_LAZY_KEY, asset)[0]],
+        [...(acc[2] || []), recipientKey(IOT_LAZY_KEY, asset)[0]],
+      ],
+      [],
+    )
 
   const hntRecipients =
-    (await program.account.recipientV0.fetchMultiple(
-      hntRecipientKeys || [],
-    )) || []
+    (await program.account.recipientV0.fetchMultiple(hntRecipientKeys || [])) ||
+    []
 
   const mobileRecipients =
     (await program.account.recipientV0.fetchMultiple(

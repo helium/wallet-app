@@ -319,7 +319,7 @@ export const HotspotMapHotspotDetails = ({
 
   const hasRecipientSet = useMemo(
     () => hasIotRecipient || hasMobileRecipient || hasHntRecipient,
-    [hasIotRecipient, hasMobileRecipient],
+    [hasIotRecipient, hasMobileRecipient, hasHntRecipient],
   )
 
   const isLoading = useMemo(
