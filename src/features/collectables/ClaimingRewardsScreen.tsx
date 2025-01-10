@@ -39,16 +39,20 @@ const ClaimingRewardsScreen = () => {
   const solanaPayment = useSelector(
     (reduxState: RootState) => reduxState.solana.payment,
   )
-  const { pendingIotRewards, pendingMobileRewards } = useHotspots()
+  const { pendingIotRewards, pendingMobileRewards, pendingHntRewards } =
+    useHotspots()
   const pendingIotRewardsNum = pendingIotRewards
     ? toNumber(pendingIotRewards, 6)
     : 0
   const pendingMobileRewardsNum = pendingMobileRewards
     ? toNumber(pendingMobileRewards, 6)
     : 0
+  const pendingHntRewardsNum = pendingHntRewards
+    ? toNumber(pendingHntRewards, 8)
+    : 0
 
   const video =
-    pendingIotRewardsNum && pendingMobileRewardsNum
+    (pendingIotRewardsNum && pendingMobileRewardsNum) || pendingHntRewardsNum
       ? iotMobileTokens
       : pendingMobileRewardsNum
       ? mobileTokens

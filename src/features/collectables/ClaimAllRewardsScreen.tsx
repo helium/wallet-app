@@ -7,7 +7,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHotspots from '@hooks/useHotspots'
@@ -15,6 +15,7 @@ import useSubmitTxn from '@hooks/useSubmitTxn'
 import { useNavigation } from '@react-navigation/native'
 import { useModal } from '@storage/ModalsProvider'
 import {
+  HNT_LAZY_KEY,
   IOT_LAZY_KEY,
   MIN_BALANCE_THRESHOLD,
   MOBILE_LAZY_KEY,
@@ -22,6 +23,7 @@ import {
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ScrollView } from 'react-native'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
@@ -39,6 +41,7 @@ const ClaimAllRewardsScreen = () => {
     hotspotsWithMeta,
     pendingIotRewards,
     pendingMobileRewards,
+    pendingHntRewards,
     totalHotspots,
   } = useHotspots()
 
@@ -61,7 +64,7 @@ const ClaimAllRewardsScreen = () => {
       setRedeeming(true)
       const claim = async () => {
         await submitClaimAllRewards(
-          [IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+          [HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY],
           hotspotsWithMeta,
           totalHotspots,
         )
@@ -115,31 +118,41 @@ const ClaimAllRewardsScreen = () => {
               {t('collectablesScreen.hotspots.hotspotsClaimMessage')}
             </Text>
           </Box>
-          <Box
-            flexGrow={1}
-            alignItems="center"
-            justifyContent="center"
-            flexDirection="row"
-          >
-            {hasMore ||
-            (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) ? (
-              <RewardItem
-                mint={MOBILE_MINT}
-                amount={pendingMobileRewards || new BN(0)}
-                marginEnd="s"
-                hasMore={hasMore}
-              />
-            ) : null}
-            {hasMore ||
-            (pendingIotRewards && pendingIotRewards.gt(new BN(0))) ? (
-              <RewardItem
-                mint={IOT_MINT}
-                amount={pendingIotRewards || new BN(0)}
-                marginStart="s"
-                hasMore={hasMore}
-              />
-            ) : null}
-          </Box>
+          <ScrollView horizontal>
+            <Box
+              flexGrow={1}
+              alignItems="center"
+              justifyContent="center"
+              flexDirection="row"
+            >
+              {hasMore ||
+              (pendingHntRewards && pendingHntRewards.gt(new BN(0))) ? (
+                <RewardItem
+                  mint={HNT_MINT}
+                  amount={pendingHntRewards || new BN(0)}
+                  marginEnd="s"
+                  hasMore={hasMore}
+                />
+              ) : null}
+              {hasMore ||
+              (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) ? (
+                <RewardItem
+                  mint={MOBILE_MINT}
+                  amount={pendingMobileRewards || new BN(0)}
+                  marginEnd="s"
+                  hasMore={hasMore}
+                />
+              ) : null}
+              {hasMore ||
+              (pendingIotRewards && pendingIotRewards.gt(new BN(0))) ? (
+                <RewardItem
+                  mint={IOT_MINT}
+                  amount={pendingIotRewards || new BN(0)}
+                  hasMore={hasMore}
+                />
+              ) : null}
+            </Box>
+          </ScrollView>
           {claimError && (
             <Box>
               <Text
