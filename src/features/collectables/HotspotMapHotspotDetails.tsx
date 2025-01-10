@@ -251,7 +251,7 @@ export const HotspotMapHotspotDetails = ({
     if (!hotspotWithMeta?.pendingRewards) return
     const num = toNumber(
       new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
-      hntMint?.decimals || 6,
+      hntMint?.decimals || 8,
     )
     return formatLargeNumber(new BigNumber(num))
   }, [hotspotWithMeta, hntMint])

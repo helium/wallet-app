@@ -76,7 +76,7 @@ const HotspotListItem = ({
     if (!hotspot.pendingRewards) return
     const num = toNumber(
       new BN(hotspot.pendingRewards[Mints.HNT]),
-      hntMint?.decimals || 6,
+      hntMint?.decimals || 8,
     )
     return formatLargeNumber(new BigNumber(num))
   }, [hotspot, hntMint])
