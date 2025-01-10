@@ -26,7 +26,7 @@ interface IntentParams {
   feeBudget?: string
 }
 
-interface Intent {
+export interface Intent {
   inputMint: string
   inAmount: string
   outputMint: string

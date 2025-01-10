@@ -602,6 +602,9 @@ const SwapScreen = () => {
       navigation.navigate('SwappingScreen', {
         tokenA: inputMint.toBase58(),
         tokenB: outputMint.toBase58(),
+        intent: quoteResponse,
+        signedOpenTransaction: openTransaction,
+        submitIntentResponse: submitResponse,
       })
     } catch (e) {
       Logger.error(e)
