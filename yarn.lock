@@ -2142,13 +2142,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dflow-protocol/swap-api-utils@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@dflow-protocol/swap-api-utils@npm:0.1.0"
+"@dflow-protocol/swap-api-utils@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "@dflow-protocol/swap-api-utils@npm:0.1.2"
   dependencies:
     "@solana/web3.js": ^1
     bs58: ^6
-  checksum: e34c473fad03bb8bafcfc61b9a9e106fc0c9b9f5c4805823f6c062b5e8916531332c4ee0482aa3b02eb0ff10c75715f1a619102c83babdfa68d9009db3d85a0a
+  checksum: da3cab45c597c00fe2fc6a6a27361188853ad36563cff5d76b2fb9e84f7bc4220b50bf080edb3a8b69ef2aab72095317ded1aac0f1380c58a6f686975e400d06
   languageName: node
   linkType: hard
 
@@ -15687,7 +15687,7 @@ __metadata:
     "@babel/runtime": 7.20.13
     "@bonfida/spl-name-service": 1.1.1
     "@coral-xyz/anchor": 0.28.0
-    "@dflow-protocol/swap-api-utils": ^0.1.0
+    "@dflow-protocol/swap-api-utils": ^0.1.2
     "@gorhom/bottom-sheet": 5.0.4
     "@gorhom/portal": 1.0.14
     "@graphql-codegen/cli": 5.0.0
