@@ -30,7 +30,7 @@ const TokenItem = ({ mint, amount }: { mint: PublicKey; amount: bigint }) => {
 
   return (
     <Text
-      variant="body2Medium"
+      variant="textSmMedium"
       color="secondaryText"
       maxFontSizeMultiplier={1.3}
     >
