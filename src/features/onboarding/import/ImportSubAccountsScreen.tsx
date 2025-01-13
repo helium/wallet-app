@@ -19,8 +19,25 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { PublicKey } from '@solana/web3.js'
+import { useMint } from '@helium/helium-react-hooks'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useOnboarding } from '../OnboardingProvider'
 
+const TokenItem = ({ mint, amount }: { mint: PublicKey; amount: bigint }) => {
+  const decimals = useMint(mint).info?.decimals
+  const { symbol } = useMetaplexMetadata(mint)
+
+  return (
+    <Text
+      variant="body2Medium"
+      color="secondaryText"
+      maxFontSizeMultiplier={1.3}
+    >
+      {humanReadable(new BN(amount.toString() || 0), decimals)} {symbol}
+    </Text>
+  )
+}
 export default () => {
   const { t } = useTranslation()
   const { hasAccounts } = useAccountStorage()
@@ -37,9 +54,8 @@ export default () => {
   const derivationAccounts = useMemo(() => {
     return foundAccounts.filter(
       (acc) =>
-        (acc.tokens?.value.length || 0) > 0 ||
+        (acc.tokens?.length || 0) > 0 ||
         (acc?.balance || 0) > 0 ||
-        (acc.nfts?.length || 0) > 0 ||
         acc.needsMigrated ||
         acc.derivationPath === DEFAULT_DERIVATION_PATH,
     )
@@ -114,26 +130,13 @@ export default () => {
               >
                 {humanReadable(new BN(item?.balance || 0), 9)} SOL
               </Text>
-              {(item.tokens?.value.length || 0) > 0 ? (
-                <Text
-                  variant="body2Medium"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {`${item.tokens?.value.length} tokens`}
-                </Text>
-              ) : null}
-              {(item.nfts?.length || 0) > 0 ? (
-                <Text
-                  variant="body2Medium"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {`${
-                    item.nfts?.length === 10 ? '10+' : item.nfts?.length
-                  } NFTs`}
-                </Text>
-              ) : null}
+              {item.tokens?.map((token) => (
+                <TokenItem
+                  key={token.mint.toBase58()}
+                  mint={token.mint}
+                  amount={token.amount}
+                />
+              ))}
               {item.needsMigrated ? (
                 <Text
                   variant="body2Medium"
