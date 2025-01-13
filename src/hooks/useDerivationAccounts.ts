@@ -1,11 +1,12 @@
 import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
-import { Asset, truthy } from '@helium/spl-utils'
 import {
-  AccountInfo,
-  Keypair,
-  PublicKey,
-  RpcResponseAndContext,
-} from '@solana/web3.js'
+  Asset,
+  HNT_MINT,
+  IOT_MINT,
+  MOBILE_MINT,
+  truthy,
+} from '@helium/spl-utils'
+import { Keypair, PublicKey } from '@solana/web3.js'
 import axios from 'axios'
 import * as bip39 from 'bip39'
 import { Buffer } from 'buffer'
@@ -14,6 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { useSolana } from '@features/solana/SolanaProvider'
+import { AccountLayout, getAssociatedTokenAddress } from '@solana/spl-token'
 
 export const solanaDerivation = (account = -1, change: number | undefined) => {
   if (account === -1) {
@@ -53,12 +55,7 @@ export type ResolvedPath = {
   derivationPath: string
   keypair: Keypair
   balance?: number
-  tokens?: RpcResponseAndContext<
-    Array<{
-      pubkey: PublicKey
-      account: AccountInfo<Buffer>
-    }>
-  >
+  tokens?: { mint: PublicKey; amount: bigint }[]
   nfts?: Asset[]
   needsMigrated?: boolean
 }
@@ -131,27 +128,33 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
 
                     if (keypair) {
                       let needsMigrated = false
-                      const [balance] = await Promise.all([
+                      const ataMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
+                      const atas = await Promise.all(
+                        ataMints.map((mint) =>
+                          getAssociatedTokenAddress(mint, keypair.publicKey),
+                        ),
+                      )
+                      const [balance, tokens] = await Promise.all([
                         retryWithBackoff(() =>
                           connection.getBalance(keypair.publicKey),
                         ),
-                        // retryWithBackoff(() =>
-                        //   connection.getTokenAccountsByOwner(
-                        //     keypair.publicKey,
-                        //     {
-                        //       programId: TOKEN_PROGRAM_ID,
-                        //     },
-                        //   ),
-                        // ),
-                        // retryWithBackoff(() =>
-                        //   getAssetsByOwner(
-                        //     connection.rpcEndpoint,
-                        //     keypair.publicKey.toBase58(),
-                        //     {
-                        //       limit: 10,
-                        //     },
-                        //   ),
-                        // ),
+                        retryWithBackoff(() =>
+                          connection.getMultipleAccountsInfo(atas),
+                        ).then((tokenAccounts) =>
+                          tokenAccounts
+                            .map((acc, idx) => {
+                              if (!acc) return null
+
+                              const accInfo = AccountLayout.decode(acc.data)
+                              const amount = BigInt(accInfo.amount)
+                              if (amount <= 0n) return null
+                              return {
+                                mint: ataMints[idx],
+                                amount,
+                              }
+                            })
+                            .filter((account) => account !== null),
+                        ),
                       ])
 
                       if (derivationPath === heliumDerivation(-1)) {
@@ -167,6 +170,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                         derivationPath,
                         keypair,
                         balance,
+                        tokens,
                         needsMigrated,
                       } as ResolvedPath
                     }
