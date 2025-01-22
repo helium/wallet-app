@@ -15,6 +15,7 @@ import TouchableContainer from '@components/TouchableContainer'
 import CarotRight from '@assets/svgs/carot-right.svg'
 import Config from 'react-native-config'
 import animalName from 'angry-purple-tiger'
+import { useFocusEffect } from '@react-navigation/native'
 import { useHotspotOnboarding } from '../../OnboardingSheet'
 
 const MOCK = Config.MOCK_IOT === 'true'
@@ -53,6 +54,12 @@ const WifiSettings = () => {
     const available = await readWifiNetworks(false)
     setNetworks(available)
   })
+
+  useFocusEffect(
+    useCallback(() => {
+      handleRefresh()
+    }, [handleRefresh]),
+  )
 
   // Refresh on network change or on load
   useEffect(() => {
@@ -97,10 +104,11 @@ const WifiSettings = () => {
     [carouselRef, setOnboardDetails, getOnboardingAddress],
   )
 
-  const data = useMemo(
-    () => [...(configuredNetworks || []), ...(networks || [])],
-    [configuredNetworks, networks],
-  )
+  const data = useMemo(() => {
+    const nks = [...(configuredNetworks || []), ...(networks || [])]
+    // remove duplicates
+    return nks.filter((network, index, self) => self.indexOf(network) === index)
+  }, [configuredNetworks, networks])
 
   const renderItem = useCallback(
     ({

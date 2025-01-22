@@ -20,10 +20,11 @@ import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { useMobileInfo } from '@hooks/useMobileInfo'
 import { parseH3BNLocation } from '@utils/h3'
+import CircleLoader from '@components/CircleLoader'
 import { HotspotWithPendingRewards } from '../../../../types/solana'
 
 const ExplorerPage = () => {
-  const { hotspotsWithMeta } = useHotspots()
+  const { hotspotsWithMeta, loading } = useHotspots()
   const spacing = useSpacing()
   const [userLocation, setUserLocation] = useState<Location>()
   const [showTotalHotspotPuck, setShowTotalHotspotPuck] = useState(false)
@@ -67,12 +68,21 @@ const ExplorerPage = () => {
     )
   }, [showTotalHotspotPuck, hotspotsWithMeta, spacing])
 
+  if (loading) {
+    return (
+      <Box flex={1} justifyContent="center" alignItems="center">
+        <CircleLoader type="blue" loaderSize={60} />
+      </Box>
+    )
+  }
+
   return (
     <Box flex={1}>
       <TotalHotspotPuckContainer />
       <Map onCameraChanged={handleCameraChanged}>
         <Camera
-          minZoomLevel={1}
+          zoomLevel={0}
+          minZoomLevel={0}
           maxZoomLevel={22}
           pitch={0}
           centerCoordinate={[
@@ -117,7 +127,7 @@ const HotspotMarker = ({ hotspot }: { hotspot: HotspotWithPendingRewards }) => {
     if (mobileInfoAcc) {
       return parseH3BNLocation(mobileInfoAcc.info.location).reverse()
     }
-  }, [hotspot])
+  }, [iotInfoAcc?.info?.location, mobileInfoAcc?.info?.location])
 
   if (!result) return null
 

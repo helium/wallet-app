@@ -68,6 +68,7 @@ const HotspotDetails = () => {
   }, [hotspot])
 
   const { result: hotspotAddress } = useAsync(async () => {
+    if (!iotInfoAcc && !mobileInfoAcc) return undefined
     let address:
       | {
           city: string | undefined
@@ -91,7 +92,7 @@ const HotspotDetails = () => {
     if (!address) return undefined
 
     return `${address.street}, ${address.city}, ${address.state}`
-  }, [hotspot, subDao])
+  }, [iotInfoAcc?.info.location, mobileInfoAcc?.info.location])
 
   const onConfig = useCallback(() => {
     if (!hotspotAddress) return

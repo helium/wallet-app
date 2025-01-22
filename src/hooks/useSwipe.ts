@@ -1,4 +1,5 @@
 import { Dimensions, GestureResponderEvent } from 'react-native'
+import useHaptic from './useHaptic'
 
 const windowWidth = Dimensions.get('window').width
 
@@ -7,6 +8,7 @@ export function useSwipe(
   onSwipeRight?: ((event: GestureResponderEvent) => void) | undefined,
   rangeOffset = 4,
 ) {
+  const { triggerImpact } = useHaptic()
   let firstTouch = 0
 
   // set user touch start position
@@ -19,14 +21,21 @@ export function useSwipe(
     // get touch position and screen size
     const positionX = e.nativeEvent.pageX
     const range = windowWidth / rangeOffset
-
     // check if position is growing positively and has reached specified range
-    if (positionX - firstTouch > range) {
-      if (onSwipeRight) onSwipeRight(e)
+    const swipeRightRange = positionX - firstTouch
+    if (swipeRightRange > range) {
+      if (onSwipeRight) {
+        triggerImpact('medium')
+        onSwipeRight(e)
+      }
     }
     // check if position is growing negatively and has reached specified range
-    else if (firstTouch - positionX > range) {
-      if (onSwipeLeft) onSwipeLeft(e)
+    const swipeLeftRange = firstTouch - positionX
+    if (swipeLeftRange > range) {
+      if (onSwipeLeft) {
+        triggerImpact('medium')
+        onSwipeLeft(e)
+      }
     }
   }
 

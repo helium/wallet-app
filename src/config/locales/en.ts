@@ -1753,4 +1753,7 @@ export default {
     subtitle:
       'There was an error with the app attempting to deep link. Please contact the app provider.',
   },
+  UnclaimedRewardsBanner: {
+    title: 'You have rewards to claim.',
+  },
 }
