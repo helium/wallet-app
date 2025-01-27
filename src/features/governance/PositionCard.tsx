@@ -441,6 +441,7 @@ export const PositionCard = ({
       lockupPeriodsInDays: values.lockupPeriodInDays,
       onInstructions: async (ixs, sigs) => {
         await decideAndExecute({
+          sequentially: true,
           header: t('gov.transactions.splitPosition'),
           sequentially: true,
           message: t('gov.positions.splitMessage', {
