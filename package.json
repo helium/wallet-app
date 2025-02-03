@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.11.1",
+  "version": "2.11.2",
   "private": true,
   "scripts": {
     "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
