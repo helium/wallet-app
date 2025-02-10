@@ -568,7 +568,7 @@ const HotspotMapScreen = () => {
                 }
               >
                 {legendVisible && <HotspotMapLegend network={networkType} />}
-                {activeHexItem && (
+                {activeHexItem && activeHexItem.hotspot && (
                   <HotspotMapHotspotDetails
                     hotspot={activeHexItem.hotspot}
                     info={activeHexItem?.info}
