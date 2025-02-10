@@ -26,6 +26,7 @@ import { CSAccount } from '@storage/cloudStorage'
 import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
 import { HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
+import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -42,7 +43,6 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import BN from 'bn.js'
 
 type Route = RouteProp<
   CollectableStackParamList,
