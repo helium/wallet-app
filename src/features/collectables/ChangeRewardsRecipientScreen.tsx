@@ -1,4 +1,7 @@
+import HntSymbol from '@assets/images/hnt.svg'
+import IotSymbol from '@assets/images/iotSymbol.svg'
 import Menu from '@assets/images/menu.svg'
+import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
@@ -8,15 +11,22 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
-import IotSymbol from '@assets/images/iotSymbol.svg'
-import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useEntityKey } from '@hooks/useEntityKey'
+import { useIotInfo } from '@hooks/useIotInfo'
+import { useMobileInfo } from '@hooks/useMobileInfo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
 import { CSAccount } from '@storage/cloudStorage'
+import { useColors } from '@theme/themeHooks'
 import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
+import { HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY } from '@utils/constants'
+import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -27,17 +37,12 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { IOT_LAZY_KEY, MOBILE_LAZY_KEY, HNT_LAZY_KEY } from '@utils/constants'
-import { PublicKey } from '@solana/web3.js'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useColors } from '@theme/themeHooks'
+import { Mints } from '../../utils/constants'
 import * as Logger from '../../utils/logger'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { Mints } from '../../utils/constants'
 
 type Route = RouteProp<
   CollectableStackParamList,
@@ -72,6 +77,14 @@ const ChangeRewardsRecipientScreen = () => {
     [hotspot],
   )
 
+  const hntRecipient = useMemo(
+    () => hotspot?.rewardRecipients?.[Mints.HNT],
+    [hotspot],
+  )
+  const entityKey = useEntityKey(hotspot)
+  const { info: mobileInfoAcc } = useMobileInfo(entityKey)
+  const { info: iotInfoAcc } = useIotInfo(entityKey)
+
   const hasIotRecipient = useMemo(
     () =>
       iotRecipient?.destination &&
@@ -90,17 +103,29 @@ const ChangeRewardsRecipientScreen = () => {
     [mobileRecipient, wallet],
   )
 
+  const hasHntRecipient = useMemo(
+    () =>
+      hntRecipient?.destination &&
+      wallet &&
+      !new PublicKey(hntRecipient.destination).equals(wallet) &&
+      !new PublicKey(hntRecipient.destination).equals(PublicKey.default),
+    [hntRecipient, wallet],
+  )
+
   const recipientsAreDifferent = useMemo(
     () =>
       iotRecipient?.destination &&
       mobileRecipient?.destination &&
-      !new PublicKey(iotRecipient?.destination).equals(
-        new PublicKey(mobileRecipient?.destination),
-      ),
-    [iotRecipient, mobileRecipient],
+      hntRecipient?.destination &&
+      new Set([
+        iotRecipient?.destination?.toBase58(),
+        mobileRecipient?.destination?.toBase58(),
+        hntRecipient?.destination?.toBase58(),
+      ]).size > 1,
+    [iotRecipient, mobileRecipient, hntRecipient],
   )
 
-  const hasRecipients = hasIotRecipient || hasMobileRecipient
+  const hasRecipients = hasIotRecipient || hasMobileRecipient || hasHntRecipient
 
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})
@@ -138,8 +163,23 @@ const ChangeRewardsRecipientScreen = () => {
     setTransactionError(undefined)
     setUpdating(true)
     try {
+      const validLazyKeys: PublicKey[] = [HNT_LAZY_KEY]
+      // Only add iot/mobile lazy if they actually have pending rewards,
+      // otherwise we're full HNT now.
+      if (
+        iotInfoAcc &&
+        !new BN(hotspot.pendingRewards?.[Mints.IOT] || '0').isZero()
+      ) {
+        validLazyKeys.push(IOT_LAZY_KEY)
+      }
+      if (
+        mobileInfoAcc &&
+        !new BN(hotspot.pendingRewards?.[Mints.MOBILE] || '0').isZero()
+      ) {
+        validLazyKeys.push(MOBILE_LAZY_KEY)
+      }
       await submitUpdateRewardsDestination({
-        lazyDistributors: [HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+        lazyDistributors: validLazyKeys,
         destination: recipient,
         assetId: hotspot.id,
       })
@@ -150,7 +190,15 @@ const ChangeRewardsRecipientScreen = () => {
       Logger.error(error)
       setTransactionError((error as Error).message)
     }
-  }, [recipient, hotspot, setUpdating, nav, submitUpdateRewardsDestination])
+  }, [
+    recipient,
+    hotspot,
+    setUpdating,
+    nav,
+    submitUpdateRewardsDestination,
+    iotInfoAcc,
+    mobileInfoAcc,
+  ])
 
   const handleRemoveRecipient = useCallback(async () => {
     setTransactionError(undefined)
@@ -229,7 +277,9 @@ const ChangeRewardsRecipientScreen = () => {
                         >
                           {!recipientsAreDifferent ? (
                             <>
-                              {(hasIotRecipient || hasMobileRecipient) && (
+                              {(hasIotRecipient ||
+                                hasMobileRecipient ||
+                                hasHntRecipient) && (
                                 <Box
                                   flex={1}
                                   flexDirection="row"
@@ -267,13 +317,22 @@ const ChangeRewardsRecipientScreen = () => {
                                           height={20}
                                         />
                                       )}
+                                      {hasHntRecipient && (
+                                        <HntSymbol
+                                          color={colors.hntBlue}
+                                          width={20}
+                                          height={20}
+                                        />
+                                      )}
                                       <Text variant="body3">Recipient</Text>
                                     </Box>
                                     <Text variant="body2">
                                       {ellipsizeAddress(
                                         new PublicKey(
                                           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                          iotRecipient?.destination!,
+                                          (hntRecipient?.destination ||
+                                            mobileRecipient?.destination ||
+                                            iotRecipient?.destination)!,
                                         ).toBase58(),
                                       )}
                                     </Text>
@@ -356,6 +415,39 @@ const ChangeRewardsRecipientScreen = () => {
                                   </Text>
                                 </Box>
                               )}
+                            </Box>
+                          )}
+                          {hasHntRecipient && (
+                            <Box
+                              flexDirection="row"
+                              padding="s"
+                              backgroundColor="black600"
+                              borderRadius="m"
+                              justifyContent="space-between"
+                              position="relative"
+                            >
+                              <Box
+                                flexDirection="row"
+                                alignItems="center"
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                gap={8}
+                              >
+                                <HntSymbol
+                                  color={colors.hntBlue}
+                                  width={20}
+                                  height={20}
+                                />
+                                <Text variant="body3">Recipient</Text>
+                              </Box>
+                              <Text variant="body2">
+                                {ellipsizeAddress(
+                                  new PublicKey(
+                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+                                    hntRecipient?.destination!,
+                                  ).toBase58(),
+                                )}
+                              </Text>
                             </Box>
                           )}
                           <TouchableOpacityBox
