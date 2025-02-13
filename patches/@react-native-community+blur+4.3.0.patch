@@ -1,3 +1,14 @@
+diff --git a/node_modules/@react-native-community/blur/android/build.gradle b/node_modules/@react-native-community/blur/android/build.gradle
+index 4bd9c81..01d3b2f 100644
+--- a/node_modules/@react-native-community/blur/android/build.gradle
++++ b/node_modules/@react-native-community/blur/android/build.gradle
+@@ -138,5 +138,5 @@ dependencies {
+   implementation "com.facebook.react:react-native:+"
+   // From node_modules
+
+-  implementation 'com.github.Dimezis:BlurView:version-2.0.2'
++  implementation 'com.github.Dimezis:BlurView:version-2.0.4'
+ }
 diff --git a/node_modules/@react-native-community/blur/android/build/.transforms/593e5f118db70e64727be49451b658e8/results.bin b/node_modules/@react-native-community/blur/android/build/.transforms/593e5f118db70e64727be49451b658e8/results.bin
 new file mode 100644
 index 0000000..1ed65e0
@@ -14,24 +25,19 @@ index 0000000..5ff383e
 +o/debug
 diff --git a/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewManager.dex b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewManager.dex
 new file mode 100644
-index 0000000..4fe7449
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewManager.dex differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewManagerImpl.dex b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewManagerImpl.dex
 new file mode 100644
-index 0000000..d5c594c
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewManagerImpl.dex differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewPackage.dex b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewPackage.dex
 new file mode 100644
-index 0000000..58c3f02
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BlurViewPackage.dex differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BuildConfig.dex b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BuildConfig.dex
 new file mode 100644
-index 0000000..2a33e37
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/debug/com/reactnativecommunity/blurview/BuildConfig.dex differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/desugar_graph.bin b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/desugar_graph.bin
 new file mode 100644
-index 0000000..601f245
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/.transforms/e9613877f3504f974b5daeceea5e0e5d/transformed/desugar_graph.bin differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/generated/source/buildConfig/debug/com/reactnativecommunity/blurview/BuildConfig.java b/node_modules/@react-native-community/blur/android/build/generated/source/buildConfig/debug/com/reactnativecommunity/blurview/BuildConfig.java
 new file mode 100644
 index 0000000..6b09d26
@@ -111,12 +117,10 @@ index 0000000..9e26dfe
 \ No newline at end of file
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/compile_library_classes_jar/debug/classes.jar b/node_modules/@react-native-community/blur/android/build/intermediates/compile_library_classes_jar/debug/classes.jar
 new file mode 100644
-index 0000000..f55afb4
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/compile_library_classes_jar/debug/classes.jar differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/compile_r_class_jar/debug/R.jar b/node_modules/@react-native-community/blur/android/build/intermediates/compile_r_class_jar/debug/R.jar
 new file mode 100644
-index 0000000..4a85e1a
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/compile_r_class_jar/debug/R.jar differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/compile_symbol_list/debug/R.txt b/node_modules/@react-native-community/blur/android/build/intermediates/compile_symbol_list/debug/R.txt
 new file mode 100644
 index 0000000..0ae48ad
@@ -2165,20 +2169,16 @@ index 0000000..266978e
 \ No newline at end of file
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewManager.class b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewManager.class
 new file mode 100644
-index 0000000..6d69bd6
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewManager.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewManagerImpl.class b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewManagerImpl.class
 new file mode 100644
-index 0000000..50c17c2
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewManagerImpl.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewPackage.class b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewPackage.class
 new file mode 100644
-index 0000000..0532b18
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BlurViewPackage.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BuildConfig.class b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BuildConfig.class
 new file mode 100644
-index 0000000..cba1ec0
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/javac/debug/classes/com/reactnativecommunity/blurview/BuildConfig.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/local_only_symbol_list/debug/R-def.txt b/node_modules/@react-native-community/blur/android/build/intermediates/local_only_symbol_list/debug/R-def.txt
 new file mode 100644
 index 0000000..5f02a86
@@ -2280,20 +2280,16 @@ index 0000000..0dc94a7
 \ No newline at end of file
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewManager.class b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewManager.class
 new file mode 100644
-index 0000000..6d69bd6
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewManager.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewManagerImpl.class b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewManagerImpl.class
 new file mode 100644
-index 0000000..50c17c2
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewManagerImpl.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewPackage.class b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewPackage.class
 new file mode 100644
-index 0000000..0532b18
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BlurViewPackage.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BuildConfig.class b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BuildConfig.class
 new file mode 100644
-index 0000000..cba1ec0
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/intermediates/runtime_library_classes_dir/debug/com/reactnativecommunity/blurview/BuildConfig.class differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt b/node_modules/@react-native-community/blur/android/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt
 new file mode 100644
 index 0000000..c7e81e2
@@ -3793,8 +3789,7 @@ index 0000000..d181fc5
 +		INJECTED from /Users/mattreetz/Code/wallet/wallet-app/node_modules/@react-native-community/blur/android/src/main/AndroidManifest.xml
 diff --git a/node_modules/@react-native-community/blur/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/@react-native-community/blur/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
 new file mode 100644
-index 0000000..110956b
-Binary files /dev/null and b/node_modules/@react-native-community/blur/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin differ
+index 0000000..e69de29
 diff --git a/node_modules/@react-native-community/blur/android/src/main/java/com/reactnativecommunity/blurview/BlurViewManagerImpl.java b/node_modules/@react-native-community/blur/android/src/main/java/com/reactnativecommunity/blurview/BlurViewManagerImpl.java
 index 47030e5..979bf81 100644
 --- a/node_modules/@react-native-community/blur/android/src/main/java/com/reactnativecommunity/blurview/BlurViewManagerImpl.java
@@ -3820,4 +3815,4 @@ index 47030e5..979bf81 100644
 +      .setBlurRadius(defaultRadius);
      return blurView;
    }
- 
+
