@@ -38,6 +38,7 @@ const AccountAssignScreen = () => {
     ImportAccountNavigationProp & CreateAccountNavigationProp
   >()
   const rootNav = useNavigation<RootNavigationProp>()
+  const [error, setError] = useState<string | null>(null)
 
   const { t } = useTranslation()
   const [alias, setAlias] = useState('')
@@ -160,7 +161,8 @@ const AccountAssignScreen = () => {
         ...highestBalanceAcc,
         netType: accountNetType(highestBalanceAcc.address),
       })
-    } catch (e) {
+    } catch (e: any) {
+      setError(e.toString())
       console.error(e)
     }
   })
@@ -258,6 +260,11 @@ const AccountAssignScreen = () => {
           {!loading && existingNames?.has(alias) ? (
             <Text mb="m" color="red500">
               {t('accountAssign.nameExists')}
+            </Text>
+          ) : null}
+          {error ? (
+            <Text mb="m" color="red500">
+              {error}
             </Text>
           ) : null}
           {loading ? (
