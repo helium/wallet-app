@@ -1270,7 +1270,7 @@ export default {
           title: 'How to Vote',
         },
         {
-          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT, MOBILE, IOT that you have\nlocked up in the account.\n\nLocked HNT can be delegated\nto SubNetworks for rewards.',
+          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT that you have\nlocked up in the account.\n\nLocked HNT can be delegated\nto SubNetworks for rewards.',
           title: 'Vote Power',
         },
         {
