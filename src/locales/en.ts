@@ -640,7 +640,7 @@ export default {
     swipeToBurn: 'Swipe to Burn',
     title: 'Burn',
     subdao: '{{subdao}} Subnetwork',
-    choooseSubDAO: 'Choose a Subnetwork',
+    choooseSubDAO: 'Choose a subnetwork',
   },
   delegate: {
     title: 'Delegate',
@@ -1270,7 +1270,7 @@ export default {
           title: 'How to Vote',
         },
         {
-          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT that you have\nlocked up in the account.\n\nLocked HNT can be delegated\nto SubNetworks for rewards.',
+          body: 'Your <primaryText>Vote Power</primaryText>\nis determined by the amount of\nHNT that you have\nlocked up in the account.\n\nLocked HNT must be delegated\nto either subnetwork and you must be an active participant in governance to receive rewards.',
           title: 'Vote Power',
         },
         {
@@ -1382,7 +1382,7 @@ export default {
       longerLockup:
         'Select a new lockup period longer than or equal to the existing {{existing}}',
       delegateBlurb:
-        "Delegating to a subnetwork may earn you rewards in that subnetwork's token.",
+        "Delegating to a subnetwork may earn you rewards in HNT.",
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
       initialVotePowerMult: 'Initial Vote Power Multiplier',
@@ -1393,7 +1393,7 @@ export default {
         'Transfering out of a Landrush position, will result in losing the multiplier!',
       cantTransfer: 'There are no positions that meet this criteria.',
       selectTransfer: 'Select position to transfer too.',
-      selectSubDao: 'Select an existing SubNetwork to delegate to.',
+      selectSubDao: 'Select an existing subnetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
       noneFound: 'No Positions Found',
       closeMessage: 'Close this position?',
