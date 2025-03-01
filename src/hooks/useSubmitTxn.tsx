@@ -21,13 +21,14 @@ import { PaymentPreivew } from '@features/solana/PaymentPreview'
 import { useSolana } from '@features/solana/SolanaProvider'
 import { useWalletSign } from '@features/solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '@features/solana/walletSignBottomSheetTypes'
+import { Intent, useDFlow } from '@config/storage/DFlowProvider'
+
 import {
   claimAllRewards,
   claimRewards,
   makeCollectablePayment,
   makePayment,
   sendDelegateDataCredits,
-  sendJupiterSwap,
   sendMintDataCredits,
   sendTreasurySwap,
   updateRewardsDestinations,
@@ -41,6 +42,7 @@ export default () => {
   const { t } = i18n
   const { walletSignBottomSheetRef } = useWalletSign()
   const { getAssertData } = useOnboarding()
+  const { submitIntent } = useDFlow()
 
   const dispatch = useAppDispatch()
 
@@ -173,34 +175,34 @@ export default () => {
     ],
   )
 
-  const submitJupiterSwap = useCallback(
+  const submitDFlowSwap = useCallback(
     async ({
       inputMint,
       inputAmount,
       outputMint,
       outputAmount,
       minReceived,
-      swapTxn,
+      intent,
+      signedOpenTransaction,
     }: {
       inputMint: PublicKey
       inputAmount: number
       outputMint: PublicKey
       outputAmount: number
       minReceived: number
-      swapTxn: VersionedTransaction
+      intent: Intent
+      signedOpenTransaction: Transaction
     }) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
-
-      const serializedTx = Buffer.from(swapTxn.serialize())
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         header: t('swapsScreen.swapTokens'),
         message: t('transactions.signSwapTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: [Buffer.from(signedOpenTransaction.serialize())],
         suppressWarnings: true,
         renderer: () => (
           <SwapPreview
@@ -219,22 +221,18 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      dispatch(
-        sendJupiterSwap({
-          anchorProvider,
-          cluster,
-          swapTxn,
-        }),
-      )
+      const submitIntentResponse = await submitIntent({
+        quoteResponse: intent,
+        signedOpenTransaction,
+      })
+
+      if (!submitIntentResponse) {
+        throw new Error('Failed to submit swap intent')
+      }
+
+      return submitIntentResponse
     },
-    [
-      anchorProvider,
-      cluster,
-      currentAccount,
-      dispatch,
-      t,
-      walletSignBottomSheetRef,
-    ],
+    [anchorProvider, currentAccount, submitIntent, t, walletSignBottomSheetRef],
   )
 
   const submitTreasurySwap = useCallback(
@@ -695,7 +693,7 @@ export default () => {
   return {
     submitPayment,
     submitCollectable,
-    submitJupiterSwap,
+    submitDFlowSwap,
     submitTreasurySwap,
     submitClaimRewards,
     submitClaimAllRewards,

@@ -119,12 +119,6 @@ type TreasurySwapTxn = {
   swapTxn: TransactionDraft
 }
 
-type JupiterSwapTxn = {
-  cluster: Cluster
-  anchorProvider: AnchorProvider
-  swapTxn: VersionedTransaction
-}
-
 type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
@@ -223,30 +217,6 @@ export const sendTreasurySwap = createAsyncThunk(
           await populateMissingDraftInfo(anchorProvider.connection, swapTxn),
         ),
       )
-
-      const { txid: sig } = await sendAndConfirmWithRetry(
-        anchorProvider.connection,
-        Buffer.from(signed.serialize()),
-        {
-          skipPreflight: true,
-        },
-        'confirmed',
-      )
-
-      postPayment({ signatures: [sig], cluster })
-    } catch (error) {
-      Logger.error(error)
-      throw error
-    }
-    return true
-  },
-)
-
-export const sendJupiterSwap = createAsyncThunk(
-  'solana/sendJupiterSwap',
-  async ({ cluster, anchorProvider, swapTxn }: JupiterSwapTxn) => {
-    try {
-      const signed = await anchorProvider.wallet.signTransaction(swapTxn)
 
       const { txid: sig } = await sendAndConfirmWithRetry(
         anchorProvider.connection,
@@ -803,29 +773,6 @@ const solanaSlice = createSlice({
       }
     })
     builder.addCase(sendTreasurySwap.fulfilled, (state, _action) => {
-      state.payment = {
-        success: true,
-        loading: false,
-        error: undefined,
-      }
-    })
-    builder.addCase(sendJupiterSwap.rejected, (state, action) => {
-      state.payment = {
-        success: false,
-        loading: false,
-        error: action.error,
-        signature: undefined,
-      }
-    })
-    builder.addCase(sendJupiterSwap.pending, (state, _action) => {
-      state.payment = {
-        success: false,
-        loading: true,
-        error: undefined,
-        signature: undefined,
-      }
-    })
-    builder.addCase(sendJupiterSwap.fulfilled, (state, _action) => {
       state.payment = {
         success: true,
         loading: false,

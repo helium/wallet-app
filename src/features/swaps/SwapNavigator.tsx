@@ -2,7 +2,7 @@ import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack'
-import { JupiterProvider } from '@config/storage/JupiterProvider'
+import { DFlowProvider } from '@config/storage/DFlowProvider'
 import React, { memo, useMemo } from 'react'
 import SwappingScreen from './SwappingScreen'
 import SwapScreen from './SwapScreen'
@@ -19,12 +19,12 @@ const SwapStackScreen = () => {
   )
 
   return (
-    <JupiterProvider>
+    <DFlowProvider>
       <SwapStack.Navigator screenOptions={cardPresentation}>
         <SwapStack.Screen name="SwapScreen" component={SwapScreen} />
         <SwapStack.Screen name="SwappingScreen" component={SwappingScreen} />
       </SwapStack.Navigator>
-    </JupiterProvider>
+    </DFlowProvider>
   )
 }
 export default memo(SwapStackScreen)

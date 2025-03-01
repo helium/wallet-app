@@ -6,23 +6,20 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
-import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { useBN } from '@hooks/useBN'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useDFlow } from '@config/storage/DFlowProvider'
+import { useConnection } from '@solana/wallet-adapter-react'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { parseTransactionError } from '@utils/solanaUtils'
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
-import 'text-encoding-polyfill'
-import ArrowRight from '../../assets/svgs/arrowRight.svg'
-import BackArrow from '../../assets/svgs/backArrow.svg'
-import { TabBarNavigationProp } from '../../app/rootTypes'
-import { RootState } from '../../store/rootReducer'
+import ArrowRight from '@assets/svgs/arrowRight.svg'
+import BackArrow from '@assets/svgs/backArrow.svg'
+import { TabBarNavigationProp } from '@app/rootTypes'
+import { ORDER_STATUS } from '@dflow-protocol/swap-api-utils'
+import * as Logger from '@utils/logger'
 import { SwapStackParamList } from './swapTypes'
 
 type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
@@ -31,19 +28,83 @@ const SwappingScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<TabBarNavigationProp>()
   const backEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
-
   const { t } = useTranslation()
-  const { tokenA, tokenB } = route.params
+  const {
+    tokenA,
+    tokenB,
+    intent,
+    signedOpenTransaction,
+    submitIntentResponse,
+  } = route.params
   const { json: jsonA } = useMetaplexMetadata(usePublicKey(tokenA))
   const { json: jsonB } = useMetaplexMetadata(usePublicKey(tokenB))
+  const { connection } = useConnection()
+  const { monitorOrder } = useDFlow()
+  const [error, setError] = useState<string>()
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const solanaPayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.payment,
-  )
+  useEffect(() => {
+    const monitor = async () => {
+      try {
+        const result = await monitorOrder({
+          connection,
+          intent,
+          signedOpenTransaction,
+          submitIntentResponse,
+        })
+
+        switch (result.status) {
+          case ORDER_STATUS.CLOSED: {
+            if (result.fills.length > 0) {
+              setSuccess(true)
+              setTimeout(() => navigation.goBack(), 2000)
+            } else {
+              setError(t('swapsScreen.swapFailed'))
+            }
+            break
+          }
+          case ORDER_STATUS.PENDING_CLOSE: {
+            if (result.fills.length > 0) {
+              setSuccess(true)
+              setTimeout(() => navigation.goBack(), 2000)
+            } else {
+              setError(t('swapsScreen.swapFailed'))
+            }
+            break
+          }
+          case ORDER_STATUS.OPEN_EXPIRED: {
+            setError(t('swapsScreen.swapExpired'))
+            break
+          }
+          case ORDER_STATUS.OPEN_FAILED: {
+            setError(
+              (result.transactionError as string) ||
+                t('swapsScreen.swapFailed'),
+            )
+            break
+          }
+        }
+      } catch (e) {
+        Logger.error(e)
+        setError((e as Error).message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    monitor()
+  }, [
+    connection,
+    monitorOrder,
+    navigation,
+    intent,
+    signedOpenTransaction,
+    submitIntentResponse,
+    t,
+  ])
 
   const onReturn = useCallback(() => {
-    // Reset Swap stack to first screen
     navigation.goBack()
   }, [navigation])
 
@@ -87,7 +148,7 @@ const SwappingScreen = () => {
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           {TokensSwappedContainer}
-          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
+          {success && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -111,7 +172,7 @@ const SwappingScreen = () => {
             </Animated.View>
           )}
 
-          {solanaPayment?.error && (
+          {error && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -131,32 +192,12 @@ const SwappingScreen = () => {
                 marginTop="8"
                 textAlign="center"
               >
-                {parseTransactionError(
-                  solBalance,
-                  solanaPayment?.error?.message,
-                )}
+                {error}
               </Text>
             </Animated.View>
           )}
 
-          {!solanaPayment && (
-            <Animated.View
-              style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
-            >
-              <Text
-                variant="displaySmRegular"
-                color="primaryText"
-                marginTop="8"
-                textAlign="center"
-              >
-                {t('swapsScreen.swapError')}
-              </Text>
-            </Animated.View>
-          )}
-
-          {solanaPayment && solanaPayment.loading && (
+          {loading && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
