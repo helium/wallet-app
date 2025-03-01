@@ -1,0 +1,9 @@
+global-libraries:
+  - 'react-native' # Run React Native rules
+
+exclude:
+  - '**/node_modules/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/public/**'
+  - '**/src/assets/**'
