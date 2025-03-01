@@ -192,7 +192,7 @@ export const ProposalScreen = () => {
       {
         basePriorityFee: await getBasePriorityFee(),
         useFirstEstimateForAll: true,
-        computeScaleUp: 1.4,
+        computeScaleUp: 1.5,
       },
     )
     const populatedTxs = await Promise.all(
