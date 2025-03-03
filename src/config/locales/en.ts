@@ -1408,7 +1408,7 @@ export default {
       longerLockup:
         'Select a new lockup period longer than or equal to the existing {{existing}}',
       delegateBlurb:
-        "Delegating to a subnetwork may earn you rewards in that subnetwork's token.",
+        "Delegating to a subnetwork results in more HNT being emitted to that subnetwork.",
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
       initialVotePowerMult: 'Initial Vote Power Multiplier',
