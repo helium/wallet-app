@@ -70,9 +70,15 @@ target 'HeliumWallet' do
 
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
+        config.build_settings['DEFINES_MODULE'] = 'YES'
         config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
+
+        # Fix for React-Core module map
+        if target.name == 'React-Core'
+          config.build_settings['MODULEMAP_FILE'] = '${PODS_ROOT}/Headers/Public/React-Core/React/React-Core.modulemap'
+        end
       end
     end
   end
