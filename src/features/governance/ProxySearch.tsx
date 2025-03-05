@@ -38,7 +38,6 @@ export const ProxySearch: React.FC<{
       voteService,
     }),
   )
-
   const result = useMemo(() => {
     const resultsAsOptions =
       resultPaged?.pages.flat().map((r) => {
@@ -89,6 +88,7 @@ export const ProxySearch: React.FC<{
   const selected = useMemo(() => {
     return result?.find((r: { value: string }) => r.value === input)
   }, [input, result])
+
   const { t } = useTranslation()
 
   const handleInputChange = useCallback(
@@ -97,9 +97,15 @@ export const ProxySearch: React.FC<{
         setFocused(true)
       }
 
+      if (isValidPublicKey(v)) {
+        onValueChange(v)
+      } else {
+        onValueChange('')
+      }
+
       setInput(v)
     },
-    [focused],
+    [focused, onValueChange],
   )
 
   const navigation = useNavigation<GovernanceNavigationProp>()
