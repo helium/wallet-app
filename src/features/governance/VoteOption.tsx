@@ -8,13 +8,12 @@ import { PublicKey } from '@solana/web3.js'
 import { Color, Theme } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
 import { shortenAddress } from '@utils/formatting'
-import BN from 'bn.js'
 import React from 'react'
 import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
 
 export const VoteOption = ({
   option,
-  myWeight,
+  didVote,
   canVote,
   canRelinquishVote,
   voting,
@@ -25,7 +24,7 @@ export const VoteOption = ({
 }: {
   voters?: PublicKey[]
   option: VoteChoiceWithMeta
-  myWeight?: BN
+  didVote?: boolean
   canVote: boolean
   canRelinquishVote: boolean
   voting: boolean
@@ -57,7 +56,7 @@ export const VoteOption = ({
             borderWidth={2}
             borderColor={VotingResultColors[option.index]}
             backgroundColor={
-              !myWeight ? 'transparent' : VotingResultColors[option.index]
+              !didVote ? 'transparent' : VotingResultColors[option.index]
             }
           />
         ) : (
