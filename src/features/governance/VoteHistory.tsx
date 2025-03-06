@@ -254,7 +254,10 @@ const ProposalItem: React.FC<{
                 // Calc with 4 decimals precision
                 proposal.votes[0].weight && !votingResults?.totalVotes.isZero()
                   ? `${(
-                      new BN(proposal.votes[0].weight)
+                      (BN.isBN(proposal.votes[0].weight)
+                        ? proposal.votes[0].weight
+                        : new BN(proposal.votes[0].weight.toString())
+                      )
                         .mul(new BN(10000))
                         .div(votingResults.totalVotes)
                         .toNumber() / 100
