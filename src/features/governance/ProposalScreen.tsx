@@ -109,7 +109,7 @@ export const ProposalScreen = () => {
   }, [hasSeen])
 
   const {
-    voteWeights,
+    didVote,
     canVote,
     vote,
     loading: voting,
@@ -270,7 +270,7 @@ export const ProposalScreen = () => {
 
   const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
   const noVotingPower = !loading && (!votingPower || votingPower.isZero())
-  const voted = !voting && voteWeights?.some((n) => n.gt(new BN(0)))
+  const voted = !voting && didVote?.some((n) => n)
   const showVoteResults =
     derivedState !== 'cancelled' &&
     (voted ||
@@ -554,7 +554,7 @@ export const ProposalScreen = () => {
                               currVote === r.index && (voting || relinquishing)
                             }
                             option={r}
-                            myWeight={voteWeights?.[r.index]}
+                            didVote={didVote?.[r.index]}
                             canVote={canVote(r.index)}
                             canRelinquishVote={canRelinquishVote(r.index)}
                             onVote={handleVote(r)}
