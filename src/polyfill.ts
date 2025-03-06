@@ -2,8 +2,19 @@
 /* eslint-disable func-names */
 
 import { Buffer } from 'buffer'
+import structuredClone from '@ungap/structured-clone'
 
 global.Buffer = Buffer
+global.structuredClone = structuredClone
+
+Buffer.prototype.subarray = function subarray(
+  begin: number | undefined,
+  end: number | undefined,
+) {
+  const result = Uint8Array.prototype.subarray.apply(this, [begin, end])
+  Object.setPrototypeOf(result, Buffer.prototype) // Explicitly add the `Buffer` prototype (adds `readUIntLE`!)
+  return result
+}
 
 // String.prototype.replaceAll() polyfill
 if (!String.prototype.replaceAll) {
