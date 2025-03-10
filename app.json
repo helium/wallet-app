@@ -2,6 +2,9 @@
   "name": "HeliumWallet",
   "displayName": "Helium Wallet",
   "expo": {
-    "scheme": "heliumwallet"
+    "scheme": "heliumwallet",
+    "plugins": [
+      "@maplibre/maplibre-react-native"
+    ]
   }
 }
