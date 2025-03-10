@@ -152,7 +152,7 @@
 		96E4147427BEE4C300CE6EC1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		96E4147C27BEE61400CE6EC1 /* OneSignalNotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OneSignalNotificationServiceExtension.entitlements; sourceTree = "<group>"; };
 		9998D5C2837CACD6B263B48A /* libPods-HeliumWalletWidgetExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWalletWidgetExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		99ED3018E9DBF6106B1DE1A7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = HeliumWallet/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		99ED3018E9DBF6106B1DE1A7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = HeliumWallet/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		9D05C88428527DF0008198FC /* HeliumWalletWidgetProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetProvider.swift; sourceTree = "<group>"; };
 		9D05C88628527E1E008198FC /* HeliumWalletWidgetSmallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetSmallView.swift; sourceTree = "<group>"; };
 		9D05C88828527E40008198FC /* HeliumWalletWidgetMediumView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetMediumView.swift; sourceTree = "<group>"; };
@@ -484,7 +484,7 @@
 			);
 			name = HeliumWalletTests;
 			packageProductDependencies = (
-				899688236472B5978CFDB459 /* Mapbox */,
+				B77E3B21F63838DF362252EF /* MapLibre */,
 			);
 			productName = HeliumWalletTests;
 			productReference = 00E356EE1AD99517003FC87E /* HeliumWalletTests.xctest */;
@@ -515,7 +515,7 @@
 			);
 			name = HeliumWallet;
 			packageProductDependencies = (
-				5A94DB7A8D2811C850C94941 /* Mapbox */,
+				7645A55FE0B71E1B115B72C2 /* MapLibre */,
 			);
 			productName = HeliumWallet;
 			productReference = 13B07F961A680F5B00A75B9A /* HeliumWallet.app */;
@@ -536,7 +536,7 @@
 			);
 			name = OneSignalNotificationServiceExtension;
 			packageProductDependencies = (
-				CE0525B8C0183FCA3071F4F6 /* Mapbox */,
+				0766917C3867C9A2B4770A0E /* MapLibre */,
 			);
 			productName = OneSignalNotificationServiceExtension;
 			productReference = 96E4147027BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex */;
@@ -558,7 +558,7 @@
 			name = HeliumWalletWidgetExtension;
 			packageProductDependencies = (
 				9DCA365E28E6781D000F2A66 /* Charts */,
-				6B1147D96DED6C57572658F4 /* Mapbox */,
+				20D8E26035C09788368A96AB /* MapLibre */,
 			);
 			productName = HeliumWalletWidgetExtension;
 			productReference = 9D7DB3AE2850EC14004D9409 /* HeliumWalletWidgetExtension.appex */;
@@ -601,7 +601,7 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
 				9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */,
-				FC2F6DB42C72C0A0082909AF /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
+				06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1512,6 +1512,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution";
+			requirement = {
+				kind = exactVersion;
+				version = 6.11.0;
+			};
+		};
 		9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/spacenation/swiftui-charts";
@@ -1520,41 +1528,33 @@
 				minimumVersion = 1.0.0;
 			};
 		};
-		FC2F6DB42C72C0A0082909AF /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/maplibre/maplibre-gl-native-distribution";
-			requirement = {
-				kind = exactVersion;
-				version = 5.13.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		5A94DB7A8D2811C850C94941 /* Mapbox */ = {
+		0766917C3867C9A2B4770A0E /* MapLibre */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FC2F6DB42C72C0A0082909AF /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
+			package = 06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
+			productName = MapLibre;
 		};
-		6B1147D96DED6C57572658F4 /* Mapbox */ = {
+		20D8E26035C09788368A96AB /* MapLibre */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FC2F6DB42C72C0A0082909AF /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
+			package = 06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
+			productName = MapLibre;
 		};
-		899688236472B5978CFDB459 /* Mapbox */ = {
+		7645A55FE0B71E1B115B72C2 /* MapLibre */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FC2F6DB42C72C0A0082909AF /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
+			package = 06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
+			productName = MapLibre;
 		};
 		9DCA365E28E6781D000F2A66 /* Charts */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */;
 			productName = Charts;
 		};
-		CE0525B8C0183FCA3071F4F6 /* Mapbox */ = {
+		B77E3B21F63838DF362252EF /* MapLibre */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = FC2F6DB42C72C0A0082909AF /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
-			productName = Mapbox;
+			package = 06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
+			productName = MapLibre;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -2,7 +2,6 @@ import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
-import MapLibreGL from '@maplibre/maplibre-react-native'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
 import { ModalProvider } from '@storage/ModalsProvider'
@@ -45,11 +44,6 @@ SplashLib.preventAutoHideAsync().catch(() => {
 })
 
 const App = () => {
-  // Note that the Android SDK is slightly peculiar
-  // in that it requires setting an access token,
-  // even though it will be null for most users(only Mapbox authenticates this way)
-  MapLibreGL.setAccessToken(null)
-
   LogBox.ignoreLogs([
     'Module iCloudStorage',
     'EventEmitter.removeListener',

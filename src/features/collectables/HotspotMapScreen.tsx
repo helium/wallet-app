@@ -28,7 +28,8 @@ import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
-import MapLibreGL, { OnPressEvent } from '@maplibre/maplibre-react-native'
+import * as MapLibreRN from '@maplibre/maplibre-react-native'
+import { ShapeSource } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import { Polygon, feature, featureCollection } from '@turf/helpers'
@@ -42,7 +43,14 @@ import {
 } from '@utils/solanaUtils'
 import { BN } from 'bn.js'
 import { cellToBoundary, latLngToCell } from 'h3-js'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert } from 'react-native'
@@ -57,6 +65,9 @@ import {
 } from './collectablesTypes'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
+type OnPress = NonNullable<
+  Pick<ComponentProps<typeof ShapeSource>, 'onPress'>['onPress']
+>
 
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
 const HotspotMapScreen = () => {
@@ -66,8 +77,8 @@ const HotspotMapScreen = () => {
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
-  const mapRef = useRef<MapLibreGL.MapView>(null)
-  const cameraRef = useRef<MapLibreGL.Camera>(null)
+  const mapRef = useRef<MapLibreRN.MapViewRef>(null)
+  const cameraRef = useRef<MapLibreRN.CameraRef>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
@@ -87,9 +98,9 @@ const HotspotMapScreen = () => {
   const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
   const [initialCenterSet, setInitalCenter] = useState(false)
-  const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
+  const [userLocation, setUserLocation] = useState<MapLibreRN.Location>()
   const onUserLocationUpdate = useCallback(
-    (loc: MapLibreGL.Location) => {
+    (loc: MapLibreRN.Location) => {
       setUserLocation(loc)
     },
     [setUserLocation],
@@ -244,41 +255,36 @@ const HotspotMapScreen = () => {
       bottomSheetHeight
     ) {
       const cords = parseH3BNLocation(new BN(activeHex)).reverse()
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const mapHeight = mapRef.current.state.height
 
-      if (mapHeight - bottomSheetHeight > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-shadow
-        const zoomLevel = await mapRef.current.getZoom()
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      const zoomLevel = await mapRef.current.getZoom()
 
-        // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
-        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
-        const centeringShift = bottomSheetHeight / 4
+      // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
+      // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
+      const centeringShift = bottomSheetHeight / 4
 
-        // Convert the latitude to radians for more accurate calculations
-        const latitudeRadians = (cords[1] * Math.PI) / 180
+      // Convert the latitude to radians for more accurate calculations
+      const latitudeRadians = (cords[1] * Math.PI) / 180
 
-        // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
-        // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
-        const metersPerPixel =
-          (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
-          (256 * 2 ** zoomLevel)
+      // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
+      // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
+      const metersPerPixel =
+        (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
+        (256 * 2 ** zoomLevel)
 
-        // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
-        const pixelShift = centeringShift
+      // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
+      const pixelShift = centeringShift
 
-        // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
-        const degreeShift = (pixelShift * metersPerPixel) / 111319.9
+      // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
+      const degreeShift = (pixelShift * metersPerPixel) / 111319.9
 
-        // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
-        // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
-        // viewable area above the bottom sheet.
-        cameraRef.current?.setCamera({
-          centerCoordinate: [cords[0], cords[1] - degreeShift],
-          animationDuration: 200,
-        })
-      }
+      // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
+      // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
+      // viewable area above the bottom sheet.
+      cameraRef.current?.setCamera({
+        centerCoordinate: [cords[0], cords[1] - degreeShift],
+        animationDuration: 200,
+      })
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
@@ -351,7 +357,10 @@ const HotspotMapScreen = () => {
       cameraRef.current.setCamera({
         animationDuration: 500,
         zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation.coords,
+        centerCoordinate: [
+          userLocation.coords.longitude,
+          userLocation.coords.latitude,
+        ],
       })
     }
   }, [userLocation, cameraRef])
@@ -374,8 +383,8 @@ const HotspotMapScreen = () => {
     setHotspot(undefined)
   }, [networkType, setNetworkType])
 
-  const handleHexClick = useCallback(
-    (event: OnPressEvent) => {
+  const handleHexClick: OnPress = useCallback(
+    (event) => {
       const hex = event.features[0]
       setLegendVisible(false)
       const id = hex.properties?.id
@@ -435,9 +444,7 @@ const HotspotMapScreen = () => {
               },
             }}
           >
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-            {/* @ts-ignore */}
-            <MapLibreGL.Images
+            <MapLibreRN.Images
               images={{
                 iotHex: require('@assets/images/mapIotHex.png'),
                 iotHexActive: require('@assets/images/mapIotHexActive.png'),
@@ -445,13 +452,13 @@ const HotspotMapScreen = () => {
                 mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
               }}
             />
-            <MapLibreGL.ShapeSource
+            <MapLibreRN.ShapeSource
               id="hexsFeature"
               shape={hexsFeature}
               onPress={handleHexClick}
               hitbox={{ width: iconSize, height: iconSize }}
             >
-              <MapLibreGL.FillLayer
+              <MapLibreRN.FillLayer
                 sourceID="hexs"
                 id="hexs-fill"
                 style={{
@@ -459,7 +466,7 @@ const HotspotMapScreen = () => {
                   fillOpacity: ['get', 'opacity'],
                 }}
               />
-            </MapLibreGL.ShapeSource>
+            </MapLibreRN.ShapeSource>
           </Map>
           <Box
             flexDirection="row"

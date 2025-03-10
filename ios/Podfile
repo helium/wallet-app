@@ -57,8 +57,6 @@ target 'HeliumWallet' do
   setup_permissions(['BluetoothPeripheral'])
 
   post_install do |installer|
-    $RNMBGL.post_install(installer)
-
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
@@ -75,6 +73,8 @@ target 'HeliumWallet' do
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
       end
     end
+
+    $MLRN.post_install(installer)
   end
 end
 

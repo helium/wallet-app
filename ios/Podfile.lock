@@ -118,11 +118,11 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - maplibre-react-native (9.1.0):
-    - maplibre-react-native/DynamicLibrary (= 9.1.0)
+  - maplibre-react-native (10.1.1):
+    - maplibre-react-native/DynamicLibrary (= 10.1.1)
     - React
     - React-Core
-  - maplibre-react-native/DynamicLibrary (9.1.0):
+  - maplibre-react-native/DynamicLibrary (10.1.1):
     - React
     - React-Core
   - MultiplatformBleAdapter (0.1.9)
@@ -1891,7 +1891,7 @@ SPEC CHECKSUMS:
   hermes-engine: 8c1577f3fdb849cbe7729c2e7b5abc4b845e88f8
   lottie-ios: e047b1d2e6239b787cc5e9755b988869cf190494
   lottie-react-native: f26bf46e376a20620da39b1e74d9f0972bfeb0e8
-  maplibre-react-native: 15c10bfd89c738f27d9014f160d8c223044dce7a
+  maplibre-react-native: 275e81319b9d75e120902a09f4ca07cce9537234
   MultiplatformBleAdapter: 5a6a897b006764392f9cef785e4360f54fb9477d
   OneSignalXCFramework: f06edd9b146c7ac5935136a117ce2a5fdd6420f6
   RCT-Folly: 5dc73daec3476616d19e8a53f0156176f7b55461
@@ -1982,6 +1982,6 @@ SPEC CHECKSUMS:
   Yoga: 950bbfd7e6f04790fdb51149ed51df41f329fcc8
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: d44dfed27ca86fe0b1eb67aab0856b7cc9e24ff7
+PODFILE CHECKSUM: f2b3cf4c49920f615cb5cba978ce43a6e636b29f
 
 COCOAPODS: 1.16.2

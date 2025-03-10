@@ -1,4 +1,4 @@
-import MapLibreGL from '@maplibre/maplibre-react-native'
+import * as MapLibreRN from '@maplibre/maplibre-react-native'
 import { Position } from '@turf/helpers'
 import React, { PropsWithChildren, useMemo } from 'react'
 import Config from 'react-native-config'
@@ -12,12 +12,12 @@ import {
 
 const Map: React.FC<
   PropsWithChildren<{
-    map?: React.RefObject<MapLibreGL.MapView>
-    camera?: React.RefObject<MapLibreGL.Camera>
-    onUserLocationUpdate?: (userLocation: MapLibreGL.Location) => void
+    map?: React.RefObject<MapLibreRN.MapViewRef>
+    camera?: React.RefObject<MapLibreRN.CameraRef>
+    onUserLocationUpdate?: (userLocation: MapLibreRN.Location) => void
     centerCoordinate?: Position
-    mapProps?: Omit<React.ComponentProps<typeof MapLibreGL.MapView>, 'children'>
-    cameraProps?: React.ComponentProps<typeof MapLibreGL.Camera>
+    mapProps?: Omit<React.ComponentProps<typeof MapLibreRN.MapView>, 'children'>
+    cameraProps?: React.ComponentProps<typeof MapLibreRN.Camera>
   }>
 > = ({
   children,
@@ -45,7 +45,7 @@ const Map: React.FC<
   )
 
   return (
-    <MapLibreGL.MapView
+    <MapLibreRN.MapView
       ref={map}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -55,10 +55,10 @@ const Map: React.FC<
       attributionEnabled={false}
       rotateEnabled={false}
       onUserLocationUpdate={onUserLocationUpdate}
-      styleJSON={mapStyle}
+      mapStyle={mapStyle}
       {...mapProps}
     >
-      <MapLibreGL.Camera
+      <MapLibreRN.Camera
         ref={camera}
         defaultSettings={{
           ...INITIAL_MAP_VIEW_STATE,
@@ -68,10 +68,12 @@ const Map: React.FC<
         minZoomLevel={MIN_MAP_ZOOM}
         maxZoomLevel={MAX_MAP_ZOOM}
         {...cameraProps}
+        animationDuration={2000}
+        animationMode="easeTo"
       />
-      <MapLibreGL.UserLocation />
+      <MapLibreRN.UserLocation />
       {children}
-    </MapLibreGL.MapView>
+    </MapLibreRN.MapView>
   )
 }
 
