@@ -13,6 +13,10 @@
 		13B07FC11A68108700A75B9A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.mm */; };
 		1A7DAB918483F1C2761BA7A4 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296757835722BB74360F9FEF /* ExpoModulesProvider.swift */; };
 		38E42365F35F3591000984D8 /* libPods-HeliumWalletWidgetExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9998D5C2837CACD6B263B48A /* libPods-HeliumWalletWidgetExtension.a */; };
+		43EFD7BD2D808C850093A5F0 /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = 7645A55FE0B71E1B115B72C2 /* MapLibre */; };
+		43EFD7BE2D808C850093A5F0 /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = 0766917C3867C9A2B4770A0E /* MapLibre */; };
+		43EFD7BF2D808C850093A5F0 /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = 20D8E26035C09788368A96AB /* MapLibre */; };
+		43EFD7C02D808C850093A5F0 /* MapLibre in Frameworks */ = {isa = PBXBuildFile; productRef = B77E3B21F63838DF362252EF /* MapLibre */; };
 		45330C4A223536223298B2A3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 645194928E31AE79BE70ED88 /* ExpoModulesProvider.swift */; };
 		50D1D6AC2763AAA2009D52C0 /* DMSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A62763AAA2009D52C0 /* DMSans-Bold.ttf */; };
 		50D1D6AD2763AAA2009D52C0 /* DMSans-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6A72763AAA2009D52C0 /* DMSans-BoldItalic.ttf */; };
@@ -23,10 +27,10 @@
 		62F5B7130136D8A4D6B2630E /* libPods-HeliumWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B9900F667412466335CBA9A /* libPods-HeliumWallet.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */; };
-		962862712BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
-		962862722BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
-		962862732BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
-		962862742BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		962862712BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862722BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862732BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862742BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
 		96E4147327BEE4C300CE6EC1 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E4147227BEE4C300CE6EC1 /* NotificationService.swift */; };
 		96E4147727BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 96E4147027BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9D05C88528527DF0008198FC /* HeliumWalletWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D05C88428527DF0008198FC /* HeliumWalletWidgetProvider.swift */; };
@@ -198,7 +202,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				962862742BDCCAF70073839C /* BuildFile in Frameworks */,
+				43EFD7C02D808C850093A5F0 /* MapLibre in Frameworks */,
+				962862742BDCCAF70073839C /* (null) in Frameworks */,
 				A86972378F7E58ECEE3784D8 /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -207,7 +212,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				962862712BDCCAF70073839C /* BuildFile in Frameworks */,
+				43EFD7BD2D808C850093A5F0 /* MapLibre in Frameworks */,
+				962862712BDCCAF70073839C /* (null) in Frameworks */,
 				62F5B7130136D8A4D6B2630E /* libPods-HeliumWallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -216,7 +222,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				962862722BDCCAF70073839C /* BuildFile in Frameworks */,
+				43EFD7BE2D808C850093A5F0 /* MapLibre in Frameworks */,
+				962862722BDCCAF70073839C /* (null) in Frameworks */,
 				C84C026A1BE79711C0DE6308 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,7 +232,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				962862732BDCCAF70073839C /* BuildFile in Frameworks */,
+				43EFD7BF2D808C850093A5F0 /* MapLibre in Frameworks */,
+				962862732BDCCAF70073839C /* (null) in Frameworks */,
 				9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */,
 				9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */,
 				9DCA365F28E6781D000F2A66 /* Charts in Frameworks */,
@@ -550,6 +558,7 @@
 				9D7DB3AA2850EC14004D9409 /* Sources */,
 				9D7DB3AB2850EC14004D9409 /* Frameworks */,
 				9D7DB3AC2850EC14004D9409 /* Resources */,
+				43EFD7C12D808C9E0093A5F0 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -727,6 +736,23 @@
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-HeliumWallet-HeliumWalletTests/Pods-HeliumWallet-HeliumWalletTests-resources.sh\"\n";
 			showEnvVarsInLog = 0;
+		};
+		43EFD7C12D808C9E0093A5F0 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nrm -rf \"$CONFIGURATION_BUILD_DIR/MapLibre.xcframework-ios.signature\"\n";
 		};
 		605F33BAC36C3F7AE67374B0 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1200,10 +1226,7 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -1264,10 +1287,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
