@@ -240,14 +240,15 @@ const VoterCard: React.FC<{
         <VoterCardStat
           title="Total Voting Power"
           value={
-            proxy.proxiedVeTokens
+            // Force 2 decimals
+            decimals && proxy.proxiedVeTokens
               ? humanReadable(
                   new BN(proxy.proxiedVeTokens).div(
-                    new BN(10 ** (decimals || 0) - 2),
+                    new BN(10 ** (decimals - 2)),
                   ),
                   2,
                 ) || ''
-              : '0'
+              : ''
           }
         />
         <VoterCardStat

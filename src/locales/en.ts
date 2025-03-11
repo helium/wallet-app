@@ -1295,18 +1295,18 @@ export default {
       lockYourTokens: 'Lock {{amount}} {{symbol}} for {{duration}}?',
     },
     voters: {
-      title: 'Browse Voters',
-      searchPlaceholder: "Search for voter's name or public key",
+      title: 'Browse Proxies',
+      searchPlaceholder: 'Search for name or public key',
       warning:
         'Assigning proxy to majority voters may threaten the decentralization of the network.',
       majority: 'Majority Voter',
       minority: 'Minority Voter',
-      assignBelow: 'Consider assigning proxy to voters below this point.',
-      noneFound: 'No voters found matching this search',
+      assignBelow: 'Consider assigning to voters below this point.',
+      noneFound: 'No proxies found matching this search',
     },
     assignProxy: {
       title: 'Assign Proxy',
-      browseVoters: 'Browse Voters',
+      browseVoters: 'Browse Proxies',
       description:
         "Select the voter to assign as your position's proxy. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
       searchPlaceholder: 'Select Proxy or Paste Wallet Address',
