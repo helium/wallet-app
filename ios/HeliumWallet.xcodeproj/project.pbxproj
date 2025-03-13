@@ -27,10 +27,10 @@
 		62F5B7130136D8A4D6B2630E /* libPods-HeliumWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B9900F667412466335CBA9A /* libPods-HeliumWallet.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */; };
-		962862712BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		962862722BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		962862732BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
-		962862742BDCCAF70073839C /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		962862712BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		962862722BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		962862732BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
+		962862742BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		96E4147327BEE4C300CE6EC1 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E4147227BEE4C300CE6EC1 /* NotificationService.swift */; };
 		96E4147727BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 96E4147027BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9D05C88528527DF0008198FC /* HeliumWalletWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D05C88428527DF0008198FC /* HeliumWalletWidgetProvider.swift */; };
@@ -203,7 +203,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				43EFD7C02D808C850093A5F0 /* MapLibre in Frameworks */,
-				962862742BDCCAF70073839C /* (null) in Frameworks */,
+				962862742BDCCAF70073839C /* BuildFile in Frameworks */,
 				A86972378F7E58ECEE3784D8 /* libPods-HeliumWallet-HeliumWalletTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -213,7 +213,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				43EFD7BD2D808C850093A5F0 /* MapLibre in Frameworks */,
-				962862712BDCCAF70073839C /* (null) in Frameworks */,
+				962862712BDCCAF70073839C /* BuildFile in Frameworks */,
 				62F5B7130136D8A4D6B2630E /* libPods-HeliumWallet.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -223,7 +223,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				43EFD7BE2D808C850093A5F0 /* MapLibre in Frameworks */,
-				962862722BDCCAF70073839C /* (null) in Frameworks */,
+				962862722BDCCAF70073839C /* BuildFile in Frameworks */,
 				C84C026A1BE79711C0DE6308 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -233,7 +233,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				43EFD7BF2D808C850093A5F0 /* MapLibre in Frameworks */,
-				962862732BDCCAF70073839C /* (null) in Frameworks */,
+				962862732BDCCAF70073839C /* BuildFile in Frameworks */,
 				9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */,
 				9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */,
 				9DCA365F28E6781D000F2A66 /* Charts in Frameworks */,
@@ -1226,7 +1226,10 @@
 				);
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -1287,7 +1290,10 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
