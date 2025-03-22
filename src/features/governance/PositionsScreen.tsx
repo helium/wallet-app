@@ -110,6 +110,7 @@ export const PositionsScreen = () => {
     sigs = [],
     onProgress = () => {},
     sequentially = false,
+    computeScaleUp = undefined,
   }: {
     header: string
     message: string
@@ -117,6 +118,7 @@ export const PositionsScreen = () => {
     sigs?: Keypair[]
     onProgress?: (status: Status) => void
     sequentially?: boolean
+    computeScaleUp?: number
   }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -124,6 +126,7 @@ export const PositionsScreen = () => {
       anchorProvider,
       instructions,
       {
+        computeScaleUp,
         basePriorityFee: await getBasePriorityFee(),
         addressLookupTableAddresses: [
           cluster === 'devnet' ? HELIUM_COMMON_LUT_DEVNET : HELIUM_COMMON_LUT,
@@ -224,6 +227,7 @@ export const PositionsScreen = () => {
             message: 'Approve this transaction to claim your rewards',
             instructions: ixs,
             onProgress: setStatusOfClaim,
+            computeScaleUp: 1.4,
           }),
       })
 
