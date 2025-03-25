@@ -66,7 +66,7 @@ export function useImplicitBurn(): {
                   DC_MINT,
                 ),
               ])
-              .accounts({
+              .accountsPartial({
                 dcMint: DC_MINT,
                 recipient: wallet,
               })
