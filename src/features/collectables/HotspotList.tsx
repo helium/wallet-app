@@ -1,5 +1,6 @@
-import Plus from '@assets/images/plus.svg'
 import Globe from '@assets/images/globe.svg'
+import Plus from '@assets/images/plus.svg'
+import Automation from '@assets/images/automation.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -16,7 +17,7 @@ import { useColors } from '@theme/themeHooks'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
@@ -27,6 +28,8 @@ import { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 export const DEFAULT_PAGE_AMOUNT = 20
+
+type AutomationSchedule = 'daily' | 'weekly' | 'monthly' | undefined
 
 function RewardItem({
   mint,
@@ -72,6 +75,7 @@ const HotspotList = () => {
   const isFocused = useIsFocused()
   const { primaryText } = useColors()
   const { triggerImpact } = useHaptic()
+  const [automationSchedule] = useState<AutomationSchedule>()
 
   const {
     hotspots,
@@ -123,6 +127,20 @@ const HotspotList = () => {
   const handleNavigateToHotspotOnboard = useCallback(() => {
     navigation.navigate('OnboardingNavigator')
   }, [navigation])
+
+  const handleNavigateToAutomation = useCallback(() => {
+    navigation.navigate('AutomationSetupScreen')
+  }, [navigation])
+
+  useEffect(() => {
+    // TODO: Load automation schedule from storage
+    // This is where we'll load the saved automation schedule when implementing the actual functionality
+    const loadAutomationSchedule = async () => {
+      // TODO: Implement loading from storage
+      // For now, we'll just leave it undefined
+    }
+    loadAutomationSchedule()
+  }, [])
 
   const renderHeader = useCallback(() => {
     return (
@@ -180,7 +198,6 @@ const HotspotList = () => {
   }, [t, handleNavigateToMap, handleNavigateToHotspotOnboard, totalHotspots])
 
   const renderCollectable = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: HotspotWithPendingRewards }) => {
       return (
         <HotspotCompressedListItem
@@ -281,29 +298,53 @@ const HotspotList = () => {
             hasMore={hotspots.length < (totalHotspots || 0)}
           />
         </Box>
-        <ButtonPressable
+        <Box
           flexGrow={1}
           marginTop="m"
-          borderRadius="round"
-          backgroundColor="hntBlue"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="secondaryText"
-          title={t('collectablesScreen.hotspots.claimAllRewards')}
-          titleColor="white"
-          disabled={
-            (pendingIotRewards &&
-              pendingIotRewards.eq(new BN('0')) &&
-              pendingMobileRewards &&
-              pendingMobileRewards.eq(new BN('0')) &&
-              pendingHntRewards &&
-              pendingHntRewards.eq(new BN('0')) &&
-              hotspotsWithMeta.length === (totalHotspots || 0)) ||
-            hotspotsWithMeta?.length === 0
-          }
-          onPress={handleNavigateToClaimRewards}
-        />
+          flexDirection="row"
+          alignItems="center"
+          marginBottom="l"
+        >
+          <ButtonPressable
+            flex={1}
+            height={50}
+            borderRadius="round"
+            backgroundColor="hntBlue"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabledOpacity={0.5}
+            titleColorDisabled="secondaryText"
+            title={t('collectablesScreen.hotspots.claimAllRewards')}
+            titleColor="white"
+            onPress={handleNavigateToClaimRewards}
+            disabled={
+              (pendingIotRewards &&
+                pendingIotRewards.eq(new BN('0')) &&
+                pendingMobileRewards &&
+                pendingMobileRewards.eq(new BN('0')) &&
+                pendingHntRewards &&
+                pendingHntRewards.eq(new BN('0')) &&
+                hotspotsWithMeta.length === (totalHotspots || 0)) ||
+              hotspotsWithMeta?.length === 0
+            }
+          />
+          <ButtonPressable
+            width={50}
+            height={50}
+            marginStart="xs"
+            borderRadius="round"
+            backgroundColor="offWhite"
+            innerContainerProps={{
+              justifyContent: 'center',
+            }}
+            backgroundColorOpacityPressed={0.7}
+            alignItems="center"
+            justifyContent="center"
+            onPress={handleNavigateToAutomation}
+            Icon={Automation}
+            titleColor={automationSchedule ? 'gold' : 'black'}
+          />
+        </Box>
       </Box>
     </>
   )

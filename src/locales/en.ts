@@ -309,6 +309,23 @@ export default {
       },
     },
   },
+  automationScreen: {
+    title: 'Automate Rewards',
+    description:
+      'Set up automatic claiming of your hotspot rewards on a schedule. You will need to fund the automation with SOL for the transaction fees.',
+    selectSchedule: 'Select Claim Schedule',
+    enterDuration: 'Enter Duration',
+    schedule: {
+      daily: 'Daily',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+    },
+    duration: {
+      days: 'Days',
+      weeks: 'Weeks',
+      months: 'Months',
+    },
+  },
   activityScreen: {
     title: 'My Activity',
     transactionSuccessful: 'Transaction Successful',
@@ -687,6 +704,7 @@ export default {
     body: 'By continuing, you agree to the',
   },
   generic: {
+    automate: 'Automate',
     dBi: 'dBi',
     gain: 'Gain',
     maker: 'Maker',

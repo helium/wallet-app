@@ -54,6 +54,7 @@ export type CollectableStackParamList = {
   AddressBookNavigator: undefined
   ScanAddress: undefined
   OnboardingNavigator: undefined
+  AutomationSetupScreen: undefined
 }
 
 export type CollectableNavigationProp =
