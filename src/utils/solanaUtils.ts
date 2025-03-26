@@ -1214,7 +1214,7 @@ export async function getCachedKeyToAsset(
       account,
       info: hemProgram.coder.accounts.decode<
         IdlAccounts<HeliumEntityManager>['keyToAssetV0']
-      >('KeyToAssetV0', account.data),
+      >('keyToAssetV0', account.data),
     }),
     true,
     false,
@@ -1236,7 +1236,7 @@ export async function getCachedKeyToAssets(
         account,
         info: hemProgram.coder.accounts.decode<
           IdlAccounts<HeliumEntityManager>['keyToAssetV0']
-        >('KeyToAssetV0', account.data),
+        >('keyToAssetV0', account.data),
       }),
       true,
       false,
@@ -1258,7 +1258,7 @@ export async function getCachedIotInfo(
       account,
       info: hemProgram.coder.accounts.decode<
         IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
-      >('IotHotspotInfoV0', account.data),
+      >('iotHotspotInfoV0', account.data),
     }),
     false,
     false,
@@ -1280,7 +1280,7 @@ export async function getCachedIotInfos(
         account,
         info: hemProgram.coder.accounts.decode<
           IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
-        >('IotHotspotInfoV0', account.data),
+        >('iotHotspotInfoV0', account.data),
       }),
       false,
       false,
@@ -1302,7 +1302,7 @@ export async function getCachedMobileInfo(
       account,
       info: hemProgram.coder.accounts.decode<
         IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
-      >('MobileHotspotInfoV0', account.data),
+      >('mobileHotspotInfoV0', account.data),
     }),
     false,
     false,
@@ -1324,7 +1324,7 @@ export async function getCachedMobileInfos(
         account,
         info: hemProgram.coder.accounts.decode<
           IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
-        >('MobileHotspotInfoV0', account.data),
+        >('mobileHotspotInfoV0', account.data),
       }),
       false,
       false,
