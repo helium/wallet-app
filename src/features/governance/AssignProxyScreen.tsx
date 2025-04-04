@@ -51,7 +51,6 @@ export const AssignProxyScreen = () => {
   const { wallet, position } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
-  const positionKey = usePublicKey(position)
   const { loading, positions, refetch, mint } = useGovernance()
   const networks = useMemo(() => {
     return [
@@ -64,13 +63,9 @@ export const AssignProxyScreen = () => {
   const unproxiedPositions = useMemo(
     () =>
       positions?.filter(
-        (p) =>
-          !p.proxy ||
-          (p.proxy.nextVoter.equals(PublicKey.default) &&
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            (!positionKey || p.pubkey.equals(positionKey!))),
+        (p) => !p.proxy || p.proxy.nextVoter.equals(PublicKey.default),
       ) || [],
-    [positions, positionKey],
+    [positions],
   )
   const [selectedPositions, setSelectedPositions] = useState<Set<string>>(
     new Set<string>([position].filter(truthy)),
