@@ -478,8 +478,8 @@ const SwapScreen = () => {
         )
       }
 
-      if (isDevnet) return handleDevnetPrice()
       if (output.equals(DC_MINT)) return handleDCConversion()
+      if (isDevnet) return handleDevnetPrice()
       return handleJupiterRoute()
     },
     [

@@ -77,7 +77,7 @@ const useBalanceHook = () => {
     )
   }, [cluster, anchorProvider, allBalances])
 
-  const { result: hntToDcPrice } = useAsync(async () => {
+  const { result: hntToDcPrice, error } = useAsync(async () => {
     if (!anchorProvider) {
       return
     }
@@ -97,6 +97,12 @@ const useBalanceHook = () => {
         )
       : new BN(0)
   }, [cluster, anchorProvider?.connection])
+
+  useEffect(() => {
+    if (error) {
+      console.error(error)
+    }
+  }, [error])
 
   const solanaPrice = useMemo(() => {
     if (!tokenPrices?.solana) return
