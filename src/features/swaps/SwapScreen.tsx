@@ -712,7 +712,10 @@ const SwapScreen = () => {
             onTokenSelected={setTokenTypeHandler}
             tokenData={tokenData}
           >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback
+              onPress={Keyboard.dismiss}
+              accessibilityRole="button"
+            >
               <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
                 <KeyboardAvoidingView
                   behavior="position"
