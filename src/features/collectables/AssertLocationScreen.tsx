@@ -732,7 +732,10 @@ const AssertLocationScreen = () => {
             height="100%"
             width="100%"
           >
-            <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <TouchableWithoutFeedback
+              onPress={() => Keyboard.dismiss()}
+              accessibilityRole="button"
+            >
               <Box flex={1}>
                 <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
                   <Box
