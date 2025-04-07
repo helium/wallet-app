@@ -182,7 +182,7 @@ export const ProposalScreen = () => {
   }: {
     header: string
     message: string
-    instructions: TransactionInstruction[]
+    instructions: TransactionInstruction[] | TransactionInstruction[][]
   }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
