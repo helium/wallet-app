@@ -32,7 +32,10 @@ import { useMobileInfo } from '@hooks/useMobileInfo'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
-import MapLibreGL from '@maplibre/maplibre-react-native'
+import MapLibreGL, {
+  MapViewRef,
+  CameraRef,
+} from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
@@ -73,8 +76,8 @@ const AssertLocationScreen = () => {
   const { info: iotInfoAcc } = useIotInfo(entityKey)
   const { info: mobileInfoAcc } = useMobileInfo(entityKey)
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const mapRef = useRef<MapLibreGL.MapView>(null)
-  const cameraRef = useRef<MapLibreGL.Camera>(null)
+  const mapRef = useRef<MapViewRef>(null)
+  const cameraRef = useRef<CameraRef>(null)
   const { showOKAlert } = useAlert()
   const colors = useColors()
   const [mapCenter, setMapCenter] = useState<number[]>()
@@ -251,7 +254,10 @@ const AssertLocationScreen = () => {
       cameraRef.current.setCamera({
         animationDuration: 500,
         zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: userLocation?.coords,
+        centerCoordinate: [
+          userLocation?.coords.longitude,
+          userLocation?.coords.latitude,
+        ],
       })
     }
   }, [cameraRef, userLocation?.coords])
