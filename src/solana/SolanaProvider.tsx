@@ -25,7 +25,6 @@ import React, {
   useRef,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 import nacl from 'tweetnacl'
 import KeystoneModal, {
@@ -33,7 +32,7 @@ import KeystoneModal, {
 } from '../features/keystone/KeystoneModal'
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { getSessionKey, getSolanaKeypair } from '../storage/secureStorage'
+import { getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
@@ -46,17 +45,11 @@ const useSolanaHook = () => {
   const cluster = useSelector(
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
-  const { loading, result: sessionKey } = useAsync(getSessionKey, [])
   const ledgerModalRef = useRef<LedgerModalRef>()
   const keystoneModalRef = useRef<KeystoneModalRef>()
-  const connection = useMemo(() => {
-    const sessionKeyActual =
-      !loading && !sessionKey ? Config.RPC_SESSION_KEY_FALLBACK : sessionKey
-
-    if (sessionKeyActual) {
-      return getConnection(cluster, sessionKeyActual)
-    }
-  }, [cluster, sessionKey, loading])
+  const connection: WrappedConnection | undefined = useMemo(() => {
+    return getConnection(cluster)
+  }, [cluster])
   const isDevnet = useMemo(() => cluster === 'devnet', [cluster])
   const address = useMemo(
     () => currentAccount?.address,
@@ -311,7 +304,7 @@ const useSolanaHook = () => {
     anchorProvider,
     cluster,
     isDevnet,
-    connection,
+    connection: connection as WrappedConnection | undefined,
     updateCluster,
     cache,
     signMsg,

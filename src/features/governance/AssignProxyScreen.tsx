@@ -18,7 +18,6 @@ import {
   PositionWithMeta,
   useAssignProxies,
 } from '@helium/voter-stake-registry-hooks'
-import { usePublicKey } from '@hooks/usePublicKey'
 import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'

@@ -177,19 +177,15 @@ const govProgramId = new PublicKey(
   'hgovkRU6Ghe1Qoyb54HdSLdqN7VtxaifBzRmh9jtd3S',
 )
 
-export const SolanaConnection = (sessionKey: string) =>
+export const SolanaConnection = () =>
   ({
-    devnet: new WrappedConnection(
-      `${Config.DEVNET_RPC_URL}/?session-key=${sessionKey}`,
-    ),
+    devnet: new WrappedConnection(`${Config.DEVNET_RPC_URL}`),
     testnet: new WrappedConnection(clusterApiUrl('testnet')),
-    'mainnet-beta': new WrappedConnection(
-      `${Config.MAINNET_RPC_URL}/?session-key=${sessionKey}`,
-    ),
+    'mainnet-beta': new WrappedConnection(`${Config.MAINNET_RPC_URL}`),
   } as const)
 
-export const getConnection = (cluster: Cluster, sessionKey: string) =>
-  SolanaConnection(sessionKey)[cluster] || SolanaConnection(sessionKey).devnet
+export const getConnection = (cluster: Cluster) =>
+  SolanaConnection()[cluster] || SolanaConnection().devnet
 
 export const confirmTransaction = async (
   anchorProvider: AnchorProvider,
@@ -609,7 +605,7 @@ export const mintDataCredits = async ({
         hntAmount: null,
         dcAmount,
       })
-      .accounts({
+      .accountsPartial({
         dcMint: DC_MINT,
         recipient,
       })
@@ -653,7 +649,7 @@ export const delegateDataCredits = async (
           amount: new BN(amount, 0),
           routerKey: delegateAddress,
         })
-        .accounts({
+        .accountsPartial({
           subDao,
         })
         .instruction(),
@@ -1218,7 +1214,7 @@ export async function getCachedKeyToAsset(
       account,
       info: hemProgram.coder.accounts.decode<
         IdlAccounts<HeliumEntityManager>['keyToAssetV0']
-      >('KeyToAssetV0', account.data),
+      >('keyToAssetV0', account.data),
     }),
     true,
     false,
@@ -1240,7 +1236,7 @@ export async function getCachedKeyToAssets(
         account,
         info: hemProgram.coder.accounts.decode<
           IdlAccounts<HeliumEntityManager>['keyToAssetV0']
-        >('KeyToAssetV0', account.data),
+        >('keyToAssetV0', account.data),
       }),
       true,
       false,
@@ -1262,7 +1258,7 @@ export async function getCachedIotInfo(
       account,
       info: hemProgram.coder.accounts.decode<
         IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
-      >('IotHotspotInfoV0', account.data),
+      >('iotHotspotInfoV0', account.data),
     }),
     false,
     false,
@@ -1284,7 +1280,7 @@ export async function getCachedIotInfos(
         account,
         info: hemProgram.coder.accounts.decode<
           IdlAccounts<HeliumEntityManager>['iotHotspotInfoV0']
-        >('IotHotspotInfoV0', account.data),
+        >('iotHotspotInfoV0', account.data),
       }),
       false,
       false,
@@ -1306,7 +1302,7 @@ export async function getCachedMobileInfo(
       account,
       info: hemProgram.coder.accounts.decode<
         IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
-      >('MobileHotspotInfoV0', account.data),
+      >('mobileHotspotInfoV0', account.data),
     }),
     false,
     false,
@@ -1328,7 +1324,7 @@ export async function getCachedMobileInfos(
         account,
         info: hemProgram.coder.accounts.decode<
           IdlAccounts<HeliumEntityManager>['mobileHotspotInfoV0']
-        >('MobileHotspotInfoV0', account.data),
+        >('mobileHotspotInfoV0', account.data),
       }),
       false,
       false,
@@ -1742,7 +1738,7 @@ export async function createTreasurySwapTxn(
       .preInstructions([
         ComputeBudgetProgram.setComputeUnitLimit({ units: 350000 }),
       ])
-      .accounts({
+      .accountsPartial({
         treasuryManagement,
         to: getAssociatedTokenAddressSync(HNT_MINT, recipient, true),
       })
@@ -1789,7 +1785,7 @@ export async function createTreasurySwapMessage(
       .preInstructions([
         ComputeBudgetProgram.setComputeUnitLimit({ units: 350000 }),
       ])
-      .accounts({
+      .accountsPartial({
         treasuryManagement,
         to: getAssociatedTokenAddressSync(HNT_MINT, recipient, true),
       })
@@ -2082,7 +2078,7 @@ export const createUpdateCompressionDestinationTxn = async (
             .updateCompressionDestinationV0({
               ...args,
             })
-            .accounts({
+            .accountsPartial({
               ...accounts,
               owner,
               recipient: recipientKey(lazy, assetId)[0],

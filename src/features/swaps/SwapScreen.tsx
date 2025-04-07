@@ -478,8 +478,8 @@ const SwapScreen = () => {
         )
       }
 
-      if (isDevnet) return handleDevnetPrice()
       if (output.equals(DC_MINT)) return handleDCConversion()
+      if (isDevnet) return handleDevnetPrice()
       return handleJupiterRoute()
     },
     [
@@ -712,7 +712,10 @@ const SwapScreen = () => {
             onTokenSelected={setTokenTypeHandler}
             tokenData={tokenData}
           >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <TouchableWithoutFeedback
+              onPress={Keyboard.dismiss}
+              accessibilityRole="button"
+            >
               <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
                 <KeyboardAvoidingView
                   behavior="position"
