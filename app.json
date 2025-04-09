@@ -4,9 +4,7 @@
   "expo": {
     "scheme": "heliumwallet",
     "plugins": [
-      "@maplibre/maplibre-react-native",
-      "expo-asset",
-      "expo-secure-store"
+      "@maplibre/maplibre-react-native"
     ]
   }
 }
