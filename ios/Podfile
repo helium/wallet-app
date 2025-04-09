@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
   )', __dir__]).strip
 require_relative '../node_modules/react-native-permissions/scripts/setup'
 
-platform :ios, '14.0'
+platform :ios, '15.1'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -33,6 +33,7 @@ end
 
 target 'HeliumWallet' do
   use_expo_modules!
+  pod 'lottie-ios'
   post_integrate do |installer|
     begin
       expo_patch_react_imports!(installer)
@@ -40,7 +41,23 @@ target 'HeliumWallet' do
       Pod::UI.warn e
     end
   end
-  config = use_native_modules!
+
+  if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
+    config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
+  else
+    config_command = [
+      'node',
+      '--no-warnings',
+      '--eval',
+      'require(require.resolve(\'expo-modules-autolinking\', { paths: [require.resolve(\'expo/package.json\')] }))(process.argv.slice(1))',
+      'react-native-config',
+      '--json',
+      '--platform',
+      'ios'
+    ]
+  end
+
+  config = use_native_modules!(config_command)
 
   use_react_native!(
     :path => config[:reactNativePath],
