@@ -48,13 +48,8 @@ target 'HeliumWallet' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'HeliumWalletTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-
   permissions_path = '../node_modules/react-native-permissions/ios'
-  setup_permissions(['BluetoothPeripheral'])
+  setup_permissions(['BluetoothPeripheral', 'LocationAlways', 'LocationWhenInUse'])
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
@@ -71,6 +66,10 @@ target 'HeliumWallet' do
         config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
+        
+        # Add the additional compiler flags for new architecture
+        config.build_settings['OTHER_CPLUSPLUSFLAGS'] = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1'
+        config.build_settings['OTHER_CFLAGS'] = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1'
       end
     end
 

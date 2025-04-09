@@ -6,7 +6,7 @@ const defaultAssetExts = require('metro-config/src/defaults/defaults').assetExts
  * Metro configuration
  * https://facebook.github.io/metro/docs/configuration
  *
- * @type {import('metro-config').MetroConfig}
+ * @type {import('@react-native/metro-config').MetroConfig}
  */
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), {

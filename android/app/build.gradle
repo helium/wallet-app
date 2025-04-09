@@ -3,7 +3,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'gradle.plugin.com.onesignal:onesignal-gradle-plugin:[0.12.10, 0.99.99]'
+        classpath 'gradle.plugin.com.onesignal:onesignal-gradle-plugin:0.14.0'
     }
 }
 
@@ -23,14 +23,14 @@ import com.android.build.OutputFile
  */
 react {
     /* Folders */
-    //   The root of your project, i.e. where "package.json" lives. Default is '..'
-    // root = file("../")
-    //   The folder where the react-native NPM package is. Default is ../node_modules/react-native
-    // reactNativeDir = file("../node_modules/react-native")
-    //   The folder where the react-native Codegen package is. Default is ../node_modules/react-native-codegen
-    // codegenDir = file("../node_modules/react-native-codegen")
-    //   The cli.js file which is the React Native CLI entrypoint. Default is ../node_modules/react-native/cli.js
-    // cliFile = file("../node_modules/react-native/cli.js")
+    //   The root of your project, i.e. where "package.json" lives. Default is '../..'
+    // root = file("../../")
+    //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
+    // reactNativeDir = file("../../node_modules/react-native")
+    //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
+    // codegenDir = file("../../node_modules/@react-native/codegen")
+    //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
+    // cliFile = file("../../node_modules/react-native/cli.js")
     /* Variants */
     //   The list of variants to that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
@@ -61,6 +61,9 @@ react {
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
+
+    /* Autolinking */
+    autolinkLibrariesWithApp()
 }
 
 /**
@@ -80,14 +83,14 @@ def enableProguardInReleaseBuilds = false
  * The preferred build flavor of JavaScriptCore (JSC)
  *
  * For example, to use the international variant, you can use:
- * `def jscFlavor = 'org.webkit:android-jsc-intl:+'`
+ * `def jscFlavor = io.github.react-native-community:jsc-android-intl:2026004.+`
  *
  * The international variant includes ICU i18n library and necessary data
  * allowing to use e.g. `Date.toLocaleString` and `String.localeCompare` that
  * give correct results when using with locales other than en-US. Note that
  * this variant is about 6MiB larger per architecture than default.
  */
-def jscFlavor = 'org.webkit:android-jsc:+'
+def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 /**
  * Private function to get the list of Native Architectures you want to build.
@@ -117,6 +120,58 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName getAppVersion()
+    }
+
+    // Enhanced packaging block to handle duplicate files
+    packaging {
+        resources {
+            // Handle duplicate META-INF files
+            pickFirsts += [
+                'META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version',
+                'META-INF/androidx.customview_customview.version',
+                'META-INF/androidx.core_core.version',
+                'META-INF/androidx.versionedparcelable_versionedparcelable.version',
+                'META-INF/com.android.support_support-compat.version',
+                'META-INF/*.version',
+                'META-INF/*.kotlin_module',
+                'META-INF/proguard/*',
+                'META-INF/DEPENDENCIES',
+                'META-INF/LICENSE',
+                'META-INF/LICENSE.txt',
+                'META-INF/license.txt',
+                'META-INF/NOTICE',
+                'META-INF/NOTICE.txt',
+                'META-INF/notice.txt',
+                'META-INF/ASL2.0'
+            ]
+        }
+    }
+
+    configurations {
+        all {
+            // Exclude the older Android Support libraries in favor of AndroidX
+            exclude group: 'com.android.support', module: 'support-v4'
+            exclude group: 'com.android.support', module: 'support-compat'
+            exclude group: 'com.android.support', module: 'support-fragment'
+            exclude group: 'com.android.support', module: 'support-core-utils'
+            exclude group: 'com.android.support', module: 'support-core-ui'
+            exclude group: 'com.android.support', module: 'support-annotations'
+            exclude group: 'com.android.support', module: 'support-media-compat'
+            exclude group: 'com.android.support', module: 'versionedparcelable'
+            exclude group: 'com.android.support', module: 'customview'
+            exclude group: 'com.android.support', module: 'collections'
+            exclude group: 'com.android.support', module: 'support-v4'
+            
+            // Fix duplication of classes
+            resolutionStrategy {
+                force 'androidx.core:core:1.13.1'
+                force 'androidx.core:core-ktx:1.13.1'
+                force 'androidx.versionedparcelable:versionedparcelable:1.1.1'
+                force 'androidx.collection:collection:1.0.0'
+                force 'androidx.customview:customview:1.1.0'
+                force 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
+            }
+        }
     }
 
     splits {
@@ -174,5 +229,3 @@ dependencies {
         implementation jscFlavor
     }
 }
-
-apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
