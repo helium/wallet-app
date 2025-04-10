@@ -127,58 +127,6 @@ android {
         versionName getAppVersion()
     }
 
-    // Enhanced packaging block to handle duplicate files
-    packaging {
-        resources {
-            // Handle duplicate META-INF files
-            pickFirsts += [
-                'META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version',
-                'META-INF/androidx.customview_customview.version',
-                'META-INF/androidx.core_core.version',
-                'META-INF/androidx.versionedparcelable_versionedparcelable.version',
-                'META-INF/com.android.support_support-compat.version',
-                'META-INF/*.version',
-                'META-INF/*.kotlin_module',
-                'META-INF/proguard/*',
-                'META-INF/DEPENDENCIES',
-                'META-INF/LICENSE',
-                'META-INF/LICENSE.txt',
-                'META-INF/license.txt',
-                'META-INF/NOTICE',
-                'META-INF/NOTICE.txt',
-                'META-INF/notice.txt',
-                'META-INF/ASL2.0'
-            ]
-        }
-    }
-
-    configurations {
-        all {
-            // Exclude the older Android Support libraries in favor of AndroidX
-            exclude group: 'com.android.support', module: 'support-v4'
-            exclude group: 'com.android.support', module: 'support-compat'
-            exclude group: 'com.android.support', module: 'support-fragment'
-            exclude group: 'com.android.support', module: 'support-core-utils'
-            exclude group: 'com.android.support', module: 'support-core-ui'
-            exclude group: 'com.android.support', module: 'support-annotations'
-            exclude group: 'com.android.support', module: 'support-media-compat'
-            exclude group: 'com.android.support', module: 'versionedparcelable'
-            exclude group: 'com.android.support', module: 'customview'
-            exclude group: 'com.android.support', module: 'collections'
-            exclude group: 'com.android.support', module: 'support-v4'
-            
-            // Fix duplication of classes
-            resolutionStrategy {
-                force 'androidx.core:core:1.13.1'
-                force 'androidx.core:core-ktx:1.13.1'
-                force 'androidx.versionedparcelable:versionedparcelable:1.1.1'
-                force 'androidx.collection:collection:1.0.0'
-                force 'androidx.customview:customview:1.1.0'
-                force 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
-            }
-        }
-    }
-
     splits {
         abi {
             reset()
