@@ -62,16 +62,13 @@ target 'HeliumWallet' do
       # :ccache_enabled => true
     )
     __apply_Xcode_14_3_RC_post_install_workaround(installer)
+    
 
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
-        
-        # Add the additional compiler flags for new architecture
-        config.build_settings['OTHER_CPLUSPLUSFLAGS'] = ' -DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DREANIMATED_VERSION=3.16.1'
-        config.build_settings['OTHER_CFLAGS'] = '-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1'
       end
     end
 

@@ -48,6 +48,7 @@ export const useLocationPermission = () => {
           const permissions = [PERMISSIONS.IOS.LOCATION_WHEN_IN_USE]
           const statuses = await checkMultiple(permissions)
           const status = statuses[PERMISSIONS.IOS.LOCATION_WHEN_IN_USE]
+          console.log('status', status)
           updatePermissionStatus(status)
 
           if (status === RESULTS.DENIED) {
