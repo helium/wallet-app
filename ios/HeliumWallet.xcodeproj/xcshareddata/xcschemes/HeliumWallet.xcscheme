@@ -33,7 +33,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "HeliumWalletTests.xctest"
+               BuildableName = "HeliumWalletTests"
                BlueprintName = "HeliumWalletTests"
                ReferencedContainer = "container:HeliumWallet.xcodeproj">
             </BuildableReference>

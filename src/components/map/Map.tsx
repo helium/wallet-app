@@ -54,7 +54,6 @@ const Map: React.FC<
       pitchEnabled={false}
       attributionEnabled={false}
       rotateEnabled={false}
-      onUserLocationUpdate={onUserLocationUpdate}
       mapStyle={mapStyle}
       {...mapProps}
     >
@@ -71,7 +70,7 @@ const Map: React.FC<
         animationDuration={2000}
         animationMode="easeTo"
       />
-      <MapLibreRN.UserLocation />
+      <MapLibreRN.UserLocation onUpdate={onUserLocationUpdate} />
       {children}
     </MapLibreRN.MapView>
   )
