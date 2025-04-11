@@ -1956,7 +1956,7 @@ PODS:
     - React-Core
   - RNDeviceInfo (8.7.1):
     - React-Core
-  - RNGestureHandler (2.25.0):
+  - RNGestureHandler (2.24.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2720,7 +2720,7 @@ SPEC CHECKSUMS:
   RNCCheckbox: a3ca9978cb0846b981d28da4e9914bd437403d77
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNDeviceInfo: aad3c663b25752a52bf8fce93f2354001dd185aa
-  RNGestureHandler: 66e593addd8952725107cfaa4f5e3378e946b541
+  RNGestureHandler: 9b05fab9a0b48fe48c968de7dbb9ca38a2b4f7ab
   RNICloudStore: bc6e225811637c09bd1eb055d6cd7448e61cd451
   RNLocalize: a64514b46a01375fdfae9349036b4dc7130333b5
   RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
