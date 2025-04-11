@@ -117,6 +117,7 @@ export const ProxySearch: React.FC<{
 
   return (
     <FlatList
+      keyboardShouldPersistTaps="handled"
       data={focused ? result || [] : []}
       renderItem={renderItem}
       ListHeaderComponent={
