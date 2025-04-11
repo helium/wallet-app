@@ -314,9 +314,7 @@ export const PositionsScreen = () => {
             mint={mint}
             maxLockupAmount={maxLockupAmount}
             calcMultiplierFn={handleCalcLockupMultiplier}
-            onClose={() =>
-              mint.equals(HNT_MINT) ? setIsLockModalOpen(false) : null
-            }
+            onClose={() => setIsLockModalOpen(false)}
             onSubmit={handleLockTokens}
           />
         )}
