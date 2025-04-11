@@ -15,7 +15,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useSharedValue } from 'react-native-reanimated'
 import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
 import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'
 import {
@@ -36,7 +35,6 @@ const WalletSignBottomSheet = forwardRef(
     useImperativeHandle(ref, () => ({ show, hide }))
     const { secondaryText } = useColors()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-    const animatedContentHeight = useSharedValue(0)
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const [simulated, setSimulated] = useState(false)
@@ -120,7 +118,6 @@ const WalletSignBottomSheet = forwardRef(
               elevation: 24,
             }}
             enableDynamicSizing
-            contentHeight={animatedContentHeight}
           >
             <BottomSheetScrollView>
               {hasRenderer && !simulated ? (
