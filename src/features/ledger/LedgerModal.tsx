@@ -29,7 +29,6 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSharedValue } from 'react-native-reanimated'
 import Animation from './Animation'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
