@@ -311,6 +311,7 @@ export default {
   },
   automationScreen: {
     title: 'Automate Rewards',
+    removeAutomation: 'Remove Automation',
     description:
       'Set up automatic claiming of your hotspot rewards on a schedule. You will need to fund the automation with SOL for the transaction fees.',
     selectSchedule: 'Select Claim Schedule',

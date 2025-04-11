@@ -16,9 +16,10 @@ type Schedule = 'daily' | 'weekly' | 'monthly'
 const AutomationSetupScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
-  const [selectedSchedule, setSelectedSchedule] = useState<Schedule>()
-  const backEdges = ['top'] as Edge[]
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule>('daily')
   const [duration, setDuration] = useState('10')
+  const [hasExistingAutomation, setHasExistingAutomation] = useState(true)
+  const backEdges = ['top'] as Edge[]
 
   const handleDurationChange = (text: string) => {
     // Remove any non-numeric characters
@@ -51,25 +52,37 @@ const AutomationSetupScreen = () => {
 
   const handleSave = useCallback(() => {
     // TODO: Implement the actual automation setup
-    // For now, just go back
+    setHasExistingAutomation(true)
     navigation.goBack()
   }, [navigation])
 
-  const ScheduleOption = ({ schedule }: { schedule: Schedule }) => (
+  const handleRemoveAutomation = useCallback(() => {
+    // TODO: Implement removing the automation
+    setHasExistingAutomation(false)
+    navigation.goBack()
+  }, [navigation])
+
+  const ScheduleOption = ({
+    schedule,
+    index,
+  }: {
+    schedule: Schedule
+    index: number
+  }) => (
     <TouchableOpacityBox
       onPress={() => handleScheduleSelect(schedule)}
-      backgroundColor={
-        selectedSchedule === schedule ? 'white' : 'surfaceSecondary'
-      }
-      borderRadius="round"
-      padding="m"
-      marginBottom="m"
+      backgroundColor={selectedSchedule === schedule ? 'white' : 'black'}
+      marginBottom="none"
       alignItems="center"
       justifyContent="center"
+      flex={1}
+      padding="m"
+      borderRadius="xl"
+      marginLeft={index > 0 ? 'xxs' : 'none'}
     >
       <Text
         variant="body1Medium"
-        color={selectedSchedule === schedule ? 'black' : 'white'}
+        color={selectedSchedule === schedule ? 'black' : 'grey300'}
         textAlign="center"
       >
         {t(`automationScreen.schedule.${schedule}`)}
@@ -100,9 +113,16 @@ const AutomationSetupScreen = () => {
             {t('automationScreen.selectSchedule')}
           </Text>
 
-          <ScheduleOption schedule="daily" />
-          <ScheduleOption schedule="weekly" />
-          <ScheduleOption schedule="monthly" />
+          <Box
+            flexDirection="row"
+            backgroundColor="black"
+            borderRadius="xl"
+            padding="xxs"
+          >
+            <ScheduleOption schedule="daily" index={0} />
+            <ScheduleOption schedule="weekly" index={1} />
+            <ScheduleOption schedule="monthly" index={2} />
+          </Box>
 
           {selectedSchedule && (
             <>
@@ -133,15 +153,28 @@ const AutomationSetupScreen = () => {
 
           <ButtonPressable
             title={t('generic.save')}
-            backgroundColor="hntBlue"
+            backgroundColor="white"
             backgroundColorOpacityPressed={0.7}
-            titleColor="white"
+            titleColor="black"
             disabled={!selectedSchedule || !duration}
             onPress={handleSave}
             borderRadius="round"
             padding="m"
             marginBottom="m"
           />
+
+          {hasExistingAutomation && (
+            <ButtonPressable
+              title={t('automationScreen.removeAutomation')}
+              backgroundColor="surfaceSecondary"
+              backgroundColorOpacityPressed={0.7}
+              titleColor="error"
+              onPress={handleRemoveAutomation}
+              borderRadius="round"
+              padding="m"
+              marginBottom="m"
+            />
+          )}
         </Box>
       </ScrollView>
     </BackScreen>
