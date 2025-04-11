@@ -71,8 +71,6 @@ const LedgerModal = forwardRef(
       | 'enableBlindSign'
     >('loading')
 
-    const animatedContentHeight = useSharedValue(0)
-
     const openAppAndSign = useCallback(
       async ({
         transactionBuffer: tBuffer,
@@ -343,7 +341,6 @@ const LedgerModal = forwardRef(
             backdropComponent={renderBackdrop}
             // onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
-            contentHeight={animatedContentHeight}
             enableDynamicSizing
           >
             <BottomSheetScrollView>
