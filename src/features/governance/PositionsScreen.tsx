@@ -271,7 +271,7 @@ export const PositionsScreen = () => {
             titleColor="white"
             titleColorPressed="black"
             onPress={() => setIsLockModalOpen(true)}
-            disabled={claimingAllRewards || loading}
+            disabled={claimingAllRewards || loading || !mint.equals(HNT_MINT)}
           />
           {HNT_MINT.equals(mint) && (
             <>
