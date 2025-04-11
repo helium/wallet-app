@@ -270,7 +270,9 @@ export const PositionsScreen = () => {
             title={t('gov.transactions.lockTokens')}
             titleColor="white"
             titleColorPressed="black"
-            onPress={() => setIsLockModalOpen(true)}
+            onPress={() =>
+              mint.equals(HNT_MINT) ? setIsLockModalOpen(true) : null
+            }
             disabled={claimingAllRewards || loading}
           />
           {HNT_MINT.equals(mint) && (
@@ -312,7 +314,9 @@ export const PositionsScreen = () => {
             mint={mint}
             maxLockupAmount={maxLockupAmount}
             calcMultiplierFn={handleCalcLockupMultiplier}
-            onClose={() => setIsLockModalOpen(false)}
+            onClose={() =>
+              mint.equals(HNT_MINT) ? setIsLockModalOpen(false) : null
+            }
             onSubmit={handleLockTokens}
           />
         )}
