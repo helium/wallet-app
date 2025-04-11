@@ -356,7 +356,7 @@ const HotspotMapScreen = () => {
     if (cameraRef?.current && userLocation?.coords) {
       cameraRef.current.setCamera({
         animationDuration: 500,
-        zoomLevel: MAX_MAP_ZOOM,
+        zoomLevel: 14,
         centerCoordinate: [
           userLocation.coords.longitude,
           userLocation.coords.latitude,

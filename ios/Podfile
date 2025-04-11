@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
   )', __dir__]).strip
 require_relative '../node_modules/react-native-permissions/scripts/setup'
 
-platform :ios, '14.0'
+platform :ios, '15.1'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -33,6 +33,7 @@ end
 
 target 'HeliumWallet' do
   use_expo_modules!
+  pod 'lottie-ios'
   post_integrate do |installer|
     begin
       expo_patch_react_imports!(installer)
@@ -40,6 +41,7 @@ target 'HeliumWallet' do
       Pod::UI.warn e
     end
   end
+
   config = use_native_modules!
 
   use_react_native!(
@@ -48,13 +50,8 @@ target 'HeliumWallet' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'HeliumWalletTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-
   permissions_path = '../node_modules/react-native-permissions/ios'
-  setup_permissions(['BluetoothPeripheral'])
+  setup_permissions(['BluetoothPeripheral', 'LocationAlways', 'LocationWhenInUse'])
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
@@ -65,6 +62,7 @@ target 'HeliumWallet' do
       # :ccache_enabled => true
     )
     __apply_Xcode_14_3_RC_post_install_workaround(installer)
+    
 
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|

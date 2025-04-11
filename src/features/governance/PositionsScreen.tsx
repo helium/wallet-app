@@ -110,7 +110,8 @@ export const PositionsScreen = () => {
     sigs = [],
     onProgress = () => {},
     sequentially = false,
-    computeScaleUp = undefined,
+    computeScaleUp,
+    maxInstructionsPerTx,
   }: {
     header: string
     message: string
@@ -119,6 +120,7 @@ export const PositionsScreen = () => {
     onProgress?: (status: Status) => void
     sequentially?: boolean
     computeScaleUp?: number
+    maxInstructionsPerTx?: number
   }) => {
     if (!anchorProvider || !walletSignBottomSheetRef) return
 
@@ -127,6 +129,7 @@ export const PositionsScreen = () => {
       instructions,
       {
         computeScaleUp,
+        maxInstructionsPerTx,
         basePriorityFee: await getBasePriorityFee(),
         addressLookupTableAddresses: [
           cluster === 'devnet' ? HELIUM_COMMON_LUT_DEVNET : HELIUM_COMMON_LUT,
@@ -228,6 +231,7 @@ export const PositionsScreen = () => {
             instructions: ixs,
             onProgress: setStatusOfClaim,
             computeScaleUp: 1.4,
+            maxInstructionsPerTx: 8,
           }),
       })
 
@@ -267,7 +271,7 @@ export const PositionsScreen = () => {
             titleColor="white"
             titleColorPressed="black"
             onPress={() => setIsLockModalOpen(true)}
-            disabled={claimingAllRewards || loading}
+            disabled={claimingAllRewards || loading || !mint.equals(HNT_MINT)}
           />
           {HNT_MINT.equals(mint) && (
             <>

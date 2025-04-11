@@ -340,6 +340,7 @@ const AccountsScreen = () => {
         <StatusBanner />
       </Box>
       <BottomSheet
+        enableDynamicSizing={false}
         ref={bottomSheetRef}
         snapPoints={snapPoints || [10, 100]}
         backgroundStyle={bottomSheetStyle}
