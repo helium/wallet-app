@@ -135,8 +135,16 @@ const AccountAssignScreen = () => {
       await storeAllSecureAccounts()
       const mnemonicHash = generateMnemonicHash(words)
       const newAccounts = await createNewAccounts(allPaths, alias, mnemonicHash)
-      const highestBalanceAcc = newAccounts.reduce((prev, current) =>
-        (current.balance ?? 0) > (prev.balance ?? 0) ? current : prev,
+
+      // This only happens when the user proceeds too quickly through this screen.
+      if (newAccounts.length === 0) {
+        return
+      }
+
+      const highestBalanceAcc = newAccounts.reduce(
+        (prev, current) =>
+          (current.balance ?? 0) > (prev.balance ?? 0) ? current : prev,
+        newAccounts[0],
       )
 
       await upsertAccounts(newAccounts)
