@@ -270,10 +270,8 @@ export const PositionsScreen = () => {
             title={t('gov.transactions.lockTokens')}
             titleColor="white"
             titleColorPressed="black"
-            onPress={() =>
-              mint.equals(HNT_MINT) ? setIsLockModalOpen(true) : null
-            }
-            disabled={claimingAllRewards || loading}
+            onPress={() => setIsLockModalOpen(true)}
+            disabled={claimingAllRewards || loading || !mint.equals(HNT_MINT)}
           />
           {HNT_MINT.equals(mint) && (
             <>
