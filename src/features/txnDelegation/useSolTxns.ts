@@ -5,10 +5,15 @@ import {
   Program,
 } from '@coral-xyz/anchor'
 import {
+  convertIdlToCamelCase,
+  IdlInstruction,
+} from '@coral-xyz/anchor/dist/cjs/idl'
+import {
   decodeEntityKey,
   init,
   keyToAssetForAsset,
 } from '@helium/helium-entity-manager-sdk'
+import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import { Message } from '@helium/onboarding'
 import { Asset, getAsset, heliumAddressToSolAddress } from '@helium/spl-utils'
 import { SignHotspotResponse } from '@helium/wallet-link'
@@ -19,8 +24,6 @@ import bs58 from 'bs58'
 import { get, last } from 'lodash'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
-import { IdlInstruction } from '@coral-xyz/anchor/dist/cjs/idl'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
@@ -83,8 +86,9 @@ const useSolTxns = ({
 
   const fetchIdl = useCallback(
     async (pubkey: PublicKey) => {
-      const idl = await Program.fetchIdl(pubkey, anchorProvider)
-      if (!idl) throw new Error(`Could not find idl for${pubkey.toBase58()}`)
+      const rawIdl = await Program.fetchIdl(pubkey, anchorProvider)
+      if (!rawIdl) throw new Error(`Could not find idl for${pubkey.toBase58()}`)
+      const idl = convertIdlToCamelCase(rawIdl)
       return idl
     },
     [anchorProvider],
