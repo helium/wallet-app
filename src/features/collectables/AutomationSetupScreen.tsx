@@ -5,11 +5,15 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { CollectableNavigationProp } from './collectablesTypes'
+import { useAutomateHotspotClaims } from '../../hooks/useAutomateHotspotClaims'
+import { useWalletSign } from '../../solana/WalletSignProvider'
+import { MessagePreview } from '../../solana/MessagePreview'
+import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
 
@@ -18,8 +22,16 @@ const AutomationSetupScreen = () => {
   const { t } = useTranslation()
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule>('daily')
   const [duration, setDuration] = useState('10')
-  const [hasExistingAutomation, setHasExistingAutomation] = useState(true)
+  const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = ['top'] as Edge[]
+
+  const {
+    loading,
+    error,
+    execute,
+    remove,
+    hasExistingAutomation
+  } = useAutomateHotspotClaims(selectedSchedule, parseInt(duration, 10))
 
   const handleDurationChange = (text: string) => {
     // Remove any non-numeric characters
@@ -50,17 +62,62 @@ const AutomationSetupScreen = () => {
     setSelectedSchedule(schedule)
   }, [])
 
-  const handleSave = useCallback(() => {
-    // TODO: Implement the actual automation setup
-    setHasExistingAutomation(true)
-    navigation.goBack()
-  }, [navigation])
+  const handleSave = useCallback(async () => {
+    try {
+      await execute({
+        onInstructions: async (instructions) => {
+          const decision = await walletSignBottomSheetRef?.show({
+            type: WalletStandardMessageTypes.signTransaction,
+            url: '',
+            header: t('automationScreen.setupAutomation'),
+            renderer: () => (
+              <MessagePreview 
+                message={t('automationScreen.setupAutomationMessage', {
+                  schedule: selectedSchedule,
+                  duration
+                })} 
+              />
+            ),
+            serializedTxs: instructions.map((tx) => Buffer.from(tx.serialize())),
+          })
 
-  const handleRemoveAutomation = useCallback(() => {
-    // TODO: Implement removing the automation
-    setHasExistingAutomation(false)
-    navigation.goBack()
-  }, [navigation])
+          if (!decision) {
+            throw new Error('User rejected transaction')
+          }
+        }
+      })
+      navigation.goBack()
+    } catch (e) {
+      console.error(e)
+    }
+  }, [execute, navigation, selectedSchedule, duration, walletSignBottomSheetRef, t])
+
+  const handleRemoveAutomation = useCallback(async () => {
+    try {
+      await remove({
+        onInstructions: async (instructions) => {
+          const decision = await walletSignBottomSheetRef?.show({
+            type: WalletStandardMessageTypes.signTransaction,
+            url: '',
+            header: t('automationScreen.removeAutomation'),
+            renderer: () => (
+              <MessagePreview 
+                message={t('automationScreen.removeAutomationMessage')} 
+              />
+            ),
+            serializedTxs: instructions.map((tx) => Buffer.from(tx.serialize())),
+          })
+
+          if (!decision) {
+            throw new Error('User rejected transaction')
+          }
+        }
+      })
+      navigation.goBack()
+    } catch (e) {
+      console.error(e)
+    }
+  }, [remove, navigation, walletSignBottomSheetRef, t])
 
   const ScheduleOption = ({
     schedule,
@@ -151,12 +208,27 @@ const AutomationSetupScreen = () => {
 
           <Box flex={1} />
 
+          {error && (
+            <Box
+              flexDirection="row"
+              backgroundColor="surfaceSecondary"
+              borderRadius="l"
+              padding="m"
+              marginBottom="m"
+            >
+              <Text variant="body3Medium" color="red500">
+                {error.message}
+              </Text>
+            </Box>
+          )}
+
           <ButtonPressable
             title={t('generic.save')}
             backgroundColor="white"
             backgroundColorOpacityPressed={0.7}
             titleColor="black"
-            disabled={!selectedSchedule || !duration}
+            disabled={!selectedSchedule || !duration || loading}
+            loading={loading}
             onPress={handleSave}
             borderRadius="round"
             padding="m"
@@ -169,6 +241,8 @@ const AutomationSetupScreen = () => {
               backgroundColor="surfaceSecondary"
               backgroundColorOpacityPressed={0.7}
               titleColor="error"
+              disabled={loading}
+              loading={loading}
               onPress={handleRemoveAutomation}
               borderRadius="round"
               padding="m"

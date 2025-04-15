@@ -3626,6 +3626,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@helium/cron-sdk@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "@helium/cron-sdk@npm:0.0.8"
+  dependencies:
+    "@coral-xyz/anchor": ^0.31.0
+    "@helium/anchor-resolvers": ^0.10.0-alpha.4
+    "@helium/tuktuk-idls": ^0.0.8
+    "@helium/tuktuk-sdk": ^0.0.8
+    js-sha256: ^0.11.0
+  checksum: 3203f7e9887cde3f83bced56e045b0dd1b0d721d0a3eabccbe3bec24424a0adf64fdd8063075af7b945ea338103c2d9c0cf4e546afb055c7fb37914ce7896d67
+  languageName: node
+  linkType: hard
+
 "@helium/crypto-react-native@npm:4.8.0":
   version: 4.8.0
   resolution: "@helium/crypto-react-native@npm:4.8.0"
@@ -4456,6 +4469,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@helium/tuktuk-idls@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "@helium/tuktuk-idls@npm:0.0.8"
+  dependencies:
+    "@coral-xyz/anchor": ^0.31.0
+    "@solana/web3.js": ^1.95.2
+  checksum: ab186e17e00cfd176bf07943797afc91290cb4a68df0a1b5392a9de596330ca4498734dffa33deb6b15b77f44b0ba8f2a890d4b17978475b1ba290c4ea28f2ca
+  languageName: node
+  linkType: hard
+
 "@helium/tuktuk-sdk@npm:^0.0.6":
   version: 0.0.6
   resolution: "@helium/tuktuk-sdk@npm:0.0.6"
@@ -4465,6 +4488,18 @@ __metadata:
     "@helium/tuktuk-idls": ^0.0.6
     js-sha256: ^0.11.0
   checksum: 32b6097215f82cb846faa0549e11d8d50bfe5679375b5e43da15a12c649c3561b4c3633f233ac3e241e6137d887f50ba2d821fe86b49f8800774fd89ab9e53a4
+  languageName: node
+  linkType: hard
+
+"@helium/tuktuk-sdk@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "@helium/tuktuk-sdk@npm:0.0.8"
+  dependencies:
+    "@coral-xyz/anchor": ^0.31.0
+    "@helium/anchor-resolvers": ^0.10.0-alpha.4
+    "@helium/tuktuk-idls": ^0.0.8
+    js-sha256: ^0.11.0
+  checksum: 33506db28837b620569545b5197577f0646ea879cddf319d9836a2ea14c5a32b3afa4db07e2afdb71f69c78b2b2d120f9d64ca773f03dfa9bd945f8b4de64b1a
   languageName: node
   linkType: hard
 
@@ -14113,6 +14148,7 @@ __metadata:
     "@helium/account-fetch-cache-hooks": 0.10.6
     "@helium/address": 4.10.2
     "@helium/circuit-breaker-sdk": 0.10.6
+    "@helium/cron-sdk": ^0.0.8
     "@helium/crypto-react-native": 4.8.0
     "@helium/currency-utils": 0.10.6
     "@helium/data-credits-sdk": 0.10.6
@@ -14121,6 +14157,7 @@ __metadata:
     "@helium/helium-entity-manager-sdk": 0.10.6
     "@helium/helium-react-hooks": 0.10.6
     "@helium/helium-sub-daos-sdk": 0.10.6
+    "@helium/hpl-crons-sdk": ^0.10.6
     "@helium/http": 4.7.5
     "@helium/idls": 0.10.6
     "@helium/lazy-distributor-sdk": 0.10.6
@@ -14136,6 +14173,7 @@ __metadata:
     "@helium/sus": 0.10.6
     "@helium/transactions": 4.8.1
     "@helium/treasury-management-sdk": 0.10.6
+    "@helium/tuktuk-sdk": ^0.0.8
     "@helium/voter-stake-registry-hooks": 0.10.6
     "@helium/voter-stake-registry-sdk": 0.10.6
     "@helium/wallet-link": 4.11.0
