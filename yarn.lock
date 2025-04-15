@@ -14317,7 +14317,7 @@ __metadata:
     react-native-simple-toast: 1.1.4
     react-native-snap-carousel: 4.0.0-beta.6
     react-native-sodium: ^0.4.0
-    react-native-svg: 15.10.1
+    react-native-svg: 15.11.2
     react-native-svg-transformer: 0.14.3
     react-native-tab-view: 3.3.4
     react-native-tcp: 3.3.2
@@ -19959,9 +19959,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:15.10.1":
-  version: 15.10.1
-  resolution: "react-native-svg@npm:15.10.1"
+"react-native-svg@npm:15.11.2":
+  version: 15.11.2
+  resolution: "react-native-svg@npm:15.11.2"
   dependencies:
     css-select: ^5.1.0
     css-tree: ^1.1.3
@@ -19969,7 +19969,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: c210426b424e99730ba35d6bbf18335a99f04f2f234cb5bb578ac685c31cfca5e39d48ebf05f9189edd61c028405f4ff242b5edc98ee3e3f41c8bfa960f5bff4
+  checksum: 7bc2d9a5b7ceb66905e358d995bf102d63ce017db40b024d31a6ada03c21733fd3620f9ad867d631b878e2380033ea8777e75c4f654bc5b420ea902695ed9ba8
   languageName: node
   linkType: hard
 
