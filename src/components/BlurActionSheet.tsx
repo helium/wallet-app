@@ -1,17 +1,17 @@
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
-  BottomSheetScrollView,
+  BottomSheetScrollView
 } from '@gorhom/bottom-sheet'
-import { LayoutChangeEvent } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
-import { useAsync } from 'react-async-hook'
 import { Portal } from '@gorhom/portal'
 import { useOpacity } from '@theme/themeHooks'
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import { useAsync } from 'react-async-hook'
+import { LayoutChangeEvent } from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
+import { wh } from '../utils/layout'
 import CustomBlurBackdrop from './CustomBlurBackdrop'
 import SafeAreaBox from './SafeAreaBox'
-import { wh } from '../utils/layout'
 
 type Props = {
   title: string
@@ -23,7 +23,7 @@ type Props = {
 const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [contentHeight, setContentHeight] = useState(0)
-  const { backgroundStyle } = useOpacity('black400', 0.4)
+  const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
 
   const handleOnClose = useCallback(() => {
     if (onClose) {

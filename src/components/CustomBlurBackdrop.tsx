@@ -44,7 +44,15 @@ const CustomBlurBackdrop = ({
 
   return (
     <Animated.View onTouchEnd={onPress} style={containerStyle}>
-      <BlurBox position="absolute" top={0} bottom={0} left={0} right={0}>
+      <BlurBox
+        position="absolute"
+        top={0}
+        bottom={0}
+        left={0}
+        right={0}
+        tint="dark"
+        intensity={80}
+      >
         <SafeAreaBox
           edges={['top']}
           backgroundColor="transparent"

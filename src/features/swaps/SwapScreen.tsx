@@ -66,6 +66,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Platform,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -883,51 +884,65 @@ const SwapScreen = () => {
             </TouchableWithoutFeedback>
           </TokenSelector>
           {slippageInfoVisible ? (
-            <ReAnimatedBlurBox
-              entering={FadeInFast}
-              position="absolute"
-              height="100%"
-              width="100%"
-              tint="dark"
-              intensity={80}
-            >
-              <Box flexDirection="column" height="100%">
+            <>
+              {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+              {Platform.OS === 'android' && (
                 <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  marginTop="l"
-                >
-                  <Box flex={1}>
-                    <CloseButton
-                      marginStart="m"
-                      onPress={() => setSlippageInfoVisible(false)}
-                    />
+                  position="absolute"
+                  zIndex={0}
+                  left={0}
+                  top={0}
+                  height="100%"
+                  width="100%"
+                  backgroundColor="black"
+                />
+              )}
+              <ReAnimatedBlurBox
+                entering={FadeInFast}
+                position="absolute"
+                height="100%"
+                width="100%"
+                tint="dark"
+                intensity={80}
+              >
+                <Box flexDirection="column" height="100%">
+                  <Box
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    marginTop="l"
+                  >
+                    <Box flex={1}>
+                      <CloseButton
+                        marginStart="m"
+                        onPress={() => setSlippageInfoVisible(false)}
+                      />
+                    </Box>
+                    <Box flex={1} alignItems="center" flexDirection="row">
+                      <Text
+                        variant="h4"
+                        color="white"
+                        flex={1}
+                        textAlign="center"
+                      >
+                        {t('swapsScreen.slippage')}
+                      </Text>
+                    </Box>
+                    <Box flex={1} />
                   </Box>
-                  <Box flex={1} alignItems="center" flexDirection="row">
+                  <Box flex={1} paddingHorizontal="m" marginTop="l">
                     <Text
-                      variant="h4"
+                      variant="body1Medium"
                       color="white"
                       flex={1}
                       textAlign="center"
                     >
-                      {t('swapsScreen.slippage')}
+                      {t('swapsScreen.slippageInfo')}
                     </Text>
                   </Box>
-                  <Box flex={1} />
                 </Box>
-                <Box flex={1} paddingHorizontal="m" marginTop="l">
-                  <Text
-                    variant="body1Medium"
-                    color="white"
-                    flex={1}
-                    textAlign="center"
-                  >
-                    {t('swapsScreen.slippageInfo')}
-                  </Text>
-                </Box>
-              </Box>
-            </ReAnimatedBlurBox>
+              </ReAnimatedBlurBox>
+            </>
           ) : undefined}
         </HNTKeyboard>
       </AddressBookSelector>
