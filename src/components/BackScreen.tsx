@@ -143,8 +143,7 @@ const BackScreen = ({
             left={0}
             right={0}
             bottom={0}
-            blurAmount={isAndroid ? 15 : 5}
-            blurType={isAndroid ? 'dark' : 'thinMaterialDark'}
+            intensity={isAndroid ? 15 : 5}
           />
         </>
       )}
