@@ -352,7 +352,7 @@ const HotspotMapScreen = () => {
     () => loading || !onEndReached || loadingInfos,
     [loading, onEndReached, loadingInfos],
   )
-  const debouncedIsLoading = useDebounce(isLoading, 1000)
+  const [debouncedIsLoading] = useDebounce(isLoading, 1000)
 
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocation?.coords) {
