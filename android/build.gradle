@@ -5,9 +5,10 @@ buildscript {
         buildToolsVersion = "35.0.0"
         minSdkVersion = 24
         compileSdkVersion = 35
-        targetSdkVersion = 35
+        targetSdkVersion = 34
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.0.21"
+        appCompatVersion = "1.6.1"
     }
     repositories {
         google()
@@ -16,12 +17,8 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.google.gms:google-services:4.4.2'
         classpath("com.facebook.react:react-native-gradle-plugin")
-
-        // Expo is not able to build without this kotlin-gradle-plugin
-        // https://github.com/expo/expo/issues/15989#issuecomment-1175696527
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -41,3 +38,5 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 }
+
+apply plugin: "com.facebook.react.rootproject"
