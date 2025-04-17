@@ -3,6 +3,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
+  BottomSheetView,
 } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
 import {
@@ -493,80 +494,82 @@ const HNTKeyboardSelector = forwardRef(
               snapPoints={snapPoints}
               onDismiss={handleModalDismiss}
             >
-              <SafeAreaBox
-                flex={1}
-                edges={safeEdges}
-                flexDirection="column"
-                alignItems="center"
-              >
-                <Text
-                  marginHorizontal="l"
-                  variant="h1"
-                  maxFontSizeMultiplier={1}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
+              <BottomSheetView style={{ flex: 1 }}>
+                <SafeAreaBox
+                  flex={1}
+                  edges={safeEdges}
+                  flexDirection="column"
+                  alignItems="center"
                 >
-                  {`${value || '0'} ${symbol || ''}`}
-                </Text>
-                {payer && networkFee && (
                   <Text
-                    paddingHorizontal="m"
+                    marginHorizontal="l"
+                    variant="h1"
                     maxFontSizeMultiplier={1}
                     numberOfLines={1}
-                    variant="body1"
-                    color="secondaryText"
-                    marginBottom="l"
+                    adjustsFontSizeToFit
                   >
-                    {t('hntKeyboard.fee', {
-                      value: networkFee && humanReadable(networkFee, 9),
-                    })}
+                    {`${value || '0'} ${symbol || ''}`}
                   </Text>
-                )}
-                <Keypad
-                  customButtonType="decimal"
-                  onPress={handlePress}
-                  marginHorizontal="l"
-                  flex={1}
-                />
-                <Box
-                  flexDirection="row"
-                  marginHorizontal="l"
-                  marginVertical="l"
-                >
-                  <TouchableOpacityBox
-                    minHeight={66}
-                    onPress={handleCancel}
-                    borderRadius="round"
-                    alignItems="center"
-                    justifyContent="center"
-                    flex={1}
-                    marginRight="xs"
-                    overflow="hidden"
-                  >
-                    <BackgroundFill backgroundColor="error" />
-                    <Text variant="subtitle2" color="error">
-                      {t('generic.cancel')}
+                  {payer && networkFee && (
+                    <Text
+                      paddingHorizontal="m"
+                      maxFontSizeMultiplier={1}
+                      numberOfLines={1}
+                      variant="body1"
+                      color="secondaryText"
+                      marginBottom="l"
+                    >
+                      {t('hntKeyboard.fee', {
+                        value: networkFee && humanReadable(networkFee, 9),
+                      })}
                     </Text>
-                  </TouchableOpacityBox>
-                  <TouchableOpacityBox
-                    onPress={handleConfirm}
-                    marginLeft="xs"
-                    minHeight={66}
-                    alignItems="center"
-                    justifyContent="center"
-                    borderRadius="round"
+                  )}
+                  <Keypad
+                    customButtonType="decimal"
+                    onPress={handlePress}
+                    marginHorizontal="l"
                     flex={1}
-                    backgroundColor={
-                      allowOverdraft || hasSufficientBalance
-                        ? 'surface'
-                        : 'grey300'
-                    }
-                    disabled={!allowOverdraft ? !hasSufficientBalance : false}
+                  />
+                  <Box
+                    flexDirection="row"
+                    marginHorizontal="l"
+                    marginVertical="l"
                   >
-                    <Text variant="subtitle2">{t('generic.confirm')}</Text>
-                  </TouchableOpacityBox>
-                </Box>
-              </SafeAreaBox>
+                    <TouchableOpacityBox
+                      minHeight={66}
+                      onPress={handleCancel}
+                      borderRadius="round"
+                      alignItems="center"
+                      justifyContent="center"
+                      flex={1}
+                      marginRight="xs"
+                      overflow="hidden"
+                    >
+                      <BackgroundFill backgroundColor="error" />
+                      <Text variant="subtitle2" color="error">
+                        {t('generic.cancel')}
+                      </Text>
+                    </TouchableOpacityBox>
+                    <TouchableOpacityBox
+                      onPress={handleConfirm}
+                      marginLeft="xs"
+                      minHeight={66}
+                      alignItems="center"
+                      justifyContent="center"
+                      borderRadius="round"
+                      flex={1}
+                      backgroundColor={
+                        allowOverdraft || hasSufficientBalance
+                          ? 'surface'
+                          : 'grey300'
+                      }
+                      disabled={!allowOverdraft ? !hasSufficientBalance : false}
+                    >
+                      <Text variant="subtitle2">{t('generic.confirm')}</Text>
+                    </TouchableOpacityBox>
+                  </Box>
+                </SafeAreaBox>
+              </BottomSheetView>
             </BottomSheetModal>
             {!usePortal && children}
           </BottomSheetModalProvider>

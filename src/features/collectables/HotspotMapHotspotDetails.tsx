@@ -588,13 +588,15 @@ export const HotspotMapHotspotDetails = ({
         <Box position="relative">
           <ReAnimatedBlurBox
             visible={onboardLoading}
+            zIndex={onboardLoading ? 100 : 0}
             exiting={DelayedFadeIn}
             position="absolute"
             width="100%"
             height="100%"
             justifyContent="center"
             alignItems="center"
-            zIndex={100}
+            tint="dark"
+            intensity={80}
           >
             <CircleLoader loaderSize={24} color="white" />
           </ReAnimatedBlurBox>

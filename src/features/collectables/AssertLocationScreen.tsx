@@ -434,6 +434,8 @@ const AssertLocationScreen = () => {
             width="100%"
             height="100%"
             zIndex={isLoading ? 100 : 0}
+            tint="dark"
+            intensity={80}
           >
             <Box flex={1} height="100%" justifyContent="center">
               <CircleLoader loaderSize={24} color="white" />
@@ -724,13 +726,14 @@ const AssertLocationScreen = () => {
         )}
         {elevGainVisible ? (
           <ReAnimatedBlurBox
-            visible={elevGainVisible}
             entering={FadeInFast}
             flexDirection="row"
             position="absolute"
             bottom={0}
             height="100%"
             width="100%"
+            tint="dark"
+            intensity={80}
           >
             <TouchableWithoutFeedback
               onPress={() => Keyboard.dismiss()}

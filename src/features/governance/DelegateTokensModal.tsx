@@ -65,11 +65,12 @@ export const DelegateTokensModal = ({
   return (
     <Portal hostName="GovernancePortalHost">
       <ReAnimatedBlurBox
-        visible
         entering={FadeInFast}
         position="absolute"
         height="100%"
         width="100%"
+        tint="dark"
+        intensity={80}
       >
         <BackScreen
           hideBack

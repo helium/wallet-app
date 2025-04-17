@@ -162,13 +162,14 @@ const InsufficientSolConversionModal: FC = () => {
 
   return (
     <ReAnimatedBlurBox
-      visible
       entering={FadeInFast}
       position="absolute"
       zIndex={9999}
       height="100%"
       width="100%"
       paddingBottom="xl"
+      tint="dark"
+      intensity={80}
     >
       <SafeAreaBox edges={edges} flex={1}>
         <Box
