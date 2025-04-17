@@ -54,6 +54,7 @@ import {
   Alert,
   Keyboard,
   KeyboardAvoidingView,
+  Platform,
   TouchableWithoutFeedback,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -725,103 +726,117 @@ const AssertLocationScreen = () => {
           </Box>
         )}
         {elevGainVisible ? (
-          <ReAnimatedBlurBox
-            entering={FadeInFast}
-            flexDirection="row"
-            position="absolute"
-            bottom={0}
-            height="100%"
-            width="100%"
-            tint="dark"
-            intensity={80}
-          >
-            <TouchableWithoutFeedback
-              onPress={() => Keyboard.dismiss()}
-              accessibilityRole="button"
+          <>
+            {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+            {Platform.OS === 'android' && (
+              <Box
+                position="absolute"
+                zIndex={0}
+                left={0}
+                top={0}
+                height="100%"
+                width="100%"
+                backgroundColor="black"
+              />
+            )}
+            <ReAnimatedBlurBox
+              entering={FadeInFast}
+              flexDirection="row"
+              position="absolute"
+              bottom={0}
+              height="100%"
+              width="100%"
+              tint="dark"
+              intensity={80}
             >
-              <Box flex={1}>
-                <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-                  <Box
-                    backgroundColor="transparent"
-                    flex={1}
-                    height="100%"
-                    marginHorizontal="ms"
-                  >
-                    <Box flex={1} justifyContent="center" height="100%">
-                      <Text
-                        textAlign="left"
-                        variant="subtitle2"
-                        adjustsFontSizeToFit
-                      >
-                        {t('assertLocationScreen.antennaSetup')}
-                      </Text>
-                      <Text
-                        variant="subtitle4"
-                        color="secondaryText"
-                        marginBottom="m"
-                      >
-                        {t('assertLocationScreen.antennaSetupDescription')}
-                      </Text>
-                      <Box
-                        width="100%"
-                        backgroundColor="secondary"
-                        borderRadius="l"
-                        paddingVertical="xs"
-                      >
-                        <TextInput
-                          variant="transparent"
-                          floatingLabel={`${t(
-                            'assertLocationScreen.gainPlaceholder',
-                          )}`}
-                          textInputProps={{
-                            placeholder: t(
-                              'assertLocationScreen.gainPlaceholder',
-                            ),
-                            onChangeText: setGain,
-                            value: gain,
-                            keyboardType: 'decimal-pad',
-                          }}
-                        />
+              <TouchableWithoutFeedback
+                onPress={() => Keyboard.dismiss()}
+                accessibilityRole="button"
+              >
+                <Box flex={1}>
+                  <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+                    <Box
+                      backgroundColor="transparent"
+                      flex={1}
+                      height="100%"
+                      marginHorizontal="ms"
+                    >
+                      <Box flex={1} justifyContent="center" height="100%">
+                        <Text
+                          textAlign="left"
+                          variant="subtitle2"
+                          adjustsFontSizeToFit
+                        >
+                          {t('assertLocationScreen.antennaSetup')}
+                        </Text>
+                        <Text
+                          variant="subtitle4"
+                          color="secondaryText"
+                          marginBottom="m"
+                        >
+                          {t('assertLocationScreen.antennaSetupDescription')}
+                        </Text>
                         <Box
-                          height={1}
                           width="100%"
-                          backgroundColor="black200"
-                        />
-                        <TextInput
-                          variant="transparent"
-                          floatingLabel={`${t(
-                            'assertLocationScreen.elevationPlaceholder',
-                          )}`}
-                          textInputProps={{
-                            placeholder: t(
+                          backgroundColor="secondary"
+                          borderRadius="l"
+                          paddingVertical="xs"
+                        >
+                          <TextInput
+                            variant="transparent"
+                            floatingLabel={`${t(
+                              'assertLocationScreen.gainPlaceholder',
+                            )}`}
+                            textInputProps={{
+                              placeholder: t(
+                                'assertLocationScreen.gainPlaceholder',
+                              ),
+                              onChangeText: setGain,
+                              value: gain,
+                              keyboardType: 'decimal-pad',
+                            }}
+                          />
+                          <Box
+                            height={1}
+                            width="100%"
+                            backgroundColor="black200"
+                          />
+                          <TextInput
+                            variant="transparent"
+                            floatingLabel={`${t(
                               'assertLocationScreen.elevationPlaceholder',
-                            ),
-                            onChangeText: setElevation,
-                            value: elevation,
-                            keyboardType: 'decimal-pad',
-                          }}
-                        />
+                            )}`}
+                            textInputProps={{
+                              placeholder: t(
+                                'assertLocationScreen.elevationPlaceholder',
+                              ),
+                              onChangeText: setElevation,
+                              value: elevation,
+                              keyboardType: 'decimal-pad',
+                            }}
+                          />
+                        </Box>
                       </Box>
                     </Box>
+                  </KeyboardAvoidingView>
+                  <Box padding="ms">
+                    <ButtonPressable
+                      flexGrow={1}
+                      borderRadius="round"
+                      backgroundColor="white"
+                      backgroundColorOpacityPressed={0.7}
+                      backgroundColorDisabled="white"
+                      backgroundColorDisabledOpacity={0.0}
+                      titleColorDisabled="grey600"
+                      title={asserting ? '' : t('assertLocationScreen.title')}
+                      titleColor="black"
+                      onPress={handleAssertLocationPress}
+                    />
                   </Box>
-                </KeyboardAvoidingView>
-                <Box padding="ms">
-                  <ButtonPressable
-                    flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="white"
-                    backgroundColorDisabledOpacity={0.0}
-                    titleColorDisabled="grey600"
-                    title={asserting ? '' : t('assertLocationScreen.title')}
-                    titleColor="black"
-                    onPress={handleAssertLocationPress}
-                  />
                 </Box>
-              </Box>
-            </TouchableWithoutFeedback>
-          </ReAnimatedBlurBox>
+              </TouchableWithoutFeedback>
+            </ReAnimatedBlurBox>
+          </>
         ) : undefined}
       </SafeAreaBox>
     </ReAnimatedBox>
