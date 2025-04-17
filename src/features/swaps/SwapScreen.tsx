@@ -884,11 +884,12 @@ const SwapScreen = () => {
           </TokenSelector>
           {slippageInfoVisible ? (
             <ReAnimatedBlurBox
-              visible
               entering={FadeInFast}
               position="absolute"
               height="100%"
               width="100%"
+              tint="dark"
+              intensity={80}
             >
               <Box flexDirection="column" height="100%">
                 <Box
