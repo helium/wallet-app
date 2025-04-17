@@ -3,6 +3,7 @@ import {
   BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
+  BottomSheetView,
 } from '@gorhom/bottom-sheet'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
@@ -137,10 +138,12 @@ const KeystoneModal = forwardRef(
             onDismiss={handleDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
           >
-            <SignTxModal
-              eventEmitter={eventEmitter}
-              solSignRequest={solSignRequest as KeystoneSolSignRequest}
-            />
+            <BottomSheetView style={{ flex: 1 }}>
+              <SignTxModal
+                eventEmitter={eventEmitter}
+                solSignRequest={solSignRequest as KeystoneSolSignRequest}
+              />
+            </BottomSheetView>
           </BottomSheetModal>
           {children}
         </BottomSheetModalProvider>

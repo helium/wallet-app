@@ -13,9 +13,6 @@ node_require('expo/scripts/autolinking.rb')
 
 setup_permissions(['BluetoothPeripheral', 'LocationAlways', 'LocationWhenInUse'])
 
-# Disable new architecture for now https://github.com/Kureev/react-native-blur/issues/628
-ENV['RCT_NEW_ARCH_ENABLED'] = '0'
-
 platform :ios, '15.1'
 prepare_react_native_project!
 

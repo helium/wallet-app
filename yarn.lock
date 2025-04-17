@@ -5577,16 +5577,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/blur@npm:4.4.1":
-  version: 4.4.1
-  resolution: "@react-native-community/blur@npm:4.4.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 1e47144b0c00dce562e72ea9f6c3e93d3bb392ec0ea001ce37ff801d9a496c9801927033ee4800bf92ea2ece9de0abe596715add3b7afe3c5d1533e260f5e09e
-  languageName: node
-  linkType: hard
-
 "@react-native-community/checkbox@npm:0.5.17":
   version: 0.5.17
   resolution: "@react-native-community/checkbox@npm:0.5.17"
@@ -12719,6 +12709,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-blur@npm:~14.0.3":
+  version: 14.0.3
+  resolution: "expo-blur@npm:14.0.3"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: f5f8aad2fa23b7cadc4c84bc7690ba44ebbe15c7aca89a703662c8a176e96de243baed2fde879bd6e044aafbe115ff0f3460ab8667aab0fd2461dfb1e5c53431
+  languageName: node
+  linkType: hard
+
 "expo-camera@npm:16.0.18":
   version: 16.0.18
   resolution: "expo-camera@npm:16.0.18"
@@ -14066,7 +14067,6 @@ __metadata:
     "@ngraveio/bc-ur": 1.1.13
     "@onsol/tldparser": 0.5.3
     "@react-native-async-storage/async-storage": 1.18.1
-    "@react-native-community/blur": 4.4.1
     "@react-native-community/checkbox": 0.5.17
     "@react-native-community/cli": 15.0.1
     "@react-native-community/cli-platform-android": 15.0.1
@@ -14161,6 +14161,7 @@ __metadata:
     events: 3.3.0
     expo: 52.0.44
     expo-asset: 10.0.10
+    expo-blur: ~14.0.3
     expo-camera: 16.0.18
     expo-constants: 16.0.2
     expo-haptics: 13.0.1
