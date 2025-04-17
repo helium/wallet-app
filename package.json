@@ -12,7 +12,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx && tsc",
     "android-clean": "cd android && ./gradlew clean && cd ..",
     "ios-clean": "rm -rf ios/Pods && rm -rf ios/build",
-    "pod-install": "bundle install && cd ios && RCT_NEW_ARCH_ENABLED=0 bundle exec pod install --repo-update",
+    "pod-install": "bundle install && cd ios && RCT_NEW_ARCH_ENABLED=1 bundle exec pod install --repo-update",
     "clean-install": "react-native-clean-project",
     "bump-patch": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type patch",
     "bump-minor": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type minor",
