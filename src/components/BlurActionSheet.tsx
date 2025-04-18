@@ -1,7 +1,7 @@
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
-  BottomSheetScrollView
+  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
 import { useOpacity } from '@theme/themeHooks'
