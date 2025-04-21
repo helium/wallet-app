@@ -55,6 +55,7 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { useDebounce } from 'use-debounce'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { HotspotMapHotspotDetails } from './HotspotMapHotspotDetails'
@@ -351,6 +352,7 @@ const HotspotMapScreen = () => {
     () => loading || !onEndReached || loadingInfos,
     [loading, onEndReached, loadingInfos],
   )
+  const [debouncedIsLoading] = useDebounce(isLoading, 1000)
 
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocation?.coords) {
@@ -418,12 +420,14 @@ const HotspotMapScreen = () => {
           position="relative"
         >
           <ReAnimatedBlurBox
-            visible={isLoading}
+            visible={debouncedIsLoading}
             exiting={DelayedFadeIn}
             position="absolute"
             flex={1}
             width="100%"
             height="100%"
+            tint="dark"
+            intensity={80}
             // On android, the blur just doesn't go away when done loading.
             zIndex={isLoading ? 100 : 0}
           >

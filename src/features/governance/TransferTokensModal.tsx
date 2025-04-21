@@ -10,7 +10,7 @@ import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { PublicKey } from '@solana/web3.js'
 import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
-import { Keyboard, ScrollView } from 'react-native'
+import { Keyboard, Platform, ScrollView } from 'react-native'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import BN from 'bn.js'
@@ -107,12 +107,25 @@ export const TransferTokensModal = ({
 
   return (
     <Portal hostName="GovernancePortalHost">
+      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+      {Platform.OS === 'android' && (
+        <Box
+          position="absolute"
+          zIndex={0}
+          left={0}
+          top={0}
+          height="100%"
+          width="100%"
+          backgroundColor="black"
+        />
+      )}
       <ReAnimatedBlurBox
-        visible
         entering={FadeInFast}
         position="absolute"
         height="100%"
         width="100%"
+        tint="dark"
+        intensity={80}
       >
         <BackScreen
           hideBack

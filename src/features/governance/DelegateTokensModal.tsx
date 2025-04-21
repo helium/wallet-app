@@ -13,6 +13,7 @@ import ButtonPressable from '@components/ButtonPressable'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TokenIcon from '@components/TokenIcon'
 import { useTranslation } from 'react-i18next'
+import { Platform } from 'react-native'
 
 export const DelegateTokensModal = ({
   onClose,
@@ -64,12 +65,25 @@ export const DelegateTokensModal = ({
 
   return (
     <Portal hostName="GovernancePortalHost">
+      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+      {Platform.OS === 'android' && (
+        <Box
+          position="absolute"
+          zIndex={0}
+          left={0}
+          top={0}
+          height="100%"
+          width="100%"
+          backgroundColor="black"
+        />
+      )}
       <ReAnimatedBlurBox
-        visible
         entering={FadeInFast}
         position="absolute"
         height="100%"
         width="100%"
+        tint="dark"
+        intensity={80}
       >
         <BackScreen
           hideBack

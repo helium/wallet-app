@@ -14,7 +14,7 @@ import { getSecureAccount } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
 import * as bip39 from 'bip39'
 import React, { memo, useCallback, useEffect, useRef } from 'react'
-import { useAsync, useAsyncCallback } from 'react-async-hook'
+import { useAsyncCallback } from 'react-async-hook'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
 import { useSelector } from 'react-redux'
@@ -53,12 +53,6 @@ const RootNavigator = () => {
   const dispatch = useAppDispatch()
   const { setOnboardingData, onboardingData } = useOnboarding()
   const { currentAccount, accounts } = useAccountStorage()
-  const { result: seed } = useAsync(async () => {
-    if (currentAccount) {
-      const storage = await getSecureAccount(currentAccount.address)
-      return bip39.mnemonicToSeedSync(storage?.mnemonic?.join(' ') || '', '')
-    }
-  }, [currentAccount])
 
   useEffect(() => {
     changeNavigationBarColor(colors.primaryBackground, true, false)
@@ -70,9 +64,14 @@ const RootNavigator = () => {
 
   const { execute: handleAddSub } = useAsyncCallback(async (acc: CSAccount) => {
     try {
-      if (!seed || !acc?.derivationPath) {
+      if (!currentAccount || !acc?.derivationPath) {
         throw new Error('Missing seed or derivation path')
       }
+      const storage = await getSecureAccount(currentAccount.address)
+      const seed = bip39.mnemonicToSeedSync(
+        storage?.mnemonic?.join(' ') || '',
+        '',
+      )
       const currentPath = acc.derivationPath
       const takenAddresses = new Set(
         Object.values(accounts || {}).map((a) => a.solanaAddress),

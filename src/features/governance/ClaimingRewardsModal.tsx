@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Status } from '@helium/spl-utils'
 import ProgressBar from '@components/ProgressBar'
+import { Platform } from 'react-native'
 
 export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
   const { t } = useTranslation()
@@ -34,12 +35,25 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
 
   return (
     <Portal hostName="GovernancePortalHost">
+      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+      {Platform.OS === 'android' && (
+        <Box
+          position="absolute"
+          zIndex={0}
+          left={0}
+          top={0}
+          height="100%"
+          width="100%"
+          backgroundColor="black"
+        />
+      )}
       <ReAnimatedBlurBox
-        visible
         entering={FadeInFast}
         position="absolute"
         height="100%"
         width="100%"
+        tint="dark"
+        intensity={80}
       >
         <SafeAreaBox
           edges={edges}

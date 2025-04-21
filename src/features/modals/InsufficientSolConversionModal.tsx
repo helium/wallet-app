@@ -30,6 +30,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Platform } from 'react-native'
 import { Switch } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -161,179 +162,198 @@ const InsufficientSolConversionModal: FC = () => {
   }, [t, transactionError, solConvertError])
 
   return (
-    <ReAnimatedBlurBox
-      visible
-      entering={FadeInFast}
-      position="absolute"
-      zIndex={9999}
-      height="100%"
-      width="100%"
-      paddingBottom="xl"
-    >
-      <SafeAreaBox edges={edges} flex={1}>
+    <>
+      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+      {Platform.OS === 'android' && (
         <Box
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="center"
-          paddingTop="s"
-          paddingHorizontal="m"
-        >
-          <Text variant="h4" color="white" flex={1} textAlign="center">
-            {t('insufficientSolConversionModal.title')}
-          </Text>
-        </Box>
-        <Box flex={1} paddingHorizontal="m" marginTop="l">
-          <Text
-            variant="body1Medium"
-            color="white"
-            opacity={0.6}
-            textAlign="center"
-          >
-            {t('insufficientSolConversionModal.body')}
-          </Text>
+          position="absolute"
+          zIndex={0}
+          left={0}
+          top={0}
+          height="100%"
+          width="100%"
+          backgroundColor="black"
+        />
+      )}
+      <ReAnimatedBlurBox
+        entering={FadeInFast}
+        position="absolute"
+        zIndex={9999}
+        height="100%"
+        width="100%"
+        paddingBottom="xl"
+        tint="dark"
+        intensity={80}
+      >
+        <SafeAreaBox edges={edges} flex={1}>
           <Box
             flexDirection="row"
-            justifyContent="space-between"
-            marginTop="xxl"
+            alignItems="center"
+            justifyContent="center"
+            paddingTop="s"
+            paddingHorizontal="m"
           >
-            {validInputMints.map((mint) => (
-              <TokenPill
-                key={mint.toBase58()}
-                mint={mint}
-                isActive={inputMint?.equals(mint)}
-                isDisabled={!hasEnoughForSolByMint[mint.toBase58()]}
-                onPress={onMintSelect(mint)}
-              />
-            ))}
-          </Box>
-          <Box flex={1} marginTop="xxl" alignItems="center">
-            {loading && <CircleLoader loaderSize={30} color="white" />}
-            {!loading && !hasAtLeastOne && (
-              <Box justifyContent="center" alignItems="center" marginTop="xxl">
-                <Text variant="body2Medium" color="white" textAlign="center">
-                  {t('insufficientSolConversionModal.noBalance')}
-                </Text>
-              </Box>
-            )}
-            {!loading && hasAtLeastOne && (
-              <>
-                <Box
-                  justifyContent="center"
-                  alignItems="center"
-                  marginTop="xxl"
-                >
-                  <Text
-                    variant="body3"
-                    color="white"
-                    opacity={0.6}
-                    marginBottom="xs"
-                  >
-                    {t('swapsScreen.youPay')}
-                  </Text>
-                  <Box flexDirection="row">
-                    <Text marginEnd="s" variant="h4">
-                      {inputAmount}
-                    </Text>
-                    <Text variant="h4" color="white" opacity={0.6}>
-                      {symbol}
-                    </Text>
-                  </Box>
-                </Box>
-                <Box
-                  marginTop="xxl"
-                  justifyContent="center"
-                  alignItems="center"
-                >
-                  <Text
-                    variant="body3"
-                    color="white"
-                    opacity={0.6}
-                    marginBottom="xs"
-                  >
-                    {t('swapsScreen.youReceive')}
-                  </Text>
-                  <Box flexDirection="row">
-                    <Text marginEnd="s" variant="h4">
-                      ~0.02
-                    </Text>
-                    <Text variant="h4" color="white" opacity={0.6}>
-                      SOL
-                    </Text>
-                  </Box>
-                </Box>
-                <Text
-                  opacity={transactionError || solConvertError ? 100 : 0}
-                  marginHorizontal="m"
-                  variant="body3Medium"
-                  marginBottom="l"
-                  color="red500"
-                >
-                  {showError}
-                </Text>
-              </>
-            )}
-          </Box>
-        </Box>
-        <Box
-          flexDirection="row"
-          paddingHorizontal="m"
-          marginBottom="l"
-          marginTop="xxl"
-          alignItems="center"
-        >
-          <Switch
-            value={useAuto}
-            trackColor={{ false: 'secondaryText', true: 'blueBright500' }}
-            thumbColor="primaryBackground"
-            onValueChange={() => setUseAuto((ua) => !ua)}
-          />
-          <Box flex={1}>
-            <Text ml="m" color="white">
-              {t('insufficientSolConversionModal.useAuto')}
+            <Text variant="h4" color="white" flex={1} textAlign="center">
+              {t('insufficientSolConversionModal.title')}
             </Text>
           </Box>
-        </Box>
-        {!loading && (
+          <Box flex={1} paddingHorizontal="m" marginTop="l">
+            <Text
+              variant="body1Medium"
+              color="white"
+              opacity={0.6}
+              textAlign="center"
+            >
+              {t('insufficientSolConversionModal.body')}
+            </Text>
+            <Box
+              flexDirection="row"
+              justifyContent="space-between"
+              marginTop="xxl"
+            >
+              {validInputMints.map((mint) => (
+                <TokenPill
+                  key={mint.toBase58()}
+                  mint={mint}
+                  isActive={inputMint?.equals(mint)}
+                  isDisabled={!hasEnoughForSolByMint[mint.toBase58()]}
+                  onPress={onMintSelect(mint)}
+                />
+              ))}
+            </Box>
+            <Box flex={1} marginTop="xxl" alignItems="center">
+              {loading && <CircleLoader loaderSize={30} color="white" />}
+              {!loading && !hasAtLeastOne && (
+                <Box
+                  justifyContent="center"
+                  alignItems="center"
+                  marginTop="xxl"
+                >
+                  <Text variant="body2Medium" color="white" textAlign="center">
+                    {t('insufficientSolConversionModal.noBalance')}
+                  </Text>
+                </Box>
+              )}
+              {!loading && hasAtLeastOne && (
+                <>
+                  <Box
+                    justifyContent="center"
+                    alignItems="center"
+                    marginTop="xxl"
+                  >
+                    <Text
+                      variant="body3"
+                      color="white"
+                      opacity={0.6}
+                      marginBottom="xs"
+                    >
+                      {t('swapsScreen.youPay')}
+                    </Text>
+                    <Box flexDirection="row">
+                      <Text marginEnd="s" variant="h4">
+                        {inputAmount}
+                      </Text>
+                      <Text variant="h4" color="white" opacity={0.6}>
+                        {symbol}
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Box
+                    marginTop="xxl"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Text
+                      variant="body3"
+                      color="white"
+                      opacity={0.6}
+                      marginBottom="xs"
+                    >
+                      {t('swapsScreen.youReceive')}
+                    </Text>
+                    <Box flexDirection="row">
+                      <Text marginEnd="s" variant="h4">
+                        ~0.02
+                      </Text>
+                      <Text variant="h4" color="white" opacity={0.6}>
+                        SOL
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Text
+                    opacity={transactionError || solConvertError ? 100 : 0}
+                    marginHorizontal="m"
+                    variant="body3Medium"
+                    marginBottom="l"
+                    color="red500"
+                  >
+                    {showError}
+                  </Text>
+                </>
+              )}
+            </Box>
+          </Box>
           <Box
             flexDirection="row"
-            marginHorizontal="m"
-            justifyContent="space-between"
+            paddingHorizontal="m"
+            marginBottom="l"
+            marginTop="xxl"
+            alignItems="center"
           >
-            <ButtonPressable
-              width={hasAtLeastOne ? '48%' : '100%'}
-              borderRadius="round"
-              backgroundColor="black400"
-              backgroundColorOpacityPressed={0.05}
-              titleColorPressedOpacity={0.3}
-              titleColor="white"
-              title={t('generic.cancel')}
-              disabled={loading}
-              onPress={handleCancel}
+            <Switch
+              value={useAuto}
+              trackColor={{ false: 'secondaryText', true: 'blueBright500' }}
+              thumbColor="primaryBackground"
+              onValueChange={() => setUseAuto((ua) => !ua)}
             />
-            {hasAtLeastOne && (
-              <ButtonPressable
-                width="48%"
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="secondaryBackground"
-                titleColorDisabled="secondaryText"
-                titleColor="black"
-                disabled={!inputMint}
-                titleColorPressedOpacity={0.3}
-                title={swapping ? '' : t('generic.swap')}
-                onPress={handleSwapTokens}
-                TrailingComponent={
-                  swapping ? (
-                    <CircleLoader loaderSize={20} color="black" />
-                  ) : undefined
-                }
-              />
-            )}
+            <Box flex={1}>
+              <Text ml="m" color="white">
+                {t('insufficientSolConversionModal.useAuto')}
+              </Text>
+            </Box>
           </Box>
-        )}
-      </SafeAreaBox>
-    </ReAnimatedBlurBox>
+          {!loading && (
+            <Box
+              flexDirection="row"
+              marginHorizontal="m"
+              justifyContent="space-between"
+            >
+              <ButtonPressable
+                width={hasAtLeastOne ? '48%' : '100%'}
+                borderRadius="round"
+                backgroundColor="black400"
+                backgroundColorOpacityPressed={0.05}
+                titleColorPressedOpacity={0.3}
+                titleColor="white"
+                title={t('generic.cancel')}
+                disabled={loading}
+                onPress={handleCancel}
+              />
+              {hasAtLeastOne && (
+                <ButtonPressable
+                  width="48%"
+                  borderRadius="round"
+                  backgroundColor="white"
+                  backgroundColorOpacityPressed={0.7}
+                  backgroundColorDisabled="secondaryBackground"
+                  titleColorDisabled="secondaryText"
+                  titleColor="black"
+                  disabled={!inputMint}
+                  titleColorPressedOpacity={0.3}
+                  title={swapping ? '' : t('generic.swap')}
+                  onPress={handleSwapTokens}
+                  TrailingComponent={
+                    swapping ? (
+                      <CircleLoader loaderSize={20} color="black" />
+                    ) : undefined
+                  }
+                />
+              )}
+            </Box>
+          )}
+        </SafeAreaBox>
+      </ReAnimatedBlurBox>
+    </>
   )
 }
 

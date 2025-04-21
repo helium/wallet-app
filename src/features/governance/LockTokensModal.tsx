@@ -28,6 +28,7 @@ import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableWithoutFeedback,
+  Platform,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import HntIcon from '@assets/images/helium.svg'
@@ -230,12 +231,26 @@ export const LockTokensModal = ({
 
   return (
     <Portal hostName="GovernancePortalHost">
+      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
+      {Platform.OS === 'android' && (
+        <Box
+          position="absolute"
+          zIndex={0}
+          left={0}
+          top={0}
+          height="100%"
+          width="100%"
+          backgroundColor="black"
+        />
+      )}
       <ReAnimatedBlurBox
-        visible
         entering={FadeInFast}
         position="absolute"
         height="100%"
         width="100%"
+        tint="dark"
+        intensity={80}
+        backgroundColor={Platform.OS === 'android' ? 'black' : 'transparent'}
       >
         <BackScreen
           hideBack
