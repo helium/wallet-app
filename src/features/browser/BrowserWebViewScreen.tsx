@@ -61,7 +61,7 @@ const BrowserWebViewScreen = () => {
     () => currentAccount?.solanaAddress,
     [currentAccount?.solanaAddress],
   )
-  const { top, bottom } = useSafeAreaInsets()
+  const { top } = useSafeAreaInsets()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
