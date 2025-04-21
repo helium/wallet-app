@@ -2620,9 +2620,9 @@ SPEC CHECKSUMS:
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 28e5b80459ee6723917995556657e54b98bb16bc
   maplibre-react-native: 275e81319b9d75e120902a09f4ca07cce9537234
-  MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
+  MultiplatformBleAdapter: ea8bac405ec200d0ca9de0f89afef6f06fb2abbc
   OneSignalXCFramework: 1a3b28dfbff23aabce585796d23c1bef37772774
-  RCT-Folly: 36fe2295e44b10d831836cc0d1daec5f8abcf809
+  RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 85b72250b63cfb54f29ca96ceb108cb9ef3c2079
   RCTRequired: 567cb8f5d42b990331bfd93faad1d8999b1c1736
   RCTTypeSafety: 5e57924492a5e0a762654f814dd018953274eca9
@@ -2665,7 +2665,7 @@ SPEC CHECKSUMS:
   react-native-simple-toast: 59d8b58998dac9f063b46d95f9fd7fd7caab6101
   react-native-slider: bb7eb4732940fab78217e1c096bb647d8b0d1cf3
   react-native-sodium: aa1ff846402c8356a754c0dc20430d8e5acce266
-  react-native-udp: 317678b857ce48dbf5b30cfb2fbd3ca4c3300096
+  react-native-udp: 9019822bb289526c077f6266f0d1d6ed104777ed
   react-native-video: 94187eb89b128a5304ef26a8add4ae5cc8181dfb
   react-native-webview: 5095dd03fc98a529e44a6bb81aed21062b5f879e
   React-nativeconfig: ecf4dc92c40b97e2b3f0c619938f78bfd6507b08

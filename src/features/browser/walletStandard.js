@@ -1,5 +1,8 @@
 /* eslint-disable */
 const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid) {
+if (window.heliumWalletInjected) return;
+window.heliumWalletInjected = true;
+
 var isConnecting = false
 var parent = isAndroid ? document : window
 
