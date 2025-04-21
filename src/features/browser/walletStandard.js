@@ -1,5 +1,7 @@
 /* eslint-disable */
 const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid) {
+if (window.heliumWalletInjected) return;
+
 var isConnecting = false
 var parent = isAndroid ? document : window
 
@@ -426,6 +428,8 @@ window.addEventListener('wallet-standard:app-ready', function (event) {
     window.dispatchEvent(registerEvent)
     event.detail.register(walletObj)
 })
+
+window.heliumWalletInjected = true;
 }`
 
 module.exports = stringF

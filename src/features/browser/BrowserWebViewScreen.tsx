@@ -61,7 +61,7 @@ const BrowserWebViewScreen = () => {
     () => currentAccount?.solanaAddress,
     [currentAccount?.solanaAddress],
   )
-  const { top, bottom } = useSafeAreaInsets()
+  const { top } = useSafeAreaInsets()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
@@ -511,8 +511,8 @@ const BrowserWebViewScreen = () => {
             originWhitelist={['*']}
             javaScriptEnabled
             onLoadStart={onLoadStart}
-            onLoadEnd={onLoadEnd}
             injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
+            onLoadEnd={isAndroid ? undefined : onLoadEnd}
             onNavigationStateChange={onNavigationChange}
             onMessage={onMessage}
             source={{ uri }}
@@ -525,8 +525,8 @@ const BrowserWebViewScreen = () => {
         </SafeAreaBox>
         <Box
           backgroundColor="black900"
-          height={bottom}
           position="absolute"
+          height="auto"
           bottom={0}
           left={0}
           right={0}
