@@ -67,8 +67,10 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
     () => sortedPositions?.filter((p) => !p.isProxiedToMe),
     [sortedPositions],
   )
+
   const renderItem = useCallback(
     ({ item: p, index: idx }) => {
+      if (!p.votingMint) return null
       return (
         <PositionCard
           // eslint-disable-next-line react/no-array-index-key
