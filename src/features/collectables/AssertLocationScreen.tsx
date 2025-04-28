@@ -454,15 +454,23 @@ const AssertLocationScreen = () => {
           >
             {(sameLocation ? [iotLocation] : [iotLocation, mobileLocation])
               .map((location, i) => {
-                if (!location || location.length < 2) return null
+                if (
+                  !location ||
+                  location.length < 2 ||
+                  typeof location[0] !== 'number' ||
+                  typeof location[1] !== 'number' ||
+                  Number.isNaN(location[0]) ||
+                  Number.isNaN(location[1])
+                ) {
+                  return null
+                }
 
+                const key = `MarkerView-${i + 1}-${location[0]}-${location[1]}`
                 return (
                   <MapLibreGL.MarkerView
+                    key={key}
                     id={`MarkerView-${i + 1}`}
-                    coordinate={[
-                      i === 0 ? location[0] + 0.001 : location[0],
-                      location[1],
-                    ]}
+                    coordinate={[location[0], location[1]]}
                   >
                     {sameLocation ? (
                       <Box flexDirection="row">

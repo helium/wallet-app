@@ -205,8 +205,8 @@ export const HotspotMapHotspotDetails = ({
   // Need to repair this hotspot if it is missing an info struct but the maker
   // has approval for that subnetwork.
   const needsRepair =
-    (iotMakerApprovalAcc && !iotInfoAcc?.info) ||
-    (mobileMakerApprovalAcc && !mobileInfoAcc?.info)
+    (Boolean(iotMakerApprovalAcc) && !iotInfoAcc?.info) ||
+    (Boolean(mobileMakerApprovalAcc) && !mobileInfoAcc?.info)
 
   const pendingIotRewards = useMemo(
     () =>
