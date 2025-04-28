@@ -1381,7 +1381,8 @@ export default {
       actionsTitle: 'Manage Position',
       longerLockup:
         'Select a new lockup period longer than or equal to the existing {{existing}}',
-      delegateBlurb: 'Delegating to a subnetwork may earn you rewards in HNT.',
+      delegateBlurb:
+        'Delegating your position to a subnetwork and voting regularly earns you HNT rewards. Select the subnetwork you believe offers the greatest potential for growth and impact. This choice does not affect the rewarded amount.',
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
       initialVotePowerMult: 'Initial Vote Power Multiplier',
@@ -1392,7 +1393,7 @@ export default {
         'Transfering out of a Landrush position, will result in losing the multiplier!',
       cantTransfer: 'There are no positions that meet this criteria.',
       selectTransfer: 'Select position to transfer too.',
-      selectSubDao: 'Select an existing subnetwork to delegate to.',
+      selectSubDao: 'Choose a subnetwork to delegate to.',
       fetchingSubDaos: 'Fetching SubDaos...',
       noneFound: 'No Positions Found',
       closeMessage: 'Close this position?',

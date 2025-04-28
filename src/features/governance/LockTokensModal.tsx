@@ -31,8 +31,8 @@ import {
   Platform,
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import HntIcon from '@assets/images/helium.svg'
 import { ScrollView } from 'react-native-gesture-handler'
+import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [
@@ -120,6 +120,15 @@ export const LockTokensModal = ({
   const mintMinAmount = mintAcc ? getMintMinAmountAsDecimal(mintAcc) : 1
   const currentPrecision = precision(mintMinAmount)
   const hasMinLockup = minLockupTimeInDays && minLockupTimeInDays > 0
+
+  useEffect(() => {
+    if (subDaos && !selectedSubDaoPk) {
+      setSelectedSubDaoPk(
+        subDaos.find((subDao) => subDao.pubkey.equals(MOBILE_SUB_DAO_KEY))
+          ?.pubkey || null,
+      )
+    }
+  }, [subDaos, selectedSubDaoPk, setSelectedSubDaoPk])
 
   const lockupKindOptions = [
     { value: LockupKind.cliff, display: t('gov.positions.decaying') },
@@ -642,12 +651,7 @@ export const LockTokensModal = ({
                   >
                     {t('gov.positions.selectSubDao')}
                   </Text>
-                  <Box
-                    borderRadius="l"
-                    backgroundColor="secondary"
-                    padding="ms"
-                    marginBottom="m"
-                  >
+                  <Box borderRadius="l" backgroundColor="black900" padding="ms">
                     <Text variant="body3">
                       {t('gov.positions.delegateBlurb')}
                     </Text>
@@ -666,77 +670,59 @@ export const LockTokensModal = ({
                   </Text>
                 </Box>
               )}
-              <Box>
-                {subDaos && (
-                  <TouchableOpacityBox
-                    borderRadius="l"
-                    backgroundColor={
-                      !selectedSubDaoPk ? 'secondaryBackground' : 'secondary'
-                    }
-                    onPress={() => setSelectedSubDaoPk(null)}
-                  >
-                    <Box flexDirection="row" padding="ms" alignItems="center">
-                      <Box
-                        borderColor="black"
-                        borderWidth={2}
-                        borderRadius="round"
-                      >
-                        <HntIcon width={26} height={26} color="white" />
-                      </Box>
-                      <Text
-                        variant="subtitle3"
-                        color="primaryText"
-                        marginLeft="m"
-                      >
-                        None
-                      </Text>
-                    </Box>
-                  </TouchableOpacityBox>
-                )}
-                {subDaos
-                  ?.sort((a, b) =>
-                    a.dntMetadata.name.localeCompare(b.dntMetadata.name),
-                  )
-                  .map((subDao) => {
-                    const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
-
-                    return (
-                      <TouchableOpacityBox
-                        key={subDao.pubkey.toString()}
-                        borderRadius="l"
-                        marginTop="m"
-                        backgroundColor={
-                          isSelected ? 'secondaryBackground' : 'secondary'
-                        }
-                        onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
-                      >
-                        <Box
-                          flexDirection="row"
-                          padding="ms"
-                          alignItems="center"
+              {subDaos && (
+                <Box
+                  borderRadius="m"
+                  backgroundColor="secondary"
+                  marginTop="m"
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  gap={16}
+                  padding="m"
+                >
+                  {subDaos
+                    ?.sort((a, b) =>
+                      b.dntMetadata.name.localeCompare(a.dntMetadata.name),
+                    )
+                    .map((subDao) => {
+                      const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
+                      return (
+                        <TouchableOpacityBox
+                          key={subDao.pubkey.toString()}
+                          borderRadius="l"
+                          backgroundColor={
+                            isSelected ? 'surfaceSecondary' : 'black500'
+                          }
+                          onPress={() => setSelectedSubDaoPk(subDao.pubkey)}
                         >
                           <Box
-                            borderColor="black"
-                            borderWidth={2}
-                            borderRadius="round"
+                            flexDirection="row"
+                            padding="ms"
+                            alignItems="center"
                           >
-                            <TokenIcon
-                              size={26}
-                              img={subDao.dntMetadata.json?.image || ''}
-                            />
+                            <Box
+                              borderColor="black"
+                              borderWidth={2}
+                              borderRadius="round"
+                            >
+                              <TokenIcon
+                                size={26}
+                                img={subDao.dntMetadata.json?.image || ''}
+                              />
+                            </Box>
+                            <Text
+                              variant="subtitle3"
+                              color="primaryText"
+                              marginLeft="m"
+                            >
+                              {subDao.dntMetadata.name.replace('Helium', '')}
+                            </Text>
                           </Box>
-                          <Text
-                            variant="subtitle3"
-                            color="primaryText"
-                            marginLeft="m"
-                          >
-                            {subDao.dntMetadata.name}
-                          </Text>
-                        </Box>
-                      </TouchableOpacityBox>
-                    )
-                  })}
-              </Box>
+                        </TouchableOpacityBox>
+                      )
+                    })}
+                </Box>
+              )}
             </Box>
           )}
           {showError && (
