@@ -32,8 +32,7 @@ import {
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
 
-const WELL_KNOWN_CANOPY_URL =
-  'https://shdw-drive.genesysgo.net/6tcnBSybPG7piEDShBcrVtYJDPSvGrDbVvXmXKpzBvWP/merkles.json'
+const WELL_KNOWN_CANOPY_URL = 'https://entities.nft.helium.io/v2/merkles'
 let wellKnownCanopyCache: Record<string, number> | undefined
 
 type IWalletSignBottomSheetSimulatedProps = WalletSignOpts & {
