@@ -188,8 +188,47 @@ export const useAutomateHotspotClaims = (
 
       const instructions: TransactionInstruction[] = []
 
-      // If cronJob doesn't exist, create it
-      if (!cronJobAccount) {
+      // If cronJob doesn't exist or schedule changed, create/recreate it
+      if (
+        !cronJobAccount ||
+        (cronJobAccount.schedule &&
+          interpretCronString(cronJobAccount.schedule).schedule !== schedule)
+      ) {
+        // If it exists but schedule changed, remove it first
+        if (cronJobAccount) {
+          const maxTxId = cronJobAccount.nextTransactionId || 0
+          const txIds = Array.from({ length: maxTxId }, (_, i) => i)
+
+          instructions.push(
+            ...(await Promise.all(
+              txIds.map((txId) =>
+                hplCronsProgram.methods
+                  .removeEntityFromCronV0({
+                    index: txId,
+                  })
+                  .accounts({
+                    cronJob,
+                    rentRefund: provider.wallet.publicKey,
+                    cronJobTransaction: cronJobTransactionKey(cronJob, txId)[0],
+                  })
+                  .instruction(),
+              ),
+            )),
+            await hplCronsProgram.methods
+              .closeEntityClaimCronV0()
+              .accounts({
+                cronJob,
+                rentRefund: provider.wallet.publicKey,
+                cronJobNameMapping: cronJobNameMappingKey(
+                  authority,
+                  'entity_claim',
+                )[0],
+              })
+              .instruction(),
+          )
+        }
+
+        // Create new cron job
         instructions.push(
           await hplCronsProgram.methods
             .initEntityClaimCronV0({
@@ -205,13 +244,27 @@ export const useAutomateHotspotClaims = (
               )[0],
             })
             .instruction(),
-          SystemProgram.transfer({
-            fromPubkey: provider.wallet.publicKey,
-            toPubkey: cronJob,
-            lamports: solFee,
-          }),
         )
-      } else if (solFee > 0) {
+      } else if (cronJobAccount?.removedFromQueue) {
+        // If cron exists but was removed from queue due to insufficient SOL, requeue it
+        instructions.push(
+          await hplCronsProgram.methods
+            .requeueEntityClaimCronV0()
+            .accounts({
+              taskQueue: TASK_QUEUE,
+              cronJob,
+              task,
+              cronJobNameMapping: cronJobNameMappingKey(
+                authority,
+                'entity_claim',
+              )[0],
+            })
+            .instruction(),
+        )
+      }
+
+      // Add SOL if needed
+      if (solFee > 0) {
         instructions.push(
           SystemProgram.transfer({
             fromPubkey: provider.wallet.publicKey,
@@ -220,22 +273,22 @@ export const useAutomateHotspotClaims = (
           }),
         )
       }
-      // Add the entity to the cron job
-      const { instruction } = await hplCronsProgram.methods
-        .addWalletToEntityCronV0({
-          index: cronJobAccount?.nextTransactionId || 0,
-        })
-        .accounts({
-          wallet: provider.wallet.publicKey,
-          cronJob,
-          cronJobTransaction: cronJobTransactionKey(
-            cronJob,
-            cronJobAccount?.nextTransactionId || 0,
-          )[0],
-        })
-        .prepare()
 
-      instructions.push(instruction)
+      // Add the entity to the cron job if it's new
+      if (!cronJobAccount) {
+        const { instruction } = await hplCronsProgram.methods
+          .addWalletToEntityCronV0({
+            index: 0,
+          })
+          .accounts({
+            wallet: provider.wallet.publicKey,
+            cronJob,
+            cronJobTransaction: cronJobTransactionKey(cronJob, 0)[0],
+          })
+          .prepare()
+
+        instructions.push(instruction)
+      }
 
       if (params.onInstructions) {
         await params.onInstructions(instructions)
@@ -305,7 +358,7 @@ export const useAutomateHotspotClaims = (
     error: error || removeError,
     execute,
     remove,
-    hasExistingAutomation: !!cronJobAccount,
+    hasExistingAutomation: !!cronJobAccount && !cronJobAccount.removedFromQueue,
     cron: cronJobAccount,
     currentSchedule: cronJobAccount?.schedule
       ? interpretCronString(cronJobAccount.schedule)
@@ -313,5 +366,6 @@ export const useAutomateHotspotClaims = (
     rentFee: cronJobAccount ? 0 : BASE_AUTOMATION_RENT,
     solFee: solFee / LAMPORTS_PER_SOL,
     insufficientSol: !loadingSol && solFee > (userSol || 0),
+    isOutOfSol: cronJobAccount?.removedFromQueue || false,
   }
 }

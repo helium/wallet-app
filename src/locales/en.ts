@@ -318,6 +318,7 @@ export default {
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
     insufficientSol: 'Insufficient SOL',
+    outOfSol: 'Automation paused - Out of SOL. Save again to extend the automation.',
     title: 'Automate Rewards',
     description:
       'Set up automatic claiming of your hotspot rewards on a schedule. You will need to fund the automation with SOL for the transaction fees.',

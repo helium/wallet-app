@@ -46,6 +46,7 @@ const AutomationSetupScreen = () => {
     insufficientSol,
     rentFee,
     solFee,
+    isOutOfSol,
   } = useAutomateHotspotClaims(selectedSchedule, parseInt(duration, 10))
 
   const handleDurationChange = (text: string) => {
@@ -322,6 +323,18 @@ const AutomationSetupScreen = () => {
             >
               <Text variant="body3Medium" color="red500">
                 {error.message}
+              </Text>
+            </Box>
+          )}
+          {isOutOfSol && (
+            <Box
+              backgroundColor="surfaceSecondary"
+              borderRadius="l"
+              padding="m"
+              marginTop="m"
+            >
+              <Text variant="body3Medium" color="red500">
+                {t('automationScreen.outOfSol')}
               </Text>
             </Box>
           )}
