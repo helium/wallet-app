@@ -14,6 +14,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import TokenIcon from '@components/TokenIcon'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
+import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 
 export const DelegateTokensModal = ({
   onClose,
@@ -36,6 +37,15 @@ export const DelegateTokensModal = ({
       console.error(error.message)
     }
   }, [error])
+
+  useEffect(() => {
+    if (subDaos && !selectedSubDaoPk) {
+      setSelectedSubDaoPk(
+        subDaos.find((subDao) => subDao.pubkey.equals(MOBILE_SUB_DAO_KEY))
+          ?.pubkey || null,
+      )
+    }
+  }, [subDaos, selectedSubDaoPk, setSelectedSubDaoPk])
 
   const handleOnClose = () => {
     onClose()
@@ -120,7 +130,7 @@ export const DelegateTokensModal = ({
             <Box>
               {subDaos
                 ?.sort((a, b) =>
-                  a.dntMetadata.name.localeCompare(b.dntMetadata.name),
+                  b.dntMetadata.name.localeCompare(a.dntMetadata.name),
                 )
                 .map((subDao, idx) => {
                   const isSelected = selectedSubDaoPk?.equals(subDao.pubkey)
@@ -151,7 +161,7 @@ export const DelegateTokensModal = ({
                           color="primaryText"
                           marginLeft="m"
                         >
-                          {subDao.dntMetadata.name}
+                          {subDao.dntMetadata.name.replace('Helium', '')}
                         </Text>
                       </Box>
                     </TouchableOpacityBox>
