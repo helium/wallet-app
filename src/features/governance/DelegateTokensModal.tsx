@@ -113,10 +113,15 @@ export const DelegateTokensModal = ({
                 <Text
                   variant="subtitle4"
                   color="secondaryText"
-                  marginBottom="m"
+                  marginBottom="s"
                 >
                   {t('gov.positions.selectSubDao')}
                 </Text>
+                <Box borderRadius="l" backgroundColor="black900" padding="ms">
+                  <Text variant="body3">
+                    {t('gov.positions.delegateBlurb')}
+                  </Text>
+                </Box>
               </>
             )}
             {loading && (
