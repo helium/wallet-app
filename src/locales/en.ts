@@ -309,6 +309,36 @@ export default {
       },
     },
   },
+  automationScreen: {
+    setupAutomation: 'Setup Automation',
+    removeAutomation: 'Remove Automation',
+    setupAutomationMessage:
+      'Claim your rewards on a {{schedule}} schedule for {{duration}} days. This will cost {{rentFee}} SOL that can be reclaimed, and {{solFee}} SOL for transaction fees.',
+    reclaimableSol: 'Reclaimable SOL',
+    transactionFees: 'Transaction Fees',
+    removeAutomationMessage: 'Remove automation to stop claiming your rewards',
+    insufficientSol: 'Insufficient SOL',
+    outOfSol:
+      'Automation paused - Out of SOL. Save again to extend the automation.',
+    title: 'Automate Rewards',
+    description:
+      'Set up automatic claiming of your hotspot rewards on a schedule. You will need to fund the automation with SOL for the transaction fees.',
+    selectSchedule: 'Select Claim Schedule',
+    enterDuration: 'Enter Duration',
+    currentAutomation: 'Current Automation',
+    schedule: {
+      daily: 'Daily',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+      running: 'Running {{schedule}} at {{time}}',
+    },
+    duration: {
+      days: 'Days',
+      weeks: 'Weeks',
+      months: 'Months',
+    },
+    nextRun: 'Next run on {{date}}',
+  },
   activityScreen: {
     title: 'My Activity',
     transactionSuccessful: 'Transaction Successful',
@@ -687,6 +717,7 @@ export default {
     body: 'By continuing, you agree to the',
   },
   generic: {
+    automate: 'Automate',
     dBi: 'dBi',
     gain: 'Gain',
     maker: 'Maker',
