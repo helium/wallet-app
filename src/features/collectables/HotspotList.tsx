@@ -198,8 +198,7 @@ const HotspotList = () => {
   }, [t, handleNavigateToMap, handleNavigateToHotspotOnboard, totalHotspots])
 
   const renderCollectable = useCallback(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: HotspotWithPendingRewards }) => {
       return (
         <HotspotCompressedListItem
