@@ -5,12 +5,14 @@ import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { useAutomateHotspotClaims } from '@helium/automation-hooks'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
   populateMissingDraftInfo,
   toVersionedTx,
 } from '@helium/spl-utils'
+import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
 import { TransactionInstruction } from '@solana/web3.js'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
@@ -19,7 +21,6 @@ import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useAutomateHotspotClaims } from '../../hooks/useAutomateHotspotClaims'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -36,6 +37,8 @@ const AutomationSetupScreen = () => {
   const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = ['top'] as Edge[]
 
+  const { anchorProvider } = useSolana()
+  const { totalHotspots } = useHotspots()
   const {
     loading,
     error,
@@ -47,7 +50,13 @@ const AutomationSetupScreen = () => {
     rentFee,
     solFee,
     isOutOfSol,
-  } = useAutomateHotspotClaims(selectedSchedule, parseInt(duration, 10))
+  } = useAutomateHotspotClaims({
+    schedule: selectedSchedule,
+    duration: parseInt(duration, 10),
+    totalHotspots: totalHotspots || 1,
+    wallet: anchorProvider?.wallet?.publicKey,
+    provider: anchorProvider,
+  })
 
   const handleDurationChange = (text: string) => {
     // Remove any non-numeric characters
@@ -78,7 +87,6 @@ const AutomationSetupScreen = () => {
     setSelectedSchedule(schedule)
   }, [])
 
-  const { anchorProvider } = useSolana()
   const decideAndExecute = useCallback(
     async (
       header: string,
@@ -204,12 +212,12 @@ const AutomationSetupScreen = () => {
       alignItems="center"
       justifyContent="center"
       flex={1}
-      padding="m"
+      padding="s"
       borderRadius="xl"
       marginLeft={index > 0 ? 'xxs' : 'none'}
     >
       <Text
-        variant="body1Medium"
+        variant="subtitle4"
         color={selectedSchedule === schedule ? 'black' : 'grey300'}
         textAlign="center"
       >
@@ -230,16 +238,16 @@ const AutomationSetupScreen = () => {
         contentContainerStyle={{ flexGrow: 1 }}
       >
         <Box flex={1} padding="l">
-          <Text variant="h0" marginBottom="m">
+          <Text variant="subtitle1" marginBottom="s">
             {t('automationScreen.title')}
           </Text>
-          <Text variant="subtitle1" color="grey400" marginBottom="xl">
+          <Text variant="subtitle4" color="grey400" marginBottom="xl">
             {t('automationScreen.description')}
           </Text>
 
           {hasExistingAutomation && currentSchedule ? (
             <>
-              <Text variant="h3" marginBottom="m">
+              <Text variant="subtitle3" marginBottom="m">
                 {t('automationScreen.currentAutomation')}
               </Text>
               <Box
@@ -248,7 +256,7 @@ const AutomationSetupScreen = () => {
                 padding="l"
                 marginBottom="xl"
               >
-                <Text variant="subtitle1" color="grey300" marginBottom="s">
+                <Text variant="subtitle4" color="grey300" marginBottom="s">
                   {t('automationScreen.schedule.running', {
                     schedule: t(
                       `automationScreen.schedule.${currentSchedule.schedule}`,
@@ -256,7 +264,7 @@ const AutomationSetupScreen = () => {
                     time: currentSchedule.time,
                   })}
                 </Text>
-                <Text variant="subtitle1" color="grey300">
+                <Text variant="subtitle4" color="grey300">
                   {t('automationScreen.nextRun', {
                     date: formatNextRunDate(currentSchedule.nextRun),
                   })}
@@ -265,7 +273,7 @@ const AutomationSetupScreen = () => {
             </>
           ) : (
             <>
-              <Text variant="h3" marginBottom="m">
+              <Text variant="subtitle4" marginBottom="m">
                 {t('automationScreen.selectSchedule')}
               </Text>
 
@@ -283,14 +291,10 @@ const AutomationSetupScreen = () => {
 
               {selectedSchedule && (
                 <>
-                  <Text variant="h3" marginBottom="m">
+                  <Text variant="subtitle4" marginBottom="s">
                     {t('automationScreen.enterDuration')}
                   </Text>
-                  <Box
-                    flexDirection="row"
-                    alignItems="center"
-                    marginBottom="xl"
-                  >
+                  <Box flexDirection="row" alignItems="center" marginBottom="s">
                     <TextInput
                       flex={1}
                       variant="transparent"
@@ -302,7 +306,7 @@ const AutomationSetupScreen = () => {
                         returnKeyType: 'done',
                       }}
                     />
-                    <Text variant="subtitle1" color="grey400" marginStart="s">
+                    <Text variant="subtitle3" color="grey400" marginStart="s">
                       {getUnitLabel()}
                     </Text>
                   </Box>

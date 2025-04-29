@@ -331,7 +331,7 @@ const HotspotList = () => {
           <ButtonPressable
             width={50}
             height={50}
-            marginStart="xs"
+            marginStart="s"
             borderRadius="round"
             backgroundColor="offWhite"
             innerContainerProps={{
