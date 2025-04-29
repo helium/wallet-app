@@ -204,7 +204,7 @@ const WalletSignBottomSheetTransaction = ({
           <WarningBox
             header="Simulation Failed"
             body={`${JSON.stringify(transaction.error)}\n${
-              transaction.logs
+              Array.isArray(transaction.logs)
                 ? transaction.logs.some((log) =>
                     log.includes('SlippageToleranceExceeded'),
                   )
@@ -285,14 +285,15 @@ const WalletSignBottomSheetTransaction = ({
                 : null}
             </>
           ) : null}
-          {transaction.possibleCNftChanges.slice(0, 10).map((asset) => (
-            <Box key={asset.id} p="s" flexDirection="row" alignItems="center">
-              <AssetImage uri={asset.content.json_uri} />
-              <Text ml="xs" color="white">
-                {asset.content.metadata?.name || 'Unknown cNFT'}
-              </Text>
-            </Box>
-          ))}
+          {Array.isArray(transaction.possibleCNftChanges) &&
+            transaction.possibleCNftChanges.slice(0, 10).map((asset) => (
+              <Box key={asset.id} p="s" flexDirection="row" alignItems="center">
+                <AssetImage uri={asset.content.json_uri} />
+                <Text ml="xs" color="white">
+                  {asset.content.metadata?.name || 'Unknown cNFT'}
+                </Text>
+              </Box>
+            ))}
         </Box>
       )}
     </Box>
