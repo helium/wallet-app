@@ -198,6 +198,8 @@ const HotspotList = () => {
   }, [t, handleNavigateToMap, handleNavigateToHotspotOnboard, totalHotspots])
 
   const renderCollectable = useCallback(
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     ({ item }: { item: HotspotWithPendingRewards }) => {
       return (
         <HotspotCompressedListItem
