@@ -1319,6 +1319,7 @@ export default {
     votingPower: {
       title: 'Voting Power',
       yourPower: 'Your Voting Power',
+      proxiedPower: 'Proxied Power',
       noPower: 'You have no voting power in this dao',
       locked: '{{symbol}} Locked',
       youHave: 'You have {{amount}} more {{symbol}} available to lock.',

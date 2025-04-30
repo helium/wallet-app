@@ -80,7 +80,14 @@ export const VotingPowerCard = ({
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const colors = useColors()
-  const { loading, mint, votingPower, amountLocked } = useGovernance()
+  const {
+    loading,
+    mint,
+    votingPower,
+    myVotingPower,
+    proxiedVotingPower,
+    amountLocked,
+  } = useGovernance()
   const { info: mintAcc } = useMint(mint)
   const { amount: ownedAmount } = useOwnedAmount(wallet, mint)
   const { symbol } = useMetaplexMetadata(mint)
@@ -90,6 +97,8 @@ export const VotingPowerCard = ({
   }, [onPress, mint])
 
   const noVotingPower = !loading && (!votingPower || votingPower.isZero())
+  const hasProxiedVotingPower =
+    !loading && proxiedVotingPower && !proxiedVotingPower.isZero()
 
   const renderCard = (compact = false) => {
     if (loading) return <VotingPowerCardSkeleton />
@@ -119,7 +128,30 @@ export const VotingPowerCard = ({
             </Box>
           )}
           {((!compact && !noVotingPower) || compact) && (
-            <>
+            <Box
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              gap={4}
+              flexDirection="column"
+              justifyContent="center"
+              alignItems="stretch"
+            >
+              {hasProxiedVotingPower && (
+                <Box flexDirection="row" justifyContent="space-between">
+                  <Text variant="body1" color="secondaryText">
+                    {t('gov.votingPower.proxiedPower')}
+                  </Text>
+                  <Box flexDirection="row" alignItems="center">
+                    <Text variant="body1" color="primaryText">
+                      {mintAcc &&
+                        humanReadable(
+                          proxiedVotingPower || new BN(0),
+                          mintAcc.decimals,
+                        )}
+                    </Text>
+                  </Box>
+                </Box>
+              )}
               <Box flexDirection="row" justifyContent="space-between">
                 <Box flex={1}>
                   <Text variant="body1" color="secondaryText">
@@ -129,14 +161,14 @@ export const VotingPowerCard = ({
                     <Text variant="body1" color="primaryText">
                       {mintAcc &&
                         humanReadable(
-                          votingPower || new BN(0),
+                          myVotingPower || new BN(0),
                           mintAcc.decimals,
                         )}
                     </Text>
                     {amountLocked &&
-                      votingPower &&
+                      myVotingPower &&
                       !amountLocked.isZero() &&
-                      !votingPower.isZero() && (
+                      !myVotingPower.isZero() && (
                         <Box
                           flexDirection="row"
                           justifyContent="center"
@@ -152,12 +184,14 @@ export const VotingPowerCard = ({
                           />
                           <Text variant="body3" color="primaryText">
                             {`${
-                              votingPower &&
+                              myVotingPower &&
                               amountLocked &&
                               mintAcc &&
                               // Add 2 decimals to the mulitiplier
                               humanReadable(
-                                votingPower.mul(new BN(100)).div(amountLocked),
+                                myVotingPower
+                                  .mul(new BN(100))
+                                  .div(amountLocked),
                                 2,
                               )
                             }x`}
@@ -179,7 +213,7 @@ export const VotingPowerCard = ({
                   </Text>
                 </Box>
               </Box>
-            </>
+            </Box>
           )}
         </Box>
         <Box
