@@ -9,6 +9,7 @@ import { useAutomateHotspotClaims } from '@helium/automation-hooks'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
+  HNT_MINT,
   populateMissingDraftInfo,
   toVersionedTx,
 } from '@helium/spl-utils'
@@ -17,7 +18,7 @@ import { useNavigation } from '@react-navigation/native'
 import { TransactionInstruction } from '@solana/web3.js'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getBasePriorityFee } from '@utils/walletApiV2'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -38,7 +39,13 @@ const AutomationSetupScreen = () => {
   const backEdges = ['top'] as Edge[]
 
   const { anchorProvider } = useSolana()
-  const { totalHotspots } = useHotspots()
+  const { totalHotspots, hotspotsWithMeta } = useHotspots()
+
+  const hotspotsNeedingRecipient = useMemo(() => {
+    return hotspotsWithMeta.filter(
+      (hotspot) => !hotspot.rewardRecipients[HNT_MINT.toBase58()],
+    ).length
+  }, [hotspotsWithMeta])
   const {
     loading,
     error,
@@ -49,6 +56,7 @@ const AutomationSetupScreen = () => {
     insufficientSol,
     rentFee,
     solFee,
+    recipientFee,
     isOutOfSol,
   } = useAutomateHotspotClaims({
     schedule: selectedSchedule,
@@ -56,6 +64,7 @@ const AutomationSetupScreen = () => {
     totalHotspots: totalHotspots || 1,
     wallet: anchorProvider?.wallet?.publicKey,
     provider: anchorProvider,
+    hotspotsNeedingRecipient,
   })
 
   const handleDurationChange = (text: string) => {
@@ -362,6 +371,20 @@ const AutomationSetupScreen = () => {
                   {rentFee} SOL
                 </Text>
               </Box>
+              {totalHotspots && hotspotsNeedingRecipient > 0 && (
+                <Box
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  marginBottom="s"
+                >
+                  <Text variant="body2" color="grey400">
+                    {t('automationScreen.recipientSol')}
+                  </Text>
+                  <Text variant="body2Medium" color="grey200">
+                    {recipientFee} SOL
+                  </Text>
+                </Box>
+              )}
               <Box flexDirection="row" justifyContent="space-between">
                 <Text variant="body2" color="grey400">
                   {t('automationScreen.transactionFees')}

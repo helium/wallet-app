@@ -318,6 +318,7 @@ export default {
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
     insufficientSol: 'Insufficient SOL',
+    recipientSol: 'Hotspot Recipient Rent',
     outOfSol:
       'Automation paused - Out of SOL. Save again to extend the automation.',
     title: 'Automate Rewards',
