@@ -17,6 +17,7 @@ import {
   Text,
   TextInput,
 } from '@components'
+import BlurBox from '@components/BlurBox'
 import Map from '@components/map/Map'
 import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from '@components/map/utils'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -33,10 +34,11 @@ import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import MapLibreGL, {
-  MapViewRef,
   CameraRef,
+  MapViewRef,
 } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useColors, useCreateOpacity } from '@theme/themeHooks'
 import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import * as Logger from '@utils/logger'
@@ -59,8 +61,7 @@ import {
 } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { useDebounce } from 'use-debounce'
-import { useColors, useCreateOpacity } from '@theme/themeHooks'
+import { useDebouncedCallback } from 'use-debounce'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -239,7 +240,7 @@ const AssertLocationScreen = () => {
     hideSearch()
   }, [cameraRef, t, hideSearch, searchValue, forwardGeo, showOKAlert])
 
-  const handleRegionChanged = useCallback(async () => {
+  const handleRegionChanged = useDebouncedCallback(async () => {
     if (mapRef?.current) {
       const center = await mapRef?.current.getCenter()
       if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
@@ -248,7 +249,7 @@ const AssertLocationScreen = () => {
         hideSearch()
       }
     }
-  }, [mapRef, mapCenter, setMapCenter, hideSearch])
+  }, 200)
 
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocation?.coords) {
@@ -413,9 +414,6 @@ const AssertLocationScreen = () => {
     [loadingMyDc, loadingMakerDc, loadingLocationAssertDcRequirements],
   )
 
-  const [debouncedDisabled] = useDebounce(disabled, 300)
-  const [reverseGeoLoading] = useDebounce(reverseGeo.loading, 300)
-
   return (
     <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
       <SafeAreaBox edges={backEdges} flex={1}>
@@ -427,9 +425,8 @@ const AssertLocationScreen = () => {
           overflow="hidden"
           position="relative"
         >
-          <ReAnimatedBlurBox
+          <BlurBox
             visible={isLoading}
-            exiting={DelayedFadeIn}
             position="absolute"
             flex={1}
             width="100%"
@@ -441,7 +438,7 @@ const AssertLocationScreen = () => {
             <Box flex={1} height="100%" justifyContent="center">
               <CircleLoader loaderSize={24} color="white" />
             </Box>
-          </ReAnimatedBlurBox>
+          </BlurBox>
           <Map
             map={mapRef}
             camera={cameraRef}
@@ -561,7 +558,7 @@ const AssertLocationScreen = () => {
                 alignItems="center"
                 marginHorizontal="ms"
               >
-                {reverseGeoLoading && (
+                {reverseGeo.loading && (
                   <Box>
                     <CircleLoader
                       loaderSize={20}
@@ -575,7 +572,7 @@ const AssertLocationScreen = () => {
                     {showError}
                   </Text>
                 )}
-                {!reverseGeoLoading && !showError && reverseGeo.result && (
+                {!reverseGeo.loading && !showError && reverseGeo.result && (
                   <FadeInOut>
                     <Box
                       flexShrink={1}
@@ -719,7 +716,7 @@ const AssertLocationScreen = () => {
               justifyContent="center"
               onPress={handleAssertLocationPress}
             >
-              {debouncedDisabled || asserting ? (
+              {disabled || asserting ? (
                 <CircleLoader loaderSize={19} color="black" />
               ) : (
                 <Text
