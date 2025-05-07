@@ -1372,7 +1372,7 @@ PODS:
     - React-jsiexecutor
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
-  - react-native-ble-plx (3.5.0):
+  - react-native-ble-plx (3.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2620,7 +2620,7 @@ SPEC CHECKSUMS:
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 28e5b80459ee6723917995556657e54b98bb16bc
   maplibre-react-native: 275e81319b9d75e120902a09f4ca07cce9537234
-  MultiplatformBleAdapter: ea8bac405ec200d0ca9de0f89afef6f06fb2abbc
+  MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   OneSignalXCFramework: 1a3b28dfbff23aabce585796d23c1bef37772774
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 85b72250b63cfb54f29ca96ceb108cb9ef3c2079
@@ -2651,7 +2651,7 @@ SPEC CHECKSUMS:
   React-logger: 592d84bed2e04db64c0b3725f9970b437473f3d3
   React-Mapbuffer: 595c88852c1dcb1c4faafad88148de8690a70aae
   React-microtasksnativemodule: b56986b155ae82e9bcb1d1c0ca8726bac52dbb6e
-  react-native-ble-plx: 6fc4914e37ea8236d5b4e0813ed264f721533e9b
+  react-native-ble-plx: e4f463a9f0f08f8d7ef4f858bd864ec55636907d
   react-native-charts-wrapper: d7b8f60a5ad07947798902bf805bcac01ea6273a
   react-native-config: 8e425892a531627c52db765be3088185cb871e19
   react-native-get-random-values: 0fd2b6a3129988d701d10e30f0622d5f039531bc
@@ -2665,7 +2665,7 @@ SPEC CHECKSUMS:
   react-native-simple-toast: 59d8b58998dac9f063b46d95f9fd7fd7caab6101
   react-native-slider: bb7eb4732940fab78217e1c096bb647d8b0d1cf3
   react-native-sodium: aa1ff846402c8356a754c0dc20430d8e5acce266
-  react-native-udp: 9019822bb289526c077f6266f0d1d6ed104777ed
+  react-native-udp: 317678b857ce48dbf5b30cfb2fbd3ca4c3300096
   react-native-video: 94187eb89b128a5304ef26a8add4ae5cc8181dfb
   react-native-webview: 5095dd03fc98a529e44a6bb81aed21062b5f879e
   React-nativeconfig: ecf4dc92c40b97e2b3f0c619938f78bfd6507b08
@@ -2705,7 +2705,7 @@ SPEC CHECKSUMS:
   RNICloudStore: e0a579c3658e4ef49b84de2575886459c3ad695d
   RNLocalize: 5bcbb34b6f9cb4c2010ccfedb03f6a2b6f98466d
   RNOS: d07e5090b5060c6f2b83116d740a32cfdb33afe3
-  RNPermissions: 637c91fa6015069daba692a6899ae63b82876187
+  RNPermissions: 5f7264f605b3680851f7732977f3f0972dd4e601
   RNReactNativeSharedGroupPreferences: d4869af3c7757405b6b5ac633d0ef5f9886a9be7
   RNReanimated: 55d324091cbf5067a9c22b6ade0075e626a3f0cb
   RNScreens: 790123c4a28783d80a342ce42e8c7381bed62db1
@@ -2720,6 +2720,6 @@ SPEC CHECKSUMS:
   Yoga: 31a098f74c16780569aebd614a0f37a907de0189
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 43660855f3bc66cee43b675127fe0710530f06a1
+PODFILE CHECKSUM: a18697d8f807d51cd1d496223f3663ed19f4e0a9
 
 COCOAPODS: 1.15.2
