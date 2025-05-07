@@ -1371,7 +1371,15 @@ export default {
       assignProxy: 'Assign Proxy',
       revokeProxy: 'Revoke Proxy',
     },
+    automation: {
+      enableAutomation: 'Enable automatic claiming of rewards',
+      rentFees: 'Reclaimable SOL',
+      prepaidTxFees: 'Prepaid Transaction Fees',
+      delegationSplit: 'HNT Emissions Split from Delegations',
+      dataUsageRevenue: 'Data Usage Revenue (30 days)',
+    },
     positions: {
+      changeDelegation: 'Change delegation',
       delegatedTo: 'Delegated To',
       proxiedTo: 'Proxied To',
       relinquish: 'Relinquish Votes',
@@ -1415,7 +1423,7 @@ export default {
       longerLockup:
         'Select a new lockup period longer than or equal to the existing {{existing}}',
       delegateBlurb:
-        'Delegating your position to a subnetwork and voting regularly earns you HNT rewards. Select the subnetwork you believe offers the greatest potential for growth and impact. This choice does not affect the rewarded amount.',
+        "Delegating your position to a subnetwork and voting regularly earns you HNT rewards. Select the subnetwork you believe offers the greatest potential for future revenue. This choice does not affect your hnt rewards for this delegation. Delegation percentages drive the amount of HNT emissions that go towards each subnetwork's growth.",
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
       initialVotePowerMult: 'Initial Vote Power Multiplier',

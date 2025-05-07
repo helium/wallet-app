@@ -90,6 +90,8 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
+  const [automationEnabled, setAutomationEnabled] = useState(true)
+  const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
   const { positions, mint, network, refetch: refetchState } = useGovernance()
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])
@@ -285,13 +287,26 @@ export const PositionCard = ({
     loading: isDelegating,
     error: delegatingError,
     delegatePosition,
-  } = useDelegatePosition()
+    rentFee: delegationFees,
+    prepaidTxFees,
+    insufficientBalance: insufficientDelegationBalance,
+  } = useDelegatePosition({
+    automationEnabled,
+    position,
+    subDao: subDao || undefined,
+  })
+
+  if (delegatingError) {
+    console.log('delegatingError', delegatingError)
+  }
 
   const {
     loading: isUndelegating,
     error: undelegatingError,
     undelegatePosition,
-  } = useUndelegatePosition()
+  } = useUndelegatePosition({
+    position,
+  })
 
   const {
     loading: isRelinquishing,
@@ -490,17 +505,15 @@ export const PositionCard = ({
     })
   }
 
-  const handleDelegateTokens = async (subDao: SubDaoWithMeta) => {
+  const handleDelegateTokens = async () => {
     await delegatePosition({
-      position,
-      subDao,
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.delegatePosition'),
           message: t('gov.positions.delegateMessage', {
             amount: lockedTokens,
             symbol,
-            subdao: subDao.dntMetadata.name,
+            subdao: subDao?.dntMetadata.name,
           }),
           instructions: ixs,
         })
@@ -514,7 +527,6 @@ export const PositionCard = ({
 
   const handleUndelegateTokens = async () => {
     await undelegatePosition({
-      position,
       onInstructions: async (ixs) => {
         const undelegate = ixs[ixs.length - 1]
         const claims = ixs.slice(0, ixs.length - 1)
@@ -602,6 +614,18 @@ export const PositionCard = ({
               selected={false}
               hasPressedState={false}
             />
+            {canDelegate && (
+              <ListItem
+                key="delegate"
+                title={t('gov.positions.changeDelegation')}
+                onPress={() => {
+                  setActionsOpen(false)
+                  setIsDelegateModalOpen(true)
+                }}
+                selected={false}
+                hasPressedState={false}
+              />
+            )}
             {proxyAction}
           </>
         ) : (
@@ -697,7 +721,7 @@ export const PositionCard = ({
                     />
                   </>
                 )}
-                {canDelegate && !isDelegated && (
+                {canDelegate && (
                   <ListItem
                     key="delegate"
                     title={t('gov.positions.delegate')}
@@ -1056,8 +1080,15 @@ export const PositionCard = ({
           )}
           {isDelegateModalOpen && (
             <DelegateTokensModal
+              prepaidTxFees={prepaidTxFees}
+              automationEnabled={automationEnabled}
+              onSetAutomationEnabled={setAutomationEnabled}
               onClose={() => setIsDelegateModalOpen(false)}
               onSubmit={handleDelegateTokens}
+              solFees={delegationFees}
+              insufficientBalance={!!insufficientDelegationBalance}
+              subDao={subDao}
+              setSubDao={setSubDao}
             />
           )}
         </>
