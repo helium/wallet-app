@@ -11,7 +11,7 @@ node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 node_require('expo/scripts/autolinking.rb')
 
-setup_permissions(['BluetoothPeripheral', 'LocationAlways', 'LocationWhenInUse'])
+setup_permissions(['Bluetooth', 'LocationAlways', 'LocationWhenInUse'])
 
 ENV['RCT_NEW_ARCH_ENABLED'] = "1"
 
