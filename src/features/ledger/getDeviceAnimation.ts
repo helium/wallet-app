@@ -15,10 +15,11 @@ type AnimationRecord = Record<'light' | 'dark', AnimationSource>
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 type S_SP_BLUE = DeviceModelId.nanoS | DeviceModelId.nanoSP | DeviceModelId.blue
+type AnimatedDevices = DeviceModelId.nanoX
 export type Animations = {
   [modelId in S_SP_BLUE]: Record<string, AnimationRecord>
 } & {
-  [modelId in DeviceModelId]: Record<string, Record<string, AnimationRecord>>
+  [modelId in AnimatedDevices]: Record<string, Record<string, AnimationRecord>>
 }
 
 const animations: Animations = {
@@ -199,84 +200,6 @@ const animations: Animations = {
       blePaired: {
         light: require('./animations/nanoX/BlePaired/light.json'),
         dark: require('./animations/nanoX/BlePaired/dark.json'),
-      },
-    },
-  },
-  stax: {
-    wired: {
-      plugAndPinCode: {
-        light: require('./animations/stax/enterPIN.json'),
-        dark: require('./animations/stax/enterPIN.json'),
-      },
-      enterPinCode: {
-        light: require('./animations/stax/enterPIN.json'),
-        dark: require('./animations/stax/enterPIN.json'),
-      },
-      quitApp: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      allowManager: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      openApp: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      verify: {
-        light: require('./animations/stax/verifyAddress.json'),
-        dark: require('./animations/stax/verifyAddress.json'),
-      },
-      sign: {
-        light: require('./animations/stax/signTransaction.json'),
-        dark: require('./animations/stax/signTransaction.json'),
-      },
-      allowUpdate: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-    },
-    bluetooth: {
-      plugAndPinCode: {
-        light: require('./animations/stax/enterPIN.json'),
-        dark: require('./animations/stax/enterPIN.json'),
-      },
-      enterPinCode: {
-        light: require('./animations/stax/enterPIN.json'),
-        dark: require('./animations/stax/enterPIN.json'),
-      },
-      quitApp: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      allowManager: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      openApp: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      verify: {
-        light: require('./animations/stax/verifyAddress.json'),
-        dark: require('./animations/stax/verifyAddress.json'),
-      },
-      sign: {
-        light: require('./animations/stax/signTransaction.json'),
-        dark: require('./animations/stax/signTransaction.json'),
-      },
-      allowUpdate: {
-        light: require('./animations/stax/allowConnection.json'),
-        dark: require('./animations/stax/allowConnection.json'),
-      },
-      blePairing: {
-        light: require('./animations/stax/pairingProgress.json'),
-        dark: require('./animations/stax/pairingProgress.json'),
-      },
-      blePaired: {
-        light: require('./animations/stax/pairingSuccess.json'),
-        dark: require('./animations/stax/pairingSuccess.json'),
       },
     },
   },
