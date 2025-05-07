@@ -2,7 +2,6 @@ import ChevronDown from '@assets/images/chevronDown.svg'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import BlurActionSheet from './BlurActionSheet'
 import Box from './Box'
 import ListItem from './ListItem'
@@ -10,6 +9,7 @@ import Text from './Text'
 import TouchableContainer from './TouchableContainer'
 
 export type SelectProps = {
+  title: string
   value: string
   onValueChange: (value: string) => void
   options: {
@@ -19,13 +19,13 @@ export type SelectProps = {
   }[]
 } & BoxProps<Theme>
 export const Select: React.FC<SelectProps> = ({
+  title,
   value,
   onValueChange,
   options,
   ...rest
 }) => {
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { t } = useTranslation()
 
   return (
     <>
@@ -50,7 +50,7 @@ export const Select: React.FC<SelectProps> = ({
         <ChevronDown color="gray" />
       </TouchableContainer>
       <BlurActionSheet
-        title={t('gov.proposals.filterTitle')}
+        title={title}
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
       >

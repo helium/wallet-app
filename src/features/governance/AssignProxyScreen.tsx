@@ -247,6 +247,7 @@ export const AssignProxyScreen = () => {
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
+              title={t('gov.assignProxy.selectNetwork')}
               value={mint.toBase58()}
               onValueChange={(pk) => navigation.setParams({ mint: pk })}
               options={networks}

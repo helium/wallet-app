@@ -219,6 +219,7 @@ export const RevokeProxyScreen = () => {
               {t('gov.assignProxy.selectNetwork')}
             </Text>
             <Select
+              title={t('gov.assignProxy.selectNetwork')}
               value={mint.toBase58()}
               onValueChange={(m: string) => navigation.setParams({ mint: m })}
               options={networks}
