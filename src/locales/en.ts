@@ -317,7 +317,6 @@ export default {
     reclaimableSol: 'Reclaimable SOL',
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
-    insufficientSol: 'Insufficient SOL',
     recipientSol: 'Hotspot Recipient Rent',
     outOfSol:
       'Automation paused - Out of SOL. Save again to extend the automation.',
@@ -755,6 +754,7 @@ export default {
     notValidAddress: 'Not a valid Wallet Address.',
     notValidSolanaAddress: 'Not a valid Solana Address.',
     insufficientBalance: 'Insufficient balance',
+    insufficientSol: 'Insufficient SOL',
     ok: 'OK',
     period: '.',
     password: 'Password',

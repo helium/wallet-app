@@ -45,6 +45,7 @@ export const PositionsScreen = () => {
   const wallet = useCurrentWallet()
   const { walletSignBottomSheetRef } = useWalletSign()
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
+  const [automationEnabled, setAutomationEnabled] = useState(true)
   const [statusOfClaim, setStatusOfClaim] = useState<Status | undefined>()
   const {
     mint,
@@ -55,7 +56,15 @@ export const PositionsScreen = () => {
   } = useGovernance()
   const { symbol } = useMetaplexMetadata(mint)
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
-  const { error: createPositionError, createPosition } = useCreatePosition()
+  const {
+    error: createPositionError,
+    createPosition,
+    rentFee: solFees,
+    prepaidTxFees,
+    insufficientBalance,
+  } = useCreatePosition({
+    automationEnabled,
+  })
   const {
     error: claimingAllRewardsError,
     loading: claimingAllRewards,
@@ -309,11 +318,16 @@ export const PositionsScreen = () => {
         {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
         {isLockModalOpen && (
           <LockTokensModal
+            insufficientBalance={insufficientBalance}
             mint={mint}
             maxLockupAmount={maxLockupAmount}
             calcMultiplierFn={handleCalcLockupMultiplier}
             onClose={() => setIsLockModalOpen(false)}
             onSubmit={handleLockTokens}
+            automationEnabled={automationEnabled}
+            onSetAutomationEnabled={setAutomationEnabled}
+            solFees={solFees || 0}
+            prepaidTxFees={prepaidTxFees || 0}
           />
         )}
       </Box>

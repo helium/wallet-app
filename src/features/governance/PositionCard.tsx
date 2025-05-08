@@ -1035,6 +1035,10 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsExtendModalOpen(false)}
               onSubmit={handleExtendTokens}
+              automationEnabled={false}
+              onSetAutomationEnabled={() => {}}
+              solFees={0}
+              prepaidTxFees={0}
             />
           )}
           {isSplitModalOpen && (
@@ -1063,6 +1067,10 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsSplitModalOpen(false)}
               onSubmit={handleSplitTokens}
+              automationEnabled={false}
+              onSetAutomationEnabled={() => {}}
+              solFees={0}
+              prepaidTxFees={0}
             />
           )}
           {isTransferModalOpen && (

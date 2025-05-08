@@ -62,7 +62,7 @@
     "@helium/treasury-management-sdk": "0.10.12",
     "@helium/tuktuk-idls": "^0.0.8",
     "@helium/tuktuk-sdk": "^0.0.8",
-    "@helium/voter-stake-registry-hooks": "0.10.12",
+    "@helium/voter-stake-registry-hooks": "file:.yalc/@helium/voter-stake-registry-hooks",
     "@helium/voter-stake-registry-sdk": "0.10.12",
     "@helium/wallet-link": "4.11.0",
     "@jup-ag/api": "6.0.6",
