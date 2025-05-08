@@ -1423,7 +1423,7 @@ export default {
       longerLockup:
         'Select a new lockup period longer than or equal to the existing {{existing}}',
       delegateBlurb:
-        "Delegating your position to a subnetwork and voting regularly earns you HNT rewards. Select the subnetwork you believe offers the greatest potential for future revenue. This choice does not affect your hnt rewards for this delegation. Delegation percentages drive the amount of HNT emissions that go towards each subnetwork's growth.",
+        "Delegating your position to a subnetwork and voting regularly earns you HNT rewards. Select the subnetwork you believe offers the greatest potential for future revenue. This choice does not affect your HNT rewards for this delegation. Delegation percentages drive the amount of HNT emissions that go towards each subnetwork's growth.",
       splitWarning:
         'Splitting a Landrush position after the Landrush period will result in the split tokens losing the multiplier!',
       initialVotePowerMult: 'Initial Vote Power Multiplier',

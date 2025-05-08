@@ -219,7 +219,7 @@ export const DelegateTokensModal = ({
                           leftColor="mobileBlue"
                           rightColor="iotGreen"
                           leftLabel="Mobile"
-                          rightLabel="IOT"
+                          rightLabel="IoT"
                         />
                         <Box marginTop="s">
                           <SplitBar

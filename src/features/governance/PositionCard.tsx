@@ -296,10 +296,6 @@ export const PositionCard = ({
     subDao: subDao || undefined,
   })
 
-  if (delegatingError) {
-    console.log('delegatingError', delegatingError)
-  }
-
   const {
     loading: isUndelegating,
     error: undelegatingError,
