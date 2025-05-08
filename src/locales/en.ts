@@ -313,7 +313,7 @@ export default {
     setupAutomation: 'Setup Automation',
     removeAutomation: 'Remove Automation',
     setupAutomationMessage:
-      'Claim your rewards on a {{schedule}} schedule for {{duration}} days. This will cost {{rentFee}} SOL that can be reclaimed, and {{solFee}} SOL for transaction fees.',
+      'Claim your rewards on a {{schedule}} schedule for {{duration}} {{interval}}. This will cost {{rentFee}} SOL that can be reclaimed, and {{solFee}} SOL for transaction fees.',
     reclaimableSol: 'Reclaimable SOL',
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
