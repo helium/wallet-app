@@ -1,7 +1,14 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useCallback, useState, useRef } from 'react'
 import { Observable, Subscription } from 'rxjs'
-import { PermissionsAndroid, Platform } from 'react-native'
+import { Platform } from 'react-native'
+import {
+  check,
+  Permission,
+  PERMISSIONS,
+  request,
+  RESULTS,
+} from 'react-native-permissions'
 import { Device } from 'react-native-ble-plx'
 import { useAsync } from 'react-async-hook'
 import * as Logger from '../utils/logger'
@@ -41,33 +48,23 @@ type LedgerAvailable = {
 }
 
 const checkPermission = async () => {
+  let permissions: Permission[] = []
   if (Platform.OS === 'ios') {
-    return true
+    permissions = [PERMISSIONS.IOS.BLUETOOTH]
+  } else if (Platform.OS === 'android') {
+    permissions = [
+      PERMISSIONS.ANDROID.BLUETOOTH_SCAN,
+      PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+    ]
   }
 
-  const perms = [
-    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-    PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-  ]
-
-  const results = await Promise.all(
-    perms.map((p) => PermissionsAndroid.check(p)),
-  )
-
-  if (results.findIndex((r) => r === false) === -1) {
-    return true
-  }
-
-  const granted = await PermissionsAndroid.requestMultiple([
-    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-    PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-    PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-  ])
-
-  perms.forEach((p) => {
-    if (!granted[p]) {
-      return false
+  permissions.forEach(async (perm) => {
+    const result = await check(perm)
+    if (result === RESULTS.DENIED) {
+      const requestResult = await request(perm)
+      if (requestResult !== RESULTS.GRANTED) {
+        return false
+      }
     }
   })
 

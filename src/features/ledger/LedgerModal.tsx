@@ -369,8 +369,7 @@ const LedgerModal = forwardRef(
                                 currentAccount?.ledgerDevice?.name ?? '',
                               modelId: deviceModelId,
                               wired:
-                                currentAccount?.ledgerDevice?.type === 'usb' ??
-                                false,
+                                currentAccount?.ledgerDevice?.type === 'usb',
                             },
                             key: ledgerModalState,
                             theme: 'dark',
