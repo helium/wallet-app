@@ -117,6 +117,7 @@ const ButtonPressable = ({
           onPressOut={() => setPressed(false)}
           style={styles.pressable}
           disabled={disabled}
+          accessibilityRole="button"
         >
           <Box
             style={backgroundColorStyle}
