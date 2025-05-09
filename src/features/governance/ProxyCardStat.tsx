@@ -4,7 +4,7 @@ import React from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 
-export const VoterCardStat: React.FC<
+export const ProxyCardStat: React.FC<
   {
     title: string
     value: string

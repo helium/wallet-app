@@ -24,14 +24,14 @@ import { NetworkTabs } from './NetworkTabs'
 
 const icons: { [key: string]: React.ReactElement } = {
   proposals: <Flag width={16} height={16} color="white" />,
-  voters: <LightningBolt width={16} height={16} color="white" />,
-  positions: <UserStar width={16} height={16} color="white" />,
+  proxies: <UserStar width={16} height={16} color="white" />,
+  positions: <LightningBolt width={16} height={16} color="white" />,
 }
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalsScreen'>
 export const GovernanceWrapper: React.FC<
   React.PropsWithChildren<{
-    selectedTab: 'proposals' | 'voters' | 'positions'
+    selectedTab: 'proposals' | 'proxies' | 'positions'
     header?: React.ReactElement
   }>
 > = ({ selectedTab, children, header }) => {

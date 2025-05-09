@@ -1327,21 +1327,21 @@ export default {
       increase: 'Increase your voting power by locking tokens.',
       lockYourTokens: 'Lock {{amount}} {{symbol}} for {{duration}}?',
     },
-    voters: {
+    proxies: {
       title: 'Browse Proxies',
       searchPlaceholder: 'Search for name or public key',
       warning:
-        'Assigning proxy to majority voters may threaten the decentralization of the network.',
-      majority: 'Majority Voter',
-      minority: 'Minority Voter',
-      assignBelow: 'Consider assigning to voters below this point.',
+        'Assigning to majority proxies may threaten the decentralization of the network.',
+      majority: 'Majority Proxy',
+      minority: 'Minority Proxy',
+      assignBelow: 'Consider assigning to proxies below this point.',
       noneFound: 'No proxies found matching this search',
     },
     assignProxy: {
       title: 'Assign Proxy',
-      browseVoters: 'Browse Proxies',
+      browseProxies: 'Browse Proxies',
       description:
-        "Select the voter to assign as your position's proxy. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
+        "Select the proxy to assign as your position's votes. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
       searchPlaceholder: 'Select Proxy or Paste Wallet Address',
       selectNetwork: 'Select Network',
       assignPositions: 'Assign Positions',
@@ -1353,7 +1353,7 @@ export default {
     revokeProxy: {
       title: 'Revoke Proxy',
       description:
-        'Select the voter to revoke as your position’s proxy. Once revoked, they can no longer cast a vote on your behalf and/or assign it to others.',
+        "Select the proxy to revoke as your position's votes. Once revoked, they can no longer cast a vote on your behalf nor assign it to others.",
       revokePositions: 'Revoke Positions',
     },
     history: {
@@ -1367,7 +1367,7 @@ export default {
       completed: 'Completed',
       result: 'Result',
     },
-    voter: {
+    proxy: {
       assignProxy: 'Assign Proxy',
       revokeProxy: 'Revoke Proxy',
     },
@@ -1460,7 +1460,7 @@ export default {
       toVote:
         'To vote, click on any option. To remove your vote, click the option again. Vote for up to {{maxChoicesPerVoter}} of {{choicesLength}} options.',
       assignProxy:
-        "Assign proxy to a trusted voter if you don't want to vote. You can override any active votes anytime - your vote takes precedence over a proxy.",
+        "Assign your votes to a trusted proxy if you don't want to vote directly. You can override any active votes anytime - your vote takes precedence over a proxy.",
     },
     transactions: {
       assignProxy: 'Assign Proxy',

@@ -21,7 +21,7 @@ export function useSetTab() {
           })
           break
         case 'proxies':
-          navigation.navigate('VotersScreen', {
+          navigation.navigate('ProxiesScreen', {
             mint: mint.toBase58(),
           })
           break
