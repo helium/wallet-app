@@ -20,7 +20,7 @@ import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { ProposalTags } from './ProposalTags'
-import { VoterCardStat } from './VoterCardStat'
+import { ProxyCardStat } from './ProxyCardStat'
 import { GovernanceNavigationProp } from './governanceTypes'
 
 export const VoteHistory: React.FC<{
@@ -204,13 +204,13 @@ const ProposalItem: React.FC<{
           justifyContent="space-between"
           alignItems="center"
         >
-          <VoterCardStat
+          <ProxyCardStat
             title={t('gov.history.completed')}
             value={new Date(
               (endTs?.toNumber() || 0) * 1000,
             ).toLocaleDateString()}
           />
-          <VoterCardStat
+          <ProxyCardStat
             title={t('gov.history.result')}
             alignItems="flex-end"
             value={
@@ -227,7 +227,7 @@ const ProposalItem: React.FC<{
       ) : null}
       <Box px="m">
         {!timeExpired && (
-          <VoterCardStat
+          <ProxyCardStat
             title={t('gov.history.estTimeRemaining')}
             value={getTimeFromNowFmt(endTs || new BN(0))}
           />
@@ -243,11 +243,11 @@ const ProposalItem: React.FC<{
       >
         {proposal.votes[0].weight ? (
           <>
-            <VoterCardStat
+            <ProxyCardStat
               title={t('gov.history.voted')}
               value={proposal.votes.map((v) => v.choiceName).join(', ')}
             />
-            <VoterCardStat
+            <ProxyCardStat
               title={t('gov.history.percentOfVote')}
               alignItems="flex-end"
               value={

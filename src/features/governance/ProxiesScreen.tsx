@@ -23,16 +23,16 @@ import { FlatList, Image, RefreshControl } from 'react-native'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
 import { GovernanceWrapper } from './GovernanceWrapper'
-import { VoterCardStat } from './VoterCardStat'
+import { ProxyCardStat } from './ProxyCardStat'
 
 const DECENTRALIZATION_RISK_PERCENT = 10
 const VOTER_HEIGHT = 110
 
-export const VoterSkeleton = () => {
+export const ProxySkeleton = () => {
   return <CardSkeleton height={VOTER_HEIGHT} />
 }
 
-export default function VotersScreen() {
+export default function ProxiesScreen() {
   const { t } = useTranslation()
   const { loading, voteService, mintAcc } = useGovernance()
   const decimals = mintAcc?.decimals
@@ -66,7 +66,7 @@ export default function VotersScreen() {
       return (
         <Box flex={1} flexDirection="column">
           {times(5).map((i) => (
-            <VoterSkeleton key={i} />
+            <ProxySkeleton key={i} />
           ))}
         </Box>
       )
@@ -83,7 +83,7 @@ export default function VotersScreen() {
         mb="m"
       >
         <Text variant="body1" color="white">
-          {t('gov.voters.noneFound')}
+          {t('gov.proxies.noneFound')}
         </Text>
       </Box>
     )
@@ -99,7 +99,7 @@ export default function VotersScreen() {
     ({ item: proxy, index }) => {
       const majority = Number(proxy.percent) >= DECENTRALIZATION_RISK_PERCENT
       const card = (
-        <VoterCard
+        <ProxyCard
           decimals={decimals}
           key={proxy.wallet}
           proxy={proxy}
@@ -122,7 +122,7 @@ export default function VotersScreen() {
             >
               <Warning width={24} height={24} />
               <Text variant="body2" color="grey600" flex={1}>
-                {t('gov.voters.warning')}
+                {t('gov.proxies.warning')}
               </Text>
             </Box>
             {card}
@@ -136,7 +136,7 @@ export default function VotersScreen() {
               <Box flexDirection="row" alignItems="center" mb="s">
                 <BlueCheck width={24} height={24} />
                 <Text ml="m" variant="body2" opacity={0.75}>
-                  {t('gov.voters.assignBelow')}
+                  {t('gov.proxies.assignBelow')}
                 </Text>
               </Box>
               <Box
@@ -159,12 +159,12 @@ export default function VotersScreen() {
   const { primaryText } = useColors()
 
   return (
-    <GovernanceWrapper selectedTab="voters">
+    <GovernanceWrapper selectedTab="proxies">
       <Text color="white" opacity={0.5} fontSize={20} mb="l">
-        {t('gov.voters.title')}
+        {t('gov.proxies.title')}
       </Text>
       <SearchInput
-        placeholder={t('gov.voters.searchPlaceholder')}
+        placeholder={t('gov.proxies.searchPlaceholder')}
         onChangeText={setProxySearch}
         value={proxySearch}
       />
@@ -187,7 +187,7 @@ export default function VotersScreen() {
   )
 }
 
-const VoterCard: React.FC<{
+const ProxyCard: React.FC<{
   proxy: EnhancedProxy
   majority: boolean
   decimals?: number
@@ -202,7 +202,7 @@ const VoterCard: React.FC<{
       borderRadius="l"
       mb="m"
       onPress={() => {
-        navigation.navigate('VoterScreen', {
+        navigation.navigate('ProxyScreen', {
           mint: mint.toBase58(),
           wallet: proxy.wallet,
         })
@@ -230,14 +230,14 @@ const VoterCard: React.FC<{
             color="black"
             textProps={{ variant: 'body3' }}
             text={
-              majority ? t('gov.voters.majority') : t('gov.voters.minority')
+              majority ? t('gov.proxies.majority') : t('gov.proxies.minority')
             }
           />
         </Box>
       </Box>
 
       <Box px="m" py="s" flexDirection="row" justifyContent="space-between">
-        <VoterCardStat
+        <ProxyCardStat
           title="Total Voting Power"
           value={
             // Force 2 decimals
@@ -251,12 +251,12 @@ const VoterCard: React.FC<{
               : ''
           }
         />
-        <VoterCardStat
+        <ProxyCardStat
           title="Proposals Voted"
           alignItems="center"
           value={proxy.numProposalsVoted}
         />
-        <VoterCardStat
+        <ProxyCardStat
           title="Last Voted"
           alignItems="flex-end"
           value={
