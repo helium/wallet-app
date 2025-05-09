@@ -22,8 +22,6 @@ import {
   heliumAddressToSolAddress,
 } from '../utils/accountUtils'
 import makeApiToken from '../utils/makeApiToken'
-import { getSessionKey } from '../utils/walletApiV2'
-import { useAppStorage } from './AppStorageProvider'
 import {
   CSAccount,
   CSAccounts,
@@ -58,7 +56,6 @@ const useAccountStorageHook = () => {
 
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const { updateSessionKey } = useAppStorage()
   const dispatch = useAppDispatch()
   const currentAppState = useAppState()
 
@@ -111,14 +108,6 @@ const useAccountStorageHook = () => {
     () => sortedAccounts.filter(({ netType }) => netType === NetType.MAINNET),
     [sortedAccounts],
   )
-
-  useAsync(async () => {
-    // We can cache this for a certain amount of time but for now we fetch the session key every time we load the app
-    const sessionKey = await getSessionKey()
-    if (!sessionKey) return
-
-    updateSessionKey({ sessionKey })
-  }, [])
 
   useEffect(() => {
     // Ensure all accounts have solana address

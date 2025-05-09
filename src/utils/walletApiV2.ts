@@ -144,13 +144,6 @@ export const getBasePriorityFee = async () => {
   }
 }
 
-export const getSessionKey = async () => {
-  const { data } = await axiosInstance.get<{ sessionKey: string }>(
-    '/sessionKey',
-  )
-  return data?.sessionKey
-}
-
 export type Explorer = {
   label: string
   value: string
