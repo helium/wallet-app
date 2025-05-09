@@ -111,7 +111,6 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
-import { getSessionKey } from '../storage/secureStorage'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -1500,13 +1499,10 @@ export const getAllTransactions = async (
 > => {
   const pubKey = new PublicKey(address)
   const conn = anchorProvider.connection
-  const sessionKey = await getSessionKey()
 
   const parseTransactionsUrl = `${
     cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
-  }/v0/transactions/?session-key=${
-    sessionKey || Config.RPC_SESSION_KEY_FALLBACK
-  }`
+  }/v0/transactions/`
 
   try {
     const sigs = await conn.getSignaturesForAddress(pubKey, {
