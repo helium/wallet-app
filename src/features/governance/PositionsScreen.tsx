@@ -318,7 +318,7 @@ export const PositionsScreen = () => {
         {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
         {isLockModalOpen && (
           <LockTokensModal
-            insufficientBalance={insufficientBalance}
+            insufficientBalance={!!insufficientBalance}
             mint={mint}
             maxLockupAmount={maxLockupAmount}
             calcMultiplierFn={handleCalcLockupMultiplier}
