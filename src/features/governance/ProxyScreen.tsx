@@ -20,15 +20,15 @@ import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
 import { NetworkTabs } from './NetworkTabs'
 import { VoteHistory } from './VoteHistory'
-import { VoterCardStat } from './VoterCardStat'
+import { ProxyCardStat } from './ProxyCardStat'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
 
-type Route = RouteProp<GovernanceStackParamList, 'VoterScreen'>
+type Route = RouteProp<GovernanceStackParamList, 'ProxyScreen'>
 
-export const VoterScreen = () => {
+export const ProxyScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
@@ -155,12 +155,12 @@ export const VoterScreen = () => {
                 p="l"
                 mb="m"
               >
-                <VoterCardStat
+                <ProxyCardStat
                   title="Current Rank"
                   alignItems="center"
                   value={`#${proxy.rank} of ${proxy.numProxies}`}
                 />
-                <VoterCardStat
+                <ProxyCardStat
                   title="Last Time Voted"
                   alignItems="center"
                   value={
@@ -182,7 +182,7 @@ export const VoterScreen = () => {
                   borderRadius="round"
                   backgroundColorOpacityPressed={0.7}
                   backgroundColorDisabled="black500"
-                  title={t('gov.voter.assignProxy')}
+                  title={t('gov.proxy.assignProxy')}
                   disabled={!unproxiedPositions?.length}
                   onPress={handleAssignProxy}
                 />
@@ -198,7 +198,7 @@ export const VoterScreen = () => {
                     borderWidth={1}
                     borderRadius="round"
                     backgroundColorOpacityPressed={0.7}
-                    title={t('gov.voter.revokeProxy')}
+                    title={t('gov.proxy.revokeProxy')}
                     onPress={handleRevokeProxy}
                   />
                 ) : null}
@@ -221,11 +221,11 @@ export const VoterScreen = () => {
                   borderBottomWidth={1}
                   justifyContent="space-between"
                 >
-                  <VoterCardStat
+                  <ProxyCardStat
                     title="Current Rank"
                     value={`#${proxy.rank} of ${proxy.numProxies}`}
                   />
-                  <VoterCardStat
+                  <ProxyCardStat
                     title="Total Power"
                     alignItems="flex-end"
                     value={
@@ -242,11 +242,11 @@ export const VoterScreen = () => {
                   />
                 </Box>
                 <Box pt="s" flexDirection="row" justifyContent="space-between">
-                  <VoterCardStat
+                  <ProxyCardStat
                     title="Proposals Voted"
                     value={proxy.numProposalsVoted}
                   />
-                  <VoterCardStat
+                  <ProxyCardStat
                     title="Num Assignments"
                     alignItems="flex-end"
                     value={proxy.numAssignments}
@@ -258,7 +258,7 @@ export const VoterScreen = () => {
                     flexDirection="row"
                     justifyContent="space-between"
                   >
-                    <VoterCardStat
+                    <ProxyCardStat
                       title="Power From Me"
                       value={
                         // Force 2 decimals
@@ -272,7 +272,7 @@ export const VoterScreen = () => {
                           : ''
                       }
                     />
-                    <VoterCardStat
+                    <ProxyCardStat
                       title="Positions Assigned"
                       alignItems="flex-end"
                       value={proxiedToPositions?.length?.toString() || '0'}
@@ -298,4 +298,4 @@ export const VoterScreen = () => {
   )
 }
 
-export default VoterScreen
+export default ProxyScreen

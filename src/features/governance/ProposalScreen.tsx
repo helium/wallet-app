@@ -1,4 +1,4 @@
-import BrowseVoters from '@assets/images/browseVoters.svg'
+import BrowseProxies from '@assets/images/browseProxies.svg'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
@@ -71,8 +71,8 @@ export const ProposalScreen = () => {
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
   const { mint, loading, votingPower } = useGovernance()
-  const handleBrowseVoters = useCallback(() => {
-    navigation.navigate('VotersScreen', {
+  const handleBrowseProxies = useCallback(() => {
+    navigation.navigate('ProxiesScreen', {
       mint: mint.toBase58(),
     })
   }, [navigation, mint])
@@ -514,12 +514,14 @@ export const ProposalScreen = () => {
                       fontSize={16}
                       height={48}
                       backgroundColor="black500"
-                      LeadingComponent={<BrowseVoters width={18} height={18} />}
+                      LeadingComponent={
+                        <BrowseProxies width={18} height={18} />
+                      }
                       borderRadius="round"
                       mt="m"
-                      onPress={handleBrowseVoters}
+                      onPress={handleBrowseProxies}
                       padding="s"
-                      title={t('gov.assignProxy.browseVoters')}
+                      title={t('gov.assignProxy.browseProxies')}
                     />
                   </Box>
                   <Box

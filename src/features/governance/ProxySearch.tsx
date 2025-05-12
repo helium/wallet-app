@@ -1,4 +1,4 @@
-import BrowseVoters from '@assets/images/browseVoters.svg'
+import BrowseProxies from '@assets/images/browseProxies.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
@@ -110,7 +110,7 @@ export const ProxySearch: React.FC<{
 
   const navigation = useNavigation<GovernanceNavigationProp>()
   const handleBrowseVoters = useCallback(() => {
-    navigation.navigate('VotersScreen', {
+    navigation.navigate('ProxiesScreen', {
       mint: mint.toBase58(),
     })
   }, [navigation, mint])
@@ -139,7 +139,7 @@ export const ProxySearch: React.FC<{
             />
             <ButtonPressable
               backgroundColor="secondary"
-              Icon={BrowseVoters}
+              Icon={BrowseProxies}
               borderRadius="l"
               ml="s"
               onPress={handleBrowseVoters}

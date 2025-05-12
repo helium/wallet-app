@@ -22,9 +22,9 @@ export type GovernanceStackParamList = {
   GovernanceTutorialScreen: undefined
   ProposalsScreen: { mint?: string; proposal?: string }
   PositionsScreen: { mint: string }
-  VotersScreen: { mint?: string }
+  ProxiesScreen: { mint?: string }
   ProposalScreen: { mint: string; proposal: string }
-  VoterScreen: { mint: string; wallet: string }
+  ProxyScreen: { mint: string; wallet: string }
   AssignProxyScreen: { mint: string; position?: string; wallet?: string }
   RevokeProxyScreen: { mint: string; position?: string; wallet?: string }
 }

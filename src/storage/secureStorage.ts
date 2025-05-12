@@ -9,7 +9,6 @@ import { Keypair as SolanaKeypair } from '@solana/web3.js'
 import * as bip39 from 'bip39'
 import * as SecureStore from 'expo-secure-store'
 import { Alert } from 'react-native'
-import Config from 'react-native-config'
 import { navToImportAccount } from '../navigation/NavigationHelper'
 import { ellipsizeAddress } from '../utils/accountUtils'
 import i18n from '../utils/i18n'
@@ -146,15 +145,6 @@ export const getSecureAccount = async (
     const item = await SecureStore.getItemAsync(address)
     if (!item) return
     return JSON.parse(item) as SecureAccount
-  } catch (e) {
-    console.error(e)
-  }
-}
-
-export const getSessionKey = async (): Promise<string | undefined> => {
-  try {
-    const item = await SecureStore.getItemAsync(SecureStorageKeys.SESSION_KEY)
-    return item || Config.RPC_SESSION_KEY_FALLBACK
   } catch (e) {
     console.error(e)
   }

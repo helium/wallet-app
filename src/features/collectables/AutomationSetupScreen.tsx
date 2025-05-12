@@ -160,7 +160,13 @@ const AutomationSetupScreen = () => {
               schedule: selectedSchedule,
               duration,
               rentFee,
-              solFee,
+              solFee: Math.max(solFee, 0),
+              interval:
+                selectedSchedule === 'daily'
+                  ? 'days'
+                  : selectedSchedule === 'weekly'
+                  ? 'weeks'
+                  : 'months',
             }),
             instructions,
           )
@@ -390,7 +396,7 @@ const AutomationSetupScreen = () => {
                   {t('automationScreen.transactionFees')}
                 </Text>
                 <Text variant="body2Medium" color="grey200">
-                  {solFee} SOL
+                  {Math.max(solFee, 0)} SOL
                 </Text>
               </Box>
             </Box>

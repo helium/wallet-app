@@ -11,8 +11,8 @@ import PositionsScreen from './PositionsScreen'
 import ProposalScreen from './ProposalScreen'
 import ProposalsScreen from './ProposalsScreen'
 import RevokeProxyScreen from './RevokeProxyScreen'
-import VoterScreen from './VoterScreen'
-import VotersScreen from './VotersScreen'
+import ProxyScreen from './ProxyScreen'
+import ProxiesScreen from './ProxiesScreen'
 
 const GovernanceStack = createStackNavigator()
 const screenOptions: StackNavigationOptions = {
@@ -40,12 +40,15 @@ const GovernanceStackScreen = () => {
           name="PositionsScreen"
           component={PositionsScreen}
         />
-        <GovernanceStack.Screen name="VotersScreen" component={VotersScreen} />
+        <GovernanceStack.Screen
+          name="ProxiesScreen"
+          component={ProxiesScreen}
+        />
         <GovernanceStack.Screen
           name="ProposalScreen"
           component={ProposalScreen}
         />
-        <GovernanceStack.Screen name="VoterScreen" component={VoterScreen} />
+        <GovernanceStack.Screen name="ProxyScreen" component={ProxyScreen} />
         <GovernanceStack.Screen
           name="AssignProxyScreen"
           component={AssignProxyScreen}
