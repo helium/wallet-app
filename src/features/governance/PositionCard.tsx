@@ -43,7 +43,10 @@ import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
+import {
+  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+  MOBILE_SUB_DAO_KEY,
+} from '@utils/constants'
 import {
   daysToSecs,
   getFormattedStringFromDays,
@@ -54,7 +57,7 @@ import {
 import { shortenAddress } from '@utils/formatting'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -91,7 +94,16 @@ export const PositionCard = ({
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
   const [automationEnabled, setAutomationEnabled] = useState(true)
-  const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
+  const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(
+    subDaos?.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
+  )
+  useEffect(() => {
+    if (subDaos && !subDao) {
+      setSubDao(
+        subDaos.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
+      )
+    }
+  }, [subDaos, subDao])
   const { positions, mint, network, refetch: refetchState } = useGovernance()
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])
@@ -1011,6 +1023,7 @@ export const PositionCard = ({
           </BlurActionSheet>
           {isExtendModalOpen && (
             <LockTokensModal
+              insufficientBalance={false}
               mint={mint}
               mode="extend"
               minLockupTimeInDays={
@@ -1043,6 +1056,7 @@ export const PositionCard = ({
           )}
           {isSplitModalOpen && (
             <LockTokensModal
+              insufficientBalance={false}
               mint={mint}
               mode="split"
               minLockupTimeInDays={
