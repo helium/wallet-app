@@ -56,11 +56,7 @@ export const AutomationFeesWidget = ({
           }
         />
       </Box>
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        marginBottom="s"
-      >
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
         <Text variant="body2" color="grey400">
           {t('gov.automation.rentFees')}
         </Text>
@@ -68,11 +64,7 @@ export const AutomationFeesWidget = ({
           {solFees.toFixed(6)} SOL
         </Text>
       </Box>
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        marginBottom="s"
-      >
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
         <Text variant="body2" color="grey400">
           {t('gov.automation.prepaidTxFees')}
         </Text>
@@ -82,4 +74,4 @@ export const AutomationFeesWidget = ({
       </Box>
     </Box>
   )
-} 
+}
