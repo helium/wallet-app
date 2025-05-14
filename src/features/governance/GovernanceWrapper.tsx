@@ -20,7 +20,6 @@ import {
   GovernanceStackParamList,
 } from './governanceTypes'
 import { useSetTab } from './useSetTab'
-import { NetworkTabs } from './NetworkTabs'
 
 const icons: { [key: string]: React.ReactElement } = {
   proposals: <Flag width={16} height={16} color="white" />,
@@ -92,9 +91,6 @@ export const GovernanceWrapper: React.FC<
           <Text marginTop="m" alignSelf="center" variant="h4">
             {t('gov.title')}
           </Text>
-          <Box mt="xl" mb="l">
-            <NetworkTabs />
-          </Box>
           {loading ? (
             <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
               <CircleLoader loaderSize={24} color="white" />

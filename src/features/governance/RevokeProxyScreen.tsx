@@ -2,14 +2,10 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { Select } from '@components/Select'
 import Text from '@components/Text'
 import {
   batchInstructionsToTxsWithPriorityFee,
   bulkSendTransactions,
-  HNT_MINT,
-  IOT_MINT,
-  MOBILE_MINT,
   populateMissingDraftInfo,
   toVersionedTx,
   truthy,
@@ -51,14 +47,7 @@ export const RevokeProxyScreen = () => {
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const proxyWalletKey = usePublicKey(proxyWallet)
   const positionKey = usePublicKey(position)
-  const { loading, positions, refetch, mint } = useGovernance()
-  const networks = useMemo(() => {
-    return [
-      { label: 'HNT', value: HNT_MINT.toBase58() },
-      { label: 'MOBILE', value: MOBILE_MINT.toBase58() },
-      { label: 'IOT', value: IOT_MINT.toBase58() },
-    ]
-  }, [])
+  const { loading, positions, refetch } = useGovernance()
 
   const proxiedPositions = useMemo(
     () =>
@@ -212,20 +201,6 @@ export const RevokeProxyScreen = () => {
           />
         </Box>
 
-        {/* Don't show network when position already defined */}
-        {position ? null : (
-          <Box mb="m">
-            <Text variant="body3" color="secondaryText" mb="xs">
-              {t('gov.assignProxy.selectNetwork')}
-            </Text>
-            <Select
-              title={t('gov.assignProxy.selectNetwork')}
-              value={mint.toBase58()}
-              onValueChange={(m: string) => navigation.setParams({ mint: m })}
-              options={networks}
-            />
-          </Box>
-        )}
         <Box flexDirection="row" justifyContent="space-between">
           <Text variant="body1" color="white" opacity={0.5}>
             {t('gov.revokeProxy.revokePositions')}

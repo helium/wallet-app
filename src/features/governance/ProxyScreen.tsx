@@ -18,7 +18,6 @@ import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
-import { NetworkTabs } from './NetworkTabs'
 import { VoteHistory } from './VoteHistory'
 import { ProxyCardStat } from './ProxyCardStat'
 import {
@@ -286,10 +285,6 @@ export const ProxyScreen = () => {
                 borderBottomColor="dividerGrey"
                 borderBottomWidth={1}
               />
-
-              <Box mb="m">
-                <NetworkTabs />
-              </Box>
             </>
           }
         />
