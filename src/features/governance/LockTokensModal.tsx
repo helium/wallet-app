@@ -286,7 +286,10 @@ export const LockTokensModal = ({
         >
           <ScrollView>
             {step === 1 && (
-              <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+              <TouchableWithoutFeedback
+                onPress={() => Keyboard.dismiss()}
+                accessibilityRole="button"
+              >
                 <KeyboardAvoidingView
                   style={{ flex: 1 }}
                   behavior="padding"
