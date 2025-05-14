@@ -43,7 +43,10 @@ import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
+import {
+  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+  MOBILE_SUB_DAO_KEY,
+} from '@utils/constants'
 import {
   daysToSecs,
   getFormattedStringFromDays,
@@ -54,7 +57,7 @@ import {
 import { shortenAddress } from '@utils/formatting'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -90,6 +93,17 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
+  const [automationEnabled, setAutomationEnabled] = useState(true)
+  const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(
+    subDaos?.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
+  )
+  useEffect(() => {
+    if (subDaos && !subDao) {
+      setSubDao(
+        subDaos.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
+      )
+    }
+  }, [subDaos, subDao])
   const { positions, mint, network, refetch: refetchState } = useGovernance()
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])
@@ -285,13 +299,22 @@ export const PositionCard = ({
     loading: isDelegating,
     error: delegatingError,
     delegatePosition,
-  } = useDelegatePosition()
+    rentFee: delegationFees,
+    prepaidTxFees,
+    insufficientBalance: insufficientDelegationBalance,
+  } = useDelegatePosition({
+    automationEnabled,
+    position,
+    subDao: subDao || undefined,
+  })
 
   const {
     loading: isUndelegating,
     error: undelegatingError,
     undelegatePosition,
-  } = useUndelegatePosition()
+  } = useUndelegatePosition({
+    position,
+  })
 
   const {
     loading: isRelinquishing,
@@ -490,17 +513,15 @@ export const PositionCard = ({
     })
   }
 
-  const handleDelegateTokens = async (subDao: SubDaoWithMeta) => {
+  const handleDelegateTokens = async () => {
     await delegatePosition({
-      position,
-      subDao,
       onInstructions: async (ixs) => {
         await decideAndExecute({
           header: t('gov.transactions.delegatePosition'),
           message: t('gov.positions.delegateMessage', {
             amount: lockedTokens,
             symbol,
-            subdao: subDao.dntMetadata.name,
+            subdao: subDao?.dntMetadata.name,
           }),
           instructions: ixs,
         })
@@ -514,7 +535,6 @@ export const PositionCard = ({
 
   const handleUndelegateTokens = async () => {
     await undelegatePosition({
-      position,
       onInstructions: async (ixs) => {
         const undelegate = ixs[ixs.length - 1]
         const claims = ixs.slice(0, ixs.length - 1)
@@ -602,6 +622,18 @@ export const PositionCard = ({
               selected={false}
               hasPressedState={false}
             />
+            {canDelegate && (
+              <ListItem
+                key="delegate"
+                title={t('gov.positions.changeDelegation')}
+                onPress={() => {
+                  setActionsOpen(false)
+                  setIsDelegateModalOpen(true)
+                }}
+                selected={false}
+                hasPressedState={false}
+              />
+            )}
             {proxyAction}
           </>
         ) : (
@@ -697,7 +729,7 @@ export const PositionCard = ({
                     />
                   </>
                 )}
-                {canDelegate && !isDelegated && (
+                {canDelegate && (
                   <ListItem
                     key="delegate"
                     title={t('gov.positions.delegate')}
@@ -991,6 +1023,7 @@ export const PositionCard = ({
           </BlurActionSheet>
           {isExtendModalOpen && (
             <LockTokensModal
+              insufficientBalance={false}
               mint={mint}
               mode="extend"
               minLockupTimeInDays={
@@ -1015,10 +1048,15 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsExtendModalOpen(false)}
               onSubmit={handleExtendTokens}
+              automationEnabled={false}
+              onSetAutomationEnabled={() => {}}
+              solFees={0}
+              prepaidTxFees={0}
             />
           )}
           {isSplitModalOpen && (
             <LockTokensModal
+              insufficientBalance={false}
               mint={mint}
               mode="split"
               minLockupTimeInDays={
@@ -1043,6 +1081,10 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsSplitModalOpen(false)}
               onSubmit={handleSplitTokens}
+              automationEnabled={false}
+              onSetAutomationEnabled={() => {}}
+              solFees={0}
+              prepaidTxFees={0}
             />
           )}
           {isTransferModalOpen && (
@@ -1056,8 +1098,15 @@ export const PositionCard = ({
           )}
           {isDelegateModalOpen && (
             <DelegateTokensModal
+              prepaidTxFees={prepaidTxFees}
+              automationEnabled={automationEnabled}
+              onSetAutomationEnabled={setAutomationEnabled}
               onClose={() => setIsDelegateModalOpen(false)}
               onSubmit={handleDelegateTokens}
+              solFees={delegationFees}
+              insufficientBalance={!!insufficientDelegationBalance}
+              subDao={subDao}
+              setSubDao={setSubDao}
             />
           )}
         </>

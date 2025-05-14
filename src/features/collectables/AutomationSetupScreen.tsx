@@ -427,7 +427,7 @@ const AutomationSetupScreen = () => {
             <ButtonPressable
               title={
                 insufficientSol
-                  ? t('automationScreen.insufficientSol')
+                  ? t('generic.insufficientSol')
                   : loading
                   ? undefined
                   : t('generic.save')
