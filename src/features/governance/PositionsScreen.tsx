@@ -269,21 +269,21 @@ export const PositionsScreen = () => {
           </Box>
         )}
         <Box flexDirection="row" padding="m">
-          <ButtonPressable
-            flex={1}
-            fontSize={16}
-            borderRadius="round"
-            borderWidth={2}
-            borderColor="white"
-            backgroundColorOpacityPressed={0.7}
-            title={t('gov.transactions.lockTokens')}
-            titleColor="white"
-            titleColorPressed="black"
-            onPress={() => setIsLockModalOpen(true)}
-            disabled={claimingAllRewards || loading || !mint.equals(HNT_MINT)}
-          />
           {HNT_MINT.equals(mint) && (
             <>
+              <ButtonPressable
+                flex={1}
+                fontSize={16}
+                borderRadius="round"
+                borderWidth={2}
+                borderColor="white"
+                backgroundColorOpacityPressed={0.7}
+                title={t('gov.transactions.lockTokens')}
+                titleColor="white"
+                titleColorPressed="black"
+                onPress={() => setIsLockModalOpen(true)}
+                disabled={claimingAllRewards || loading}
+              />
               <Box paddingHorizontal="s" />
               <ButtonPressable
                 flex={1}
