@@ -314,7 +314,7 @@ const AutomationSetupScreen = () => {
                       flex={1}
                       variant="transparent"
                       textInputProps={{
-                        placeholder: duration,
+                        placeholder: duration || '------',
                         onChangeText: handleDurationChange,
                         value: duration,
                         keyboardType: 'decimal-pad',
