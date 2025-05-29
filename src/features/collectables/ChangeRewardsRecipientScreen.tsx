@@ -246,22 +246,19 @@ const ChangeRewardsRecipientScreen = () => {
                 marginHorizontal="s"
                 marginVertical="xs"
               >
-                <Box flexGrow={1} justifyContent="center">
+                <Box flexGrow={1} justifyContent="flex-start">
                   <Text
-                    textAlign="left"
-                    variant="subtitle2"
-                    adjustsFontSizeToFit
+                    variant="subtitle4"
+                    color="secondaryText"
+                    marginBottom="s"
                   >
-                    {t('changeRewardsRecipientScreen.title')}
-                  </Text>
-                  <Text variant="subtitle4" color="secondaryText">
                     {t('changeRewardsRecipientScreen.description')}
                   </Text>
                   <Box
                     borderRadius="m"
                     backgroundColor="secondary"
                     padding="ms"
-                    marginTop="s"
+                    marginBottom="m"
                   >
                     <Text variant="body3">
                       {t('changeRewardsRecipientScreen.blurb')}
@@ -270,206 +267,262 @@ const ChangeRewardsRecipientScreen = () => {
                   {removed
                     ? null
                     : hasRecipients && (
-                        <Box
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          marginTop="s"
-                        >
+                        <Box flexDirection="column" marginBottom="m">
                           {!recipientsAreDifferent ? (
-                            <>
-                              {(hasIotRecipient ||
-                                hasMobileRecipient ||
-                                hasHntRecipient) && (
+                            (hasIotRecipient ||
+                              hasMobileRecipient ||
+                              hasHntRecipient) && (
+                              <Box
+                                flexDirection="row"
+                                alignItems="center"
+                                backgroundColor="black600"
+                                borderRadius="m"
+                                padding="s"
+                                marginBottom="s"
+                              >
                                 <Box
-                                  flex={1}
                                   flexDirection="row"
-                                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                  // @ts-ignore
-                                  gap={4}
+                                  alignItems="center"
+                                  flex={1}
                                 >
-                                  <Box
-                                    flex={1}
-                                    flexDirection="row"
-                                    padding="s"
-                                    backgroundColor="black600"
-                                    borderRadius="m"
-                                    justifyContent="space-between"
-                                    position="relative"
+                                  {hasIotRecipient && (
+                                    <IotSymbol
+                                      color={colors.iotGreen}
+                                      width={20}
+                                      height={20}
+                                      style={{ marginRight: 8 }}
+                                    />
+                                  )}
+                                  {hasMobileRecipient && (
+                                    <MobileSymbol
+                                      color={colors.mobileBlue}
+                                      width={20}
+                                      height={20}
+                                      style={{ marginRight: 8 }}
+                                    />
+                                  )}
+                                  {hasHntRecipient && (
+                                    <HntSymbol
+                                      color={colors.hntBlue}
+                                      width={20}
+                                      height={20}
+                                      style={{ marginRight: 8 }}
+                                    />
+                                  )}
+                                  <Text
+                                    variant="body3"
+                                    marginLeft="s"
+                                    style={{ marginRight: 8 }}
                                   >
-                                    <Box
-                                      flexDirection="row"
-                                      alignItems="center"
-                                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                      // @ts-ignore
-                                      gap={8}
-                                    >
-                                      {hasIotRecipient && (
-                                        <IotSymbol
-                                          color={colors.iotGreen}
-                                          width={20}
-                                          height={20}
-                                        />
-                                      )}
-                                      {hasMobileRecipient && (
-                                        <MobileSymbol
-                                          color={colors.mobileBlue}
-                                          width={20}
-                                          height={20}
-                                        />
-                                      )}
-                                      {hasHntRecipient && (
-                                        <HntSymbol
-                                          color={colors.hntBlue}
-                                          width={20}
-                                          height={20}
-                                        />
-                                      )}
-                                      <Text variant="body3">Recipient</Text>
-                                    </Box>
-                                    <Text variant="body2">
-                                      {ellipsizeAddress(
-                                        new PublicKey(
-                                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                          (hntRecipient?.destination ||
-                                            mobileRecipient?.destination ||
-                                            iotRecipient?.destination)!,
-                                        ).toBase58(),
-                                      )}
-                                    </Text>
-                                  </Box>
+                                    Recipient
+                                  </Text>
+                                  <Text variant="body2" marginLeft="s">
+                                    {ellipsizeAddress(
+                                      new PublicKey(
+                                        hntRecipient?.destination ||
+                                          mobileRecipient?.destination ||
+                                          iotRecipient?.destination ||
+                                          '',
+                                      ).toBase58(),
+                                    )}
+                                  </Text>
                                 </Box>
-                              )}
-                            </>
+                                <TouchableOpacityBox
+                                  marginLeft="m"
+                                  paddingHorizontal="m"
+                                  paddingVertical="sx"
+                                  borderRadius="m"
+                                  backgroundColor="black700"
+                                  onPress={handleRemoveRecipient}
+                                >
+                                  {removing ? (
+                                    <CircleLoader
+                                      loaderSize={20}
+                                      color="white"
+                                    />
+                                  ) : (
+                                    <Text variant="body3Medium">
+                                      {t('generic.remove')}
+                                    </Text>
+                                  )}
+                                </TouchableOpacityBox>
+                              </Box>
+                            )
                           ) : (
-                            <Box
-                              flex={1}
-                              marginTop="s"
-                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                              // @ts-ignore
-                              gap={4}
-                            >
+                            <>
                               {hasIotRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  padding="s"
+                                  alignItems="center"
                                   backgroundColor="black600"
                                   borderRadius="m"
-                                  justifyContent="space-between"
-                                  position="relative"
+                                  padding="s"
+                                  marginBottom="s"
                                 >
                                   <Box
                                     flexDirection="row"
                                     alignItems="center"
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    gap={8}
+                                    flex={1}
                                   >
                                     <IotSymbol
                                       color={colors.iotGreen}
                                       width={20}
                                       height={20}
+                                      style={{ marginRight: 8 }}
                                     />
-                                    <Text variant="body3">Recipient</Text>
+                                    <Text
+                                      variant="body3"
+                                      marginLeft="s"
+                                      style={{ marginRight: 8 }}
+                                    >
+                                      Recipient
+                                    </Text>
+                                    <Text variant="body2" marginLeft="s">
+                                      {ellipsizeAddress(
+                                        new PublicKey(
+                                          iotRecipient?.destination || '',
+                                        ).toBase58(),
+                                      )}
+                                    </Text>
                                   </Box>
-                                  <Text variant="body2">
-                                    {ellipsizeAddress(
-                                      new PublicKey(
-                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                        iotRecipient?.destination!,
-                                      ).toBase58(),
+                                  <TouchableOpacityBox
+                                    marginLeft="m"
+                                    paddingHorizontal="m"
+                                    paddingVertical="sx"
+                                    borderRadius="m"
+                                    backgroundColor="black700"
+                                    onPress={handleRemoveRecipient}
+                                  >
+                                    {removing ? (
+                                      <CircleLoader
+                                        loaderSize={20}
+                                        color="white"
+                                      />
+                                    ) : (
+                                      <Text variant="body3Medium">
+                                        {t('generic.remove')}
+                                      </Text>
                                     )}
-                                  </Text>
+                                  </TouchableOpacityBox>
                                 </Box>
                               )}
                               {hasMobileRecipient && (
                                 <Box
                                   flexDirection="row"
-                                  padding="s"
+                                  alignItems="center"
                                   backgroundColor="black600"
                                   borderRadius="m"
-                                  justifyContent="space-between"
-                                  position="relative"
+                                  padding="s"
+                                  marginBottom="s"
                                 >
                                   <Box
                                     flexDirection="row"
                                     alignItems="center"
-                                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                    // @ts-ignore
-                                    gap={8}
-                                    l
+                                    flex={1}
                                   >
                                     <MobileSymbol
                                       color={colors.mobileBlue}
                                       width={20}
                                       height={20}
+                                      style={{ marginRight: 8 }}
                                     />
-                                    <Text variant="body3">Recipient</Text>
+                                    <Text
+                                      variant="body3"
+                                      marginLeft="s"
+                                      style={{ marginRight: 8 }}
+                                    >
+                                      Recipient
+                                    </Text>
+                                    <Text variant="body2" marginLeft="s">
+                                      {ellipsizeAddress(
+                                        new PublicKey(
+                                          mobileRecipient?.destination || '',
+                                        ).toBase58(),
+                                      )}
+                                    </Text>
                                   </Box>
-                                  <Text variant="body2">
-                                    {ellipsizeAddress(
-                                      new PublicKey(
-                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                        mobileRecipient?.destination!,
-                                      ).toBase58(),
+                                  <TouchableOpacityBox
+                                    marginLeft="m"
+                                    paddingHorizontal="m"
+                                    paddingVertical="sx"
+                                    borderRadius="m"
+                                    backgroundColor="black700"
+                                    onPress={handleRemoveRecipient}
+                                  >
+                                    {removing ? (
+                                      <CircleLoader
+                                        loaderSize={20}
+                                        color="white"
+                                      />
+                                    ) : (
+                                      <Text variant="body3Medium">
+                                        {t('generic.remove')}
+                                      </Text>
                                     )}
-                                  </Text>
+                                  </TouchableOpacityBox>
                                 </Box>
                               )}
-                            </Box>
+                              {hasHntRecipient && (
+                                <Box
+                                  flexDirection="row"
+                                  alignItems="center"
+                                  backgroundColor="black600"
+                                  borderRadius="m"
+                                  padding="s"
+                                  marginBottom="s"
+                                >
+                                  <Box
+                                    flexDirection="row"
+                                    alignItems="center"
+                                    flex={1}
+                                  >
+                                    <HntSymbol
+                                      color={colors.hntBlue}
+                                      width={20}
+                                      height={20}
+                                      style={{ marginRight: 8 }}
+                                    />
+                                    <Text
+                                      variant="body3"
+                                      marginLeft="s"
+                                      style={{ marginRight: 8 }}
+                                    >
+                                      Recipient
+                                    </Text>
+                                    <Text variant="body2" marginLeft="s">
+                                      {ellipsizeAddress(
+                                        new PublicKey(
+                                          hntRecipient?.destination ||
+                                            mobileRecipient?.destination ||
+                                            iotRecipient?.destination ||
+                                            '',
+                                        ).toBase58(),
+                                      )}
+                                    </Text>
+                                  </Box>
+                                  <TouchableOpacityBox
+                                    marginLeft="m"
+                                    paddingHorizontal="m"
+                                    paddingVertical="sx"
+                                    borderRadius="m"
+                                    backgroundColor="black700"
+                                    onPress={handleRemoveRecipient}
+                                  >
+                                    {removing ? (
+                                      <CircleLoader
+                                        loaderSize={20}
+                                        color="white"
+                                      />
+                                    ) : (
+                                      <Text variant="body3Medium">
+                                        {t('generic.remove')}
+                                      </Text>
+                                    )}
+                                  </TouchableOpacityBox>
+                                </Box>
+                              )}
+                            </>
                           )}
-                          {hasHntRecipient && (
-                            <Box
-                              flexDirection="row"
-                              padding="s"
-                              backgroundColor="black600"
-                              borderRadius="m"
-                              justifyContent="space-between"
-                              position="relative"
-                            >
-                              <Box
-                                flexDirection="row"
-                                alignItems="center"
-                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                                // @ts-ignore
-                                gap={8}
-                              >
-                                <HntSymbol
-                                  color={colors.hntBlue}
-                                  width={20}
-                                  height={20}
-                                />
-                                <Text variant="body3">Recipient</Text>
-                              </Box>
-                              <Text variant="body2">
-                                {ellipsizeAddress(
-                                  new PublicKey(
-                                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-                                    hntRecipient?.destination!,
-                                  ).toBase58(),
-                                )}
-                              </Text>
-                            </Box>
-                          )}
-                          <TouchableOpacityBox
-                            flexDirection="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            borderRadius="m"
-                            paddingVertical="sx"
-                            marginLeft="s"
-                            paddingLeft="s"
-                            paddingRight="s"
-                            backgroundColor="black600"
-                            onPress={handleRemoveRecipient}
-                          >
-                            {removing ? (
-                              <CircleLoader loaderSize={20} color="white" />
-                            ) : (
-                              <Text variant="body3Medium">
-                                {t('generic.remove')}
-                              </Text>
-                            )}
-                          </TouchableOpacityBox>
                         </Box>
                       )}
                   <TextInput

@@ -58,6 +58,8 @@ const App = () => {
     'ws error: received bad response code from server 429',
     'Ignored unsubscribe request because an active subscription with id',
     'accountFetchCache Batching account fetch of',
+    "ws error: The operation couldn't be completed. Connection reset by peer",
+    'You have tried to read "wallet" on a WalletContext without providing one. Make sure to render a WalletProvider as an ancestor of the component that uses WalletContext',
   ])
 
   const { appState } = useAppState()
