@@ -650,7 +650,8 @@ export const PositionCard = ({
             />
             {canDelegate && (
               <>
-                {(showDelegationExpiringWarning || showDelegationExpiredWarning) && (
+                {(showDelegationExpiringWarning ||
+                  showDelegationExpiredWarning) && (
                   <ListItem
                     key="renewDelegation"
                     title={t('gov.positions.renewDelegation')}
