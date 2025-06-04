@@ -576,23 +576,49 @@ export const PositionCard = ({
 
   const govNavigation = useNavigation<GovernanceNavigationProp>()
 
+  // Add status indicators for proxy and delegation
+  const showProxyExpiringWarning =
+    position.isProxyRenewable && !position.isProxyExpired
+  const showProxyExpiredWarning = position.isProxyExpired
+  const showDelegationExpiringWarning =
+    position.isDelegationRenewable && !position.isDelegationExpired
+  const showDelegationExpiredWarning = position.isDelegationExpired
+
   const actions = () => {
     const proxyAction =
       position.proxy && !position.proxy.nextVoter.equals(PublicKey.default) ? (
-        <ListItem
-          key="revokeProxy"
-          title={t('gov.revokeProxy.title')}
-          onPress={() => {
-            setActionsOpen(false)
-            govNavigation.navigate('RevokeProxyScreen', {
-              mint: votingMint.mint.toBase58(),
-              position: position.pubkey.toBase58(),
-              wallet: position.proxy?.nextVoter?.toBase58(),
-            })
-          }}
-          selected={false}
-          hasPressedState={false}
-        />
+        <>
+          {(showProxyExpiringWarning || showProxyExpiredWarning) && (
+            <ListItem
+              key="renewProxy"
+              title={t('gov.positions.renewProxy')}
+              onPress={() => {
+                setActionsOpen(false)
+                govNavigation.navigate('AssignProxyScreen', {
+                  mint: votingMint.mint.toBase58(),
+                  position: position.pubkey.toBase58(),
+                  wallet: position.proxy?.nextVoter?.toBase58(),
+                })
+              }}
+              selected={false}
+              hasPressedState={false}
+            />
+          )}
+          <ListItem
+            key="revokeProxy"
+            title={t('gov.revokeProxy.title')}
+            onPress={() => {
+              setActionsOpen(false)
+              govNavigation.navigate('RevokeProxyScreen', {
+                mint: votingMint.mint.toBase58(),
+                position: position.pubkey.toBase58(),
+                wallet: position.proxy?.nextVoter?.toBase58(),
+              })
+            }}
+            selected={false}
+            hasPressedState={false}
+          />
+        </>
       ) : (
         <ListItem
           key="proxy"
@@ -623,16 +649,31 @@ export const PositionCard = ({
               hasPressedState={false}
             />
             {canDelegate && (
-              <ListItem
-                key="delegate"
-                title={t('gov.positions.changeDelegation')}
-                onPress={() => {
-                  setActionsOpen(false)
-                  setIsDelegateModalOpen(true)
-                }}
-                selected={false}
-                hasPressedState={false}
-              />
+              <>
+                {(showDelegationExpiringWarning ||
+                  showDelegationExpiredWarning) && (
+                  <ListItem
+                    key="renewDelegation"
+                    title={t('gov.positions.renewDelegation')}
+                    onPress={() => {
+                      setActionsOpen(false)
+                      setIsDelegateModalOpen(true)
+                    }}
+                    selected={false}
+                    hasPressedState={false}
+                  />
+                )}
+                <ListItem
+                  key="delegate"
+                  title={t('gov.positions.changeDelegation')}
+                  onPress={() => {
+                    setActionsOpen(false)
+                    setIsDelegateModalOpen(true)
+                  }}
+                  selected={false}
+                  hasPressedState={false}
+                />
+              </>
             )}
             {proxyAction}
           </>
@@ -863,6 +904,67 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
+                {/* Add status warnings */}
+                {(showProxyExpiringWarning ||
+                  showProxyExpiredWarning ||
+                  showDelegationExpiringWarning ||
+                  showDelegationExpiredWarning) && (
+                  <Box flexDirection="row" marginBottom="s">
+                    {showProxyExpiringWarning && (
+                      <Box
+                        padding="s"
+                        paddingHorizontal="m"
+                        backgroundColor="warning"
+                        borderRadius="m"
+                        marginRight="s"
+                      >
+                        <Text variant="body3" fontSize={10} color="black">
+                          {t('gov.positions.proxyExpiringSoon').toUpperCase()}
+                        </Text>
+                      </Box>
+                    )}
+                    {showProxyExpiredWarning && (
+                      <Box
+                        padding="s"
+                        paddingHorizontal="m"
+                        backgroundColor="error"
+                        borderRadius="m"
+                        marginRight="s"
+                      >
+                        <Text variant="body3" fontSize={10} color="black">
+                          {t('gov.positions.proxyExpired').toUpperCase()}
+                        </Text>
+                      </Box>
+                    )}
+                    {showDelegationExpiringWarning && (
+                      <Box
+                        padding="s"
+                        paddingHorizontal="m"
+                        backgroundColor="warning"
+                        borderRadius="m"
+                        marginRight="s"
+                      >
+                        <Text variant="body3" fontSize={10} color="black">
+                          {t(
+                            'gov.positions.delegationExpiringSoon',
+                          ).toUpperCase()}
+                        </Text>
+                      </Box>
+                    )}
+                    {showDelegationExpiredWarning && (
+                      <Box
+                        padding="s"
+                        paddingHorizontal="m"
+                        backgroundColor="error"
+                        borderRadius="m"
+                      >
+                        <Text variant="body3" fontSize={10} color="black">
+                          {t('gov.positions.delegationExpired').toUpperCase()}
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
+                )}
                 <Box
                   flexDirection="row"
                   justifyContent="space-between"
