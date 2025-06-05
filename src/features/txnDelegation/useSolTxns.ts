@@ -27,6 +27,7 @@ import { useAsync } from 'react-async-hook'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
+import { formatIdl } from './convertLegacyIdl'
 
 const ValidTxnKeys = [
   'onboardIotHotspotV0',
@@ -341,7 +342,10 @@ const useSolTxns = ({
       try {
         const idl = await fetchIdl(instruction.programId)
 
-        const coder = new BorshInstructionCoder(idl)
+        const anchor31Idl = convertIdlToCamelCase(
+          formatIdl(idl, instruction.programId.toBase58()),
+        )
+        const coder = new BorshInstructionCoder(anchor31Idl)
         const decodedInstruction = coder.decode(instruction.data)
 
         if (!decodedInstruction) return {}
