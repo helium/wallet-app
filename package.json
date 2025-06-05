@@ -75,6 +75,7 @@
     "@metaplex-foundation/mpl-bubblegum": "0.6.0",
     "@metaplex-foundation/mpl-token-metadata": "2.10.0",
     "@ngraveio/bc-ur": "1.1.13",
+    "@noble/hashes": "^1.8.0",
     "@onsol/tldparser": "0.5.3",
     "@react-native-async-storage/async-storage": "1.18.1",
     "@react-native-community/checkbox": "0.5.17",
