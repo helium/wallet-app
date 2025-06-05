@@ -17,7 +17,6 @@ import {
   IdlType,
   IdlTypeDef,
   IdlTypeDefined,
-  IdlTypeDefTy,
 } from '@coral-xyz/anchor/dist/cjs/idl'
 import { sha256 } from '@noble/hashes/sha256'
 
@@ -166,7 +165,7 @@ export function convertLegacyIdl(
   }
   return {
     accounts: (legacyIdl.accounts || []).map(convertAccount),
-    address: address,
+    address,
     constants: (legacyIdl.constants || []).map(convertConst),
     errors: legacyIdl.errors?.map(convertErrorCode) || [],
     events: legacyIdl.events?.map(convertEvent) || [],
@@ -180,87 +179,6 @@ export function convertLegacyIdl(
       ...(legacyIdl.accounts || []).map(convertTypeDef),
       ...(legacyIdl.events || []).map(convertEventToTypeDef),
     ],
-  }
-}
-
-function traverseType(type: IdlType | string, refs: Set<string>) {
-  if (typeof type === 'string') {
-    // skip
-  } else if ('vec' in type) {
-    traverseType(type.vec, refs)
-  } else if ('option' in type) {
-    traverseType(type.option, refs)
-  } else if ('defined' in type) {
-    refs.add(type.defined.name)
-  } else if ('array' in type) {
-    traverseType(type.array[0], refs)
-  } else if ('generic' in type) {
-    refs.add(type.generic)
-  } else if ('coption' in type) {
-    traverseType(type.coption, refs)
-  }
-}
-
-function traverseIdlFields(fields: IdlDefinedFields, refs: Set<string>) {
-  fields.forEach((field: IdlField | IdlType | string) =>
-    typeof field === 'string'
-      ? traverseType(field, refs)
-      : typeof field === 'object' && 'type' in field
-      ? traverseType(field.type, refs)
-      : traverseType(field, refs),
-  )
-}
-
-function traverseTypeDef(type: IdlTypeDefTy, refs: Set<string>) {
-  switch (type.kind) {
-    case 'struct':
-      traverseIdlFields(type.fields ?? [], refs)
-      return
-    case 'enum':
-      type.variants.forEach((variant: any) =>
-        traverseIdlFields(variant.fields ?? [], refs),
-      )
-      return
-    case 'type':
-      traverseType(type.alias, refs)
-      return
-  }
-}
-
-function getTypeReferences(idl: Idl): Set<string> {
-  const refs = new Set<string>()
-  idl.constants?.forEach((constant: any) => traverseType(constant.type, refs))
-  idl.accounts?.forEach((account: any) => refs.add(account.name))
-  idl.instructions?.forEach((instruction: any) =>
-    instruction.args.forEach((arg: any) => traverseType(arg.type, refs)),
-  )
-  idl.events?.forEach((event: any) => refs.add(event.name))
-
-  // Build up recursive type references in breadth-first manner.
-  // Very inefficient since we traverse same types multiple times.
-  // But it works. Open to contributions that do proper graph traversal
-  let prevSize = refs.size
-  let sizeDiff = 1
-  while (sizeDiff > 0) {
-    for (const idlType of idl.types ?? []) {
-      if (refs.has(idlType.name)) {
-        traverseTypeDef(idlType.type, refs)
-      }
-    }
-    sizeDiff = refs.size - prevSize
-    prevSize = refs.size
-  }
-  return refs
-}
-
-// Remove types that are not used in definition of instructions, accounts, events, or constants
-function removeUnusedTypes(idl: Idl): Idl {
-  const usedElsewhere = getTypeReferences(idl)
-  return {
-    ...idl,
-    types: (idl.types ?? []).filter((type: any) =>
-      usedElsewhere.has(type.name),
-    ),
   }
 }
 
@@ -336,11 +254,10 @@ function convertEnumFields(fields: LegacyEnumFields): IdlDefinedFields {
     'type' in fields[0]
   ) {
     return (fields as LegacyIdlField[]).map(convertField) as IdlField[]
-  } else {
-    return (fields as LegacyIdlType[]).map((type) =>
-      convertType(type),
-    ) as IdlType[]
   }
+  return (fields as LegacyIdlType[]).map((type) =>
+    convertType(type),
+  ) as IdlType[]
 }
 
 function convertEvent(event: LegacyIdlEvent): IdlEvent {
@@ -371,16 +288,15 @@ function convertInstructionAccount(
 ): IdlInstructionAccountItem {
   if ('accounts' in account) {
     return convertInstructionAccounts(account)
-  } else {
-    return {
-      docs: account.docs || [],
-      name: getSnakeCase(account.name),
-      optional: account.isOptional || false,
-      pda: account.pda ? convertPda(account.pda) : undefined,
-      relations: account.relations || [],
-      signer: account.isSigner || false,
-      writable: account.isMut || false,
-    }
+  }
+  return {
+    docs: account.docs || [],
+    name: getSnakeCase(account.name),
+    optional: account.isOptional || false,
+    pda: account.pda ? convertPda(account.pda) : undefined,
+    relations: account.relations || [],
+    signer: account.isSigner || false,
+    writable: account.isMut || false,
   }
 }
 
@@ -432,17 +348,23 @@ function convertEventToTypeDef(event: LegacyIdlEvent): IdlTypeDef {
 function convertType(type: LegacyIdlType): IdlType {
   if (typeof type === 'string') {
     return type === 'publicKey' ? 'pubkey' : type
-  } else if ('vec' in type) {
+  }
+  if ('vec' in type) {
     return { vec: convertType(type.vec) }
-  } else if ('option' in type) {
+  }
+  if ('option' in type) {
     return { option: convertType(type.option) }
-  } else if ('defined' in type) {
+  }
+  if ('defined' in type) {
     return { defined: { generics: [], name: type.defined } } as IdlTypeDefined
-  } else if ('array' in type) {
+  }
+  if ('array' in type) {
     return { array: [convertType(type.array[0]), type.array[1]] }
-  } else if ('generic' in type) {
+  }
+  if ('generic' in type) {
     return type
-  } else if ('definedWithTypeArgs' in type) {
+  }
+  if ('definedWithTypeArgs' in type) {
     return {
       defined: {
         generics: type.definedWithTypeArgs.args.map(convertDefinedTypeArg),
@@ -456,9 +378,11 @@ function convertType(type: LegacyIdlType): IdlType {
 function convertDefinedTypeArg(arg: LegacyIdlDefinedTypeArg): any {
   if ('generic' in arg) {
     return { generic: arg.generic }
-  } else if ('value' in arg) {
+  }
+  if ('value' in arg) {
     return { value: arg.value }
-  } else if ('type' in arg) {
+  }
+  if ('type' in arg) {
     return { type: convertType(arg.type) }
   }
   throw new Error(`Unsupported defined type arg: ${JSON.stringify(arg)}`)
