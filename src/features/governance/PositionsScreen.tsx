@@ -1,7 +1,7 @@
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
-import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import {
   HELIUM_COMMON_LUT,
   HELIUM_COMMON_LUT_DEVNET,
@@ -16,9 +16,11 @@ import {
   toVersionedTx,
 } from '@helium/spl-utils'
 import {
+  SubDaoWithMeta,
   calcLockupMultiplier,
   useClaimAllPositionsRewards,
   useCreatePosition,
+  useDelegatePositions,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
@@ -35,6 +37,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { ClaimingRewardsModal } from './ClaimingRewardsModal'
+import { DelegateTokensModal } from './DelegateTokensModal'
 import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
@@ -124,7 +127,7 @@ export const PositionsScreen = () => {
   }: {
     header: string
     message: string
-    instructions: TransactionInstruction[]
+    instructions: TransactionInstruction[] | TransactionInstruction[][]
     sigs?: Keypair[]
     onProgress?: (status: Status) => void
     sequentially?: boolean
@@ -250,6 +253,51 @@ export const PositionsScreen = () => {
     }
   }
 
+  const [isDelegateAllModalOpen, setIsDelegateAllModalOpen] = useState(false)
+  const [delegateAllSubDao, setDelegateAllSubDao] =
+    useState<SubDaoWithMeta | null>(null)
+  const [delegateAllAutomationEnabled, setDelegateAllAutomationEnabled] =
+    useState(true)
+
+  const now = useSolanaUnixNow()
+  const unexpiredPositions = useMemo(
+    () =>
+      positions?.filter(
+        (p) =>
+          p.lockup.kind.constant ||
+          p.lockup.endTs.gt(new BN(now?.toString() || '0')),
+      ),
+    [positions, now],
+  )
+  const {
+    delegatePositions,
+    rentFee: delegateAllSolFees = 0,
+    prepaidTxFees: delegateAllPrepaidTxFees = 0,
+    insufficientBalance: delegateAllInsufficientBalance = false,
+    error: delegateAllError,
+    loading: delegateAllLoading,
+  } = useDelegatePositions({
+    automationEnabled: delegateAllAutomationEnabled,
+    positions: unexpiredPositions || [],
+    subDao: delegateAllSubDao || undefined,
+  })
+  const handleDelegateAll = async () => {
+    if (!delegatePositions) return
+    await delegatePositions({
+      onInstructions: async (ixs) => {
+        await decideAndExecute({
+          header: t('gov.transactions.delegatePosition'),
+          message: t('gov.positions.delegateAllMessage', {
+            subdao: delegateAllSubDao?.dntMetadata.name,
+          }),
+          instructions: ixs,
+        })
+      },
+    })
+    setIsDelegateAllModalOpen(false)
+    refetchState()
+  }
+
   return (
     <GovernanceWrapper selectedTab="positions">
       <Box flexDirection="column" flex={1}>
@@ -273,32 +321,42 @@ export const PositionsScreen = () => {
             <>
               <ButtonPressable
                 flex={1}
-                fontSize={16}
+                height={44}
+                fontSize={12}
                 borderRadius="round"
                 borderWidth={2}
                 borderColor="white"
                 backgroundColorOpacityPressed={0.7}
                 title={t('gov.transactions.lockTokens')}
                 titleColor="white"
-                titleColorPressed="black"
                 onPress={() => setIsLockModalOpen(true)}
                 disabled={claimingAllRewards || loading}
               />
-              <Box paddingHorizontal="s" />
+              <Box paddingHorizontal="xs" />
               <ButtonPressable
+                height={44}
                 flex={1}
-                fontSize={16}
+                fontSize={12}
                 borderRadius="round"
                 borderWidth={2}
-                borderColor={
-                  // eslint-disable-next-line no-nested-ternary
-                  claimingAllRewards
-                    ? 'surfaceSecondary'
-                    : !positionsWithRewards?.length
-                    ? 'surfaceSecondary'
-                    : 'white'
-                }
-                backgroundColor="white"
+                borderColor="white"
+                titleColor="white"
+                backgroundColorOpacityPressed={0.7}
+                backgroundColorDisabled="surfaceSecondary"
+                backgroundColorDisabledOpacity={0.9}
+                titleColorDisabled="secondaryText"
+                title={t('gov.positions.delegateAll')}
+                onPress={() => setIsDelegateAllModalOpen(true)}
+                disabled={loading || delegateAllLoading}
+              />
+              <Box paddingHorizontal="xs" />
+              <ButtonPressable
+                flex={1}
+                height={44}
+                fontSize={12}
+                borderRadius="round"
+                borderWidth={2}
+                borderColor="white"
                 backgroundColorOpacityPressed={0.7}
                 backgroundColorDisabled="surfaceSecondary"
                 backgroundColorDisabledOpacity={0.9}
@@ -306,7 +364,7 @@ export const PositionsScreen = () => {
                 title={
                   claimingAllRewards ? '' : t('gov.transactions.claimRewards')
                 }
-                titleColor="black"
+                titleColor="white"
                 onPress={handleClaimRewards}
                 disabled={
                   !positionsWithRewards?.length || claimingAllRewards || loading
@@ -329,6 +387,31 @@ export const PositionsScreen = () => {
             solFees={solFees || 0}
             prepaidTxFees={prepaidTxFees || 0}
           />
+        )}
+        {isDelegateAllModalOpen && (
+          <DelegateTokensModal
+            onClose={() => setIsDelegateAllModalOpen(false)}
+            onSubmit={handleDelegateAll}
+            onSetAutomationEnabled={setDelegateAllAutomationEnabled}
+            automationEnabled={delegateAllAutomationEnabled}
+            solFees={delegateAllSolFees}
+            prepaidTxFees={delegateAllPrepaidTxFees}
+            insufficientBalance={!!delegateAllInsufficientBalance}
+            subDao={delegateAllSubDao}
+            setSubDao={setDelegateAllSubDao}
+          />
+        )}
+        {delegateAllError && (
+          <Box
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            paddingTop="ms"
+          >
+            <Text variant="body3Medium" color="red500">
+              {delegateAllError.message}
+            </Text>
+          </Box>
         )}
       </Box>
     </GovernanceWrapper>

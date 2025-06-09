@@ -1392,6 +1392,7 @@ export default {
       constant: 'Constant',
       decaying: 'Decaying',
       delegate: 'Delegate position',
+      delegateAll: 'Delegate All',
       undelegate: 'Undelegate Position',
       extend: 'Extend position',
       close: 'Close position',
@@ -1453,6 +1454,8 @@ export default {
         'Transfer {{amount}} {{symbol}} to the position with {{targetAmount}} {{symbol}}?',
       delegateMessage:
         'delegate {{amount}} {{symbol}} to the {{subdao}} Subnetwork?',
+      delegateAllMessage:
+        'Delegate all positions to the {{subdao}} Subnetwork?',
       undelegateMessage: 'Undelegate {{amount}} {{symbol}}?',
       relinquishVotesMessage: 'Relinquish this positions votes?',
     },

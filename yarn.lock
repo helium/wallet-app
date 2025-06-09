@@ -3937,9 +3937,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/automation-hooks@npm:^0.10.16":
+"@helium/automation-hooks@file:.yalc/@helium/automation-hooks::locator=helium-wallet%40workspace%3A.":
   version: 0.10.16
-  resolution: "@helium/automation-hooks@npm:0.10.16"
+  resolution: "@helium/automation-hooks@file:.yalc/@helium/automation-hooks#.yalc/@helium/automation-hooks::hash=9c9ee4&locator=helium-wallet%40workspace%3A."
   dependencies:
     "@coral-xyz/anchor": ^0.31.0
     "@helium/account-fetch-cache": ^0.10.16
@@ -3956,7 +3956,7 @@ __metadata:
     "@solana/wallet-adapter-react": ^0.15.32
     react: ^16.8 || ^17 || ^18
     react-dom: ^16.8 || ^17 || ^18
-  checksum: 038e44ef70f58c98ff9031321784a76b459a729801e9b6cf4e99c6e0bd1466def72223ce06081d27f8c85886bb84af5b3cba45d53a10e3ff893fe5a3bbab89ee
+  checksum: 5b24c102a63cc568fca728d923805e9b90c1640a805d4235a07fe59f175078be0247b4dd78af20edbd38a67a62aa73c42e6706dc339e0d9572a650be1d2a4008
   languageName: node
   linkType: hard
 
@@ -4847,9 +4847,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/voter-stake-registry-hooks@npm:0.10.16":
+"@helium/voter-stake-registry-hooks@file:.yalc/@helium/voter-stake-registry-hooks::locator=helium-wallet%40workspace%3A.":
   version: 0.10.16
-  resolution: "@helium/voter-stake-registry-hooks@npm:0.10.16"
+  resolution: "@helium/voter-stake-registry-hooks@file:.yalc/@helium/voter-stake-registry-hooks#.yalc/@helium/voter-stake-registry-hooks::hash=27902d&locator=helium-wallet%40workspace%3A."
   dependencies:
     "@coral-xyz/anchor": ^0.31.0
     "@helium/account-fetch-cache": ^0.10.16
@@ -4875,7 +4875,7 @@ __metadata:
     "@solana/wallet-adapter-react": ^0.15.32
     react: ^16.8 || ^17 || ^18
     react-dom: ^16.8 || ^17 || ^18
-  checksum: 77a189bd9a34f6fbc1679498deba828a017f1b4e8535416d591524276f09a710191a7fd89b28c045ee5ef7f545acc25e8c210ca90450e341f3d29442145ed6fd
+  checksum: a4e8a2c215c344e27fd73a303c4b4f4bc50087c001f8cb9329e595c24a307d50ff63ea88ffa5dc4154965259acf6fa47a84dc6c1e76e95d1777ec6750b522191
   languageName: node
   linkType: hard
 
@@ -15098,7 +15098,7 @@ __metadata:
     "@helium/account-fetch-cache": 0.10.16
     "@helium/account-fetch-cache-hooks": 0.10.16
     "@helium/address": 4.10.2
-    "@helium/automation-hooks": ^0.10.16
+    "@helium/automation-hooks": "file:.yalc/@helium/automation-hooks"
     "@helium/circuit-breaker-sdk": 0.10.16
     "@helium/cron-sdk": ^0.0.8
     "@helium/crypto-react-native": 4.8.0
@@ -15127,7 +15127,7 @@ __metadata:
     "@helium/treasury-management-sdk": 0.10.16
     "@helium/tuktuk-idls": ^0.0.8
     "@helium/tuktuk-sdk": ^0.0.8
-    "@helium/voter-stake-registry-hooks": 0.10.16
+    "@helium/voter-stake-registry-hooks": "file:.yalc/@helium/voter-stake-registry-hooks"
     "@helium/voter-stake-registry-sdk": 0.10.16
     "@helium/wallet-link": 4.11.0
     "@jup-ag/api": 6.0.6
