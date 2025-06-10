@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.14.2",
+  "version": "2.14.3",
   "private": true,
   "scripts": {
     "postinstall": "patch-package && ./node_modules/.bin/rn-nodeify --hack --install && npx jetify",
@@ -33,7 +33,7 @@
     "@helium/account-fetch-cache": "0.10.16",
     "@helium/account-fetch-cache-hooks": "0.10.16",
     "@helium/address": "4.10.2",
-    "@helium/automation-hooks": "file:.yalc/@helium/automation-hooks",
+    "@helium/automation-hooks": "^0.10.16",
     "@helium/circuit-breaker-sdk": "0.10.16",
     "@helium/cron-sdk": "^0.0.8",
     "@helium/crypto-react-native": "4.8.0",
@@ -62,7 +62,7 @@
     "@helium/treasury-management-sdk": "0.10.16",
     "@helium/tuktuk-idls": "^0.0.8",
     "@helium/tuktuk-sdk": "^0.0.8",
-    "@helium/voter-stake-registry-hooks": "file:.yalc/@helium/voter-stake-registry-hooks",
+    "@helium/voter-stake-registry-hooks": "0.10.16",
     "@helium/voter-stake-registry-sdk": "0.10.16",
     "@helium/wallet-link": "4.11.0",
     "@jup-ag/api": "6.0.6",
@@ -290,11 +290,10 @@
     "@helium/account-fetch-cache": "0.10.16",
     "@helium/account-fetch-cache-hooks": "0.10.16",
     "@helium/helium-react-hooks": "0.10.16",
-    "@helium/voter-stake-registry-hooks": "file:.yalc/@helium/voter-stake-registry-hooks",
+    "@helium/voter-stake-registry-hooks": "0.10.16",
     "@helium/voter-stake-registry-sdk": "0.10.16",
     "@helium/modular-governance-hooks": "0.1.5",
-    "@helium/onboarding": "4.14.0",
-    "@helium/automation-hooks": "file:.yalc/@helium/automation-hooks"
+    "@helium/onboarding": "4.14.0"
   },
   "react-native": {
     "zlib": "browserify-zlib",
