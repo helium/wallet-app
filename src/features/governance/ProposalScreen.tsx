@@ -543,7 +543,7 @@ export const ProposalScreen = () => {
                       </Box>
                     )}
                     <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
-                      {votingResults.results?.map((r, index) => (
+                      {votingResults.results?.map((r) => (
                         <Box
                           backgroundColor="surfaceSecondary"
                           borderRadius="l"
