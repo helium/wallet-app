@@ -550,7 +550,7 @@ export const ProposalScreen = () => {
                           padding="xs"
                         >
                           <VoteOption
-                            voters={voters?.[index] || []}
+                            voters={voters?.[r.index] || []}
                             key={r.name}
                             voting={
                               currVote === r.index && (voting || relinquishing)
