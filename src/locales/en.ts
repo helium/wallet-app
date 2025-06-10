@@ -1285,6 +1285,7 @@ export default {
     autoGasConvertHeader: 'Auto Fee Conversion: Low on SOL',
   },
   gov: {
+    manage: 'Manage',
     title: 'Governance',
     tutorial: {
       goToVote: 'Go To Vote',
@@ -1378,6 +1379,7 @@ export default {
       dataUsageRevenue: 'Data Usage Revenue (30 days)',
     },
     positions: {
+      proxyAll: 'Proxy All',
       renewDelegation: 'Renew Delegation',
       delegationExpiringSoon: 'Delegation Expiring Soon',
       delegationExpired: 'Delegation Expired',
