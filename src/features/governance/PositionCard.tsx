@@ -183,7 +183,7 @@ export const PositionCard = ({
   }: {
     header: string
     message: string
-    instructions: TransactionInstruction[]
+    instructions: TransactionInstruction[] | TransactionInstruction[][]
     sigs?: Keypair[]
     sequentially?: boolean
   }) => {
