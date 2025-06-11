@@ -1285,6 +1285,7 @@ export default {
     autoGasConvertHeader: 'Auto Fee Conversion: Low on SOL',
   },
   gov: {
+    manage: 'Manage',
     title: 'Governance',
     tutorial: {
       goToVote: 'Go To Vote',
@@ -1378,6 +1379,7 @@ export default {
       dataUsageRevenue: 'Data Usage Revenue (30 days)',
     },
     positions: {
+      proxyAll: 'Proxy All',
       renewDelegation: 'Renew Delegation',
       delegationExpiringSoon: 'Delegation Expiring Soon',
       delegationExpired: 'Delegation Expired',
@@ -1392,6 +1394,7 @@ export default {
       constant: 'Constant',
       decaying: 'Decaying',
       delegate: 'Delegate position',
+      delegateAll: 'Delegate All',
       undelegate: 'Undelegate Position',
       extend: 'Extend position',
       close: 'Close position',
@@ -1453,6 +1456,8 @@ export default {
         'Transfer {{amount}} {{symbol}} to the position with {{targetAmount}} {{symbol}}?',
       delegateMessage:
         'delegate {{amount}} {{symbol}} to the {{subdao}} Subnetwork?',
+      delegateAllMessage:
+        'Delegate all positions to the {{subdao}} Subnetwork?',
       undelegateMessage: 'Undelegate {{amount}} {{symbol}}?',
       relinquishVotesMessage: 'Relinquish this positions votes?',
     },
