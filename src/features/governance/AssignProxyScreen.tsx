@@ -60,7 +60,11 @@ export const AssignProxyScreen = () => {
   )
   const today = new Date()
   const augustFirst = Date.UTC(
-    today.getMonth() >= 7 ? today.getFullYear() + 1 : today.getFullYear(),
+    today.getMonth() === 6
+      ? today.getFullYear() + 1
+      : today.getMonth() > 6
+      ? today.getFullYear() + 1
+      : today.getFullYear(),
     7,
     1,
   )
