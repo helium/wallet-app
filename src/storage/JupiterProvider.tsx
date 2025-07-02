@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import {
-  Configuration,
-  DefaultApi,
+  createJupiterApiClient,
   QuoteGetRequest,
   QuoteResponse,
+  SwapApi,
   SwapPostRequest,
 } from '@jup-ag/api'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -22,7 +22,7 @@ import * as Logger from '../utils/logger'
 interface IJupiterContextState {
   loading: boolean
   error: unknown
-  api: DefaultApi
+  api: SwapApi
   routes?: QuoteResponse
 
   getRoute: (opts: QuoteGetRequest) => Promise<QuoteResponse | undefined>
@@ -41,12 +41,13 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
   const [error, setError] = useState<unknown>()
   const [routes, setRoutes] = useState<QuoteResponse>()
 
-  const api = useMemo(() => {
-    const config = new Configuration({
-      basePath: process.env.JUP_SWAP_API || 'https://quote-api.jup.ag/v6',
-    })
-    return new DefaultApi(config)
-  }, [])
+  const api = useMemo(
+    () =>
+      createJupiterApiClient({
+        ...(process.env.JUP_SWAP_API && { basePath: process.env.JUP_SWAP_API }),
+      }),
+    [],
+  )
 
   const getRoute = useCallback(
     async (opts: QuoteGetRequest) => {

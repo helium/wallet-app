@@ -5319,10 +5319,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jup-ag/api@npm:6.0.6":
-  version: 6.0.6
-  resolution: "@jup-ag/api@npm:6.0.6"
-  checksum: 3438ac34675b3f5250755d4d61460b811a64a401bd52b51090c369077f9880f9f02dcbf732a13c5114765daed3711c60461019f66737c46adfda95a766de3f6f
+"@jup-ag/api@npm:6.0.44":
+  version: 6.0.44
+  resolution: "@jup-ag/api@npm:6.0.44"
+  checksum: 053dd1d106b9fc5bc455df3451f91fb3e57c932938d63004a383a359ee9ab5a3220be6055329fe6039528328feabeeacd58c31ca75f9a7f287028bd9a847f75b
   languageName: node
   linkType: hard
 
@@ -15172,7 +15172,7 @@ __metadata:
     "@helium/voter-stake-registry-hooks": 0.10.22
     "@helium/voter-stake-registry-sdk": 0.10.22
     "@helium/wallet-link": 4.11.0
-    "@jup-ag/api": 6.0.6
+    "@jup-ag/api": 6.0.44
     "@keystonehq/keystone-sdk": 0.8.0
     "@ledgerhq/hw-app-solana": 7.4.0
     "@ledgerhq/hw-transport-mocker": 6.27.2

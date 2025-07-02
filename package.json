@@ -65,7 +65,7 @@
     "@helium/voter-stake-registry-hooks": "0.10.22",
     "@helium/voter-stake-registry-sdk": "0.10.22",
     "@helium/wallet-link": "4.11.0",
-    "@jup-ag/api": "6.0.6",
+    "@jup-ag/api": "6.0.44",
     "@keystonehq/keystone-sdk": "0.8.0",
     "@ledgerhq/hw-app-solana": "7.4.0",
     "@ledgerhq/react-native-hid": "6.32.4",
