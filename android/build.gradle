@@ -24,6 +24,18 @@ buildscript {
     }
 }
 
+subprojects { proj ->
+  if (proj.name.contains("react-native-sodium") || proj.name.contains("libsodium")) {
+    proj.afterEvaluate {
+      def androidExt = proj.extensions.findByName("android")
+      if (androidExt != null) {
+        androidExt.defaultConfig.externalNativeBuild.cmake.arguments +=
+          "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+      }
+    }
+  }
+}
+
 allprojects {
     repositories {
         mavenCentral()
