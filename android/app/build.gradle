@@ -123,6 +123,19 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    packagingOptions {
+        // If multiple versions of libsodium-jni.so are found, use the first one encountered
+        // This prevents build failures due to duplicate native library files
+        pickFirst '**/libsodium-jni.so'
+
+        // If multiple versions of the C++ standard library are found, use the first one
+        // This is common when multiple dependencies include their own C++ runtime
+        pickFirst '**/libc++_shared.so'
+
+        // Preserve debug symbols in libsodium-jni.so for debugging purposes
+        // This prevents the build process from stripping symbols from this native library
+        doNotStrip '**/libsodium-jni.so'
+    }
 }
 
 dependencies {
