@@ -123,6 +123,13 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    // do not strip native libsodium on any builds
+    packagingOptions {
+        doNotStrip "**/arm64-v8a/libsodium.so"
+        doNotStrip "**/arm64-v8a/libsodium-jni.so"
+
+    }
 }
 
 dependencies {

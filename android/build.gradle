@@ -24,13 +24,14 @@ buildscript {
     }
 }
 
+// append the 16 KB page-size support flag to any project that uses cmake
 subprojects { proj ->
-  if (proj.name.contains("react-native-sodium") || proj.name.contains("libsodium")) {
-    proj.afterEvaluate {
-      def androidExt = proj.extensions.findByName("android")
-      if (androidExt != null) {
-        androidExt.defaultConfig.externalNativeBuild.cmake.arguments +=
-          "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+  proj.afterEvaluate { p ->
+    def androidExt = p.extensions.findByName("android")
+    if (androidExt != null) {
+      def cm = androidExt.defaultConfig?.externalNativeBuild?.cmake
+      if (cm != null) {
+        cm.arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
       }
     }
   }
