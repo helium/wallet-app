@@ -24,19 +24,6 @@ buildscript {
     }
 }
 
-// append the 16 KB page-size support flag to any project that uses cmake
-subprojects { proj ->
-  proj.afterEvaluate { p ->
-    def androidExt = p.extensions.findByName("android")
-    if (androidExt != null) {
-      def cm = androidExt.defaultConfig?.externalNativeBuild?.cmake
-      if (cm != null) {
-        cm.arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
-      }
-    }
-  }
-}
-
 allprojects {
     repositories {
         mavenCentral()
