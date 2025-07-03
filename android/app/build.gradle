@@ -123,6 +123,11 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    packagingOptions {
+        doNotStrip "**/*.so"
+        pickFirst "**/libc++_shared.so"
+        pickFirst "**/libsodium-jni.so"
+    }
 }
 
 dependencies {

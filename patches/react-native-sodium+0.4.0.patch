@@ -2,21 +2,25 @@ diff --git a/node_modules/react-native-sodium/android/build.gradle b/node_module
 index 1f5e62f..416578e 100644
 --- a/node_modules/react-native-sodium/android/build.gradle
 +++ b/node_modules/react-native-sodium/android/build.gradle
-@@ -11,12 +11,12 @@ buildscript {
+@@ -11,12 +11,16 @@ buildscript {
  apply plugin: 'com.android.library'
- 
+
  android {
 -    compileSdkVersion 28
 -    buildToolsVersion "28.0.3"
-+    compileSdkVersion 34
-+    buildToolsVersion "34.0.0"
++    compileSdkVersion 35
++    buildToolsVersion "35.0.0"
++    ndkVersion rootProject.ext.ndkVersion
++    packagingOptions {
++        pickFirst "**/libsodium-jni.so"
++    }
      defaultConfig {
 -        minSdkVersion 16
 -        compileSdkVersion 28
 -        targetSdkVersion 28
-+        minSdkVersion 21
-+        compileSdkVersion 34
-+        targetSdkVersion 34
++        minSdkVersion 24
++        compileSdkVersion 35
++        targetSdkVersion 35
          versionCode 1
          versionName "0.1"
          compileOptions {
@@ -33,5 +37,5 @@ index 5599c58..e4fd8a8 100644
 +#import <React/RCTBridgeModule.h>
 +#import <React/RCTUtils.h>
  #import "sodium.h"
- 
+
  #import "RCTSodium.h"
