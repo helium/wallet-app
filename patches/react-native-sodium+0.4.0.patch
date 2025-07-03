@@ -21,7 +21,7 @@ index 1f5e62f..416578e 100644
          versionCode 1
          versionName "0.1"
          compileOptions {
-@@ -25,7 +29,12 @@ android {
+@@ -25,7 +29,15 @@ android {
          }
          externalNativeBuild {
              cmake {
@@ -30,7 +30,10 @@ index 1f5e62f..416578e 100644
 +                    "-DANDROID_TOOLCHAIN=clang",
 +                    "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
 +                    "-DANDROID_NATIVE_API_LEVEL=21",
-+                    "-DANDROID_ARM_MODE=arm"
++                    "-DANDROID_ARM_MODE=arm",
++                    "-DCMAKE_C_FLAGS=-fno-strict-aliasing -fwrapv",
++                    "-DCMAKE_CXX_FLAGS=-fno-strict-aliasing -fwrapv",
++                    "-DCMAKE_BUILD_TYPE=Release"
 +                )
              }
          }

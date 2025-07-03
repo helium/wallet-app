@@ -11,17 +11,19 @@ import globalStyles from '@theme/globalStyles'
 import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import * as SplashLib from 'expo-splash-screen'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { LogBox } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { OneSignal } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
+import RNSodium from 'react-native-sodium'
 import 'text-encoding-polyfill'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
+import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 import LockScreen from './features/lock/LockScreen'
 import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
 import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
@@ -37,11 +39,19 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
-import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
+
+const initializeSodium = async () => {
+  try {
+    // Ensure libsodium is properly initialized
+    await RNSodium.crypto_secretbox_keygen()
+  } catch (error) {
+    console.error('Failed to initialize libsodium:', error)
+  }
+}
 
 const App = () => {
   LogBox.ignoreLogs([
@@ -106,6 +116,10 @@ const App = () => {
   })
 
   const queryClient = React.useMemo(() => new QueryClient(), [])
+
+  useEffect(() => {
+    initializeSodium()
+  }, [])
 
   return (
     <QueryClientProvider client={queryClient}>
