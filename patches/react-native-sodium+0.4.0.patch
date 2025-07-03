@@ -24,6 +24,32 @@ index 1f5e62f..416578e 100644
          versionCode 1
          versionName "0.1"
          compileOptions {
+@@ -25,7 +29,10 @@ android {
+         }
+         externalNativeBuild {
+             cmake {
+-                arguments "-DANDROID_TOOLCHAIN=clang"
++                arguments (
++                    "-DANDROID_TOOLCHAIN=clang",
++                    "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
++                )
+             }
+         }
+         ndk {
+diff --git a/node_modules/react-native-sodium/build.sh b/node_modules/react-native-sodium/build.sh
+index eb61bc6..4740c85 100755
+--- a/node_modules/react-native-sodium/build.sh
++++ b/node_modules/react-native-sodium/build.sh
+@@ -39,6 +39,9 @@ do
+       dist-build/android-arm.sh
+       ;;
+     "arm")
++      echo "*** enable 16 KB page-size support on Android 15/16+ ***"
++      export LDFLAGS="$LDFLAGS -Wl,-z,max-page-size=16384"
++
+       dist-build/android-armv7-a.sh
+       dist-build/android-armv8-a.sh
+       ;;
 diff --git a/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m b/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m
 index 5599c58..e4fd8a8 100644
 --- a/node_modules/react-native-sodium/ios/RCTSodium/RCTSodium.m
