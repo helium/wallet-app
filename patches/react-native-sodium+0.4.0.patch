@@ -2,7 +2,7 @@ diff --git a/node_modules/react-native-sodium/android/build.gradle b/node_module
 index 1f5e62f..416578e 100644
 --- a/node_modules/react-native-sodium/android/build.gradle
 +++ b/node_modules/react-native-sodium/android/build.gradle
-@@ -11,12 +11,16 @@ buildscript {
+@@ -11,12 +11,13 @@ buildscript {
  apply plugin: 'com.android.library'
 
  android {
@@ -11,9 +11,6 @@ index 1f5e62f..416578e 100644
 +    compileSdkVersion 35
 +    buildToolsVersion "35.0.0"
 +    ndkVersion rootProject.ext.ndkVersion
-+    packagingOptions {
-+        pickFirst "**/libsodium-jni.so"
-+    }
      defaultConfig {
 -        minSdkVersion 16
 -        compileSdkVersion 28
@@ -24,21 +21,7 @@ index 1f5e62f..416578e 100644
          versionCode 1
          versionName "0.1"
          compileOptions {
-@@ -25,7 +29,10 @@ android {
-         }
-         externalNativeBuild {
-             cmake {
--                arguments "-DANDROID_TOOLCHAIN=clang"
-+                arguments (
-+                    "-DANDROID_TOOLCHAIN=clang",
-+                    "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
-+                )
-             }
-         }
-         ndk {
-diff --git a/node_modules/react-native-sodium/build.sh b/node_modules/react-native-sodium/build.sh
-index eb61bc6..4740c85 100755
---- a/node_modules/react-native-sodium/build.sh
+          /build.sh
 +++ b/node_modules/react-native-sodium/build.sh
 @@ -39,6 +39,9 @@ do
        dist-build/android-arm.sh
