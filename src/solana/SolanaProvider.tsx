@@ -2,8 +2,8 @@ import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
-import { ConnectionContext } from '@solana/wallet-adapter-react'
 import { DC_MINT, HNT_MINT, chunks } from '@helium/spl-utils'
+import { ConnectionContext } from '@solana/wallet-adapter-react'
 import {
   AccountInfo,
   Cluster,
@@ -14,6 +14,7 @@ import {
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { signMessageEd25519 } from '@utils/crypto'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import React, {
   ReactNode,
@@ -26,7 +27,6 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
-import { signMessageEd25519 } from '../utils/crypto'
 import KeystoneModal, {
   KeystoneModalRef,
 } from '../features/keystone/KeystoneModal'

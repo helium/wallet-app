@@ -9,11 +9,11 @@ import useAlert from '@hooks/useAlert'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { createKeypair } from '@storage/secureStorage'
+import { decryptPasswordProtectedData } from '@utils/crypto'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextStyle } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { decryptPasswordProtectedData } from '../../../utils/crypto'
 import { useOnboarding } from '../OnboardingProvider'
 import {
   CLIAccountNavigationProp,

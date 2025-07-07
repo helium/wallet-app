@@ -8,6 +8,8 @@ import { Mnemonic } from '@helium/crypto-react-native'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
+import { decryptPasswordProtectedData, extractEd25519Seed } from '@utils/crypto'
+import * as Logger from '@utils/logger'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
 import React, { memo, useCallback, useState } from 'react'
@@ -19,11 +21,6 @@ import {
   DEFAULT_DERIVATION_PATH,
   createKeypair,
 } from '../../../storage/secureStorage'
-import {
-  decryptPasswordProtectedData,
-  extractEd25519Seed,
-} from '../../../utils/crypto'
-import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingStackParamList } from '../onboardingTypes'
 
