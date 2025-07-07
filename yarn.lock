@@ -5794,6 +5794,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@noble/ciphers@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@noble/ciphers@npm:1.3.0"
+  checksum: 19722c35475df9bc78db60d261d0b5ef8a6d722561efc2135453f943eaa421b492195dc666e3e4df2b755bca3739e04f04b9c660198559f5dd05d3cfbf1b9e92
+  languageName: node
+  linkType: hard
+
 "@noble/curves@npm:1.4.2, @noble/curves@npm:~1.4.0":
   version: 1.4.2
   resolution: "@noble/curves@npm:1.4.2"
@@ -5818,6 +5825,13 @@ __metadata:
   dependencies:
     "@noble/hashes": 1.7.1
   checksum: 4143f1248ed57c1ae46dfef5c692a91383e5830420b9c72d3ff1061aa9ebbf8999297da6d2aed8a9716fef8e6b1f5a45737feeab02abf55ca2a4f514bf9339ec
+  languageName: node
+  linkType: hard
+
+"@noble/ed25519@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "@noble/ed25519@npm:2.3.0"
+  checksum: 0ee00e6ada8b9360750e5813be0f5ab5b7336f9771e1119b78738311fa0a29b0b49826d8a67a7920aa5f96b4a94c1e6a5d1bbfb78e4c74754daf78068c1c0414
   languageName: node
   linkType: hard
 
@@ -15174,6 +15188,8 @@ __metadata:
     "@metaplex-foundation/mpl-bubblegum": 0.6.0
     "@metaplex-foundation/mpl-token-metadata": 2.10.0
     "@ngraveio/bc-ur": 1.1.13
+    "@noble/ciphers": ^1.3.0
+    "@noble/ed25519": ^2.3.0
     "@noble/hashes": ^1.8.0
     "@onsol/tldparser": 0.5.3
     "@react-native-async-storage/async-storage": 1.18.1
@@ -15341,7 +15357,6 @@ __metadata:
     react-native-shared-group-preferences: 1.1.24
     react-native-simple-toast: 1.1.4
     react-native-snap-carousel: 4.0.0-beta.6
-    react-native-sodium: 0.4.0
     react-native-svg: 15.11.2
     react-native-svg-transformer: 0.14.3
     react-native-tab-view: 3.3.4
@@ -15370,7 +15385,6 @@ __metadata:
     timers-browserify: 1.4.2
     tinycolor2: 1.4.2
     tty-browserify: 0.0.0
-    tweetnacl: 1.0.3
     typescript: 5.0.4
     url: 0.10.3
     use-debounce: 7.0.1
@@ -21389,7 +21403,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-sodium@npm:0.4.0, react-native-sodium@npm:^0.4.0":
+"react-native-sodium@npm:^0.4.0":
   version: 0.4.0
   resolution: "react-native-sodium@npm:0.4.0"
   checksum: fd8bcfcb48ef029ddf57b362e02699de9cefe7a260947c454083201a67fd1e40cb6516f7a5bbcbaf4fb57dad29872b35a4649cdea5fb898cf036b578268d5c7b

@@ -11,14 +11,13 @@ import globalStyles from '@theme/globalStyles'
 import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import * as SplashLib from 'expo-splash-screen'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { LogBox } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { OneSignal } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import RNSodium from 'react-native-sodium'
 import 'text-encoding-polyfill'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
@@ -43,15 +42,6 @@ import { useDeepLinking } from './utils/linking'
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
-
-const initializeSodium = async () => {
-  try {
-    // Ensure libsodium is properly initialized
-    await RNSodium.crypto_secretbox_keygen()
-  } catch (error) {
-    console.error('Failed to initialize libsodium:', error)
-  }
-}
 
 const App = () => {
   LogBox.ignoreLogs([
@@ -116,10 +106,6 @@ const App = () => {
   })
 
   const queryClient = React.useMemo(() => new QueryClient(), [])
-
-  useEffect(() => {
-    initializeSodium()
-  }, [])
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -1549,8 +1549,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-sodium (0.4.0):
-    - React
   - react-native-udp (2.7.0):
     - React
   - react-native-video (6.12.0):
@@ -2285,7 +2283,6 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-simple-toast (from `../node_modules/react-native-simple-toast`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
-  - react-native-sodium (from `../node_modules/react-native-sodium`)
   - react-native-udp (from `../node_modules/react-native-udp`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -2488,8 +2485,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-simple-toast"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
-  react-native-sodium:
-    :path: "../node_modules/react-native-sodium"
   react-native-udp:
     :path: "../node_modules/react-native-udp"
   react-native-video:
@@ -2664,7 +2659,6 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 0f14bce545abcdfbff79ce2e3c78c109f0be283e
   react-native-simple-toast: 59d8b58998dac9f063b46d95f9fd7fd7caab6101
   react-native-slider: bb7eb4732940fab78217e1c096bb647d8b0d1cf3
-  react-native-sodium: aa1ff846402c8356a754c0dc20430d8e5acce266
   react-native-udp: 9019822bb289526c077f6266f0d1d6ed104777ed
   react-native-video: 94187eb89b128a5304ef26a8add4ae5cc8181dfb
   react-native-webview: 5095dd03fc98a529e44a6bb81aed21062b5f879e
