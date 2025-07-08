@@ -37,6 +37,7 @@ export type SolPaymentInfo = {
 
 export type CompressedNFT = {
   interface: string
+  burnt: boolean
   id: string
   content: {
     $schema: string
