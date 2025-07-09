@@ -43,17 +43,20 @@ export const AssignProxyScreen = () => {
   const { walletSignBottomSheetRef } = useWalletSign()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
-  const { wallet, position } = route.params
+  const { wallet, position, includeProxied } = route.params
   const { t } = useTranslation()
   const [proxyWallet, setProxyWallet] = useState(wallet)
   const { loading, positions, refetch } = useGovernance()
 
-  const unproxiedPositions = useMemo(
+  const selectablePositions = useMemo(
     () =>
       positions?.filter(
-        (p) => !p.proxy || p.proxy.nextVoter.equals(PublicKey.default),
+        (p) =>
+          includeProxied ||
+          !p.proxy ||
+          p.proxy.nextVoter.equals(PublicKey.default),
       ) || [],
-    [positions],
+    [includeProxied, positions],
   )
   const [selectedPositions, setSelectedPositions] = useState<Set<string>>(
     new Set<string>([position].filter(truthy)),
@@ -66,7 +69,7 @@ export const AssignProxyScreen = () => {
   )
   const maxDate = Math.min(
     augustFirst - 1000,
-    ...unproxiedPositions
+    ...selectablePositions
       .filter((p) => selectedPositions.has(p.pubkey.toBase58()) && p.proxy)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -111,17 +114,17 @@ export const AssignProxyScreen = () => {
     )
   }
 
-  const selectedAll = unproxiedPositions.length === selectedPositions.size
+  const selectedAll = selectablePositions.length === selectedPositions.size
 
   const handleSelectAll = useCallback(() => {
     if (selectedAll) {
       setSelectedPositions(new Set([]))
     } else {
       setSelectedPositions(
-        new Set(unproxiedPositions.map((p) => p.pubkey.toBase58())),
+        new Set(selectablePositions.map((p) => p.pubkey.toBase58())),
       )
     }
-  }, [unproxiedPositions, selectedAll])
+  }, [selectablePositions, selectedAll])
 
   const {
     mutateAsync: assignProxies,
@@ -245,7 +248,7 @@ export const AssignProxyScreen = () => {
           </Text>
         </Box>
         <Box flex={1} mb="m">
-          <FlatList data={unproxiedPositions} renderItem={renderPosition} />
+          <FlatList data={selectablePositions} renderItem={renderPosition} />
         </Box>
         {error && (
           <Box
