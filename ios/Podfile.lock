@@ -12,7 +12,7 @@ PODS:
   - Charts/Core (4.1.0):
     - SwiftAlgorithms (~> 1.0)
   - DoubleConversion (1.1.6)
-  - EXConstants (16.0.2):
+  - EXConstants (17.0.6):
     - ExpoModulesCore
   - Expo (52.0.44):
     - ExpoModulesCore
@@ -1616,7 +1616,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webview (13.15.0):
+  - react-native-webview (13.13.5):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2592,7 +2592,7 @@ SPEC CHECKSUMS:
   BVLinearGradient: 7815a70ab485b7b155186dd0cc836363e0288cad
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  EXConstants: 89d35611505a8ce02550e64e43cd05565da35f9a
+  EXConstants: f5c27bfa40ba650257535ab958f4f5876ee93edd
   Expo: 75e002fc29a18a72aa3db967b41b29c2b206875d
   ExpoAsset: 286fee7ba711ce66bf20b315e68106b13b8629fc
   ExpoBlur: 392c1207f71d0ecf22371621c1fbd44ba84d9742
@@ -2661,7 +2661,7 @@ SPEC CHECKSUMS:
   react-native-slider: bb7eb4732940fab78217e1c096bb647d8b0d1cf3
   react-native-udp: 9019822bb289526c077f6266f0d1d6ed104777ed
   react-native-video: 94187eb89b128a5304ef26a8add4ae5cc8181dfb
-  react-native-webview: 80ef603d1df42e24fdde765686fbb9b8a6ecd554
+  react-native-webview: 5095dd03fc98a529e44a6bb81aed21062b5f879e
   React-nativeconfig: ecf4dc92c40b97e2b3f0c619938f78bfd6507b08
   React-NativeModulesApple: f457bbfb30fb3bc41979b1a87b99d292d7340d39
   React-perflogger: 1111b5feb064c4cc83df88fb403efda54b387951
