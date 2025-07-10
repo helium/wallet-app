@@ -19,6 +19,22 @@ class MainActivity : ReactActivity() {
     super.onCreate(null)
   }
 
+  // Add this method to fix the crash
+  override fun onWindowFocusChanged(hasFocus: Boolean) {
+    try {
+      val reactInstanceManager = reactNativeHost.reactInstanceManager
+      val reactContext = reactInstanceManager.currentReactContext
+
+      // Only call super if React Native is ready
+      if (reactContext != null) {
+        super.onWindowFocusChanged(hasFocus)
+      }
+    } catch (e: Exception) {
+      // Log but don't crash if something goes wrong
+      android.util.Log.w("MainActivity", "Error in onWindowFocusChanged: ${e.message}")
+    }
+  }
+
   /**
    * Returns the instance of the [ReactActivityDelegate]. We use [DefaultReactActivityDelegate]
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
