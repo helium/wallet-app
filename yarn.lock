@@ -4602,9 +4602,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/react-native-sdk@file:.yalc/@helium/react-native-sdk::locator=helium-wallet%40workspace%3A.":
-  version: 3.1.0
-  resolution: "@helium/react-native-sdk@file:.yalc/@helium/react-native-sdk#.yalc/@helium/react-native-sdk::hash=a278b8&locator=helium-wallet%40workspace%3A."
+"@helium/react-native-sdk@npm:^4.0.0-alpha.0":
+  version: 4.0.0-alpha.0
+  resolution: "@helium/react-native-sdk@npm:4.0.0-alpha.0"
   dependencies:
     "@azure/core-asynciterator-polyfill": ^1.0.2
     "@coral-xyz/anchor": ^0.31.0
@@ -4650,7 +4650,7 @@ __metadata:
     react-native-get-random-values: ^1.7.0
     readable-stream: ^3.6.0
     stream: ^0.0.2
-  checksum: b9d2439f3a4168f555821ce6d1bfc7ef86027bc451d0576afbea2849beaa83052157a76edb7b85538790eb63b500ca825f3aa5642424d97c66cdb1c6ff8e6ae3
+  checksum: 56161c0d0d5ea7c5f858bd2190c4f8bd6d6b5447c4c5dc49630466915264932d708fad4726bd125f2d111dede64317f6dda0f330531323346bc3e749286bcfd3
   languageName: node
   linkType: hard
 
@@ -15172,7 +15172,7 @@ __metadata:
     "@helium/onboarding": ^5.0.0-alpha.1
     "@helium/organization-sdk": 0.1.5
     "@helium/proto-ble": ^5.0.0-alpha.1
-    "@helium/react-native-sdk": "file:.yalc/@helium/react-native-sdk"
+    "@helium/react-native-sdk": ^4.0.0-alpha.0
     "@helium/spl-utils": 0.10.25
     "@helium/state-controller-sdk": 0.1.5
     "@helium/sus": 0.10.25
