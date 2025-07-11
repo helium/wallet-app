@@ -24,7 +24,7 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { Keypair, TransactionInstruction, PublicKey } from '@solana/web3.js'
+import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
@@ -307,13 +307,6 @@ export const PositionsScreen = () => {
   const [isManageSheetOpen, setIsManageSheetOpen] = useState(false)
 
   const navigation = useNavigation<GovernanceNavigationProp>()
-  const unproxiedPositions = useMemo(
-    () =>
-      positions?.filter(
-        (p) => !p.proxy || p.proxy.nextVoter.equals(PublicKey.default),
-      ) || [],
-    [positions],
-  )
 
   // Prepare action sheet data for ListItem
   const manageActions = [
@@ -342,9 +335,10 @@ export const PositionsScreen = () => {
         setIsManageSheetOpen(false)
         navigation.navigate('AssignProxyScreen', {
           mint: mint.toBase58(),
+          includeProxied: true,
         })
       },
-      disabled: unproxiedPositions.length === 0,
+      disabled: positions?.length === 0,
     },
     {
       label: t('gov.transactions.claimRewards'),

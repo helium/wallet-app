@@ -100,10 +100,12 @@ export const PositionCard = ({
   useEffect(() => {
     if (subDaos && !subDao) {
       setSubDao(
-        subDaos.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
+        subDaos.find((sd) =>
+          sd.pubkey.equals(position?.delegatedSubDao || MOBILE_SUB_DAO_KEY),
+        ) || null,
       )
     }
-  }, [subDaos, subDao])
+  }, [subDaos, subDao, position?.delegatedSubDao])
   const { positions, mint, network, refetch: refetchState } = useGovernance()
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])

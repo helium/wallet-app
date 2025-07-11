@@ -1979,6 +1979,7 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
 export function toAsset(hotspot: CompressedNFT): Asset {
   return {
     ...hotspot,
+    burnt: hotspot.burnt || false,
     id: new PublicKey(hotspot.id),
     creators: hotspot.creators.map((c) => ({
       ...c,

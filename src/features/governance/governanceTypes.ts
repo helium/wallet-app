@@ -25,7 +25,12 @@ export type GovernanceStackParamList = {
   ProxiesScreen: { mint?: string }
   ProposalScreen: { mint: string; proposal: string }
   ProxyScreen: { mint: string; wallet: string }
-  AssignProxyScreen: { mint: string; position?: string; wallet?: string }
+  AssignProxyScreen: {
+    mint: string
+    position?: string
+    wallet?: string
+    includeProxied?: boolean
+  }
   RevokeProxyScreen: { mint: string; position?: string; wallet?: string }
 }
 
