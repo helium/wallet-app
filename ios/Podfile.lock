@@ -12,7 +12,7 @@ PODS:
   - Charts/Core (4.1.0):
     - SwiftAlgorithms (~> 1.0)
   - DoubleConversion (1.1.6)
-  - EXConstants (16.0.2):
+  - EXConstants (17.0.6):
     - ExpoModulesCore
   - Expo (52.0.44):
     - ExpoModulesCore
@@ -88,7 +88,7 @@ PODS:
   - FBLazyVector (0.77.2)
   - fmt (11.0.2)
   - glog (0.3.5)
-  - helium-react-native-sdk (3.1.0):
+  - helium-react-native-sdk (4.0.1):
     - React-Core
   - hermes-engine (0.77.2):
     - hermes-engine/Pre-built (= 0.77.2)
@@ -1549,8 +1549,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-sodium (0.4.0):
-    - React
   - react-native-udp (2.7.0):
     - React
   - react-native-video (6.12.0):
@@ -2285,7 +2283,6 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-simple-toast (from `../node_modules/react-native-simple-toast`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
-  - react-native-sodium (from `../node_modules/react-native-sodium`)
   - react-native-udp (from `../node_modules/react-native-udp`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -2488,8 +2485,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-simple-toast"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
-  react-native-sodium:
-    :path: "../node_modules/react-native-sodium"
   react-native-udp:
     :path: "../node_modules/react-native-udp"
   react-native-video:
@@ -2597,7 +2592,7 @@ SPEC CHECKSUMS:
   BVLinearGradient: 7815a70ab485b7b155186dd0cc836363e0288cad
   Charts: ce0768268078eee0336f122c3c4ca248e4e204c5
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
-  EXConstants: 89d35611505a8ce02550e64e43cd05565da35f9a
+  EXConstants: f5c27bfa40ba650257535ab958f4f5876ee93edd
   Expo: 75e002fc29a18a72aa3db967b41b29c2b206875d
   ExpoAsset: 286fee7ba711ce66bf20b315e68106b13b8629fc
   ExpoBlur: 392c1207f71d0ecf22371621c1fbd44ba84d9742
@@ -2615,7 +2610,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 4c16dde959a9d6b24f2aa32cb87cb919a1ace3f3
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
-  helium-react-native-sdk: 088771fc52932e9e7b5e99a4983a383d62882015
+  helium-react-native-sdk: ba331f88f896705d1b663bda338a75d43768c955
   hermes-engine: 8eb265241fa1d7095d3a40d51fd90f7dce68217c
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 28e5b80459ee6723917995556657e54b98bb16bc
@@ -2664,7 +2659,6 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 0f14bce545abcdfbff79ce2e3c78c109f0be283e
   react-native-simple-toast: 59d8b58998dac9f063b46d95f9fd7fd7caab6101
   react-native-slider: bb7eb4732940fab78217e1c096bb647d8b0d1cf3
-  react-native-sodium: aa1ff846402c8356a754c0dc20430d8e5acce266
   react-native-udp: 9019822bb289526c077f6266f0d1d6ed104777ed
   react-native-video: 94187eb89b128a5304ef26a8add4ae5cc8181dfb
   react-native-webview: 5095dd03fc98a529e44a6bb81aed21062b5f879e

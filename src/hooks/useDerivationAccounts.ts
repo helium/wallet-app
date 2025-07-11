@@ -1,4 +1,4 @@
-import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto'
+import { Keypair as HeliumKeypair, Mnemonic } from '@helium/crypto-react-native'
 import {
   Asset,
   HNT_MINT,
@@ -43,7 +43,7 @@ export async function keypairFromSeed(
       derivationPath,
       seed.toString('hex'),
     ).key
-    return Keypair.fromSeed(derivedSeed)
+    return Keypair.fromSeed(new Uint8Array(derivedSeed))
   } catch (e) {
     console.error(`Error deriving keypair at ${derivationPath}`, e)
 
@@ -118,11 +118,13 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                     const keypair =
                       derivationPath === HELIUM_DERIVATION
                         ? Keypair.fromSecretKey(
-                            (
-                              await HeliumKeypair.fromMnemonic(
-                                new Mnemonic(mnemonic?.split(' ') || []),
-                              )
-                            ).privateKey,
+                            new Uint8Array(
+                              (
+                                await HeliumKeypair.fromMnemonic(
+                                  new Mnemonic(mnemonic?.split(' ') || []),
+                                )
+                              ).privateKey,
+                            ),
                           )
                         : await keypairFromSeed(seed, derivationPath)
 
@@ -146,7 +148,9 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                             .map((acc, idx) => {
                               if (!acc) return null
 
-                              const accInfo = AccountLayout.decode(acc.data)
+                              const accInfo = AccountLayout.decode(
+                                new Uint8Array(acc.data),
+                              )
                               const amount = BigInt(accInfo.amount)
                               if (amount <= 0n) return null
                               return {

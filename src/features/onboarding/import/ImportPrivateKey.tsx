@@ -8,19 +8,19 @@ import { Mnemonic } from '@helium/crypto-react-native'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
+import { decryptPasswordProtectedData, extractEd25519Seed } from '@utils/crypto'
+import * as Logger from '@utils/logger'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
 import React, { memo, useCallback, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import RNSodium from 'react-native-sodium'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
   DEFAULT_DERIVATION_PATH,
   createKeypair,
 } from '../../../storage/secureStorage'
-import * as Logger from '../../../utils/logger'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingStackParamList } from '../onboardingTypes'
 
@@ -73,11 +73,9 @@ const ImportPrivateKey = () => {
         // decoding b58 private key
         try {
           const keyBytes = bs58.decode(key)
-          const seedBase64 = await RNSodium.crypto_sign_ed25519_sk_to_seed(
-            Buffer.from(keyBytes).toString('base64'),
-          )
-          const seedBuffer = Buffer.from(seedBase64, 'base64')
-          const mnemonic = Mnemonic.fromEntropy(seedBuffer)
+          const seed = extractEd25519Seed(keyBytes)
+
+          const mnemonic = Mnemonic.fromEntropy(Buffer.from(seed))
           const { keypair, words } = await createKeypair({
             givenMnemonic: mnemonic.words,
             use24Words: mnemonic.words.length === 24,
@@ -104,22 +102,10 @@ const ImportPrivateKey = () => {
             nonce: string
             salt: string
           }
-          const cryptoKey = await RNSodium.crypto_pwhash(
-            32,
-            Buffer.from(password).toString('base64'),
-            data.salt,
-            RNSodium.crypto_pwhash_OPSLIMIT_MODERATE,
-            RNSodium.crypto_pwhash_MEMLIMIT_MODERATE,
-            RNSodium.crypto_pwhash_ALG_ARGON2ID13,
-          )
-          const base64Words = await RNSodium.crypto_secretbox_open_easy(
-            data.ciphertext,
-            data.nonce,
-            cryptoKey,
-          )
-          const words = JSON.parse(
-            Buffer.from(base64Words, 'base64').toString(),
-          )
+
+          const decryptedData = decryptPasswordProtectedData(data, password)
+          const words = JSON.parse(decryptedData)
+
           const { keypair } = await createKeypair({
             givenMnemonic: words,
             use24Words: words.length === 24,

@@ -22,6 +22,7 @@ import 'text-encoding-polyfill'
 import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
 import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
+import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 import LockScreen from './features/lock/LockScreen'
 import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
 import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
@@ -37,7 +38,6 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
-import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */

@@ -2,8 +2,8 @@ import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
 import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'
-import { ConnectionContext } from '@solana/wallet-adapter-react'
 import { DC_MINT, HNT_MINT, chunks } from '@helium/spl-utils'
+import { ConnectionContext } from '@solana/wallet-adapter-react'
 import {
   AccountInfo,
   Cluster,
@@ -14,6 +14,7 @@ import {
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
+import { signMessageEd25519 } from '@utils/crypto'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import React, {
   ReactNode,
@@ -26,7 +27,6 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useSelector } from 'react-redux'
-import nacl from 'tweetnacl'
 import KeystoneModal, {
   KeystoneModalRef,
 } from '../features/keystone/KeystoneModal'
@@ -139,8 +139,8 @@ const useSolanaHook = () => {
           secretKey: secureAcct.secretKey,
         }
 
-        const signedMessage = nacl.sign.detached(msg, signer.secretKey)
-        return signedMessage
+        const signedMessage = await signMessageEd25519(msg, signer.secretKey)
+        return Buffer.from(signedMessage)
       }
 
       const signedMessage = await ledgerModalRef?.current?.showLedgerModal({

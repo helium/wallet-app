@@ -9,11 +9,11 @@ import useAlert from '@hooks/useAlert'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { createKeypair } from '@storage/secureStorage'
+import { decryptPasswordProtectedData } from '@utils/crypto'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextStyle } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import RNSodium from 'react-native-sodium'
 import { useOnboarding } from '../OnboardingProvider'
 import {
   CLIAccountNavigationProp,
@@ -45,26 +45,15 @@ const CLIPasswordScreen = () => {
   }, [])
 
   const handleNext = useCallback(async () => {
-    // Derive key using password and salt.
-    const key = await RNSodium.crypto_pwhash(
-      32,
-      Buffer.from(password).toString('base64'),
-      salt,
-      RNSodium.crypto_pwhash_OPSLIMIT_MODERATE,
-      RNSodium.crypto_pwhash_MEMLIMIT_MODERATE,
-      RNSodium.crypto_pwhash_ALG_ARGON2ID13,
-    )
-
     try {
-      // Decrypt secretbox_open cipherText using derived key, nonce, and key.
-      const phrase = await RNSodium.crypto_secretbox_open_easy(
-        ciphertext,
-        nonce,
-        key,
+      // One simple function call instead of manual crypto operations!
+      const decryptedData = decryptPasswordProtectedData(
+        { ciphertext, nonce, salt },
+        password,
       )
 
       const { keypair, words } = await createKeypair({
-        givenMnemonic: Buffer.from(phrase, 'base64').toString().split(' '),
+        givenMnemonic: decryptedData.split(' '),
         use24Words: true,
         derivationPath: HELIUM_DERIVATION,
       })
