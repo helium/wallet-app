@@ -88,7 +88,7 @@ PODS:
   - FBLazyVector (0.77.2)
   - fmt (11.0.2)
   - glog (0.3.5)
-  - helium-react-native-sdk (4.0.0-alpha.1):
+  - helium-react-native-sdk (4.0.1):
     - React-Core
   - hermes-engine (0.77.2):
     - hermes-engine/Pre-built (= 0.77.2)
@@ -2610,7 +2610,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 4c16dde959a9d6b24f2aa32cb87cb919a1ace3f3
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
-  helium-react-native-sdk: 13612e8bfe08673c8b005f9b517bef91a0254f52
+  helium-react-native-sdk: ba331f88f896705d1b663bda338a75d43768c955
   hermes-engine: 8eb265241fa1d7095d3a40d51fd90f7dce68217c
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 28e5b80459ee6723917995556657e54b98bb16bc

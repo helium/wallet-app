@@ -3878,14 +3878,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/address@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/address@npm:5.0.0-alpha.1"
+"@helium/address@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/address@npm:5.0.0"
   dependencies:
     "@noble/hashes": ^1.8.0
     bs58: ^6.0.0
     multiformats: ^9.6.4
-  checksum: d4fb718a6a4dfba6e8344942ffa7f98251ced11b180a5024251a723bc02facf2ad7a0aa86aa9dc86ead852f9c67d93e1b01e8ad49f4578d37c8437cf1cd48107
+  checksum: 8dee201808b16c86ec66e5ca87d17e199ab940ac337eb20ffe4de8847d7ab45b267ce536369b98d9b28ce7817a09b02aefbb2a65a70c8c6c95b93c278907d1cd
   languageName: node
   linkType: hard
 
@@ -4028,26 +4028,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/crypto-react-native@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/crypto-react-native@npm:5.0.0-alpha.1"
+"@helium/crypto-react-native@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/crypto-react-native@npm:5.0.0"
   dependencies:
-    "@helium/address": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
     "@noble/curves": ^1.9.2
     "@noble/hashes": ^1.8.0
     safe-buffer: ^5.2.1
-  checksum: 534e31f881eb431cb6d89608de5ce1d64cff50e8928ecee323647db5ece31a6d025e670413015208a344e77ac42c8b38a9f601840da2ff53870f776fb686190b
+  checksum: 48f6bc46dfec44935cec3584759bb9f200ac1407d63afbfdebe2f82f3a7eaceceb64ee60a8f0f8cfba3f0658f0d081ef9c3882cfbd7963118083a5f89e2fbcaa
   languageName: node
   linkType: hard
 
-"@helium/crypto@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/crypto@npm:5.0.0-alpha.1"
+"@helium/crypto@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/crypto@npm:5.0.0"
   dependencies:
-    "@helium/address": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
     "@noble/curves": ^1.9.2
     "@noble/hashes": ^1.8.0
-  checksum: 7d1e71a12b19ed0b4d96aed4c28c495ac6ef66726a2a195183e4e81b235105c13191f51f7c0ab137303b16520d01039120144629da08a6bafbb50472ca64a218
+  checksum: ceee929ca732d8dd4c29709c90bf93e0b440d45604e17b4cf8115206d6335d40c872cca08c79dbb7e4176d71759d038d52c3512ab2962135099a831d65acb056
   languageName: node
   linkType: hard
 
@@ -4081,12 +4081,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/currency@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/currency@npm:5.0.0-alpha.1"
+"@helium/currency@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/currency@npm:5.0.0"
   dependencies:
     bignumber.js: ^9.0.0
-  checksum: 012fdbf4df0e2742d04254a99dea48740d97fa0f29dadc5fbd286d22d093e82029fea94d7c7edd1d9c19989e68af1ccaa2f45cd4432d8f931b4579fd1b21d9c7
+  checksum: 6bca7e3ad8d33439ce922d60eeecbe711ccd9aa21abdf0e511128f5ef98817d11c45f7b79f42d7d9a97b936dac24b945d359d83ee6c491c7ff02067bd1ad3b7a
   languageName: node
   linkType: hard
 
@@ -4369,18 +4369,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/http@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/http@npm:5.0.0-alpha.1"
+"@helium/http@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/http@npm:5.0.0"
   dependencies:
-    "@helium/address": ^5.0.0-alpha.1
-    "@helium/currency": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
+    "@helium/currency": ^5.0.0
     axios: ^0.21.1
     camelcase-keys: ^6.2.2
     qs: ^6.9.3
     retry-axios: ^2.1.2
     snakecase-keys: ^5.4.6
-  checksum: 8ccf2247027945bdb7fb2a5396f36625a892b2bf352264017c17e20bc4474df6c5772d73e3461331178522e61644dd9e29c484026160c8fe83bf13430f0b6221
+  checksum: 52a5aa9658f315f9dde449fdfb9b31febd7073fb7de8935b832f87f05821f20fd34efd25de27e8eb59c8c230a2f6376e2d5f31aee5e9208116ac6d874adcf108
   languageName: node
   linkType: hard
 
@@ -4529,19 +4529,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/onboarding@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/onboarding@npm:5.0.0-alpha.1"
+"@helium/onboarding@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/onboarding@npm:5.0.0"
   dependencies:
     "@coral-xyz/anchor": ^0.31.0
-    "@helium/address": ^5.0.0-alpha.1
-    "@helium/crypto": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
+    "@helium/crypto": ^5.0.0
     "@helium/currency-utils": ^0.10.2
     "@helium/data-credits-sdk": ^0.10.2
     "@helium/helium-entity-manager-sdk": ^0.10.2
     "@helium/hotspot-utils": ^0.10.2
     "@helium/spl-utils": ^0.10.2
-    "@helium/transactions": ^5.0.0-alpha.1
+    "@helium/transactions": ^5.0.0
     "@metaplex-foundation/mpl-bubblegum": ^0.7.0
     "@solana/web3.js": ^1.91.1
     axios: ^1.5.0
@@ -4557,7 +4557,7 @@ __metadata:
     ts-proto: ^1.165.1
     ts-protoc-gen: ^0.15.0
     uuid: ^9.0.0
-  checksum: 1ecada3834155bfa875d9088724ff3948bcb12941db64a38d607f1e8de9cc891930ae769644475db511db59df4d9a29229273ece8fa2722b04c20bf6973d7a91
+  checksum: 8319daae65cb13690295fce8c0f11253e0cec40fab804ca836991e89a46aa48b6b9ddd31b92475e7886748ee58702ef0a2787b86bc756a186511b5d9189d3b33
   languageName: node
   linkType: hard
 
@@ -4584,12 +4584,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/proto-ble@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/proto-ble@npm:5.0.0-alpha.1"
+"@helium/proto-ble@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/proto-ble@npm:5.0.0"
   dependencies:
     protobufjs: ^6.8.9
-  checksum: 06fa61396437f9544b65882ecfd802cb1ac2f644ec0b65cf2bee4296d6e378b933cb54159d22c2ade96d62eb99f59f5f8d39928babead3209877ef7945ae37f0
+  checksum: 3eafde1d0ff4a4b38407bf41c7b8c391a4d28a5b176b43ef85bf354f6f50bc7516fdd3866a9e7162041aa7865a36b3ee32e5fb4964c6febbdfe1271ab7294677
   languageName: node
   linkType: hard
 
@@ -4602,9 +4602,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/react-native-sdk@npm:^4.0.0-alpha.1":
-  version: 4.0.0-alpha.1
-  resolution: "@helium/react-native-sdk@npm:4.0.0-alpha.1"
+"@helium/react-native-sdk@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@helium/react-native-sdk@npm:4.0.1"
   dependencies:
     "@azure/core-asynciterator-polyfill": ^1.0.2
     "@coral-xyz/anchor": ^0.31.0
@@ -4613,8 +4613,8 @@ __metadata:
     "@helium/helium-entity-manager-sdk": ^0.10.3
     "@helium/helium-sub-daos-sdk": ^0.10.3
     "@helium/hotspot-utils": ^0.10.3
-    "@helium/onboarding": ^5.0.0-alpha.1
-    "@helium/proto-ble": ^5.0.0-alpha.1
+    "@helium/onboarding": ^5.0.0
+    "@helium/proto-ble": ^5.0.0
     "@helium/spl-utils": ^0.10.3
     "@helium/voter-stake-registry-sdk": ^0.10.3
     "@solana/spl-token": 0.4.13
@@ -4629,12 +4629,12 @@ __metadata:
     text-encoding-polyfill: ^0.6.7
     typescript-collections: ^1.3.3
   peerDependencies:
-    "@helium/crypto-react-native": ^5.0.0-alpha.1
-    "@helium/currency": ^5.0.0-alpha.1
-    "@helium/http": ^5.0.0-alpha.1
-    "@helium/onboarding": ^5.0.0-alpha.1
-    "@helium/proto-ble": ^5.0.0-alpha.1
-    "@helium/transactions": ^5.0.0-alpha.1
+    "@helium/crypto-react-native": ^5.0.0
+    "@helium/currency": ^5.0.0
+    "@helium/http": ^5.0.0
+    "@helium/onboarding": ^5.0.0
+    "@helium/proto-ble": ^5.0.0
+    "@helium/transactions": ^5.0.0
     axios-retry: ^3.3.1
     buffer: ^6.0.3
     compare-versions: ^3.6.0
@@ -4650,7 +4650,7 @@ __metadata:
     react-native-get-random-values: ^1.7.0
     readable-stream: ^3.6.0
     stream: ^0.0.2
-  checksum: 3a1c3f32139bca02b2b1eac262132acc7d28a1d3dd151d4c7da16724221d3a41c9cd116c14bdf36aefc73d3f214fb7f7025bb6ce29a64262bd7095b100b23a37
+  checksum: 6dd7c5876e498f542ce25d7c052651ef1eafb12ed21d5d1d7219e003363ccfecd7397782ae9a7b4a31b40e7444f4bb6eb949634bde035c3e088a3a27a510ba92
   languageName: node
   linkType: hard
 
@@ -4754,15 +4754,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/transactions@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/transactions@npm:5.0.0-alpha.1"
+"@helium/transactions@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/transactions@npm:5.0.0"
   dependencies:
-    "@helium/address": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
     "@helium/proto": ^2.2.0
     long: ^4.0.0
     path: ^0.12.7
-  checksum: 29497527325924a5148e9007c5e7bffd875c49af2ef9c34a0bcd10555749760457a57a17d17861e5781b90d79b4e432c7b3aedf1efb4ea427fb3a7b147fc1caf
+  checksum: 29b9a9cc365f018d110a3cf28c46bbde8e5bf3b60d49cc6f1bfd511355cbfce16c12df25c39aed3660b2d53900f6ecd74807da1d3e7ff8bf4d9c5771f95293df
   languageName: node
   linkType: hard
 
@@ -4904,17 +4904,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/wallet-link@npm:^5.0.0-alpha.1":
-  version: 5.0.0-alpha.1
-  resolution: "@helium/wallet-link@npm:5.0.0-alpha.1"
+"@helium/wallet-link@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "@helium/wallet-link@npm:5.0.0"
   dependencies:
-    "@helium/address": ^5.0.0-alpha.1
-    "@helium/transactions": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
+    "@helium/transactions": ^5.0.0
     date-fns: ^2.28.0
     query-string: ^7.1.1
   peerDependencies:
     "@helium/crypto": ^4.3.1
-  checksum: 449b09ff5b30ecefd7ee3162ea176c084665c7cf73ea81b6410a3a4029f051460636e7bb5264393b10a78b25d4b259b64c3bfb11c3a1b9924335a2baae0a640e
+  checksum: 4451e625ef3f57ec5075e0fa137a4c5cdce7e7f9120977623fb9278e818dfc6d7a799e44fcb33b0234814f0f1a655a99448bb7aa538545e2855ff90b741b89fa
   languageName: node
   linkType: hard
 
@@ -15150,11 +15150,11 @@ __metadata:
     "@gorhom/portal": 1.0.14
     "@helium/account-fetch-cache": 0.10.26
     "@helium/account-fetch-cache-hooks": 0.10.26
-    "@helium/address": ^5.0.0-alpha.1
+    "@helium/address": ^5.0.0
     "@helium/automation-hooks": ^0.10.26
     "@helium/circuit-breaker-sdk": 0.10.26
     "@helium/cron-sdk": ^0.0.8
-    "@helium/crypto-react-native": ^5.0.0-alpha.1
+    "@helium/crypto-react-native": ^5.0.0
     "@helium/currency-utils": 0.10.26
     "@helium/data-credits-sdk": 0.10.26
     "@helium/distributor-oracle": 0.10.26
@@ -15163,26 +15163,26 @@ __metadata:
     "@helium/helium-react-hooks": 0.10.26
     "@helium/helium-sub-daos-sdk": 0.10.26
     "@helium/hpl-crons-sdk": ^0.10.26
-    "@helium/http": ^5.0.0-alpha.1
+    "@helium/http": ^5.0.0
     "@helium/idls": 0.10.26
     "@helium/lazy-distributor-sdk": 0.10.26
     "@helium/modular-governance-hooks": 0.1.5
     "@helium/modular-governance-idls": 0.1.5
     "@helium/no-emit-sdk": 0.10.26
-    "@helium/onboarding": ^5.0.0-alpha.1
+    "@helium/onboarding": ^5.0.0
     "@helium/organization-sdk": 0.1.5
-    "@helium/proto-ble": ^5.0.0-alpha.1
-    "@helium/react-native-sdk": ^4.0.0-alpha.1
+    "@helium/proto-ble": ^5.0.0
+    "@helium/react-native-sdk": ^4.0.1
     "@helium/spl-utils": 0.10.26
     "@helium/state-controller-sdk": 0.1.5
     "@helium/sus": 0.10.26
-    "@helium/transactions": ^5.0.0-alpha.1
+    "@helium/transactions": ^5.0.0
     "@helium/treasury-management-sdk": 0.10.26
     "@helium/tuktuk-idls": ^0.0.8
     "@helium/tuktuk-sdk": ^0.0.8
     "@helium/voter-stake-registry-hooks": 0.10.26
     "@helium/voter-stake-registry-sdk": 0.10.26
-    "@helium/wallet-link": ^5.0.0-alpha.1
+    "@helium/wallet-link": ^5.0.0
     "@jup-ag/api": 6.0.6
     "@keystonehq/keystone-sdk": 0.8.0
     "@ledgerhq/hw-app-solana": 7.4.0
