@@ -4602,9 +4602,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/react-native-sdk@npm:^4.0.0-alpha.0":
-  version: 4.0.0-alpha.0
-  resolution: "@helium/react-native-sdk@npm:4.0.0-alpha.0"
+"@helium/react-native-sdk@npm:^4.0.0-alpha.1":
+  version: 4.0.0-alpha.1
+  resolution: "@helium/react-native-sdk@npm:4.0.0-alpha.1"
   dependencies:
     "@azure/core-asynciterator-polyfill": ^1.0.2
     "@coral-xyz/anchor": ^0.31.0
@@ -4650,7 +4650,7 @@ __metadata:
     react-native-get-random-values: ^1.7.0
     readable-stream: ^3.6.0
     stream: ^0.0.2
-  checksum: 56161c0d0d5ea7c5f858bd2190c4f8bd6d6b5447c4c5dc49630466915264932d708fad4726bd125f2d111dede64317f6dda0f330531323346bc3e749286bcfd3
+  checksum: 3a1c3f32139bca02b2b1eac262132acc7d28a1d3dd151d4c7da16724221d3a41c9cd116c14bdf36aefc73d3f214fb7f7025bb6ce29a64262bd7095b100b23a37
   languageName: node
   linkType: hard
 
@@ -15172,7 +15172,7 @@ __metadata:
     "@helium/onboarding": ^5.0.0-alpha.1
     "@helium/organization-sdk": 0.1.5
     "@helium/proto-ble": ^5.0.0-alpha.1
-    "@helium/react-native-sdk": ^4.0.0-alpha.0
+    "@helium/react-native-sdk": ^4.0.0-alpha.1
     "@helium/spl-utils": 0.10.25
     "@helium/state-controller-sdk": 0.1.5
     "@helium/sus": 0.10.25
