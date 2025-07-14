@@ -82,13 +82,15 @@ export const createKeypair = async ({
   let keypair
   if (derivationPath === HELIUM_DERIVATION) {
     keypair = SolanaKeypair.fromSecretKey(
-      (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
+      new Uint8Array(
+        (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
+      ),
     )
   } else {
     keypair = await keypairFromSeed(seed, derivationPath)
   }
 
-  return { keypair: keypair!, words: mnemonic }
+  return { keypair, words: mnemonic }
 }
 
 export const checkSecureAccount = async (
@@ -171,7 +173,7 @@ export const getSolanaKeypair = async (
   }
 
   return SolanaKeypair.fromSecretKey(
-    Buffer.from(secureAccount.keypair.sk, 'base64'),
+    new Uint8Array(Buffer.from(secureAccount.keypair.sk, 'base64')),
   )
 }
 
