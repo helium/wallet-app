@@ -8,7 +8,10 @@ import { Pill } from '@components/Pill'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { TASK_QUEUE, useDelegationClaimBot } from '@helium/automation-hooks'
 import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
+import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
+import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
 import { organizationKey } from '@helium/organization-sdk'
 import {
   HNT_MINT,
@@ -61,7 +64,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { EPOCH_LENGTH } from '@helium/helium-sub-daos-sdk'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -93,7 +95,24 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
+  const delegationClaimBotK = useMemo(
+    () =>
+      delegationClaimBotKey(
+        TASK_QUEUE,
+        delegatedPositionKey(position.pubkey)[0],
+      )[0],
+    [position.pubkey],
+  )
+  const { info: delegationClaimBot } =
+    useDelegationClaimBot(delegationClaimBotK)
   const [automationEnabled, setAutomationEnabled] = useState(true)
+  useEffect(() => {
+    if (delegationClaimBot) {
+      setAutomationEnabled(true)
+    } else {
+      setAutomationEnabled(false)
+    }
+  }, [delegationClaimBot])
   const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(
     subDaos?.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
   )
