@@ -13,7 +13,7 @@ import { useSpacing } from '@theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Platform, StyleSheet } from 'react-native'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
 import {
   WebView,
   WebViewMessageEvent,
@@ -61,7 +61,7 @@ const BrowserWebViewScreen = () => {
     () => currentAccount?.solanaAddress,
     [currentAccount?.solanaAddress],
   )
-  const { top } = useSafeAreaInsets()
+
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, addFavorite, removeFavorite } = useBrowser()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
@@ -496,15 +496,7 @@ const BrowserWebViewScreen = () => {
   return (
     <Box position="absolute" top={0} left={0} right={0} bottom={0}>
       <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
-        <Box
-          backgroundColor="black900"
-          height={top}
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-        />
-        <SafeAreaBox flex={1} edges={edges}>
+        <SafeAreaBox flex={1} edges={edges} backgroundColor="black900">
           <BrowserHeader />
           <WebView
             ref={webview}
@@ -523,14 +515,6 @@ const BrowserWebViewScreen = () => {
           />
           <BrowserFooter />
         </SafeAreaBox>
-        <Box
-          backgroundColor="black900"
-          position="absolute"
-          height="auto"
-          bottom={0}
-          left={0}
-          right={0}
-        />
       </WalletSignBottomSheet>
     </Box>
   )
