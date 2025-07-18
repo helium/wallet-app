@@ -13,7 +13,7 @@ import { useSpacing } from '@theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { Platform, StyleSheet } from 'react-native'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
 import {
   WebView,
   WebViewMessageEvent,
@@ -360,8 +360,6 @@ const BrowserWebViewScreen = () => {
       signMsg,
     ],
   )
-
-  const { top } = useSafeAreaInsets()
 
   const injectedJavascript = useCallback(() => {
     if (isScriptInjected) return ''
