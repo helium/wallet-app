@@ -306,6 +306,11 @@ const BrowserWebViewScreen = () => {
         const decision = await walletSignBottomSheetRef.current?.show({
           type,
           url: currentUrl,
+          message: inputs
+            .map(({ message }: SolanaSignMessageInput) =>
+              Buffer.from(message).toString('utf-8'),
+            )
+            .join(','),
           serializedTxs: undefined,
         })
 
@@ -320,20 +325,19 @@ const BrowserWebViewScreen = () => {
         }
 
         // Converting int array objects to Uint8Array
-        const messages: Uint8Array[] = inputs.map(
-          ({ message }: SolanaSignMessageInput) =>
-            new Uint8Array(
-              Object.keys(message).map((k) => inputs[0].message[k]),
-            ),
+        const messages: Buffer[] = inputs.map(
+          ({ message }: SolanaSignMessageInput) => {
+            return Buffer.from(message)
+          },
         )
 
         // Sign each message using nacl and return the signature
         const signedMessages = await Promise.all(
           messages.map(async (message) => {
-            const signedMessage = await signMsg(Buffer.from(message))
+            const signature = await signMsg(message)
             return {
-              signedMessage,
-              signature: signedMessage,
+              signedMessage: message.toJSON().data,
+              signature: signature.toJSON().data,
             }
           }),
         )

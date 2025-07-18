@@ -1,7 +1,10 @@
-import { argon2id } from '@noble/hashes/argon2'
 import { xsalsa20poly1305 } from '@noble/ciphers/salsa'
 import * as ed25519 from '@noble/ed25519'
+import { argon2id } from '@noble/hashes/argon2'
+import { sha512 } from '@noble/hashes/sha2'
 import { Buffer } from 'buffer'
+
+ed25519.etc.sha512Sync = (...m) => sha512(ed25519.etc.concatBytes(...m))
 
 /**
  * Libsodium-compatible Argon2ID parameters

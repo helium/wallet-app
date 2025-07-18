@@ -394,9 +394,7 @@ class HeliumWallet {
                 const signedMessages = data.map(({ signature, signedMessage }) => {
                     return {
                         signedMessage: new Uint8Array(signedMessage),
-                        signature: new Uint8Array(Object.keys(signature).map((key) => {
-                            return signature[key]
-                        })),
+                        signature: new Uint8Array(signature),
                     }
                 })
 
