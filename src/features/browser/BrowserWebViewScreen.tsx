@@ -498,9 +498,12 @@ const BrowserWebViewScreen = () => {
   }, [onBack, onForward, isFavorite, onFavorite, onRefresh])
 
   return (
-    <Box position="absolute" top={0} left={0} right={0} bottom={0}>
-      <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
-        <SafeAreaBox flex={1} edges={edges} backgroundColor="black900">
+    <Box flex={1}>
+      <SafeAreaBox flex={1} edges={edges} backgroundColor="black900">
+        <WalletSignBottomSheet
+          ref={walletSignBottomSheetRef}
+          onClose={() => {}}
+        >
           <BrowserHeader />
           <WebView
             ref={webview}
@@ -518,8 +521,8 @@ const BrowserWebViewScreen = () => {
             }}
           />
           <BrowserFooter />
-        </SafeAreaBox>
-      </WalletSignBottomSheet>
+        </WalletSignBottomSheet>
+      </SafeAreaBox>
     </Box>
   )
 }
