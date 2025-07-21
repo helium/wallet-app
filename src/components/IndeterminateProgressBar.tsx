@@ -8,6 +8,7 @@ import {
   withDelay,
   withRepeat,
   withTiming,
+  cancelAnimation,
 } from 'react-native-reanimated'
 import { Theme } from '@theme/theme'
 import { ReAnimatedBox } from './AnimatedBox'
@@ -47,6 +48,10 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
       // Set number of repetitions to -1 to loop indefinitely
       -1,
     )
+
+    return () => {
+      cancelAnimation(translateX)
+    }
   }, [PROGRESS_WIDTH, translateX])
 
   const progress = useAnimatedStyle(() => {

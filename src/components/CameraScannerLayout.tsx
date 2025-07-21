@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withRepeat,
   withTiming,
+  cancelAnimation,
 } from 'react-native-reanimated'
 import Box from './Box'
 
@@ -25,6 +26,10 @@ export const CameraScannerLayout = () => {
       }),
       -1,
     )
+
+    return () => {
+      cancelAnimation(linePosition)
+    }
   }, [linePosition])
 
   return (

@@ -21,16 +21,18 @@ const CircleLoader = ({
 }: Props) => {
   const rotateAnim = useRef(new Animated.Value(0))
   const opacityAnim = useRef(new Animated.Value(0))
+  const animationRef = useRef<Animated.CompositeAnimation>()
 
   const anim = () => {
-    Animated.loop(
+    animationRef.current = Animated.loop(
       Animated.timing(rotateAnim.current, {
         toValue: -1,
         duration: 1000,
         useNativeDriver: true,
         easing: Easing.linear,
       }),
-    ).start()
+    )
+    animationRef.current.start()
 
     Animated.timing(opacityAnim.current, {
       toValue: 1,
@@ -45,6 +47,12 @@ const CircleLoader = ({
       anim()
     }
     scan()
+
+    return () => {
+      if (animationRef.current) {
+        animationRef.current.stop()
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

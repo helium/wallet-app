@@ -50,7 +50,7 @@ export const BrowserWrapper = () => {
 const BrowserWebViewScreen = () => {
   const route = useRoute<Route>()
   const { uri } = route.params
-  const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
+  const edges = useMemo(() => ['top'] as Edge[], [])
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, signMsg } = useSolana()
   const webview = useRef<WebView | null>(null)
@@ -498,32 +498,27 @@ const BrowserWebViewScreen = () => {
   }, [onBack, onForward, isFavorite, onFavorite, onRefresh])
 
   return (
-    <Box flex={1}>
-      <SafeAreaBox flex={1} edges={edges} backgroundColor="black900">
-        <WalletSignBottomSheet
-          ref={walletSignBottomSheetRef}
-          onClose={() => {}}
-        >
-          <BrowserHeader />
-          <WebView
-            ref={webview}
-            originWhitelist={['*']}
-            javaScriptEnabled
-            onLoadStart={onLoadStart}
-            injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
-            onLoadEnd={isAndroid ? undefined : onLoadEnd}
-            onNavigationStateChange={onNavigationChange}
-            onMessage={onMessage}
-            source={{ uri }}
-            onShouldStartLoadWithRequest={(event) => {
-              // Sites should not do this, but if you click MWA on realms it bricks us
-              return !event.url.startsWith('solana-wallet:')
-            }}
-          />
-          <BrowserFooter />
-        </WalletSignBottomSheet>
-      </SafeAreaBox>
-    </Box>
+    <SafeAreaBox flex={1} edges={edges} backgroundColor="black900">
+      <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
+        <BrowserHeader />
+        <WebView
+          ref={webview}
+          originWhitelist={['*']}
+          javaScriptEnabled
+          onLoadStart={onLoadStart}
+          injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
+          onLoadEnd={isAndroid ? undefined : onLoadEnd}
+          onNavigationStateChange={onNavigationChange}
+          onMessage={onMessage}
+          source={{ uri }}
+          onShouldStartLoadWithRequest={(event) => {
+            // Sites should not do this, but if you click MWA on realms it bricks us
+            return !event.url.startsWith('solana-wallet:')
+          }}
+        />
+        <BrowserFooter />
+      </WalletSignBottomSheet>
+    </SafeAreaBox>
   )
 }
 
