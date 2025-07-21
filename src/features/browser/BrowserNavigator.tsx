@@ -18,7 +18,7 @@ const cardPresentation: NativeStackNavigationOptions = {
 
 const modalPresentation: NativeStackNavigationOptions = {
   headerShown: false,
-  presentation: 'transparentModal',
+  presentation: 'card',
   animation: 'slide_from_bottom',
 }
 
