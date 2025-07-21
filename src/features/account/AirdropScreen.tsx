@@ -25,6 +25,7 @@ import {
   withDelay,
   withRepeat,
   withTiming,
+  cancelAnimation,
 } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -143,6 +144,11 @@ const AirdropScreen = () => {
 
   useEffect(() => {
     ring.value = 1
+
+    return () => {
+      cancelAnimation(ring)
+      cancelAnimation(ringDrop)
+    }
   }, [ring, ringDrop])
 
   return (
