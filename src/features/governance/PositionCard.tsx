@@ -105,7 +105,7 @@ export const PositionCard = ({
   )
   const { info: delegationClaimBot } =
     useDelegationClaimBot(delegationClaimBotK)
-  const [automationEnabled, setAutomationEnabled] = useState(true)
+  const [automationEnabled, setAutomationEnabled] = useState(false)
   useEffect(() => {
     if (delegationClaimBot) {
       setAutomationEnabled(true)
@@ -113,9 +113,7 @@ export const PositionCard = ({
       setAutomationEnabled(false)
     }
   }, [delegationClaimBot])
-  const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(
-    subDaos?.find((sd) => sd.pubkey.equals(MOBILE_SUB_DAO_KEY)) || null,
-  )
+  const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
   useEffect(() => {
     if (subDaos && !subDao) {
       setSubDao(
