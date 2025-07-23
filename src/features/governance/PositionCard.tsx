@@ -105,7 +105,7 @@ export const PositionCard = ({
   )
   const { info: delegationClaimBot } =
     useDelegationClaimBot(delegationClaimBotK)
-  const [automationEnabled, setAutomationEnabled] = useState(false)
+  const [automationEnabled, setAutomationEnabled] = useState(true)
   useEffect(() => {
     if (delegationClaimBot) {
       setAutomationEnabled(true)
