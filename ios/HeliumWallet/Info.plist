@@ -44,12 +44,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
-  <dict>
-    <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
-    <true/>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>ec2-35-82-2-45.us-west-2.compute.amazonaws.com</key>
@@ -77,6 +76,8 @@
 	<array>
 		<string>ConfigurationIntent</string>
 	</array>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>DMSans-Bold.ttf</string>
