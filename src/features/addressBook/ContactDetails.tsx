@@ -66,7 +66,7 @@ const ContactDetails = ({ action, contact }: Props) => {
   const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
   const { connection } = useSolana()
-  // debounce is needed to avoid unneccessary rpc calls
+  // debounce is needed to avoid unnecessary rpc calls
   const [debouncedAddress] = useDebounce(address, 800)
 
   useEffect(() => {
