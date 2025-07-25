@@ -31,6 +31,8 @@ const BackButton = ({
       alignItems="center"
       flexDirection="row"
       hitSlop={hitSlop}
+      minWidth={44}
+      minHeight={44}
       {...props}
     >
       <IconPressedContainer
