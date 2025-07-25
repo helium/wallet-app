@@ -7,8 +7,9 @@ import Expo
 @main
 class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
-  var reactNativeDelegate: ReactNativeDelegate?
+  var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
+
 
   override func application(
     _ application: UIApplication,

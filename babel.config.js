@@ -10,7 +10,7 @@ function getAliasesFromTsConfig() {
 }
 
 const baseConfig = {
-  presets: ['babel-preset-expo'],
+  presets: ['module:@react-native/babel-preset'],
   plugins: [
     [
       'module-resolver',
