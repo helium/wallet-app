@@ -1,15 +1,12 @@
-import UIKit
-import React
-import React_RCTAppDelegate
-import ReactAppDependencyProvider
 import Expo
+import React
+import ReactAppDependencyProvider
 
-@main
+@UIApplicationMain
 class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
   var reactNativeFactory: RCTReactNativeFactory?
-
 
   override func application(
     _ application: UIApplication,
