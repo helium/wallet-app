@@ -258,7 +258,7 @@
     "@typescript-eslint/eslint-plugin": "5.59.2",
     "@typescript-eslint/parser": "5.59.2",
     "babel-jest": "29.7.0",
-    "babel-plugin-module-resolver": "4.1.0",
+    "babel-plugin-module-resolver": "5.0.2",
     "babel-plugin-transform-remove-console": "6.9.4",
     "eslint": "7.32.0",
     "eslint-config-airbnb": "18.2.1",
@@ -296,10 +296,10 @@
     "@helium/onboarding": "^5.0.1"
   },
   "react-native": {
-    "crypto": "react-native-crypto",
     "zlib": "browserify-zlib",
     "console": "console-browserify",
     "constants": "constants-browserify",
+    "crypto": "react-native-crypto",
     "dns": "dns.js",
     "net": "react-native-tcp",
     "domain": "domain-browser",
@@ -318,8 +318,8 @@
     "timers": "timers-browserify",
     "tty": "tty-browserify",
     "vm": "vm-browserify",
-    "os": "react-native-os",
-    "tls": false
+    "tls": false,
+    "os": "react-native-os"
   },
   "browser": {
     "_stream_duplex": "readable-stream/duplex",
