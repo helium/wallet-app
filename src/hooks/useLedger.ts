@@ -92,7 +92,7 @@ const useLedger = () => {
     ): Promise<LedgerAccount[]> => {
       const accounts: LedgerAccount[] = []
 
-      // Check default path: 44'/501'/x'/0'
+      // Check legacy path: 44'/501'/x'
       try {
         const { address } = await solana.getAddress(
           runDerivationScheme(accountIndex),
@@ -112,7 +112,7 @@ const useLedger = () => {
         accounts.push({
           address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
           balance,
-          derivationPath: 'Default',
+          derivationPath: 'Legacy',
           alias: `${t('ledger.show.alias', {
             accountIndex: accountIndex + 1,
           })}`,
@@ -123,7 +123,7 @@ const useLedger = () => {
         // ignore if derivation fails
       }
 
-      // Check legacy path: 44'/501'/x'
+      // Check default path: 44'/501'/x'/0'
       try {
         const { address } = await solana.getAddress(
           runDefaultDerivationScheme(accountIndex),
@@ -143,7 +143,7 @@ const useLedger = () => {
         accounts.push({
           address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
           balance,
-          derivationPath: 'Legacy',
+          derivationPath: 'Default',
           alias: `${t('ledger.show.alias', {
             accountIndex: accountIndex + 1,
           })}`,
@@ -201,6 +201,12 @@ const useLedger = () => {
           acc.accountIndex === 0 && acc.derivationPath.includes('Default'),
       )
 
+      // Always include account 0 from legacy path (44'/501'/0')
+      const legacyAccount0 = allIndexedAccounts.find(
+        (acc) =>
+          acc.accountIndex === 0 && acc.derivationPath.includes('Legacy'),
+      )
+
       const finalAccounts = [...accountsWithBalance]
 
       // Add default account 0 if it's not already included (doesn't have balance)
@@ -212,6 +218,17 @@ const useLedger = () => {
         )
       ) {
         finalAccounts.push(defaultAccount0)
+      }
+
+      // Add legacy account 0 if it's not already included (doesn't have balance)
+      if (
+        legacyAccount0 &&
+        !accountsWithBalance.some(
+          (acc) =>
+            acc.accountIndex === 0 && acc.derivationPath.includes('Legacy'),
+        )
+      ) {
+        finalAccounts.push(legacyAccount0)
       }
 
       setLedgerAccounts(finalAccounts)
