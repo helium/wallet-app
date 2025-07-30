@@ -285,7 +285,7 @@
   },
   "resolutions": {
     "@types/react": "19",
-    "react": "19.1.0",
+    "react": "19.0.0",
     "@solana/wallet-adapter-react": "0.15.33",
     "@helium/account-fetch-cache": "0.10.30",
     "@helium/account-fetch-cache-hooks": "0.10.30",
