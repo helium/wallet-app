@@ -74,7 +74,7 @@ yalc.lock
 
 # testing
 /coverage
- 
+
 # Yarn
 .yarn/*
 !.yarn/patches

@@ -1,6 +1,7 @@
 /* eslint-disable no-bitwise */
 /* eslint-disable func-names */
 
+import 'text-encoding-polyfill'
 import { Buffer } from 'buffer'
 import structuredClone from '@ungap/structured-clone'
 

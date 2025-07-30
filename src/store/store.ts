@@ -1,4 +1,4 @@
-import { StoreEnhancer, configureStore } from '@reduxjs/toolkit'
+import { configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useStore } from 'react-redux'
 import { persistReducer } from 'redux-persist'
 import { setupListeners } from '@reduxjs/toolkit/query'
@@ -8,12 +8,6 @@ import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
 import { name as balancesSliceName } from './slices/balancesSlice'
 import { name as notificationsSliceName } from './slices/notificationsSlice'
-import Reactotron from '../../ReactotronConfig'
-
-const enhancers: StoreEnhancer[] = []
-if (Reactotron.createEnhancer && __DEV__) {
-  enhancers.push(Reactotron.createEnhancer())
-}
 
 const persistConfig = {
   key: 'root',
@@ -36,7 +30,14 @@ const store = configureStore({
       serializableCheck: false,
       immutableCheck: false,
     }).concat([solanaStatusApi.middleware]),
-  enhancers,
+  enhancers: (getDefaultEnhancers) => {
+    if (__DEV__) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const reactotron = require('../../ReactotronConfig').default
+      return getDefaultEnhancers().concat(reactotron.createEnhancer())
+    }
+    return getDefaultEnhancers()
+  },
 })
 
 setupListeners(store.dispatch)

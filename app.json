@@ -1,7 +1,7 @@
 {
-  "name": "HeliumWallet",
-  "displayName": "Helium Wallet",
   "expo": {
+    "name": "HeliumWallet",
+    "displayName": "Helium Wallet",
     "scheme": "heliumwallet",
     "plugins": [
       "@maplibre/maplibre-react-native",
@@ -9,10 +9,15 @@
         "react-native-ble-plx",
         {
           "isBackgroundEnabled": true,
-          "modes": ["peripheral", "central"],
+          "modes": [
+            "peripheral",
+            "central"
+          ],
           "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-secure-store"
     ]
   }
 }
