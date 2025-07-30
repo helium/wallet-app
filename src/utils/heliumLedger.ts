@@ -9,9 +9,17 @@ const mainNetDerivation = (account = -1) => {
   return `44'/501'/${account}'` // sub derivation path
 }
 
+const defaultSolanaDerivation = (account = 0) => {
+  return `44'/501'/${account}'/0'` // default Solana derivation path
+}
+
 // Replaces the account alias with the index from the ledger
 export const runDerivationScheme = (account = 0) => {
   return mainNetDerivation(account)
+}
+
+export const runDefaultDerivationScheme = (account = 0) => {
+  return defaultSolanaDerivation(account)
 }
 
 export const signLedgerTransaction = async (

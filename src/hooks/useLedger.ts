@@ -2,7 +2,6 @@ import AppSolana from '@ledgerhq/hw-app-solana'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import TransportHID from '@ledgerhq/react-native-hid'
 import { useCallback, useState } from 'react'
-import { last } from 'lodash'
 import { useTranslation } from 'react-i18next'
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { solAddressToHelium } from '@utils/accountUtils'
@@ -10,11 +9,15 @@ import base58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
 import { useSolana } from '../solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
-import { runDerivationScheme } from '../utils/heliumLedger'
+import {
+  runDerivationScheme,
+  runDefaultDerivationScheme,
+} from '../utils/heliumLedger'
 
 export type LedgerAccount = {
   address: string
   balance?: number
+  derivationPath: string
   alias: string
   accountIndex: number
   solanaAddress: string
@@ -82,53 +85,138 @@ const useLedger = () => {
   //     setTransport(undefined)
   //   })
 
-  const getLedgerAcct = useCallback(
-    async (solana: AppSolana, accountIndex: number, display: boolean) => {
-      const { address } = await solana.getAddress(
-        runDerivationScheme(accountIndex),
-        display,
-      )
-      let balance = 0
-      try {
-        const balanceResponse = await anchorProvider?.connection.getBalance(
-          new PublicKey(base58.encode(address)),
-        )
+  const getLedgerAccountsForBothPaths = useCallback(
+    async (
+      solana: AppSolana,
+      accountIndex: number,
+    ): Promise<LedgerAccount[]> => {
+      const accounts: LedgerAccount[] = []
 
-        if (balanceResponse) {
-          balance = balanceResponse / 10 ** 9
+      // Check default path: 44'/501'/x'/0'
+      try {
+        const { address } = await solana.getAddress(
+          runDerivationScheme(accountIndex),
+          false,
+        )
+        let balance = 0
+        try {
+          const balanceResponse = await anchorProvider?.connection.getBalance(
+            new PublicKey(base58.encode(new Uint8Array(address))),
+          )
+          if (balanceResponse) {
+            balance = balanceResponse / 10 ** 9
+          }
+        } catch {
+          // ignore
         }
+        accounts.push({
+          address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
+          balance,
+          derivationPath: 'Default',
+          alias: `${t('ledger.show.alias', {
+            accountIndex: accountIndex + 1,
+          })}`,
+          accountIndex,
+          solanaAddress: bs58.encode(new Uint8Array(address)),
+        })
       } catch {
-        // ignore
+        // ignore if derivation fails
       }
-      return {
-        address: solAddressToHelium(bs58.encode(address)),
-        balance,
-        alias: t('ledger.show.alias', { accountIndex: accountIndex + 1 }),
-        accountIndex,
-        solanaAddress: bs58.encode(address),
-      } as LedgerAccount
+
+      // Check legacy path: 44'/501'/x'
+      try {
+        const { address } = await solana.getAddress(
+          runDefaultDerivationScheme(accountIndex),
+          false,
+        )
+        let balance = 0
+        try {
+          const balanceResponse = await anchorProvider?.connection.getBalance(
+            new PublicKey(base58.encode(new Uint8Array(address))),
+          )
+          if (balanceResponse) {
+            balance = balanceResponse / 10 ** 9
+          }
+        } catch {
+          // ignore
+        }
+        accounts.push({
+          address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
+          balance,
+          derivationPath: 'Legacy',
+          alias: `${t('ledger.show.alias', {
+            accountIndex: accountIndex + 1,
+          })}`,
+          accountIndex,
+          solanaAddress: bs58.encode(new Uint8Array(address)),
+        })
+      } catch {
+        // ignore if derivation fails
+      }
+
+      return accounts
     },
     [anchorProvider?.connection, t],
   )
 
-  const getLedgerAccounts = useCallback(
-    async (solana: AppSolana, accounts: LedgerAccount[]): Promise<void> => {
-      let index = -1
-      const prevAcct = last(accounts)
-      if (prevAcct) {
-        index = prevAcct.accountIndex + 1
+  const getAllLedgerAccounts = useCallback(
+    async (solana: AppSolana): Promise<LedgerAccount[]> => {
+      const allAccounts: LedgerAccount[] = []
+
+      // Check accounts from index 0 to 9
+      for (let accountIndex = 0; accountIndex < 10; accountIndex += 1) {
+        const accounts = await getLedgerAccountsForBothPaths(
+          solana,
+          accountIndex,
+        )
+        allAccounts.push(...accounts)
+
+        // If no balance found in this batch and we're past index 3, stop checking
+        const hasBalance = accounts.some(
+          (acc) => acc.balance && acc.balance > 0,
+        )
+        if (!hasBalance && accountIndex >= 3) {
+          break
+        }
       }
-      if (index >= 256) return
 
-      const acct = await getLedgerAcct(solana, index, false)
-      const next = [...accounts, acct]
-      setLedgerAccounts(next)
-
-      if (!acct.balance) return
-
-      return getLedgerAccounts(solana, next)
+      return allAccounts
     },
-    [getLedgerAcct],
+    [getLedgerAccountsForBothPaths],
+  )
+
+  const getLedgerAccounts = useCallback(
+    async (solana: AppSolana, mainAccounts: LedgerAccount[]): Promise<void> => {
+      const allIndexedAccounts = await getAllLedgerAccounts(solana)
+      const allAccounts = [...mainAccounts, ...allIndexedAccounts]
+
+      // Filter to accounts with balances > 0
+      const accountsWithBalance = allAccounts.filter(
+        (acc) => acc.balance && acc.balance > 0,
+      )
+
+      // Always include account 0 from default path (44'/501'/0'/0')
+      const defaultAccount0 = allIndexedAccounts.find(
+        (acc) =>
+          acc.accountIndex === 0 && acc.derivationPath.includes('Default'),
+      )
+
+      const finalAccounts = [...accountsWithBalance]
+
+      // Add default account 0 if it's not already included (doesn't have balance)
+      if (
+        defaultAccount0 &&
+        !accountsWithBalance.some(
+          (acc) =>
+            acc.accountIndex === 0 && acc.derivationPath.includes('Default'),
+        )
+      ) {
+        finalAccounts.push(defaultAccount0)
+      }
+
+      setLedgerAccounts(finalAccounts)
+    },
+    [getAllLedgerAccounts],
   )
 
   const updateLedgerAccounts = useCallback(
@@ -143,10 +231,45 @@ const useLedger = () => {
       const solana = new AppSolana(nextTransport)
 
       setLedgerAccountsLoading(true)
-      await getLedgerAccounts(solana, [])
+
+      // Check root derivation path first (44'/501')
+      const mainAccounts: LedgerAccount[] = []
+      try {
+        const { address } = await solana.getAddress("44'/501'", false)
+        let balance = 0
+        try {
+          const balanceResponse = await anchorProvider?.connection.getBalance(
+            new PublicKey(base58.encode(new Uint8Array(address))),
+          )
+          if (balanceResponse) {
+            balance = balanceResponse / 10 ** 9
+          }
+        } catch {
+          // ignore
+        }
+        mainAccounts.push({
+          address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
+          balance,
+          derivationPath: 'Root',
+          alias: t('ledger.show.alias', { accountIndex: 'Root' }),
+          accountIndex: -1,
+          solanaAddress: bs58.encode(new Uint8Array(address)),
+        })
+      } catch {
+        // ignore if derivation fails
+      }
+
+      // Start checking both derivation paths for each account index
+      await getLedgerAccounts(solana, mainAccounts)
       setLedgerAccountsLoading(false)
     },
-    [getLedgerAccounts, getTransport, ledgerAccountsLoading],
+    [
+      getLedgerAccounts,
+      getTransport,
+      ledgerAccountsLoading,
+      anchorProvider?.connection,
+      t,
+    ],
   )
 
   return {
