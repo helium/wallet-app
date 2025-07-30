@@ -16,7 +16,11 @@ import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
-import { signLedgerMessage, signLedgerTransaction } from '@utils/heliumLedger'
+import {
+  signLedgerMessage,
+  signLedgerTransaction,
+  shouldUseDefaultDerivation,
+} from '@utils/heliumLedger'
 import React, {
   ReactNode,
   Ref,
@@ -147,12 +151,14 @@ const LedgerModal = forwardRef(
               nextTransport,
               currentAccount.accountIndex,
               tBuffer,
+              shouldUseDefaultDerivation(currentAccount?.derivationPath),
             )
           } else if (mBuffer) {
             signature = await signLedgerMessage(
               nextTransport,
               currentAccount?.accountIndex,
               mBuffer,
+              shouldUseDefaultDerivation(currentAccount?.derivationPath),
             )
           }
 

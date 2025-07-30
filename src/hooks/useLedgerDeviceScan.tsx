@@ -122,9 +122,22 @@ const useDeviceScan = () => {
 
   useAsync(async () => {
     let previousAvailable: boolean | undefined
+    let isInitialState = true // Add this flag
+
     new Observable<LedgerAvailable>(TransportBLE.observeState).subscribe(
       (e) => {
         if (e.available !== previousAvailable) {
+          // If this is the first state event, just record it without triggering errors
+          if (isInitialState) {
+            isInitialState = false
+            previousAvailable = e.available
+            if (e.available) {
+              reload()
+            }
+            return
+          }
+
+          // Only trigger errors/actions for actual state changes after initialization
           previousAvailable = e.available
           if (e.available) {
             reload()
