@@ -67,13 +67,15 @@ export default () => {
   )
 
   useEffect(() => {
-    setSelected(
-      new Set([
-        ...derivationAccounts.map((d) => d.derivationPath),
-        DEFAULT_DERIVATION_PATH,
-      ]),
-    )
-  }, [derivationAccounts])
+    if (derivationAccounts.length > 0 && selected.size <= 1) {
+      setSelected(
+        new Set([
+          ...derivationAccounts.map((d) => d.derivationPath),
+          DEFAULT_DERIVATION_PATH,
+        ]),
+      )
+    }
+  }, [derivationAccounts, selected.size])
 
   useEffect(() => {
     setOnboardingData((data) => ({
@@ -88,14 +90,18 @@ export default () => {
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: ResolvedPath; index: number }) => {
       const onSelect = () => {
-        if (selected.has(item.derivationPath)) {
-          selected.delete(item.derivationPath)
-          setSelected(new Set(selected))
-        } else {
-          selected.add(item.derivationPath)
-          setSelected(new Set(selected))
-        }
+        setSelected((prev) => {
+          const newSelected = new Set(prev)
+          if (prev.has(item.derivationPath)) {
+            newSelected.delete(item.derivationPath)
+          } else {
+            newSelected.add(item.derivationPath)
+          }
+          return newSelected
+        })
       }
+
+      const isSelected = selected.has(item.derivationPath)
       return (
         <TouchableContainer
           onPress={onSelect}
@@ -150,7 +156,7 @@ export default () => {
           </Box>
           <Box justifyContent="center" alignItems="center" marginEnd="xs">
             <CheckBox
-              value={selected.has(item.derivationPath)}
+              value={isSelected}
               style={{ height: 18, width: 18 }}
               tintColors={{
                 true: colors.primaryText,
