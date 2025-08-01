@@ -11,7 +11,11 @@ import { AccountLayout, getAssociatedTokenAddress } from '@solana/spl-token'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useSolana } from '../solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
-import { runDerivationScheme } from '../utils/heliumLedger'
+import {
+  getDerivationPath,
+  getDerivationPathLabel,
+  type DerivationType,
+} from '../utils/heliumLedger'
 
 export type LedgerAccount = {
   address: string
@@ -21,6 +25,8 @@ export type LedgerAccount = {
   accountIndex: number
   solanaAddress: string
   hasBalance: boolean
+  derivationType: DerivationType
+  pathLabel: string
 }
 
 export const ManagerAppName = 'Solana'
@@ -84,13 +90,12 @@ const useLedger = () => {
     async (
       solana: AppSolana,
       accountIndex: number,
-      useDefault: boolean,
+      derivationType: DerivationType,
     ): Promise<LedgerAccount | null> => {
       try {
-        const { address } = await solana.getAddress(
-          runDerivationScheme(accountIndex, useDefault),
-          false,
-        )
+        const derivationPath = getDerivationPath(accountIndex, derivationType)
+
+        const { address } = await solana.getAddress(derivationPath, false)
         const publicKey = new PublicKey(base58.encode(new Uint8Array(address)))
 
         let balance = 0
@@ -136,53 +141,56 @@ const useLedger = () => {
               }
             })
           }
-        } catch {
-          // ignore balance check errors
-        }
+        } catch (error) {}
 
         const pathLabel =
-          accountIndex === -1 ? 'Root' : useDefault ? 'Default' : 'Legacy'
+          accountIndex === -1 ? 'Root' : getDerivationPathLabel(derivationType)
         const aliasKey = accountIndex === -1 ? 'Root' : accountIndex + 1
 
         return {
           address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
           balance,
-          derivationPath: pathLabel,
-          alias: `${t('ledger.show.alias', { accountIndex: aliasKey })}`,
+          pathLabel,
+          derivationPath: `m/${derivationPath}`, // Store the full parseable path
+          alias: `${t('ledger.show.alias', {
+            accountIndex: aliasKey,
+          })}`,
           accountIndex,
           solanaAddress: bs58.encode(new Uint8Array(address)),
           hasBalance,
+          derivationType,
         }
-      } catch {
-        // ignore if derivation fails
+      } catch (error) {
         return null
       }
     },
     [anchorProvider?.connection, t],
   )
 
-  const getLedgerAccountsForBothPaths = useCallback(
+  const getLedgerAccountsForAllPaths = useCallback(
     async (
       solana: AppSolana,
       accountIndex: number,
     ): Promise<LedgerAccount[]> => {
       const accounts: LedgerAccount[] = []
 
-      // Check legacy path: 44'/501'/x'
-      const legacyAccount = await createLedgerAccount(
-        solana,
-        accountIndex,
-        false,
-      )
-      if (legacyAccount) accounts.push(legacyAccount)
+      // Check all derivation paths sequentially to avoid Ledger device busy errors
+      const allTypes: DerivationType[] = [
+        'legacy',
+        'default',
+        'extended',
+        'alternative',
+        'migration',
+        'change',
+      ]
 
-      // Check default path: 44'/501'/x'/0'
-      const defaultAccount = await createLedgerAccount(
-        solana,
-        accountIndex,
-        true,
-      )
-      if (defaultAccount) accounts.push(defaultAccount)
+      await allTypes.reduce(async (promise, type) => {
+        await promise
+        const account = await createLedgerAccount(solana, accountIndex, type)
+        if (account) {
+          accounts.push(account)
+        }
+      }, Promise.resolve())
 
       return accounts
     },
@@ -192,23 +200,29 @@ const useLedger = () => {
   const getAllLedgerAccounts = useCallback(
     async (solana: AppSolana): Promise<LedgerAccount[]> => {
       const allAccounts: LedgerAccount[] = []
-      for (let accountIndex = 0; accountIndex < 15; accountIndex += 1) {
-        const accounts = await getLedgerAccountsForBothPaths(
+      let lastBalanceIndex = -1
+
+      for (let accountIndex = 0; accountIndex < 256; accountIndex += 1) {
+        const accounts = await getLedgerAccountsForAllPaths(
           solana,
           accountIndex,
         )
         allAccounts.push(...accounts)
 
-        // If no balance (SOL or tokens) found in this batch and we're past index 5, stop checking
         const hasAnyBalance = accounts.some((acc) => acc.hasBalance)
-        if (!hasAnyBalance && accountIndex >= 5) {
+        if (hasAnyBalance) {
+          lastBalanceIndex = accountIndex
+        }
+
+        // Stop if we've checked at least 5 indices and no balance found in the last 5 indices
+        if (accountIndex >= 5 && accountIndex >= lastBalanceIndex + 5) {
           break
         }
       }
 
       return allAccounts
     },
-    [getLedgerAccountsForBothPaths],
+    [getLedgerAccountsForAllPaths],
   )
 
   const getLedgerAccounts = useCallback(
@@ -217,37 +231,56 @@ const useLedger = () => {
       const allAccounts = [...mainAccounts, ...allIndexedAccounts]
       const accountsWithBalance = allAccounts.filter((acc) => acc.hasBalance)
 
-      // Always include account 0 from each derivation path if they don't have balance
-      const defaultAccount0 = allIndexedAccounts.find(
-        (acc) =>
-          acc.accountIndex === 0 && acc.derivationPath.includes('Default'),
-      )
-
-      const legacyAccount0 = allIndexedAccounts.find(
-        (acc) =>
-          acc.accountIndex === 0 && acc.derivationPath.includes('Legacy'),
-      )
+      // Only include account 0 from core derivation paths if they don't have balance
+      // For other paths (extended, alternative, migration, change), only show if they have balance
+      const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
+      const account0FromCoreTypes = coreTypes
+        .map((type) =>
+          allIndexedAccounts.find(
+            (acc) => acc.accountIndex === 0 && acc.derivationType === type,
+          ),
+        )
+        .filter(Boolean) as LedgerAccount[]
 
       const finalAccounts = [...accountsWithBalance]
 
-      // Add account 0 from each path if not already included
-      const addIfMissing = (
-        account: LedgerAccount | undefined,
-        pathName: string,
-      ) => {
+      // Add account 0 from core derivation types if not already included with balance
+      account0FromCoreTypes.forEach((account) => {
         if (
-          account &&
           !accountsWithBalance.some(
             (acc) =>
-              acc.accountIndex === 0 && acc.derivationPath.includes(pathName),
+              acc.accountIndex === 0 &&
+              acc.derivationType === account.derivationType,
           )
         ) {
           finalAccounts.push(account)
         }
-      }
+      })
 
-      addIfMissing(defaultAccount0, 'Default')
-      addIfMissing(legacyAccount0, 'Legacy')
+      // Sort accounts for better UX: accounts with balance first, then by account index, then by derivation type
+      finalAccounts.sort((a, b) => {
+        if (a.hasBalance !== b.hasBalance) {
+          return b.hasBalance ? 1 : -1
+        }
+
+        if (a.accountIndex !== b.accountIndex) {
+          return a.accountIndex - b.accountIndex
+        }
+
+        // Then by derivation type priority (most common first)
+        const typeOrder: DerivationType[] = [
+          'root',
+          'default',
+          'legacy',
+          'extended',
+          'alternative',
+          'migration',
+          'change',
+        ]
+        const aIndex = typeOrder.indexOf(a.derivationType)
+        const bIndex = typeOrder.indexOf(b.derivationType)
+        return aIndex - bIndex
+      })
 
       setLedgerAccounts(finalAccounts)
     },
@@ -270,7 +303,7 @@ const useLedger = () => {
 
       // Check Solana root path (44'/501')
       try {
-        const solanaRootAccount = await createLedgerAccount(solana, -1, false)
+        const solanaRootAccount = await createLedgerAccount(solana, -1, 'root')
         if (solanaRootAccount) {
           mainAccounts.push(solanaRootAccount)
         }
@@ -278,7 +311,7 @@ const useLedger = () => {
         // ignore if derivation fails
       }
 
-      // Start checking both derivation paths for each account index
+      // Start checking all derivation paths for each account index
       await getLedgerAccounts(solana, mainAccounts)
       setLedgerAccountsLoading(false)
     },

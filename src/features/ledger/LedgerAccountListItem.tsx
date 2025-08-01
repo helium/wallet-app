@@ -83,7 +83,7 @@ const LedgerAccountListItem = ({
         <AccountIcon size={40} address={account.address} />
         <Box marginRight="l" marginLeft="l" flexGrow={1}>
           <Text variant="subtitle4" marginBottom="xxs" color="secondaryText">
-            {account.derivationPath}
+            {account.pathLabel} ({account.derivationPath})
           </Text>
           <Text variant="subtitle2" marginBottom="xxs">
             {account.alias}
