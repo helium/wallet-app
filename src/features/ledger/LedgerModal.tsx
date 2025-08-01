@@ -19,7 +19,7 @@ import { useColors, useOpacity } from '@theme/themeHooks'
 import {
   signLedgerMessage,
   signLedgerTransaction,
-  shouldUseDefaultDerivation,
+  getDerivationTypeForSigning,
 } from '@utils/heliumLedger'
 import React, {
   ReactNode,
@@ -151,14 +151,14 @@ const LedgerModal = forwardRef(
               nextTransport,
               currentAccount.accountIndex,
               tBuffer,
-              shouldUseDefaultDerivation(currentAccount?.derivationPath),
+              getDerivationTypeForSigning(currentAccount?.derivationPath),
             )
           } else if (mBuffer) {
             signature = await signLedgerMessage(
               nextTransport,
               currentAccount?.accountIndex,
               mBuffer,
-              shouldUseDefaultDerivation(currentAccount?.derivationPath),
+              getDerivationTypeForSigning(currentAccount?.derivationPath),
             )
           }
 
