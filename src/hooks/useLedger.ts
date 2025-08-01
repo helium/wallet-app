@@ -214,8 +214,8 @@ const useLedger = () => {
           lastBalanceIndex = accountIndex
         }
 
-        // Stop if we've checked at least 5 indices and no balance found in the last 5 indices
-        if (accountIndex >= 5 && accountIndex >= lastBalanceIndex + 5) {
+        // Stop if we've checked at least 10 indices and no balance found in the last 10 indices
+        if (accountIndex >= 10 && accountIndex >= lastBalanceIndex + 10) {
           break
         }
       }

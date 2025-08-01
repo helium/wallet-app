@@ -185,6 +185,9 @@ const DeviceShow = () => {
         </Text>
         {isScanning && (
           <Box marginVertical="l" backgroundColor="primaryBackground">
+            <Text variant="body1" textAlign="center" marginBottom="m">
+              {t('ledger.show.scanning')}
+            </Text>
             <ActivityIndicator />
           </Box>
         )}

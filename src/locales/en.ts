@@ -893,6 +893,7 @@ export default {
       selectAll: 'Select All',
       subtitle:
         'This Ledger device can authorize transactions for the below Helium Account. ',
+      scanning: 'Scanning for wallets...',
       title: 'Select Wallets',
     },
     start: {
