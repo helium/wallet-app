@@ -8,7 +8,7 @@ import { solAddressToHelium } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
 import { AccountLayout, getAssociatedTokenAddress } from '@solana/spl-token'
-import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { HNT_MINT } from '@helium/spl-utils'
 import { useSolana } from '../solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
 import {
@@ -111,35 +111,29 @@ const useLedger = () => {
             hasBalance = balance > 0
           }
 
-          // Check token balances (HNT, MOBILE, IOT)
-          const tokenMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
-          const ataAddresses = await Promise.all(
-            tokenMints.map((mint) =>
-              getAssociatedTokenAddress(mint, publicKey),
-            ),
-          )
-
-          const tokenAccounts =
-            await anchorProvider?.connection.getMultipleAccountsInfo(
-              ataAddresses,
+          // Only check HNT token balance if there's no SOL balance
+          if (!hasBalance) {
+            const hntTokenAddress = await getAssociatedTokenAddress(
+              HNT_MINT,
+              publicKey,
+            )
+            const hntAccount = await anchorProvider?.connection.getAccountInfo(
+              hntTokenAddress,
             )
 
-          if (tokenAccounts) {
-            tokenAccounts.forEach((account) => {
-              if (account && account.data) {
-                try {
-                  const accInfo = AccountLayout.decode(
-                    new Uint8Array(account.data),
-                  )
-                  const tokenAmount = BigInt(accInfo.amount)
-                  if (tokenAmount > 0n) {
-                    hasBalance = true
-                  }
-                } catch {
-                  // ignore token decode errors
+            if (hntAccount && hntAccount.data) {
+              try {
+                const accInfo = AccountLayout.decode(
+                  new Uint8Array(hntAccount.data),
+                )
+                const tokenAmount = BigInt(accInfo.amount)
+                if (tokenAmount > 0n) {
+                  hasBalance = true
                 }
+              } catch {
+                // ignore token decode errors
               }
-            })
+            }
           }
         } catch (error) {}
 
