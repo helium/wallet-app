@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
-import CloseButton from '@components/CloseButton'
+import BackButton from '@components/BackButton'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
@@ -26,8 +26,8 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
       backgroundColor="secondaryBackground"
       paddingHorizontal="l"
     >
-      <Box width="100%" alignItems="flex-end" visible={!inline}>
-        <CloseButton onPress={onClose} />
+      <Box width="100%" alignItems="flex-start" visible={!inline}>
+        <BackButton onPress={onClose} />
       </Box>
       <Box justifyContent="center" alignItems="center" flex={1}>
         <CreateAccount />
