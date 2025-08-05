@@ -2176,7 +2176,7 @@ PODS:
     - Yoga
   - RNDeviceInfo (8.7.1):
     - React-Core
-  - RNGestureHandler (2.27.1):
+  - RNGestureHandler (2.27.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2975,7 +2975,7 @@ SPEC CHECKSUMS:
   RNCCheckbox: 33b44487ca8008394ce658cc32b26eab04f426ef
   RNCClipboard: ea6045252d5c0753cf17f62290f647dc0096f6ac
   RNDeviceInfo: d3e91ffb33ee97a7982108476edb68cb3672efa6
-  RNGestureHandler: e9dfbf95010aa6aa3212dcdefb0d38a42006cbab
+  RNGestureHandler: 9205e0a9649ef6fcfd71e86992ecfb21eefab3d3
   RNICloudStore: e0a579c3658e4ef49b84de2575886459c3ad695d
   RNLocalize: 5bcbb34b6f9cb4c2010ccfedb03f6a2b6f98466d
   RNOS: d07e5090b5060c6f2b83116d740a32cfdb33afe3

@@ -7318,7 +7318,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-test-renderer@npm:^19.1.0":
+"@types/react-test-renderer@npm:^19.0.0":
   version: 19.1.0
   resolution: "@types/react-test-renderer@npm:19.1.0"
   dependencies:
@@ -13638,12 +13638,12 @@ __metadata:
     "@types/markdown-it": 13.0.5
     "@types/parse5": 5.0.3
     "@types/qs": 6.9.7
-    "@types/react": ~19.0.10
+    "@types/react": ^19.0.0
     "@types/react-native-charts-wrapper": 0.5.2
     "@types/react-native-shared-group-preferences": 1.1.1
     "@types/react-native-snap-carousel": 3.8.5
     "@types/react-native-video": 5.0.14
-    "@types/react-test-renderer": ^19.1.0
+    "@types/react-test-renderer": ^19.0.0
     "@types/semver": 7.3.12
     "@types/tinycolor2": 1.4.3
     "@typescript-eslint/eslint-plugin": 5.59.2
@@ -13736,7 +13736,7 @@ __metadata:
     react-native-crypto: 2.2.0
     react-native-device-info: 8.7.1
     react-native-flash-message: 0.2.1
-    react-native-gesture-handler: 2.27.1
+    react-native-gesture-handler: ^2.27.2
     react-native-get-random-values: 1.11.0
     react-native-icloudstore: 0.9.0
     react-native-jazzicon: 0.1.2
@@ -13772,7 +13772,7 @@ __metadata:
     react-native-video: 6.12.0
     react-native-webview: 13.13.5
     react-redux: 8.0.4
-    react-test-renderer: 19.1.0
+    react-test-renderer: 19.0.0
     reactotron-react-native: 5.1.14
     reactotron-redux: 3.2.0
     readable-stream: 3.6.0
@@ -18850,10 +18850,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^19.1.0":
-  version: 19.1.0
-  resolution: "react-is@npm:19.1.0"
-  checksum: 3eb4eac7f09bf178bdc6fa98d384f5f243b85de7c99679a88b0154ead4d818ad94386ccb00ea31ec52409ffd13299057f5ec6ca2eaec06f9f7eddc1ad4832332
+"react-is@npm:^19.0.0":
+  version: 19.1.1
+  resolution: "react-is@npm:19.1.1"
+  checksum: e60ed01c27fe4d22b08f8a31f18831d144a801d08a909ca31fb1d02721b4f4cde0759148d6341f660a4d6ce54a78e22b8b39520b67e2e76254e583885868ab43
   languageName: node
   linkType: hard
 
@@ -18989,9 +18989,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:2.27.1":
-  version: 2.27.1
-  resolution: "react-native-gesture-handler@npm:2.27.1"
+"react-native-gesture-handler@npm:^2.27.2":
+  version: 2.27.2
+  resolution: "react-native-gesture-handler@npm:2.27.2"
   dependencies:
     "@egjs/hammerjs": ^2.0.17
     hoist-non-react-statics: ^3.3.0
@@ -18999,7 +18999,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 45a9ba24dd6fa370a4f4d6a58dcd58eaa9937a1fcc7db7e6b3c9020dcde41f335c1b80eb2eda0c73dc43e32cd5f151ebc5f90ae7179028e7c3490f4df4ef7817
+  checksum: d0c78afaeb10431917c9c13e91be5eefe6e13b9852b8734d33a8c562a52e859f2abcaed0c3a14a5676638fcdf532187161d0f29aadda734ce3e0f32b9fb6702e
   languageName: node
   linkType: hard
 
@@ -19520,15 +19520,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-test-renderer@npm:19.1.0":
-  version: 19.1.0
-  resolution: "react-test-renderer@npm:19.1.0"
+"react-test-renderer@npm:19.0.0":
+  version: 19.0.0
+  resolution: "react-test-renderer@npm:19.0.0"
   dependencies:
-    react-is: ^19.1.0
-    scheduler: ^0.26.0
+    react-is: ^19.0.0
+    scheduler: ^0.25.0
   peerDependencies:
-    react: ^19.1.0
-  checksum: e060239f8fbfbe54c2fa0e1d7a9eb1ee77787b0b29fd75ba6170dc22cd637c3a9052a82285db6be5a269309a65b8e8c40ddc8103620fbe1652cce693fd608acc
+    react: ^19.0.0
+  checksum: 2e1e527588c69e822b7aa25262c9f4a48161ede9cee5109b88228ecafbd91ce82f7afed176645efcba903ba5a43d05842a8229cdde220049e42a0cf679715dbc
   languageName: node
   linkType: hard
 
@@ -20406,17 +20406,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"scheduler@npm:0.25.0":
+"scheduler@npm:0.25.0, scheduler@npm:^0.25.0":
   version: 0.25.0
   resolution: "scheduler@npm:0.25.0"
   checksum: b7bb9fddbf743e521e9aaa5198a03ae823f5e104ebee0cb9ec625392bb7da0baa1c28ab29cee4b1e407a94e76acc6eee91eeb749614f91f853efda2613531566
-  languageName: node
-  linkType: hard
-
-"scheduler@npm:^0.26.0":
-  version: 0.26.0
-  resolution: "scheduler@npm:0.26.0"
-  checksum: c63a9f1c0e5089b537231cff6c11f75455b5c8625ae09535c1d7cd0a1b0c77ceecdd9f1074e5e063da5d8dc11e73e8033dcac3361791088be08a6e60c0283ed9
   languageName: node
   linkType: hard
 
