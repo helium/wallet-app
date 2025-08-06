@@ -3,7 +3,7 @@ import React
 import ReactAppDependencyProvider
 
 @UIApplicationMain
-class AppDelegate: EXAppDelegateWrapper {
+class AppDelegate: ExpoAppDelegate {
   var window: UIWindow?
 
   var reactNativeDelegate: ExpoReactNativeFactoryDelegate?
@@ -33,7 +33,7 @@ class AppDelegate: EXAppDelegateWrapper {
   }
 
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-    return ApplicationDelegate.shared.application(app, open: url, options: options) || RCTLinkingManager.application(app, open: url, options: options)
+    return RCTLinkingManager.application(app, open: url, options: options)
   }
 
   override func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
