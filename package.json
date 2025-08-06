@@ -118,7 +118,7 @@
     "bignumber.js": "9.1.1",
     "bip39": "3.1.0",
     "bn.js": "5.2.1",
-    "browserify-zlib": "0.1.4",
+    "browserify-zlib": "0.2.0",
     "bs58": "5.0.0",
     "buffer": "6.0.3",
     "camelcase-keys": "7.0.2",

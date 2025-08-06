@@ -10235,12 +10235,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserify-zlib@npm:0.1.4":
-  version: 0.1.4
-  resolution: "browserify-zlib@npm:0.1.4"
+"browserify-zlib@npm:0.2.0":
+  version: 0.2.0
+  resolution: "browserify-zlib@npm:0.2.0"
   dependencies:
-    pako: "npm:~0.2.0"
-  checksum: 10/cd506a1ef9c3280f6537a17ed1352ef7738b66fef0a15a655dc3a43edc34be6ee78c5838427146ae1fcd4801fc06d2ab203614d0f8c4df8b5a091cf0134b9a80
+    pako: "npm:~1.0.5"
+  checksum: 10/852e72effdc00bf8acc6d167d835179eda9e5bd13721ae5d0a2d132dc542f33e73bead2959eb43a2f181a9c495bc2ae2bdb4ec37c4e37ff61a0277741cbaaa7a
   languageName: node
   linkType: hard
 
@@ -14587,7 +14587,7 @@ __metadata:
     bignumber.js: "npm:9.1.1"
     bip39: "npm:3.1.0"
     bn.js: "npm:5.2.1"
-    browserify-zlib: "npm:0.1.4"
+    browserify-zlib: "npm:0.2.0"
     bs58: "npm:5.0.0"
     buffer: "npm:6.0.3"
     camelcase-keys: "npm:7.0.2"
@@ -18784,10 +18784,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pako@npm:~0.2.0":
-  version: 0.2.9
-  resolution: "pako@npm:0.2.9"
-  checksum: 10/627c6842e90af0b3a9ee47345bd66485a589aff9514266f4fa9318557ad819c46fedf97510f2cef9b6224c57913777966a05cb46caf6a9b31177a5401a06fe15
+"pako@npm:~1.0.5":
+  version: 1.0.11
+  resolution: "pako@npm:1.0.11"
+  checksum: 10/1ad07210e894472685564c4d39a08717e84c2a68a70d3c1d9e657d32394ef1670e22972a433cbfe48976cb98b154ba06855dcd3fcfba77f60f1777634bec48c0
   languageName: node
   linkType: hard
 

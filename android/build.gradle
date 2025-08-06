@@ -38,5 +38,4 @@ allprojects {
     }
 }
 
-apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
