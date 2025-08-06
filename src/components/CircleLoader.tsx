@@ -21,7 +21,7 @@ const CircleLoader = ({
 }: Props) => {
   const rotateAnim = useRef(new Animated.Value(0))
   const opacityAnim = useRef(new Animated.Value(0))
-  const animationRef = useRef<Animated.CompositeAnimation>()
+  const animationRef = useRef<Animated.CompositeAnimation | null>(null)
 
   const anim = () => {
     animationRef.current = Animated.loop(

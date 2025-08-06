@@ -31,7 +31,7 @@ const useEnrichedTransactions = (): {
   const [fetchingMore, setFetchingMore] = useState<boolean>(false)
   const [onEndReached, setOnEndReached] = useState<boolean>(false)
   const [hasNewTransactions, setHasNewTransactions] = useState(false)
-  const accountSubscriptionId = useRef<number>()
+  const accountSubscriptionId = useRef<number | null>(null)
   const dispatch = useAppDispatch()
   const firstSig = useMemo(
     () => (transactions[0] ? transactions[0].signature : ''),
@@ -170,7 +170,7 @@ const useEnrichedTransactions = (): {
       setHasNewTransactions(true)
     })
 
-    if (accountSubscriptionId.current !== undefined) {
+    if (accountSubscriptionId.current !== null) {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId

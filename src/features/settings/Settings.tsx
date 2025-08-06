@@ -10,7 +10,7 @@ import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { Cluster } from '@solana/web3.js'
 import { useHitSlop, useSpacing } from '@theme/themeHooks'
-import React, { ReactText, memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, Platform, SectionList } from 'react-native'
@@ -103,7 +103,7 @@ const Settings = () => {
   }, [currentAccount?.address])
 
   const handleIntervalSelected = useCallback(
-    async (value: ReactText) => {
+    async (value: string | number) => {
       const number = typeof value === 'number' ? value : parseInt(value, 10)
       await updateAuthInterval(number)
     },
@@ -259,21 +259,21 @@ const Settings = () => {
   )
 
   const handleCurrencyTypeChange = useCallback(
-    async (currencyType: ReactText, _index: number) => {
+    async (currencyType: string | number, _index: number) => {
       await updateCurrency(currencyType as string)
     },
     [updateCurrency],
   )
 
   const handleExplorerChange = useCallback(
-    async (ex: ReactText, _index: number) => {
+    async (ex: string | number, _index: number) => {
       await updateExplorer(ex as string)
     },
     [updateExplorer],
   )
 
   const handleSolanaClusterChange = useCallback(
-    async (network: ReactText, _index: number) => {
+    async (network: string | number, _index: number) => {
       updateCluster(network as Cluster)
     },
     [updateCluster],

@@ -3,7 +3,7 @@ import { BackHandler, Platform } from 'react-native'
 import { BottomSheetModal } from '@gorhom/bottom-sheet'
 
 const useBackHandler = (
-  bottomSheetModalRef: React.RefObject<BottomSheetModal>,
+  bottomSheetModalRef: React.RefObject<BottomSheetModal | null>,
 ) => {
   const [isShowing, setIsShowing] = useState(false)
 
