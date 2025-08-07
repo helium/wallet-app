@@ -41,7 +41,7 @@ export function useImplicitBurn(): {
     if ((myDc || BigInt(0)) < BigInt(totalDcReq)) {
       const program = (await initDataCredits(
         anchorProvider,
-      )) as Program<DataCredits>
+      )) as unknown as Program<DataCredits>
       const dcDeficit = BigInt(totalDcReq) - (myDc || BigInt(0))
       const burnTx = new Transaction({
         feePayer: wallet,

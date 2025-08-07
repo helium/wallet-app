@@ -183,7 +183,7 @@ const useSolTxns = ({
       if (!anchorProvider || !asset) return ''
       const hemProgram = (await init(
         anchorProvider,
-      )) as Program<HeliumEntityManager>
+      )) as unknown as Program<HeliumEntityManager>
       const keyToAssetKey = keyToAssetForAsset(asset)
       const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
         keyToAssetKey,

@@ -597,7 +597,9 @@ export const mintDataCredits = async ({
 }): Promise<TransactionDraft> => {
   try {
     const { publicKey: payer } = anchorProvider.wallet
-    const program = (await initDc(anchorProvider)) as Program<DataCredits>
+    const program = (await initDc(
+      anchorProvider,
+    )) as unknown as Program<DataCredits>
 
     const ix = await program.methods
       .mintDataCreditsV0({
@@ -991,7 +993,12 @@ export const getNFTsMetadata = async (collectables: CompressedNFT[]) =>
     await Promise.all(
       collectables.map(async (col) => {
         try {
-          const { data } = await axios.get(col.content.json_uri, {
+          // Force HTTPS for security - convert any HTTP URLs to HTTPS
+          const secureUri = col.content.json_uri.replace(
+            /^http:\/\//,
+            'https://',
+          )
+          const { data } = await axios.get(secureUri, {
             timeout: 3000,
           })
 
@@ -1119,8 +1126,12 @@ export const getHotspotRecipients = async (
     recipients: { [key: string]: RecipientV0 | undefined }
   }[]
 > => {
-  const program = (await initLazy(provider)) as Program<LazyDistributor>
-  const hemProgram = (await initHem(provider)) as Program<HeliumEntityManager>
+  const program = (await initLazy(
+    provider,
+  )) as unknown as Program<LazyDistributor>
+  const hemProgram = (await initHem(
+    provider,
+  )) as unknown as Program<HeliumEntityManager>
   const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const assetKeys = ktaAccs.map((kta) => kta.asset)
@@ -1506,7 +1517,7 @@ export const getAllTransactions = async (
 
   try {
     const sigs = await conn.getSignaturesForAddress(pubKey, {
-      before: oldestTransaction,
+      before: oldestTransaction || undefined, // Convert empty string to undefined
       limit: 100,
       until: newestTransaction,
     })
@@ -1638,12 +1649,14 @@ export const getAllTransactions = async (
                 return tx
               }
 
-              const { data: metadata } = await axios.get(
-                compressedNFT.content.json_uri,
-                {
-                  timeout: 3000,
-                },
+              // Force HTTPS for security - convert any HTTP URLs to HTTPS
+              const secureUri = compressedNFT.content.json_uri.replace(
+                /^http:\/\//,
+                'https://',
               )
+              const { data: metadata } = await axios.get(secureUri, {
+                timeout: 3000,
+              })
 
               return {
                 ...tx,
@@ -1703,6 +1716,7 @@ export const getAllTransactions = async (
 
     return allTxnsWithMetadata
   } catch (e) {
+    console.error('getAllTransactions error:', e)
     return []
   }
 }

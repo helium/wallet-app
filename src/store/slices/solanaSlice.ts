@@ -430,10 +430,10 @@ export const claimAllRewards = createAsyncThunk(
       let triesRemaining = 10
       const program = (await lz.init(
         anchorProvider,
-      )) as Program<LazyDistributor>
+      )) as unknown as Program<LazyDistributor>
       const hemProgram = (await init(
         anchorProvider,
-      )) as Program<HeliumEntityManager>
+      )) as unknown as Program<HeliumEntityManager>
 
       const mints = await Promise.all(
         lazyDistributors.map(async (d) => {
@@ -502,7 +502,7 @@ export const claimAllRewards = createAsyncThunk(
             )
 
             const rewards = await getBulkRewards(
-              program,
+              program as any,
               lazyDistributor,
               entityKeys,
             )
@@ -516,7 +516,7 @@ export const claimAllRewards = createAsyncThunk(
             )
 
             const txns = await formBulkTransactions({
-              program,
+              program: program as any,
               rewards,
               assets: chunk.map((h) => new PublicKey(h.id)),
               compressionAssetAccs: chunk.map(solUtils.toAsset),

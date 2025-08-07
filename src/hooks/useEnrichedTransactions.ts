@@ -3,7 +3,6 @@ import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { useAppDispatch } from '../store/store'
 import { EnrichedTransaction } from '../types/solana'
 import {
   getAllTransactions,
@@ -31,8 +30,7 @@ const useEnrichedTransactions = (): {
   const [fetchingMore, setFetchingMore] = useState<boolean>(false)
   const [onEndReached, setOnEndReached] = useState<boolean>(false)
   const [hasNewTransactions, setHasNewTransactions] = useState(false)
-  const accountSubscriptionId = useRef<number | null>(null)
-  const dispatch = useAppDispatch()
+  const accountSubscriptionId = useRef<number | undefined>(undefined)
   const firstSig = useMemo(
     () => (transactions[0] ? transactions[0].signature : ''),
     [transactions],
@@ -56,7 +54,9 @@ const useEnrichedTransactions = (): {
   }, [currentAccount])
 
   const refresh = useCallback(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
+    if (!currentAccount?.solanaAddress || !anchorProvider) {
+      return
+    }
     setLoading(true)
     const fetchTransactions = await getAllTransactions(
       currentAccount?.solanaAddress,
@@ -74,9 +74,8 @@ const useEnrichedTransactions = (): {
   }, [currentAccount, cluster, anchorProvider])
   const loadTransactionsFromStorage = useCallback(async () => {
     try {
-      const storedTransactions = await AsyncStorage.getItem(
-        `txs-${cluster}-${currentAccount?.solanaAddress}`,
-      )
+      const storageKey = `txs-${cluster}-${currentAccount?.solanaAddress}`
+      const storedTransactions = await AsyncStorage.getItem(storageKey)
       if (storedTransactions && storedTransactions.length > 0) {
         const parsedTransactions = JSON.parse(storedTransactions)
         setTransactions(parsedTransactions)
@@ -161,7 +160,9 @@ const useEnrichedTransactions = (): {
   ])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
+    if (!currentAccount?.solanaAddress || !anchorProvider) {
+      return
+    }
 
     loadTransactionsFromStorage()
 
@@ -170,17 +171,12 @@ const useEnrichedTransactions = (): {
       setHasNewTransactions(true)
     })
 
-    if (accountSubscriptionId.current !== null) {
+    if (accountSubscriptionId.current !== undefined) {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [
-    anchorProvider,
-    currentAccount,
-    dispatch,
-    loadTransactionsFromStorage,
-    fetchNew,
-  ])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anchorProvider, currentAccount])
 
   const resetNewTransactions = useCallback(() => {
     setHasNewTransactions(false)

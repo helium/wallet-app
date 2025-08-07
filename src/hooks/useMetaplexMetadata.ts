@@ -19,8 +19,10 @@ export function getMetadata(
   const uri = uriIn?.replace(/\0/g, '')
   if (uri) {
     if (!cache[uri]) {
+      // Force HTTPS for security - convert any HTTP URLs to HTTPS
+      const secureUri = uri.replace(/^http:\/\//, 'https://')
       cache[uri] = axios
-        .get(uri.replace(/\0/g, ''), {
+        .get(secureUri, {
           timeout: 3000,
         })
         .then((res) => res.data)
