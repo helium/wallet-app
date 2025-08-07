@@ -179,6 +179,7 @@ PODS:
     - OneSignalXCFramework/OneSignalNotifications
     - OneSignalXCFramework/OneSignalOSCore
     - OneSignalXCFramework/OneSignalOutcomes
+  - OpenSSL-Universal (3.3.3001)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1572,6 +1573,32 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-quick-crypto (0.7.17):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - OpenSSL-Universal
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-randombytes (3.6.1):
     - React-Core
   - react-native-safe-area-context (5.3.0):
@@ -2501,6 +2528,7 @@ DEPENDENCIES:
   - react-native-network-info (from `../node_modules/react-native-network-info`)
   - react-native-onesignal (from `../node_modules/react-native-onesignal`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
+  - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-simple-toast (from `../node_modules/react-native-simple-toast`)
@@ -2565,6 +2593,7 @@ SPEC REPOS:
     - lottie-ios
     - MultiplatformBleAdapter
     - OneSignalXCFramework
+    - OpenSSL-Universal
     - SocketRocket
     - SwiftAlgorithms
     - SwiftyJSON
@@ -2705,6 +2734,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-onesignal"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
+  react-native-quick-crypto:
+    :path: "../node_modules/react-native-quick-crypto"
   react-native-randombytes:
     :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
@@ -2849,6 +2880,7 @@ SPEC CHECKSUMS:
   maplibre-react-native: 275e81319b9d75e120902a09f4ca07cce9537234
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   OneSignalXCFramework: 1a3b28dfbff23aabce585796d23c1bef37772774
+  OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 5f638f65935e273753b1f31a365db6a8d6dc53b5
   RCTRequired: 8b46a520ea9071e2bc47d474aa9ca31b4a935bd8
@@ -2889,6 +2921,7 @@ SPEC CHECKSUMS:
   react-native-network-info: 23b4f34419d7998727c9e50bf8dee3c1bd3f975a
   react-native-onesignal: 33ade92bd91578374c31c5a5a91f45f49c2d6614
   react-native-pager-view: 66c1536b8ee0818d6379e4206a140092ef16d1f3
+  react-native-quick-crypto: 25eea8fe1d2a2ae24b609cb8061b7ef5873e7615
   react-native-randombytes: 3c8f3e89d12487fd03a2f966c288d495415fc116
   react-native-safe-area-context: 2827adb0d1250242917057a8ae0b3bfb5670d9e4
   react-native-simple-toast: 59d8b58998dac9f063b46d95f9fd7fd7caab6101
