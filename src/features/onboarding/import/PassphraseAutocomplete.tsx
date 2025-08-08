@@ -8,7 +8,7 @@ import Box from '@components/Box'
 import FabButton from '@components/FabButton'
 import usePrevious from '@hooks/usePrevious'
 import { Color } from '@theme/theme'
-import Clipboard from '@react-native-community/clipboard'
+import Clipboard from '@react-native-clipboard/clipboard'
 import MatchingWord from './MatchingWord'
 
 type Props = {

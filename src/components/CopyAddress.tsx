@@ -2,7 +2,7 @@
 import React, { memo, useCallback } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { useTranslation } from 'react-i18next'
-import Clipboard from '@react-native-community/clipboard'
+import Clipboard from '@react-native-clipboard/clipboard'
 import Toast from 'react-native-simple-toast'
 import CopyAddressIcon from '@assets/images/copyAddress.svg'
 import { Theme } from '@theme/theme'

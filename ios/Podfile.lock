@@ -2155,8 +2155,30 @@ PODS:
   - RNCCheckbox (0.5.17):
     - BEMCheckBox (~> 1.4)
     - React-Core
-  - RNCClipboard (1.5.1):
+  - RNCClipboard (1.16.3):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNDeviceInfo (8.7.1):
     - React-Core
   - RNGestureHandler (2.24.0):
@@ -2569,7 +2591,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCCheckbox (from `../node_modules/@react-native-community/checkbox`)"
-  - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNICloudStore (from `../node_modules/react-native-icloudstore`)
@@ -2817,7 +2839,7 @@ EXTERNAL SOURCES:
   RNCCheckbox:
     :path: "../node_modules/@react-native-community/checkbox"
   RNCClipboard:
-    :path: "../node_modules/@react-native-community/clipboard"
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNDeviceInfo:
     :path: "../node_modules/react-native-device-info"
   RNGestureHandler:
@@ -2962,7 +2984,7 @@ SPEC CHECKSUMS:
   ReactCommon: 1ab5451fc5da87c4cc4c3046e19a8054624ca763
   RNCAsyncStorage: 01062b75ce749e3a18091a9ad7749effdf09ea43
   RNCCheckbox: 450ce156f3e29e25efa0315c96cfbabe5a39ded1
-  RNCClipboard: b0541df1bb88935d40bdc93b41b7d8e3334c998a
+  RNCClipboard: ea6045252d5c0753cf17f62290f647dc0096f6ac
   RNDeviceInfo: d3e91ffb33ee97a7982108476edb68cb3672efa6
   RNGestureHandler: 7d0931a61d7ba0259f32db0ba7d0963c3ed15d2b
   RNICloudStore: e0a579c3658e4ef49b84de2575886459c3ad695d
@@ -2985,4 +3007,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: a18697d8f807d51cd1d496223f3663ed19f4e0a9
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.15.2
