@@ -1510,10 +1510,14 @@ export const getAllTransactions = async (
 > => {
   const pubKey = new PublicKey(address)
   const conn = anchorProvider.connection
-
-  const parseTransactionsUrl = `${
+  const baseUrl =
     cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
-  }/v0/transactions/`
+  const url = new URL(baseUrl)
+  url.pathname = '/v0/transactions'
+  const parseTransactionsUrl = url.toString()
+  if (!baseUrl) {
+    throw new Error(`Missing RPC URL configuration for cluster: ${cluster}`)
+  }
 
   try {
     const sigs = await conn.getSignaturesForAddress(pubKey, {

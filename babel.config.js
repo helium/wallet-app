@@ -1,14 +1,3 @@
-function getAliasesFromTsConfig() {
-  const tsConfig = require('./tsconfig.json')
-  const paths = tsConfig.compilerOptions.paths
-  let alias = {}
-  Object.keys(paths).forEach((key) => {
-    alias[key] = `./${paths[key][0]}`
-  })
-
-  return alias
-}
-
 module.exports = (api) => {
   api.cache(true)
 
@@ -35,8 +24,6 @@ module.exports = (api) => {
             '@storage': './src/storage',
             '@types': './src/types',
           },
-          extensions: ['.ios.js', '.android.js', '.js', '.ts', '.tsx', '.json'],
-          root: ['./src'],
         },
       ],
       'react-native-reanimated/plugin',
