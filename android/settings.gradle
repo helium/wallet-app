@@ -2,7 +2,7 @@ pluginManagement {
   repositories {
     maven { url "https://plugins.gradle.org/m2/" }
   }
-  includeBuild("../node_modules/@react-native/gradle-plugin") 
+  includeBuild("../node_modules/@react-native/gradle-plugin")
 }
 plugins { id("com.facebook.react.settings") }
 

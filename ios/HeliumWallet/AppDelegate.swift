@@ -16,7 +16,6 @@ class AppDelegate: EXAppDelegateWrapper {
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
-
   override func sourceURL(for bridge: RCTBridge) -> URL? {
     self.bundleURL()
   }
@@ -28,11 +27,11 @@ class AppDelegate: EXAppDelegateWrapper {
     Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
   }
-  
+
   override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
       return RCTLinkingManager.application(app, open: url, options: options)
   }
-  
+
   override func application(_ application: UIApplication,
                           continue userActivity: NSUserActivity,
                           restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {

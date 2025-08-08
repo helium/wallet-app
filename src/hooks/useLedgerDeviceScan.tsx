@@ -72,7 +72,7 @@ const checkPermission = async () => {
 }
 
 const useDeviceScan = () => {
-  const sub = useRef<Subscription>()
+  const sub = useRef<Subscription | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<Error>()
   const [devices, setDevices] = useState<Device[]>([])

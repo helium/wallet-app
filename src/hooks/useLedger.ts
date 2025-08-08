@@ -161,30 +161,63 @@ const useLedger = () => {
     [anchorProvider?.connection, t],
   )
 
-  const getLedgerAccountsForAllPaths = useCallback(
+  const getAllLedgerAccountsForDerivationType = useCallback(
     async (
       solana: AppSolana,
-      accountIndex: number,
+      derivationType: DerivationType,
     ): Promise<LedgerAccount[]> => {
       const accounts: LedgerAccount[] = []
+      let batchStart = 0
+      const batchSize = 10
 
-      // Check all derivation paths sequentially to avoid Ledger device busy errors
-      const allTypes: DerivationType[] = [
-        'legacy',
-        'default',
-        'extended',
-        'alternative',
-        'migration',
-        'change',
-      ]
+      while (batchStart < 256) {
+        // Check current batch of 10 accounts
+        const batchAccounts: LedgerAccount[] = []
 
-      await allTypes.reduce(async (promise, type) => {
-        await promise
-        const account = await createLedgerAccount(solana, accountIndex, type)
-        if (account) {
-          accounts.push(account)
+        const currentBatchStart = batchStart
+        await Array.from({ length: batchSize }, (_, i) => i).reduce(
+          async (promise, i) => {
+            await promise
+            const accountIndex = currentBatchStart + i
+            if (accountIndex >= 256) return
+            const account = await createLedgerAccount(
+              solana,
+              accountIndex,
+              derivationType,
+            )
+            if (account) {
+              batchAccounts.push(account)
+            }
+          },
+          Promise.resolve(),
+        )
+
+        const batchAccountsWithBalance = batchAccounts.filter(
+          (acc) => acc.hasBalance,
+        )
+
+        // If this is the first batch (0-9) and no accounts have balance
+        if (batchStart === 0 && batchAccountsWithBalance.length === 0) {
+          // Only add account 0 for core derivation types (root, default, legacy)
+          const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
+          if (coreTypes.includes(derivationType)) {
+            const account0 = batchAccounts.find((acc) => acc.accountIndex === 0)
+            if (account0) {
+              accounts.push(account0)
+            }
+          }
+          break // Stop scanning this derivation type
         }
-      }, Promise.resolve())
+
+        // If any accounts in this batch have balance, add all accounts with balance
+        if (batchAccountsWithBalance.length > 0) {
+          accounts.push(...batchAccountsWithBalance)
+          batchStart += batchSize // Continue to next batch
+        } else {
+          // No balance in this batch, stop scanning this derivation type
+          break
+        }
+      }
 
       return accounts
     },
@@ -194,65 +227,38 @@ const useLedger = () => {
   const getAllLedgerAccounts = useCallback(
     async (solana: AppSolana): Promise<LedgerAccount[]> => {
       const allAccounts: LedgerAccount[] = []
-      let lastBalanceIndex = -1
 
-      for (let accountIndex = 0; accountIndex < 256; accountIndex += 1) {
-        const accounts = await getLedgerAccountsForAllPaths(
+      // Check all derivation types sequentially to avoid Ledger device busy errors
+      const allTypes: DerivationType[] = [
+        'legacy',
+        'default',
+        'extended',
+        'alternative',
+        'migration',
+        'change',
+      ]
+
+      await allTypes.reduce(async (promise, derivationType) => {
+        await promise
+        const accounts = await getAllLedgerAccountsForDerivationType(
           solana,
-          accountIndex,
+          derivationType,
         )
         allAccounts.push(...accounts)
-
-        const hasAnyBalance = accounts.some((acc) => acc.hasBalance)
-        if (hasAnyBalance) {
-          lastBalanceIndex = accountIndex
-        }
-
-        // Stop if we've checked at least 10 indices and no balance found in the last 10 indices
-        if (accountIndex >= 10 && accountIndex >= lastBalanceIndex + 10) {
-          break
-        }
-      }
+      }, Promise.resolve())
 
       return allAccounts
     },
-    [getLedgerAccountsForAllPaths],
+    [getAllLedgerAccountsForDerivationType],
   )
 
   const getLedgerAccounts = useCallback(
     async (solana: AppSolana, mainAccounts: LedgerAccount[]): Promise<void> => {
       const allIndexedAccounts = await getAllLedgerAccounts(solana)
       const allAccounts = [...mainAccounts, ...allIndexedAccounts]
-      const accountsWithBalance = allAccounts.filter((acc) => acc.hasBalance)
-
-      // Only include account 0 from core derivation paths if they don't have balance
-      // For other paths (extended, alternative, migration, change), only show if they have balance
-      const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
-      const account0FromCoreTypes = coreTypes
-        .map((type) =>
-          allIndexedAccounts.find(
-            (acc) => acc.accountIndex === 0 && acc.derivationType === type,
-          ),
-        )
-        .filter(Boolean) as LedgerAccount[]
-
-      const finalAccounts = [...accountsWithBalance]
-
-      // Add account 0 from core derivation types if not already included with balance
-      account0FromCoreTypes.forEach((account) => {
-        if (
-          !accountsWithBalance.some(
-            (acc) =>
-              acc.accountIndex === 0 &&
-              acc.derivationType === account.derivationType,
-          )
-        ) {
-          finalAccounts.push(account)
-        }
-      })
 
       // Sort accounts for better UX: accounts with balance first, then by account index, then by derivation type
-      finalAccounts.sort((a, b) => {
+      allAccounts.sort((a, b) => {
         if (a.hasBalance !== b.hasBalance) {
           return b.hasBalance ? 1 : -1
         }
@@ -276,7 +282,7 @@ const useLedger = () => {
         return aIndex - bIndex
       })
 
-      setLedgerAccounts(finalAccounts)
+      setLedgerAccounts(allAccounts)
     },
     [getAllLedgerAccounts],
   )

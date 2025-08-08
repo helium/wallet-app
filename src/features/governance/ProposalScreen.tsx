@@ -126,7 +126,9 @@ export const ProposalScreen = () => {
 
   const { error: markdownErr, result: markdown } = useAsync(async () => {
     if (proposal && proposal.uri) {
-      const { data } = await axios.get(proposal.uri)
+      // Force HTTPS for security - convert any HTTP URLs to HTTPS
+      const secureUri = proposal.uri.replace(/^http:\/\//, 'https://')
+      const { data } = await axios.get(secureUri)
       return data
     }
   }, [])

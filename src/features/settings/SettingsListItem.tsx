@@ -1,4 +1,4 @@
-import React, { memo, ReactText, useCallback, useMemo, useRef } from 'react'
+import React, { memo, useCallback, useMemo, useRef } from 'react'
 import { Linking, Platform, Switch } from 'react-native'
 import CarotRight from '@assets/images/carot-right.svg'
 import LinkImg from '@assets/images/link.svg'
@@ -16,7 +16,7 @@ import sleep from '@utils/sleep'
 
 export type SelectProps = {
   onDonePress?: () => void
-  onValueSelect: (value: ReactText, index: number) => void
+  onValueSelect: (value: string | number, index: number) => void
   items: HeliumActionSheetItemType[]
 }
 
