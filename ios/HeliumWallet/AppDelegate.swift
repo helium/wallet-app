@@ -24,7 +24,7 @@ class AppDelegate: ExpoAppDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "HeliumMobile",
+      withModuleName: "HeliumWallet",
       in: window,
       launchOptions: launchOptions
     )

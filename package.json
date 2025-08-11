@@ -3,7 +3,7 @@
   "version": "2.14.6",
   "private": true,
   "scripts": {
-    "postinstall": "patch-package && npx jetify",
+    "postinstall": "patch-package",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
