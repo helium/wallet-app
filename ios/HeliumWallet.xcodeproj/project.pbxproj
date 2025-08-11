@@ -21,7 +21,7 @@
 		50D1D6B02763AAA2009D52C0 /* DMSans-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AA2763AAA2009D52C0 /* DMSans-Italic.ttf */; };
 		50D1D6B12763AAA2009D52C0 /* DMSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		81AB9BB92411601600AC10FF /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB82411601600AC10FF /* SplashScreen.storyboard */; };
 		855F7B1EFFEA0D92A6A8417B /* libPods-HeliumWalletWidgetExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C613981923E616021630402 /* libPods-HeliumWalletWidgetExtension.a */; };
 		9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */; };
 		962862712BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
@@ -126,7 +126,7 @@
 		645194928E31AE79BE70ED88 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-HeliumWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = HeliumWallet/AppDelegate.swift; sourceTree = "<group>"; };
 		813704F7B620241D6EE1F716 /* Pods-HeliumWalletWidgetExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWalletWidgetExtension.release.xcconfig"; path = "Target Support Files/Pods-HeliumWalletWidgetExtension/Pods-HeliumWalletWidgetExtension.release.xcconfig"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = HeliumWallet/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		81AB9BB82411601600AC10FF /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = HeliumWallet/SplashScreen.storyboard; sourceTree = "<group>"; };
 		90AEBBB0ACAEB34DDB2BD559 /* Pods-OneSignalNotificationServiceExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OneSignalNotificationServiceExtension.release.xcconfig"; path = "Target Support Files/Pods-OneSignalNotificationServiceExtension/Pods-OneSignalNotificationServiceExtension.release.xcconfig"; sourceTree = "<group>"; };
 		9609CFFE27F4DE6200CE3F93 /* RCTDateModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTDateModule.h; sourceTree = "<group>"; };
 		9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTDateModule.mm; sourceTree = "<group>"; };
@@ -220,7 +220,7 @@
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
-				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+				81AB9BB82411601600AC10FF /* SplashScreen.storyboard */,
 				508E6F6B26FA22F400774B67 /* HeliumWallet-Bridging-Header.h */,
 				9609CFFE27F4DE6200CE3F93 /* RCTDateModule.h */,
 				9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */,
@@ -544,7 +544,7 @@
 				50D1D6AF2763AAA2009D52C0 /* DMSans-MediumItalic.ttf in Resources */,
 				50D1D6B02763AAA2009D52C0 /* DMSans-Italic.ttf in Resources */,
 				50D1D6B12763AAA2009D52C0 /* DMSans-Regular.ttf in Resources */,
-				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				81AB9BB92411601600AC10FF /* SplashScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				AB02F1297F7F91A0FD2532BD /* PrivacyInfo.xcprivacy in Resources */,
 			);
