@@ -5,6 +5,7 @@ import AccountSelector, {
 } from '@components/AccountSelector'
 import BackgroundFill from '@components/BackgroundFill'
 import Box from '@components/Box'
+import SafeAreaBox from '@components/SafeAreaBox'
 import FadeInOut from '@components/FadeInOut'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import TabBar, { TabBarOption } from '@components/TabBar'
@@ -236,13 +237,14 @@ const RequestScreen = () => {
           onTokenSelected={setMint}
           tokenData={data}
         >
-          <Box
+          <SafeAreaBox
             backgroundColor="secondaryBackground"
             flex={1}
             onLayout={handleContainerLayout}
             borderWidth={1}
             borderTopStartRadius="xl"
             borderTopEndRadius="xl"
+            edges={['top']}
           >
             <Text variant="subtitle2" paddingTop="l" textAlign="center">
               {t('request.title')}
@@ -382,7 +384,7 @@ const RequestScreen = () => {
                 </Box>
               </Box>
             </KeyboardAwareScrollView>
-          </Box>
+          </SafeAreaBox>
         </TokenSelector>
       </AccountSelector>
     </HNTKeyboard>
