@@ -12703,7 +12703,7 @@ __metadata:
     reactotron-react-native: "npm:^5.1.3"
     reactotron-redux: "npm:^3.1.9"
     redux-persist: "npm:6.0.0"
-    rn-swipe-button: "npm:1.3.8"
+    rn-swipe-button: "npm:^3.0.1"
     rxjs: "npm:7.5.6"
     snakecase-keys: "npm:5.4.2"
     stream: "npm:^0.0.3"
@@ -18915,13 +18915,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rn-swipe-button@npm:1.3.8":
-  version: 1.3.8
-  resolution: "rn-swipe-button@npm:1.3.8"
+"rn-swipe-button@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "rn-swipe-button@npm:3.0.1"
   peerDependencies:
-    react: ">=16.8.6"
-    react-native: ">=0.60.5"
-  checksum: 10/38369ab80131ec8780bddeabb024d83e003adfe8eeef1262f4b885b4b4693bc4cfdfccabfa184c76daf35fde72daaa4d2b6d5f0f4315f5a81b9d0f98878b2da9
+    react: ">=18.1.0"
+    react-native: ">=0.70.0"
+  checksum: 10/6e6c032b56257f23f463115b99f90b468d5afa1de6ae367169d9df9ce5e2de9d84246565b6db7b6b5c5bcf4ae8732350a5ad3840976ad3f7763146e5e7e00def
   languageName: node
   linkType: hard
 
