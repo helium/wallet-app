@@ -4,7 +4,7 @@ import { BoxProps } from '@shopify/restyle'
 import { BorderRadii, Color, Spacing, Theme } from '@theme/theme'
 import { useColors, useInputVariants } from '@theme/themeHooks'
 import React, { useCallback } from 'react'
-import { TextInputProps } from 'react-native'
+import { TextInput as RNTextInput, TextInputProps } from 'react-native'
 import Box from './Box'
 import TextInput from './TextInput'
 
@@ -16,6 +16,7 @@ type Props = BoxProps<Theme> & {
   variant?: 'plain' | 'regular' | 'underline'
   autoFocus?: boolean
   textInputProps?: TextInputProps
+  ref?: React.RefObject<RNTextInput | null>
 }
 const SearchInput = ({
   placeholder,
@@ -25,6 +26,7 @@ const SearchInput = ({
   variant,
   autoFocus = false,
   textInputProps = {},
+  ref,
   ...boxProps
 }: Props) => {
   const {
@@ -49,7 +51,8 @@ const SearchInput = ({
     >
       <Search color={colors[color as Color]} />
       <TextInput
-        fontSize={16}
+        ref={ref}
+        fontSize={14}
         fontWeight="normal"
         textInputProps={{
           onChangeText,

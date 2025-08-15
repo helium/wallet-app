@@ -1344,7 +1344,7 @@ export default {
       browseProxies: 'Browse Proxies',
       description:
         "Select the proxy to assign as your position's votes. Once assigned, they can cast a vote on your behalf and/or assign it to others.",
-      searchPlaceholder: 'Select Proxy or Paste Wallet Address',
+      searchPlaceholder: 'Search Proxies or Paste Wallet Address',
       assignPositions: 'Assign Positions',
       selectAll: 'Select All',
       deSelectAll: 'Deselect All',

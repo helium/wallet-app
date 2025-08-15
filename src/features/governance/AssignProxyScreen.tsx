@@ -273,9 +273,18 @@ export const AssignProxyScreen = () => {
           </Box>
         )}
         <Box flexDirection="column">
-          <Text variant="body1" color="white" opacity={0.5}>
-            {t('gov.assignProxy.expiryDate')}
-          </Text>
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Text variant="body2" color="white" opacity={0.5}>
+              {t('gov.assignProxy.expiryDate')}
+            </Text>
+            <Text variant="body3" color="secondaryText">
+              {selectedDays} {t('gov.assignProxy.days')}
+            </Text>
+          </Box>
           <Slider
             value={selectedDays}
             onSlidingComplete={handleSelectedDays}
@@ -283,11 +292,6 @@ export const AssignProxyScreen = () => {
             maximumValue={maxDays}
             step={1}
           />
-          <Box flexDirection="row" justifyContent="flex-end">
-            <Text variant="body3" color="secondaryText">
-              {selectedDays} {t('gov.assignProxy.days')}
-            </Text>
-          </Box>
         </Box>
         <ButtonPressable
           width="100%"

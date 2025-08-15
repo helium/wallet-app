@@ -12,9 +12,9 @@ import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { shortenAddress } from '@utils/formatting'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
+import { FlatList, TextInput } from 'react-native'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
 
@@ -25,6 +25,8 @@ export const ProxySearch: React.FC<{
 }> = ({ value, onValueChange, disabled }) => {
   const [input, setInput] = useState<string>(value)
   const [focused, setFocused] = useState(false)
+  const inputRef = useRef<TextInput>(null)
+  const isSelectingFromDropdown = useRef(false)
   const [debouncedInput] = useDebounce(input, 300)
   const { voteService, mint } = useGovernance()
   const {
@@ -64,9 +66,12 @@ export const ProxySearch: React.FC<{
           p="m"
           mt="s"
           onPress={() => {
-            onValueChange(item.value)
+            isSelectingFromDropdown.current = true
             setInput(item.value)
+            onValueChange(item.value)
             setFocused(false)
+            // Blur the input to dismiss keyboard when proxy is selected
+            inputRef.current?.blur()
           }}
         >
           <Text variant="body3" color="white">
@@ -93,17 +98,22 @@ export const ProxySearch: React.FC<{
 
   const handleInputChange = useCallback(
     (v: string) => {
+      if (isSelectingFromDropdown.current) {
+        isSelectingFromDropdown.current = false
+        return
+      }
+
       if (!focused) {
         setFocused(true)
       }
+
+      setInput(v)
 
       if (isValidPublicKey(v)) {
         onValueChange(v)
       } else {
         onValueChange('')
       }
-
-      setInput(v)
     },
     [focused, onValueChange],
   )
@@ -120,6 +130,8 @@ export const ProxySearch: React.FC<{
       keyboardShouldPersistTaps="handled"
       data={focused ? result || [] : []}
       renderItem={renderItem}
+      style={{ maxHeight: 300 }}
+      nestedScrollEnabled
       ListHeaderComponent={
         <>
           <Text variant="body3" color="secondaryText" mb="xs">
@@ -127,6 +139,7 @@ export const ProxySearch: React.FC<{
           </Text>
           <Box flexDirection="row" alignItems="center">
             <SearchInput
+              ref={inputRef}
               flex={1}
               value={input}
               onChangeText={handleInputChange}
