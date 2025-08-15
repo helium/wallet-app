@@ -105,14 +105,16 @@ const AddGatewayBle = () => {
     ? // eslint-disable-next-line no-nested-ternary
       insufficientMakerSolBal
       ? new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissingSol', {
+          t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
+            tokens: 'SOL',
           }),
         )
       : insufficientMakerDcBal
       ? new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissingDc', {
+          t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
+            tokens: 'DC',
           }),
         )
       : undefined
@@ -162,8 +164,9 @@ const AddGatewayBle = () => {
     function wrapProgramError(e: any) {
       if (isInsufficientBal(e)) {
         throw new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissingDcOrSol', {
+          t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
+            tokens: 'DC or SOL',
           }),
         )
       }
