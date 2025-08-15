@@ -140,7 +140,7 @@ export class AsyncAccountCache implements AccountCache {
 }
 
 function debounce(func: any, wait: number) {
-  let timeout: NodeJS.Timeout
+  let timeout: ReturnType<typeof setTimeout>
   return function (this: any, ...args: any[]) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const context = this

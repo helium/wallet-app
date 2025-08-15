@@ -1,5 +1,8 @@
+import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
+import Dot from '@components/Dot'
+import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import {
@@ -21,22 +24,23 @@ import {
   useClaimAllPositionsRewards,
   useCreatePosition,
   useDelegatePositions,
+  useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useNavigation } from '@react-navigation/native'
 import { Keypair, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
+import {
+  IOT_SUB_DAO_KEY,
+  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+  MOBILE_SUB_DAO_KEY,
+} from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import Dot from '@components/Dot'
-import BlurActionSheet from '@components/BlurActionSheet'
-import ListItem from '@components/ListItem'
-import { useNavigation } from '@react-navigation/native'
-import { GovernanceNavigationProp } from './governanceTypes'
 import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -47,6 +51,7 @@ import GovernanceWrapper from './GovernanceWrapper'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
+import { GovernanceNavigationProp } from './governanceTypes'
 
 export const PositionsScreen = () => {
   const { t } = useTranslation()
@@ -265,6 +270,10 @@ export const PositionsScreen = () => {
     useState(true)
 
   const now = useSolanaUnixNow()
+  const { result: subDaos } = useSubDaos()
+  const delegatedPositions = useMemo(() => {
+    return positions?.filter((p) => p.isDelegated && p.delegatedSubDao)
+  }, [positions])
   const unexpiredPositions = useMemo(
     () =>
       positions?.filter(
@@ -275,6 +284,45 @@ export const PositionsScreen = () => {
       ),
     [positions, now],
   )
+
+  useEffect(() => {
+    if (!subDaos || !delegatedPositions || delegateAllSubDao) return
+    const mobileSubDao = subDaos.find((sd) =>
+      sd.pubkey.equals(MOBILE_SUB_DAO_KEY),
+    )
+    const iotSubDao = subDaos.find((sd) => sd.pubkey.equals(IOT_SUB_DAO_KEY))
+    if (!mobileSubDao) return
+
+    let mobileDelegations = 0
+    let iotDelegations = 0
+    let totalDelegated = 0
+
+    delegatedPositions?.forEach((position) => {
+      if (position.isDelegated && position.delegatedSubDao) {
+        totalDelegated += 1
+        if (position.delegatedSubDao.equals(MOBILE_SUB_DAO_KEY)) {
+          mobileDelegations += 1
+        } else if (position.delegatedSubDao.equals(IOT_SUB_DAO_KEY)) {
+          iotDelegations += 1
+        }
+      }
+    })
+
+    if (totalDelegated === 0) {
+      setDelegateAllSubDao(mobileSubDao)
+    } else if (mobileDelegations === totalDelegated) {
+      setDelegateAllSubDao(mobileSubDao)
+    } else if (iotDelegations === totalDelegated && iotSubDao) {
+      setDelegateAllSubDao(iotSubDao)
+    } else if (mobileDelegations >= iotDelegations) {
+      setDelegateAllSubDao(mobileSubDao)
+    } else if (iotDelegations > mobileDelegations && iotSubDao) {
+      setDelegateAllSubDao(iotSubDao)
+    } else {
+      setDelegateAllSubDao(mobileSubDao)
+    }
+  }, [subDaos, delegatedPositions, delegateAllSubDao])
+
   const {
     delegatePositions,
     rentFee: delegateAllSolFees = 0,

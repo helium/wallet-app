@@ -45,8 +45,8 @@ const useSolanaHook = () => {
   const cluster = useSelector(
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
-  const ledgerModalRef = useRef<LedgerModalRef>()
-  const keystoneModalRef = useRef<KeystoneModalRef>()
+  const ledgerModalRef = useRef<LedgerModalRef | null>(null)
+  const keystoneModalRef = useRef<KeystoneModalRef | null>(null)
   const connection: WrappedConnection | undefined = useMemo(() => {
     return getConnection(cluster)
   }, [cluster])
@@ -321,8 +321,8 @@ const initialState: {
   cache: AccountFetchCache | undefined
   updateCluster: (nextCluster: Cluster) => void
   signMsg: (msg: Buffer) => Promise<Buffer>
-  ledgerModalRef: React.MutableRefObject<LedgerModalRef | undefined>
-  keystoneModalRef: React.MutableRefObject<KeystoneModalRef | undefined>
+  ledgerModalRef: React.RefObject<LedgerModalRef | null>
+  keystoneModalRef: React.RefObject<KeystoneModalRef | null>
 } = {
   anchorProvider: undefined,
   cluster: 'mainnet-beta' as Cluster,
@@ -331,8 +331,8 @@ const initialState: {
   cache: undefined,
   updateCluster: (_nextCluster: Cluster) => {},
   signMsg: (_msg: Buffer) => Promise.resolve(_msg),
-  ledgerModalRef: { current: undefined },
-  keystoneModalRef: { current: undefined },
+  ledgerModalRef: { current: null },
+  keystoneModalRef: { current: null },
 }
 const SolanaContext =
   createContext<ReturnType<typeof useSolanaHook>>(initialState)

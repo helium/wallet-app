@@ -16,7 +16,7 @@ const useCollectables = (): WalletCollectables & {
 } => {
   const { cluster, anchorProvider } = useSolana()
   const dispatch = useAppDispatch()
-  const accountSubscriptionId = useRef<number>()
+  const accountSubscriptionId = useRef<number | null>(null)
   const { currentAccount } = useAccountStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
 
@@ -52,7 +52,7 @@ const useCollectables = (): WalletCollectables & {
       refresh()
     })
 
-    if (accountSubscriptionId.current !== undefined) {
+    if (accountSubscriptionId.current !== null) {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId

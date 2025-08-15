@@ -155,7 +155,7 @@ const HotspotMapScreen = () => {
             )
 
             const ktaAccs = await getCachedKeyToAssets(
-              hemProgram,
+              hemProgram as any,
               keyToAssetKeys,
             )
 
@@ -175,11 +175,11 @@ const HotspotMapScreen = () => {
             })
 
             if (networkType === 'IOT') {
-              return getCachedIotInfos(hemProgram, infoKeys)
+              return getCachedIotInfos(hemProgram as any, infoKeys)
             }
 
             if (networkType === 'MOBILE') {
-              return getCachedMobileInfos(hemProgram, infoKeys)
+              return getCachedMobileInfos(hemProgram as any, infoKeys)
             }
           }),
         )

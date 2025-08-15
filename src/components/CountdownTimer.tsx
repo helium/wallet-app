@@ -32,7 +32,7 @@ const CountdownTimer = forwardRef(
 
     const [timerWidth, setTimerWidth] = useState(0)
     const [timerSeconds, setTimerSeconds] = useState(-1)
-    const timerRef = useRef<NodeJS.Timeout>()
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
     const { primaryText } = useColors()
 
     const start = useCallback((duration: number) => {

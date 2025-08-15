@@ -26,7 +26,7 @@ export default ({
   const solanaActivity = useSelector(
     (state: RootState) => state.solana.activity,
   )
-  const accountSubscriptionId = useRef<number>()
+  const accountSubscriptionId = useRef<number | null>(null)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -62,7 +62,7 @@ export default ({
       },
     )
 
-    if (accountSubscriptionId.current !== undefined) {
+    if (accountSubscriptionId.current !== null) {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId

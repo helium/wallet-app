@@ -65,23 +65,25 @@ export default () => {
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set([DEFAULT_DERIVATION_PATH]),
   )
+  const [hasInitialized, setHasInitialized] = React.useState(false)
 
   useEffect(() => {
-    if (derivationAccounts.length > 0 && selected.size <= 1) {
+    if (derivationAccounts.length > 0 && !hasInitialized) {
       setSelected(
         new Set([
           ...derivationAccounts.map((d) => d.derivationPath),
           DEFAULT_DERIVATION_PATH,
         ]),
       )
+      setHasInitialized(true)
     }
-  }, [derivationAccounts, selected.size])
+  }, [derivationAccounts, hasInitialized])
 
   useEffect(() => {
     setOnboardingData((data) => ({
       ...data,
       paths: derivationAccounts.filter((acc) =>
-        selected.has(acc.derivationPath),
+        selected?.has(acc.derivationPath),
       ),
     }))
   }, [setOnboardingData, selected, derivationAccounts])
@@ -92,7 +94,7 @@ export default () => {
       const onSelect = () => {
         setSelected((prev) => {
           const newSelected = new Set(prev)
-          if (prev.has(item.derivationPath)) {
+          if (prev?.has(item.derivationPath)) {
             newSelected.delete(item.derivationPath)
           } else {
             newSelected.add(item.derivationPath)
@@ -101,7 +103,7 @@ export default () => {
         })
       }
 
-      const isSelected = selected.has(item.derivationPath)
+      const isSelected = selected?.has(item.derivationPath)
       return (
         <TouchableContainer
           onPress={onSelect}
@@ -170,6 +172,7 @@ export default () => {
               offAnimationType="fill"
               boxType="square"
               onValueChange={() => {}}
+              disabled
             />
           </Box>
         </TouchableContainer>
@@ -262,7 +265,7 @@ export default () => {
           backgroundColorDisabledOpacity={0.5}
           titleColorDisabled="black500"
           titleColor="black500"
-          disabled={selected.size === 0}
+          disabled={!selected || selected.size === 0}
           onPress={onNext}
           title={t('generic.next')}
           marginBottom="l"

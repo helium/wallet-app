@@ -33,6 +33,12 @@ module.exports = {
     'no-use-before-define': 'off',
     'no-console': [2, { allow: ['warn', 'error'] }],
     '@typescript-eslint/no-use-before-define': 'off',
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto',
+      },
+    ],
     'default-case': 'off',
     'react/jsx-props-no-spreading': 'off',
     quotes: [

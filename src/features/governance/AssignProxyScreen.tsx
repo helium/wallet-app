@@ -22,9 +22,9 @@ import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
+import { FlatList, TextInput, TouchableWithoutFeedback } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
@@ -45,8 +45,16 @@ export const AssignProxyScreen = () => {
   const route = useRoute<Route>()
   const { wallet, position, includeProxied } = route.params
   const { t } = useTranslation()
-  const [proxyWallet, setProxyWallet] = useState(wallet)
+  const [proxyWallet, setProxyWallet] = useState(wallet || '')
   const { loading, positions, refetch } = useGovernance()
+  const proxySearchRef = useRef<TextInput>(null)
+  const lastInitializedWallet = useRef<string | undefined>(undefined)
+  React.useEffect(() => {
+    if (wallet && wallet !== lastInitializedWallet.current) {
+      setProxyWallet(wallet)
+      lastInitializedWallet.current = wallet
+    }
+  }, [wallet])
 
   const selectablePositions = useMemo(
     () =>
@@ -219,6 +227,10 @@ export const AssignProxyScreen = () => {
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
+  const handleBlurSearch = useCallback(() => {
+    proxySearchRef.current?.blur()
+  }, [])
+
   if (loading) return null
 
   return (
@@ -228,87 +240,94 @@ export const AssignProxyScreen = () => {
       padding="s"
       title={t('gov.assignProxy.title')}
     >
-      <Box flex={1} flexDirection="column">
-        <Box mb="m">
-          <Text variant="body2" color="white" opacity={0.5}>
-            {t('gov.assignProxy.description')}
-          </Text>
-        </Box>
-
-        <Box mb="m">
-          <ProxySearch
-            value={proxyWallet || ''}
-            onValueChange={setProxyWallet}
-          />
-        </Box>
-
-        <Box flexDirection="row" justifyContent="space-between">
-          <Text variant="body1" color="white" opacity={0.5}>
-            {t('gov.assignProxy.assignPositions')}
-          </Text>
-          <Text
-            variant="body1"
-            color="white"
-            opacity={0.5}
-            onPress={handleSelectAll}
-          >
-            {selectedAll
-              ? t('gov.assignProxy.deSelectAll')
-              : t('gov.assignProxy.selectAll')}
-          </Text>
-        </Box>
-        <Box flex={1} mb="m">
-          <FlatList data={selectablePositions} renderItem={renderPosition} />
-        </Box>
-        {error && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
-          >
-            <Text variant="body3Medium" color="red500">
-              {error.toString()}
+      <TouchableWithoutFeedback onPress={handleBlurSearch}>
+        <Box flex={1} flexDirection="column">
+          <Box mb="m">
+            <Text variant="body2" color="white" opacity={0.5}>
+              {t('gov.assignProxy.description')}
             </Text>
           </Box>
-        )}
-        <Box flexDirection="column">
-          <Text variant="body1" color="white" opacity={0.5}>
-            {t('gov.assignProxy.expiryDate')}
-          </Text>
-          <Slider
-            value={selectedDays}
-            onSlidingComplete={handleSelectedDays}
-            minimumValue={1}
-            maximumValue={maxDays}
-            step={1}
-          />
-          <Box flexDirection="row" justifyContent="flex-end">
-            <Text variant="body3" color="secondaryText">
-              {selectedDays} {t('gov.assignProxy.days')}
+
+          <Box mb="m">
+            <ProxySearch
+              ref={proxySearchRef}
+              value={proxyWallet || ''}
+              onValueChange={setProxyWallet}
+            />
+          </Box>
+
+          <Box flexDirection="row" justifyContent="space-between">
+            <Text variant="body1" color="white" opacity={0.5}>
+              {t('gov.assignProxy.assignPositions')}
+            </Text>
+            <Text
+              variant="body1"
+              color="white"
+              opacity={0.5}
+              onPress={handleSelectAll}
+            >
+              {selectedAll
+                ? t('gov.assignProxy.deSelectAll')
+                : t('gov.assignProxy.selectAll')}
             </Text>
           </Box>
+          <Box flex={1} mb="m">
+            <FlatList data={selectablePositions} renderItem={renderPosition} />
+          </Box>
+          {error && (
+            <Box
+              flexDirection="row"
+              justifyContent="center"
+              alignItems="center"
+              paddingTop="ms"
+            >
+              <Text variant="body3Medium" color="red500">
+                {error.toString()}
+              </Text>
+            </Box>
+          )}
+          <Box flexDirection="column">
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Text variant="body2" color="white" opacity={0.5}>
+                {t('gov.assignProxy.expiryDate')}
+              </Text>
+              <Text variant="body3" color="secondaryText">
+                {selectedDays} {t('gov.assignProxy.days')}
+              </Text>
+            </Box>
+            <Slider
+              value={selectedDays}
+              onSlidingComplete={handleSelectedDays}
+              minimumValue={1}
+              maximumValue={maxDays}
+              step={1}
+            />
+          </Box>
+          <ButtonPressable
+            width="100%"
+            fontSize={16}
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabledOpacity={0.9}
+            titleColorDisabled="secondaryText"
+            title={isSubmitting ? undefined : t('gov.assignProxy.title')}
+            titleColor="black"
+            onPress={handleSubmit}
+            disabled={
+              isSubmitting || selectedPositions.size === 0 || !proxyWallet
+            }
+            TrailingComponent={
+              isSubmitting ? <CircleLoader color="white" /> : undefined
+            }
+          />
         </Box>
-        <ButtonPressable
-          width="100%"
-          fontSize={16}
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.9}
-          titleColorDisabled="secondaryText"
-          title={isSubmitting ? undefined : t('gov.assignProxy.title')}
-          titleColor="black"
-          onPress={handleSubmit}
-          disabled={
-            isSubmitting || selectedPositions.size === 0 || !proxyWallet
-          }
-          TrailingComponent={
-            isSubmitting ? <CircleLoader color="white" /> : undefined
-          }
-        />
-      </Box>
+      </TouchableWithoutFeedback>
     </BackScreen>
   )
 }

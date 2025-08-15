@@ -122,7 +122,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       </Text>
       <Box flexDirection="row" marginHorizontal="l" marginBottom="l">
         <ButtonPressable
-          width="33%"
+          width="33.33%"
           borderTopLeftRadius="round"
           borderBottomLeftRadius="round"
           backgroundColor="havelockBlue"
@@ -134,11 +134,11 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
           backgroundColorDisabled="havelockBlue"
           backgroundColorDisabledOpacity={0.4}
           fontWeight="500"
-          fontSize={18}
+          fontSize={16}
           disabled={reachedAccountLimit}
         />
         <ButtonPressable
-          width="33%"
+          width="33.33%"
           marginLeft="xxs"
           backgroundColor="grey500"
           titleColor="black900"
@@ -149,11 +149,11 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
           backgroundColorDisabled="grey500"
           backgroundColorDisabledOpacity={0.4}
           fontWeight="500"
-          fontSize={18}
+          fontSize={16}
           disabled={reachedAccountLimit}
         />
         <ButtonPressable
-          width="33%"
+          width="33.33%"
           marginLeft="xxs"
           backgroundColor="jazzberryJam"
           titleColor="black900"
@@ -164,7 +164,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
           backgroundColorDisabled="jazzberryJam"
           backgroundColorDisabledOpacity={0.4}
           fontWeight="500"
-          fontSize={18}
+          fontSize={16}
           disabled={reachedAccountLimit}
           borderTopRightRadius="round"
           borderBottomRightRadius="round"

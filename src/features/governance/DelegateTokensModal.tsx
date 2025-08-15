@@ -16,7 +16,6 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useColors } from '@theme/themeHooks'
-import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -109,15 +108,6 @@ export const DelegateTokensModal = ({
       console.error(error.message)
     }
   }, [error])
-
-  useEffect(() => {
-    if (subDaos && !selectedSubDao) {
-      setSubDao(
-        subDaos.find((subDao) => subDao.pubkey.equals(MOBILE_SUB_DAO_KEY)) ||
-          null,
-      )
-    }
-  }, [subDaos, selectedSubDao, setSubDao])
 
   const handleOnClose = () => {
     onClose()

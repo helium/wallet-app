@@ -23,8 +23,9 @@ const SubmitButton = ({
   ...boxProps
 }: Props) => {
   const { surfaceSecondary, secondaryText, ...rest } = useColors()
-  const colorActual = rest[color as keyof typeof rest]
-  const backgroundActual = rest[backgroundColor as keyof typeof rest]
+  const colorActual = rest[color as keyof typeof rest] || rest.blueBright500
+  const backgroundActual =
+    rest[backgroundColor as keyof typeof rest] || rest.secondaryIcon
   const icon = useMemo(
     () => () => <SwipeIcon color={colorActual} />,
     [colorActual],
@@ -55,18 +56,18 @@ const SubmitButton = ({
     >
       <SwipeButton
         shouldResetAfterSuccess
-        railBackgroundColor={backgroundActual}
+        railBackgroundColor={backgroundActual || rest.secondaryIcon}
         railStyles={styles.railStyles}
-        railBorderColor={backgroundActual}
+        railBorderColor={backgroundActual || rest.secondaryIcon}
         titleStyles={styles.titleStyles}
         titleMaxFontScale={1}
-        thumbIconBackgroundColor={backgroundActual}
-        thumbIconBorderColor={colorActual}
-        title={title}
+        thumbIconBackgroundColor={backgroundActual || rest.secondaryIcon}
+        thumbIconBorderColor={colorActual || rest.blueBright500}
+        title={title || ''}
         onSwipeSuccess={onSubmit}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        thumbIconComponent={icon}
+        thumbIconComponent={colorActual ? icon : undefined}
         disableResetOnTap
         disabled={disabled}
         disabledRailBackgroundColor={surfaceSecondary}
