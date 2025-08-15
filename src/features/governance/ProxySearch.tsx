@@ -39,6 +39,12 @@ export const ProxySearch = React.forwardRef<
   const isSelectingFromDropdown = useRef(false)
 
   useImperativeHandle(ref, () => inputRef.current as TextInput, [])
+  React.useEffect(() => {
+    if (value !== input && !focused) {
+      setInput(value)
+    }
+  }, [value, input, focused])
+
   const [debouncedInput] = useDebounce(input, 300)
   const { voteService, mint } = useGovernance()
   const {
@@ -140,7 +146,7 @@ export const ProxySearch = React.forwardRef<
   const keyboard = useKeyboard()
   const screenHeight = Dimensions.get('window').height
   const maxListHeight = useMemo(() => {
-    const availableHeight = screenHeight - keyboard.keyboardHeight - 200
+    const availableHeight = screenHeight - keyboard.keyboardHeight
     return Math.max(150, Math.min(340, availableHeight))
   }, [keyboard.keyboardHeight, screenHeight])
 

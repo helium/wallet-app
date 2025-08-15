@@ -45,9 +45,16 @@ export const AssignProxyScreen = () => {
   const route = useRoute<Route>()
   const { wallet, position, includeProxied } = route.params
   const { t } = useTranslation()
-  const [proxyWallet, setProxyWallet] = useState(wallet)
+  const [proxyWallet, setProxyWallet] = useState(wallet || '')
   const { loading, positions, refetch } = useGovernance()
   const proxySearchRef = useRef<TextInput>(null)
+  const lastInitializedWallet = useRef<string | undefined>(undefined)
+  React.useEffect(() => {
+    if (wallet && wallet !== lastInitializedWallet.current) {
+      setProxyWallet(wallet)
+      lastInitializedWallet.current = wallet
+    }
+  }, [wallet])
 
   const selectablePositions = useMemo(
     () =>
