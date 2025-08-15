@@ -206,31 +206,37 @@ export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
 
 export const calculateRequiredSol = async (
   anchorProvider: AnchorProvider,
-  tx?: any,
+  tx?: Transaction | string,
 ): Promise<BN> => {
   try {
-    // Build the actual transaction that will be used
-    const transaction = tx || new Transaction()
+    let transaction: Transaction
+
+    if (typeof tx === 'string') {
+      try {
+        const buffer = Buffer.from(tx, 'base64')
+        transaction = Transaction.from(buffer)
+      } catch (deserializeError) {
+        transaction = new Transaction()
+      }
+    } else {
+      transaction = tx || new Transaction()
+    }
 
     const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
       'recent',
     )
     transaction.recentBlockhash = blockhash
     transaction.feePayer = anchorProvider.publicKey
-
-    // Get estimated fee including priority fees
     const estimatedFee = await transaction.getEstimatedFee(
       anchorProvider.connection,
     )
 
-    // Add buffer for safety (10% extra)
     const feeWithBuffer = estimatedFee
       ? new BN(estimatedFee * 1.1)
       : new BN(TXN_FEE_IN_LAMPORTS)
 
     return feeWithBuffer
   } catch (e) {
-    // Fallback to a reasonable estimate if calculation fails
     return new BN(0.002 * LAMPORTS_PER_SOL) // 0.002 SOL
   }
 }
