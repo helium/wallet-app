@@ -1,4 +1,5 @@
 import { createTheme } from '@shopify/restyle'
+import { responsiveFontSize } from '@utils/layout'
 
 export const Font = {
   italic: 'DMSans-Italic',
@@ -12,73 +13,73 @@ export const Font = {
 const textVariants = {
   h0: {
     fontFamily: Font.regular,
-    fontSize: 42,
-    lineHeight: 44,
+    fontSize: responsiveFontSize(42),
+    lineHeight: responsiveFontSize(44),
     color: 'primaryText',
   },
   h1: {
     fontFamily: Font.regular,
-    fontSize: 37,
+    fontSize: responsiveFontSize(37),
     color: 'primaryText',
   },
   h2: {
     fontFamily: Font.regular,
-    fontSize: 33,
+    fontSize: responsiveFontSize(33),
     color: 'primaryText',
   },
   h3: {
     fontFamily: Font.regular,
-    fontSize: 27,
+    fontSize: responsiveFontSize(27),
     color: 'primaryText',
   },
   h4: {
     fontFamily: Font.regular,
-    fontSize: 22,
+    fontSize: responsiveFontSize(22),
     color: 'primaryText',
   },
   subtitle1: {
     fontFamily: Font.medium,
-    fontSize: 20,
+    fontSize: responsiveFontSize(20),
     color: 'primaryText',
   },
   subtitle2: {
     fontFamily: Font.medium,
-    fontSize: 19,
+    fontSize: responsiveFontSize(19),
     color: 'primaryText',
   },
   subtitle3: {
     fontFamily: Font.medium,
-    fontSize: 17,
+    fontSize: responsiveFontSize(17),
     color: 'primaryText',
   },
   subtitle4: {
     fontFamily: Font.medium,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: 'primaryText',
   },
   body0: {
     fontFamily: Font.regular,
-    fontSize: 21,
+    fontSize: responsiveFontSize(21),
     color: 'primaryText',
   },
   body1: {
     fontFamily: Font.regular,
-    fontSize: 16,
+    fontSize: responsiveFontSize(16),
     color: 'primaryText',
   },
   body2: {
     fontFamily: Font.regular,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: 'primaryText',
   },
   body3: {
     fontFamily: Font.regular,
-    fontSize: 12,
+    fontSize: responsiveFontSize(12),
     color: 'primaryText',
   },
   body4: {
     fontFamily: Font.regular,
-    fontSize: 8,
+    fontSize: responsiveFontSize(8),
     color: 'primaryText',
   },
   regular: {
@@ -326,7 +327,7 @@ export const theme = createTheme({
   inputVariants: {
     plain: {
       color: 'primaryText',
-      fontSize: 19,
+      fontSize: responsiveFontSize(19),
       paddingBottom: 'm',
       paddingTop: 'm',
       paddingHorizontal: 'xl',
