@@ -12,21 +12,33 @@ import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { shortenAddress } from '@utils/formatting'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, TextInput } from 'react-native'
+import { Dimensions, FlatList, TextInput } from 'react-native'
+import { useKeyboard } from '@react-native-community/hooks'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
 
-export const ProxySearch: React.FC<{
-  value: string
-  disabled?: boolean
-  onValueChange: (value: string) => void
-}> = ({ value, onValueChange, disabled }) => {
+export const ProxySearch = React.forwardRef<
+  TextInput,
+  {
+    value: string
+    disabled?: boolean
+    onValueChange: (value: string) => void
+  }
+>(({ value, onValueChange, disabled }, ref) => {
   const [input, setInput] = useState<string>(value)
   const [focused, setFocused] = useState(false)
   const inputRef = useRef<TextInput>(null)
   const isSelectingFromDropdown = useRef(false)
+
+  useImperativeHandle(ref, () => inputRef.current as TextInput, [])
   const [debouncedInput] = useDebounce(input, 300)
   const { voteService, mint } = useGovernance()
   const {
@@ -125,12 +137,19 @@ export const ProxySearch: React.FC<{
     })
   }, [navigation, mint])
 
+  const keyboard = useKeyboard()
+  const screenHeight = Dimensions.get('window').height
+  const maxListHeight = useMemo(() => {
+    const availableHeight = screenHeight - keyboard.keyboardHeight - 200
+    return Math.max(150, Math.min(340, availableHeight))
+  }, [keyboard.keyboardHeight, screenHeight])
+
   return (
     <FlatList
       keyboardShouldPersistTaps="handled"
       data={focused ? result || [] : []}
       renderItem={renderItem}
-      style={{ maxHeight: 300 }}
+      style={{ maxHeight: maxListHeight }}
       nestedScrollEnabled
       ListHeaderComponent={
         <>
@@ -166,7 +185,7 @@ export const ProxySearch: React.FC<{
       ListEmptyComponent={ListEmptyComponent}
     />
   )
-}
+})
 
 function isValidPublicKey(input: string | undefined) {
   try {
