@@ -37,6 +37,7 @@ export const ProxySearch = React.forwardRef<
   const [focused, setFocused] = useState(false)
   const inputRef = useRef<TextInput>(null)
   const isSelectingFromDropdown = useRef(false)
+  const isScrolling = useRef(false)
 
   useImperativeHandle(ref, () => inputRef.current as TextInput, [])
   React.useEffect(() => {
@@ -157,6 +158,17 @@ export const ProxySearch = React.forwardRef<
       renderItem={renderItem}
       style={{ maxHeight: maxListHeight }}
       nestedScrollEnabled
+      onScrollBeginDrag={() => {
+        isScrolling.current = true
+      }}
+      onScrollEndDrag={() => {
+        setTimeout(() => {
+          isScrolling.current = false
+        }, 50)
+      }}
+      onMomentumScrollEnd={() => {
+        isScrolling.current = false
+      }}
       ListHeaderComponent={
         <>
           <Text variant="body3" color="secondaryText" mb="xs">
@@ -171,7 +183,11 @@ export const ProxySearch = React.forwardRef<
               placeholder={t('gov.assignProxy.searchPlaceholder')}
               textInputProps={{
                 onFocus: () => setFocused(true),
-                onBlur: () => setFocused(false),
+                onBlur: () => {
+                  if (!isScrolling.current) {
+                    setFocused(false)
+                  }
+                },
                 editable: !disabled,
               }}
             />
