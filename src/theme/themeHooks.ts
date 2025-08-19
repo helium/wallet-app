@@ -4,7 +4,7 @@ import { Platform, ViewStyle } from 'react-native'
 import { useCallback, useMemo } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Color, Spacing, Theme } from '@theme/theme'
-import { ww, getDeviceType, getMaxFontSizeMultiplier } from '@utils/layout'
+import { ww } from '@utils/layout'
 
 const colorScheme = 'dark' as 'dark' | 'light'
 export const useColorScheme = () => {
