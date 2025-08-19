@@ -116,6 +116,7 @@ const KeypadButton = ({ value, onPress }: Props) => {
             maxWidth={80}
             maxHeight={80}
             hitSlop={hitSlop}
+            overflow="hidden"
           >
             {body(pressed)}
           </Box>

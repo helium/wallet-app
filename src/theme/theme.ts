@@ -1,4 +1,5 @@
 import { createTheme } from '@shopify/restyle'
+import { responsiveFontSize } from '@utils/layout'
 
 export const Font = {
   italic: 'DMSans-Italic',
@@ -12,73 +13,73 @@ export const Font = {
 const textVariants = {
   h0: {
     fontFamily: Font.regular,
-    fontSize: 42,
-    lineHeight: 44,
+    fontSize: responsiveFontSize(42),
+    lineHeight: responsiveFontSize(44),
     color: 'primaryText',
   },
   h1: {
     fontFamily: Font.regular,
-    fontSize: 37,
+    fontSize: responsiveFontSize(37),
     color: 'primaryText',
   },
   h2: {
     fontFamily: Font.regular,
-    fontSize: 33,
+    fontSize: responsiveFontSize(33),
     color: 'primaryText',
   },
   h3: {
     fontFamily: Font.regular,
-    fontSize: 27,
+    fontSize: responsiveFontSize(27),
     color: 'primaryText',
   },
   h4: {
     fontFamily: Font.regular,
-    fontSize: 22,
+    fontSize: responsiveFontSize(22),
     color: 'primaryText',
   },
   subtitle1: {
     fontFamily: Font.medium,
-    fontSize: 20,
+    fontSize: responsiveFontSize(20),
     color: 'primaryText',
   },
   subtitle2: {
     fontFamily: Font.medium,
-    fontSize: 19,
+    fontSize: responsiveFontSize(19),
     color: 'primaryText',
   },
   subtitle3: {
     fontFamily: Font.medium,
-    fontSize: 17,
+    fontSize: responsiveFontSize(17),
     color: 'primaryText',
   },
   subtitle4: {
     fontFamily: Font.medium,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: 'primaryText',
   },
   body0: {
     fontFamily: Font.regular,
-    fontSize: 21,
+    fontSize: responsiveFontSize(21),
     color: 'primaryText',
   },
   body1: {
     fontFamily: Font.regular,
-    fontSize: 16,
+    fontSize: responsiveFontSize(16),
     color: 'primaryText',
   },
   body2: {
     fontFamily: Font.regular,
-    fontSize: 14,
+    fontSize: responsiveFontSize(14),
     color: 'primaryText',
   },
   body3: {
     fontFamily: Font.regular,
-    fontSize: 12,
+    fontSize: responsiveFontSize(12),
     color: 'primaryText',
   },
   body4: {
     fontFamily: Font.regular,
-    fontSize: 8,
+    fontSize: responsiveFontSize(8),
     color: 'primaryText',
   },
   regular: {
@@ -92,6 +93,29 @@ const textVariants = {
   },
 }
 
+const generateFontVariants = (baseVariants: typeof textVariants) => {
+  const variants: Record<string, any> = { ...baseVariants }
+
+  const baseTypes = ['body0', 'body1', 'body2', 'body3', 'h1', 'h2', 'h3', 'h4']
+  const weightTypes = ['medium', 'bold'] as const
+
+  baseTypes.forEach((baseType) => {
+    if (baseVariants[baseType]) {
+      weightTypes.forEach((weight) => {
+        const variantName = `${baseType}${weight
+          .charAt(0)
+          .toUpperCase()}${weight.slice(1)}`
+        variants[variantName] = {
+          ...baseVariants[baseType],
+          ...baseVariants[weight],
+        }
+      })
+    }
+  })
+
+  return variants
+}
+
 /**
  * Use https://www.hexdictionary.com/ to determine color names, for example https://www.hexdictionary.com/color/d23e72.
  * https://elektrobild.org/tools/sort-colors can be used to sort colors.
@@ -99,7 +123,6 @@ const textVariants = {
 
 const palette = {
   aquaMarine: '#69DBB3',
-
   black200: '#414141',
   black300: '#464646',
   black400: '#333333',
@@ -112,9 +135,7 @@ const palette = {
   black850: '#131313',
   black900: '#0E0E0E',
   black900_9A: '#0000009A',
-
   black: '#000000',
-
   blue500: '#3B82F6',
   blue950: '#172554',
   blueBorder: 'rgba(59, 130, 246, 0.25)',
@@ -124,31 +145,20 @@ const palette = {
   mobileBlue: '#009EF8',
   iotDarkGreen: '#053919',
   iotGreen: '#26ED75',
-
   green500: '#22C55E',
   green950: '#052E16',
   greenBorder: 'rgba(34, 197, 94, 0.25)',
-
   orange500: '#f97316',
   orange950: '#431407',
   orangeBorder: 'rgba(245, 115, 22, 0.25)',
-
   blueBright500: '#009FF9',
-
   blueRibbon: '#484CF6',
-
   caribbeanGreen: '#27DCB7',
-
   darkGrey: '#333333',
-
   electricViolet: '#DD0FFF',
-
   flamenco: '#FF800B',
-
   gold: '#FFD700',
-
   greenBright500: '#27EE76',
-
   grey50: '#B8B8B8',
   grey100: '#F7F7F7',
   grey200: '#EFEFF0',
@@ -162,33 +172,20 @@ const palette = {
   grey900: '#2C2E37',
   lightGrey: '#E2E2E2',
   dividerGrey: '#2E2E2E',
-
   matchaGray900: '#2B2B2B',
-
   havelockBlue: '#0C93E5',
-
   jazzberryJam: '#D23E72',
-
   lividBrown: '#421B27',
-
   malachite: '#14D111',
-
   offWhite: '#F9FAFC',
-
   warning: '#FFE5C7',
-
   critical500: '#EF4444',
   critical950: '#450A0A',
   criticalBorder: 'rgba(239, 68, 68, 0.25)',
-
   persianRose: '#FF2DB7',
-
   purple500: '#B556FF',
-
   purpleHeart: '#3E42E5',
-
   red200: '#F59CA2',
-
   red300: '#F97570',
   red400: '#FF6666',
   red500: '#E43B70',
@@ -196,15 +193,11 @@ const palette = {
   matchaRed500: '#EF4444',
   matchaRed950: '#450A0A',
   redBorder: 'rgba(239, 68, 68, 0.25)',
-
   solanaGreen: '#14F195',
   solanaPurple: '#9945FF',
-
   transparent: '#00000000',
   transparent10: '#FFFFFF1A',
-
   turquoise: '#2BD7E2',
-
   white: '#FFFFFF',
   bottomSheetBg: '#191919',
 }
@@ -300,7 +293,7 @@ export const theme = createTheme({
     lx: 16,
     xl: 20,
     xxl: 35,
-    round: 1000,
+    round: 9999,
   },
   breakpoints: {
     smallPhone: 0,
@@ -330,37 +323,11 @@ export const theme = createTheme({
       borderRadius: 'xl',
     },
   },
-  textVariants: {
-    ...textVariants,
-
-    body0Medium: { ...textVariants.body0, ...textVariants.medium },
-    body0Bold: { ...textVariants.body0, ...textVariants.bold },
-
-    body1Medium: { ...textVariants.body1, ...textVariants.medium },
-    body1Bold: { ...textVariants.body1, ...textVariants.bold },
-
-    body2Medium: { ...textVariants.body2, ...textVariants.medium },
-    body2Bold: { ...textVariants.body2, ...textVariants.bold },
-
-    body3Medium: { ...textVariants.body3, ...textVariants.medium },
-    body3Bold: { ...textVariants.body3, ...textVariants.bold },
-
-    h1Medium: { ...textVariants.h1, ...textVariants.medium },
-    h1Bold: { ...textVariants.h1, ...textVariants.bold },
-
-    h2Medium: { ...textVariants.h2, ...textVariants.medium },
-    h2Bold: { ...textVariants.h2, ...textVariants.bold },
-
-    h3Medium: { ...textVariants.h3, ...textVariants.medium },
-    h3Bold: { ...textVariants.h3, ...textVariants.bold },
-
-    h4Medium: { ...textVariants.h4, ...textVariants.medium },
-    h4Bold: { ...textVariants.h4, ...textVariants.bold },
-  },
+  textVariants: generateFontVariants(textVariants),
   inputVariants: {
     plain: {
       color: 'primaryText',
-      fontSize: 19,
+      fontSize: responsiveFontSize(19),
       paddingBottom: 'm',
       paddingTop: 'm',
       paddingHorizontal: 'xl',

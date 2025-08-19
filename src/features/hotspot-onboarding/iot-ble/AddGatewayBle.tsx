@@ -30,7 +30,11 @@ import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import sleep from '@utils/sleep'
-import { getHotspotWithRewards, isInsufficientBal } from '@utils/solanaUtils'
+import {
+  calculateRequiredSol,
+  getHotspotWithRewards,
+  isInsufficientBal,
+} from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React, { useMemo, useState } from 'react'
@@ -43,7 +47,6 @@ import { HotspotBLEStackParamList } from './navTypes'
 
 type Route = RouteProp<HotspotBLEStackParamList, 'AddGatewayBle'>
 
-const REQUIRED_SOL = new BN((0.00089088 + 0.00001) * LAMPORTS_PER_SOL)
 const AddGatewayBle = () => {
   const route = useRoute<Route>()
   const { createGatewayTx, onboardingAddress, network } = route.params
@@ -80,19 +83,33 @@ const AddGatewayBle = () => {
     }
     return undefined
   }, [anchorProvider, keyToAsset])
+
+  const { result: requiredSol, loading: loadingRequiredSol } = useAsync(
+    () =>
+      anchorProvider
+        ? calculateRequiredSol(anchorProvider, createGatewayTx)
+        : Promise.resolve(new BN(0)),
+    [anchorProvider, createGatewayTx],
+  )
+
+  const REQUIRED_SOL = requiredSol || new BN(0.002 * LAMPORTS_PER_SOL)
   const wrongOwner = asset && wallet && !asset.ownership.owner.equals(wallet)
   const mint = network === 'IOT' ? IOT_MINT : MOBILE_MINT
   const requiredDc = onboardingDcRequirements[mint.toBase58()] || new BN(0)
   const assertRequiredDc =
     locationAssertDcRequirements[mint.toBase58()] || new BN(0)
   const insufficientMakerSolBal =
-    !loadingMakerSol && (makerSol || new BN(0)).lt(REQUIRED_SOL)
+    !loadingMakerSol &&
+    !loadingRequiredSol &&
+    (makerSol || new BN(0)).lt(REQUIRED_SOL)
   const insufficientMakerDcBal =
     !loadingMakerDc &&
     !loadingOnboardingDcRequirements &&
     (makerDc || new BN(0)).lt(requiredDc)
   const insufficientMySolBal =
-    !loadingMySol && (mySol || new BN(0)).lt(REQUIRED_SOL)
+    !loadingMySol &&
+    !loadingRequiredSol &&
+    (mySol || new BN(0)).lt(REQUIRED_SOL)
   const insufficientMyDcBal =
     !loadingOnboardingDcRequirements &&
     !loadingMyDc &&
@@ -105,14 +122,16 @@ const AddGatewayBle = () => {
     ? // eslint-disable-next-line no-nested-ternary
       insufficientMakerSolBal
       ? new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissingSol', {
+          t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
+            tokens: 'SOL',
           }),
         )
       : insufficientMakerDcBal
       ? new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissingDc', {
+          t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
+            tokens: 'DC',
           }),
         )
       : undefined
@@ -162,8 +181,9 @@ const AddGatewayBle = () => {
     function wrapProgramError(e: any) {
       if (isInsufficientBal(e)) {
         throw new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissingDcOrSol', {
+          t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
+            tokens: 'DC or SOL',
           }),
         )
       }
@@ -298,7 +318,8 @@ const AddGatewayBle = () => {
     loadingMakerSol ||
     loadingMyDc ||
     loadingMySol ||
-    loadingOnboardingDcRequirements
+    loadingOnboardingDcRequirements ||
+    loadingRequiredSol
   const disabled =
     wrongOwner ||
     !maker ||

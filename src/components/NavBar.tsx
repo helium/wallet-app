@@ -73,6 +73,7 @@ const NavBarItem = ({
           borderRadius="round"
           justifyContent="center"
           alignItems="center"
+          overflow="hidden"
         />
       </Animated.View>
       <Box position="absolute" top={0}>

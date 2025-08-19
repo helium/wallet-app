@@ -89,7 +89,9 @@ export const ProposalCard = ({
     result: desc,
   } = useAsync(async () => {
     if (proposal && proposal.uri) {
-      const { data } = await axios.get(proposal.uri)
+      // Force HTTPS for security - convert any HTTP URLs to HTTPS
+      const secureUri = proposal.uri.replace(/^http:\/\//, 'https://')
+      const { data } = await axios.get(secureUri)
       const htmlContent = markdownParser.render(data)
       const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
       return firstParagraphMatch

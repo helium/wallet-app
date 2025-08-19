@@ -91,7 +91,7 @@ const SwapScreen = () => {
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitJupiterSwap, submitTreasurySwap, submitMintDataCredits } =
     useSubmitTxn()
-  const edges = useMemo(() => ['bottom'] as Edge[], [])
+  const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const [selectorMode, setSelectorMode] = useState(SelectorMode.youPay)
   const [inputMint, setInputMint] = useState<PublicKey>(MOBILE_MINT)
   const [inputAmount, setInputAmount] = useState<number>(0)

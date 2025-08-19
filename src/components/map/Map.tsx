@@ -12,8 +12,8 @@ import {
 
 const Map: React.FC<
   PropsWithChildren<{
-    map?: React.RefObject<MapLibreRN.MapViewRef>
-    camera?: React.RefObject<MapLibreRN.CameraRef>
+    map?: React.RefObject<MapLibreRN.MapViewRef | null>
+    camera?: React.RefObject<MapLibreRN.CameraRef | null>
     onUserLocationUpdate?: (userLocation: MapLibreRN.Location) => void
     centerCoordinate?: Position
     mapProps?: Omit<React.ComponentProps<typeof MapLibreRN.MapView>, 'children'>
