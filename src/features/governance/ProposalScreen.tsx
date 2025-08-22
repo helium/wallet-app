@@ -526,12 +526,7 @@ export const ProposalScreen = () => {
                       title={t('gov.assignProxy.browseProxies')}
                     />
                   </Box>
-                  <Box
-                    flexGrow={1}
-                    justifyContent="center"
-                    mt="m"
-                    {...{ gap: 14 }}
-                  >
+                  <Box flexGrow={1} justifyContent="center" mt="m" gap="ms">
                     {showError && (
                       <Box
                         flexDirection="row"
@@ -544,7 +539,7 @@ export const ProposalScreen = () => {
                         </Text>
                       </Box>
                     )}
-                    <Box flex={1} flexDirection="column" {...{ gap: 14 }}>
+                    <Box flex={1} flexDirection="column" gap="m">
                       {votingResults.results?.map((r) => (
                         <Box
                           backgroundColor="surfaceSecondary"

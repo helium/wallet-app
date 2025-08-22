@@ -118,7 +118,7 @@ export default function ProxiesScreen() {
               alignItems="center"
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              gap={8}
+              gap="s"
             >
               <Warning width={24} height={24} />
               <Text variant="body2" color="grey600" flex={1}>

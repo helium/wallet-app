@@ -31,14 +31,14 @@ export const CollectablePreview = ({
       mt="m"
       px="m"
       py="ms"
-      {...{ gap: 8 }}
+      gap="s"
     >
       <Box
         justifyContent="space-between"
         flexDirection="row"
         alignContent="center"
       >
-        <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+        <Box flexDirection="row" alignItems="center" gap="xs">
           {metadata && (
             <Box
               shadowColor="black"

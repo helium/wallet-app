@@ -131,7 +131,7 @@ export const VotingPowerCard = ({
             <Box
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              gap={4}
+              gap="xs"
               flexDirection="column"
               justifyContent="center"
               alignItems="stretch"

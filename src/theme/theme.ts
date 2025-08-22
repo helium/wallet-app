@@ -11,6 +11,11 @@ export const Font = {
 }
 
 const textVariants = {
+  defaults: {
+    fontFamily: Font.regular,
+    fontSize: responsiveFontSize(16),
+    color: 'primaryText',
+  },
   h0: {
     fontFamily: Font.regular,
     fontSize: responsiveFontSize(42),

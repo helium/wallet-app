@@ -55,7 +55,7 @@ export const SwapPreview = ({
             flexDirection="row"
             alignItems="center"
           >
-            <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+            <Box flexDirection="row" alignItems="center" gap="xs">
               {inputMintJson ? (
                 <TokenIcon img={inputMintJson.image} size={30} />
               ) : null}
@@ -70,7 +70,7 @@ export const SwapPreview = ({
             flexDirection="row"
             alignItems="center"
           >
-            <Box flexDirection="row" alignItems="center" {...{ gap: 4 }}>
+            <Box flexDirection="row" alignItems="center" gap="xs">
               {outputMintJson ? (
                 <TokenIcon img={outputMintJson.image} size={30} />
               ) : null}
