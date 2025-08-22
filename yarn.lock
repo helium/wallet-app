@@ -5069,13 +5069,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/restyle@npm:1.8.0":
-  version: 1.8.0
-  resolution: "@shopify/restyle@npm:1.8.0"
+"@shopify/restyle@npm:2.4.5":
+  version: 2.4.5
+  resolution: "@shopify/restyle@npm:2.4.5"
   peerDependencies:
-    react: ">=16.8.0"
-    react-native: ">=0.59.0"
-  checksum: 10/6f1ff2e17754c290df1789826f195f69cd7edaca80517c973d736227c21e2002a90f1ad50d8411b89d32188f94f336b6f9b93578c1541d5f35d0a83935ccb455
+    react: "*"
+    react-native: "*"
+  checksum: 10/1ebc53c66b9c77bc7a2c7f328d390acdeeea93e0575c1b628efacec87ec0623028c3a12c79eef86f91e5b23081923d98bd77063f133636cd4e49c652775bbd69
   languageName: node
   linkType: hard
 
@@ -12561,7 +12561,7 @@ __metadata:
     "@react-navigation/native-stack": "npm:6.7.0"
     "@react-navigation/stack": "npm:6.2.2"
     "@reduxjs/toolkit": "npm:1.9.1"
-    "@shopify/restyle": "npm:1.8.0"
+    "@shopify/restyle": "npm:2.4.5"
     "@solana/spl-account-compression": "npm:0.1.4"
     "@solana/spl-memo": "npm:0.2.3"
     "@solana/spl-token": "npm:0.3.6"

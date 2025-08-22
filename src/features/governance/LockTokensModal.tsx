@@ -690,9 +690,7 @@ export const LockTokensModal = ({
                         borderRadius="m"
                         backgroundColor="secondary"
                         marginTop="m"
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        gap={16}
+                        gap="m"
                         padding="m"
                       >
                         {subDaos

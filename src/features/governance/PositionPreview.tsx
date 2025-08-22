@@ -80,9 +80,7 @@ export const PositionPreview: React.FC<
       <Box mr="s">{Icon}</Box>
       <Box flexDirection="column" justifyContent="space-around">
         {hasGenesisMultiplier && (
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          <Box flexDirection="row" alignItems="center" gap={4}>
+          <Box flexDirection="row" alignItems="center" gap="xs">
             <Text variant="body3" color="primaryText" textAlign="right">
               {t('gov.positions.landrush')}
             </Text>

@@ -86,7 +86,7 @@ export const VoteOption = ({
             flexDirection="row"
             flexWrap="wrap"
             alignItems="center"
-            {...{ gap: 4 }}
+            gap="xs"
           >
             <Text variant="body2" color="secondaryText">
               Voted by -

@@ -14,7 +14,7 @@ const BASE_HEIGHT = 667
 // Determine device type
 export const getDeviceType = (): 'small' | 'medium' | 'large' => {
   if (width <= 375) return 'small'
-  if (width <= 430) return 'medium'
+  if (width <= 390) return 'medium'
   return 'large'
 }
 
@@ -26,13 +26,13 @@ export const getFontScale = (): number => {
   // Apply different scaling strategies per device size
   switch (deviceType) {
     case 'small':
-      // More aggressive scaling down for small devices
-      return Math.max(0.85, Math.min(baseScale, 0.95))
+      // Keep text readable on small devices
+      return Math.max(0.95, Math.min(baseScale, 1.0))
     case 'medium':
-      // Moderate scaling for medium devices
-      return Math.max(0.9, Math.min(baseScale, 1.1))
+      // Standard scaling for medium devices
+      return Math.max(1.0, Math.min(baseScale, 1.1))
     case 'large':
-      // Conservative scaling for large devices
+      // Allow scaling up for large devices
       return Math.max(1.0, Math.min(baseScale, 1.2))
     default:
       return 1.0
