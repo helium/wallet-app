@@ -44,7 +44,7 @@ export const SwapPreview = ({
       mt="m"
       px="m"
       py="ms"
-      {...{ gap: 8 }}
+      gap="s"
     >
       {loadingInputMintMetadata || loadingOutputMintMetadata ? (
         <CircleLoader />
