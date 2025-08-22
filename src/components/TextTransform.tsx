@@ -5,7 +5,9 @@ import { ResponsiveValue, TextProps } from '@shopify/restyle'
 import { TextVariant, Theme } from '@theme/theme'
 import Text from './Text'
 
-const getComponents = (variant?: ResponsiveValue<TextVariant, Theme>) => ({
+const getComponents = (
+  variant?: ResponsiveValue<TextVariant, Theme['breakpoints']>,
+) => ({
   b: <Text fontWeight="700" variant={variant} />,
   errorText: <Text color="error" variant={variant} />,
   primaryText: <Text color="primaryText" variant={variant} />,
@@ -34,7 +36,7 @@ type Props = TextProps<Theme> & {
   numberOfLines?: number
   adjustsFontSizeToFit?: boolean
   maxFontSizeMultiplier?: number
-  colorTextVariant?: ResponsiveValue<TextVariant, Theme>
+  colorTextVariant?: ResponsiveValue<TextVariant, Theme['breakpoints']>
 }
 
 const TextTransform = ({
