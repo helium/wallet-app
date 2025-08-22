@@ -19,14 +19,7 @@ export const HotspotMapLegend = ({
       paddingTop="ms"
       paddingBottom="m"
     >
-      <Box
-        flexDirection="row"
-        flexWrap="wrap"
-        paddingHorizontal="ms"
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        gap="sx"
-      >
+      <Box flexDirection="row" flexWrap="wrap" paddingHorizontal="ms" gap="sx">
         <Box
           flexDirection="row"
           justifyContent="center"
@@ -56,8 +49,6 @@ export const HotspotMapLegend = ({
             paddingVertical="sx"
             borderRadius="round"
             backgroundColor="darkGrey"
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             gap="sx"
           >
             <Box
@@ -96,8 +87,6 @@ export const HotspotMapLegend = ({
           paddingVertical="sx"
           borderRadius="round"
           backgroundColor="darkGrey"
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           gap="s"
         >
           <Box flexDirection="row" justifyContent="center" alignItems="center">

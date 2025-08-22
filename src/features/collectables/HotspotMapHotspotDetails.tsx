@@ -661,8 +661,6 @@ export const HotspotMapHotspotDetails = ({
                     flex={1}
                     flexDirection="row"
                     justifyContent="flex-end"
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
                     gap="xs"
                   >
                     {!!hasHntRewards && (
