@@ -54,12 +54,12 @@ export const getMaxFontSizeMultiplier = (): number => {
 
   switch (deviceType) {
     case 'small':
-      return 1.3 // Allow more scaling on small devices for accessibility
+      return 1.2 // Allow less scaling on small devices
     case 'medium':
-      return 1.4 // Standard scaling
+      return 1.3 // Standard scaling
     case 'large':
-      return 1.5 // Allow more scaling on large devices
+      return 1.4 // Allow more scaling on large devices
     default:
-      return 1.4
+      return 1.3
   }
 }
