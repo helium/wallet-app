@@ -254,12 +254,8 @@ const useLedger = () => {
           const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
           if (coreTypes.includes(derivationType)) {
             const account0 = batchAccounts.find((acc) => acc.accountIndex === 0)
-            const account1 = batchAccounts.find((acc) => acc.accountIndex === 1)
             if (account0) {
               accounts.push(account0)
-            }
-            if (account1) {
-              accounts.push(account1)
             }
           }
           break // Stop scanning this derivation type
