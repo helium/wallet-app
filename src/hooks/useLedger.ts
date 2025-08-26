@@ -91,51 +91,13 @@ const useLedger = () => {
       solana: AppSolana,
       accountIndex: number,
       derivationType: DerivationType,
+      balance?: number,
+      hasBalance?: boolean,
     ): Promise<LedgerAccount | null> => {
       try {
         const derivationPath = getDerivationPath(accountIndex, derivationType)
 
         const { address } = await solana.getAddress(derivationPath, false)
-        const publicKey = new PublicKey(base58.encode(new Uint8Array(address)))
-
-        let balance = 0
-        let hasBalance = false
-
-        try {
-          // Check SOL balance
-          const balanceResponse = await anchorProvider?.connection.getBalance(
-            publicKey,
-          )
-          if (balanceResponse) {
-            balance = balanceResponse / 10 ** 9
-            hasBalance = balance > 0
-          }
-
-          // Only check HNT token balance if there's no SOL balance
-          if (!hasBalance) {
-            const hntTokenAddress = await getAssociatedTokenAddress(
-              HNT_MINT,
-              publicKey,
-            )
-            const hntAccount = await anchorProvider?.connection.getAccountInfo(
-              hntTokenAddress,
-            )
-
-            if (hntAccount && hntAccount.data) {
-              try {
-                const accInfo = AccountLayout.decode(
-                  new Uint8Array(hntAccount.data),
-                )
-                const tokenAmount = BigInt(accInfo.amount)
-                if (tokenAmount > 0n) {
-                  hasBalance = true
-                }
-              } catch {
-                // ignore token decode errors
-              }
-            }
-          }
-        } catch (error) {}
 
         const pathLabel =
           accountIndex === -1 ? 'Root' : getDerivationPathLabel(derivationType)
@@ -143,7 +105,7 @@ const useLedger = () => {
 
         return {
           address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
-          balance,
+          balance: balance || 0,
           pathLabel,
           derivationPath: `m/${derivationPath}`, // Store the full parseable path
           alias: `${t('ledger.show.alias', {
@@ -151,14 +113,75 @@ const useLedger = () => {
           })}`,
           accountIndex,
           solanaAddress: bs58.encode(new Uint8Array(address)),
-          hasBalance,
+          hasBalance: hasBalance || false,
           derivationType,
         }
       } catch (error) {
         return null
       }
     },
-    [anchorProvider?.connection, t],
+    [t],
+  )
+
+  const checkBatchBalances = useCallback(
+    async (
+      publicKeys: PublicKey[],
+    ): Promise<{ solBalances: number[]; hntBalances: boolean[] }> => {
+      const solBalances: number[] = []
+      const hntBalances: boolean[] = []
+
+      try {
+        // Batch check SOL balances
+        const accountInfos =
+          await anchorProvider?.connection.getMultipleAccountsInfo(publicKeys)
+
+        if (accountInfos) {
+          solBalances.push(
+            ...accountInfos.map((accountInfo) =>
+              accountInfo ? accountInfo.lamports / 10 ** 9 : 0,
+            ),
+          )
+        }
+
+        // Batch check HNT token balances for accounts with no SOL
+        const hntTokenAddresses = await Promise.all(
+          publicKeys.map((pk) => getAssociatedTokenAddress(HNT_MINT, pk)),
+        )
+
+        const hntAccountInfos =
+          await anchorProvider?.connection.getMultipleAccountsInfo(
+            hntTokenAddresses,
+          )
+
+        if (hntAccountInfos) {
+          hntBalances.push(
+            ...hntAccountInfos.map((hntAccount, i) => {
+              // Only check HNT if no SOL balance
+              if (solBalances[i] === 0 && hntAccount && hntAccount.data) {
+                try {
+                  const accInfo = AccountLayout.decode(
+                    new Uint8Array(hntAccount.data),
+                  )
+                  const tokenAmount = BigInt(accInfo.amount)
+                  return tokenAmount > 0n
+                } catch {
+                  // ignore token decode errors
+                  return false
+                }
+              }
+              return false
+            }),
+          )
+        }
+      } catch (error) {
+        // Fill with defaults on error
+        solBalances.push(...publicKeys.map(() => 0))
+        hntBalances.push(...publicKeys.map(() => false))
+      }
+
+      return { solBalances, hntBalances }
+    },
+    [anchorProvider?.connection],
   )
 
   const getAllLedgerAccountsForDerivationType = useCallback(
@@ -171,26 +194,55 @@ const useLedger = () => {
       const batchSize = 10
 
       while (batchStart < 256) {
-        // Check current batch of 10 accounts
-        const batchAccounts: LedgerAccount[] = []
+        // Get addresses for current batch
+        const batchPublicKeys: PublicKey[] = []
+        const batchAccountIndexes: number[] = []
 
         const currentBatchStart = batchStart
-        await Array.from({ length: batchSize }, (_, i) => i).reduce(
-          async (promise, i) => {
-            await promise
-            const accountIndex = currentBatchStart + i
-            if (accountIndex >= 256) return
-            const account = await createLedgerAccount(
-              solana,
+        // Process accounts sequentially to avoid Ledger device busy errors
+        for (let i = 0; i < batchSize && currentBatchStart + i < 256; i += 1) {
+          const accountIndex = currentBatchStart + i
+          try {
+            const derivationPath = getDerivationPath(
               accountIndex,
               derivationType,
             )
-            if (account) {
-              batchAccounts.push(account)
-            }
-          },
-          Promise.resolve(),
+
+            const { address } = await solana.getAddress(derivationPath, false)
+            const publicKey = new PublicKey(
+              base58.encode(new Uint8Array(address)),
+            )
+            batchPublicKeys.push(publicKey)
+            batchAccountIndexes.push(accountIndex)
+          } catch (error) {
+            // Skip invalid derivations
+          }
+        }
+
+        if (batchPublicKeys.length === 0) break
+
+        // Batch check balances for all accounts in this batch
+        const { solBalances, hntBalances } = await checkBatchBalances(
+          batchPublicKeys,
         )
+
+        // Create account objects with balance info
+        const batchAccounts = (
+          await Promise.all(
+            batchAccountIndexes.map(async (accountIndex, i) => {
+              const balance = solBalances[i]
+              const hasBalance = balance > 0 || hntBalances[i]
+
+              return createLedgerAccount(
+                solana,
+                accountIndex,
+                derivationType,
+                balance,
+                hasBalance,
+              )
+            }),
+          )
+        ).filter(Boolean) as LedgerAccount[]
 
         const batchAccountsWithBalance = batchAccounts.filter(
           (acc) => acc.hasBalance,
@@ -202,8 +254,12 @@ const useLedger = () => {
           const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
           if (coreTypes.includes(derivationType)) {
             const account0 = batchAccounts.find((acc) => acc.accountIndex === 0)
+            const account1 = batchAccounts.find((acc) => acc.accountIndex === 1)
             if (account0) {
               accounts.push(account0)
+            }
+            if (account1) {
+              accounts.push(account1)
             }
           }
           break // Stop scanning this derivation type
@@ -221,7 +277,7 @@ const useLedger = () => {
 
       return accounts
     },
-    [createLedgerAccount],
+    [createLedgerAccount, checkBatchBalances],
   )
 
   const getAllLedgerAccounts = useCallback(
@@ -303,7 +359,23 @@ const useLedger = () => {
 
       // Check Solana root path (44'/501')
       try {
-        const solanaRootAccount = await createLedgerAccount(solana, -1, 'root')
+        const derivationPath = getDerivationPath(-1, 'root')
+        const { address } = await solana.getAddress(derivationPath, false)
+        const publicKey = new PublicKey(base58.encode(new Uint8Array(address)))
+
+        const { solBalances, hntBalances } = await checkBatchBalances([
+          publicKey,
+        ])
+        const balance = solBalances[0] || 0
+        const hasBalance = balance > 0 || hntBalances[0]
+
+        const solanaRootAccount = await createLedgerAccount(
+          solana,
+          -1,
+          'root',
+          balance,
+          hasBalance,
+        )
         if (solanaRootAccount) {
           mainAccounts.push(solanaRootAccount)
         }
@@ -320,6 +392,7 @@ const useLedger = () => {
       getLedgerAccounts,
       getTransport,
       ledgerAccountsLoading,
+      checkBatchBalances,
     ],
   )
 
