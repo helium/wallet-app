@@ -330,6 +330,13 @@ export const theme = createTheme({
   },
   textVariants: generateFontVariants(textVariants),
   inputVariants: {
+    defaults: {
+      color: 'primaryText',
+      fontSize: 19,
+      padding: 'm',
+      backgroundColor: 'regularInputBackground',
+      borderRadius: 'lm',
+    },
     plain: {
       color: 'primaryText',
       fontSize: responsiveFontSize(19),
