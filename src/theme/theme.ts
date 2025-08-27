@@ -307,6 +307,11 @@ export const theme = createTheme({
     tablet: 768,
   },
   cardVariants: {
+    defaults: {
+      padding: 'ms',
+      borderRadius: 'ms',
+      backgroundColor: 'surface',
+    },
     regular: {
       padding: 'ms',
       borderRadius: 'ms',
