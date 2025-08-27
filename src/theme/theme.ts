@@ -11,11 +11,7 @@ export const Font = {
 }
 
 const textVariants = {
-  defaults: {
-    fontFamily: Font.regular,
-    fontSize: responsiveFontSize(16),
-    color: 'primaryText',
-  },
+  defaults: {},
   h0: {
     fontFamily: Font.regular,
     fontSize: responsiveFontSize(42),
@@ -307,11 +303,7 @@ export const theme = createTheme({
     tablet: 768,
   },
   cardVariants: {
-    defaults: {
-      padding: 'ms',
-      borderRadius: 'ms',
-      backgroundColor: 'surface',
-    },
+    defaults: {},
     regular: {
       padding: 'ms',
       borderRadius: 'ms',
@@ -335,13 +327,7 @@ export const theme = createTheme({
   },
   textVariants: generateFontVariants(textVariants),
   inputVariants: {
-    defaults: {
-      color: 'primaryText',
-      fontSize: 19,
-      padding: 'm',
-      backgroundColor: 'regularInputBackground',
-      borderRadius: 'lm',
-    },
+    defaults: {},
     plain: {
       color: 'primaryText',
       fontSize: responsiveFontSize(19),
