@@ -238,7 +238,7 @@ const ConnectedWallets = forwardRef(
 
     const footer = useCallback(
       () => (
-        <Box onLayout={setFooterHeight}>
+        <Box onLayout={setFooterHeight} paddingBottom="xl">
           <TouchableContainer
             onPress={handleAddNew(NetTypes.MAINNET)}
             flexDirection="row"
