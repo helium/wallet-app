@@ -12,7 +12,7 @@ import axios from 'axios'
 import * as bip39 from 'bip39'
 import { Buffer } from 'buffer'
 import * as ed25519 from 'ed25519-hd-key'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { useSolana } from '../solana/SolanaProvider'
@@ -99,101 +99,113 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
 
   const seed = useMemo(() => {
     if (mnemonic) {
-      return bip39.mnemonicToSeedSync(mnemonic, '')
+      try {
+        // Validate mnemonic before converting to seed
+        if (!bip39.validateMnemonic(mnemonic)) {
+          throw new Error('Invalid mnemonic: checksum validation failed')
+        }
+        return bip39.mnemonicToSeedSync(mnemonic, '')
+      } catch (e) {
+        console.error('Mnemonic validation error:', e)
+        setError(e instanceof Error ? e : new Error('Invalid mnemonic'))
+        return null
+      }
     }
   }, [mnemonic])
 
-  useEffect(() => {
-    if (seed && groups.some((_, i) => !resolvedGroups[i])) {
-      ;(async () => {
-        setLoading(true)
-        try {
-          if (!connection) return
-          const resolved = await Promise.all(
-            groups.map(async (group, index) => {
-              if (resolvedGroups[index]) return resolvedGroups[index]
-              return (
-                await Promise.all(
-                  group.map(async (derivationPath) => {
-                    const keypair =
-                      derivationPath === HELIUM_DERIVATION
-                        ? Keypair.fromSecretKey(
-                            new Uint8Array(
-                              (
-                                await HeliumKeypair.fromMnemonic(
-                                  new Mnemonic(mnemonic?.split(' ') || []),
-                                )
-                              ).privateKey,
-                            ),
-                          )
-                        : await keypairFromSeed(seed, derivationPath)
+  const fetchAccounts = useCallback(async () => {
+    if (!seed || !connection) return
+    if (!groups.some((_, i) => !resolvedGroups[i])) return
 
-                    if (keypair) {
-                      let needsMigrated = false
-                      const ataMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
-                      const atas = await Promise.all(
-                        ataMints.map((mint) =>
-                          getAssociatedTokenAddress(mint, keypair.publicKey),
+    setLoading(true)
+    try {
+      const resolved = await Promise.all(
+        groups.map(async (group, index) => {
+          if (resolvedGroups[index]) return resolvedGroups[index]
+          return (
+            await Promise.all(
+              group.map(async (derivationPath) => {
+                const keypair =
+                  derivationPath === HELIUM_DERIVATION
+                    ? Keypair.fromSecretKey(
+                        new Uint8Array(
+                          (
+                            await HeliumKeypair.fromMnemonic(
+                              new Mnemonic(mnemonic?.split(' ') || []),
+                            )
+                          ).privateKey,
                         ),
                       )
+                    : await keypairFromSeed(seed, derivationPath)
 
-                      const [balance, tokens] = await Promise.all([
-                        retryWithBackoff(() =>
-                          connection.getBalance(keypair.publicKey),
-                        ),
-                        retryWithBackoff(() =>
-                          connection.getMultipleAccountsInfo(atas),
-                        ).then((tokenAccounts) =>
-                          tokenAccounts
-                            .map((acc, idx) => {
-                              if (!acc) return null
+                if (keypair) {
+                  let needsMigrated = false
+                  const ataMints = [HNT_MINT, MOBILE_MINT, IOT_MINT]
+                  const atas = await Promise.all(
+                    ataMints.map((mint) =>
+                      getAssociatedTokenAddress(mint, keypair.publicKey),
+                    ),
+                  )
 
-                              const accInfo = AccountLayout.decode(
-                                new Uint8Array(acc.data),
-                              )
-                              const amount = BigInt(accInfo.amount)
-                              if (amount <= 0n) return null
-                              return {
-                                mint: ataMints[idx],
-                                amount,
-                              }
-                            })
-                            .filter((account) => account !== null),
-                        ),
-                      ])
+                  const [balance, tokens] = await Promise.all([
+                    retryWithBackoff(() =>
+                      connection.getBalance(keypair.publicKey),
+                    ),
+                    retryWithBackoff(() =>
+                      connection.getMultipleAccountsInfo(atas),
+                    ).then((tokenAccounts) =>
+                      tokenAccounts
+                        .map((acc, idx) => {
+                          if (!acc) return null
 
-                      if (derivationPath === heliumDerivation(-1)) {
-                        const url = `${
-                          Config.MIGRATION_SERVER_URL
-                        }/migrate/${keypair.publicKey.toBase58()}`
-                        // eslint-disable-next-line no-await-in-loop
-                        const { transactions } = (await axios.get(url)).data
-                        needsMigrated = transactions.length > 0
-                      }
+                          const accInfo = AccountLayout.decode(
+                            new Uint8Array(acc.data),
+                          )
+                          const amount = BigInt(accInfo.amount)
+                          if (amount <= 0n) return null
+                          return {
+                            mint: ataMints[idx],
+                            amount,
+                          }
+                        })
+                        .filter((account) => account !== null),
+                    ),
+                  ])
 
-                      return {
-                        derivationPath,
-                        keypair,
-                        balance,
-                        tokens,
-                        needsMigrated,
-                      } as ResolvedPath
-                    }
-                  }),
-                )
-              ).filter(truthy)
-            }),
-          )
+                  if (derivationPath === heliumDerivation(-1)) {
+                    const url = `${
+                      Config.MIGRATION_SERVER_URL
+                    }/migrate/${keypair.publicKey.toBase58()}`
+                    // eslint-disable-next-line no-await-in-loop
+                    const { transactions } = (await axios.get(url)).data
+                    needsMigrated = transactions.length > 0
+                  }
 
-          setResolvedGroups(resolved)
-        } catch (e: any) {
-          setError(e)
-        } finally {
-          setLoading(false)
-        }
-      })()
+                  return {
+                    derivationPath,
+                    keypair,
+                    balance,
+                    tokens,
+                    needsMigrated,
+                  } as ResolvedPath
+                }
+              }),
+            )
+          ).filter(truthy)
+        }),
+      )
+
+      setResolvedGroups(resolved)
+    } catch (e: any) {
+      setError(e)
+    } finally {
+      setLoading(false)
     }
   }, [seed, groups, connection, resolvedGroups, mnemonic])
+
+  useEffect(() => {
+    fetchAccounts()
+  }, [fetchAccounts])
 
   return {
     error,

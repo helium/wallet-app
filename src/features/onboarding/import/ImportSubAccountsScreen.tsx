@@ -3,12 +3,15 @@ import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableContainer from '@components/TouchableContainer'
+import { useMint } from '@helium/helium-react-hooks'
 import {
   ResolvedPath,
   useDerivationAccounts,
 } from '@hooks/useDerivationAccounts'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_DERIVATION_PATH } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
@@ -19,9 +22,6 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl } from 'react-native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
-import { PublicKey } from '@solana/web3.js'
-import { useMint } from '@helium/helium-react-hooks'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useOnboarding } from '../OnboardingProvider'
 
 const TokenItem = ({ mint, amount }: { mint: PublicKey; amount: bigint }) => {
@@ -43,7 +43,13 @@ export default () => {
   const { hasAccounts } = useAccountStorage()
   const { onboardingData, setOnboardingData } = useOnboarding()
   const { words } = onboardingData
-  const mnemonic = useMemo(() => words?.join(' '), [words])
+  const mnemonic = useMemo(() => {
+    if (!words || words.length === 0) return undefined
+    return words
+      .filter((word) => word && word.trim())
+      .join(' ')
+      .trim()
+  }, [words])
   const {
     error,
     loading,
@@ -239,7 +245,11 @@ export default () => {
         <Text textAlign="center" p="s" variant="body1" mb="l">
           {t('accountImport.privateKey.selectAccountsBody')}
         </Text>
-        {error && <Text color="red500">{error.message}</Text>}
+        {error && (
+          <Text textAlign="center" color="red500" mb="l">
+            {error.message}
+          </Text>
+        )}
         <FlatList
           refreshControl={
             <RefreshControl
@@ -256,21 +266,23 @@ export default () => {
           refreshing={loading}
           onEndReached={fetchMore}
         />
-        <ButtonPressable
-          marginTop="l"
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="black500"
-          disabled={!selected || selected.size === 0}
-          onPress={onNext}
-          title={t('generic.next')}
-          marginBottom="l"
-          marginHorizontal="l"
-        />
+        {!!derivationAccounts.length && (
+          <ButtonPressable
+            marginTop="l"
+            borderRadius="round"
+            backgroundColor="white"
+            backgroundColorOpacityPressed={0.7}
+            backgroundColorDisabled="surfaceSecondary"
+            backgroundColorDisabledOpacity={0.5}
+            titleColorDisabled="black500"
+            titleColor="black500"
+            disabled={!selected || selected.size === 0 || !!error || loading}
+            onPress={onNext}
+            title={t('generic.next')}
+            marginBottom="l"
+            marginHorizontal="l"
+          />
+        )}
       </Box>
     </SafeAreaBox>
   )
