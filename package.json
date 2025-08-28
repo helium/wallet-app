@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.14.9",
+  "version": "2.14.10",
   "private": true,
   "scripts": {
     "postinstall": "patch-package",
