@@ -1376,7 +1376,7 @@ export default {
       enableAutomation: 'Enable automatic claiming of rewards',
       rentFees: 'Reclaimable SOL',
       prepaidTxFees: 'Prepaid Transaction Fees',
-      delegationSplit: 'HNT Emissions Split from Delegations',
+      delegationSplit: 'Current Delegation Split',
       dataUsageRevenue: 'Data Usage Revenue (30 days)',
     },
     positions: {
