@@ -99,17 +99,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
 
   const seed = useMemo(() => {
     if (mnemonic) {
-      try {
-        // Validate mnemonic before converting to seed
-        if (!bip39.validateMnemonic(mnemonic)) {
-          throw new Error('Invalid mnemonic: checksum validation failed')
-        }
-        return bip39.mnemonicToSeedSync(mnemonic, '')
-      } catch (e) {
-        console.error('Mnemonic validation error:', e)
-        setError(e instanceof Error ? e : new Error('Invalid mnemonic'))
-        return null
-      }
+      return bip39.mnemonicToSeedSync(mnemonic, '')
     }
   }, [mnemonic])
 
