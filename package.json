@@ -70,7 +70,7 @@
     "@ledgerhq/hw-app-solana": "7.5.2",
     "@ledgerhq/react-native-hid": "6.32.9",
     "@ledgerhq/react-native-hw-transport-ble": "6.35.2",
-    "@ledgerhq/types-devices": "6.27.0",
+    "@ledgerhq/types-devices": "6.25.3",
     "@maplibre/maplibre-react-native": "10.1.1",
     "@metaplex-foundation/mpl-bubblegum": "0.6.0",
     "@metaplex-foundation/mpl-token-metadata": "2.10.0",

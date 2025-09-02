@@ -4022,10 +4022,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/types-devices@npm:6.27.0":
-  version: 6.27.0
-  resolution: "@ledgerhq/types-devices@npm:6.27.0"
-  checksum: 10/b76cfce1b29c8d6ba87e4e3be5ab0ee4013697ddcdfafd73a37931369ae6ef5965144abf1830bf9e43492573eb227a6f11cb48018a6f2b8364066d83997cd85b
+"@ledgerhq/types-devices@npm:6.25.3":
+  version: 6.25.3
+  resolution: "@ledgerhq/types-devices@npm:6.25.3"
+  checksum: 10/3264e4767a1891c3d067425c9fb4e2cd2e6daa70754097a3797ea36de78572e704179c598502a9ec6ced216fac13a890e8a70921766a741311394f716f74df92
   languageName: node
   linkType: hard
 
@@ -12564,7 +12564,7 @@ __metadata:
     "@ledgerhq/hw-transport-mocker": "npm:6.29.8"
     "@ledgerhq/react-native-hid": "npm:6.32.9"
     "@ledgerhq/react-native-hw-transport-ble": "npm:6.35.2"
-    "@ledgerhq/types-devices": "npm:6.27.0"
+    "@ledgerhq/types-devices": "npm:6.25.3"
     "@maplibre/maplibre-react-native": "npm:10.1.1"
     "@metaplex-foundation/mpl-bubblegum": "npm:0.6.0"
     "@metaplex-foundation/mpl-token-metadata": "npm:2.10.0"
