@@ -24,6 +24,11 @@ export const getDerivationPath = (
   account = 0,
   type: DerivationType,
 ): string => {
+  // Handle special case: account -1 should always use root derivation
+  if (account === -1) {
+    return rootDerivation()
+  }
+
   switch (type) {
     case 'root':
       return rootDerivation()
@@ -117,41 +122,83 @@ export const signLedgerTransaction = async (
   transport: TransportBLE | TransportHID,
   accountIndex: number,
   txBuffer: Buffer,
-  derivationType: DerivationType | boolean = 'default',
+  derivationType?: DerivationType | boolean,
 ) => {
   const solana = new AppSolana(transport)
-  let actualDerivationType: DerivationType
-  if (typeof derivationType === 'boolean') {
-    actualDerivationType = derivationType ? 'default' : 'legacy'
-  } else {
-    actualDerivationType = derivationType
-  }
+  const derivationPath = getDerivationPath(
+    accountIndex,
+    (derivationType as DerivationType) || 'default',
+  )
 
-  const derivationPath = getDerivationPath(accountIndex, actualDerivationType)
-  const { signature } = await solana.signTransaction(derivationPath, txBuffer)
-  return signature
+  try {
+    const { signature } = await solana.signTransaction(derivationPath, txBuffer)
+    return signature
+  } catch (error) {
+    if (error?.toString().includes('0x6a81')) {
+      // Try different derivation paths in order of compatibility
+      const fallbackPaths = [
+        { path: legacySolanaDerivation(accountIndex), type: 'legacy' },
+        { path: rootDerivation(), type: 'root' },
+      ]
+
+      for (let i = 0; i < fallbackPaths.length; i += 1) {
+        try {
+          const { signature } = await solana.signTransaction(
+            fallbackPaths[i].path,
+            txBuffer,
+          )
+          return signature
+        } catch (fallbackError) {
+          // Continue to next fallback
+        }
+      }
+    }
+
+    throw error
+  }
 }
 
 export const signLedgerMessage = async (
   transport: TransportBLE | TransportHID,
   accountIndex: number,
   msgBuffer: Buffer,
-  derivationType: DerivationType | boolean = 'default',
+  derivationType?: DerivationType | boolean,
 ) => {
   const solana = new AppSolana(transport)
-  let actualDerivationType: DerivationType
-  if (typeof derivationType === 'boolean') {
-    actualDerivationType = derivationType ? 'default' : 'legacy'
-  } else {
-    actualDerivationType = derivationType
-  }
-
-  const derivationPath = getDerivationPath(accountIndex, actualDerivationType)
-  const { signature } = await solana.signOffchainMessage(
-    derivationPath,
-    msgBuffer,
+  const derivationPath = getDerivationPath(
+    accountIndex,
+    (derivationType as DerivationType) || 'default',
   )
-  return signature
+
+  try {
+    const { signature } = await solana.signOffchainMessage(
+      derivationPath,
+      msgBuffer,
+    )
+    return signature
+  } catch (error) {
+    if (error?.toString().includes('0x6a81')) {
+      // Try different derivation paths in order of compatibility
+      const fallbackPaths = [
+        { path: legacySolanaDerivation(accountIndex), type: 'legacy' },
+        { path: rootDerivation(), type: 'root' },
+      ]
+
+      for (let i = 0; i < fallbackPaths.length; i += 1) {
+        try {
+          const { signature } = await solana.signOffchainMessage(
+            fallbackPaths[i].path,
+            msgBuffer,
+          )
+          return signature
+        } catch (fallbackError) {
+          // Continue to next fallback
+        }
+      }
+    }
+
+    throw error
+  }
 }
 
 export const getDerivationTypeForSigning = (
