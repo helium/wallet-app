@@ -113,45 +113,76 @@ export const getDerivationPathLabel = (type: DerivationType): string => {
   }
 }
 
+const mainNetDerivation = (account = -1) => {
+  if (account === -1) {
+    return "44'/501'" // main derivation path
+  }
+  return `44'/501'/${account}'` // sub derivation path
+}
+
+export const runDerivationScheme = (account = 0) => {
+  return mainNetDerivation(account)
+}
+
 export const signLedgerTransaction = async (
   transport: TransportBLE | TransportHID,
   accountIndex: number,
   txBuffer: Buffer,
-  derivationType: DerivationType | boolean = 'default',
+  derivationType?: DerivationType | boolean,
 ) => {
   const solana = new AppSolana(transport)
-  let actualDerivationType: DerivationType
-  if (typeof derivationType === 'boolean') {
-    actualDerivationType = derivationType ? 'default' : 'legacy'
-  } else {
-    actualDerivationType = derivationType
-  }
+  let derivationPath = getDerivationPath(
+    accountIndex,
+    (derivationType as DerivationType) || 'default',
+  )
 
-  const derivationPath = getDerivationPath(accountIndex, actualDerivationType)
-  const { signature } = await solana.signTransaction(derivationPath, txBuffer)
-  return signature
+  try {
+    const { signature } = await solana.signTransaction(derivationPath, txBuffer)
+    return signature
+  } catch (error) {
+    if (error?.toString().includes('0x6a81')) {
+      // Fallback to simple derivation
+      derivationPath = runDerivationScheme(accountIndex)
+      const { signature } = await solana.signTransaction(
+        derivationPath,
+        txBuffer,
+      )
+      return signature
+    }
+    throw error
+  }
 }
 
 export const signLedgerMessage = async (
   transport: TransportBLE | TransportHID,
   accountIndex: number,
   msgBuffer: Buffer,
-  derivationType: DerivationType | boolean = 'default',
+  derivationType?: DerivationType | boolean,
 ) => {
   const solana = new AppSolana(transport)
-  let actualDerivationType: DerivationType
-  if (typeof derivationType === 'boolean') {
-    actualDerivationType = derivationType ? 'default' : 'legacy'
-  } else {
-    actualDerivationType = derivationType
-  }
-
-  const derivationPath = getDerivationPath(accountIndex, actualDerivationType)
-  const { signature } = await solana.signOffchainMessage(
-    derivationPath,
-    msgBuffer,
+  let derivationPath = getDerivationPath(
+    accountIndex,
+    (derivationType as DerivationType) || 'default',
   )
-  return signature
+
+  try {
+    const { signature } = await solana.signOffchainMessage(
+      derivationPath,
+      msgBuffer,
+    )
+    return signature
+  } catch (error) {
+    if (error?.toString().includes('0x6a81')) {
+      // Fallback to simple derivation
+      derivationPath = runDerivationScheme(accountIndex)
+      const { signature } = await solana.signOffchainMessage(
+        derivationPath,
+        msgBuffer,
+      )
+      return signature
+    }
+    throw error
+  }
 }
 
 export const getDerivationTypeForSigning = (
