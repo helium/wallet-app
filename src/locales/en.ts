@@ -1377,7 +1377,7 @@ export default {
       rentFees: 'Reclaimable SOL',
       prepaidTxFees: 'Prepaid Transaction Fees',
       delegationSplit: 'HNT Emissions Split from Delegations',
-      dataUsageRevenue: 'Data Usage Revenue (30 days)',
+      networkRevenue: 'Network Revenue (30 days)',
     },
     positions: {
       proxyAll: 'Proxy All',
