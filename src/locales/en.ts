@@ -168,6 +168,7 @@ export default {
       ledger: 'Pair with Ledger',
       title: 'What would\nyou like to do?',
       keystone: 'Connect Keystone to Wallet',
+      cli: 'Import CLI',
     },
     createPin: {
       subtitle: 'Let’s secure your wallet with a PIN Code.',
