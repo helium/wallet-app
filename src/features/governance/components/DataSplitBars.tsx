@@ -78,7 +78,7 @@ export const DataSplitBars = () => {
   return (
     <Box marginTop="l" marginBottom="l">
       <SplitBar
-        title={t('gov.automation.dataUsageRevenue')}
+        title={t('gov.automation.networkRevenue')}
         leftValue={`$${humanReadable(
           new BN(mobileDataUsageRev.toFixed(0)),
           0,
