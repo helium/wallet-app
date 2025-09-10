@@ -32,7 +32,12 @@ import KeystoneModal, {
 } from '../features/keystone/KeystoneModal'
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { getSolanaKeypair } from '../storage/secureStorage'
+import {
+  getSolanaKeypair,
+  getSecureItem,
+  storeSecureItem,
+  SecureStorageKeys,
+} from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
@@ -223,33 +228,107 @@ const useSolanaHook = () => {
     })
     // Async fetch the cache accounts to check for changes and update account fetch cache
     ;(async () => {
-      const keys = asyncCache.keys().map((k) => new PublicKey(k))
-      const nonWrappedConnection = new Connection(connection.rpcEndpoint)
-      const accts = (
-        await Promise.all(
-          chunks(keys, 100).map((k) =>
-            nonWrappedConnection.getMultipleAccountsInfo(k),
-          ),
+      try {
+        const keys = asyncCache.keys().map((k) => new PublicKey(k))
+        if (keys.length === 0) return
+
+        const nonWrappedConnection = new Connection(connection.rpcEndpoint)
+
+        // Get current slot and last checked slot
+        const currentSlot = await nonWrappedConnection.getSlot('confirmed')
+        const lastCheckedSlotStr = await getSecureItem(
+          SecureStorageKeys.LAST_CHECKED_SLOT,
         )
-      ).flat()
-      accts.forEach((acc, index) => {
-        const key = keys[index]
-        if (acc) {
-          if (
-            !c.get(key)?.account.data.equals(acc.data) ||
-            c.get(key)?.account.lamports !== acc.lamports ||
-            !c.get(key)?.account.owner.equals(acc.owner)
-          ) {
-            c.updateCacheAndRaiseUpdated(key.toBase58(), {
-              pubkey: key,
-              account: acc,
-            })
+        const lastCheckedSlot = lastCheckedSlotStr
+          ? parseInt(lastCheckedSlotStr, 10)
+          : undefined
+
+        // Make direct RPC calls in chunks
+        const responses = await Promise.all(
+          chunks(keys, 100).map(async (keyChunk) => {
+            const keyStrings = keyChunk.map((k) => k.toBase58())
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore - accessing private method for direct RPC call
+            // eslint-disable-next-line no-underscore-dangle
+            const response = await nonWrappedConnection._rpcRequest(
+              'getMultipleAccounts',
+              [
+                keyStrings,
+                {
+                  encoding: 'base64',
+                  changedSinceSlot: lastCheckedSlot,
+                  commitment: 'confirmed',
+                },
+              ],
+            )
+            return { response, keys: keyChunk }
+          }),
+        )
+
+        // Process each response
+        responses.forEach(({ response, keys: keyChunk }) => {
+          if (response.error) {
+            console.error('RPC error:', response.error)
+            return
           }
-          // Account existed and now doesn't
-        } else if (c.get(key)) {
-          c.updateCacheAndRaiseUpdated(key.toBase58(), null)
-        }
-      })
+
+          const accounts = response.result.value
+          accounts.forEach((acc: unknown, index: number) => {
+            const key = keyChunk[index]
+
+            // Check if the account response has a status field indicating it's unchanged
+            if (
+              acc &&
+              typeof acc === 'object' &&
+              (acc as { status?: string }).status === 'unchanged'
+            ) {
+              // Account is unchanged, skip cache update
+              return
+            }
+
+            if (acc && typeof acc === 'object' && 'data' in acc) {
+              const accData = acc as {
+                data: [string, string]
+                executable: boolean
+                lamports: number
+                owner: string
+                rentEpoch: number
+              }
+              // Account has changed or is new, check if we need to update cache
+              const currentCached = c.get(key)
+              const accountInfo = {
+                data: Buffer.from(accData.data[0], 'base64'),
+                executable: accData.executable,
+                lamports: accData.lamports,
+                owner: new PublicKey(accData.owner),
+                rentEpoch: accData.rentEpoch,
+              }
+
+              if (
+                !currentCached?.account.data.equals(accountInfo.data) ||
+                currentCached?.account.lamports !== accountInfo.lamports ||
+                !currentCached?.account.owner.equals(accountInfo.owner)
+              ) {
+                c.updateCacheAndRaiseUpdated(key.toBase58(), {
+                  pubkey: key,
+                  account: accountInfo,
+                })
+              }
+            } else if (c.get(key)) {
+              // Account existed and now doesn't
+              c.updateCacheAndRaiseUpdated(key.toBase58(), null)
+            }
+          })
+        })
+
+        // Store the current slot as the last checked slot for next time
+        await storeSecureItem(
+          SecureStorageKeys.LAST_CHECKED_SLOT,
+          currentSlot.toString(),
+        )
+      } catch (e) {
+        console.error('Failed to fetch accounts', e)
+      }
     })()
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
