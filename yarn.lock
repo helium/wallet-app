@@ -4461,9 +4461,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/checkbox@npm:0.5.17":
-  version: 0.5.17
-  resolution: "@react-native-community/checkbox@npm:0.5.17"
+"@react-native-community/checkbox@npm:0.5.20":
+  version: 0.5.20
+  resolution: "@react-native-community/checkbox@npm:0.5.20"
   peerDependencies:
     react: "*"
     react-native: ">= 0.62"
@@ -4471,7 +4471,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-windows:
       optional: true
-  checksum: 10/dcb2335c37f56fc707f0a513d84af74641894778c20e57bd3f98accb6f15498a7ec1754b576e58a3984680df54c7dd7c577777141393ea8ade7e7972871fce96
+  checksum: 10/f1ab95f1fbfd4853b4e798cf4b4b18ec20920106bcea9dcc8be05413a3698a0957e5175102a5acb3b45438d03c29167971daf3b0ccd66e0d6ee29f6e8a07f4f4
   languageName: node
   linkType: hard
 
@@ -12575,7 +12575,7 @@ __metadata:
     "@onsol/tldparser": "npm:0.5.3"
     "@react-native-async-storage/async-storage": "npm:1.18.1"
     "@react-native-clipboard/clipboard": "npm:^1.16.3"
-    "@react-native-community/checkbox": "npm:0.5.17"
+    "@react-native-community/checkbox": "npm:0.5.20"
     "@react-native-community/cli": "npm:18.0.0"
     "@react-native-community/cli-platform-android": "npm:18.0.0"
     "@react-native-community/cli-platform-ios": "npm:18.0.0"

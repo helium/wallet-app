@@ -2150,7 +2150,7 @@ PODS:
     - React-utils (= 0.79.5)
   - RNCAsyncStorage (1.18.1):
     - React-Core
-  - RNCCheckbox (0.5.17):
+  - RNCCheckbox (0.5.20):
     - BEMCheckBox (~> 1.4)
     - React-Core
   - RNCClipboard (1.16.3):
@@ -2972,7 +2972,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 6cb6e0d0b52471abc883541c76589d1c367c64c7
   ReactCommon: 1ab5451fc5da87c4cc4c3046e19a8054624ca763
   RNCAsyncStorage: 01062b75ce749e3a18091a9ad7749effdf09ea43
-  RNCCheckbox: 450ce156f3e29e25efa0315c96cfbabe5a39ded1
+  RNCCheckbox: 33b44487ca8008394ce658cc32b26eab04f426ef
   RNCClipboard: ea6045252d5c0753cf17f62290f647dc0096f6ac
   RNDeviceInfo: d3e91ffb33ee97a7982108476edb68cb3672efa6
   RNGestureHandler: 0397fea67f39d5a2d17fcf4a028e206f7ba098ba
