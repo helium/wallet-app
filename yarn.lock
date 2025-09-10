@@ -12714,7 +12714,7 @@ __metadata:
     react-native-qrcode-svg: "npm:6.1.2"
     react-native-quick-crypto: "npm:^0.7.17"
     react-native-randombytes: "npm:3.6.1"
-    react-native-reanimated: "npm:3.17.5"
+    react-native-reanimated: "npm:3.19.1"
     react-native-safe-area-context: "npm:^5.5.2"
     react-native-screens: "npm:^4.13.1"
     react-native-share: "npm:7.9.0"
@@ -18059,9 +18059,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.17.5":
-  version: 3.17.5
-  resolution: "react-native-reanimated@npm:3.17.5"
+"react-native-reanimated@npm:3.19.1":
+  version: 3.19.1
+  resolution: "react-native-reanimated@npm:3.19.1"
   dependencies:
     "@babel/plugin-transform-arrow-functions": "npm:^7.0.0-0"
     "@babel/plugin-transform-class-properties": "npm:^7.0.0-0"
@@ -18079,7 +18079,7 @@ __metadata:
     "@babel/core": ^7.0.0-0
     react: "*"
     react-native: "*"
-  checksum: 10/63501d8ac0cb2039e60ac93bc779e946af267bb55f95cf53ed538bcf9bfca030fa5d84d5c9343dcbc4d8df0d5e9d7c58ca5647d43b17f8399dec11d812da11fc
+  checksum: 10/2ae82f5f1dc57c50c8296b3859e0be8b31439df4eb99e8e06062af32d61fafe3d4a56b12e2044729a429afbcacbfb85287e5a854454fa4b4b21d20bc0eef7f07
   languageName: node
   linkType: hard
 
