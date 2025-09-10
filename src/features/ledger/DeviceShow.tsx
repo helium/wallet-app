@@ -50,7 +50,7 @@ const DeviceShow = () => {
   const [existingLedgerAccounts, setExistingLedgerAccounts] = useState<
     LedgerAccount[]
   >([])
-  const [selectAll, setSelectAll] = useState<boolean>(true)
+  const [selectAll, setSelectAll] = useState<boolean>(false)
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<string, boolean>
   >({})
@@ -67,7 +67,7 @@ const DeviceShow = () => {
     const selected = {} as Record<string, boolean>
     ledgerAccounts.forEach((a) => {
       if (selected[a.address] === undefined) {
-        selected[a.address] = true
+        selected[a.address] = false
       }
     })
 
