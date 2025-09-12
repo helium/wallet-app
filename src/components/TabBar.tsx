@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { Insets, LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { Insets, LayoutChangeEvent, LayoutRectangle, View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -122,6 +122,7 @@ const TabBar = ({
   hasIndicator = true,
   ...containerProps
 }: Props) => {
+  const { ref, ...boxProps } = containerProps
   const hitSlop = useVerticalHitSlop('l')
   const [itemRects, setItemRects] = useState<Record<string, LayoutRectangle>>()
   const offset = useSharedValue<number | null>(null)
@@ -189,7 +190,7 @@ const TabBar = ({
   ])
 
   return (
-    <Box {...containerProps}>
+    <Box {...boxProps} ref={ref as React.Ref<View>}>
       <Box flexDirection="row" justifyContent="center" paddingVertical="ms">
         {items}
       </Box>
