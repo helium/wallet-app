@@ -2249,20 +2249,20 @@ __metadata:
   linkType: hard
 
 "@expo/prebuild-config@npm:^9.0.10, @expo/prebuild-config@npm:^9.0.11":
-  version: 9.0.11
-  resolution: "@expo/prebuild-config@npm:9.0.11"
+  version: 9.0.12
+  resolution: "@expo/prebuild-config@npm:9.0.12"
   dependencies:
     "@expo/config": "npm:~11.0.13"
     "@expo/config-plugins": "npm:~10.1.2"
     "@expo/config-types": "npm:^53.0.5"
     "@expo/image-utils": "npm:^0.7.6"
     "@expo/json-file": "npm:^9.1.5"
-    "@react-native/normalize-colors": "npm:0.79.5"
+    "@react-native/normalize-colors": "npm:0.79.6"
     debug: "npm:^4.3.1"
     resolve-from: "npm:^5.0.0"
     semver: "npm:^7.6.0"
     xml2js: "npm:0.6.0"
-  checksum: 10/220461fa9d98ab8a95e7c39c943667e9d5980f4b90b1ffbaaef4e3f0db3a862ed4919ccbab0768129a89d2187b8c0f80b4159d9a57e86fa79bdaafaa1e98444c
+  checksum: 10/7b31e0b7499c4df314d21ceec3e4effff01826616b823a18c8cabfded4a52659a842650e8da75ec289e09a71877b839e448f62eaf375dcd6baaad78e1534eca8
   languageName: node
   linkType: hard
 
@@ -3901,18 +3901,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/devices@npm:8.4.8":
-  version: 8.4.8
-  resolution: "@ledgerhq/devices@npm:8.4.8"
-  dependencies:
-    "@ledgerhq/errors": "npm:^6.23.0"
-    "@ledgerhq/logs": "npm:^6.13.0"
-    rxjs: "npm:^7.8.1"
-    semver: "npm:^7.3.5"
-  checksum: 10/4ce35892708d6f4e4488f166fbf8f71caad22867a563ab230391922394b84ce7e45eaae575e5a71174a4b260871acad0f72cd521e4987c1bbcc993fb9cee9487
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/devices@npm:8.5.0":
   version: 8.5.0
   resolution: "@ledgerhq/devices@npm:8.5.0"
@@ -3922,13 +3910,6 @@ __metadata:
     rxjs: "npm:^7.8.1"
     semver: "npm:^7.3.5"
   checksum: 10/0b2c9aab492a25d575816a5d0d4013dc5ad8f55750d69462dbf4784d07477809922fab54264c4352b16be5f896d08399fd479511d27c6a1b52af90e0116484e5
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/errors@npm:^6.23.0":
-  version: 6.23.0
-  resolution: "@ledgerhq/errors@npm:6.23.0"
-  checksum: 10/e847b6b88bddcd26df4d957cdb9794073068f96ccec6e1772ccd0c7a834dd966b96e36427409f03a28049effd9eb2324c9215b075d34ccb2ea089946de1f336e
   languageName: node
   linkType: hard
 
@@ -3961,19 +3942,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.31.8":
-  version: 6.31.8
-  resolution: "@ledgerhq/hw-transport@npm:6.31.8"
-  dependencies:
-    "@ledgerhq/devices": "npm:8.4.8"
-    "@ledgerhq/errors": "npm:^6.23.0"
-    "@ledgerhq/logs": "npm:^6.13.0"
-    events: "npm:^3.3.0"
-  checksum: 10/f5a639baa0e2dfa22a3e82695398ba7e16b4b21f73b1140f7a152433d8665955f193034bb8a58d929d06f0b81bdb2cd5c745d11cc1e8dc395d1ac558acb5327a
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport@npm:^6.31.9":
+"@ledgerhq/hw-transport@npm:^6.31.8, @ledgerhq/hw-transport@npm:^6.31.9":
   version: 6.31.9
   resolution: "@ledgerhq/hw-transport@npm:6.31.9"
   dependencies:
@@ -4894,6 +4863,13 @@ __metadata:
   version: 0.79.5
   resolution: "@react-native/normalize-colors@npm:0.79.5"
   checksum: 10/c2ec87cacba9439f17dede82befd9c9bd4a8b0ed2fdd508765609119e233bed75cf9097364f9e39633686d98061bab9577d08b2c93956e93a99210a49ca9022a
+  languageName: node
+  linkType: hard
+
+"@react-native/normalize-colors@npm:0.79.6":
+  version: 0.79.6
+  resolution: "@react-native/normalize-colors@npm:0.79.6"
+  checksum: 10/e8596238ddf6f666cb336cd410616f2222f513022ea37fd908826161cf554d00c5d43eb8b50e8a2f7000b9f73ee99c37e9813261cad4b896f7a74f26aaed0ebe
   languageName: node
   linkType: hard
 
@@ -6511,11 +6487,11 @@ __metadata:
   linkType: hard
 
 "@types/react@npm:^19.0.0":
-  version: 19.1.9
-  resolution: "@types/react@npm:19.1.9"
+  version: 19.1.12
+  resolution: "@types/react@npm:19.1.12"
   dependencies:
     csstype: "npm:^3.0.2"
-  checksum: 10/b1032eae52e3b4f2a8b9ea6aac936385a78b7eff55cad4ff4f0d7e726c6ea87c1f287a1ba0e57a76a8e4456d3fb918b4f97a01e71686fdc11a65b26b8d296be4
+  checksum: 10/c03d595b84faecb15079757555c96871e84ea6eef9a5eddb13ec1f648f718f9624bebc4199e86267edb825b23df97758324ea39ff840d9ad328386f96971f588
   languageName: node
   linkType: hard
 
@@ -11408,11 +11384,11 @@ __metadata:
   linkType: hard
 
 "expo-secure-store@npm:~14.2.3":
-  version: 14.2.3
-  resolution: "expo-secure-store@npm:14.2.3"
+  version: 14.2.4
+  resolution: "expo-secure-store@npm:14.2.4"
   peerDependencies:
     expo: "*"
-  checksum: 10/41ff17044d01a6ee5da78b3a511bbd9a8bf1ba7c70564f299d770bdbc1cc050cc7a960d82f110aaab85182cbbd50956708ddaedc800938f0908ea7a827e51b3d
+  checksum: 10/62e77505f549f1ae49e390956d2bf16f4fc9e684d6981086917705d3a684f3a8cfa40009122983165f327a42ce44e2f7221394165cea12b4df811e6bb80c1505
   languageName: node
   linkType: hard
 
@@ -17475,13 +17451,13 @@ __metadata:
   linkType: hard
 
 "query-string@npm:^9.1.1":
-  version: 9.2.2
-  resolution: "query-string@npm:9.2.2"
+  version: 9.3.0
+  resolution: "query-string@npm:9.3.0"
   dependencies:
     decode-uri-component: "npm:^0.4.1"
     filter-obj: "npm:^5.1.0"
     split-on-first: "npm:^3.0.0"
-  checksum: 10/fb9a33dcbe1fe4f3b7fdc1fa6428794b422d7b67b8c30b06b343833d13d96e25065cc74883d587e5688f271dc713edb14bc69187d6e3e426742693527d4d9746
+  checksum: 10/4e10d20f32f605444e8e3474f6705d1c717b6b0392499a73bd2f17cb710cf10dbdade50d9047945346b57243b7f4f6b53ff0292fac3d37c5aec8fa4827ffb925
   languageName: node
   linkType: hard
 
@@ -18084,18 +18060,18 @@ __metadata:
   linkType: hard
 
 "react-native-safe-area-context@npm:^5.5.2":
-  version: 5.6.0
-  resolution: "react-native-safe-area-context@npm:5.6.0"
+  version: 5.6.1
+  resolution: "react-native-safe-area-context@npm:5.6.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10/409a59ab249cec6c22e2df423945a7c0e991e44b7650e0c558eb01a2a1f932c97f90302e2e2ef9263f86df1bd81ed6399db022900d79f517902342dbb5e6c3bd
+  checksum: 10/2fc93cf46a6cbad28e5850bef009905c6db44066fb7e6f7bbce52c2ae4b0467c6718e4f572a42f8387c6b37f6d61ebe79980d0c2b5899e23dc19482a7db8417b
   languageName: node
   linkType: hard
 
 "react-native-screens@npm:^4.13.1":
-  version: 4.13.1
-  resolution: "react-native-screens@npm:4.13.1"
+  version: 4.16.0
+  resolution: "react-native-screens@npm:4.16.0"
   dependencies:
     react-freeze: "npm:^1.0.0"
     react-native-is-edge-to-edge: "npm:^1.2.1"
@@ -18103,7 +18079,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10/40a9c4ea67c80b4f847ec19e26df4aed9ba470b02a0806c4ef003df9005b2068f7e5002a72f144a6dc38eb2b7c33b6fa87334b9304c1d7111dde02b4a9212d32
+  checksum: 10/f055d37b3abf96f42c15d61645441995884ed69b2a6b35f63a21abeb147b9df7e084447d2a329a424ee3686d703c25817ea588d3be9e6ebc38e5c653ebe5e05b
   languageName: node
   linkType: hard
 
@@ -18159,8 +18135,8 @@ __metadata:
   linkType: hard
 
 "react-native-svg@npm:^15.12.1":
-  version: 15.12.1
-  resolution: "react-native-svg@npm:15.12.1"
+  version: 15.13.0
+  resolution: "react-native-svg@npm:15.13.0"
   dependencies:
     css-select: "npm:^5.1.0"
     css-tree: "npm:^1.1.3"
@@ -18168,7 +18144,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10/aa7b3a54cf2eb52aeb1322ba4a3f63176d4da0725ea4b9ec0051a59df0a511dc189fd101abf7993e94676c1cdea736e4abb207a0aea6f3083b5982c48e4648ac
+  checksum: 10/03db4516aec2dfcdf406283bf6b0e18ea3f56cdf228c97f92d282128b1e39c3336424d46a1afec894ebc1c3681b16d2c35c03b08a8a5ee2314c124bdea7ae6e3
   languageName: node
   linkType: hard
 
@@ -18369,14 +18345,14 @@ __metadata:
   linkType: hard
 
 "reactotron-react-native@npm:^5.1.3":
-  version: 5.1.14
-  resolution: "reactotron-react-native@npm:5.1.14"
+  version: 5.1.16
+  resolution: "reactotron-react-native@npm:5.1.16"
   dependencies:
     mitt: "npm:^3.0.1"
     reactotron-core-client: "npm:2.9.7"
   peerDependencies:
     react-native: ">=0.40.0"
-  checksum: 10/f69647e5dd90f7996f54f56e6ab87b98ae4f7f4133627a7ee4db4d007f1142d971ce4318fd2186c1c4ceb38573162d00597515f4457d02e9323e147af5c06c6b
+  checksum: 10/4eb6c00a4b84cc96a38285375532e8f7b81c49580c54510bce52ed1e1e59be0a16406c27f2e1b7db06467ca6892486e096cb76b64d06cbe702fa99668f6e608c
   languageName: node
   linkType: hard
 
@@ -21066,11 +21042,11 @@ __metadata:
   linkType: hard
 
 "use-debounce@npm:^10.0.4":
-  version: 10.0.5
-  resolution: "use-debounce@npm:10.0.5"
+  version: 10.0.6
+  resolution: "use-debounce@npm:10.0.6"
   peerDependencies:
     react: "*"
-  checksum: 10/329e71d3c53baa3e1bc3d1cd8cba8f358d06e3594c606b8f26fc391be6ce0010704026056909d3975314900562dc963c54b1889c875e62d7971a82260cad62d4
+  checksum: 10/d28cc3d688cdb3dfbcab05c1b6ff763764ff4b298fa7598e534e7b255d4ac41cb1a24b1725c31420bac3b570418be630df460a6fcefd57c2cb0f5189264e1a7b
   languageName: node
   linkType: hard
 
