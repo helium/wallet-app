@@ -4461,9 +4461,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/checkbox@npm:0.5.20":
-  version: 0.5.20
-  resolution: "@react-native-community/checkbox@npm:0.5.20"
+"@react-native-community/checkbox@npm:0.5.17":
+  version: 0.5.17
+  resolution: "@react-native-community/checkbox@npm:0.5.17"
   peerDependencies:
     react: "*"
     react-native: ">= 0.62"
@@ -4471,7 +4471,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-windows:
       optional: true
-  checksum: 10/f1ab95f1fbfd4853b4e798cf4b4b18ec20920106bcea9dcc8be05413a3698a0957e5175102a5acb3b45438d03c29167971daf3b0ccd66e0d6ee29f6e8a07f4f4
+  checksum: 10/dcb2335c37f56fc707f0a513d84af74641894778c20e57bd3f98accb6f15498a7ec1754b576e58a3984680df54c7dd7c577777141393ea8ade7e7972871fce96
   languageName: node
   linkType: hard
 
@@ -12575,7 +12575,7 @@ __metadata:
     "@onsol/tldparser": "npm:0.5.3"
     "@react-native-async-storage/async-storage": "npm:1.18.1"
     "@react-native-clipboard/clipboard": "npm:^1.16.3"
-    "@react-native-community/checkbox": "npm:0.5.20"
+    "@react-native-community/checkbox": "npm:0.5.17"
     "@react-native-community/cli": "npm:18.0.0"
     "@react-native-community/cli-platform-android": "npm:18.0.0"
     "@react-native-community/cli-platform-ios": "npm:18.0.0"
@@ -12714,7 +12714,7 @@ __metadata:
     react-native-qrcode-svg: "npm:6.1.2"
     react-native-quick-crypto: "npm:^0.7.17"
     react-native-randombytes: "npm:3.6.1"
-    react-native-reanimated: "npm:3.19.1"
+    react-native-reanimated: "npm:3.17.5"
     react-native-safe-area-context: "npm:^5.5.2"
     react-native-screens: "npm:^4.13.1"
     react-native-share: "npm:7.9.0"
@@ -18059,9 +18059,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.19.1":
-  version: 3.19.1
-  resolution: "react-native-reanimated@npm:3.19.1"
+"react-native-reanimated@npm:3.17.5":
+  version: 3.17.5
+  resolution: "react-native-reanimated@npm:3.17.5"
   dependencies:
     "@babel/plugin-transform-arrow-functions": "npm:^7.0.0-0"
     "@babel/plugin-transform-class-properties": "npm:^7.0.0-0"
@@ -18079,7 +18079,7 @@ __metadata:
     "@babel/core": ^7.0.0-0
     react: "*"
     react-native: "*"
-  checksum: 10/2ae82f5f1dc57c50c8296b3859e0be8b31439df4eb99e8e06062af32d61fafe3d4a56b12e2044729a429afbcacbfb85287e5a854454fa4b4b21d20bc0eef7f07
+  checksum: 10/63501d8ac0cb2039e60ac93bc779e946af267bb55f95cf53ed538bcf9bfca030fa5d84d5c9343dcbc4d8df0d5e9d7c58ca5647d43b17f8399dec11d812da11fc
   languageName: node
   linkType: hard
 
