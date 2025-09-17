@@ -55,7 +55,6 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
         title={title}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
-        opacity={0.6}
         {...props}
       />
     ),

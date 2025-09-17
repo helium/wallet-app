@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { Platform } from 'react-native'
 import { BottomSheetBackdropProps } from '@gorhom/bottom-sheet'
 import Animated, {
   Extrapolate,
@@ -42,6 +43,8 @@ const CustomBlurBackdrop = ({
     [style, containerAnimatedStyle],
   )
 
+  const isAndroid = Platform.OS === 'android'
+
   return (
     <Animated.View onTouchEnd={onPress} style={containerStyle}>
       <BlurBox
@@ -51,8 +54,20 @@ const CustomBlurBackdrop = ({
         left={0}
         right={0}
         tint="dark"
-        intensity={80}
+        intensity={isAndroid ? 100 : 80}
       >
+        {isAndroid && (
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            }}
+          />
+        )}
         <SafeAreaBox
           edges={['top']}
           backgroundColor="transparent"

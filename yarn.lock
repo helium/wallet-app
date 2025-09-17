@@ -4165,7 +4165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/ciphers@npm:^1.3.0":
+"@noble/ciphers@npm:1.3.0":
   version: 1.3.0
   resolution: "@noble/ciphers@npm:1.3.0"
   checksum: 10/051660051e3e9e2ca5fb9dece2885532b56b7e62946f89afa7284a0fb8bc02e2bd1c06554dba68162ff42d295b54026456084198610f63c296873b2f1cd7a586
@@ -4199,7 +4199,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/ed25519@npm:^2.3.0":
+"@noble/ed25519@npm:2.3.0":
   version: 2.3.0
   resolution: "@noble/ed25519@npm:2.3.0"
   checksum: 10/3b12a7ac401ac625c59ab4b597d415aea3b855cdfa2563529863c9848b6c143b29fb1f0e462acec947bd20ab4fac0d8cfe892231566cbdcf6bdd13532241191b
@@ -4413,7 +4413,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-clipboard/clipboard@npm:^1.16.3":
+"@react-native-clipboard/clipboard@npm:1.16.3":
   version: 1.16.3
   resolution: "@react-native-clipboard/clipboard@npm:1.16.3"
   peerDependencies:
@@ -12545,12 +12545,12 @@ __metadata:
     "@metaplex-foundation/mpl-bubblegum": "npm:0.6.0"
     "@metaplex-foundation/mpl-token-metadata": "npm:2.10.0"
     "@ngraveio/bc-ur": "npm:1.1.13"
-    "@noble/ciphers": "npm:^1.3.0"
-    "@noble/ed25519": "npm:^2.3.0"
-    "@noble/hashes": "npm:^1.8.0"
+    "@noble/ciphers": "npm:1.3.0"
+    "@noble/ed25519": "npm:2.3.0"
+    "@noble/hashes": "npm:1.8.0"
     "@onsol/tldparser": "npm:0.5.3"
     "@react-native-async-storage/async-storage": "npm:1.18.1"
-    "@react-native-clipboard/clipboard": "npm:^1.16.3"
+    "@react-native-clipboard/clipboard": "npm:1.16.3"
     "@react-native-community/checkbox": "npm:0.5.20"
     "@react-native-community/cli": "npm:18.0.0"
     "@react-native-community/cli-platform-android": "npm:18.0.0"
@@ -12690,7 +12690,7 @@ __metadata:
     react-native-qrcode-svg: "npm:6.1.2"
     react-native-quick-crypto: "npm:^0.7.17"
     react-native-randombytes: "npm:3.6.1"
-    react-native-reanimated: "npm:3.19.1"
+    react-native-reanimated: "npm:3.18.0"
     react-native-safe-area-context: "npm:^5.5.2"
     react-native-screens: "npm:^4.13.1"
     react-native-share: "npm:7.9.0"
@@ -18035,9 +18035,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.19.1":
-  version: 3.19.1
-  resolution: "react-native-reanimated@npm:3.19.1"
+"react-native-reanimated@npm:3.18.0":
+  version: 3.18.0
+  resolution: "react-native-reanimated@npm:3.18.0"
   dependencies:
     "@babel/plugin-transform-arrow-functions": "npm:^7.0.0-0"
     "@babel/plugin-transform-class-properties": "npm:^7.0.0-0"
@@ -18055,7 +18055,7 @@ __metadata:
     "@babel/core": ^7.0.0-0
     react: "*"
     react-native: "*"
-  checksum: 10/2ae82f5f1dc57c50c8296b3859e0be8b31439df4eb99e8e06062af32d61fafe3d4a56b12e2044729a429afbcacbfb85287e5a854454fa4b4b21d20bc0eef7f07
+  checksum: 10/aec34f97393b3189fc727cee306481af0f6f47309589f04d4ece89cae69144131f896ddc226f786c2261c828091481494cbd6c442d1152461da83334fc643def
   languageName: node
   linkType: hard
 

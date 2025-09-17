@@ -19,7 +19,7 @@ import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo, useRef } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
@@ -46,12 +46,31 @@ const CheckableTokenListItem = ({
   const wallet = useCurrentWallet()
   const { amount, decimals } = useOwnedAmount(wallet, mint)
   const { json, symbol } = useMetaplexMetadata(mint)
+  const isMountedRef = useRef(true)
+
   const balanceToDisplay = useMemo(() => {
     return amount && typeof decimals !== 'undefined'
       ? humanReadable(new BN(amount.toString()), decimals)
       : ''
   }, [amount, decimals])
   const colors = useColors()
+
+  const handleValueChange = useCallback(() => {
+    try {
+      if (isMountedRef.current && mint) {
+        onUpdateTokens(mint, !checked)
+      }
+    } catch (error) {
+      console.warn('CheckBox onValueChange error:', error)
+    }
+  }, [mint, checked, onUpdateTokens])
+
+  React.useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   return (
     <TouchableContainer
@@ -102,7 +121,7 @@ const CheckableTokenListItem = ({
           onAnimationType="fill"
           offAnimationType="fill"
           boxType="square"
-          onValueChange={() => mint && onUpdateTokens(mint, !checked)}
+          onValueChange={handleValueChange}
         />
       </Box>
     </TouchableContainer>

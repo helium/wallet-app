@@ -2235,7 +2235,7 @@ PODS:
     - Yoga
   - RNReactNativeSharedGroupPreferences (1.1.24):
     - React
-  - RNReanimated (3.19.1):
+  - RNReanimated (3.18.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2258,10 +2258,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 3.19.1)
-    - RNReanimated/worklets (= 3.19.1)
+    - RNReanimated/reanimated (= 3.18.0)
+    - RNReanimated/worklets (= 3.18.0)
     - Yoga
-  - RNReanimated/reanimated (3.19.1):
+  - RNReanimated/reanimated (3.18.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2284,9 +2284,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 3.19.1)
+    - RNReanimated/reanimated/apple (= 3.18.0)
     - Yoga
-  - RNReanimated/reanimated/apple (3.19.1):
+  - RNReanimated/reanimated/apple (3.18.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2310,7 +2310,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNReanimated/worklets (3.19.1):
+  - RNReanimated/worklets (3.18.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2333,9 +2333,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/worklets/apple (= 3.19.1)
+    - RNReanimated/worklets/apple (= 3.18.0)
     - Yoga
-  - RNReanimated/worklets/apple (3.19.1):
+  - RNReanimated/worklets/apple (3.18.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2981,7 +2981,7 @@ SPEC CHECKSUMS:
   RNOS: d07e5090b5060c6f2b83116d740a32cfdb33afe3
   RNPermissions: 9510a70fa724380332102d11514ad0d38f33f231
   RNReactNativeSharedGroupPreferences: d4869af3c7757405b6b5ac633d0ef5f9886a9be7
-  RNReanimated: 730ffe6cf7b931f78b795e6b6e0920dcab9c8beb
+  RNReanimated: 722d67dfde539bfe29b572878f4bc805f727726b
   RNScreens: 7e56b051227a1a11c3068849d1a9a5dd457537df
   RNShare: fd38ef4e36245bc590de292a139a2b9e332a4665
   RNSVG: ba53827311fd9f8a14e06626365a749ce7713975
