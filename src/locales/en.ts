@@ -1277,6 +1277,8 @@ export default {
     signClaimRewardsTxn: 'Sign this transaction to claim your rewards.',
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
+    signMintDataCreditsTxnPreview:
+      'Burn ~{{hntAmount}} hnt to mint {{dcAmount}} data credits',
     signDelegateDCTxn: 'Sign this transaction to delegate your data credits.',
     signAssertLocationTxn: 'Sign this transaction to assert the location.',
     recipientNonExistent:

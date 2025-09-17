@@ -14,6 +14,7 @@ import * as solUtils from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
 import { ellipsizeAddress } from '@utils/accountUtils'
+import { humanReadable } from '@utils/formatting'
 import { SwapPreview } from '../solana/SwapPreview'
 import { CollectablePreview } from '../solana/CollectablePreview'
 import { MessagePreview } from '../solana/MessagePreview'
@@ -389,7 +390,15 @@ export default () => {
   }, [])
 
   const submitMintDataCredits = useCallback(
-    async ({ dcAmount, recipient }: { dcAmount: BN; recipient: PublicKey }) => {
+    async ({
+      hntAmount,
+      dcAmount,
+      recipient,
+    }: {
+      hntAmount: BN
+      dcAmount: BN
+      recipient: PublicKey
+    }) => {
       if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
@@ -399,21 +408,26 @@ export default () => {
         await connection.getAccountInfo(recipient),
       )
 
-      const draft = await solUtils.mintDataCredits({
+      const txs = await solUtils.mintDataCredits({
         anchorProvider,
         dcAmount,
         recipient,
       })
-      const swapTxn = await populateMissingDraftInfo(connection, draft)
-
-      const serializedTx = toVersionedTx(swapTxn).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         message: t('transactions.signMintDataCreditsTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs: txs.map(({ tx }) => Buffer.from(tx.serialize())),
+        renderer: () => (
+          <MessagePreview
+            message={t('transactions.signMintDataCreditsTxnPreview', {
+              hntAmount: humanReadable(hntAmount, 8),
+              dcAmount: humanReadable(dcAmount, 0),
+            })}
+          />
+        ),
       })
 
       if (!decision) {
@@ -424,7 +438,7 @@ export default () => {
         sendMintDataCredits({
           anchorProvider,
           cluster,
-          swapTxn,
+          txs,
         }),
       )
     },

@@ -105,7 +105,7 @@ export class AsyncAccountCache implements AccountCache {
     this.debouncedSet()
   }
 
-  private setAsyncStorage = (): void => {
+  setAsyncStorage = (): void => {
     // Make sure we purge the least recently used items
     const orderedCache = [...this.cache.keys()]
       .sort(

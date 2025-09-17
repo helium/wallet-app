@@ -30,6 +30,7 @@ import {
   Cluster,
   PublicKey,
   SignaturesForAddressOptions,
+  Signer,
   VersionedTransaction,
 } from '@solana/web3.js'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
@@ -128,7 +129,7 @@ type JupiterSwapTxn = {
 type MintDataCreditsInput = {
   anchorProvider: AnchorProvider
   cluster: Cluster
-  swapTxn: TransactionDraft
+  txs: { tx: VersionedTransaction; signers: Signer[] }[]
 }
 
 type DelegateDataCreditsInput = {
@@ -268,24 +269,31 @@ export const sendJupiterSwap = createAsyncThunk(
 
 export const sendMintDataCredits = createAsyncThunk(
   'solana/sendMintDataCredits',
-  async ({ cluster, anchorProvider, swapTxn }: MintDataCreditsInput) => {
+  async ({ cluster, anchorProvider, txs }: MintDataCreditsInput) => {
     try {
-      const signed = await anchorProvider.wallet.signTransaction(
-        toVersionedTx(
-          await populateMissingDraftInfo(anchorProvider.connection, swapTxn),
-        ),
-      )
+      const signedTxs: VersionedTransaction[] = []
+      for (const { tx, signers } of txs) {
+        const signed = await anchorProvider.wallet.signTransaction(tx)
+        if (signers.length > 0) {
+          await signed.sign(signers)
+        }
+        signedTxs.push(signed)
+      }
 
-      const { txid: sig } = await sendAndConfirmWithRetry(
-        anchorProvider.connection,
-        Buffer.from(signed.serialize()),
-        {
-          skipPreflight: true,
-        },
-        'confirmed',
-      )
+      const signatures: string[] = []
+      for (const signed of signedTxs) {
+        const { txid: sig } = await sendAndConfirmWithRetry(
+          anchorProvider.connection,
+          Buffer.from(signed.serialize()),
+          {
+            skipPreflight: true,
+          },
+          'confirmed',
+        )
+        signatures.push(sig)
+      }
 
-      postPayment({ signatures: [sig], cluster })
+      postPayment({ signatures, cluster })
     } catch (error) {
       Logger.error(error)
       throw error
