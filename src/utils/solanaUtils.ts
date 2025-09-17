@@ -6,6 +6,7 @@ import {
   delegatedDataCreditsKey,
   escrowAccountKey,
   init as initDc,
+  mintDataCredits as sdkMintDataCredits,
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
 import { DataCredits } from '@helium/idls/lib/types/data_credits'
@@ -98,6 +99,7 @@ import {
   PublicKey,
   SignatureResult,
   SignaturesForAddressOptions,
+  Signer,
   SystemProgram,
   Transaction,
   TransactionInstruction,
@@ -631,32 +633,22 @@ export const mintDataCredits = async ({
   anchorProvider: AnchorProvider
   dcAmount: BN
   recipient: PublicKey
-}): Promise<TransactionDraft> => {
+}): Promise<{ tx: VersionedTransaction; signers: Signer[] }[]> => {
   try {
-    const { publicKey: payer } = anchorProvider.wallet
     const program = (await initDc(
       anchorProvider,
     )) as unknown as Program<DataCredits>
 
-    const ix = await program.methods
-      .mintDataCreditsV0({
-        hntAmount: null,
-        dcAmount,
-      })
-      .accountsPartial({
-        dcMint: DC_MINT,
-        recipient,
-      })
-      .instruction()
+    const { txs } = await sdkMintDataCredits({
+      dcAmount,
+      dcMint: DC_MINT,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      program,
+      recipient,
+    })
 
-    return {
-      instructions: await withPriorityFees({
-        connection: anchorProvider.connection,
-        instructions: [ix],
-        feePayer: payer,
-      }),
-      feePayer: payer,
-    }
+    return txs
   } catch (e) {
     Logger.error(e)
     throw e as Error

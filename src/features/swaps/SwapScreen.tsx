@@ -630,6 +630,8 @@ const SwapScreen = () => {
           outputAmount
         ) {
           await submitMintDataCredits({
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            hntAmount: dcToNetworkTokens(new BN(outputAmount))!,
             dcAmount: new BN(outputAmount),
             recipient: recipientAddr,
           })
@@ -680,6 +682,7 @@ const SwapScreen = () => {
     isDevnet,
     t,
     getSwapTx,
+    dcToNetworkTokens,
   ])
 
   const isLoading = useMemo(() => {

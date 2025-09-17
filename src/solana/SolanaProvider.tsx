@@ -321,6 +321,7 @@ const useSolanaHook = () => {
           })
         })
 
+        await asyncCache.setAsyncStorage()
         // Store the current slot as the last checked slot for next time
         await storeSecureItem(
           SecureStorageKeys.LAST_CHECKED_SLOT,

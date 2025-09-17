@@ -42,3 +42,57 @@ if (!String.prototype.replaceAll) {
 BigInt.prototype.toJSON = function () {
   return this.toString()
 }
+
+// AbortSignal.timeout() polyfill for React Native
+if (typeof AbortSignal !== 'undefined' && !(AbortSignal as any).timeout) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  AbortSignal.timeout = function (ms: number): AbortSignal {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => {
+      controller.abort()
+    }, ms)
+
+    // Clean up the timeout if the signal is already aborted
+    if (controller.signal.aborted) {
+      clearTimeout(timeoutId)
+    } else {
+      controller.signal.addEventListener('abort', () => {
+        clearTimeout(timeoutId)
+      })
+    }
+
+    return controller.signal
+  }
+}
+
+// AbortSignal.any() polyfill for React Native
+if (typeof AbortSignal !== 'undefined' && !(AbortSignal as any).any) {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  AbortSignal.any = function (signals: AbortSignal[]): AbortSignal {
+    const controller = new AbortController()
+
+    // If any signal is already aborted, abort immediately
+    const hasAbortedSignal = signals.some((signal) => signal.aborted)
+    if (hasAbortedSignal) {
+      controller.abort()
+      return controller.signal
+    }
+
+    // Listen for abort events on all signals
+    const abortHandlers = signals.map((signal) => {
+      const handler = () => {
+        controller.abort()
+        // Clean up all listeners
+        signals.forEach((s, index) => {
+          s.removeEventListener('abort', abortHandlers[index])
+        })
+      }
+      signal.addEventListener('abort', handler)
+      return handler
+    })
+
+    return controller.signal
+  }
+}
