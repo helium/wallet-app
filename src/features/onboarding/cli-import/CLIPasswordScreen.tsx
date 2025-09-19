@@ -1,7 +1,7 @@
 import Terminal from '@assets/images/terminal.svg'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import CloseButton from '@components/CloseButton'
+import BackButton from '@components/BackButton'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
@@ -88,8 +88,8 @@ const CLIPasswordScreen = () => {
 
   return (
     <SafeAreaBox marginHorizontal="l" flex={1} edges={edges}>
-      <Box width="100%" alignItems="flex-end" paddingVertical="l">
-        <CloseButton onPress={onClose} />
+      <Box width="100%" alignItems="flex-start" paddingVertical="l">
+        <BackButton onPress={onClose} />
       </Box>
       <Box flexGrow={1} alignItems="center">
         <Terminal width={98} height={98} />
