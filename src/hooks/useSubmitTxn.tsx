@@ -7,7 +7,7 @@ import {
   sendAndConfirmWithRetry,
   toVersionedTx,
 } from '@helium/spl-utils'
-import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
@@ -590,7 +590,7 @@ export default () => {
       const signedTxns =
         serializedTxs &&
         (await anchorProvider.wallet.signAllTransactions(
-          serializedTxs.map((ser) => Transaction.from(ser)),
+          serializedTxs.map((ser) => VersionedTransaction.deserialize(ser)),
         ))
 
       try {
@@ -599,7 +599,7 @@ export default () => {
           // eslint-disable-next-line no-await-in-loop
           await sendAndConfirmWithRetry(
             anchorProvider.connection,
-            txn.serialize(),
+            Buffer.from(txn.serialize()),
             {
               skipPreflight: true,
             },

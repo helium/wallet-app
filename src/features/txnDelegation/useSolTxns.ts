@@ -15,7 +15,12 @@ import {
 } from '@helium/helium-entity-manager-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import { Message } from '@helium/onboarding'
-import { Asset, getAsset, heliumAddressToSolAddress } from '@helium/spl-utils'
+import {
+  Asset,
+  getAsset,
+  heliumAddressToSolAddress,
+  truthy,
+} from '@helium/spl-utils'
 import { SignHotspotResponse } from '@helium/wallet-link'
 import { getLeafAssetId } from '@metaplex-foundation/mpl-bubblegum'
 import * as web3 from '@solana/web3.js'
@@ -39,7 +44,7 @@ const ValidTxnKeys = [
 ] as const
 export type ValidTxn = (typeof ValidTxnKeys)[number]
 type Txn = {
-  transaction: web3.Transaction
+  transaction: web3.VersionedTransaction
   gatewayAddress?: string
   location?: string
   elevation?: number
@@ -411,13 +416,44 @@ const useSolTxns = ({
   )
 
   const handleTransaction = useCallback(
-    async (txn: web3.Transaction) => {
+    async (txn: web3.VersionedTransaction) => {
+      if (!anchorProvider) return
+      const LUTs = (
+        await Promise.all(
+          txn.message.addressTableLookups.map((acc) =>
+            anchorProvider.connection.getAddressLookupTable(acc.accountKey),
+          ),
+        )
+      )
+        .map((lut) => lut.value)
+        .filter((val) => val !== null) as web3.AddressLookupTableAccount[]
+      const allAccs = txn.message.getAccountKeys({
+        addressLookupTableAccounts: LUTs,
+      })
+      const instructions = txn.message.compiledInstructions.map(
+        (ix) =>
+          new web3.TransactionInstruction({
+            keys: ix.accountKeyIndexes.map((i) => {
+              const acc = allAccs.get(i)
+              if (!acc) {
+                throw new Error('Failed to get account')
+              }
+              return {
+                pubkey: acc,
+                isSigner: txn.message.isAccountSigner(i),
+                isWritable: txn.message.isAccountWritable(i),
+              }
+            }),
+            programId: allAccs.get(ix.programIdIndex)!,
+            data: Buffer.from(ix.data),
+          }),
+      )
       const info = await Promise.all(
-        txn.instructions.map(async (instruction) => decode(instruction)),
+        instructions.map(async (instruction) => decode(instruction)),
       )
       return { info, txn }
     },
-    [decode],
+    [anchorProvider, decode],
   )
 
   useAsync(async () => {
@@ -430,11 +466,15 @@ const useSolTxns = ({
     if (solanaTransactions) {
       const txns = solanaTransactions
         .split(',')
-        .map((t) => web3.Transaction.from(Buffer.from(t, 'base64')))
+        .map((t) =>
+          web3.VersionedTransaction.deserialize(Buffer.from(t, 'base64')),
+        )
 
-      const handledTxns = await Promise.all(txns.map(handleTransaction))
+      const handledTxns = (
+        await Promise.all(txns.map(handleTransaction))
+      ).filter(truthy)
       const nextRecord = {} as Record<ValidTxn, Txn>
-      handledTxns.forEach(({ txn, info }) => {
+      handledTxns.forEach(({ info, txn }) => {
         info.forEach((i) => {
           if (i) {
             const name = i.name as ValidTxn
@@ -496,8 +536,8 @@ const useSolTxns = ({
       } as SignHotspotResponse
 
       const txnList = transactionList.map(({ transaction: tx }) => {
-        tx.partialSign(signer)
-        return tx.serialize().toString('base64')
+        tx.sign([signer])
+        return Buffer.from(tx.serialize()).toString('base64')
       })
 
       responseParams.solanaTransactions = txnList.join(',')
@@ -568,7 +608,9 @@ const useSolTxns = ({
 
     // TODO: Confirm this works
     const ids = await Promise.all(
-      txnBuffs.map((txn) => submitSolana({ anchorProvider, txn })),
+      txnBuffs.map((txn) =>
+        submitSolana({ anchorProvider, txn: Buffer.from(txn) }),
+      ),
     )
     setSubmitLoading(false)
     return ids

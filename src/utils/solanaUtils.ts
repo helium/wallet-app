@@ -41,6 +41,7 @@ import {
   searchAssetsWithPageInfo,
   sendAndConfirmWithRetry,
   toBN,
+  toVersionedTx,
   truthy,
 } from '@helium/spl-utils'
 import {
@@ -208,33 +209,40 @@ export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
 
 export const calculateRequiredSol = async (
   anchorProvider: AnchorProvider,
-  tx?: Transaction | string,
+  tx?: VersionedTransaction | string,
 ): Promise<BN> => {
   try {
-    let transaction: Transaction
-
-    if (typeof tx === 'string') {
-      try {
-        const buffer = Buffer.from(tx, 'base64')
-        transaction = Transaction.from(buffer)
-      } catch (deserializeError) {
-        transaction = new Transaction()
-      }
-    } else {
-      transaction = tx || new Transaction()
-    }
+    let transaction: VersionedTransaction
 
     const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
       'recent',
     )
-    transaction.recentBlockhash = blockhash
-    transaction.feePayer = anchorProvider.publicKey
-    const estimatedFee = await transaction.getEstimatedFee(
-      anchorProvider.connection,
+    if (typeof tx === 'string') {
+      try {
+        const buffer = Buffer.from(tx, 'base64')
+        transaction = VersionedTransaction.deserialize(buffer)
+      } catch (deserializeError) {
+        transaction = toVersionedTx({
+          instructions: [],
+          recentBlockhash: blockhash,
+          feePayer: anchorProvider.publicKey,
+        })
+      }
+    } else {
+      transaction =
+        tx ||
+        toVersionedTx({
+          instructions: [],
+          recentBlockhash: blockhash,
+          feePayer: anchorProvider.publicKey,
+        })
+    }
+    const estimatedFee = await anchorProvider.connection.getFeeForMessage(
+      transaction.message,
     )
 
     const feeWithBuffer = estimatedFee
-      ? new BN(estimatedFee * 1.1)
+      ? new BN((estimatedFee.value || TXN_FEE_IN_LAMPORTS) * 1.1)
       : new BN(TXN_FEE_IN_LAMPORTS)
 
     return feeWithBuffer
