@@ -97,11 +97,15 @@ const App = () => {
   useMount(() => {
     // init OneSignal
     if (Config.ONE_SIGNAL_APP_ID) {
-      OneSignal.initialize(Config.ONE_SIGNAL_APP_ID)
-      OneSignal.Notifications.addEventListener('click', (event) => {
-        setOpenedNotification(event.notification)
-      })
-      OneSignal.Notifications.requestPermission(true)
+      try {
+        OneSignal.initialize(Config.ONE_SIGNAL_APP_ID)
+        OneSignal.Notifications.addEventListener('click', (event) => {
+          setOpenedNotification(event.notification)
+        })
+        OneSignal.Notifications.requestPermission(true)
+      } catch (error) {
+        console.error('OneSignal initialization error:', error)
+      }
     }
   })
 

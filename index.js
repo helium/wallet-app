@@ -19,6 +19,30 @@ import store from './src/store/store'
 import { darkThemeColors, theme } from './src/theme/theme'
 import './src/utils/i18n'
 
+const originalHandler = global.ErrorUtils?.getGlobalHandler?.()
+global.ErrorUtils?.setGlobalHandler?.((error, isFatal) => {
+  console.error('Global error handler:', error, 'isFatal:', isFatal)
+  if (originalHandler) {
+    originalHandler(error, isFatal)
+  }
+})
+
+const handleUnhandledRejection = (event) => {
+  console.error('Unhandled promise rejection:', event.reason)
+  // Don't crash the app for unhandled promises in production
+  if (process.env.NODE_ENV === 'production') {
+    event.preventDefault?.()
+  }
+}
+
+if (typeof global !== 'undefined' && global.addEventListener) {
+  global.addEventListener('unhandledrejection', handleUnhandledRejection)
+} else if (typeof process !== 'undefined' && process.on) {
+  process.on('unhandledRejection', (reason, _promise) => {
+    console.error('Unhandled promise rejection:', reason)
+  })
+}
+
 // eslint-disable-next-line no-undef
 if (__DEV__) {
   import('./ReactotronConfig')
