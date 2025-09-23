@@ -17,22 +17,26 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
   } = useBalance()
 
   const balanceString = useMemo(() => {
-    switch (ticker) {
-      case 'ALL':
-        return formattedTotal
-      case 'HNT':
-        return formattedHntValue
-      case 'SOL':
-        return formattedSolValue
-      case 'DC':
-        return formattedDcValue
-      case 'MOBILE':
-        return formattedMobileValue
-      case 'IOT':
-        return formattedIotValue
-      default:
-        return '-'
+    const balanceValues = {
+      ALL: formattedTotal,
+      HNT: formattedHntValue,
+      SOL: formattedSolValue,
+      DC: formattedDcValue,
+      MOBILE: formattedMobileValue,
+      IOT: formattedIotValue,
     }
+
+    const value = balanceValues[ticker as keyof typeof balanceValues]
+
+    if (value === undefined || value === '') {
+      return undefined
+    }
+
+    if (value === '0.00' || value === '$0.00' || value === '0') {
+      return value
+    }
+
+    return value || '-'
   }, [
     formattedDcValue,
     formattedHntValue,
@@ -43,6 +47,19 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
     formattedTotal,
   ])
 
+  if (balanceString === undefined) {
+    return (
+      <Text
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        maxFontSizeMultiplier={1}
+        {...textProps}
+      >
+        ...
+      </Text>
+    )
+  }
+
   return (
     <Text
       numberOfLines={1}
@@ -50,7 +67,7 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
       maxFontSizeMultiplier={1}
       {...textProps}
     >
-      {balanceString || ' '}
+      {balanceString}
     </Text>
   )
 }
