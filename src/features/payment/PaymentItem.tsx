@@ -17,7 +17,6 @@ import { useColors, useOpacity } from '@theme/themeHooks'
 import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import { toUpper } from 'lodash'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -77,7 +76,6 @@ const PaymentItem = ({
   hasError,
   hideMemo,
   index,
-  max,
   memo,
   netType,
   onAddressBookSelected,
@@ -85,10 +83,11 @@ const PaymentItem = ({
   onEditAmount,
   onEditMemo,
   onRemove,
-  onToggleMax,
   onUpdateError,
   mint,
   showAmount = true,
+  max: _max,
+  onToggleMax: _onToggleMax,
   ...boxProps
 }: Props) => {
   const decimals = useMint(mint)?.info?.decimals
@@ -157,12 +156,6 @@ const PaymentItem = ({
   const handleEditAmount = useCallback(() => {
     onEditAmount({ address, index })
   }, [address, index, onEditAmount])
-
-  const handleToggleMax = useCallback(() => {
-    if (!onToggleMax) return
-
-    onToggleMax({ address, index })
-  }, [address, index, onToggleMax])
 
   const handleEditMemo = useCallback(
     (text?: string) => {
@@ -329,25 +322,6 @@ const PaymentItem = ({
               )}
             </TouchableOpacityBox>
           )}
-
-          <TouchableOpacityBox
-            onPress={handleToggleMax}
-            backgroundColor={max ? 'white' : 'transparent'}
-            borderColor={max ? 'transparent' : 'surface'}
-            borderWidth={1.5}
-            borderRadius="m"
-            paddingVertical="xs"
-            paddingHorizontal="ms"
-            marginRight="ms"
-            marginVertical="l"
-            justifyContent="center"
-            disabled
-            visible={false} // TODO: Enable once we move to solana (will need some rework)
-          >
-            <Text variant="body3" color={max ? 'black900' : 'secondaryText'}>
-              {toUpper(t('payment.max'))}
-            </Text>
-          </TouchableOpacityBox>
         </Box>
       )}
 
