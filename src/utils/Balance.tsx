@@ -112,7 +112,7 @@ const useBalanceHook = () => {
 
   const dcToNetworkTokens = useCallback(
     (dcBalance: BN): BN | undefined => {
-      if (!hntToDcPrice) return
+      if (!hntToDcPrice || hntToDcPrice.isZero()) return
       return toBN(dcBalance.toNumber() / hntToDcPrice.toNumber(), 8)
     },
     [hntToDcPrice],
