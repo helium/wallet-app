@@ -16,6 +16,8 @@ import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { Edge } from 'react-native-safe-area-context'
 import {
   signLedgerMessage,
   signLedgerTransaction,
@@ -72,6 +74,7 @@ const LedgerModal = forwardRef(
       | 'enterPinCode'
       | 'error'
       | 'enableBlindSign'
+      | 'userRejected'
     >('loading')
 
     const openAppAndSign = useCallback(
@@ -171,6 +174,9 @@ const LedgerModal = forwardRef(
             case 'Missing a parameter. Try enabling blind signature in the app':
               setLedgerModalState('enableBlindSign')
               break
+            case 'Transaction rejected by user':
+              setLedgerModalState('userRejected')
+              break
             default:
               setLedgerModalState('error')
           }
@@ -222,6 +228,8 @@ const LedgerModal = forwardRef(
         backgroundColor: secondaryText,
       }
     }, [secondaryText])
+
+    const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
 
     const deviceModelId = useMemo(() => {
       let model = DeviceModelId.nanoX
@@ -328,8 +336,28 @@ const LedgerModal = forwardRef(
               </TouchableOpacityBox>
             </Box>
           )
+        case 'userRejected':
+          return (
+            <Box>
+              <Text variant="h4Medium" color="primaryText">
+                {t('ledger.transactionRejected')}
+              </Text>
+              <Text variant="body1Medium" color="secondaryText" marginTop="s">
+                {t('ledger.transactionRejectedDescription')}
+              </Text>
+            </Box>
+          )
         case 'error':
-          return null
+          return (
+            <Box>
+              <Text variant="h4Medium" color="primaryText">
+                {t('ledger.transactionRejected')}
+              </Text>
+              <Text variant="body1Medium" color="secondaryText" marginTop="s">
+                {t('ledger.transactionRejectedDescription')}
+              </Text>
+            </Box>
+          )
         default:
           return null
       }
@@ -338,66 +366,68 @@ const LedgerModal = forwardRef(
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
-          {/* <Box flex={1} {...boxProps}> */}
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
-            // onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
             enableDynamicSizing
           >
             <BottomSheetScrollView>
-              <Box paddingHorizontal="l">
-                <Box flex={1} alignItems="flex-end">
+              <SafeAreaBox edges={safeEdges} paddingHorizontal="l">
+                <Box alignItems="flex-end" height={24} justifyContent="center">
                   <CloseButton onPress={onDismiss} />
                 </Box>
                 {ledgerModalState === 'loading' && (
-                  <Box>
+                  <Box alignItems="center" justifyContent="center" flex={1}>
                     <CircleLoader loaderSize={40} />
                   </Box>
                 )}
                 {ledgerModalState !== 'loading' &&
                   ledgerModalState !== 'error' && (
                     <>
-                      <Box
-                        alignSelf="stretch"
-                        alignItems="center"
-                        justifyContent="center"
-                        height={150}
-                      >
-                        <Animation
-                          source={getDeviceAnimation({
-                            device: {
-                              deviceId: currentAccount?.ledgerDevice?.id ?? '',
-                              deviceName:
-                                currentAccount?.ledgerDevice?.name ?? '',
-                              modelId: deviceModelId,
-                              wired:
-                                currentAccount?.ledgerDevice?.type === 'usb',
-                            },
-                            key: ledgerModalState,
-                            theme: 'dark',
-                          })}
-                          style={
-                            deviceModelId === DeviceModelId.stax
-                              ? { height: 210 }
-                              : {}
-                          }
-                        />
-                      </Box>
-                      {LedgerMessage()}
+                      {ledgerModalState !== 'userRejected' && (
+                        <Box
+                          alignSelf="stretch"
+                          alignItems="center"
+                          justifyContent="center"
+                          minHeight={120}
+                        >
+                          <Animation
+                            source={getDeviceAnimation({
+                              device: {
+                                deviceId:
+                                  currentAccount?.ledgerDevice?.id ?? '',
+                                deviceName:
+                                  currentAccount?.ledgerDevice?.name ?? '',
+                                modelId: deviceModelId,
+                                wired:
+                                  currentAccount?.ledgerDevice?.type === 'usb',
+                              },
+                              key: ledgerModalState,
+                              theme: 'dark',
+                            })}
+                            style={
+                              deviceModelId === DeviceModelId.stax
+                                ? { height: 210 }
+                                : { height: 120 }
+                            }
+                          />
+                        </Box>
+                      )}
+                      <Box>{LedgerMessage()}</Box>
                     </>
                   )}
                 {ledgerModalState === 'error' && (
-                  <LedgerConnectSteps onRetry={handleRetry} />
+                  <Box marginBottom="l">
+                    <LedgerConnectSteps onRetry={handleRetry} />
+                  </Box>
                 )}
-              </Box>
+              </SafeAreaBox>
             </BottomSheetScrollView>
           </BottomSheetModal>
           {children}
-          {/* </Box> */}
         </BottomSheetModalProvider>
       </Box>
     )
