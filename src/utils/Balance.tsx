@@ -137,76 +137,43 @@ const useBalanceHook = () => {
 
   const { language } = useLanguage()
   const { result: tokenInfo } = useAsync(async () => {
-    if (
-      !allBalances ||
-      !cluster ||
-      !currency ||
-      !solanaAddress ||
-      !tokenPrices
-    ) {
-      return {
-        atas: [],
-        formattedDcValue: '',
-        formattedHntValue: '',
-        formattedIotValue: '',
-        formattedMobileValue: '',
-        formattedSolValue: '',
-        formattedTotal: '',
-      }
-    }
-
     const balancesForCluster = allBalances[cluster]
     const accountBalancesForCluster = balancesForCluster[solanaAddress]
-
-    if (!accountBalancesForCluster) {
-      return {
-        atas: [],
-        formattedDcValue: '',
-        formattedHntValue: '',
-        formattedIotValue: '',
-        formattedMobileValue: '',
-        formattedSolValue: '',
-        formattedTotal: '',
-      }
-    }
 
     const atas = accountBalancesForCluster?.atas.filter(
       (ata) => !!ata.tokenAccount,
     ) as Required<TokenAccount>[]
 
     const solToken = accountBalancesForCluster?.sol
+
     const solBalance = solToken?.balance || 0
     const solPrice = tokenPrices?.solana?.[currency] || 0
     const solValue = solPrice * (solBalance / LAMPORTS_PER_SOL)
-    const formattedSolValue =
-      solValue > 0 ? numberFormat(language, currency, solValue) : ''
+    const formattedSolValue = numberFormat(language, currency, solValue)
 
     const hntBalance = getBalance(HNT_MINT, atas)
     const hntPrice = tokenPrices?.helium?.[currency] || 0
     const hntValue = hntPrice * toNumber(hntBalance, 8)
-    const formattedHntValue =
-      hntValue > 0 ? numberFormat(language, currency, hntValue) : ''
+    const formattedHntValue = numberFormat(language, currency, hntValue)
 
     const iotBalance = getBalance(IOT_MINT, atas)
     const iotPrice = tokenPrices?.['helium-iot']?.[currency] || 0
     const iotValue = iotPrice * toNumber(iotBalance, 6)
-    const formattedIotValue =
-      iotValue > 0 ? numberFormat(language, currency, iotValue) : ''
+    const formattedIotValue = numberFormat(language, currency, iotValue)
 
     const mobileBalance = getBalance(MOBILE_MINT, atas)
     const mobilePrice = tokenPrices?.['helium-mobile']?.[currency] || 0
     const mobileValue = mobilePrice * toNumber(mobileBalance, 6)
-    const formattedMobileValue =
-      mobileValue > 0 ? numberFormat(language, currency, mobileValue) : ''
+    const formattedMobileValue = numberFormat(language, currency, mobileValue)
 
     const dcBalance = new BN(getBalance(DC_MINT, atas))
-    const formattedDcValue = dcBalance.gt(new BN(0))
-      ? humanReadable(dcBalance, 5)
-      : ''
+    const formattedDcValue = humanReadable(dcBalance, 5)
 
-    const totalValue = solValue + hntValue + mobileValue + iotValue
-    const formattedTotal =
-      totalValue > 0 ? numberFormat(language, currency, totalValue) : ''
+    const formattedTotal = numberFormat(
+      language,
+      currency,
+      solValue + hntValue + mobileValue + iotValue,
+    )
 
     return {
       atas,
@@ -225,7 +192,6 @@ const useBalanceHook = () => {
     hntToDcPrice,
     solanaAddress,
     tokenPrices,
-    language,
   ])
 
   // The useAsync does not support stale-while-revalidate, so when
