@@ -40,6 +40,7 @@ import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
 
 let promiseResolve: (value: Buffer | PromiseLike<Buffer>) => void
+let promiseReject: (reason?: Error) => void
 
 export type LedgerModalRef = {
   showLedgerModal: ({
@@ -74,7 +75,6 @@ const LedgerModal = forwardRef(
       | 'enterPinCode'
       | 'error'
       | 'enableBlindSign'
-      | 'userRejected'
     >('loading')
 
     const openAppAndSign = useCallback(
@@ -99,8 +99,9 @@ const LedgerModal = forwardRef(
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
 
-          const p = new Promise<Buffer>((resolve) => {
+          const p = new Promise<Buffer>((resolve, reject) => {
             promiseResolve = resolve
+            promiseReject = reject
           })
 
           let nextTransport = await getTransport(
@@ -174,15 +175,20 @@ const LedgerModal = forwardRef(
             case 'Missing a parameter. Try enabling blind signature in the app':
               setLedgerModalState('enableBlindSign')
               break
-            case 'Transaction rejected by user':
-              setLedgerModalState('userRejected')
-              break
+            case 'User rejected transaction':
+              // Reject promise immediately and dismiss modal
+              if (promiseReject) {
+                promiseReject(ledgerError)
+              }
+              bottomSheetModalRef.current?.dismiss()
+              return
             default:
               setLedgerModalState('error')
           }
 
-          const p = new Promise<Buffer>((resolve) => {
+          const p = new Promise<Buffer>((resolve, reject) => {
             promiseResolve = resolve
+            promiseReject = reject
           })
           return p
         }
@@ -262,17 +268,26 @@ const LedgerModal = forwardRef(
     }, [currentAccount?.ledgerDevice?.name])
 
     const handleRetry = useCallback(async () => {
-      const buffer = await openAppAndSign({
-        transactionBuffer,
-        messageBuffer,
-      })
+      try {
+        const buffer = await openAppAndSign({
+          transactionBuffer,
+          messageBuffer,
+        })
 
-      if (buffer) {
-        promiseResolve(buffer)
+        if (buffer && promiseResolve) {
+          promiseResolve(buffer)
+        }
+      } catch (error) {
+        if (promiseReject) {
+          promiseReject(error as Error)
+        }
       }
     }, [openAppAndSign, transactionBuffer, messageBuffer])
 
     const onDismiss = useCallback(() => {
+      if (promiseReject) {
+        promiseReject(new Error('User closed modal'))
+      }
       bottomSheetModalRef.current?.dismiss()
     }, [])
 
@@ -336,17 +351,6 @@ const LedgerModal = forwardRef(
               </TouchableOpacityBox>
             </Box>
           )
-        case 'userRejected':
-          return (
-            <Box>
-              <Text variant="h4Medium" color="primaryText">
-                {t('ledger.transactionRejected')}
-              </Text>
-              <Text variant="body1Medium" color="secondaryText" marginTop="s">
-                {t('ledger.transactionRejectedDescription')}
-              </Text>
-            </Box>
-          )
         case 'error':
           return (
             <Box>
@@ -387,35 +391,32 @@ const LedgerModal = forwardRef(
                 {ledgerModalState !== 'loading' &&
                   ledgerModalState !== 'error' && (
                     <>
-                      {ledgerModalState !== 'userRejected' && (
-                        <Box
-                          alignSelf="stretch"
-                          alignItems="center"
-                          justifyContent="center"
-                          minHeight={120}
-                        >
-                          <Animation
-                            source={getDeviceAnimation({
-                              device: {
-                                deviceId:
-                                  currentAccount?.ledgerDevice?.id ?? '',
-                                deviceName:
-                                  currentAccount?.ledgerDevice?.name ?? '',
-                                modelId: deviceModelId,
-                                wired:
-                                  currentAccount?.ledgerDevice?.type === 'usb',
-                              },
-                              key: ledgerModalState,
-                              theme: 'dark',
-                            })}
-                            style={
-                              deviceModelId === DeviceModelId.stax
-                                ? { height: 210 }
-                                : { height: 120 }
-                            }
-                          />
-                        </Box>
-                      )}
+                      <Box
+                        alignSelf="stretch"
+                        alignItems="center"
+                        justifyContent="center"
+                        minHeight={120}
+                      >
+                        <Animation
+                          source={getDeviceAnimation({
+                            device: {
+                              deviceId: currentAccount?.ledgerDevice?.id ?? '',
+                              deviceName:
+                                currentAccount?.ledgerDevice?.name ?? '',
+                              modelId: deviceModelId,
+                              wired:
+                                currentAccount?.ledgerDevice?.type === 'usb',
+                            },
+                            key: ledgerModalState,
+                            theme: 'dark',
+                          })}
+                          style={
+                            deviceModelId === DeviceModelId.stax
+                              ? { height: 210 }
+                              : { height: 120 }
+                          }
+                        />
+                      </Box>
                       <Box>{LedgerMessage()}</Box>
                     </>
                   )}

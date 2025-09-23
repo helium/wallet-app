@@ -270,14 +270,25 @@ const DeviceShow = () => {
 
   useEffect(() => {
     const accountAddresses = Object.keys(accounts || {})
+    // Get all Solana addresses from existing accounts for more accurate comparison
+    const existingSolanaAddresses = Object.values(accounts || {})
+      .map((acc: any) => acc.solanaAddress)
+      .filter(Boolean)
 
-    setExistingLedgerAccounts([
-      ...ledgerAccounts.filter((a) => accountAddresses.includes(a.address)),
-    ])
+    const existingAccounts = ledgerAccounts.filter(
+      (a) =>
+        accountAddresses.includes(a.address) ||
+        existingSolanaAddresses.includes(a.solanaAddress),
+    )
 
-    setNewLedgerAccounts([
-      ...ledgerAccounts.filter((a) => !accountAddresses.includes(a.address)),
-    ])
+    const newAccounts = ledgerAccounts.filter(
+      (a) =>
+        !accountAddresses.includes(a.address) &&
+        !existingSolanaAddresses.includes(a.solanaAddress),
+    )
+
+    setExistingLedgerAccounts([...existingAccounts])
+    setNewLedgerAccounts([...newAccounts])
   }, [accounts, ledgerAccounts, selectedAccounts])
 
   const handleNext = useCallback(async () => {

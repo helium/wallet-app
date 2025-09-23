@@ -120,7 +120,7 @@ const trySignWithFallbacks = async (
         } catch (fallbackError) {
           // If the fallback fails with 0x6985, it's user rejection
           if (fallbackError?.toString().includes('0x6985')) {
-            throw new Error('Transaction rejected by user')
+            throw new Error('User rejected transaction')
           }
         }
       }

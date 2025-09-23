@@ -93,11 +93,20 @@ const useLedger = () => {
       derivationType: DerivationType,
       balance?: number,
       hasBalance?: boolean,
+      publicKey?: PublicKey, // Optional pre-obtained public key
     ): Promise<LedgerAccount | null> => {
       try {
         const derivationPath = getDerivationPath(accountIndex, derivationType)
 
-        const { address } = await solana.getAddress(derivationPath, false)
+        let address: Uint8Array
+        if (publicKey) {
+          // Use the pre-obtained public key
+          address = publicKey.toBytes()
+        } else {
+          // Get address from Ledger (fallback for other calls)
+          const result = await solana.getAddress(derivationPath, false)
+          address = result.address
+        }
 
         const pathLabel =
           accountIndex === -1 ? 'Root' : getDerivationPathLabel(derivationType)
@@ -117,6 +126,8 @@ const useLedger = () => {
           derivationType,
         }
       } catch (error) {
+        // Log errors for debugging if needed
+        // console.log(`❌ createLedgerAccount error for ${derivationType} index ${accountIndex}:`, error)
         return null
       }
     },
@@ -194,7 +205,6 @@ const useLedger = () => {
       const batchSize = 10
 
       while (batchStart < 256) {
-        // Get addresses for current batch
         const batchPublicKeys: PublicKey[] = []
         const batchAccountIndexes: number[] = []
 
@@ -207,7 +217,6 @@ const useLedger = () => {
               accountIndex,
               derivationType,
             )
-
             const { address } = await solana.getAddress(derivationPath, false)
             const publicKey = new PublicKey(
               base58.encode(new Uint8Array(address)),
@@ -232,14 +241,16 @@ const useLedger = () => {
             batchAccountIndexes.map(async (accountIndex, i) => {
               const balance = solBalances[i]
               const hasBalance = balance > 0 || hntBalances[i]
-
-              return createLedgerAccount(
+              const account = await createLedgerAccount(
                 solana,
                 accountIndex,
                 derivationType,
                 balance,
                 hasBalance,
+                batchPublicKeys[i], // Pass the already obtained public key
               )
+
+              return account
             }),
           )
         ).filter(Boolean) as LedgerAccount[]
@@ -247,6 +258,14 @@ const useLedger = () => {
         const batchAccountsWithBalance = batchAccounts.filter(
           (acc) => acc.hasBalance,
         )
+
+        // Special case: Always add account 1 for legacy derivation (m/44'/501'/1') regardless of balance
+        if (derivationType === 'legacy' && batchStart === 0) {
+          const account1 = batchAccounts.find((acc) => acc.accountIndex === 1)
+          if (account1) {
+            accounts.push(account1)
+          }
+        }
 
         // If this is the first batch (0-9) and no accounts have balance
         if (batchStart === 0 && batchAccountsWithBalance.length === 0) {
