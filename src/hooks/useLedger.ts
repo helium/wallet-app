@@ -259,15 +259,12 @@ const useLedger = () => {
           (acc) => acc.hasBalance,
         )
 
-        // Special case: Always add account 1 for legacy derivation (m/44'/501'/1') regardless of balance
-        if (derivationType === 'legacy' && batchStart === 0) {
-          const account1 = batchAccounts.find((acc) => acc.accountIndex === 1)
-          if (account1) {
-            accounts.push(account1)
-          }
+        // Add all accounts with balance from this batch
+        if (batchAccountsWithBalance.length > 0) {
+          accounts.push(...batchAccountsWithBalance)
         }
 
-        // If this is the first batch (0-9) and no accounts have balance
+        // Special handling for first batch (0-9) if no accounts have balance
         if (batchStart === 0 && batchAccountsWithBalance.length === 0) {
           // Only add account 0 for core derivation types (root, default, legacy)
           const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
@@ -280,12 +277,10 @@ const useLedger = () => {
           break // Stop scanning this derivation type
         }
 
-        // If any accounts in this batch have balance, add all accounts with balance
+        // Continue to next batch only if current batch has accounts with balance
         if (batchAccountsWithBalance.length > 0) {
-          accounts.push(...batchAccountsWithBalance)
-          batchStart += batchSize // Continue to next batch
+          batchStart += batchSize
         } else {
-          // No balance in this batch, stop scanning this derivation type
           break
         }
       }
