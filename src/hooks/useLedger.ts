@@ -93,17 +93,15 @@ const useLedger = () => {
       derivationType: DerivationType,
       balance?: number,
       hasBalance?: boolean,
-      publicKey?: PublicKey, // Optional pre-obtained public key
+      publicKey?: PublicKey,
     ): Promise<LedgerAccount | null> => {
       try {
         const derivationPath = getDerivationPath(accountIndex, derivationType)
 
         let address: Uint8Array
         if (publicKey) {
-          // Use the pre-obtained public key
           address = publicKey.toBytes()
         } else {
-          // Get address from Ledger (fallback for other calls)
           const result = await solana.getAddress(derivationPath, false)
           address = result.address
         }
@@ -126,8 +124,6 @@ const useLedger = () => {
           derivationType,
         }
       } catch (error) {
-        // Log errors for debugging if needed
-        // console.log(`❌ createLedgerAccount error for ${derivationType} index ${accountIndex}:`, error)
         return null
       }
     },
@@ -247,7 +243,7 @@ const useLedger = () => {
                 derivationType,
                 balance,
                 hasBalance,
-                batchPublicKeys[i], // Pass the already obtained public key
+                batchPublicKeys[i],
               )
 
               return account
