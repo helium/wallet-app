@@ -829,6 +829,9 @@ export default {
     pleaseEnterPinCode: 'Please enter pin code on your {{ device }}',
     enableBlindSign:
       'Please enable blind signing in the ledger solana app settings. This error can also occur if your ledger firmware is out of date.',
+    transactionRejected: 'Transaction Rejected',
+    transactionRejectedDescription:
+      'You rejected the transaction on your Ledger device. If you meant to approve it, please try again.',
     chooseType: {
       bluetooth: {
         title: 'Bluetooth',

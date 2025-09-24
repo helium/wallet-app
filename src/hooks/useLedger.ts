@@ -93,11 +93,18 @@ const useLedger = () => {
       derivationType: DerivationType,
       balance?: number,
       hasBalance?: boolean,
+      publicKey?: PublicKey,
     ): Promise<LedgerAccount | null> => {
       try {
         const derivationPath = getDerivationPath(accountIndex, derivationType)
 
-        const { address } = await solana.getAddress(derivationPath, false)
+        let address: Uint8Array
+        if (publicKey) {
+          address = publicKey.toBytes()
+        } else {
+          const result = await solana.getAddress(derivationPath, false)
+          address = result.address
+        }
 
         const pathLabel =
           accountIndex === -1 ? 'Root' : getDerivationPathLabel(derivationType)
@@ -194,7 +201,6 @@ const useLedger = () => {
       const batchSize = 10
 
       while (batchStart < 256) {
-        // Get addresses for current batch
         const batchPublicKeys: PublicKey[] = []
         const batchAccountIndexes: number[] = []
 
@@ -207,7 +213,6 @@ const useLedger = () => {
               accountIndex,
               derivationType,
             )
-
             const { address } = await solana.getAddress(derivationPath, false)
             const publicKey = new PublicKey(
               base58.encode(new Uint8Array(address)),
@@ -232,14 +237,16 @@ const useLedger = () => {
             batchAccountIndexes.map(async (accountIndex, i) => {
               const balance = solBalances[i]
               const hasBalance = balance > 0 || hntBalances[i]
-
-              return createLedgerAccount(
+              const account = await createLedgerAccount(
                 solana,
                 accountIndex,
                 derivationType,
                 balance,
                 hasBalance,
+                batchPublicKeys[i],
               )
+
+              return account
             }),
           )
         ).filter(Boolean) as LedgerAccount[]
@@ -248,7 +255,12 @@ const useLedger = () => {
           (acc) => acc.hasBalance,
         )
 
-        // If this is the first batch (0-9) and no accounts have balance
+        // Add all accounts with balance from this batch
+        if (batchAccountsWithBalance.length > 0) {
+          accounts.push(...batchAccountsWithBalance)
+        }
+
+        // Special handling for first batch (0-9) if no accounts have balance
         if (batchStart === 0 && batchAccountsWithBalance.length === 0) {
           // Only add account 0 for core derivation types (root, default, legacy)
           const coreTypes: DerivationType[] = ['root', 'default', 'legacy']
@@ -261,12 +273,10 @@ const useLedger = () => {
           break // Stop scanning this derivation type
         }
 
-        // If any accounts in this batch have balance, add all accounts with balance
+        // Continue to next batch only if current batch has accounts with balance
         if (batchAccountsWithBalance.length > 0) {
-          accounts.push(...batchAccountsWithBalance)
-          batchStart += batchSize // Continue to next batch
+          batchStart += batchSize
         } else {
-          // No balance in this batch, stop scanning this derivation type
           break
         }
       }

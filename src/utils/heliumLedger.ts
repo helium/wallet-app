@@ -11,14 +11,45 @@ export type DerivationType =
   | 'migration'
   | 'change'
 
-// Derivation path generators
-const rootDerivation = () => "44'/501'"
-const legacySolanaDerivation = (account = 0) => `44'/501'/${account}'`
-const defaultSolanaDerivation = (account = 0) => `44'/501'/${account}'/0'`
-const extendedDefaultDerivation = (account = 0) => `44'/501'/${account}'/0'/0'`
-const alternativeDerivation = (account = 0) => `44'/501'/${account}'/1'`
-const migrationDerivation = (account = 0) => `44'/501'/${account}'/2'`
-const changeIndexDerivation = (account = 0) => `44'/501'/${account}'/0'/1'`
+const DERIVATION_CONFIG = {
+  root: () => "44'/501'",
+  legacy: (account: number) => `44'/501'/${account}'`,
+  default: (account: number) => `44'/501'/${account}'/0'`,
+  extended: (account: number) => `44'/501'/${account}'/0'/0'`,
+  alternative: (account: number) => `44'/501'/${account}'/1'`,
+  migration: (account: number) => `44'/501'/${account}'/2'`,
+  change: (account: number) => `44'/501'/${account}'/0'/1'`,
+} as const
+
+const DERIVATION_LABELS = {
+  root: 'Root',
+  legacy: 'Legacy',
+  default: 'Default',
+  extended: 'Extended',
+  alternative: 'Alternative',
+  migration: 'Migration',
+  change: 'Change',
+} as const
+
+const DERIVATION_PATTERNS = {
+  root: /^44'\/501'$/,
+  legacy: /^44'\/501'\/\d+'$/,
+  default: /^44'\/501'\/\d+'\/0'$/,
+  extended: /^44'\/501'\/\d+'\/0'\/0'$/,
+  alternative: /^44'\/501'\/\d+'\/1'$/,
+  migration: /^44'\/501'\/\d+'\/2'$/,
+  change: /^44'\/501'\/\d+'\/0'\/1'$/,
+} as const
+
+const FALLBACK_ORDER: DerivationType[] = [
+  'legacy',
+  'alternative',
+  'root',
+  'default',
+  'extended',
+  'migration',
+  'change',
+]
 
 export const getDerivationPath = (
   account = 0,
@@ -26,44 +57,24 @@ export const getDerivationPath = (
 ): string => {
   // Handle special case: account -1 should always use root derivation
   if (account === -1) {
-    return rootDerivation()
+    return DERIVATION_CONFIG.root()
   }
 
-  switch (type) {
-    case 'root':
-      return rootDerivation()
-    case 'legacy':
-      return legacySolanaDerivation(account)
-    case 'default':
-      return defaultSolanaDerivation(account)
-    case 'extended':
-      return extendedDefaultDerivation(account)
-    case 'alternative':
-      return alternativeDerivation(account)
-    case 'migration':
-      return migrationDerivation(account)
-    case 'change':
-      return changeIndexDerivation(account)
-    default:
-      return defaultSolanaDerivation(account)
-  }
+  const generator = DERIVATION_CONFIG[type]
+  return generator(account)
 }
 
 export const getAllDerivationPaths = (
   account = 0,
 ): Array<{ path: string; type: DerivationType }> => {
   if (account === -1) {
-    return [{ path: rootDerivation(), type: 'root' }]
+    return [{ path: DERIVATION_CONFIG.root(), type: 'root' }]
   }
 
-  return [
-    { path: legacySolanaDerivation(account), type: 'legacy' },
-    { path: defaultSolanaDerivation(account), type: 'default' },
-    { path: extendedDefaultDerivation(account), type: 'extended' },
-    { path: alternativeDerivation(account), type: 'alternative' },
-    { path: migrationDerivation(account), type: 'migration' },
-    { path: changeIndexDerivation(account), type: 'change' },
-  ]
+  return FALLBACK_ORDER.map((type) => ({
+    path: getDerivationPath(account, type),
+    type,
+  }))
 }
 
 export const getDerivationTypeFromPath = (
@@ -72,49 +83,50 @@ export const getDerivationTypeFromPath = (
   if (!derivationPath) return 'default'
   const cleanPath = derivationPath.replace(/^m\//, '')
 
-  // Root path: 44'/501'
-  if (/^44'\/501'$/.test(cleanPath)) return 'root'
-
-  // Legacy path: 44'/501'/account'
-  if (/^44'\/501'\/\d+'$/.test(cleanPath)) return 'legacy'
-
-  // Default path: 44'/501'/account'/0'
-  if (/^44'\/501'\/\d+'\/0'$/.test(cleanPath)) return 'default'
-
-  // Extended default path: 44'/501'/account'/0'/0'
-  if (/^44'\/501'\/\d+'\/0'\/0'$/.test(cleanPath)) return 'extended'
-
-  // Alternative path: 44'/501'/account'/1'
-  if (/^44'\/501'\/\d+'\/1'$/.test(cleanPath)) return 'alternative'
-
-  // Migration path: 44'/501'/account'/2'
-  if (/^44'\/501'\/\d+'\/2'$/.test(cleanPath)) return 'migration'
-
-  // Change index path: 44'/501'/account'/0'/1'
-  if (/^44'\/501'\/\d+'\/0'\/1'$/.test(cleanPath)) return 'change'
-
-  // Default fallback
-  return 'default'
+  return (
+    (Object.entries(DERIVATION_PATTERNS).find(([, pattern]) =>
+      pattern.test(cleanPath),
+    )?.[0] as DerivationType) || 'default'
+  )
 }
 
 export const getDerivationPathLabel = (type: DerivationType): string => {
-  switch (type) {
-    case 'root':
-      return 'Root'
-    case 'legacy':
-      return 'Legacy'
-    case 'default':
-      return 'Default'
-    case 'extended':
-      return 'Extended'
-    case 'alternative':
-      return 'Alternative'
-    case 'migration':
-      return 'Migration'
-    case 'change':
-      return 'Change'
-    default:
-      return 'Default'
+  return DERIVATION_LABELS[type] || 'Default'
+}
+
+const trySignWithFallbacks = async (
+  solana: AppSolana,
+  accountIndex: number,
+  buffer: Buffer,
+  signMethod: 'signTransaction' | 'signOffchainMessage',
+  primaryType?: DerivationType,
+): Promise<Buffer> => {
+  const primaryPath = getDerivationPath(accountIndex, primaryType || 'default')
+  try {
+    const { signature } = await solana[signMethod](primaryPath, buffer)
+    return signature
+  } catch (error) {
+    // If the primary path fails with 0x6a81, try the fallbacks
+    if (error?.toString().includes('0x6a81')) {
+      const fallbackPathsAttempted: DerivationType[] = []
+
+      for (let i = 0; i < FALLBACK_ORDER.length; i += 1) {
+        const type: DerivationType = FALLBACK_ORDER[i]
+        try {
+          const fallbackPath = getDerivationPath(accountIndex, type)
+          fallbackPathsAttempted.push(type)
+          const { signature } = await solana[signMethod](fallbackPath, buffer)
+          return signature
+        } catch (fallbackError) {
+          // If the fallback fails with 0x6985, it's user rejection
+          if (fallbackError?.toString().includes('0x6985')) {
+            throw new Error('User rejected transaction')
+          }
+        }
+      }
+    }
+
+    throw error
   }
 }
 
@@ -125,37 +137,17 @@ export const signLedgerTransaction = async (
   derivationType?: DerivationType | boolean,
 ) => {
   const solana = new AppSolana(transport)
-  const derivationPath = getDerivationPath(
+
+  const primaryType =
+    derivationType === true ? undefined : (derivationType as DerivationType)
+
+  return trySignWithFallbacks(
+    solana,
     accountIndex,
-    (derivationType as DerivationType) || 'default',
+    txBuffer,
+    'signTransaction',
+    primaryType,
   )
-
-  try {
-    const { signature } = await solana.signTransaction(derivationPath, txBuffer)
-    return signature
-  } catch (error) {
-    if (error?.toString().includes('0x6a81')) {
-      // Try different derivation paths in order of compatibility
-      const fallbackPaths = [
-        { path: legacySolanaDerivation(accountIndex), type: 'legacy' },
-        { path: rootDerivation(), type: 'root' },
-      ]
-
-      for (let i = 0; i < fallbackPaths.length; i += 1) {
-        try {
-          const { signature } = await solana.signTransaction(
-            fallbackPaths[i].path,
-            txBuffer,
-          )
-          return signature
-        } catch (fallbackError) {
-          // Continue to next fallback
-        }
-      }
-    }
-
-    throw error
-  }
 }
 
 export const signLedgerMessage = async (
@@ -165,40 +157,17 @@ export const signLedgerMessage = async (
   derivationType?: DerivationType | boolean,
 ) => {
   const solana = new AppSolana(transport)
-  const derivationPath = getDerivationPath(
+
+  const primaryType =
+    derivationType === true ? undefined : (derivationType as DerivationType)
+
+  return trySignWithFallbacks(
+    solana,
     accountIndex,
-    (derivationType as DerivationType) || 'default',
+    msgBuffer,
+    'signOffchainMessage',
+    primaryType,
   )
-
-  try {
-    const { signature } = await solana.signOffchainMessage(
-      derivationPath,
-      msgBuffer,
-    )
-    return signature
-  } catch (error) {
-    if (error?.toString().includes('0x6a81')) {
-      // Try different derivation paths in order of compatibility
-      const fallbackPaths = [
-        { path: legacySolanaDerivation(accountIndex), type: 'legacy' },
-        { path: rootDerivation(), type: 'root' },
-      ]
-
-      for (let i = 0; i < fallbackPaths.length; i += 1) {
-        try {
-          const { signature } = await solana.signOffchainMessage(
-            fallbackPaths[i].path,
-            msgBuffer,
-          )
-          return signature
-        } catch (fallbackError) {
-          // Continue to next fallback
-        }
-      }
-    }
-
-    throw error
-  }
 }
 
 export const getDerivationTypeForSigning = (

@@ -17,22 +17,32 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
   } = useBalance()
 
   const balanceString = useMemo(() => {
+    let value: string | undefined
+
     switch (ticker) {
       case 'ALL':
-        return formattedTotal
+        value = formattedTotal
+        break
       case 'HNT':
-        return formattedHntValue
+        value = formattedHntValue
+        break
       case 'SOL':
-        return formattedSolValue
+        value = formattedSolValue
+        break
       case 'DC':
-        return formattedDcValue
+        value = formattedDcValue
+        break
       case 'MOBILE':
-        return formattedMobileValue
+        value = formattedMobileValue
+        break
       case 'IOT':
-        return formattedIotValue
+        value = formattedIotValue
+        break
       default:
-        return '-'
+        value = '-'
     }
+
+    return value || '-'
   }, [
     formattedDcValue,
     formattedHntValue,

@@ -16,6 +16,8 @@ import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Theme } from '@theme/theme'
 import { useColors, useOpacity } from '@theme/themeHooks'
+import SafeAreaBox from '@components/SafeAreaBox'
+import { Edge } from 'react-native-safe-area-context'
 import {
   signLedgerMessage,
   signLedgerTransaction,
@@ -38,6 +40,7 @@ import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
 
 let promiseResolve: (value: Buffer | PromiseLike<Buffer>) => void
+let promiseReject: (reason?: Error) => void
 
 export type LedgerModalRef = {
   showLedgerModal: ({
@@ -96,8 +99,9 @@ const LedgerModal = forwardRef(
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
 
-          const p = new Promise<Buffer>((resolve) => {
+          const p = new Promise<Buffer>((resolve, reject) => {
             promiseResolve = resolve
+            promiseReject = reject
           })
 
           let nextTransport = await getTransport(
@@ -171,12 +175,20 @@ const LedgerModal = forwardRef(
             case 'Missing a parameter. Try enabling blind signature in the app':
               setLedgerModalState('enableBlindSign')
               break
+            case 'User rejected transaction':
+              // Reject promise immediately and dismiss modal
+              if (promiseReject) {
+                promiseReject(ledgerError)
+              }
+              bottomSheetModalRef.current?.dismiss()
+              return
             default:
               setLedgerModalState('error')
           }
 
-          const p = new Promise<Buffer>((resolve) => {
+          const p = new Promise<Buffer>((resolve, reject) => {
             promiseResolve = resolve
+            promiseReject = reject
           })
           return p
         }
@@ -223,6 +235,8 @@ const LedgerModal = forwardRef(
       }
     }, [secondaryText])
 
+    const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
+
     const deviceModelId = useMemo(() => {
       let model = DeviceModelId.nanoX
 
@@ -254,17 +268,26 @@ const LedgerModal = forwardRef(
     }, [currentAccount?.ledgerDevice?.name])
 
     const handleRetry = useCallback(async () => {
-      const buffer = await openAppAndSign({
-        transactionBuffer,
-        messageBuffer,
-      })
+      try {
+        const buffer = await openAppAndSign({
+          transactionBuffer,
+          messageBuffer,
+        })
 
-      if (buffer) {
-        promiseResolve(buffer)
+        if (buffer && promiseResolve) {
+          promiseResolve(buffer)
+        }
+      } catch (error) {
+        if (promiseReject) {
+          promiseReject(error as Error)
+        }
       }
     }, [openAppAndSign, transactionBuffer, messageBuffer])
 
     const onDismiss = useCallback(() => {
+      if (promiseReject) {
+        promiseReject(new Error('User closed modal'))
+      }
       bottomSheetModalRef.current?.dismiss()
     }, [])
 
@@ -329,7 +352,16 @@ const LedgerModal = forwardRef(
             </Box>
           )
         case 'error':
-          return null
+          return (
+            <Box>
+              <Text variant="h4Medium" color="primaryText">
+                {t('ledger.transactionRejected')}
+              </Text>
+              <Text variant="body1Medium" color="secondaryText" marginTop="s">
+                {t('ledger.transactionRejectedDescription')}
+              </Text>
+            </Box>
+          )
         default:
           return null
       }
@@ -338,23 +370,21 @@ const LedgerModal = forwardRef(
     return (
       <Box flex={1}>
         <BottomSheetModalProvider>
-          {/* <Box flex={1} {...boxProps}> */}
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
-            // onDismiss={handleModalDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
             enableDynamicSizing
           >
             <BottomSheetScrollView>
-              <Box paddingHorizontal="l">
-                <Box flex={1} alignItems="flex-end">
+              <SafeAreaBox edges={safeEdges} paddingHorizontal="l">
+                <Box alignItems="flex-end" height={24} justifyContent="center">
                   <CloseButton onPress={onDismiss} />
                 </Box>
                 {ledgerModalState === 'loading' && (
-                  <Box>
+                  <Box alignItems="center" justifyContent="center" flex={1}>
                     <CircleLoader loaderSize={40} />
                   </Box>
                 )}
@@ -365,7 +395,7 @@ const LedgerModal = forwardRef(
                         alignSelf="stretch"
                         alignItems="center"
                         justifyContent="center"
-                        height={150}
+                        minHeight={120}
                       >
                         <Animation
                           source={getDeviceAnimation({
@@ -383,21 +413,22 @@ const LedgerModal = forwardRef(
                           style={
                             deviceModelId === DeviceModelId.stax
                               ? { height: 210 }
-                              : {}
+                              : { height: 120 }
                           }
                         />
                       </Box>
-                      {LedgerMessage()}
+                      <Box>{LedgerMessage()}</Box>
                     </>
                   )}
                 {ledgerModalState === 'error' && (
-                  <LedgerConnectSteps onRetry={handleRetry} />
+                  <Box marginBottom="l">
+                    <LedgerConnectSteps onRetry={handleRetry} />
+                  </Box>
                 )}
-              </Box>
+              </SafeAreaBox>
             </BottomSheetScrollView>
           </BottomSheetModal>
           {children}
-          {/* </Box> */}
         </BottomSheetModalProvider>
       </Box>
     )

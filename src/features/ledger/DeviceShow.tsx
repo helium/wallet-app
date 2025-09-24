@@ -289,6 +289,7 @@ const DeviceShow = () => {
         ledgerDevice,
         ledgerIndex: acc.accountIndex,
         solanaAddress: acc.solanaAddress,
+        derivationPath: acc.derivationPath,
         version: 'v1' as CSAccountVersion,
       }
     })
