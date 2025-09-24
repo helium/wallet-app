@@ -39,8 +39,6 @@ const StepItem = memo(({ step, index, iconColor }: StepItemProps) => (
   </Box>
 ))
 
-StepItem.displayName = 'StepItem'
-
 const LedgerConnectSteps = ({ onLayout, onRetry }: LedgerConnectStepsProps) => {
   const { t } = useTranslation()
   const { primaryText } = useColors()
