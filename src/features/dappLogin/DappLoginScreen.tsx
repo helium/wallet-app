@@ -177,9 +177,9 @@ const DappLoginScreen = () => {
     await goBack()
   }, [connectionState, goBack, showOKAlert, t])
 
-  // if connectionState doesn't update after 5 seconds show timeout error
+  // if connectionState doesn't update after 6 seconds show timeout error
   useEffect(() => {
-    const timer = setTimeout(checkTimeoutError, 5000)
+    const timer = setTimeout(checkTimeoutError, 6000)
     return () => {
       clearTimeout(timer)
     }
