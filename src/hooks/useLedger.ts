@@ -314,6 +314,7 @@ const useLedger = () => {
               accounts.push(account0)
             }
           }
+
           break // Stop scanning this derivation type
         }
 
