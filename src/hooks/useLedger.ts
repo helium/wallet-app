@@ -39,7 +39,7 @@ const useLedger = () => {
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([])
   const [ledgerAccountsLoading, setLedgerAccountsLoading] = useState(false)
   const { t } = useTranslation()
-  const { anchorProvider } = useSolana()
+  const { anchorProvider, connection } = useSolana()
 
   const openSolanaApp = useCallback(
     async (trans: TransportBLE | TransportHID) => {
@@ -177,11 +177,20 @@ const useLedger = () => {
     ): Promise<{ solBalances: number[]; hntBalances: boolean[] }> => {
       const solBalances: number[] = []
       const hntBalances: boolean[] = []
+      const rpcConnection = anchorProvider?.connection ?? connection
+
+      if (!rpcConnection) {
+        return {
+          solBalances: publicKeys.map(() => 0),
+          hntBalances: publicKeys.map(() => false),
+        }
+      }
 
       try {
         // Batch check SOL balances
-        const accountInfos =
-          await anchorProvider?.connection.getMultipleAccountsInfo(publicKeys)
+        const accountInfos = await rpcConnection.getMultipleAccountsInfo(
+          publicKeys,
+        )
 
         if (accountInfos) {
           solBalances.push(
@@ -196,10 +205,9 @@ const useLedger = () => {
           publicKeys.map((pk) => getAssociatedTokenAddress(HNT_MINT, pk)),
         )
 
-        const hntAccountInfos =
-          await anchorProvider?.connection.getMultipleAccountsInfo(
-            hntTokenAddresses,
-          )
+        const hntAccountInfos = await rpcConnection.getMultipleAccountsInfo(
+          hntTokenAddresses,
+        )
 
         if (hntAccountInfos) {
           hntBalances.push(
@@ -229,7 +237,7 @@ const useLedger = () => {
 
       return { solBalances, hntBalances }
     },
-    [anchorProvider?.connection],
+    [anchorProvider?.connection, connection],
   )
 
   const getAllLedgerAccountsForDerivationType = useCallback(
