@@ -94,15 +94,15 @@ const LedgerModal = forwardRef(
           return
         }
 
+        const p = new Promise<Buffer>((resolve, reject) => {
+          promiseResolve = resolve
+          promiseReject = reject
+        })
+
         try {
           setLedgerModalState('loading')
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
-
-          const p = new Promise<Buffer>((resolve, reject) => {
-            promiseResolve = resolve
-            promiseReject = reject
-          })
 
           let nextTransport = await getTransport(
             currentAccount.ledgerDevice.id,
@@ -222,6 +222,7 @@ const LedgerModal = forwardRef(
 
           // If we reach here, we're in an error state but waiting for user interaction
           // The promise will be resolved/rejected by the retry mechanism
+          return p
         }
       },
       [
