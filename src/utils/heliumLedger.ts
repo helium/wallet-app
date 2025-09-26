@@ -51,6 +51,38 @@ const FALLBACK_ORDER: DerivationType[] = [
   'change',
 ]
 
+const cleanupTransport = async (
+  transport: TransportBLE | TransportHID,
+): Promise<void> => {
+  try {
+    // Send a cancel command to clear any pending operations
+    await transport.send(0x00, 0x00, 0x00, 0x00, Buffer.alloc(0))
+  } catch (error) {
+    // Ignore cleanup errors - they're expected if device is in weird state
+  }
+}
+
+const prepareTransportForSigning = async (
+  transport: TransportBLE | TransportHID,
+): Promise<void> => {
+  // Try multiple cleanup attempts to handle device lock/unlock scenarios
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await cleanupTransport(transport)
+      // Add a small delay to ensure cleanup takes effect
+      await new Promise((resolve) => setTimeout(resolve, 150))
+      break // Success, exit the loop
+    } catch (cleanupError) {
+      if (i === 2) {
+        // Last attempt failed, throw the error
+        throw cleanupError
+      }
+      // Wait longer between attempts
+      await new Promise((resolve) => setTimeout(resolve, 300))
+    }
+  }
+}
+
 export const getDerivationPath = (
   account = 0,
   type: DerivationType,
@@ -102,19 +134,17 @@ const trySignWithFallbacks = async (
   primaryType?: DerivationType,
 ): Promise<Buffer> => {
   const primaryPath = getDerivationPath(accountIndex, primaryType || 'default')
+
   try {
     const { signature } = await solana[signMethod](primaryPath, buffer)
     return signature
   } catch (error) {
     // If the primary path fails with 0x6a81, try the fallbacks
     if (error?.toString().includes('0x6a81')) {
-      const fallbackPathsAttempted: DerivationType[] = []
-
       for (let i = 0; i < FALLBACK_ORDER.length; i += 1) {
         const type: DerivationType = FALLBACK_ORDER[i]
         try {
           const fallbackPath = getDerivationPath(accountIndex, type)
-          fallbackPathsAttempted.push(type)
           const { signature } = await solana[signMethod](fallbackPath, buffer)
           return signature
         } catch (fallbackError) {
@@ -141,13 +171,24 @@ export const signLedgerTransaction = async (
   const primaryType =
     derivationType === true ? undefined : (derivationType as DerivationType)
 
-  return trySignWithFallbacks(
-    solana,
-    accountIndex,
-    txBuffer,
-    'signTransaction',
-    primaryType,
-  )
+  try {
+    // Prepare transport for signing by cleaning up any stale state
+    await prepareTransportForSigning(transport)
+
+    return await trySignWithFallbacks(
+      solana,
+      accountIndex,
+      txBuffer,
+      'signTransaction',
+      primaryType,
+    )
+  } catch (error) {
+    // If we get a race condition, try to clean up transport and provide helpful error
+    if (error?.toString().includes('TransportRaceCondition')) {
+      await cleanupTransport(transport)
+    }
+    throw error
+  }
 }
 
 export const signLedgerMessage = async (
@@ -161,13 +202,24 @@ export const signLedgerMessage = async (
   const primaryType =
     derivationType === true ? undefined : (derivationType as DerivationType)
 
-  return trySignWithFallbacks(
-    solana,
-    accountIndex,
-    msgBuffer,
-    'signOffchainMessage',
-    primaryType,
-  )
+  try {
+    // Prepare transport for signing by cleaning up any stale state
+    await prepareTransportForSigning(transport)
+
+    return await trySignWithFallbacks(
+      solana,
+      accountIndex,
+      msgBuffer,
+      'signOffchainMessage',
+      primaryType,
+    )
+  } catch (error) {
+    // If we get a race condition, try to clean up transport and provide helpful error
+    if (error?.toString().includes('TransportRaceCondition')) {
+      await cleanupTransport(transport)
+    }
+    throw error
+  }
 }
 
 export const getDerivationTypeForSigning = (

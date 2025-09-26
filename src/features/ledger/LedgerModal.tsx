@@ -64,7 +64,7 @@ const LedgerModal = forwardRef(
     const { setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
-    const { getTransport, openSolanaApp } = useLedger()
+    const { getTransport, openSolanaApp, waitForSolanaApp } = useLedger()
     const [transactionBuffer, setTransactionBuffer] = useState<Buffer>()
     const [messageBuffer, setMessageBuffer] = useState<Buffer>()
 
@@ -94,15 +94,15 @@ const LedgerModal = forwardRef(
           return
         }
 
+        const p = new Promise<Buffer>((resolve, reject) => {
+          promiseResolve = resolve
+          promiseReject = reject
+        })
+
         try {
           setLedgerModalState('loading')
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
-
-          const p = new Promise<Buffer>((resolve, reject) => {
-            promiseResolve = resolve
-            promiseReject = reject
-          })
 
           let nextTransport = await getTransport(
             currentAccount.ledgerDevice.id,
@@ -118,8 +118,7 @@ const LedgerModal = forwardRef(
           try {
             setLedgerModalState('openApp')
             await openSolanaApp(nextTransport)
-            // wait 1 second ledger to open solana app
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            await waitForSolanaApp(nextTransport)
           } catch (error) {
             const ledgerError = error as Error
             switch (ledgerError.message) {
@@ -186,14 +185,16 @@ const LedgerModal = forwardRef(
               setLedgerModalState('error')
           }
 
-          const p = new Promise<Buffer>((resolve, reject) => {
-            promiseResolve = resolve
-            promiseReject = reject
-          })
           return p
         }
       },
-      [currentAccount, setIsShowing, getTransport, openSolanaApp],
+      [
+        currentAccount,
+        setIsShowing,
+        getTransport,
+        openSolanaApp,
+        waitForSolanaApp,
+      ],
     )
 
     const showLedgerModal = useCallback(

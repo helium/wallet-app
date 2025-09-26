@@ -39,7 +39,7 @@ const useLedger = () => {
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([])
   const [ledgerAccountsLoading, setLedgerAccountsLoading] = useState(false)
   const { t } = useTranslation()
-  const { anchorProvider } = useSolana()
+  const { anchorProvider, connection } = useSolana()
 
   const openSolanaApp = useCallback(
     async (trans: TransportBLE | TransportHID) => {
@@ -54,10 +54,50 @@ const useLedger = () => {
     [],
   )
 
+  const waitForSolanaApp = useCallback(
+    async (trans: TransportBLE | TransportHID, maxAttempts = 10) => {
+      const solana = new AppSolana(trans)
+
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        try {
+          // Try to get app configuration - this will succeed when Solana app is ready
+          await solana.getAppConfiguration()
+          return // App is ready
+        } catch (error) {
+          const errorStr = error?.toString() || ''
+
+          // If app is not open yet, wait and retry
+          if (errorStr.includes('0x6e00') || errorStr.includes('0x6d00')) {
+            await new Promise((resolve) => setTimeout(resolve, 200))
+            // eslint-disable-next-line no-continue
+            continue
+          }
+
+          // For other errors, throw immediately
+          throw error
+        }
+      }
+
+      throw new Error('Solana app did not become ready within expected time')
+    },
+    [],
+  )
+
   const getTransport = useCallback(
     async (nextDeviceId: string, type: 'usb' | 'bluetooth') => {
-      if (transport?.deviceId === nextDeviceId) {
+      // If we have the same device, reuse the existing transport
+      if (transport?.deviceId === nextDeviceId && transport.transport) {
         return transport.transport
+      }
+
+      // Close existing transport if switching devices
+      if (transport && transport.deviceId !== nextDeviceId) {
+        try {
+          transport.transport.close()
+        } catch (error) {
+          // Ignore close errors
+        }
+        setTransport(undefined)
       }
 
       let newTransport: TransportBLE | TransportHID | null = null
@@ -72,8 +112,8 @@ const useLedger = () => {
       } else {
         newTransport = await TransportBLE.open(nextDeviceId)
       }
-      if (!newTransport) return
 
+      if (!newTransport) return
       newTransport.on('disconnect', () => {
         // Intentionally for the sake of simplicity we use a transport local state
         // and remove it on disconnect.
@@ -97,7 +137,6 @@ const useLedger = () => {
     ): Promise<LedgerAccount | null> => {
       try {
         const derivationPath = getDerivationPath(accountIndex, derivationType)
-
         let address: Uint8Array
         if (publicKey) {
           address = publicKey.toBytes()
@@ -110,7 +149,7 @@ const useLedger = () => {
           accountIndex === -1 ? 'Root' : getDerivationPathLabel(derivationType)
         const aliasKey = accountIndex === -1 ? 'Root' : accountIndex + 1
 
-        return {
+        const account = {
           address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
           balance: balance || 0,
           pathLabel,
@@ -123,6 +162,8 @@ const useLedger = () => {
           hasBalance: hasBalance || false,
           derivationType,
         }
+
+        return account
       } catch (error) {
         return null
       }
@@ -136,11 +177,20 @@ const useLedger = () => {
     ): Promise<{ solBalances: number[]; hntBalances: boolean[] }> => {
       const solBalances: number[] = []
       const hntBalances: boolean[] = []
+      const rpcConnection = anchorProvider?.connection ?? connection
+
+      if (!rpcConnection) {
+        return {
+          solBalances: publicKeys.map(() => 0),
+          hntBalances: publicKeys.map(() => false),
+        }
+      }
 
       try {
         // Batch check SOL balances
-        const accountInfos =
-          await anchorProvider?.connection.getMultipleAccountsInfo(publicKeys)
+        const accountInfos = await rpcConnection.getMultipleAccountsInfo(
+          publicKeys,
+        )
 
         if (accountInfos) {
           solBalances.push(
@@ -155,10 +205,9 @@ const useLedger = () => {
           publicKeys.map((pk) => getAssociatedTokenAddress(HNT_MINT, pk)),
         )
 
-        const hntAccountInfos =
-          await anchorProvider?.connection.getMultipleAccountsInfo(
-            hntTokenAddresses,
-          )
+        const hntAccountInfos = await rpcConnection.getMultipleAccountsInfo(
+          hntTokenAddresses,
+        )
 
         if (hntAccountInfos) {
           hntBalances.push(
@@ -188,7 +237,7 @@ const useLedger = () => {
 
       return { solBalances, hntBalances }
     },
-    [anchorProvider?.connection],
+    [anchorProvider?.connection, connection],
   )
 
   const getAllLedgerAccountsForDerivationType = useCallback(
@@ -213,6 +262,7 @@ const useLedger = () => {
               accountIndex,
               derivationType,
             )
+
             const { address } = await solana.getAddress(derivationPath, false)
             const publicKey = new PublicKey(
               base58.encode(new Uint8Array(address)),
@@ -224,7 +274,9 @@ const useLedger = () => {
           }
         }
 
-        if (batchPublicKeys.length === 0) break
+        if (batchPublicKeys.length === 0) {
+          break
+        }
 
         // Batch check balances for all accounts in this batch
         const { solBalances, hntBalances } = await checkBatchBalances(
@@ -270,6 +322,7 @@ const useLedger = () => {
               accounts.push(account0)
             }
           }
+
           break // Stop scanning this derivation type
         }
 
@@ -352,51 +405,58 @@ const useLedger = () => {
   const updateLedgerAccounts = useCallback(
     async (device: LedgerDevice) => {
       if (ledgerAccountsLoading) return
-
-      const nextTransport = await getTransport(device.id, device.type)
-      if (!nextTransport) {
-        throw new Error('Transport could not be created')
-      }
-
-      const solana = new AppSolana(nextTransport)
-
       setLedgerAccountsLoading(true)
-      const mainAccounts: LedgerAccount[] = []
 
-      // Check Solana root path (44'/501')
       try {
-        const derivationPath = getDerivationPath(-1, 'root')
-        const { address } = await solana.getAddress(derivationPath, false)
-        const publicKey = new PublicKey(base58.encode(new Uint8Array(address)))
-
-        const { solBalances, hntBalances } = await checkBatchBalances([
-          publicKey,
-        ])
-        const balance = solBalances[0] || 0
-        const hasBalance = balance > 0 || hntBalances[0]
-
-        const solanaRootAccount = await createLedgerAccount(
-          solana,
-          -1,
-          'root',
-          balance,
-          hasBalance,
-        )
-        if (solanaRootAccount) {
-          mainAccounts.push(solanaRootAccount)
+        const nextTransport = await getTransport(device.id, device.type)
+        if (!nextTransport) {
+          throw new Error('Transport could not be created')
         }
-      } catch {
-        // ignore if derivation fails
-      }
 
-      // Start checking all derivation paths for each account index
-      await getLedgerAccounts(solana, mainAccounts)
-      setLedgerAccountsLoading(false)
+        const solana = new AppSolana(nextTransport)
+        const mainAccounts: LedgerAccount[] = []
+
+        // Check Solana root path (44'/501')
+        try {
+          const derivationPath = getDerivationPath(-1, 'root')
+          const { address } = await solana.getAddress(derivationPath, false)
+          const publicKey = new PublicKey(
+            base58.encode(new Uint8Array(address)),
+          )
+
+          const { solBalances, hntBalances } = await checkBatchBalances([
+            publicKey,
+          ])
+          const balance = solBalances[0] || 0
+          const hasBalance = balance > 0 || hntBalances[0]
+          const solanaRootAccount = await createLedgerAccount(
+            solana,
+            -1,
+            'root',
+            balance,
+            hasBalance,
+          )
+          if (solanaRootAccount) {
+            mainAccounts.push(solanaRootAccount)
+          }
+        } catch (error) {
+          // ignore if derivation fails
+        }
+
+        // Start checking all derivation paths for each account index
+        await getLedgerAccounts(solana, mainAccounts)
+      } catch (error) {
+        setTransport(undefined)
+        throw error
+      } finally {
+        setLedgerAccountsLoading(false)
+      }
     },
     [
       createLedgerAccount,
       getLedgerAccounts,
       getTransport,
+      setTransport,
       ledgerAccountsLoading,
       checkBatchBalances,
     ],
@@ -409,6 +469,7 @@ const useLedger = () => {
     updateLedgerAccounts,
     ledgerAccountsLoading,
     openSolanaApp,
+    waitForSolanaApp,
   }
 }
 
