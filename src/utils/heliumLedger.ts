@@ -156,18 +156,6 @@ const trySignWithFallbacks = async (
           }
         }
       }
-    } else if (error?.toString().includes('TransportRaceCondition')) {
-      throw new Error(
-        'Ledger device is busy. Please close any pending prompts on your Ledger device and try again, or disconnect and reconnect your Ledger.',
-      )
-    } else if (error?.toString().includes('0x5515')) {
-      throw new Error(
-        'Ledger device is locked. Please unlock your Ledger device by entering your PIN and try again.',
-      )
-    } else if (error?.toString().includes('blind signature')) {
-      throw new Error(
-        'Please enable blind signing in your Ledger Solana app settings and try again',
-      )
     }
 
     throw error

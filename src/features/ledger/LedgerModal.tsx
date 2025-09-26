@@ -111,11 +111,8 @@ const LedgerModal = forwardRef(
 
           if (!nextTransport) {
             setLedgerModalState('error')
-            if (promiseReject) {
-              promiseReject(new Error('Failed to get transport for signing'))
-            }
-            bottomSheetModalRef.current?.dismiss()
-            return
+            // eslint-disable-next-line @typescript-eslint/return-await
+            return p
           }
 
           try {
@@ -139,7 +136,6 @@ const LedgerModal = forwardRef(
 
           setLedgerModalState('sign')
 
-          // Get fresh transport for signing to ensure clean state
           nextTransport = await getTransport(
             currentAccount.ledgerDevice.id,
             currentAccount.ledgerDevice.type,
@@ -147,11 +143,8 @@ const LedgerModal = forwardRef(
 
           if (!nextTransport) {
             setLedgerModalState('error')
-            if (promiseReject) {
-              promiseReject(new Error('Failed to get transport for signing'))
-            }
-            bottomSheetModalRef.current?.dismiss()
-            return
+            // eslint-disable-next-line @typescript-eslint/return-await
+            return p
           }
 
           let signature
@@ -188,40 +181,10 @@ const LedgerModal = forwardRef(
               }
               bottomSheetModalRef.current?.dismiss()
               return
-            case 'Ledger device: Locked device (0x5515)':
-              setLedgerModalState('enterPinCode')
-              // Don't reject promise - allow retry
-              break
-            case 'Bluetooth connection was cancelled. Please ensure your Ledger device is unlocked, nearby, and try again.':
-              setLedgerModalState('error')
-              // Don't reject promise - allow retry for BLE issues
-              break
             default:
-              // Check for device lock error pattern
-              if (
-                ledgerError.message.includes('locked') ||
-                ledgerError.message.includes('0x5515')
-              ) {
-                setLedgerModalState('enterPinCode')
-                // Don't reject promise - allow retry
-              } else if (
-                ledgerError.message.includes('Operation was cancelled')
-              ) {
-                setLedgerModalState('error')
-                // Don't reject promise - allow retry for BLE issues
-              } else {
-                setLedgerModalState('error')
-                // Reject the promise with the error for non-retryable errors
-                if (promiseReject) {
-                  promiseReject(ledgerError)
-                }
-                bottomSheetModalRef.current?.dismiss()
-              }
-              break
+              setLedgerModalState('error')
           }
 
-          // If we reach here, we're in an error state but waiting for user interaction
-          // The promise will be resolved/rejected by the retry mechanism
           return p
         }
       },
