@@ -51,7 +51,6 @@ const FALLBACK_ORDER: DerivationType[] = [
   'change',
 ]
 
-// Utility to clean up transport state when race conditions occur
 const cleanupTransport = async (
   transport: TransportBLE | TransportHID,
 ): Promise<void> => {
@@ -63,7 +62,6 @@ const cleanupTransport = async (
   }
 }
 
-// Utility to prepare transport for signing by cleaning up any stale state
 const prepareTransportForSigning = async (
   transport: TransportBLE | TransportHID,
 ): Promise<void> => {
