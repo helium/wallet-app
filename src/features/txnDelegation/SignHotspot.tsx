@@ -267,8 +267,7 @@ const SignHotspot = () => {
           lineHeight={42}
           color="primaryText"
           numberOfLines={2}
-          maxFontSizeMultiplier={1}
-          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.2}
         >
           {title}
         </Text>
