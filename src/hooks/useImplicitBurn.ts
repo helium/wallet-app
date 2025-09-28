@@ -1,15 +1,12 @@
-import { init as initDataCredits } from '@helium/data-credits-sdk'
 import { Program } from '@coral-xyz/anchor'
-import { DataCredits } from '@helium/idls/lib/types/data_credits'
+import {
+  init as initDataCredits,
+  mintDataCredits,
+} from '@helium/data-credits-sdk'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
+import { DataCredits } from '@helium/idls/lib/types/data_credits'
 import { DC_MINT, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import {
-  createAssociatedTokenAccountIdempotentInstruction,
-  getAssociatedTokenAddressSync,
-} from '@solana/spl-token'
-import { Transaction } from '@solana/web3.js'
-import { withPriorityFees } from '@utils/priorityFees'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import { useAsyncCallback } from 'react-async-hook'
@@ -43,55 +40,35 @@ export function useImplicitBurn(): {
         anchorProvider,
       )) as unknown as Program<DataCredits>
       const dcDeficit = BigInt(totalDcReq) - (myDc || BigInt(0))
-      const burnTx = new Transaction({
-        feePayer: wallet,
-        recentBlockhash: (await anchorProvider.connection.getLatestBlockhash())
-          .blockhash,
+      const { txs } = await mintDataCredits({
+        dcAmount: new BN(dcDeficit.toString()),
+        dcMint: DC_MINT,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        program,
+        recipient: wallet,
       })
-      burnTx.add(
-        ...(await withPriorityFees({
-          connection: anchorProvider.connection,
-          feePayer: wallet,
-          instructions: [
-            await program.methods
-              .mintDataCreditsV0({
-                hntAmount: null,
-                dcAmount: new BN(dcDeficit.toString()),
-              })
-              .preInstructions([
-                createAssociatedTokenAccountIdempotentInstruction(
-                  wallet,
-                  getAssociatedTokenAddressSync(DC_MINT, wallet, true),
-                  wallet,
-                  DC_MINT,
-                ),
-              ])
-              .accountsPartial({
-                dcMint: DC_MINT,
-                recipient: wallet,
-              })
-              .instruction(),
-          ],
-        })),
-      )
       if (!walletSignBottomSheetRef) {
         throw new Error('No wallet bottom sheet')
       }
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        serializedTxs: [burnTx.serialize({ requireAllSignatures: false })],
+        serializedTxs: txs.map(({ tx }) => Buffer.from(tx.serialize())),
         header: t('transactions.buyDc'),
       })
-      const signed = await anchorProvider.wallet.signTransaction(burnTx)
-      const serializedTx = Buffer.from(signed.serialize())
       if (decision) {
-        await sendAndConfirmWithRetry(
-          anchorProvider.connection,
-          serializedTx,
-          { skipPreflight: true },
-          'confirmed',
-        )
+        // eslint-disable-next-line no-restricted-syntax
+        for (const tx of txs) {
+          const signed = await anchorProvider.wallet.signTransaction(tx.tx)
+          const serializedTx = Buffer.from(signed.serialize())
+          await sendAndConfirmWithRetry(
+            anchorProvider.connection,
+            serializedTx,
+            { skipPreflight: true },
+            'confirmed',
+          )
+        }
       } else {
         throw new Error('User rejected transaction')
       }
