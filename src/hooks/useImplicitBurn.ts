@@ -61,6 +61,9 @@ export function useImplicitBurn(): {
         // eslint-disable-next-line no-restricted-syntax
         for (const tx of txs) {
           const signed = await anchorProvider.wallet.signTransaction(tx.tx)
+          if (tx.signers.length > 0) {
+            await tx.tx.sign(tx.signers)
+          }
           const serializedTx = Buffer.from(signed.serialize())
           await sendAndConfirmWithRetry(
             anchorProvider.connection,
