@@ -43,7 +43,7 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
 
   const api = useMemo(() => {
     const config = new Configuration({
-      basePath: process.env.JUP_SWAP_API || 'https://quote-api.jup.ag/v6',
+      basePath: process.env.JUP_SWAP_API || 'https://lite-api.jup.ag/swap/v1',
     })
     return new DefaultApi(config)
   }, [])
@@ -58,6 +58,7 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
           ...opts,
           platformFeeBps: Number(Config.JUPITER_FEE_BPS) || 0,
         })
+
         setRoutes(foundRoutes)
       } catch (err: any) {
         Logger.error(err)
