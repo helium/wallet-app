@@ -138,7 +138,8 @@ const DeviceScan = () => {
       <Box flex={1} backgroundColor="secondary" paddingHorizontal="l">
         <BackButton
           marginTop="m"
-          paddingHorizontal="s"
+          paddingHorizontal="l"
+          color="primaryText"
           onPress={navigation.goBack}
         />
         <Box
