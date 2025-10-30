@@ -8,6 +8,7 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableContainer from '@components/TouchableContainer'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
+import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import {
   useHeliumVsrState,
   usePositions,
@@ -87,6 +88,13 @@ export const TokenListItem = ({ mint }: Props) => {
       ? humanReadable(new BN(amount.toString()), decimals)
       : '0'
   }, [amount, decimals])
+
+  if (
+    (mint.equals(MOBILE_MINT) || mint.equals(IOT_MINT)) &&
+    balanceToDisplay === '0'
+  ) {
+    return null
+  }
 
   return (
     <FadeInOut>
@@ -264,6 +272,13 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const loadingAmount = useMemo(() => {
     return !prevLocked && (loadingPositionKeys || loadingPositions)
   }, [loadingPositionKeys, loadingPositions, prevLocked])
+
+  if (
+    (mint.equals(MOBILE_MINT) || mint.equals(IOT_MINT)) &&
+    balanceToDisplay === '0'
+  ) {
+    return null
+  }
 
   return (
     <FadeInOut>

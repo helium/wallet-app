@@ -28,6 +28,7 @@ interface IJupiterContextState {
   getRoute: (opts: QuoteGetRequest) => Promise<QuoteResponse | undefined>
   getSwapTx: (
     opts?: Pick<SwapPostRequest, 'swapRequest'>,
+    routesIn?: QuoteResponse,
   ) => Promise<VersionedTransaction | undefined>
 }
 
@@ -73,14 +74,18 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
   )
 
   const getSwapTx = useCallback(
-    async (opts?: Pick<SwapPostRequest, 'swapRequest'>) => {
+    async (
+      opts?: Pick<SwapPostRequest, 'swapRequest'>,
+      routesIn?: QuoteResponse,
+    ) => {
       try {
-        if (!routes) throw new Error(t('errors.swap.routes'))
+        if (!routes && !routesIn) throw new Error(t('errors.swap.routes'))
         if (!wallet) throw new Error(t('errors.account'))
 
         const { swapTransaction } = await api.swapPost({
           swapRequest: {
-            quoteResponse: routes,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            quoteResponse: (routesIn || routes)!,
             userPublicKey: wallet.toBase58(),
             feeAccount: Config.JUPITER_FEE_ACCOUNT || undefined,
             ...opts,

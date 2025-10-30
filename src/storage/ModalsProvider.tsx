@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 
 interface IModalProps {
-  type?: 'InsufficientSolConversion'
+  type?: 'InsufficientSolConversion' | 'DeprecatedTokens'
 
   onHide?: () => Promise<void>
   onCancel?: () => Promise<void>

@@ -4,6 +4,7 @@ import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
+import { JupiterProvider } from '@storage/JupiterProvider'
 import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -24,7 +25,10 @@ import SplashScreen from './components/SplashScreen'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 import LockScreen from './features/lock/LockScreen'
+import DeprecatedTokensCheck from './features/modals/DeprecatedTokensCheck'
+import DeprecatedTokensModal from './features/modals/DeprecatedTokensModal'
 import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
+import { DeprecatedTokensProvider } from './storage/DeprecatedTokensProvider'
 import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './hooks/useMount'
@@ -147,6 +151,12 @@ const App = () => {
 
                                               {/* place app specific modals here */}
                                               <InsufficientSolConversionModal />
+                                              <JupiterProvider>
+                                                <DeprecatedTokensProvider>
+                                                  <DeprecatedTokensModal />
+                                                  <DeprecatedTokensCheck />
+                                                </DeprecatedTokensProvider>
+                                              </JupiterProvider>
                                             </GovernanceProvider>
                                           </WalletSignProvider>
                                         </ModalProvider>

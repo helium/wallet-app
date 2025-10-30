@@ -17,6 +17,7 @@ import {
 
 const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
 const DAPP_TUTORIAL_SHOWN = 'dAppTutorialShown'
+const DEPRECATED_TOKENS_DISMISSED = 'deprecatedTokensDismissedByWallet'
 
 const useAppStorageHook = () => {
   const [autoGasManagementToken, setAutoGasManagementToken] = useState<
@@ -49,6 +50,9 @@ const useAppStorageHook = () => {
   })
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
   const [showNumericChange, setShowNumericChange] = useState(false)
+  const [deprecatedTokensDismissed, setDeprecatedTokensDismissed] = useState<
+    Record<string, boolean>
+  >({})
   const [doneSolanaMigration, setDoneSolanaMigration] = useState<
     Record<Cluster, string[]>
   >({
@@ -84,6 +88,12 @@ const useAppStorageHook = () => {
       const nextExplorer = await getSecureItem('explorer')
       const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
+      const nextDeprecatedTokensDismissedStr = await AsyncStorage.getItem(
+        DEPRECATED_TOKENS_DISMISSED,
+      )
+      const nextDeprecatedTokensDismissed = nextDeprecatedTokensDismissedStr
+        ? JSON.parse(nextDeprecatedTokensDismissedStr)
+        : {}
       const nextShowNumericChange = await getSecureItem('showNumericChange')
       const nextDoneSolanaMigration = await getSecureItem(
         SecureStorageKeys.DONE_SOLANA_MIGRATION,
@@ -118,6 +128,7 @@ const useAppStorageHook = () => {
         JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
       )
       setVoteTutorialShown(nextVoteShown === 'true')
+      setDeprecatedTokensDismissed(nextDeprecatedTokensDismissed)
       setShowNumericChange(nextShowNumericChange === 'true')
       setSessionKey(nextSessionKey || '')
       setDoneSolanaMigration(
@@ -209,6 +220,18 @@ const useAppStorageHook = () => {
     return AsyncStorage.setItem(VOTE_TUTORIAL_SHOWN, 'true')
   }, [])
 
+  const dismissDeprecatedTokens = useCallback(
+    async (walletAddress: string) => {
+      const updated = { ...deprecatedTokensDismissed, [walletAddress]: true }
+      setDeprecatedTokensDismissed(updated)
+      return AsyncStorage.setItem(
+        DEPRECATED_TOKENS_DISMISSED,
+        JSON.stringify(updated),
+      )
+    },
+    [deprecatedTokensDismissed],
+  )
+
   const updateShowNumericChange = useCallback(async (useNumeric: boolean) => {
     setShowNumericChange(useNumeric)
     return storeSecureItem('showNumericChange', useNumeric ? 'true' : 'false')
@@ -269,6 +292,8 @@ const useAppStorageHook = () => {
     setScannedAddress,
     setVoteTutorialCompleted,
     setDAppTutorialCompleted,
+    deprecatedTokensDismissed,
+    dismissDeprecatedTokens,
     showNumericChange,
     sessionKey,
     doneSolanaMigration,
@@ -304,6 +329,8 @@ const initialState = {
   setScannedAddress: () => undefined,
   setDAppTutorialCompleted: async () => undefined,
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
+  deprecatedTokensDismissed: {},
+  dismissDeprecatedTokens: async () => undefined,
   updateEnableHaptic: async () => undefined,
   updateAutoGasManagementToken: async () => undefined,
   updateAuthInterval: async () => undefined,
