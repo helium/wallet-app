@@ -7,10 +7,14 @@ import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DataCredits } from '@helium/idls/lib/types/data_credits'
 import { DC_MINT, sendAndConfirmWithRetry } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useBalance } from '@utils/Balance'
+import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
+import React from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
+import { MessagePreview } from '../solana/MessagePreview'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
@@ -22,6 +26,7 @@ export function useImplicitBurn(): {
 } {
   const { anchorProvider } = useSolana()
   const { walletSignBottomSheetRef } = useWalletSign()
+  const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const { amount: myDc, loading: loadingDc } = useOwnedAmount(wallet, DC_MINT)
@@ -40,6 +45,7 @@ export function useImplicitBurn(): {
         anchorProvider,
       )) as unknown as Program<DataCredits>
       const dcDeficit = BigInt(totalDcReq) - (myDc || BigInt(0))
+      const hntAmount = dcToNetworkTokens(new BN(dcDeficit.toString()))
       const { txs } = await mintDataCredits({
         dcAmount: new BN(dcDeficit.toString()),
         dcMint: DC_MINT,
@@ -56,6 +62,15 @@ export function useImplicitBurn(): {
         url: '',
         serializedTxs: txs.map(({ tx }) => Buffer.from(tx.serialize())),
         header: t('transactions.buyDc'),
+        message: t('transactions.signMintDataCreditsTxn'),
+        renderer: () => (
+          <MessagePreview
+            message={t('transactions.signMintDataCreditsTxnPreview', {
+              hntAmount: humanReadable(hntAmount, 8),
+              dcAmount: humanReadable(new BN(dcDeficit.toString()), 0),
+            })}
+          />
+        ),
       })
       if (decision) {
         // eslint-disable-next-line no-restricted-syntax
