@@ -277,7 +277,7 @@ const DeprecatedTokensModal: FC = () => {
 
         const outputAmount = toNumber(
           new BN(Number(iotRoute?.outAmount || 0)),
-          6, // HNT decimals
+          8, // HNT decimals
         )
 
         const minReceived = outputAmount - outputAmount * (50 / 100 / 100)
@@ -330,7 +330,7 @@ const DeprecatedTokensModal: FC = () => {
 
         const outputAmount = toNumber(
           new BN(Number(mobileRoute?.outAmount || 0)),
-          6, // HNT decimals
+          8, // HNT decimals
         )
 
         const minReceived = outputAmount - outputAmount * (50 / 100 / 100)
