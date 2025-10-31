@@ -51,7 +51,7 @@ const useAppStorageHook = () => {
   const [voteTutorialShown, setVoteTutorialShown] = useState(false)
   const [showNumericChange, setShowNumericChange] = useState(false)
   const [deprecatedTokensDismissed, setDeprecatedTokensDismissed] = useState<
-    Record<string, boolean>
+    Record<string, { dismissCount: number; lastDismissedAt: number }>
   >({})
   const [doneSolanaMigration, setDoneSolanaMigration] = useState<
     Record<Cluster, string[]>
@@ -222,12 +222,39 @@ const useAppStorageHook = () => {
 
   const dismissDeprecatedTokens = useCallback(
     async (walletAddress: string) => {
-      const updated = { ...deprecatedTokensDismissed, [walletAddress]: true }
+      const existing = deprecatedTokensDismissed[walletAddress]
+      const updated = {
+        ...deprecatedTokensDismissed,
+        [walletAddress]: {
+          dismissCount: (existing?.dismissCount || 0) + 1,
+          lastDismissedAt: Date.now(),
+        },
+      }
       setDeprecatedTokensDismissed(updated)
       return AsyncStorage.setItem(
         DEPRECATED_TOKENS_DISMISSED,
         JSON.stringify(updated),
       )
+    },
+    [deprecatedTokensDismissed],
+  )
+
+  const shouldShowDeprecatedTokens = useCallback(
+    (walletAddress: string) => {
+      const dismissInfo = deprecatedTokensDismissed[walletAddress]
+      if (!dismissInfo) return true
+
+      const { dismissCount, lastDismissedAt } = dismissInfo
+
+      // First dismiss: show immediately on next open (0 hours)
+      if (dismissCount === 1) return true
+
+      // Calculate wait time: 2h, 4h, 6h, etc., capped at 48h
+      const hoursToWait = Math.min((dismissCount - 1) * 2, 48)
+      const millisecondsToWait = hoursToWait * 60 * 60 * 1000
+      const timeSinceDismiss = Date.now() - lastDismissedAt
+
+      return timeSinceDismiss >= millisecondsToWait
     },
     [deprecatedTokensDismissed],
   )
@@ -294,6 +321,7 @@ const useAppStorageHook = () => {
     setDAppTutorialCompleted,
     deprecatedTokensDismissed,
     dismissDeprecatedTokens,
+    shouldShowDeprecatedTokens,
     showNumericChange,
     sessionKey,
     doneSolanaMigration,
@@ -331,6 +359,7 @@ const initialState = {
   setVoteTutorialCompleted: () => new Promise<void>((resolve) => resolve()),
   deprecatedTokensDismissed: {},
   dismissDeprecatedTokens: async () => undefined,
+  shouldShowDeprecatedTokens: () => true,
   updateEnableHaptic: async () => undefined,
   updateAutoGasManagementToken: async () => undefined,
   updateAuthInterval: async () => undefined,

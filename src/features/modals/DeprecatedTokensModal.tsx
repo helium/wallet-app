@@ -34,6 +34,9 @@ import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { numberFormat } from '@utils/Balance'
+import { useLanguage } from '@utils/i18n'
+import { usePollTokenPrices } from '@utils/usePollTokenPrices'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useWalletSign } from '../../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
@@ -47,10 +50,16 @@ const DeprecatedTokensModal: FC = () => {
   const wallet = useCurrentWallet()
   const [processing, setProcessing] = useState(false)
   const [error, setError] = useState<string>()
-  const { dismissDeprecatedTokens } = useAppStorage()
+  const [estimatedHnt, setEstimatedHnt] = useState<number>(0)
+  const [loadingEstimate, setLoadingEstimate] = useState(false)
+  const { dismissDeprecatedTokens, currency: currencyRaw } = useAppStorage()
   const { walletSignBottomSheetRef } = useWalletSign()
   const { submitJupiterSwap } = useSubmitTxn()
   const { getRoute, getSwapTx } = useJupiter()
+  const { tokenPrices } = usePollTokenPrices()
+  const { language } = useLanguage()
+
+  const currency = useMemo(() => currencyRaw?.toLowerCase(), [currencyRaw])
 
   // Use shared deprecated tokens data
   const {
@@ -71,18 +80,128 @@ const DeprecatedTokensModal: FC = () => {
     isLoadingPositions,
   } = useDeprecatedTokens()
 
+  const estimatedUsdValue = useMemo(() => {
+    if (!estimatedHnt || !tokenPrices?.helium?.[currency]) return null
+    const hntPrice = tokenPrices.helium[currency]
+    const value = hntPrice * estimatedHnt
+    return numberFormat(language, currency, value)
+  }, [estimatedHnt, tokenPrices, currency, language])
+
+  const iotUsdValue = useMemo(() => {
+    if (!hasIot || !tokenPrices?.['helium-iot']?.[currency]) return null
+    const iotPrice = tokenPrices['helium-iot'][currency]
+    const totalIot = toNumber(
+      (iotBalance || new BN(0)).add(iotStaked || new BN(0)),
+      iotDecimals || 6,
+    )
+    const value = iotPrice * totalIot
+    return numberFormat(language, currency, value)
+  }, [
+    hasIot,
+    tokenPrices,
+    currency,
+    iotBalance,
+    iotStaked,
+    iotDecimals,
+    language,
+  ])
+
+  const mobileUsdValue = useMemo(() => {
+    if (!hasMobile || !tokenPrices?.['helium-mobile']?.[currency]) return null
+    const mobilePrice = tokenPrices['helium-mobile'][currency]
+    const totalMobile = toNumber(
+      (mobileBalance || new BN(0)).add(mobileStaked || new BN(0)),
+      mobileDecimals || 6,
+    )
+    const value = mobilePrice * totalMobile
+    return numberFormat(language, currency, value)
+  }, [
+    hasMobile,
+    tokenPrices,
+    currency,
+    mobileBalance,
+    mobileStaked,
+    mobileDecimals,
+    language,
+  ])
+
   const { closePosition } = useClosePosition()
 
-  const handleDismiss = useCallback(async () => {
-    if (wallet) {
-      await dismissDeprecatedTokens(wallet.toBase58())
+  // Calculate estimated HNT from swaps
+  const calculateEstimatedHnt = useCallback(async () => {
+    if (!hasAnyTokens || isLoadingPositions) return
+
+    setLoadingEstimate(true)
+    let totalHnt = 0
+
+    try {
+      // Calculate IOT -> HNT
+      if (hasIot || hasStakedIot) {
+        const totalIot = (iotBalance || new BN(0)).add(iotStaked || new BN(0))
+        if (totalIot.gt(new BN(0))) {
+          const iotRoute = await getRoute({
+            amount: totalIot.toNumber(),
+            inputMint: IOT_MINT.toBase58(),
+            outputMint: HNT_MINT.toBase58(),
+            slippageBps: 50,
+          })
+
+          if (iotRoute?.outAmount) {
+            totalHnt += toNumber(new BN(Number(iotRoute.outAmount)), 8)
+          }
+        }
+      }
+
+      // Calculate MOBILE -> HNT
+      if (hasMobile || hasStakedMobile) {
+        const totalMobile = (mobileBalance || new BN(0)).add(
+          mobileStaked || new BN(0),
+        )
+        if (totalMobile.gt(new BN(0))) {
+          const mobileRoute = await getRoute({
+            amount: totalMobile.toNumber(),
+            inputMint: MOBILE_MINT.toBase58(),
+            outputMint: HNT_MINT.toBase58(),
+            slippageBps: 50,
+          })
+
+          if (mobileRoute?.outAmount) {
+            totalHnt += toNumber(new BN(Number(mobileRoute.outAmount)), 8)
+          }
+        }
+      }
+
+      setEstimatedHnt(totalHnt)
+    } catch (err) {
+      Logger.error(err)
+    } finally {
+      setLoadingEstimate(false)
     }
-    hideModal()
-  }, [dismissDeprecatedTokens, hideModal, wallet])
+  }, [
+    hasAnyTokens,
+    isLoadingPositions,
+    hasIot,
+    hasStakedIot,
+    hasMobile,
+    hasStakedMobile,
+    iotBalance,
+    iotStaked,
+    mobileBalance,
+    mobileStaked,
+    getRoute,
+  ])
+
+  // Load estimate when modal opens and data is ready
+  React.useEffect(() => {
+    if (!isLoadingPositions && hasAnyTokens) {
+      calculateEstimatedHnt()
+    }
+  }, [isLoadingPositions, hasAnyTokens, calculateEstimatedHnt])
 
   const handleRemindLater = useCallback(() => {
     hideModal()
-  }, [hideModal])
+    dismissDeprecatedTokens(wallet?.toBase58() || '')
+  }, [dismissDeprecatedTokens, wallet, hideModal])
 
   const decideAndExecute = useCallback(
     async (instructions: TransactionInstruction[]) => {
@@ -447,35 +566,58 @@ const DeprecatedTokensModal: FC = () => {
             ) : (
               <>
                 <Box>
-                  <Text
-                    variant="body1Medium"
-                    color="white"
-                    opacity={0.6}
-                    textAlign="center"
+                  <Box
                     marginTop="l"
+                    backgroundColor="black600"
+                    padding="m"
+                    borderRadius="l"
                   >
-                    {t('deprecatedTokensModal.body')}
-                  </Text>
+                    <Text variant="body3Medium" color="white" opacity={0.6}>
+                      {t('deprecatedTokensModal.body')}
+                    </Text>
+                  </Box>
 
                   <Box marginTop="xl">
                     {hasIot && (
                       <Box
-                        backgroundColor="surfaceSecondary"
+                        backgroundColor="black600"
                         borderRadius="l"
                         padding="m"
                         marginBottom="m"
                       >
-                        <Text variant="body2Medium" color="white">
-                          IOT{' '}
+                        <Box
+                          flexDirection="row"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          marginBottom="xs"
+                        >
+                          <Text variant="body2Medium" color="white">
+                            IOT
+                          </Text>
+                          {iotUsdValue && (
+                            <Text
+                              variant="body2Medium"
+                              color="white"
+                              opacity={0.7}
+                            >
+                              {iotUsdValue}
+                            </Text>
+                          )}
+                        </Box>
+                        <Box>
                           <Text variant="body2" color="white" opacity={0.7}>
+                            Balance:{' '}
                             {humanReadable(
                               new BN(iotBalance?.toString() || '0'),
                               iotDecimals || 6,
                             )}
                           </Text>
                           {hasStakedIot && (
-                            <Text variant="body2" color="orange500">
-                              {' '}
+                            <Text
+                              variant="body2"
+                              color="orange500"
+                              marginTop="xxs"
+                            >
                               Staked:{' '}
                               {humanReadable(
                                 iotStaked || new BN(0),
@@ -483,28 +625,50 @@ const DeprecatedTokensModal: FC = () => {
                               )}
                             </Text>
                           )}
-                        </Text>
+                        </Box>
                       </Box>
                     )}
 
                     {hasMobile && (
                       <Box
-                        backgroundColor="surfaceSecondary"
+                        backgroundColor="black600"
                         borderRadius="l"
                         padding="m"
                         marginBottom="m"
                       >
-                        <Text variant="body2Medium" color="white">
-                          MOBILE{' '}
+                        <Box
+                          flexDirection="row"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          marginBottom="xs"
+                        >
+                          <Text variant="body2Medium" color="white">
+                            MOBILE
+                          </Text>
+                          {mobileUsdValue && (
+                            <Text
+                              variant="body2Medium"
+                              color="white"
+                              opacity={0.7}
+                            >
+                              {mobileUsdValue}
+                            </Text>
+                          )}
+                        </Box>
+                        <Box>
                           <Text variant="body2" color="white" opacity={0.7}>
+                            Balance:{' '}
                             {humanReadable(
                               new BN(mobileBalance?.toString() || '0'),
                               mobileDecimals || 6,
                             )}
                           </Text>
                           {hasStakedMobile && (
-                            <Text variant="body2" color="orange500">
-                              {' '}
+                            <Text
+                              variant="body2"
+                              color="orange500"
+                              marginTop="xxs"
+                            >
                               Staked:{' '}
                               {humanReadable(
                                 mobileStaked || new BN(0),
@@ -512,10 +676,61 @@ const DeprecatedTokensModal: FC = () => {
                               )}
                             </Text>
                           )}
-                        </Text>
+                        </Box>
                       </Box>
                     )}
                   </Box>
+
+                  {/* Estimated HNT Preview */}
+                  {!loadingEstimate && estimatedHnt > 0 && (
+                    <Box
+                      marginTop="l"
+                      backgroundColor="black600"
+                      borderRadius="l"
+                      padding="m"
+                    >
+                      <Text
+                        variant="body2Medium"
+                        color="white"
+                        textAlign="center"
+                        marginBottom="xs"
+                      >
+                        {t('deprecatedTokensModal.estimatedReceive')}
+                      </Text>
+                      <Text
+                        variant="h3"
+                        color="greenBright500"
+                        textAlign="center"
+                      >
+                        ~{estimatedHnt.toFixed(4)} HNT
+                      </Text>
+                      {estimatedUsdValue && (
+                        <Text
+                          variant="body2"
+                          color="white"
+                          opacity={0.7}
+                          textAlign="center"
+                          marginTop="xs"
+                        >
+                          {estimatedUsdValue}
+                        </Text>
+                      )}
+                    </Box>
+                  )}
+
+                  {loadingEstimate && (
+                    <Box marginTop="l" alignItems="center">
+                      <CircleLoader loaderSize={20} color="white" />
+                      <Text
+                        variant="body3"
+                        color="white"
+                        opacity={0.7}
+                        marginTop="xs"
+                      >
+                        {t('deprecatedTokensModal.calculatingEstimate')}
+                      </Text>
+                    </Box>
+                  )}
 
                   {error && (
                     <Box marginTop="m">
@@ -576,17 +791,6 @@ const DeprecatedTokensModal: FC = () => {
                 title={t('deprecatedTokensModal.remindLater')}
                 onPress={handleRemindLater}
                 marginBottom="m"
-              />
-
-              <ButtonPressable
-                width="100%"
-                borderRadius="round"
-                backgroundColor="matchaRed500"
-                backgroundColorOpacityPressed={0.05}
-                titleColorPressedOpacity={0.3}
-                titleColor="white"
-                title={t('deprecatedTokensModal.dismiss')}
-                onPress={handleDismiss}
               />
             </Box>
           )}

@@ -10,7 +10,7 @@ import { FC, useEffect } from 'react'
  */
 const DeprecatedTokensCheck: FC = () => {
   const wallet = useCurrentWallet()
-  const { deprecatedTokensDismissed } = useAppStorage()
+  const { shouldShowDeprecatedTokens } = useAppStorage()
   const { showModal } = useModal()
 
   // Use shared deprecated tokens data
@@ -18,15 +18,15 @@ const DeprecatedTokensCheck: FC = () => {
 
   useEffect(() => {
     // Show modal if:
-    // 1. Current wallet hasn't dismissed it permanently
+    // 1. Enough time has passed based on dismiss count (exponential backoff)
     // 2. User has IOT or MOBILE tokens
     // 3. Data is loaded
     const walletAddress = wallet?.toBase58()
-    const walletHasDismissed = walletAddress
-      ? deprecatedTokensDismissed[walletAddress]
+    const shouldShow = walletAddress
+      ? shouldShowDeprecatedTokens(walletAddress)
       : false
 
-    if (!walletHasDismissed && hasDeprecatedTokens && !loading && wallet) {
+    if (shouldShow && hasDeprecatedTokens && !loading && wallet) {
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
         showModal({ type: 'DeprecatedTokens' })
@@ -35,7 +35,7 @@ const DeprecatedTokensCheck: FC = () => {
       return () => clearTimeout(timer)
     }
   }, [
-    deprecatedTokensDismissed,
+    shouldShowDeprecatedTokens,
     hasDeprecatedTokens,
     loading,
     showModal,
