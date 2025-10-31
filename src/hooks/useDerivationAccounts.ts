@@ -71,6 +71,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   const [resolvedGroups, setResolvedGroups] = useState<ResolvedPath[][]>([])
   const [error, setError] = useState<Error | null>(null)
   const [loading, setLoading] = useState(false)
+  const [hasMoreAccounts, setHasMoreAccounts] = useState(true)
   const derivationAccounts = useMemo(
     () => resolvedGroups.flat(),
     [resolvedGroups],
@@ -95,6 +96,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   // When mnemonic changes, reset resolved groups
   useEffect(() => {
     setResolvedGroups([])
+    setHasMoreAccounts(true)
   }, [mnemonic])
 
   const seed = useMemo(() => {
@@ -106,6 +108,7 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   const fetchAccounts = useCallback(async () => {
     if (!seed || !connection) return
     if (!groups.some((_, i) => !resolvedGroups[i])) return
+    if (!hasMoreAccounts) return
 
     setLoading(true)
     try {
@@ -185,13 +188,25 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
         }),
       )
 
+      // Check if the last group (the newly fetched one) has any accounts with balance or tokens
+      const lastGroupIndex = resolved.length - 1
+      const lastGroup = resolved[lastGroupIndex]
+      const lastGroupHasAccounts = lastGroup?.some(
+        (acc) => (acc?.balance || 0) > 0 || (acc?.tokens?.length || 0) > 0,
+      )
+
+      // If we're past the first group and the last group has no accounts, stop fetching
+      if (lastGroupIndex > 0 && !lastGroupHasAccounts) {
+        setHasMoreAccounts(false)
+      }
+
       setResolvedGroups(resolved)
     } catch (e: any) {
       setError(e)
     } finally {
       setLoading(false)
     }
-  }, [seed, groups, connection, resolvedGroups, mnemonic])
+  }, [seed, groups, connection, resolvedGroups, mnemonic, hasMoreAccounts])
 
   useEffect(() => {
     fetchAccounts()
@@ -201,13 +216,16 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
     error,
     loading,
     derivationAccounts,
-    fetchMore: () =>
-      setGroups([
-        ...groups,
-        [
-          ...solanaWithChange(groups.length * 10, groups.length * 10 + 10),
-          ...solanaWithoutChange(groups.length * 10, groups.length * 10 + 10),
-        ],
-      ]),
+    fetchMore: () => {
+      if (hasMoreAccounts) {
+        setGroups([
+          ...groups,
+          [
+            ...solanaWithChange(groups.length * 10, groups.length * 10 + 10),
+            ...solanaWithoutChange(groups.length * 10, groups.length * 10 + 10),
+          ],
+        ])
+      }
+    },
   }
 }
