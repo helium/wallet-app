@@ -26,7 +26,7 @@ import { useKeyToAssetForHotspot } from '@hooks/useKeyToAssetForHotspot'
 import { useMaker } from '@hooks/useMaker'
 import { useMakerApproval } from '@hooks/useMakerApproval'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { MobileHotspotInfoV0, useMobileInfo } from '@hooks/useMobileInfo'
+import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -39,11 +39,11 @@ import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert, AlertButton, Linking } from 'react-native'
+import { Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
-import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY, Mints } from '../../utils/constants'
+import { IOT_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const IotMapDetails = ({
@@ -164,7 +164,6 @@ export const HotspotMapHotspotDetails = ({
   const { info: hntMint } = useMint(HNT_MINT)
   // Use entity key from kta since it's a buffer
   const iotInfoAcc = useIotInfo(kta?.entityKey)
-  const mobileInfoAcc = useMobileInfo(kta?.entityKey)
   const { metadata } = hotspotWithMeta?.content || {}
   const copyText = useCopyText()
   const collection = hotspot.grouping.find(
@@ -188,25 +187,20 @@ export const HotspotMapHotspotDetails = ({
     mplxMetadata?.updateAuthority.toBase58(),
   )
 
-  const [iotMakerApproval, mobileMakerApproval] = useMemo(() => {
+  const iotMakerApproval = useMemo(() => {
     if (!mplxMetadata) {
-      return [undefined, undefined]
+      return undefined
     }
 
-    return [
-      makerApprovalKey(IOT_CONFIG_KEY, mplxMetadata.updateAuthority)[0],
-      makerApprovalKey(MOBILE_CONFIG_KEY, mplxMetadata.updateAuthority)[0],
-    ]
+    return makerApprovalKey(IOT_CONFIG_KEY, mplxMetadata.updateAuthority)[0]
   }, [mplxMetadata])
 
   const { info: iotMakerApprovalAcc } = useMakerApproval(iotMakerApproval)
-  const { info: mobileMakerApprovalAcc } = useMakerApproval(mobileMakerApproval)
 
   // Need to repair this hotspot if it is missing an info struct but the maker
   // has approval for that subnetwork.
-  const needsRepair =
-    (Boolean(iotMakerApprovalAcc) && !iotInfoAcc?.info) ||
-    (Boolean(mobileMakerApprovalAcc) && !mobileInfoAcc?.info)
+  // Only check IOT hotspots since wallet app doesn't have serial numbers for mobile hotspots
+  const needsRepair = Boolean(iotMakerApprovalAcc) && !iotInfoAcc?.info
 
   const pendingIotRewards = useMemo(
     () =>
@@ -423,49 +417,12 @@ export const HotspotMapHotspotDetails = ({
     loading: onboardLoading,
     error: onboardError,
   } = useAsyncCallback(async () => {
-    if (!anchorProvider || !entityKey) {
-      return
-    }
-
-    const networkType: NetworkType | undefined = await new Promise(
-      (resolve) => {
-        const options: AlertButton[] = []
-
-        if (iotMakerApprovalAcc && !iotInfoAcc?.info) {
-          options.push({
-            text: 'IOT',
-            onPress: () => {
-              resolve('IOT')
-            },
-          })
-        }
-
-        if (mobileMakerApprovalAcc && !mobileInfoAcc?.info) {
-          options.push({
-            text: 'MOBILE',
-            onPress: () => {
-              resolve('MOBILE')
-            },
-          })
-        }
-
-        options.push({
-          text: t('generic.cancel'),
-          style: 'destructive',
-          onPress: () => {
-            resolve(undefined)
-          },
-        })
-
-        Alert.alert(
-          t('collectablesScreen.hotspots.onboard.title'),
-          t('collectablesScreen.hotspots.onboard.which'),
-          options,
-        )
-      },
-    )
-
-    if (!networkType) {
+    if (
+      !anchorProvider ||
+      !entityKey ||
+      !iotMakerApprovalAcc ||
+      iotInfoAcc?.info
+    ) {
       return
     }
 
@@ -476,7 +433,7 @@ export const HotspotMapHotspotDetails = ({
       params: {
         screen: 'AddGatewayBle',
         params: {
-          network: networkType,
+          network: 'IOT',
           onboardingAddress: entityKey,
         },
       },
