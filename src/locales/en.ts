@@ -1522,7 +1522,7 @@ export default {
     },
   },
   deprecatedTokensModal: {
-    title: 'Token Deprecation Notice',
+    title: 'HNT powers Helium',
     body: 'IOT and MOBILE tokens have been deprecated as of January 2025. You can swap them to HNT, the primary token powering Helium.\n\nIf you have staked positions, they will be unstaked first.',
     unstaked: 'Unstaked: {{amount}}',
     staked: 'Staked: {{amount}}',
