@@ -5,6 +5,7 @@ import CircleLoader from '@components/CircleLoader'
 import { FadeInFast } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
+import TokenIcon from '@components/TokenIcon'
 import {
   HNT_MINT,
   IOT_MINT,
@@ -21,6 +22,7 @@ import {
   useClosePosition,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { TransactionInstruction } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
@@ -58,6 +60,8 @@ const DeprecatedTokensModal: FC = () => {
   const { getRoute, getSwapTx } = useJupiter()
   const { tokenPrices } = usePollTokenPrices()
   const { language } = useLanguage()
+  const { json: iotJson } = useMetaplexMetadata(IOT_MINT)
+  const { json: mobileJson } = useMetaplexMetadata(MOBILE_MINT)
 
   const currency = useMemo(() => currencyRaw?.toLowerCase(), [currencyRaw])
 
@@ -550,7 +554,14 @@ const DeprecatedTokensModal: FC = () => {
               {t('deprecatedTokensModal.title')}
             </Text>
           </Box>
-          <Box flex={1} paddingHorizontal="m" justifyContent="space-between">
+          <Box paddingHorizontal="m" paddingVertical="m">
+            <Box padding="m" borderRadius="l">
+              <Text variant="body3Medium" color="white" opacity={0.6}>
+                {t('deprecatedTokensModal.body')}
+              </Text>
+            </Box>
+          </Box>
+          <Box flex={1} paddingHorizontal="m" justifyContent="center">
             {isLoadingPositions ? (
               <Box flex={1} justifyContent="center" alignItems="center">
                 <CircleLoader loaderSize={30} color="white" />
@@ -565,188 +576,144 @@ const DeprecatedTokensModal: FC = () => {
               </Box>
             ) : (
               <>
-                <Box>
-                  <Box
-                    marginTop="l"
-                    backgroundColor="black600"
-                    padding="m"
-                    borderRadius="l"
-                  >
-                    <Text variant="body3Medium" color="white" opacity={0.6}>
-                      {t('deprecatedTokensModal.body')}
-                    </Text>
-                  </Box>
-
-                  <Box marginTop="xl">
-                    {hasIot && (
-                      <Box
-                        backgroundColor="black600"
-                        borderRadius="l"
-                        padding="m"
-                        marginBottom="m"
-                      >
-                        <Box
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
-                          marginBottom="xs"
-                        >
-                          <Text variant="body2Medium" color="white">
-                            IOT
-                          </Text>
-                          {iotUsdValue && (
-                            <Text
-                              variant="body2Medium"
-                              color="white"
-                              opacity={0.7}
-                            >
-                              {iotUsdValue}
-                            </Text>
-                          )}
-                        </Box>
-                        <Box>
-                          <Text variant="body2" color="white" opacity={0.7}>
-                            Balance:{' '}
-                            {humanReadable(
-                              new BN(iotBalance?.toString() || '0'),
-                              iotDecimals || 6,
-                            )}
-                          </Text>
-                          {hasStakedIot && (
-                            <Text
-                              variant="body2"
-                              color="orange500"
-                              marginTop="xxs"
-                            >
-                              Staked:{' '}
-                              {humanReadable(
-                                iotStaked || new BN(0),
-                                iotDecimals || 6,
-                              )}
-                            </Text>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {hasMobile && (
-                      <Box
-                        backgroundColor="black600"
-                        borderRadius="l"
-                        padding="m"
-                        marginBottom="m"
-                      >
-                        <Box
-                          flexDirection="row"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
-                          marginBottom="xs"
-                        >
-                          <Text variant="body2Medium" color="white">
-                            MOBILE
-                          </Text>
-                          {mobileUsdValue && (
-                            <Text
-                              variant="body2Medium"
-                              color="white"
-                              opacity={0.7}
-                            >
-                              {mobileUsdValue}
-                            </Text>
-                          )}
-                        </Box>
-                        <Box>
-                          <Text variant="body2" color="white" opacity={0.7}>
-                            Balance:{' '}
-                            {humanReadable(
-                              new BN(mobileBalance?.toString() || '0'),
-                              mobileDecimals || 6,
-                            )}
-                          </Text>
-                          {hasStakedMobile && (
-                            <Text
-                              variant="body2"
-                              color="orange500"
-                              marginTop="xxs"
-                            >
-                              Staked:{' '}
-                              {humanReadable(
-                                mobileStaked || new BN(0),
-                                mobileDecimals || 6,
-                              )}
-                            </Text>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                  </Box>
-
-                  {/* Estimated HNT Preview */}
-                  {!loadingEstimate && estimatedHnt > 0 && (
+                <Box flex={1} justifyContent="center">
+                  {hasMobile && (
                     <Box
-                      marginTop="l"
                       backgroundColor="black600"
                       borderRadius="l"
                       padding="m"
+                      marginBottom="s"
                     >
-                      <Text
-                        variant="body2Medium"
-                        color="white"
-                        textAlign="center"
-                        marginBottom="xs"
+                      <Box flexDirection="row" gap="m" alignItems="center">
+                        {mobileJson?.image && (
+                          <TokenIcon img={mobileJson.image} size={30} />
+                        )}
+                        <Box flex={1}>
+                          <Text variant="body2Medium" color="white">
+                            MOBILE balance
+                          </Text>
+                        </Box>
+                        <Box alignItems="flex-end">
+                          <Text variant="body2Bold" color="white">
+                            {humanReadable(
+                              (mobileBalance || new BN(0)).add(
+                                mobileStaked || new BN(0),
+                              ),
+                              mobileDecimals || 6,
+                            )}
+                          </Text>
+                          {mobileUsdValue && (
+                            <Text variant="body3" color="white" opacity={0.7}>
+                              ~{mobileUsdValue}
+                            </Text>
+                          )}
+                        </Box>
+                      </Box>
+                    </Box>
+                  )}
+
+                  {hasIot && (
+                    <Box
+                      backgroundColor="black600"
+                      borderRadius="l"
+                      padding="m"
+                      marginBottom="s"
+                    >
+                      <Box flexDirection="row" gap="m" alignItems="center">
+                        {iotJson?.image && (
+                          <TokenIcon img={iotJson.image} size={30} />
+                        )}
+                        <Box flex={1}>
+                          <Text variant="body2Medium" color="white">
+                            IOT balance
+                          </Text>
+                        </Box>
+                        <Box alignItems="flex-end">
+                          <Text variant="body2Bold" color="white">
+                            {humanReadable(
+                              (iotBalance || new BN(0)).add(
+                                iotStaked || new BN(0),
+                              ),
+                              iotDecimals || 6,
+                            )}
+                          </Text>
+                          {iotUsdValue && (
+                            <Text variant="body3" color="white" opacity={0.7}>
+                              ~{iotUsdValue}
+                            </Text>
+                          )}
+                        </Box>
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* Estimated HNT Preview */}
+                  <Box marginTop="m">
+                    {!loadingEstimate && estimatedHnt > 0 && (
+                      <Box
+                        borderRadius="l"
+                        padding="m"
+                        backgroundColor="black600"
                       >
-                        {t('deprecatedTokensModal.estimatedReceive')}
-                      </Text>
-                      <Text
-                        variant="h3"
-                        color="greenBright500"
-                        textAlign="center"
-                      >
-                        ~{estimatedHnt.toFixed(4)} HNT
-                      </Text>
-                      {estimatedUsdValue && (
                         <Text
-                          variant="body2"
+                          variant="body2Medium"
+                          color="white"
+                          textAlign="center"
+                          marginBottom="xs"
+                        >
+                          {t('deprecatedTokensModal.estimatedReceive')}
+                        </Text>
+                        <Text
+                          variant="h3"
+                          color="greenBright500"
+                          textAlign="center"
+                        >
+                          ~{estimatedHnt.toFixed(4)} HNT
+                        </Text>
+                        {estimatedUsdValue && (
+                          <Text
+                            variant="body2"
+                            color="white"
+                            opacity={0.7}
+                            textAlign="center"
+                            marginTop="xs"
+                          >
+                            ~{estimatedUsdValue}
+                          </Text>
+                        )}
+                      </Box>
+                    )}
+
+                    {loadingEstimate && (
+                      <Box alignItems="center">
+                        <CircleLoader loaderSize={20} color="white" />
+                        <Text
+                          variant="body3"
                           color="white"
                           opacity={0.7}
-                          textAlign="center"
                           marginTop="xs"
                         >
-                          {estimatedUsdValue}
+                          {t('deprecatedTokensModal.calculatingEstimate')}
                         </Text>
-                      )}
-                    </Box>
-                  )}
+                      </Box>
+                    )}
 
-                  {loadingEstimate && (
-                    <Box marginTop="l" alignItems="center">
-                      <CircleLoader loaderSize={20} color="white" />
-                      <Text
-                        variant="body3"
-                        color="white"
-                        opacity={0.7}
-                        marginTop="xs"
-                      >
-                        {t('deprecatedTokensModal.calculatingEstimate')}
-                      </Text>
-                    </Box>
-                  )}
-
-                  {error && (
-                    <Box marginTop="m">
-                      <Text
-                        variant="body3Medium"
-                        color="red500"
-                        textAlign="center"
-                      >
-                        {error}
-                      </Text>
-                    </Box>
-                  )}
+                    {error && (
+                      <Box>
+                        <Text
+                          variant="body3Medium"
+                          color="red500"
+                          textAlign="center"
+                        >
+                          {error}
+                        </Text>
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
 
                 {processing && (
-                  <Box alignItems="center" marginBottom="xl">
+                  <Box alignItems="center">
                     <CircleLoader loaderSize={30} color="white" />
                     <Text
                       variant="body2Medium"
