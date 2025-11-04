@@ -2,7 +2,7 @@ import { TldParser } from '@onsol/tldparser'
 import { Connection, PublicKey } from '@solana/web3.js'
 import { resolve } from '@bonfida/spl-name-service'
 
-// retrives AllDomain domain owner.
+// retrieves AllDomain domain owner.
 // the domain must include the dot
 export async function fetchDomainOwner(connection: Connection, domain: string) {
   try {
