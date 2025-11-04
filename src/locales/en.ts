@@ -454,8 +454,8 @@ export default {
     locationNotFound: 'Location not found, Please try again.',
     mobileTitle: 'MOBILE',
     success: {
-      title: 'Succesfully Asserted Location!',
-      message: 'The location was succesfully submitted to the blockchain',
+      title: 'Successfully Asserted Location!',
+      message: 'The location was successfully submitted to the blockchain',
     },
     error: {
       wrongOwner:
