@@ -1,7 +1,7 @@
-import Close from '@assets/images/close.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import BackButton from '@components/BackButton'
 import useAlert from '@hooks/useAlert'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Color } from '@theme/theme'
@@ -47,7 +47,7 @@ const AccountImportScreen = () => {
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
   const {
-    params: { restoringAccount, accountAddress },
+    params: { restoringAccount = false, accountAddress = undefined } = {},
   } = useRoute<Route>()
   const [wordCount, setWordCount] = useState(12)
   const colors = useColors()
@@ -291,9 +291,7 @@ const AccountImportScreen = () => {
 
   return (
     <Box flex={1} backgroundColor="secondaryBackground">
-      <TouchableOpacityBox padding="l" onPress={navToTop} alignItems="flex-end">
-        <Close color={colors.primaryText} height={16} width={16} />
-      </TouchableOpacityBox>
+      <BackButton onPress={navToTop} paddingHorizontal="l" />
       <KeyboardAwareScrollView
         extraScrollHeight={80}
         enableOnAndroid

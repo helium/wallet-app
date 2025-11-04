@@ -182,7 +182,7 @@ const ImportPrivateKey = () => {
 
   return (
     <SafeAreaBox paddingHorizontal="l" flex={1}>
-      <BackButton onPress={onBack} paddingHorizontal="none" />
+      <BackButton onPress={onBack} paddingHorizontal="l" />
       <Text variant="h1" marginTop="m">
         {t('accountImport.privateKey.title')}
       </Text>
