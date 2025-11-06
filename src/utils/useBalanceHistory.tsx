@@ -59,24 +59,21 @@ export const useBalanceHistory = () => {
           clearTimeout(balanceHistoryCooldownTimer)
         }
 
-        // Delay balance history fetch by 8s to spread out after other providers
-        setTimeout(() => {
-          dispatch(
-            readBalanceHistory({
-              cluster,
-              solanaAddress: currentAccount?.solanaAddress || '',
-              currency,
-            }),
-          ).finally(() => {
-            isBalanceHistorySyncing = false
+        dispatch(
+          readBalanceHistory({
+            cluster,
+            solanaAddress: currentAccount?.solanaAddress || '',
+            currency,
+          }),
+        ).finally(() => {
+          isBalanceHistorySyncing = false
 
-            // Set cooldown for 15 seconds
-            balanceHistoryCooldownTimer = setTimeout(() => {
-              lastBalanceHistorySyncKey = ''
-              balanceHistoryCooldownTimer = null
-            }, 15000)
-          })
-        }, 8000)
+          // Set cooldown for 15 seconds
+          balanceHistoryCooldownTimer = setTimeout(() => {
+            lastBalanceHistorySyncKey = ''
+            balanceHistoryCooldownTimer = null
+          }, 15000)
+        })
       }
 
       appState.current = nextAppState

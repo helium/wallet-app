@@ -65,17 +65,13 @@ export const usePollTokenPrices = () => {
   }, [apiToken, currency, getTokenPrices, prevCurrency])
 
   useEffect(() => {
-    // Delay initial token prices fetch by 2s to spread out initial load
-    const initialTimer = setTimeout(() => {
-      getTokenPrices()
-    }, 2000)
+    getTokenPrices()
 
     const interval = setInterval(() => {
       getTokenPrices()
     }, 60000) // Every 1 min
 
     return () => {
-      clearTimeout(initialTimer)
       clearInterval(interval)
     }
   }, [getTokenPrices])

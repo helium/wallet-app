@@ -83,30 +83,22 @@ const useCollectables = (): WalletCollectables & {
     // Don't fetch collectables while locked - wait until unlock
     if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
 
-    // Delay collectables fetch by 7s to spread out memory load after unlock
-    // This comes after BalanceProvider (3s) and DeprecatedTokens (5s)
-    const timer = setTimeout(() => {
-      refresh()
+    refresh()
 
-      const subId = onLogs(
-        anchorProvider,
-        currentAccount?.solanaAddress || '',
-        () => {
-          refresh()
-        },
-      )
+    const subId = onLogs(
+      anchorProvider,
+      currentAccount?.solanaAddress || '',
+      () => {
+        refresh()
+      },
+    )
 
-      if (accountSubscriptionId.current !== null) {
-        removeAccountChangeListener(
-          anchorProvider,
-          accountSubscriptionId.current,
-        )
-      }
-      accountSubscriptionId.current = subId
-    }, 7000)
+    if (accountSubscriptionId.current !== null) {
+      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+    }
+    accountSubscriptionId.current = subId
 
     return () => {
-      clearTimeout(timer)
       if (accountSubscriptionId.current !== null) {
         removeAccountChangeListener(
           anchorProvider,
