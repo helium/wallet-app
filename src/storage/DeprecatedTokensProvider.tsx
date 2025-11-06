@@ -62,11 +62,6 @@ export const DeprecatedTokensProvider: React.FC<{
         owner: wallet,
         connection: anchorProvider.connection,
       })
-      // eslint-disable-next-line no-console
-      console.log('[DeprecatedTokensProvider] IOT position keys fetched', {
-        count: result?.positions?.length || 0,
-        timestamp: new Date().toISOString(),
-      })
       return result
     }, [enabled, wallet, anchorProvider?.connection])
 
@@ -79,11 +74,6 @@ export const DeprecatedTokensProvider: React.FC<{
         registrar: getRegistrarKey(MOBILE_MINT),
         owner: wallet,
         connection: anchorProvider.connection,
-      })
-      // eslint-disable-next-line no-console
-      console.log('[DeprecatedTokensProvider] MOBILE position keys fetched', {
-        count: result?.positions?.length || 0,
-        timestamp: new Date().toISOString(),
       })
       return result
     }, [enabled, wallet, anchorProvider?.connection])

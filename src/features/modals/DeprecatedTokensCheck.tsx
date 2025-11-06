@@ -17,14 +17,6 @@ const DeprecatedTokensCheck: FC = () => {
   const { hasDeprecatedTokens, loading } = useDeprecatedTokens()
 
   useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[DeprecatedTokensCheck] Effect triggered', {
-      hasWallet: !!wallet,
-      hasDeprecatedTokens,
-      loading,
-      timestamp: new Date().toISOString(),
-    })
-
     // Show modal if:
     // 1. Enough time has passed based on dismiss count (exponential backoff)
     // 2. User has IOT or MOBILE tokens
@@ -34,25 +26,9 @@ const DeprecatedTokensCheck: FC = () => {
       ? shouldShowDeprecatedTokens(walletAddress)
       : false
 
-    // eslint-disable-next-line no-console
-    console.log('[DeprecatedTokensCheck] Should show modal?', {
-      shouldShow,
-      hasDeprecatedTokens,
-      loading,
-      timestamp: new Date().toISOString(),
-    })
-
     if (shouldShow && hasDeprecatedTokens && !loading && wallet) {
-      // eslint-disable-next-line no-console
-      console.log('[DeprecatedTokensCheck] Scheduling modal display', {
-        timestamp: new Date().toISOString(),
-      })
       // Small delay to ensure UI is ready
       const timer = setTimeout(() => {
-        // eslint-disable-next-line no-console
-        console.log('[DeprecatedTokensCheck] Showing modal', {
-          timestamp: new Date().toISOString(),
-        })
         showModal({ type: 'DeprecatedTokens' })
       }, 1000)
 

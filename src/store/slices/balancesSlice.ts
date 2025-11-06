@@ -58,25 +58,11 @@ export const syncTokenAccounts = createAsyncThunk(
 
     // Check if sync is already in progress
     if (isSyncing) {
-      // eslint-disable-next-line no-console
-      console.log('[syncTokenAccounts] Sync already in progress, skipping', {
-        solanaAddress: acct?.solanaAddress,
-        timestamp: new Date().toISOString(),
-      })
       throw new Error('Sync already in progress')
     }
 
     // Check cooldown
     if (lastSyncKey === syncKey) {
-      // eslint-disable-next-line no-console
-      console.log(
-        '[syncTokenAccounts] Cooldown active, skipping duplicate sync',
-        {
-          solanaAddress: acct?.solanaAddress,
-          syncKey,
-          timestamp: new Date().toISOString(),
-        },
-      )
       throw new Error('Sync cooldown active')
     }
 
@@ -130,13 +116,6 @@ export const syncTokenAccounts = createAsyncThunk(
 
       // Set cooldown for 10 seconds
       cooldownTimer = setTimeout(() => {
-        // eslint-disable-next-line no-console
-        console.log(
-          '[syncTokenAccounts] Cooldown expired, allowing new syncs',
-          {
-            timestamp: new Date().toISOString(),
-          },
-        )
         lastSyncKey = ''
         cooldownTimer = null
       }, 10000)

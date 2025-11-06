@@ -97,23 +97,10 @@ const App = () => {
     'You have tried to read "wallet" on a WalletContext without providing one. Make sure to render a WalletProvider as an ancestor of the component that uses WalletContext',
   ])
 
-  // eslint-disable-next-line no-console
-  console.log('[App] Component rendering', {
-    timestamp: new Date().toISOString(),
-  })
-
   const { appState } = useAppState()
   const { restored: accountsRestored } = useAccountStorage()
   // const { cache } = useSolana()
   const { setOpenedNotification } = useNotificationStorage()
-
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log('[App] accountsRestored changed', {
-      accountsRestored,
-      timestamp: new Date().toISOString(),
-    })
-  }, [accountsRestored])
 
   const linking = useDeepLinking()
 
