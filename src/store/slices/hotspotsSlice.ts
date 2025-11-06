@@ -7,6 +7,10 @@ import { CompressedNFT } from 'src/types/solana'
 import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
+import { SyncGuard } from '../../utils/syncGuard'
+
+// Global hotspots sync guard to prevent overlapping requests
+const hotspotsSyncGuard = new SyncGuard()
 
 export type WalletHotspots = {
   loading: boolean
@@ -99,37 +103,48 @@ export const fetchHotspots = createAsyncThunk(
     limit?: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
-    const pubKey = new PublicKey(account.solanaAddress)
 
-    const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
-      pubKey,
-      anchorProvider,
-      page + 1,
-      limit,
-    )
+    const syncKey = `${_cluster}-${account.solanaAddress}-${page}`
 
-    const hotspotsMetadata = await solUtils.getCompressedNFTMetadata(
-      fetchedHotspots.items,
-    )
+    // Check if sync can proceed
+    if (!hotspotsSyncGuard.canSync(syncKey)) {
+      throw new Error('Hotspots sync already in progress or cooldown active')
+    }
 
-    const hotspotsRewards = await solUtils.getHotspotPendingRewards(
-      anchorProvider,
-      fetchedHotspots.items,
-    )
+    hotspotsSyncGuard.startSync(syncKey)
 
-    const hotspotsRecipients = await solUtils.getHotspotRecipients(
-      anchorProvider,
-      fetchedHotspots.items,
-    )
+    try {
+      const pubKey = new PublicKey(account.solanaAddress)
 
-    return {
-      fetchedHotspots,
-      hotspotsMetadata,
-      hotspotsRewards,
-      hotspotsRecipients,
-      page: page + 1,
-      limit,
-      total: fetchedHotspots.grandTotal,
+      const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+        pubKey,
+        anchorProvider,
+        page + 1,
+        limit,
+      )
+
+      // Batch the metadata, rewards, and recipients calls in parallel
+      const [hotspotsMetadata, hotspotsRewards, hotspotsRecipients] =
+        await Promise.all([
+          solUtils.getCompressedNFTMetadata(fetchedHotspots.items),
+          solUtils.getHotspotPendingRewards(
+            anchorProvider,
+            fetchedHotspots.items,
+          ),
+          solUtils.getHotspotRecipients(anchorProvider, fetchedHotspots.items),
+        ])
+
+      return {
+        fetchedHotspots,
+        hotspotsMetadata,
+        hotspotsRewards,
+        hotspotsRecipients,
+        page: page + 1,
+        limit,
+        total: fetchedHotspots.grandTotal,
+      }
+    } finally {
+      hotspotsSyncGuard.endSync()
     }
   },
 )

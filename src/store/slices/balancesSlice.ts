@@ -1,11 +1,12 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { AccountLayout, TOKEN_PROGRAM_ID, getMint } from '@solana/spl-token'
+import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
 import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
+import { SyncGuard } from '../../utils/syncGuard'
 
 type BalanceHistoryByCurrency = Record<string, AccountBalance[]>
 type BalanceHistoryByWallet = Record<string, BalanceHistoryByCurrency>
@@ -38,6 +39,9 @@ const initialState: BalancesState = {
   },
 }
 
+// Global sync guard to prevent overlapping syncs from ANY source
+const balancesSyncGuard = new SyncGuard()
+
 export const syncTokenAccounts = createAsyncThunk(
   'balances/syncTokenAccounts',
   async ({
@@ -49,41 +53,114 @@ export const syncTokenAccounts = createAsyncThunk(
     acct: CSAccount
     anchorProvider: AnchorProvider
   }): Promise<Tokens> => {
-    if (!acct?.solanaAddress) throw new Error('No solana account found')
+    const syncKey = `${_cluster}-${acct.solanaAddress}`
 
-    const pubKey = new PublicKey(acct.solanaAddress)
-    const { connection } = anchorProvider
-
-    const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
-      programId: TOKEN_PROGRAM_ID,
-    })
-
-    const solAcct = await connection.getAccountInfo(pubKey)
-
-    const atas = await Promise.all(
-      tokenAccounts.value.map(async (tokenAccount) => {
-        const accountData = AccountLayout.decode(tokenAccount.account.data)
-        const { mint } = accountData
-        const mintAcc = await getMint(connection, mint)
-
-        return {
-          tokenAccount: tokenAccount.pubkey.toBase58(),
-          mint: mint.toBase58(),
-          balance: Number(accountData.amount || 0),
-          decimals: mintAcc.decimals,
-        }
-      }),
-    )
-
-    const solBalance = solAcct?.lamports || 0
-    const sol = {
-      tokenAccount: acct.solanaAddress,
-      balance: solBalance,
+    // Check if sync can proceed
+    if (!balancesSyncGuard.canSync(syncKey)) {
+      throw new Error('Sync already in progress or cooldown active')
     }
 
-    return {
-      atas,
-      sol,
+    balancesSyncGuard.startSync(syncKey)
+
+    try {
+      if (!acct?.solanaAddress) throw new Error('No solana account found')
+
+      const pubKey = new PublicKey(acct.solanaAddress)
+      const { connection } = anchorProvider
+
+      const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
+        programId: TOKEN_PROGRAM_ID,
+      })
+
+      const solAcct = await connection.getAccountInfo(pubKey)
+
+      // Decode all token account data first
+      const tokenAccountsData = tokenAccounts.value.map((tokenAccount) => {
+        const accountData = AccountLayout.decode(tokenAccount.account.data)
+        return {
+          pubkey: tokenAccount.pubkey,
+          mint: accountData.mint,
+          amount: accountData.amount,
+        }
+      })
+
+      // Extract unique mints and batch fetch their info using getMultipleAccountsInfo
+      // Cap at 100 accounts per request due to RPC limits
+      const uniqueMints = [
+        ...new Set(tokenAccountsData.map((ta) => ta.mint.toBase58())),
+      ]
+      const uniqueMintPubkeys = uniqueMints.map((mint) => new PublicKey(mint))
+
+      // Batch requests in chunks of 100 to respect RPC limits
+      const BATCH_SIZE = 100
+      const mintInfos: { mint: string; decimals: number }[] = []
+
+      for (let i = 0; i < uniqueMintPubkeys.length; i += BATCH_SIZE) {
+        const batch = uniqueMintPubkeys.slice(i, i + BATCH_SIZE)
+        const batchMints = uniqueMints.slice(i, i + BATCH_SIZE)
+
+        try {
+          const mintAccountInfos = await connection.getMultipleAccountsInfo(
+            batch,
+          )
+
+          const batchMintInfos = batchMints.map((mintStr, index) => {
+            try {
+              const accountInfo = mintAccountInfos[index]
+              if (accountInfo && accountInfo.data) {
+                // Parse mint account data to get decimals (decimals is at offset 44)
+                const decimals = accountInfo.data[44]
+                return { mint: mintStr, decimals }
+              }
+              return { mint: mintStr, decimals: 0 }
+            } catch (error) {
+              console.warn(`Failed to parse mint info for ${mintStr}:`, error)
+              return { mint: mintStr, decimals: 0 }
+            }
+          })
+
+          mintInfos.push(...batchMintInfos)
+        } catch (error) {
+          console.warn(
+            `Failed to fetch mint batch ${i}-${i + BATCH_SIZE}:`,
+            error,
+          )
+          // Add fallback entries for this batch
+          const fallbackInfos = batchMints.map((mint) => ({
+            mint,
+            decimals: 0,
+          }))
+          mintInfos.push(...fallbackInfos)
+        }
+      }
+
+      // Create mint info lookup map
+      const mintInfoMap = new Map(
+        mintInfos.map((info) => [info.mint, info.decimals]),
+      )
+
+      // Build token accounts with batched mint info
+      const atas: TokenAccount[] = tokenAccountsData.map(
+        (tokenAccountData) => ({
+          tokenAccount: tokenAccountData.pubkey.toBase58(),
+          mint: tokenAccountData.mint.toBase58(),
+          balance: Number(tokenAccountData.amount || 0),
+          decimals: mintInfoMap.get(tokenAccountData.mint.toBase58()) || 0,
+        }),
+      )
+
+      const solBalance = solAcct?.lamports || 0
+      const sol = {
+        tokenAccount: acct.solanaAddress,
+        balance: solBalance,
+      }
+
+      return {
+        atas,
+        sol,
+      }
+    } finally {
+      balancesSyncGuard.endSync()
     }
   },
 )

@@ -3,26 +3,19 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
-import { useAccountFetchCache } from '@helium/account-fetch-cache-hooks'
-import {
-  DC_MINT,
-  HNT_MINT,
-  IOT_MINT,
-  MOBILE_MINT,
-  truthy,
-} from '@helium/spl-utils'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { useNavigation } from '@react-navigation/native'
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_TOKENS, useVisibleTokens } from '@storage/TokensProvider'
 import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { times } from 'lodash'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { AppState, RefreshControl } from 'react-native'
+import { RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import { GovMints } from '../../utils/constants'
@@ -31,6 +24,8 @@ import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
+
+const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
@@ -51,10 +46,9 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { t } = useTranslation()
   const { visibleTokens } = useVisibleTokens()
   const { currentAccount } = useAccountStorage()
-  const dispatch = useAppDispatch()
   const { anchorProvider, cluster } = useSolana()
   const colors = useColors()
-  const cache = useAccountFetchCache()
+  const dispatch = useAppDispatch()
 
   const { loading: refetchingTokens, execute: refetchTokens } =
     useAsyncCallback(async () => {
@@ -65,79 +59,28 @@ const AccountTokenList = ({ onLayout }: Props) => {
         !currentAccount?.solanaAddress
       )
         return
-      await dispatch(
-        syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
-      )
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const solAddr = new PublicKey(currentAccount!.solanaAddress!)
-      await Promise.all(
-        [...visibleTokens].filter(truthy).map(async (mintStr) => {
-          const ata = getAssociatedTokenAddressSync(
-            new PublicKey(mintStr),
-            solAddr,
-          )
-          const ataStr = ata.toBase58()
-          // Trigger a refetch on all visible token accounts
-          const result = await cache.search(
-            ata,
-            cache.keyToAccountParser.get(ataStr),
-            false,
-            true,
-          )
-          if (result?.account && cache.missingAccounts.has(ata.toBase58())) {
-            cache.missingAccounts.delete(ata.toBase58())
-            cache.updateCache(ataStr, result)
-          } else if (
-            !cache.genericCache.has(ataStr) ||
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            // eslint-disable-next-line
-            result != cache.genericCache[ataStr]
-          ) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            cache.updateCache(ataStr, result)
-            cache.emitter.raiseCacheUpdated(
-              ataStr,
-              true,
-              cache.keyToAccountParser.get(ataStr),
-            )
-          }
-          return result
-        }),
-      )
-      // Trigger a refetch on all sol
-      const result = await cache.search(
-        solAddr,
-        cache.keyToAccountParser.get(solAddr.toBase58()),
-        false,
-        true,
-      )
-      if (
-        !cache.genericCache.has(solAddr.toBase58()) ||
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // eslint-disable-next-line
-        result != cache.genericCache[solAddr.toBase58()]
-      ) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        cache.updateCache(solAddr.toBase58(), result)
+
+      // Trigger Redux state sync to get accurate balances from blockchain
+      // This is the source of truth and will update the UI correctly
+      try {
+        await dispatch(
+          syncTokenAccounts({
+            cluster,
+            acct: currentAccount,
+            anchorProvider,
+          }),
+        )
+        // Successfully synced token accounts
+      } catch (_err) {
+        // Swallow sync errors (likely cooldown blocks)
       }
     })
 
-  // Trigger refresh when the app comes into the foreground from the background
-  useEffect(() => {
-    const listener = AppState.addEventListener('change', (state) => {
-      if (state === 'active') {
-        refetchTokens()
-      }
-    })
-    return () => {
-      listener.remove()
-    }
-  }, [refetchTokens])
-
+  // Note: Removed automatic refresh on app state change since Balance.tsx
+  // already handles token syncing via syncTokenAccounts(). The UI updates
+  // automatically when Redux state changes.
+  //
+  // Manual refresh is still available via pull-to-refresh gesture.
   const onManageTokenList = useCallback(() => {
     navigation.navigate('AccountManageTokenListScreen')
   }, [navigation])
@@ -153,7 +96,23 @@ const AccountTokenList = ({ onLayout }: Props) => {
       )
       .map((ta) => ta.mint)
 
+    // Start with DEFAULT_TOKENS, then filter out any that have zero balance
+    // (unless they're not in tokenAccounts at all, meaning no account exists)
     const all = [...new Set([...DEFAULT_TOKENS, ...(taMints || [])])]
+      .filter((mintStr) => {
+        // If token has an account, only show if balance > 0
+        const tokenAccount = tokenAccounts?.find((ta) => ta.mint === mintStr)
+        if (tokenAccount) {
+          return (
+            tokenAccount.balance > 0 ||
+            tokenAccount.mint === DC_MINT.toBase58() ||
+            tokenAccount.mint === NATIVE_MINT.toBase58() ||
+            tokenAccount.mint === USDC_MINT.toBase58()
+          )
+        }
+        // If no token account exists, show the default token (user can add it later)
+        return true
+      })
       .sort((a, b) => {
         return getSortValue(b) - getSortValue(a)
       })

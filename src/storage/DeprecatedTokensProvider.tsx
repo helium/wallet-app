@@ -44,36 +44,52 @@ const DeprecatedTokensContext = createContext<
   DeprecatedTokensContextState | undefined
 >(undefined)
 
-export const DeprecatedTokensProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const DeprecatedTokensProvider: React.FC<{
+  children: ReactNode
+}> = ({ children }) => {
   const wallet = useCurrentWallet()
   const { anchorProvider } = useSolana()
 
-  // Fetch position keys
-  const { result: iotPositionKeys, loading: loadingIotPositionKeys } =
+  // Batch fetch position keys for both IOT and MOBILE to reduce RPC calls
+  const { result: positionKeysData, loading: loadingPositionKeys } =
     useAsync(async () => {
-      if (wallet && anchorProvider?.connection) {
-        return getPositionKeysForOwner({
-          registrar: getRegistrarKey(IOT_MINT),
-          owner: wallet,
-          connection: anchorProvider?.connection,
-        })
+      if (!wallet || !anchorProvider?.connection) {
+        return undefined
       }
-      return undefined
-    }, [wallet, anchorProvider])
 
-  const { result: mobilePositionKeys, loading: loadingMobilePositionKeys } =
-    useAsync(async () => {
-      if (wallet && anchorProvider?.connection) {
-        return getPositionKeysForOwner({
-          registrar: getRegistrarKey(MOBILE_MINT),
-          owner: wallet,
-          connection: anchorProvider?.connection,
-        })
+      try {
+        // Batch both position key fetches in parallel
+        const [iotPositionKeys, mobilePositionKeys] = await Promise.all([
+          getPositionKeysForOwner({
+            registrar: getRegistrarKey(IOT_MINT),
+            owner: wallet,
+            connection: anchorProvider.connection,
+          }),
+          getPositionKeysForOwner({
+            registrar: getRegistrarKey(MOBILE_MINT),
+            owner: wallet,
+            connection: anchorProvider.connection,
+          }),
+        ])
+
+        return {
+          iotPositionKeys,
+          mobilePositionKeys,
+        }
+      } catch (error) {
+        console.error(
+          '[DeprecatedTokensProvider] Position keys batch fetch error:',
+          error,
+        )
+        return undefined
       }
-      return undefined
-    }, [wallet, anchorProvider])
+    }, [wallet, anchorProvider?.connection])
+
+  // Extract individual results for compatibility
+  const iotPositionKeys = positionKeysData?.iotPositionKeys
+  const mobilePositionKeys = positionKeysData?.mobilePositionKeys
+  const loadingIotPositionKeys = loadingPositionKeys
+  const loadingMobilePositionKeys = loadingPositionKeys
 
   // Fetch positions
   const { accounts: iotPositions, loading: loadingIotPositions } = usePositions(

@@ -7,6 +7,10 @@ import { useAppDispatch } from '../store/store'
 import { readBalanceHistory } from '../store/slices/balancesSlice'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useSolana } from '../solana/SolanaProvider'
+import { SyncGuard } from './syncGuard'
+
+// Global balance history sync guard to prevent overlapping requests
+const balanceHistorySyncGuard = new SyncGuard()
 
 export const useBalanceHistory = () => {
   const { currentAccount } = useAccountStorage()
@@ -32,13 +36,25 @@ export const useBalanceHistory = () => {
         currency &&
         cluster
       ) {
+        const syncKey = `${cluster}-${currentAccount.solanaAddress}-${currency}`
+
+        // Check if sync can proceed
+        if (!balanceHistorySyncGuard.canSync(syncKey)) {
+          appState.current = nextAppState
+          return
+        }
+
+        balanceHistorySyncGuard.startSync(syncKey)
+
         dispatch(
           readBalanceHistory({
             cluster,
-            solanaAddress: currentAccount?.solanaAddress,
+            solanaAddress: currentAccount?.solanaAddress || '',
             currency,
           }),
-        )
+        ).finally(() => {
+          balanceHistorySyncGuard.endSync()
+        })
       }
 
       appState.current = nextAppState
@@ -61,13 +77,22 @@ export const useBalanceHistory = () => {
 
     prevQuery.current = query
 
+    // Check if sync can proceed
+    if (!balanceHistorySyncGuard.canSync(query)) {
+      return
+    }
+
+    balanceHistorySyncGuard.startSync(query)
+
     dispatch(
       readBalanceHistory({
         cluster,
         solanaAddress: currentAccount?.solanaAddress,
         currency,
       }),
-    )
+    ).finally(() => {
+      balanceHistorySyncGuard.endSync()
+    })
   }, [cluster, currency, currentAccount?.solanaAddress, dispatch])
 
   return { balanceHistory }

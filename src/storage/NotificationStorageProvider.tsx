@@ -21,6 +21,10 @@ import usePrevious from '../hooks/usePrevious'
 import { RootState } from '../store/rootReducer'
 import { useAccountStorage } from './AccountStorageProvider'
 import { Notification } from '../utils/walletApiV2'
+import { SyncGuard } from '../utils/syncGuard'
+
+// Global notification sync guard to prevent overlapping requests
+const notificationSyncGuard = new SyncGuard()
 
 const useNotificationStorageHook = () => {
   const [selectedList, setSelectedList] = useState<string>()
@@ -64,14 +68,32 @@ const useNotificationStorageHook = () => {
 
   const updateNotifications = useCallback(() => {
     if (prevSelectedList === selectedList) return
-    currentResources.map((r) =>
-      dispatch(
-        getNotifications({
-          resource: r,
-          wallet: currentAccount?.solanaAddress,
-        }),
-      ),
-    )
+
+    const syncKey = `${currentAccount?.solanaAddress}-${selectedList}`
+
+    // Check if sync can proceed
+    if (!notificationSyncGuard.canSync(syncKey)) {
+      return
+    }
+
+    notificationSyncGuard.startSync(syncKey)
+
+    // Batch all notification requests with a small delay between each
+    currentResources.forEach((r, index) => {
+      setTimeout(() => {
+        dispatch(
+          getNotifications({
+            resource: r,
+            wallet: currentAccount?.solanaAddress,
+          }),
+        ).finally(() => {
+          // Only reset sync flag after the last request
+          if (index === currentResources.length - 1) {
+            notificationSyncGuard.endSync()
+          }
+        })
+      }, index * 200) // 200ms between each request
+    })
   }, [
     currentAccount?.solanaAddress,
     currentResources,
@@ -81,6 +103,13 @@ const useNotificationStorageHook = () => {
   ])
 
   const updateAllNotifications = useCallback(() => {
+    const syncKey = `all-${currentAccount?.solanaAddress}`
+
+    // Check if sync can proceed
+    if (!notificationSyncGuard.canSync(syncKey)) {
+      return
+    }
+
     const all = without(
       [
         ...sortedAccounts.map(({ solanaAddress }) => solanaAddress),
@@ -90,14 +119,24 @@ const useNotificationStorageHook = () => {
       undefined,
     ) as string[]
 
-    all.map((r) =>
-      dispatch(
-        getNotifications({
-          resource: r,
-          wallet: currentAccount?.solanaAddress,
-        }),
-      ),
-    )
+    notificationSyncGuard.startSync(syncKey)
+
+    // Batch all notification requests with delays
+    all.forEach((r, index) => {
+      setTimeout(() => {
+        dispatch(
+          getNotifications({
+            resource: r,
+            wallet: currentAccount?.solanaAddress,
+          }),
+        ).finally(() => {
+          // Only reset sync flag after the last request
+          if (index === all.length - 1) {
+            notificationSyncGuard.endSync()
+          }
+        })
+      }, index * 300) // 300ms between each request for bulk updates
+    })
   }, [currentAccount?.solanaAddress, dispatch, sortedAccounts])
 
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
   fetchCollectables,
@@ -10,6 +11,10 @@ import {
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
 import { useSolana } from '../solana/SolanaProvider'
+import { SyncGuard } from '../utils/syncGuard'
+
+// Global collectables sync guard to prevent overlapping requests
+const collectablesSyncGuard = new SyncGuard()
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
@@ -18,6 +23,7 @@ const useCollectables = (): WalletCollectables & {
   const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number | null>(null)
   const { currentAccount } = useAccountStorage()
+  const { locked } = useAppStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
 
   useEffect(() => {
@@ -32,6 +38,16 @@ const useCollectables = (): WalletCollectables & {
     if (!currentAccount?.solanaAddress || !anchorProvider) {
       return
     }
+
+    const syncKey = `${cluster}-${currentAccount.solanaAddress}`
+
+    // Check if sync can proceed
+    if (!collectablesSyncGuard.canSync(syncKey)) {
+      return
+    }
+
+    collectablesSyncGuard.startSync(syncKey)
+
     const { connection } = anchorProvider
 
     dispatch(
@@ -40,23 +56,40 @@ const useCollectables = (): WalletCollectables & {
         cluster,
         connection,
       }),
-    )
+    ).finally(() => {
+      collectablesSyncGuard.endSync()
+    })
   }, [cluster, currentAccount, dispatch, anchorProvider])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
+    // Don't fetch collectables while locked - wait until unlock
+    if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
 
     refresh()
 
-    const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
-      refresh()
-    })
+    const subId = onLogs(
+      anchorProvider,
+      currentAccount?.solanaAddress || '',
+      () => {
+        refresh()
+      },
+    )
 
     if (accountSubscriptionId.current !== null) {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
     }
     accountSubscriptionId.current = subId
-  }, [anchorProvider, currentAccount, dispatch, refresh])
+
+    return () => {
+      if (accountSubscriptionId.current !== null) {
+        removeAccountChangeListener(
+          anchorProvider,
+          accountSubscriptionId.current,
+        )
+        accountSubscriptionId.current = null
+      }
+    }
+  }, [anchorProvider, currentAccount, dispatch, refresh, locked])
 
   if (
     !currentAccount?.solanaAddress ||
