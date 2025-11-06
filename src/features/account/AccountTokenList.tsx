@@ -3,15 +3,8 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
-import { useAccountFetchCache } from '@helium/account-fetch-cache-hooks'
-import {
-  DC_MINT,
-  HNT_MINT,
-  IOT_MINT,
-  MOBILE_MINT,
-  truthy,
-} from '@helium/spl-utils'
-import { NATIVE_MINT, getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -55,7 +48,6 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
   const colors = useColors()
-  const cache = useAccountFetchCache()
   const dispatch = useAppDispatch()
 
   const { loading: refetchingTokens, execute: refetchTokens } =
@@ -79,8 +71,8 @@ const AccountTokenList = ({ onLayout }: Props) => {
           }),
         )
         // Successfully synced token accounts
-      } catch (error) {
-        console.log('⚠️ syncTokenAccounts blocked by cooldown:', error)
+      } catch (_err) {
+        // Swallow sync errors (likely cooldown blocks)
       }
     })
 
@@ -89,7 +81,6 @@ const AccountTokenList = ({ onLayout }: Props) => {
   // automatically when Redux state changes.
   //
   // Manual refresh is still available via pull-to-refresh gesture.
-
   const onManageTokenList = useCallback(() => {
     navigation.navigate('AccountManageTokenListScreen')
   }, [navigation])
