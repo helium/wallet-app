@@ -6,6 +6,7 @@ import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
 import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
+import { SyncGuard } from '../../utils/syncGuard'
 
 type BalanceHistoryByCurrency = Record<string, AccountBalance[]>
 type BalanceHistoryByWallet = Record<string, BalanceHistoryByCurrency>
@@ -39,9 +40,7 @@ const initialState: BalancesState = {
 }
 
 // Global sync guard to prevent overlapping syncs from ANY source
-let isSyncing = false
-let lastSyncKey = ''
-let cooldownTimer: ReturnType<typeof setTimeout> | null = null
+const balancesSyncGuard = new SyncGuard()
 
 export const syncTokenAccounts = createAsyncThunk(
   'balances/syncTokenAccounts',
@@ -56,23 +55,12 @@ export const syncTokenAccounts = createAsyncThunk(
   }): Promise<Tokens> => {
     const syncKey = `${_cluster}-${acct.solanaAddress}`
 
-    // Check if sync is already in progress
-    if (isSyncing) {
-      throw new Error('Sync already in progress')
+    // Check if sync can proceed
+    if (!balancesSyncGuard.canSync(syncKey)) {
+      throw new Error('Sync already in progress or cooldown active')
     }
 
-    // Check cooldown
-    if (lastSyncKey === syncKey) {
-      throw new Error('Sync cooldown active')
-    }
-
-    isSyncing = true
-    lastSyncKey = syncKey
-
-    // Clear any existing cooldown timer
-    if (cooldownTimer) {
-      clearTimeout(cooldownTimer)
-    }
+    balancesSyncGuard.startSync(syncKey)
 
     try {
       if (!acct?.solanaAddress) throw new Error('No solana account found')
@@ -172,13 +160,7 @@ export const syncTokenAccounts = createAsyncThunk(
         sol,
       }
     } finally {
-      isSyncing = false
-
-      // Set cooldown for 10 seconds
-      cooldownTimer = setTimeout(() => {
-        lastSyncKey = ''
-        cooldownTimer = null
-      }, 10000)
+      balancesSyncGuard.endSync()
     }
   },
 )

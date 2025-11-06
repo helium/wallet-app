@@ -7,11 +7,10 @@ import { useAppDispatch } from '../store/store'
 import { readBalanceHistory } from '../store/slices/balancesSlice'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useSolana } from '../solana/SolanaProvider'
+import { SyncGuard } from './syncGuard'
 
 // Global balance history sync guard to prevent overlapping requests
-let isBalanceHistorySyncing = false
-let lastBalanceHistorySyncKey = ''
-let balanceHistoryCooldownTimer: ReturnType<typeof setTimeout> | null = null
+const balanceHistorySyncGuard = new SyncGuard()
 
 export const useBalanceHistory = () => {
   const { currentAccount } = useAccountStorage()
@@ -39,25 +38,13 @@ export const useBalanceHistory = () => {
       ) {
         const syncKey = `${cluster}-${currentAccount.solanaAddress}-${currency}`
 
-        // Check if sync is already in progress
-        if (isBalanceHistorySyncing) {
+        // Check if sync can proceed
+        if (!balanceHistorySyncGuard.canSync(syncKey)) {
           appState.current = nextAppState
           return
         }
 
-        // Check cooldown (15 seconds)
-        if (lastBalanceHistorySyncKey === syncKey) {
-          appState.current = nextAppState
-          return
-        }
-
-        isBalanceHistorySyncing = true
-        lastBalanceHistorySyncKey = syncKey
-
-        // Clear any existing cooldown timer
-        if (balanceHistoryCooldownTimer) {
-          clearTimeout(balanceHistoryCooldownTimer)
-        }
+        balanceHistorySyncGuard.startSync(syncKey)
 
         dispatch(
           readBalanceHistory({
@@ -66,13 +53,7 @@ export const useBalanceHistory = () => {
             currency,
           }),
         ).finally(() => {
-          isBalanceHistorySyncing = false
-
-          // Set cooldown for 15 seconds
-          balanceHistoryCooldownTimer = setTimeout(() => {
-            lastBalanceHistorySyncKey = ''
-            balanceHistoryCooldownTimer = null
-          }, 15000)
+          balanceHistorySyncGuard.endSync()
         })
       }
 
@@ -96,23 +77,12 @@ export const useBalanceHistory = () => {
 
     prevQuery.current = query
 
-    // Check if sync is already in progress
-    if (isBalanceHistorySyncing) {
+    // Check if sync can proceed
+    if (!balanceHistorySyncGuard.canSync(query)) {
       return
     }
 
-    // Check cooldown
-    if (lastBalanceHistorySyncKey === query) {
-      return
-    }
-
-    isBalanceHistorySyncing = true
-    lastBalanceHistorySyncKey = query
-
-    // Clear any existing cooldown timer
-    if (balanceHistoryCooldownTimer) {
-      clearTimeout(balanceHistoryCooldownTimer)
-    }
+    balanceHistorySyncGuard.startSync(query)
 
     dispatch(
       readBalanceHistory({
@@ -121,13 +91,7 @@ export const useBalanceHistory = () => {
         currency,
       }),
     ).finally(() => {
-      isBalanceHistorySyncing = false
-
-      // Set cooldown for 15 seconds
-      balanceHistoryCooldownTimer = setTimeout(() => {
-        lastBalanceHistorySyncKey = ''
-        balanceHistoryCooldownTimer = null
-      }, 15000)
+      balanceHistorySyncGuard.endSync()
     })
   }, [cluster, currency, currentAccount?.solanaAddress, dispatch])
 

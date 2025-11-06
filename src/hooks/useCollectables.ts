@@ -11,11 +11,10 @@ import {
 import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
 import { useSolana } from '../solana/SolanaProvider'
+import { SyncGuard } from '../utils/syncGuard'
 
 // Global collectables sync guard to prevent overlapping requests
-let isCollectablesSyncing = false
-let lastCollectablesSyncKey = ''
-let collectablesCooldownTimer: ReturnType<typeof setTimeout> | null = null
+const collectablesSyncGuard = new SyncGuard()
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
@@ -42,23 +41,12 @@ const useCollectables = (): WalletCollectables & {
 
     const syncKey = `${cluster}-${currentAccount.solanaAddress}`
 
-    // Check if sync is already in progress
-    if (isCollectablesSyncing) {
+    // Check if sync can proceed
+    if (!collectablesSyncGuard.canSync(syncKey)) {
       return
     }
 
-    // Check cooldown (10 seconds)
-    if (lastCollectablesSyncKey === syncKey) {
-      return
-    }
-
-    isCollectablesSyncing = true
-    lastCollectablesSyncKey = syncKey
-
-    // Clear any existing cooldown timer
-    if (collectablesCooldownTimer) {
-      clearTimeout(collectablesCooldownTimer)
-    }
+    collectablesSyncGuard.startSync(syncKey)
 
     const { connection } = anchorProvider
 
@@ -69,13 +57,7 @@ const useCollectables = (): WalletCollectables & {
         connection,
       }),
     ).finally(() => {
-      isCollectablesSyncing = false
-
-      // Set cooldown for 10 seconds
-      collectablesCooldownTimer = setTimeout(() => {
-        lastCollectablesSyncKey = ''
-        collectablesCooldownTimer = null
-      }, 10000)
+      collectablesSyncGuard.endSync()
     })
   }, [cluster, currentAccount, dispatch, anchorProvider])
 

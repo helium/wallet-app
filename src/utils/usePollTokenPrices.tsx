@@ -5,11 +5,10 @@ import { RootState } from '../store/rootReducer'
 import { useAppDispatch } from '../store/store'
 import { readTokenPrices } from '../store/slices/balancesSlice'
 import usePrevious from '../hooks/usePrevious'
+import { SyncGuard } from './syncGuard'
 
 // Global token prices sync guard to prevent overlapping requests
-let isTokenPricesSyncing = false
-let lastTokenPricesSyncKey = ''
-let tokenPricesCooldownTimer: ReturnType<typeof setTimeout> | null = null
+const tokenPricesSyncGuard = new SyncGuard()
 
 export const usePollTokenPrices = () => {
   const { currency } = useAppStorage()
@@ -25,36 +24,19 @@ export const usePollTokenPrices = () => {
 
     const syncKey = currency.toLowerCase()
 
-    // Check if sync is already in progress
-    if (isTokenPricesSyncing) {
+    // Check if sync can proceed
+    if (!tokenPricesSyncGuard.canSync(syncKey)) {
       return
     }
 
-    // Check cooldown (30 seconds for token prices)
-    if (lastTokenPricesSyncKey === syncKey) {
-      return
-    }
-
-    isTokenPricesSyncing = true
-    lastTokenPricesSyncKey = syncKey
-
-    // Clear any existing cooldown timer
-    if (tokenPricesCooldownTimer) {
-      clearTimeout(tokenPricesCooldownTimer)
-    }
+    tokenPricesSyncGuard.startSync(syncKey)
 
     dispatch(
       readTokenPrices({
         currency: currency.toLowerCase(),
       }),
     ).finally(() => {
-      isTokenPricesSyncing = false
-
-      // Set cooldown for 30 seconds
-      tokenPricesCooldownTimer = setTimeout(() => {
-        lastTokenPricesSyncKey = ''
-        tokenPricesCooldownTimer = null
-      }, 30000)
+      tokenPricesSyncGuard.endSync()
     })
   }, [apiToken, currency, dispatch])
 

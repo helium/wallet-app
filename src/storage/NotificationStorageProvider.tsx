@@ -21,11 +21,10 @@ import usePrevious from '../hooks/usePrevious'
 import { RootState } from '../store/rootReducer'
 import { useAccountStorage } from './AccountStorageProvider'
 import { Notification } from '../utils/walletApiV2'
+import { SyncGuard } from '../utils/syncGuard'
 
 // Global notification sync guard to prevent overlapping requests
-let isNotificationSyncing = false
-let lastNotificationSyncKey = ''
-let notificationCooldownTimer: ReturnType<typeof setTimeout> | null = null
+const notificationSyncGuard = new SyncGuard()
 
 const useNotificationStorageHook = () => {
   const [selectedList, setSelectedList] = useState<string>()
@@ -72,23 +71,12 @@ const useNotificationStorageHook = () => {
 
     const syncKey = `${currentAccount?.solanaAddress}-${selectedList}`
 
-    // Check if sync is already in progress
-    if (isNotificationSyncing) {
+    // Check if sync can proceed
+    if (!notificationSyncGuard.canSync(syncKey)) {
       return
     }
 
-    // Check cooldown (5 seconds)
-    if (lastNotificationSyncKey === syncKey) {
-      return
-    }
-
-    isNotificationSyncing = true
-    lastNotificationSyncKey = syncKey
-
-    // Clear any existing cooldown timer
-    if (notificationCooldownTimer) {
-      clearTimeout(notificationCooldownTimer)
-    }
+    notificationSyncGuard.startSync(syncKey)
 
     // Batch all notification requests with a small delay between each
     currentResources.forEach((r, index) => {
@@ -101,13 +89,7 @@ const useNotificationStorageHook = () => {
         ).finally(() => {
           // Only reset sync flag after the last request
           if (index === currentResources.length - 1) {
-            isNotificationSyncing = false
-
-            // Set cooldown for 5 seconds
-            notificationCooldownTimer = setTimeout(() => {
-              lastNotificationSyncKey = ''
-              notificationCooldownTimer = null
-            }, 5000)
+            notificationSyncGuard.endSync()
           }
         })
       }, index * 200) // 200ms between each request
@@ -121,8 +103,10 @@ const useNotificationStorageHook = () => {
   ])
 
   const updateAllNotifications = useCallback(() => {
-    // Check if sync is already in progress
-    if (isNotificationSyncing) {
+    const syncKey = `all-${currentAccount?.solanaAddress}`
+
+    // Check if sync can proceed
+    if (!notificationSyncGuard.canSync(syncKey)) {
       return
     }
 
@@ -135,7 +119,7 @@ const useNotificationStorageHook = () => {
       undefined,
     ) as string[]
 
-    isNotificationSyncing = true
+    notificationSyncGuard.startSync(syncKey)
 
     // Batch all notification requests with delays
     all.forEach((r, index) => {
@@ -148,7 +132,7 @@ const useNotificationStorageHook = () => {
         ).finally(() => {
           // Only reset sync flag after the last request
           if (index === all.length - 1) {
-            isNotificationSyncing = false
+            notificationSyncGuard.endSync()
           }
         })
       }, index * 300) // 300ms between each request for bulk updates

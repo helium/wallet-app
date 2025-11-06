@@ -7,11 +7,10 @@ import { CompressedNFT } from 'src/types/solana'
 import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
+import { SyncGuard } from '../../utils/syncGuard'
 
 // Global hotspots sync guard to prevent overlapping requests
-let isHotspotsSyncing = false
-let lastHotspotsSyncKey = ''
-let hotspotsCooldownTimer: ReturnType<typeof setTimeout> | null = null
+const hotspotsSyncGuard = new SyncGuard()
 
 export type WalletHotspots = {
   loading: boolean
@@ -107,23 +106,12 @@ export const fetchHotspots = createAsyncThunk(
 
     const syncKey = `${_cluster}-${account.solanaAddress}-${page}`
 
-    // Check if sync is already in progress
-    if (isHotspotsSyncing) {
-      throw new Error('Hotspots sync already in progress')
+    // Check if sync can proceed
+    if (!hotspotsSyncGuard.canSync(syncKey)) {
+      throw new Error('Hotspots sync already in progress or cooldown active')
     }
 
-    // Check cooldown (15 seconds)
-    if (lastHotspotsSyncKey === syncKey) {
-      throw new Error('Hotspots sync cooldown active')
-    }
-
-    isHotspotsSyncing = true
-    lastHotspotsSyncKey = syncKey
-
-    // Clear any existing cooldown timer
-    if (hotspotsCooldownTimer) {
-      clearTimeout(hotspotsCooldownTimer)
-    }
+    hotspotsSyncGuard.startSync(syncKey)
 
     try {
       const pubKey = new PublicKey(account.solanaAddress)
@@ -156,13 +144,7 @@ export const fetchHotspots = createAsyncThunk(
         total: fetchedHotspots.grandTotal,
       }
     } finally {
-      isHotspotsSyncing = false
-
-      // Set cooldown for 15 seconds
-      hotspotsCooldownTimer = setTimeout(() => {
-        lastHotspotsSyncKey = ''
-        hotspotsCooldownTimer = null
-      }, 15000)
+      hotspotsSyncGuard.endSync()
     }
   },
 )
