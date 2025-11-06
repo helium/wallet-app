@@ -60,10 +60,7 @@ const GovernanceContext = createContext<IGovernanceContextState>(
   {} as IGovernanceContextState,
 )
 
-const GovernanceProvider: FC<{ children: ReactNode; enabled?: boolean }> = ({
-  children,
-  enabled = true,
-}) => {
+const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { anchorProvider } = useSolana()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const currentRoute = useCurrentRoute()
@@ -74,11 +71,52 @@ const GovernanceProvider: FC<{ children: ReactNode; enabled?: boolean }> = ({
   const networkName = useMemo(() => networkToName[network], [network])
   const mint = useMemo(() => networksToMint[network], [network])
   const registrarKey = useMemo(() => mint && getRegistrarKey(mint), [mint])
+  // Batch all governance data fetching to reduce RPC calls
+  const { loading: loadingGovernanceData, result: governanceData } =
+    useAsync(async () => {
+      if (!anchorProvider || !mint || !registrarKey) return undefined
+
+      const { connection } = anchorProvider
+      const organizationKeys = [
+        organizationKey(networkToName.hnt)[0],
+        organizationKey(networkToName.mobile)[0],
+        organizationKey(networkToName.iot)[0],
+      ]
+
+      try {
+        // Batch all account fetches in parallel
+        const [
+          mintAccount,
+          registrarAccount,
+          subDaosResult,
+          ...organizationAccounts
+        ] = await Promise.all([
+          connection.getAccountInfo(mint),
+          connection.getAccountInfo(registrarKey),
+          getSubDaos(anchorProvider),
+          ...organizationKeys.map((key) => connection.getAccountInfo(key)),
+        ])
+
+        return {
+          mintAccount,
+          registrarAccount,
+          subDaos: subDaosResult,
+          hntOrgAccount: organizationAccounts[0],
+          mobileOrgAccount: organizationAccounts[1],
+          iotOrgAccount: organizationAccounts[2],
+        }
+      } catch (error) {
+        console.error('[GovernanceProvider] Batch fetch error:', error)
+        return undefined
+      }
+    }, [anchorProvider, mint, registrarKey])
+
+  // Fallback to individual hooks for parsing (these won't make additional RPC calls if data exists)
   const { loading: loadingMint, info: mintAcc } = useMint(
-    enabled ? mint : undefined,
+    !governanceData ? mint : undefined,
   )
   const { loading: loadingRegistrar, info: registrar } = useRegistrar(
-    enabled ? registrarKey : undefined,
+    !governanceData ? registrarKey : undefined,
   )
 
   const organization = useMemo(
@@ -87,20 +125,21 @@ const GovernanceProvider: FC<{ children: ReactNode; enabled?: boolean }> = ({
   )
 
   const { loading: loadingSubdaos, result: subDaos } = useAsync(async () => {
-    if (!enabled || !anchorProvider) return undefined
+    if (governanceData?.subDaos) return governanceData.subDaos
+    if (!anchorProvider || governanceData !== undefined) return undefined
     return getSubDaos(anchorProvider)
-  }, [anchorProvider, enabled])
+  }, [anchorProvider, governanceData])
 
   const { loading: loadingHntOrg, info: hntOrg } = useOrganization(
-    enabled ? organizationKey(networkToName.hnt)[0] : undefined,
+    !governanceData ? organizationKey(networkToName.hnt)[0] : undefined,
   )
 
   const { loading: loadingMobileOrg, info: mobileOrg } = useOrganization(
-    enabled ? organizationKey(networkToName.mobile)[0] : undefined,
+    !governanceData ? organizationKey(networkToName.mobile)[0] : undefined,
   )
 
   const { loading: loadingIotOrg, info: iotOrg } = useOrganization(
-    enabled ? organizationKey(networkToName.iot)[0] : undefined,
+    !governanceData ? organizationKey(networkToName.iot)[0] : undefined,
   )
 
   const loadingOrgs = useMemo(
@@ -109,8 +148,19 @@ const GovernanceProvider: FC<{ children: ReactNode; enabled?: boolean }> = ({
   )
 
   const loading = useMemo(
-    () => loadingRegistrar || loadingMint || loadingSubdaos || loadingOrgs,
-    [loadingRegistrar, loadingMint, loadingSubdaos, loadingOrgs],
+    () =>
+      loadingGovernanceData ||
+      loadingRegistrar ||
+      loadingMint ||
+      loadingSubdaos ||
+      loadingOrgs,
+    [
+      loadingGovernanceData,
+      loadingRegistrar,
+      loadingMint,
+      loadingSubdaos,
+      loadingOrgs,
+    ],
   )
 
   const proposalCountByMint = useMemo(() => {

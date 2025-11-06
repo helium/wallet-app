@@ -8,6 +8,11 @@ import { DEFAULT_PAGE_AMOUNT } from '../../features/collectables/HotspotList'
 import { CSAccount } from '../../storage/cloudStorage'
 import * as solUtils from '../../utils/solanaUtils'
 
+// Global hotspots sync guard to prevent overlapping requests
+let isHotspotsSyncing = false
+let lastHotspotsSyncKey = ''
+let hotspotsCooldownTimer: ReturnType<typeof setTimeout> | null = null
+
 export type WalletHotspots = {
   loading: boolean
   fetchingMore: boolean
@@ -99,37 +104,65 @@ export const fetchHotspots = createAsyncThunk(
     limit?: number
   }) => {
     if (!account.solanaAddress) throw new Error('Solana address missing')
-    const pubKey = new PublicKey(account.solanaAddress)
 
-    const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
-      pubKey,
-      anchorProvider,
-      page + 1,
-      limit,
-    )
+    const syncKey = `${_cluster}-${account.solanaAddress}-${page}`
 
-    const hotspotsMetadata = await solUtils.getCompressedNFTMetadata(
-      fetchedHotspots.items,
-    )
+    // Check if sync is already in progress
+    if (isHotspotsSyncing) {
+      throw new Error('Hotspots sync already in progress')
+    }
 
-    const hotspotsRewards = await solUtils.getHotspotPendingRewards(
-      anchorProvider,
-      fetchedHotspots.items,
-    )
+    // Check cooldown (15 seconds)
+    if (lastHotspotsSyncKey === syncKey) {
+      throw new Error('Hotspots sync cooldown active')
+    }
 
-    const hotspotsRecipients = await solUtils.getHotspotRecipients(
-      anchorProvider,
-      fetchedHotspots.items,
-    )
+    isHotspotsSyncing = true
+    lastHotspotsSyncKey = syncKey
 
-    return {
-      fetchedHotspots,
-      hotspotsMetadata,
-      hotspotsRewards,
-      hotspotsRecipients,
-      page: page + 1,
-      limit,
-      total: fetchedHotspots.grandTotal,
+    // Clear any existing cooldown timer
+    if (hotspotsCooldownTimer) {
+      clearTimeout(hotspotsCooldownTimer)
+    }
+
+    try {
+      const pubKey = new PublicKey(account.solanaAddress)
+
+      const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+        pubKey,
+        anchorProvider,
+        page + 1,
+        limit,
+      )
+
+      // Batch the metadata, rewards, and recipients calls in parallel
+      const [hotspotsMetadata, hotspotsRewards, hotspotsRecipients] =
+        await Promise.all([
+          solUtils.getCompressedNFTMetadata(fetchedHotspots.items),
+          solUtils.getHotspotPendingRewards(
+            anchorProvider,
+            fetchedHotspots.items,
+          ),
+          solUtils.getHotspotRecipients(anchorProvider, fetchedHotspots.items),
+        ])
+
+      return {
+        fetchedHotspots,
+        hotspotsMetadata,
+        hotspotsRewards,
+        hotspotsRecipients,
+        page: page + 1,
+        limit,
+        total: fetchedHotspots.grandTotal,
+      }
+    } finally {
+      isHotspotsSyncing = false
+
+      // Set cooldown for 15 seconds
+      hotspotsCooldownTimer = setTimeout(() => {
+        lastHotspotsSyncKey = ''
+        hotspotsCooldownTimer = null
+      }, 15000)
     }
   },
 )

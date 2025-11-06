@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { useAppStorage } from '../storage/AppStorageProvider'
 import { RootState } from '../store/rootReducer'
 import {
   fetchCollectables,
@@ -11,6 +12,11 @@ import { useAppDispatch } from '../store/store'
 import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
 import { useSolana } from '../solana/SolanaProvider'
 
+// Global collectables sync guard to prevent overlapping requests
+let isCollectablesSyncing = false
+let lastCollectablesSyncKey = ''
+let collectablesCooldownTimer: ReturnType<typeof setTimeout> | null = null
+
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
 } => {
@@ -18,6 +24,7 @@ const useCollectables = (): WalletCollectables & {
   const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number | null>(null)
   const { currentAccount } = useAccountStorage()
+  const { locked } = useAppStorage()
   const collectables = useSelector((state: RootState) => state.collectables)
 
   useEffect(() => {
@@ -32,6 +39,27 @@ const useCollectables = (): WalletCollectables & {
     if (!currentAccount?.solanaAddress || !anchorProvider) {
       return
     }
+
+    const syncKey = `${cluster}-${currentAccount.solanaAddress}`
+
+    // Check if sync is already in progress
+    if (isCollectablesSyncing) {
+      return
+    }
+
+    // Check cooldown (10 seconds)
+    if (lastCollectablesSyncKey === syncKey) {
+      return
+    }
+
+    isCollectablesSyncing = true
+    lastCollectablesSyncKey = syncKey
+
+    // Clear any existing cooldown timer
+    if (collectablesCooldownTimer) {
+      clearTimeout(collectablesCooldownTimer)
+    }
+
     const { connection } = anchorProvider
 
     dispatch(
@@ -40,23 +68,54 @@ const useCollectables = (): WalletCollectables & {
         cluster,
         connection,
       }),
-    )
+    ).finally(() => {
+      isCollectablesSyncing = false
+
+      // Set cooldown for 10 seconds
+      collectablesCooldownTimer = setTimeout(() => {
+        lastCollectablesSyncKey = ''
+        collectablesCooldownTimer = null
+      }, 10000)
+    })
   }, [cluster, currentAccount, dispatch, anchorProvider])
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
+    // Don't fetch collectables while locked - wait until unlock
+    if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
 
-    refresh()
-
-    const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
+    // Delay collectables fetch by 7s to spread out memory load after unlock
+    // This comes after BalanceProvider (3s) and DeprecatedTokens (5s)
+    const timer = setTimeout(() => {
       refresh()
-    })
 
-    if (accountSubscriptionId.current !== null) {
-      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+      const subId = onLogs(
+        anchorProvider,
+        currentAccount?.solanaAddress || '',
+        () => {
+          refresh()
+        },
+      )
+
+      if (accountSubscriptionId.current !== null) {
+        removeAccountChangeListener(
+          anchorProvider,
+          accountSubscriptionId.current,
+        )
+      }
+      accountSubscriptionId.current = subId
+    }, 7000)
+
+    return () => {
+      clearTimeout(timer)
+      if (accountSubscriptionId.current !== null) {
+        removeAccountChangeListener(
+          anchorProvider,
+          accountSubscriptionId.current,
+        )
+        accountSubscriptionId.current = null
+      }
     }
-    accountSubscriptionId.current = subId
-  }, [anchorProvider, currentAccount, dispatch, refresh])
+  }, [anchorProvider, currentAccount, dispatch, refresh, locked])
 
   if (
     !currentAccount?.solanaAddress ||

@@ -22,6 +22,11 @@ import { RootState } from '../store/rootReducer'
 import { useAccountStorage } from './AccountStorageProvider'
 import { Notification } from '../utils/walletApiV2'
 
+// Global notification sync guard to prevent overlapping requests
+let isNotificationSyncing = false
+let lastNotificationSyncKey = ''
+let notificationCooldownTimer: ReturnType<typeof setTimeout> | null = null
+
 const useNotificationStorageHook = () => {
   const [selectedList, setSelectedList] = useState<string>()
   const prevSelectedList = usePrevious(selectedList)
@@ -64,14 +69,49 @@ const useNotificationStorageHook = () => {
 
   const updateNotifications = useCallback(() => {
     if (prevSelectedList === selectedList) return
-    currentResources.map((r) =>
-      dispatch(
-        getNotifications({
-          resource: r,
-          wallet: currentAccount?.solanaAddress,
-        }),
-      ),
-    )
+
+    const syncKey = `${currentAccount?.solanaAddress}-${selectedList}`
+
+    // Check if sync is already in progress
+    if (isNotificationSyncing) {
+      return
+    }
+
+    // Check cooldown (5 seconds)
+    if (lastNotificationSyncKey === syncKey) {
+      return
+    }
+
+    isNotificationSyncing = true
+    lastNotificationSyncKey = syncKey
+
+    // Clear any existing cooldown timer
+    if (notificationCooldownTimer) {
+      clearTimeout(notificationCooldownTimer)
+    }
+
+    // Batch all notification requests with a small delay between each
+    currentResources.forEach((r, index) => {
+      setTimeout(() => {
+        dispatch(
+          getNotifications({
+            resource: r,
+            wallet: currentAccount?.solanaAddress,
+          }),
+        ).finally(() => {
+          // Only reset sync flag after the last request
+          if (index === currentResources.length - 1) {
+            isNotificationSyncing = false
+
+            // Set cooldown for 5 seconds
+            notificationCooldownTimer = setTimeout(() => {
+              lastNotificationSyncKey = ''
+              notificationCooldownTimer = null
+            }, 5000)
+          }
+        })
+      }, index * 200) // 200ms between each request
+    })
   }, [
     currentAccount?.solanaAddress,
     currentResources,
@@ -81,6 +121,11 @@ const useNotificationStorageHook = () => {
   ])
 
   const updateAllNotifications = useCallback(() => {
+    // Check if sync is already in progress
+    if (isNotificationSyncing) {
+      return
+    }
+
     const all = without(
       [
         ...sortedAccounts.map(({ solanaAddress }) => solanaAddress),
@@ -90,14 +135,24 @@ const useNotificationStorageHook = () => {
       undefined,
     ) as string[]
 
-    all.map((r) =>
-      dispatch(
-        getNotifications({
-          resource: r,
-          wallet: currentAccount?.solanaAddress,
-        }),
-      ),
-    )
+    isNotificationSyncing = true
+
+    // Batch all notification requests with delays
+    all.forEach((r, index) => {
+      setTimeout(() => {
+        dispatch(
+          getNotifications({
+            resource: r,
+            wallet: currentAccount?.solanaAddress,
+          }),
+        ).finally(() => {
+          // Only reset sync flag after the last request
+          if (index === all.length - 1) {
+            isNotificationSyncing = false
+          }
+        })
+      }, index * 300) // 300ms between each request for bulk updates
+    })
   }, [currentAccount?.solanaAddress, dispatch, sortedAccounts])
 
   useEffect(() => {

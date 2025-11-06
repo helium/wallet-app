@@ -12,7 +12,7 @@ import globalStyles from '@theme/globalStyles'
 import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import * as SplashLib from 'expo-splash-screen'
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { LogBox } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from 'react-native-config'
@@ -38,7 +38,6 @@ import './polyfill'
 import SolanaProvider from './solana/SolanaProvider'
 import WalletSignProvider from './solana/WalletSignProvider'
 import { useAccountStorage } from './storage/AccountStorageProvider'
-import { useAppStorage } from './storage/AppStorageProvider'
 import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
@@ -47,36 +46,6 @@ import { useDeepLinking } from './utils/linking'
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
 })
-
-// Wrapper to defer heavy data fetching to prevent OOM on Face ID unlock
-const DeferredDataFetchWrapper = ({
-  children,
-}: {
-  children: React.ReactNode
-}) => {
-  const [shouldFetchDeprecated, setShouldFetchDeprecated] = useState(false)
-  const { locked } = useAppStorage()
-
-  useEffect(() => {
-    if (!locked) {
-      // Delay deprecated tokens fetch by 5 seconds after unlock
-      // This spreads out memory load from all the simultaneous provider fetches
-      const timer = setTimeout(() => {
-        setShouldFetchDeprecated(true)
-      }, 5000)
-      return () => clearTimeout(timer)
-    }
-    return undefined
-  }, [locked])
-
-  return (
-    <GovernanceProvider enabled={!locked}>
-      <DeprecatedTokensProvider enabled={shouldFetchDeprecated && !locked}>
-        {children}
-      </DeprecatedTokensProvider>
-    </GovernanceProvider>
-  )
-}
 
 const App = () => {
   LogBox.ignoreLogs([
@@ -175,7 +144,7 @@ const App = () => {
                                       <TokensProvider>
                                         <ModalProvider>
                                           <WalletSignProvider>
-                                            <DeferredDataFetchWrapper>
+                                            <GovernanceProvider>
                                               <AutoGasBanner />
                                               <NetworkAwareStatusBar />
                                               <RootNavigator />
@@ -183,10 +152,12 @@ const App = () => {
                                               {/* place app specific modals here */}
                                               <InsufficientSolConversionModal />
                                               <JupiterProvider>
-                                                <DeprecatedTokensModal />
-                                                <DeprecatedTokensCheck />
+                                                <DeprecatedTokensProvider>
+                                                  <DeprecatedTokensModal />
+                                                  <DeprecatedTokensCheck />
+                                                </DeprecatedTokensProvider>
                                               </JupiterProvider>
-                                            </DeferredDataFetchWrapper>
+                                            </GovernanceProvider>
                                           </WalletSignProvider>
                                         </ModalProvider>
                                       </TokensProvider>

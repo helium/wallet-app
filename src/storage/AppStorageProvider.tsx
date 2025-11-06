@@ -246,12 +246,9 @@ const useAppStorageHook = () => {
 
       const { dismissCount, lastDismissedAt } = dismissInfo
 
-      // First dismiss: show immediately on next open (0 hours)
-      if (dismissCount === 1) return true
-
-      // Calculate wait time: 2h, 4h, 6h, etc., capped at 48h
-      const hoursToWait = Math.min((dismissCount - 1) * 2, 48)
-      const millisecondsToWait = hoursToWait * 60 * 60 * 1000
+      // Calculate wait time: 1d, 2d, 4d, etc., capped at 4d
+      const daysToWait = Math.min(2 ** (dismissCount - 1), 4)
+      const millisecondsToWait = daysToWait * 24 * 60 * 60 * 1000
       const timeSinceDismiss = Date.now() - lastDismissedAt
 
       return timeSinceDismiss >= millisecondsToWait
