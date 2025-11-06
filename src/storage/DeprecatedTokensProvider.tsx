@@ -44,36 +44,49 @@ const DeprecatedTokensContext = createContext<
   DeprecatedTokensContextState | undefined
 >(undefined)
 
-export const DeprecatedTokensProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export const DeprecatedTokensProvider: React.FC<{
+  children: ReactNode
+  enabled?: boolean
+}> = ({ children, enabled = true }) => {
   const wallet = useCurrentWallet()
   const { anchorProvider } = useSolana()
 
-  // Fetch position keys
+  // Fetch position keys (only when enabled, wallet and provider are available)
   const { result: iotPositionKeys, loading: loadingIotPositionKeys } =
     useAsync(async () => {
-      if (wallet && anchorProvider?.connection) {
-        return getPositionKeysForOwner({
-          registrar: getRegistrarKey(IOT_MINT),
-          owner: wallet,
-          connection: anchorProvider?.connection,
-        })
+      if (!enabled || !wallet || !anchorProvider?.connection) {
+        return undefined
       }
-      return undefined
-    }, [wallet, anchorProvider])
+      const result = await getPositionKeysForOwner({
+        registrar: getRegistrarKey(IOT_MINT),
+        owner: wallet,
+        connection: anchorProvider.connection,
+      })
+      // eslint-disable-next-line no-console
+      console.log('[DeprecatedTokensProvider] IOT position keys fetched', {
+        count: result?.positions?.length || 0,
+        timestamp: new Date().toISOString(),
+      })
+      return result
+    }, [enabled, wallet, anchorProvider?.connection])
 
   const { result: mobilePositionKeys, loading: loadingMobilePositionKeys } =
     useAsync(async () => {
-      if (wallet && anchorProvider?.connection) {
-        return getPositionKeysForOwner({
-          registrar: getRegistrarKey(MOBILE_MINT),
-          owner: wallet,
-          connection: anchorProvider?.connection,
-        })
+      if (!enabled || !wallet || !anchorProvider?.connection) {
+        return undefined
       }
-      return undefined
-    }, [wallet, anchorProvider])
+      const result = await getPositionKeysForOwner({
+        registrar: getRegistrarKey(MOBILE_MINT),
+        owner: wallet,
+        connection: anchorProvider.connection,
+      })
+      // eslint-disable-next-line no-console
+      console.log('[DeprecatedTokensProvider] MOBILE position keys fetched', {
+        count: result?.positions?.length || 0,
+        timestamp: new Date().toISOString(),
+      })
+      return result
+    }, [enabled, wallet, anchorProvider?.connection])
 
   // Fetch positions
   const { accounts: iotPositions, loading: loadingIotPositions } = usePositions(

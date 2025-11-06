@@ -38,6 +38,11 @@ const initialState: BalancesState = {
   },
 }
 
+// Global sync guard to prevent overlapping syncs from ANY source
+let isSyncing = false
+let lastSyncKey = ''
+let cooldownTimer: ReturnType<typeof setTimeout> | null = null
+
 export const syncTokenAccounts = createAsyncThunk(
   'balances/syncTokenAccounts',
   async ({
@@ -49,41 +54,92 @@ export const syncTokenAccounts = createAsyncThunk(
     acct: CSAccount
     anchorProvider: AnchorProvider
   }): Promise<Tokens> => {
-    if (!acct?.solanaAddress) throw new Error('No solana account found')
+    const syncKey = `${_cluster}-${acct.solanaAddress}`
 
-    const pubKey = new PublicKey(acct.solanaAddress)
-    const { connection } = anchorProvider
-
-    const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
-      programId: TOKEN_PROGRAM_ID,
-    })
-
-    const solAcct = await connection.getAccountInfo(pubKey)
-
-    const atas = await Promise.all(
-      tokenAccounts.value.map(async (tokenAccount) => {
-        const accountData = AccountLayout.decode(tokenAccount.account.data)
-        const { mint } = accountData
-        const mintAcc = await getMint(connection, mint)
-
-        return {
-          tokenAccount: tokenAccount.pubkey.toBase58(),
-          mint: mint.toBase58(),
-          balance: Number(accountData.amount || 0),
-          decimals: mintAcc.decimals,
-        }
-      }),
-    )
-
-    const solBalance = solAcct?.lamports || 0
-    const sol = {
-      tokenAccount: acct.solanaAddress,
-      balance: solBalance,
+    // Check if sync is already in progress
+    if (isSyncing) {
+      // eslint-disable-next-line no-console
+      console.log('[syncTokenAccounts] Sync already in progress, skipping', {
+        solanaAddress: acct?.solanaAddress,
+        timestamp: new Date().toISOString(),
+      })
+      throw new Error('Sync already in progress')
     }
 
-    return {
-      atas,
-      sol,
+    // Check cooldown
+    if (lastSyncKey === syncKey) {
+      // eslint-disable-next-line no-console
+      console.log(
+        '[syncTokenAccounts] Cooldown active, skipping duplicate sync',
+        {
+          solanaAddress: acct?.solanaAddress,
+          syncKey,
+          timestamp: new Date().toISOString(),
+        },
+      )
+      throw new Error('Sync cooldown active')
+    }
+
+    isSyncing = true
+    lastSyncKey = syncKey
+
+    // Clear any existing cooldown timer
+    if (cooldownTimer) {
+      clearTimeout(cooldownTimer)
+    }
+
+    try {
+      if (!acct?.solanaAddress) throw new Error('No solana account found')
+
+      const pubKey = new PublicKey(acct.solanaAddress)
+      const { connection } = anchorProvider
+
+      const tokenAccounts = await connection.getTokenAccountsByOwner(pubKey, {
+        programId: TOKEN_PROGRAM_ID,
+      })
+
+      const solAcct = await connection.getAccountInfo(pubKey)
+
+      const atas: TokenAccount[] = await Promise.all(
+        tokenAccounts.value.map(async (tokenAccount) => {
+          const accountData = AccountLayout.decode(tokenAccount.account.data)
+          const { mint } = accountData
+          const mintAcc = await getMint(connection, mint)
+
+          return {
+            tokenAccount: tokenAccount.pubkey.toBase58(),
+            mint: mint.toBase58(),
+            balance: Number(accountData.amount || 0),
+            decimals: mintAcc.decimals,
+          }
+        }),
+      )
+
+      const solBalance = solAcct?.lamports || 0
+      const sol = {
+        tokenAccount: acct.solanaAddress,
+        balance: solBalance,
+      }
+
+      return {
+        atas,
+        sol,
+      }
+    } finally {
+      isSyncing = false
+
+      // Set cooldown for 10 seconds
+      cooldownTimer = setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.log(
+          '[syncTokenAccounts] Cooldown expired, allowing new syncs',
+          {
+            timestamp: new Date().toISOString(),
+          },
+        )
+        lastSyncKey = ''
+        cooldownTimer = null
+      }, 10000)
     }
   },
 )

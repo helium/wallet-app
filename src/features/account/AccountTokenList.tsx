@@ -130,7 +130,11 @@ const AccountTokenList = ({ onLayout }: Props) => {
   useEffect(() => {
     const listener = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
-        refetchTokens()
+        // Delay refresh by 5s to prevent OOM when Face ID unlocks
+        // (Face ID causes app to go active immediately, competing with BalanceProvider)
+        setTimeout(() => {
+          refetchTokens()
+        }, 5000)
       }
     })
     return () => {

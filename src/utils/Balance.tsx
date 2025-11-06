@@ -51,19 +51,40 @@ const useBalanceHook = () => {
   )
   const allBalances = useSelector((state: RootState) => state.balances.balances)
 
-  const { currency: currencyRaw } = useAppStorage()
+  const { currency: currencyRaw, locked } = useAppStorage()
 
   const currency = useMemo(() => currencyRaw?.toLowerCase(), [currencyRaw])
 
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
+    // Don't sync while locked - wait until unlock to avoid state updates during Face ID
+    if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
 
-    dispatch(
-      syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
-    )
-  }, [anchorProvider, cluster, currentAccount, dispatch])
+    // Delay token account sync by 3s to prevent OOM on Face ID unlock
+    // This gives GovernanceProvider time to settle (it re-renders 5-6 times after unlock)
+    // The actual sync guard is now in the Redux thunk to prevent ALL duplicate calls
+    const timer = setTimeout(() => {
+      dispatch(
+        syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
+      ).catch((error) => {
+        // Silently catch sync guard rejections (they're expected)
+        if (
+          error.message !== 'Sync already in progress' &&
+          error.message !== 'Sync cooldown active'
+        ) {
+          console.error('[BalanceProvider] Sync error:', error)
+        }
+      })
+    }, 3000)
+
+    return () => {
+      clearTimeout(timer)
+    }
+    // Use anchorProvider.connection instead of anchorProvider to prevent unnecessary re-syncs
+    // when the provider object reference changes but the connection hasn't
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anchorProvider?.connection, cluster, currentAccount, dispatch, locked])
 
   const [oracleDateTime, setOracleDateTime] = useState<Date>()
 

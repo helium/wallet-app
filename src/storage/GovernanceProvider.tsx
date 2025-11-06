@@ -60,7 +60,10 @@ const GovernanceContext = createContext<IGovernanceContextState>(
   {} as IGovernanceContextState,
 )
 
-const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
+const GovernanceProvider: FC<{ children: ReactNode; enabled?: boolean }> = ({
+  children,
+  enabled = true,
+}) => {
   const { anchorProvider } = useSolana()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const currentRoute = useCurrentRoute()
@@ -71,30 +74,33 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const networkName = useMemo(() => networkToName[network], [network])
   const mint = useMemo(() => networksToMint[network], [network])
   const registrarKey = useMemo(() => mint && getRegistrarKey(mint), [mint])
-  const { loading: loadingMint, info: mintAcc } = useMint(mint)
-  const { loading: loadingRegistrar, info: registrar } =
-    useRegistrar(registrarKey)
+  const { loading: loadingMint, info: mintAcc } = useMint(
+    enabled ? mint : undefined,
+  )
+  const { loading: loadingRegistrar, info: registrar } = useRegistrar(
+    enabled ? registrarKey : undefined,
+  )
 
   const organization = useMemo(
     () => organizationKey(networkName)[0],
     [networkName],
   )
 
-  const { loading: loadingSubdaos, result: subDaos } = useAsync(
-    async () => anchorProvider && getSubDaos(anchorProvider),
-    [anchorProvider],
-  )
+  const { loading: loadingSubdaos, result: subDaos } = useAsync(async () => {
+    if (!enabled || !anchorProvider) return undefined
+    return getSubDaos(anchorProvider)
+  }, [anchorProvider, enabled])
 
   const { loading: loadingHntOrg, info: hntOrg } = useOrganization(
-    organizationKey(networkToName.hnt)[0],
+    enabled ? organizationKey(networkToName.hnt)[0] : undefined,
   )
 
   const { loading: loadingMobileOrg, info: mobileOrg } = useOrganization(
-    organizationKey(networkToName.mobile)[0],
+    enabled ? organizationKey(networkToName.mobile)[0] : undefined,
   )
 
   const { loading: loadingIotOrg, info: iotOrg } = useOrganization(
-    organizationKey(networkToName.iot)[0],
+    enabled ? organizationKey(networkToName.iot)[0] : undefined,
   )
 
   const loadingOrgs = useMemo(
