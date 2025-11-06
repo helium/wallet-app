@@ -84,16 +84,6 @@ const DeprecatedTokensModal: FC = () => {
     isLoadingPositions,
   } = useDeprecatedTokens()
 
-  // eslint-disable-next-line no-console
-  console.log('[DeprecatedTokensModal] Token data', {
-    hasIot,
-    hasMobile,
-    hasStakedIot,
-    hasStakedMobile,
-    isLoadingPositions,
-    timestamp: new Date().toISOString(),
-  })
-
   const estimatedUsdValue = useMemo(() => {
     if (!estimatedHnt || !tokenPrices?.helium?.[currency]) return null
     const hntPrice = tokenPrices.helium[currency]
