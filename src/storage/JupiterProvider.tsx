@@ -60,23 +60,12 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
   const [routes, setRoutes] = useState<QuoteResponse>()
 
   const baseUrl = useMemo(() => {
-    // Prefer explicit Helium API base if provided; fallback to public hosted API
+    // Prefer explicit Helium API base if provided
     return (
       Config.HELIUM_TRANSACTION_API ||
       process.env.HELIUM_TRANSACTION_API ||
       'https://my-helium.web.helium.io/api/v1'
     )
-  }, [])
-
-  const authHeaders = useMemo(() => {
-    const headers: Record<string, string> = {
-      'content-type': 'application/json',
-    }
-    const apiKey = Config.HELIUM_API_KEY
-    if (apiKey) {
-      headers['x-helium-api-key'] = apiKey
-    }
-    return headers
   }, [])
 
   const getRoute = useCallback(
@@ -101,7 +90,6 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
         // Endpoint shape aligns with quote semantics
         const res = await fetch(`${baseUrl}/swap/quote?${params.toString()}`, {
           method: 'GET',
-          headers: authHeaders,
         })
         if (!res.ok) {
           throw new Error(`Quote request failed: ${res.status}`)
@@ -118,7 +106,7 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
 
       return foundRoutes
     },
-    [authHeaders, baseUrl],
+    [baseUrl],
   )
 
   const getSwapTx = useCallback(
@@ -143,7 +131,6 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
         // Helium Swap API: returns a base64 transaction similar to Jupiter
         const res = await fetch(`${baseUrl}/swap/instructions`, {
           method: 'POST',
-          headers: authHeaders,
           body: JSON.stringify({ ...body }),
         })
         if (!res.ok) {
@@ -164,7 +151,7 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
         setError(err.toString())
       }
     },
-    [t, routes, wallet, baseUrl, authHeaders],
+    [t, routes, wallet, baseUrl],
   )
 
   return (
