@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import {
-  Configuration,
-  DefaultApi,
-  QuoteGetRequest,
-  QuoteResponse,
-  SwapPostRequest,
-} from '@jup-ag/api'
 import { VersionedTransaction } from '@solana/web3.js'
 import React, {
   createContext,
@@ -19,10 +12,34 @@ import { useTranslation } from 'react-i18next'
 import Config from 'react-native-config'
 import * as Logger from '../utils/logger'
 
+type QuoteGetRequest = {
+  inputMint: string
+  outputMint: string
+  amount: number
+  slippageBps?: number
+  platformFeeBps?: number
+}
+
+type QuoteResponse = {
+  outAmount?: string | number
+  priceImpactPct?: string | number
+  // Allow additional fields from the backend without strict typing
+  [key: string]: any
+}
+
+type SwapPostRequest = {
+  swapRequest?: {
+    quoteResponse?: QuoteResponse
+    userPublicKey?: string
+    feeAccount?: string
+    // Allow additional passthrough fields
+    [key: string]: any
+  }
+}
+
 interface IJupiterContextState {
   loading: boolean
   error: unknown
-  api: DefaultApi
   routes?: QuoteResponse
 
   getRoute: (opts: QuoteGetRequest) => Promise<QuoteResponse | undefined>
@@ -42,11 +59,13 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
   const [error, setError] = useState<unknown>()
   const [routes, setRoutes] = useState<QuoteResponse>()
 
-  const api = useMemo(() => {
-    const config = new Configuration({
-      basePath: process.env.JUP_SWAP_API || 'https://lite-api.jup.ag/swap/v1',
-    })
-    return new DefaultApi(config)
+  const baseUrl = useMemo(() => {
+    // Prefer explicit Helium API base if provided
+    return (
+      Config.HELIUM_TRANSACTION_API ||
+      process.env.HELIUM_TRANSACTION_API ||
+      'https://my-helium.web.helium.io/api/v1'
+    )
   }, [])
 
   const getRoute = useCallback(
@@ -55,10 +74,27 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
 
       try {
         setLoading(true)
-        foundRoutes = await api.quoteGet({
-          ...opts,
-          platformFeeBps: Number(Config.JUPITER_FEE_BPS) || 0,
+        const params = new URLSearchParams()
+        params.set('inputMint', opts.inputMint)
+        params.set('outputMint', opts.outputMint)
+        params.set('amount', String(opts.amount))
+        if (typeof opts.slippageBps === 'number')
+          params.set('slippageBps', String(opts.slippageBps))
+        const platformFeeBps =
+          typeof opts.platformFeeBps === 'number'
+            ? opts.platformFeeBps
+            : Number(Config.JUPITER_FEE_BPS) || 0
+        if (platformFeeBps) params.set('platformFeeBps', String(platformFeeBps))
+
+        // Helium Swap API: proxy to Jupiter behind the scenes
+        // Endpoint shape aligns with quote semantics
+        const res = await fetch(`${baseUrl}/swap/quote?${params.toString()}`, {
+          method: 'GET',
         })
+        if (!res.ok) {
+          throw new Error(`Quote request failed: ${res.status}`)
+        }
+        foundRoutes = (await res.json()) as QuoteResponse
 
         setRoutes(foundRoutes)
       } catch (err: any) {
@@ -70,7 +106,7 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
 
       return foundRoutes
     },
-    [api],
+    [baseUrl],
   )
 
   const getSwapTx = useCallback(
@@ -82,24 +118,40 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
         if (!routes && !routesIn) throw new Error(t('errors.swap.routes'))
         if (!wallet) throw new Error(t('errors.account'))
 
-        const { swapTransaction } = await api.swapPost({
-          swapRequest: {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            quoteResponse: (routesIn || routes)!,
-            userPublicKey: wallet.toBase58(),
-            feeAccount: Config.JUPITER_FEE_ACCOUNT || undefined,
-            ...opts,
-          },
-        })
+        const chosenQuote = routesIn || routes
+        if (!chosenQuote) throw new Error(t('errors.swap.routes'))
 
-        const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
-        return VersionedTransaction.deserialize(swapTransactionBuf)
+        const body = {
+          quoteResponse: chosenQuote,
+          userPublicKey: wallet.toBase58(),
+          feeAccount: Config.JUPITER_FEE_ACCOUNT || undefined,
+          ...(opts?.swapRequest || {}),
+        }
+
+        // Helium Swap API: returns a base64 transaction similar to Jupiter
+        const res = await fetch(`${baseUrl}/swap/instructions`, {
+          method: 'POST',
+          body: JSON.stringify({ ...body }),
+        })
+        if (!res.ok) {
+          throw new Error(`Swap request failed: ${res.status}`)
+        }
+        const json = (await res.json()) as {
+          transactions: { serializedTransaction: string }[]
+        }
+        if (!json.transactions.length) throw new Error(t('errors.swap.tx'))
+
+        return json.transactions.map((transaction) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(transaction.serializedTransaction, 'base64'),
+          ),
+        )[0]
       } catch (err: any) {
         Logger.error(err)
         setError(err.toString())
       }
     },
-    [t, api, routes, wallet],
+    [t, routes, wallet, baseUrl],
   )
 
   return (
@@ -107,7 +159,6 @@ export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
       value={{
         loading,
         error,
-        api,
         routes,
 
         getRoute,
