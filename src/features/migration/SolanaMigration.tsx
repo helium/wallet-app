@@ -1,5 +1,4 @@
 import { Provider } from '@coral-xyz/anchor'
-import { bulkSendRawTransactions } from '@helium/spl-utils'
 import axios from 'axios'
 import React, { memo, ReactNode, useCallback, useState } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -18,15 +17,19 @@ import BackScreen from '@components/BackScreen'
 import { Theme } from '@theme/theme'
 import Config from 'react-native-config'
 import SafeAreaBox from '@components/SafeAreaBox'
+import { VersionedTransaction } from '@solana/web3.js'
+import { toTransactionData } from '@utils/transactionUtils'
+import { APIRouter } from '@helium/blockchain-api'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import * as Logger from '../../utils/logger'
 import { useAppDispatch } from '../../store/store'
 import { fetchHotspots } from '../../store/slices/hotspotsSlice'
 import { useSolana } from '../../solana/SolanaProvider'
+import { useBlockchainApi } from '../../storage/BlockchainApiProvider'
 
 async function migrateWallet(
-  provider: Provider,
+  client: APIRouter,
   wallet: string,
   onProgress: (progress: number, total: number) => void,
 ) {
@@ -38,9 +41,15 @@ async function migrateWallet(
     try {
       // eslint-disable-next-line no-await-in-loop
       const { transactions, count } = (await axios.get(url)).data
-      const txs = transactions.map(Buffer.from)
+      const txs = transactions.map((tx: number[]) =>
+        VersionedTransaction.deserialize(Buffer.from(tx)),
+      )
+      const transactionData = toTransactionData(txs, {
+        tag: 'migration',
+        metadata: { type: 'migration', description: 'Solana Migration' },
+      })
       // eslint-disable-next-line no-await-in-loop
-      await bulkSendRawTransactions(provider.connection, txs)
+      await client.transactions.submit(transactionData)
       onProgress(offset, count)
       offset += limit
       if (offset > count) {
@@ -60,6 +69,7 @@ const SolanaMigration = ({
 }: BoxProps<Theme> & { hideBack?: boolean; manual?: boolean }) => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
+  const { client } = useBlockchainApi()
   const {
     updateDoneSolanaMigration,
     doneSolanaMigration,
@@ -88,17 +98,14 @@ const SolanaMigration = ({
       currentAccount?.keystoneDevice ||
       !anchorProvider ||
       !cluster ||
+      !client ||
       (doneSolanaMigration[cluster]?.includes(currentAccount?.solanaAddress) &&
         !manual)
     )
       return
     // eslint-disable-next-line no-console
     try {
-      await migrateWallet(
-        anchorProvider,
-        currentAccount?.solanaAddress,
-        onProgress,
-      )
+      await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
 
       if (!manual) {
         await updateDoneSolanaMigration({
@@ -126,6 +133,10 @@ const SolanaMigration = ({
     cluster,
     dispatch,
     doneSolanaMigration,
+    updateDoneSolanaMigration,
+    client,
+    currentAccount,
+    manual,
     updateDoneSolanaMigration,
   ])
 

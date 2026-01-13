@@ -10,38 +10,30 @@ import {
   HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
   humanReadable,
-  populateMissingDraftInfo,
   toNumber,
-  toVersionedTx,
 } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   useClosePosition,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import useSubmitTxn from '@hooks/useSubmitTxn'
-import { TransactionInstruction } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useDeprecatedTokens } from '@storage/DeprecatedTokensProvider'
 import { useJupiter } from '@storage/JupiterProvider'
 import { useModal } from '@storage/ModalsProvider'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
-import { getBasePriorityFee } from '@utils/walletApiV2'
+import { numberFormat } from '@utils/Balance'
+import { useLanguage } from '@utils/i18n'
+import { usePollTokenPrices } from '@utils/usePollTokenPrices'
 import BN from 'bn.js'
 import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { numberFormat } from '@utils/Balance'
-import { useLanguage } from '@utils/i18n'
-import { usePollTokenPrices } from '@utils/usePollTokenPrices'
 import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import * as Logger from '../../utils/logger'
 
 const DeprecatedTokensModal: FC = () => {
@@ -55,9 +47,9 @@ const DeprecatedTokensModal: FC = () => {
   const [estimatedHnt, setEstimatedHnt] = useState<number>(0)
   const [loadingEstimate, setLoadingEstimate] = useState(false)
   const { dismissDeprecatedTokens, currency: currencyRaw } = useAppStorage()
-  const { walletSignBottomSheetRef } = useWalletSign()
   const { submitJupiterSwap } = useSubmitTxn()
   const { getRoute, getSwapTx } = useJupiter()
+  const { execute: submitInstructions } = useSubmitInstructions()
   const { tokenPrices } = usePollTokenPrices()
   const { language } = useLanguage()
   const { json: iotJson } = useMetaplexMetadata(IOT_MINT)
@@ -129,7 +121,7 @@ const DeprecatedTokensModal: FC = () => {
     language,
   ])
 
-  const { closePosition } = useClosePosition()
+  const { mutateAsync: closePosition } = useClosePosition()
 
   // Calculate estimated HNT from swaps
   const calculateEstimatedHnt = useCallback(async () => {
@@ -207,100 +199,8 @@ const DeprecatedTokensModal: FC = () => {
     dismissDeprecatedTokens(wallet?.toBase58() || '')
   }, [dismissDeprecatedTokens, wallet, hideModal])
 
-  const decideAndExecute = useCallback(
-    async (instructions: TransactionInstruction[]) => {
-      if (!anchorProvider || !walletSignBottomSheetRef) return
-
-      const transactions = await batchInstructionsToTxsWithPriorityFee(
-        anchorProvider,
-        instructions,
-        {
-          basePriorityFee: await getBasePriorityFee(),
-          useFirstEstimateForAll: true,
-          computeScaleUp: 1.4,
-        },
-      )
-      const populatedTxs = await Promise.all(
-        transactions.map((tx) =>
-          populateMissingDraftInfo(anchorProvider.connection, tx),
-        ),
-      )
-      const txs = populatedTxs.map((tx) => toVersionedTx(tx))
-
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header: t('deprecatedTokensModal.unstaking'),
-        serializedTxs: txs.map((transaction) =>
-          Buffer.from(transaction.serialize()),
-        ),
-        renderer: () => (
-          <Box
-            backgroundColor="surface"
-            borderRadius="l"
-            mt="m"
-            px="m"
-            py="ms"
-            gap="s"
-          >
-            <Text variant="body2Medium" color="white">
-              {t('deprecatedTokensModal.closingPositions')}
-            </Text>
-            {hasStakedIot && (
-              <Box flexDirection="row" justifyContent="space-between">
-                <Text variant="body2" color="white" opacity={0.7}>
-                  IOT
-                </Text>
-                <Text variant="body2" color="orange500">
-                  {humanReadable(iotStaked || new BN(0), iotDecimals || 6)}
-                </Text>
-              </Box>
-            )}
-            {hasStakedMobile && (
-              <Box flexDirection="row" justifyContent="space-between">
-                <Text variant="body2" color="white" opacity={0.7}>
-                  MOBILE
-                </Text>
-                <Text variant="body2" color="orange500">
-                  {humanReadable(
-                    mobileStaked || new BN(0),
-                    mobileDecimals || 6,
-                  )}
-                </Text>
-              </Box>
-            )}
-          </Box>
-        ),
-      })
-
-      if (decision) {
-        await bulkSendTransactions(
-          anchorProvider,
-          transactions,
-          undefined,
-          10,
-          [],
-          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-      } else {
-        throw new Error('User rejected transaction')
-      }
-    },
-    [
-      anchorProvider,
-      walletSignBottomSheetRef,
-      t,
-      hasStakedIot,
-      hasStakedMobile,
-      iotStaked,
-      iotDecimals,
-      mobileStaked,
-      mobileDecimals,
-    ],
-  )
-
   const handleSwapAll = useCallback(async () => {
-    if (!anchorProvider || !walletSignBottomSheetRef || !wallet) return
+    if (!anchorProvider || !wallet) return
 
     try {
       setProcessing(true)
@@ -308,8 +208,6 @@ const DeprecatedTokensModal: FC = () => {
 
       // Step 1: Close all positions (both IOT and MOBILE) if any exist
       if (hasStaked) {
-        const allInstructions: TransactionInstruction[] = []
-
         // Close IOT positions
         // eslint-disable-next-line no-restricted-syntax
         for (const position of iotPositions || []) {
@@ -321,7 +219,11 @@ const DeprecatedTokensModal: FC = () => {
               },
             } as PositionWithMeta,
             onInstructions: async (ixs) => {
-              allInstructions.push(...ixs)
+              await submitInstructions({
+                header: t('deprecatedTokensModal.unstaking'),
+                message: t('deprecatedTokensModal.closingPositions'),
+                instructions: ixs,
+              })
             },
           })
         }
@@ -337,16 +239,17 @@ const DeprecatedTokensModal: FC = () => {
               },
             } as PositionWithMeta,
             onInstructions: async (ixs) => {
-              allInstructions.push(...ixs)
+              await submitInstructions({
+                header: t('deprecatedTokensModal.unstaking'),
+                message: t('deprecatedTokensModal.closingPositions'),
+                instructions: ixs,
+              })
             },
           })
         }
 
-        if (allInstructions.length > 0) {
-          await decideAndExecute(allInstructions)
-          // Wait for balances to update on-chain
-          await new Promise((resolve) => setTimeout(resolve, 3000))
-        }
+        // Wait for balances to update on-chain
+        await new Promise((resolve) => setTimeout(resolve, 3000))
       }
 
       // Step 2: Get updated balances after unstaking
@@ -499,7 +402,6 @@ const DeprecatedTokensModal: FC = () => {
     }
   }, [
     anchorProvider,
-    walletSignBottomSheetRef,
     wallet,
     hasStaked,
     hasIot,
@@ -511,11 +413,12 @@ const DeprecatedTokensModal: FC = () => {
     iotDecimals,
     mobileDecimals,
     closePosition,
-    decideAndExecute,
+    submitInstructions,
     getRoute,
     getSwapTx,
     submitJupiterSwap,
     hideModal,
+    t,
   ])
 
   return (

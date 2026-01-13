@@ -12,7 +12,7 @@ import { toNumber } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useHotspots from '@hooks/useHotspots'
-import { useNavigation } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import globalStyles from '@theme/globalStyles'
 import { parseTransactionError } from '@utils/solanaUtils'
 import LottieView from 'lottie-react-native'
@@ -20,25 +20,37 @@ import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { RootState } from '../../store/rootReducer'
+import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
+import { CollectableStackParamList } from './collectablesTypes'
 import iotMobileTokens from './animations/iot-mobile-tokens.json'
 import iotTokens from './animations/iot-tokens.json'
 import mobileTokens from './animations/mobile-tokens.json'
 
 const ClaimingRewardsScreen = () => {
+  const route =
+    useRoute<RouteProp<CollectableStackParamList, 'ClaimingRewardsScreen'>>()
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
-  const solanaPayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.payment,
-  )
+  const {
+    status,
+    error: batchError,
+    isLoading,
+  } = useTransactionBatchStatus(route.params?.batchId || null)
+
+  const hasError =
+    batchError ||
+    status === 'failed' ||
+    status === 'expired' ||
+    status === 'partial'
+  const isConfirmed = status === 'confirmed'
+  const isPending = isLoading || status === 'pending'
   const { pendingIotRewards, pendingMobileRewards, pendingHntRewards } =
     useHotspots()
   const pendingIotRewardsNum = pendingIotRewards
@@ -100,7 +112,7 @@ const ClaimingRewardsScreen = () => {
           >
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
           </Box>
-          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
+          {isConfirmed && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -121,7 +133,7 @@ const ClaimingRewardsScreen = () => {
             </Animated.View>
           )}
 
-          {solanaPayment?.error ? (
+          {hasError ? (
             <Animated.View
               style={{
                 alignItems: 'center',
@@ -142,14 +154,14 @@ const ClaimingRewardsScreen = () => {
                 >
                   {parseTransactionError(
                     solBalance,
-                    solanaPayment?.error?.message,
+                    batchError?.message || 'Transaction failed',
                   )}
                 </Text>
               </Box>
             </Animated.View>
           ) : null}
 
-          {!solanaPayment ? (
+          {!route.params?.batchId ? (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -168,7 +180,7 @@ const ClaimingRewardsScreen = () => {
             </Animated.View>
           ) : null}
 
-          {solanaPayment && solanaPayment.loading ? (
+          {isPending ? (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -195,27 +207,7 @@ const ClaimingRewardsScreen = () => {
                   marginHorizontal="xxl"
                   marginTop="m"
                 >
-                  {typeof solanaPayment.progress !== 'undefined' ? (
-                    <Box
-                      width="100%"
-                      flexDirection="column"
-                      alignContent="stretch"
-                      alignItems="stretch"
-                    >
-                      <ProgressBar progress={solanaPayment.progress.percent} />
-                      <Text
-                        textAlign="center"
-                        variant="body2"
-                        color="secondaryText"
-                        marginTop="s"
-                        numberOfLines={2}
-                      >
-                        {solanaPayment.progress.text}
-                      </Text>
-                    </Box>
-                  ) : (
-                    <IndeterminateProgressBar paddingHorizontal="l" />
-                  )}
+                  <IndeterminateProgressBar paddingHorizontal="l" />
                 </Box>
               ) : (
                 <Box

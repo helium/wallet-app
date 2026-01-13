@@ -42,16 +42,15 @@ import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 import AddressBookSelector, {
   AddressBookRef,
 } from '../../components/AddressBookSelector'
 import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
 import IconPressedContainer from '../../components/IconPressedContainer'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import { RootState } from '../../store/rootReducer'
 import { useBalance } from '../../utils/Balance'
 import {
   accountNetType,
@@ -83,7 +82,18 @@ const BurnScreen = () => {
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
-  const { submitDelegateDataCredits } = useSubmitTxn()
+  const { submitDelegateDataCredits, delegateDataCreditsMutation } =
+    useSubmitTxn()
+
+  // Track batchId when mutation succeeds - only show loading after submission
+  const batchId = delegateDataCreditsMutation.data
+  const { status, isLoading: batchLoading } = useTransactionBatchStatus(
+    batchId || null,
+  )
+
+  // Only show loading after we have a batchId (transaction submitted)
+  const isSubmitting = batchId ? batchLoading || status === 'pending' : false
+
   const addressBookRef = useRef<AddressBookRef>(null)
   const { networkTokensToDc } = useBalance()
   const wallet = useCurrentWallet()
@@ -99,9 +109,6 @@ const BurnScreen = () => {
   )
   const [memo, setMemo] = useState(route.params.memo)
   const [hasError, setHasError] = useState(false)
-  const delegatePayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.delegate,
-  )
   const { symbol } = useMetaplexMetadata(mint)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 
@@ -177,6 +184,8 @@ const BurnScreen = () => {
   ])
 
   const handleSubmit = useCallback(async () => {
+    // Reset mutation state on retry
+    delegateDataCreditsMutation.reset()
     try {
       if (isDelegate && amountBalance) {
         await submitDelegateDataCredits(
@@ -197,6 +206,7 @@ const BurnScreen = () => {
     memo,
     submitDelegateDataCredits,
     setSubmitError,
+    delegateDataCreditsMutation,
   ])
 
   const handleQrScan = useCallback(() => {
@@ -516,9 +526,14 @@ const BurnScreen = () => {
             </SafeAreaBox>
             <PaymentSubmit
               mint={DC_MINT}
-              submitLoading={!!delegatePayment?.loading}
-              submitSucceeded={delegatePayment?.success}
-              submitError={delegatePayment?.error}
+              submitLoading={isSubmitting}
+              submitSucceeded={status === 'confirmed'}
+              submitError={
+                delegateDataCreditsMutation.error ||
+                (batchId && status === 'failed'
+                  ? new Error('Transaction failed')
+                  : undefined)
+              }
               totalBalance={amountBalance}
               feeTokenBalance={FEE}
               onRetry={handleSubmit}

@@ -63,13 +63,13 @@ const ClaimAllRewardsScreen = () => {
       setClaimError(undefined)
       setRedeeming(true)
       const claim = async () => {
-        await submitClaimAllRewards(
+        const batchId = await submitClaimAllRewards(
           [HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY],
           hotspotsWithMeta,
           totalHotspots,
         )
 
-        navigation.replace('ClaimingRewardsScreen')
+        navigation.replace('ClaimingRewardsScreen', { batchId })
 
         setRedeeming(false)
       }

@@ -18,10 +18,9 @@ import { useTranslation } from 'react-i18next'
 import { LogBox } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
-import { RootState } from '../../store/rootReducer'
+import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { Collectable, CompressedNFT } from '../../types/solana'
 import { ww } from '../../utils/layout'
 import { CollectableStackParamList } from './collectablesTypes'
@@ -40,10 +39,20 @@ const TransferCollectableScreen = () => {
   const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
 
   const { t } = useTranslation()
-  const { collectable } = route.params
-  const solanaPayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.payment,
-  )
+  const { collectable, batchId } = route.params
+  const {
+    status,
+    error: batchError,
+    isLoading,
+  } = useTransactionBatchStatus(batchId || null)
+
+  const hasError =
+    batchError ||
+    status === 'failed' ||
+    status === 'expired' ||
+    status === 'partial'
+  const isConfirmed = status === 'confirmed'
+  const isPending = isLoading || status === 'pending'
   const spacing = useSpacing()
 
   const compressedNFT = useMemo(
@@ -111,21 +120,19 @@ const TransferCollectableScreen = () => {
                 />
               </Box>
             )}
-            {solanaPayment &&
-              !solanaPayment.error &&
-              !solanaPayment.loading && (
-                <Animated.View
-                  style={{ alignItems: 'center' }}
-                  entering={FadeIn}
-                  exiting={FadeOut}
-                >
-                  <Text variant="h2" color="white" marginTop="xl">
-                    {t('collectablesScreen.transferComplete')}
-                  </Text>
-                </Animated.View>
-              )}
+            {isConfirmed && (
+              <Animated.View
+                style={{ alignItems: 'center' }}
+                entering={FadeIn}
+                exiting={FadeOut}
+              >
+                <Text variant="h2" color="white" marginTop="xl">
+                  {t('collectablesScreen.transferComplete')}
+                </Text>
+              </Animated.View>
+            )}
 
-            {solanaPayment?.error && (
+            {hasError && (
               <Animated.View
                 style={{ alignItems: 'center' }}
                 entering={FadeIn}
@@ -148,13 +155,13 @@ const TransferCollectableScreen = () => {
                 >
                   {parseTransactionError(
                     solBalance,
-                    solanaPayment?.error?.message,
+                    batchError?.message || 'Transaction failed',
                   )}
                 </Text>
               </Animated.View>
             )}
 
-            {!solanaPayment && (
+            {!batchId && (
               <Animated.View
                 style={{ alignItems: 'center' }}
                 entering={FadeIn}
@@ -171,7 +178,7 @@ const TransferCollectableScreen = () => {
               </Animated.View>
             )}
 
-            {solanaPayment && solanaPayment.loading && (
+            {isPending && (
               <Animated.View
                 style={{ alignItems: 'center' }}
                 entering={FadeIn}

@@ -23,13 +23,13 @@ export type CollectableStackParamList = {
   AntennaSetupScreen: {
     collectable: HotspotWithPendingRewards
   }
-  SettingUpAntennaScreen: undefined
+  SettingUpAntennaScreen: { batchId?: string }
   PaymentScreen: undefined | PaymentRouteParam
   ClaimRewardsScreen: {
     hotspot: HotspotWithPendingRewards
   }
   ClaimAllRewardsScreen: undefined
-  ClaimingRewardsScreen: undefined
+  ClaimingRewardsScreen: { batchId?: string }
   ChangeRewardsRecipientScreen: {
     hotspot: HotspotWithPendingRewards
   }
@@ -48,6 +48,7 @@ export type CollectableStackParamList = {
   }
   TransferCompleteScreen: {
     collectable: CompressedNFT | Collectable
+    batchId?: string
   }
   AddNewContact: undefined
   PaymentQrScanner: undefined

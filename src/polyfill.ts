@@ -4,6 +4,24 @@
 import { Buffer } from 'buffer'
 import structuredClone from '@ungap/structured-clone'
 
+// Web Streams API polyfill for React Native
+if (typeof global.TransformStream === 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const {
+    TransformStream,
+    ReadableStream,
+    WritableStream,
+  } = require('web-streams-polyfill')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(global as any).TransformStream = TransformStream
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(global as any).ReadableStream =
+    (global as any).ReadableStream || ReadableStream
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(global as any).WritableStream =
+    (global as any).WritableStream || WritableStream
+}
+
 global.Buffer = Buffer
 global.structuredClone = structuredClone
 

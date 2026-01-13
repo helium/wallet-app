@@ -7,19 +7,15 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenPill from '@components/TokenPill'
 import { useMint } from '@helium/helium-react-hooks'
-import {
-  HNT_MINT,
-  IOT_MINT,
-  MOBILE_MINT,
-  sendAndConfirmWithRetry,
-  toNumber,
-} from '@helium/spl-utils'
+import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useEcosystemTokenSolConvert } from '@hooks/useEcosystemTokensSolConvert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { PublicKey } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
+import { toTransactionData } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import React, {
   FC,
@@ -34,17 +30,15 @@ import { Platform } from 'react-native'
 import { Switch } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
-import * as Logger from '../../utils/logger'
 
 const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const { hideModal, onCancel, onSuccess } = useModal()
+  const { submitAndAwait, isLoading: swapping, error: submitError, reset: resetSubmit } = useSubmitAndAwait()
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const [inputMint, setInputMint] = useState<PublicKey | undefined>()
   const { symbol } = useMetaplexMetadata(inputMint)
-  const [transactionError, setTransactionError] = useState<string>()
-  const [swapping, setSwapping] = useState(false)
   const { visibleTokens } = useVisibleTokens()
   const {
     loading,
@@ -111,35 +105,33 @@ const InsufficientSolConversionModal: FC = () => {
   const onMintSelect = useCallback(
     (mint: PublicKey) => () => {
       setInputMint(mint)
-      setTransactionError(undefined)
+      resetSubmit()
     },
-    [],
+    [resetSubmit],
   )
 
   const handleSwapTokens = useCallback(async () => {
     if (!anchorProvider || !swapTx) return
 
-    try {
-      if (useAuto) {
-        await updateAutoGasManagementToken(inputMint)
-      }
-      setSwapping(true)
-      const signed = await anchorProvider.wallet.signTransaction(swapTx)
-      await sendAndConfirmWithRetry(
-        anchorProvider.connection,
-        Buffer.from(signed.serialize()),
-        {
-          skipPreflight: true,
-        },
-        'confirmed',
-      )
+    if (useAuto) {
+      await updateAutoGasManagementToken(inputMint)
+    }
+    const transactionData = toTransactionData([swapTx], {
+      tag: 'sol-convert',
+      metadata: { type: 'swap', description: 'SOL Conversion' },
+    })
 
+    const status = await submitAndAwait(transactionData, {
+      onNeedsResign: async () =>
+        toTransactionData([swapTx], {
+          tag: 'sol-convert',
+          metadata: { type: 'swap', description: 'SOL Conversion' },
+        }),
+    })
+
+    if (status === 'confirmed') {
       hideModal()
       if (onSuccess) await onSuccess()
-    } catch (error) {
-      setSwapping(false)
-      Logger.error(error)
-      setTransactionError((error as Error).message)
     }
   }, [
     anchorProvider,
@@ -149,6 +141,7 @@ const InsufficientSolConversionModal: FC = () => {
     onSuccess,
     updateAutoGasManagementToken,
     inputMint,
+    submitAndAwait,
   ])
 
   const handleCancel = useCallback(async () => {
@@ -158,8 +151,8 @@ const InsufficientSolConversionModal: FC = () => {
 
   const showError = useMemo(() => {
     if (solConvertError) return t('generic.somethingWentWrong')
-    if (transactionError) return transactionError
-  }, [t, transactionError, solConvertError])
+    if (submitError) return submitError.message
+  }, [t, submitError, solConvertError])
 
   return (
     <>

@@ -6,26 +6,15 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useAutomateHotspotClaims } from '@helium/automation-hooks'
-import {
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
-  HNT_MINT,
-  populateMissingDraftInfo,
-  toVersionedTx,
-} from '@helium/spl-utils'
+import { HNT_MINT } from '@helium/spl-utils'
+import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
 import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
-import { TransactionInstruction } from '@solana/web3.js'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
-import { getBasePriorityFee } from '@utils/walletApiV2'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { MessagePreview } from '../../solana/MessagePreview'
 import { useSolana } from '../../solana/SolanaProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
-import { useWalletSign } from '../../solana/WalletSignProvider'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
@@ -35,10 +24,10 @@ const AutomationSetupScreen = () => {
   const { t } = useTranslation()
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule>('daily')
   const [duration, setDuration] = useState('10')
-  const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = ['top'] as Edge[]
 
   const { anchorProvider } = useSolana()
+  const { execute: submitInstructions } = useSubmitInstructions()
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
 
   const hotspotsNeedingRecipient = useMemo(() => {
@@ -96,67 +85,13 @@ const AutomationSetupScreen = () => {
     setSelectedSchedule(schedule)
   }, [])
 
-  const decideAndExecute = useCallback(
-    async (
-      header: string,
-      message: string,
-      instructions: TransactionInstruction[],
-    ) => {
-      if (!anchorProvider) {
-        throw new Error('Anchor provider not found')
-      }
-      const transactions = await batchInstructionsToTxsWithPriorityFee(
-        anchorProvider,
-        instructions,
-        {
-          basePriorityFee: await getBasePriorityFee(),
-          useFirstEstimateForAll: true,
-          computeScaleUp: 1.4,
-        },
-      )
-      const populatedTxs = await Promise.all(
-        transactions.map((tx) =>
-          populateMissingDraftInfo(anchorProvider.connection, tx),
-        ),
-      )
-      const txs = populatedTxs.map((tx) => toVersionedTx(tx))
-      const decision = await walletSignBottomSheetRef?.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header,
-        renderer: () => <MessagePreview message={message} />,
-        serializedTxs: txs.map((transaction) =>
-          Buffer.from(transaction.serialize()),
-        ),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
-      if (decision) {
-        await bulkSendTransactions(
-          anchorProvider,
-          transactions,
-          undefined,
-          10,
-          [],
-          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-      } else {
-        throw new Error('User rejected transaction')
-      }
-    },
-    [anchorProvider, walletSignBottomSheetRef],
-  )
-
   const handleSave = useCallback(async () => {
     try {
       await execute({
         onInstructions: async (instructions) => {
-          await decideAndExecute(
-            t('automationScreen.setupAutomation'),
-            t('automationScreen.setupAutomationMessage', {
+          await submitInstructions({
+            header: t('automationScreen.setupAutomation'),
+            message: t('automationScreen.setupAutomationMessage', {
               schedule: selectedSchedule,
               duration,
               rentFee,
@@ -169,7 +104,7 @@ const AutomationSetupScreen = () => {
                   : 'months',
             }),
             instructions,
-          )
+          })
         },
       })
       navigation.goBack()
@@ -179,7 +114,7 @@ const AutomationSetupScreen = () => {
   }, [
     execute,
     navigation,
-    decideAndExecute,
+    submitInstructions,
     t,
     selectedSchedule,
     duration,
@@ -191,18 +126,18 @@ const AutomationSetupScreen = () => {
     try {
       await remove({
         onInstructions: async (instructions) => {
-          await decideAndExecute(
-            t('automationScreen.removeAutomation'),
-            t('automationScreen.removeAutomationMessage'),
+          await submitInstructions({
+            header: t('automationScreen.removeAutomation'),
+            message: t('automationScreen.removeAutomationMessage'),
             instructions,
-          )
+          })
         },
       })
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
-  }, [remove, navigation, t, decideAndExecute])
+  }, [remove, navigation, t, submitInstructions])
 
   const formatNextRunDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {

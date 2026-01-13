@@ -1,40 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { QuoteResponse, TransactionData } from '@helium/blockchain-api'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { VersionedTransaction } from '@solana/web3.js'
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { useMutation } from '@tanstack/react-query'
+import React, { createContext, useCallback, useContext, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Config from 'react-native-config'
-import * as Logger from '../utils/logger'
+import { useBlockchainApi } from './BlockchainApiProvider'
 
 type QuoteGetRequest = {
   inputMint: string
   outputMint: string
   amount: number
   slippageBps?: number
-  platformFeeBps?: number
-}
-
-type QuoteResponse = {
-  outAmount?: string | number
-  priceImpactPct?: string | number
-  // Allow additional fields from the backend without strict typing
-  [key: string]: any
-}
-
-type SwapPostRequest = {
-  swapRequest?: {
-    quoteResponse?: QuoteResponse
-    userPublicKey?: string
-    feeAccount?: string
-    // Allow additional passthrough fields
-    [key: string]: any
-  }
 }
 
 interface IJupiterContextState {
@@ -44,129 +20,89 @@ interface IJupiterContextState {
 
   getRoute: (opts: QuoteGetRequest) => Promise<QuoteResponse | undefined>
   getSwapTx: (
-    opts?: Pick<SwapPostRequest, 'swapRequest'>,
     routesIn?: QuoteResponse,
   ) => Promise<VersionedTransaction | undefined>
+  getSwapTransactionData: (routesIn?: QuoteResponse) => Promise<TransactionData>
 }
 
 const JupiterContext = createContext<IJupiterContextState | null>(null)
+
 export const JupiterProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<unknown>()
-  const [routes, setRoutes] = useState<QuoteResponse>()
+  const client = useBlockchainApi()
 
-  const baseUrl = useMemo(() => {
-    // Prefer explicit Helium API base if provided
-    return (
-      Config.HELIUM_TRANSACTION_API ||
-      process.env.HELIUM_TRANSACTION_API ||
-      'https://my-helium.web.helium.io/api/v1'
-    )
-  }, [])
-
-  const getRoute = useCallback(
-    async (opts: QuoteGetRequest) => {
-      let foundRoutes: undefined | QuoteResponse
-
-      try {
-        setLoading(true)
-        const params = new URLSearchParams()
-        params.set('inputMint', opts.inputMint)
-        params.set('outputMint', opts.outputMint)
-        params.set('amount', String(opts.amount))
-        if (typeof opts.slippageBps === 'number')
-          params.set('slippageBps', String(opts.slippageBps))
-        const platformFeeBps =
-          typeof opts.platformFeeBps === 'number'
-            ? opts.platformFeeBps
-            : Number(Config.JUPITER_FEE_BPS) || 0
-        if (platformFeeBps) params.set('platformFeeBps', String(platformFeeBps))
-
-        // Helium Swap API: proxy to Jupiter behind the scenes
-        // Endpoint shape aligns with quote semantics
-        const res = await fetch(`${baseUrl}/swap/quote?${params.toString()}`, {
-          method: 'GET',
-        })
-        if (!res.ok) {
-          throw new Error(`Quote request failed: ${res.status}`)
-        }
-        foundRoutes = (await res.json()) as QuoteResponse
-
-        setRoutes(foundRoutes)
-      } catch (err: any) {
-        Logger.error(err)
-        setError(err.toString())
-      } finally {
-        setLoading(false)
-      }
-
-      return foundRoutes
+  // Quote mutation using oRPC client
+  const {
+    mutateAsync: fetchQuote,
+    isPending,
+    error,
+    data: routes,
+  } = useMutation({
+    mutationFn: async (opts: QuoteGetRequest) => {
+      return client.swap.getQuote({
+        inputMint: opts.inputMint,
+        outputMint: opts.outputMint,
+        amount: String(opts.amount),
+        slippageBps: opts.slippageBps ?? 50,
+      })
     },
-    [baseUrl],
+  })
+
+  // Get swap transaction data using oRPC client
+  const getSwapTransactionData = useCallback(
+    async (routesIn?: QuoteResponse): Promise<TransactionData> => {
+      const chosenQuote = routesIn || routes
+      if (!chosenQuote) throw new Error(t('errors.swap.routes'))
+      if (!wallet) throw new Error(t('errors.account'))
+
+      return client.swap.getInstructions({
+        quoteResponse: chosenQuote,
+        userPublicKey: wallet.toBase58(),
+      })
+    },
+    [routes, wallet, client, t],
   )
 
+  // Get swap transaction (returns first VersionedTransaction for backwards compatibility)
   const getSwapTx = useCallback(
     async (
-      opts?: Pick<SwapPostRequest, 'swapRequest'>,
       routesIn?: QuoteResponse,
-    ) => {
-      try {
-        if (!routes && !routesIn) throw new Error(t('errors.swap.routes'))
-        if (!wallet) throw new Error(t('errors.account'))
+    ): Promise<VersionedTransaction | undefined> => {
+      const txnData = await getSwapTransactionData(routesIn)
 
-        const chosenQuote = routesIn || routes
-        if (!chosenQuote) throw new Error(t('errors.swap.routes'))
+      if (!txnData.transactions.length) throw new Error(t('errors.swap.tx'))
 
-        const body = {
-          quoteResponse: chosenQuote,
-          userPublicKey: wallet.toBase58(),
-          feeAccount: Config.JUPITER_FEE_ACCOUNT || undefined,
-          ...(opts?.swapRequest || {}),
-        }
-
-        // Helium Swap API: returns a base64 transaction similar to Jupiter
-        const res = await fetch(`${baseUrl}/swap/instructions`, {
-          method: 'POST',
-          body: JSON.stringify({ ...body }),
-        })
-        if (!res.ok) {
-          throw new Error(`Swap request failed: ${res.status}`)
-        }
-        const json = (await res.json()) as {
-          transactions: { serializedTransaction: string }[]
-        }
-        if (!json.transactions.length) throw new Error(t('errors.swap.tx'))
-
-        return json.transactions.map((transaction) =>
-          VersionedTransaction.deserialize(
-            Buffer.from(transaction.serializedTransaction, 'base64'),
-          ),
-        )[0]
-      } catch (err: any) {
-        Logger.error(err)
-        setError(err.toString())
-      }
+      return VersionedTransaction.deserialize(
+        Buffer.from(txnData.transactions[0].serializedTransaction, 'base64'),
+      )
     },
-    [t, routes, wallet, baseUrl],
+    [getSwapTransactionData, t],
+  )
+
+  const getRoute = useCallback(
+    async (opts: QuoteGetRequest): Promise<QuoteResponse | undefined> => {
+      return fetchQuote(opts)
+    },
+    [fetchQuote],
+  )
+
+  const value = useMemo(
+    () => ({
+      loading: isPending,
+      error,
+      routes,
+      getRoute,
+      getSwapTx,
+      getSwapTransactionData,
+    }),
+    [isPending, error, routes, getRoute, getSwapTx, getSwapTransactionData],
   )
 
   return (
-    <JupiterContext.Provider
-      value={{
-        loading,
-        error,
-        routes,
-
-        getRoute,
-        getSwapTx,
-      }}
-    >
-      {children}
-    </JupiterContext.Provider>
+    <JupiterContext.Provider value={value}>{children}</JupiterContext.Provider>
   )
 }
 

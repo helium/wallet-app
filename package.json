@@ -34,6 +34,7 @@
     "@helium/account-fetch-cache-hooks": "0.11.4",
     "@helium/address": "^5.0.4",
     "@helium/automation-hooks": "^0.11.4",
+    "@helium/blockchain-api": "^0.2.0",
     "@helium/circuit-breaker-sdk": "0.11.4",
     "@helium/cron-sdk": "^0.0.8",
     "@helium/crypto-react-native": "^5.0.4",
@@ -196,7 +197,8 @@
     "stream-browserify": "^3.0.0",
     "text-encoding-polyfill": "^0.6.7",
     "tinycolor2": "^1.6.0",
-    "use-debounce": "^10.0.4"
+    "use-debounce": "^10.0.4",
+    "web-streams-polyfill": "^4.2.0"
   },
   "devDependencies": {
     "@babel/core": "7.26.10",

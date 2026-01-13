@@ -4,6 +4,7 @@ import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
+import { BlockchainApiProvider } from '@storage/BlockchainApiProvider'
 import { JupiterProvider } from '@storage/JupiterProvider'
 import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
@@ -123,60 +124,62 @@ const App = () => {
             <PortalProvider>
               <BottomSheetModalProvider>
                 <SolanaProvider>
-                  <SplashScreen>
-                    <WalletOnboardingProvider
-                      baseUrl={Config.ONBOARDING_API_URL}
-                    >
-                      <KeystoneOnboardingProvider>
-                        <WalletConnectProvider>
-                          <HotspotOnboardingProvider
-                            baseUrl={Config.ONBOARDING_API_URL}
-                          >
-                            <LockScreen>
-                              {accountsRestored && (
-                                <>
-                                  <NavigationContainer
-                                    theme={navTheme}
-                                    linking={linking}
-                                    ref={navigationRef}
-                                  >
-                                    <BalanceProvider>
-                                      <TokensProvider>
-                                        <ModalProvider>
-                                          <WalletSignProvider>
-                                            <GovernanceProvider>
-                                              <AutoGasBanner />
-                                              <NetworkAwareStatusBar />
-                                              <RootNavigator />
+                  <BlockchainApiProvider>
+                    <SplashScreen>
+                      <WalletOnboardingProvider
+                        baseUrl={Config.ONBOARDING_API_URL}
+                      >
+                        <KeystoneOnboardingProvider>
+                          <WalletConnectProvider>
+                            <HotspotOnboardingProvider
+                              baseUrl={Config.ONBOARDING_API_URL}
+                            >
+                              <LockScreen>
+                                {accountsRestored && (
+                                  <>
+                                    <NavigationContainer
+                                      theme={navTheme}
+                                      linking={linking}
+                                      ref={navigationRef}
+                                    >
+                                      <BalanceProvider>
+                                        <TokensProvider>
+                                          <ModalProvider>
+                                            <WalletSignProvider>
+                                              <GovernanceProvider>
+                                                <AutoGasBanner />
+                                                <NetworkAwareStatusBar />
+                                                <RootNavigator />
 
-                                              {/* place app specific modals here */}
-                                              <InsufficientSolConversionModal />
-                                              <JupiterProvider>
-                                                <DeprecatedTokensProvider>
-                                                  <DeprecatedTokensModal />
-                                                  <DeprecatedTokensCheck />
-                                                </DeprecatedTokensProvider>
-                                              </JupiterProvider>
-                                            </GovernanceProvider>
-                                          </WalletSignProvider>
-                                        </ModalProvider>
-                                      </TokensProvider>
-                                    </BalanceProvider>
-                                  </NavigationContainer>
-                                  <SecurityScreen
-                                    visible={
-                                      appState !== 'active' &&
-                                      appState !== 'unknown'
-                                    }
-                                  />
-                                </>
-                              )}
-                            </LockScreen>
-                          </HotspotOnboardingProvider>
-                        </WalletConnectProvider>
-                      </KeystoneOnboardingProvider>
-                    </WalletOnboardingProvider>
-                  </SplashScreen>
+                                                {/* place app specific modals here */}
+                                                <InsufficientSolConversionModal />
+                                                <JupiterProvider>
+                                                  <DeprecatedTokensProvider>
+                                                    <DeprecatedTokensModal />
+                                                    <DeprecatedTokensCheck />
+                                                  </DeprecatedTokensProvider>
+                                                </JupiterProvider>
+                                              </GovernanceProvider>
+                                            </WalletSignProvider>
+                                          </ModalProvider>
+                                        </TokensProvider>
+                                      </BalanceProvider>
+                                    </NavigationContainer>
+                                    <SecurityScreen
+                                      visible={
+                                        appState !== 'active' &&
+                                        appState !== 'unknown'
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </LockScreen>
+                            </HotspotOnboardingProvider>
+                          </WalletConnectProvider>
+                        </KeystoneOnboardingProvider>
+                      </WalletOnboardingProvider>
+                    </SplashScreen>
+                  </BlockchainApiProvider>
                 </SolanaProvider>
               </BottomSheetModalProvider>
             </PortalProvider>

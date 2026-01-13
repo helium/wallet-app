@@ -5,18 +5,20 @@ import NotificationsBellIco from '@assets/images/notificationBell.svg'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import IconPressedContainer from '@components/IconPressedContainer'
+import PendingTransactionsIcon from '@components/PendingTransactionsIcon'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useHaptic from '@hooks/useHaptic'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
 import { useColors } from '@theme/themeHooks'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import PendingTransactionsModal from '../transactions/PendingTransactionsModal'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { RootState } from '../../store/rootReducer'
 
@@ -32,6 +34,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { triggerImpact } = useHaptic()
   const { showBanner } = useSelector((state: RootState) => state.app)
   const { isHealthy } = useSolanaHealth()
+  const [showPendingTxns, setShowPendingTxns] = useState(false)
 
   const notificationsByResource = useSelector(
     (appState: RootState) => appState.notifications.notifications,
@@ -60,6 +63,15 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
     triggerImpact('light')
     navigation.push('AddressBookNavigator')
   }, [navigation, triggerImpact])
+
+  const handlePendingTxnsPress = useCallback(() => {
+    triggerImpact('light')
+    setShowPendingTxns(true)
+  }, [triggerImpact])
+
+  const handleClosePendingTxns = useCallback(() => {
+    setShowPendingTxns(false)
+  }, [])
 
   const { top } = useSafeAreaInsets()
 
@@ -113,7 +125,8 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         </Text>
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
-      <Box flexDirection="row">
+      <Box flexDirection="row" alignItems="center">
+        <PendingTransactionsIcon onPress={handlePendingTxnsPress} />
         <Box position="relative">
           <IconPressedContainer onPress={navToNotifs}>
             <NotificationsBellIco color="white" />
@@ -143,6 +156,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
           <AccountIco color="white" />
         </IconPressedContainer>
       </Box>
+      <PendingTransactionsModal
+        visible={showPendingTxns}
+        onClose={handleClosePendingTxns}
+      />
     </Box>
   )
 }

@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from 'react'
 import Box from '@components/Box'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, RouteProp, useRoute } from '@react-navigation/native'
 import { TabBarNavigationProp } from 'src/navigation/rootTypes'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
@@ -9,7 +9,6 @@ import BackArrow from '@assets/images/backArrow.svg'
 import AccountIcon from '@components/AccountIcon'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
@@ -18,9 +17,12 @@ import { parseTransactionError } from '@utils/solanaUtils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { RootState } from '../../store/rootReducer'
+import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
+import { CollectableStackParamList } from './collectablesTypes'
 
 const SettingUpAntennaScreen = () => {
+  const route =
+    useRoute<RouteProp<CollectableStackParamList, 'SettingUpAntennaScreen'>>()
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation<TabBarNavigationProp>()
   const wallet = useCurrentWallet()
@@ -28,9 +30,19 @@ const SettingUpAntennaScreen = () => {
   const { bottom } = useSafeAreaInsets()
 
   const { t } = useTranslation()
-  const solanaPayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.payment,
-  )
+  const {
+    status,
+    error: batchError,
+    isLoading,
+  } = useTransactionBatchStatus(route.params?.batchId || null)
+
+  const hasError =
+    batchError ||
+    status === 'failed' ||
+    status === 'expired' ||
+    status === 'partial'
+  const isConfirmed = status === 'confirmed'
+  const isPending = isLoading || status === 'pending'
 
   const onReturn = useCallback(() => {
     // Reset Collectables stack to first screen
@@ -67,10 +79,7 @@ const SettingUpAntennaScreen = () => {
           >
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
           </Box>
-          {(!solanaPayment ||
-            (solanaPayment &&
-              !solanaPayment.error &&
-              !solanaPayment.loading)) && (
+          {(!route.params?.batchId || isConfirmed) && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -91,7 +100,7 @@ const SettingUpAntennaScreen = () => {
             </Animated.View>
           )}
 
-          {solanaPayment?.error && (
+          {hasError && (
             <Animated.View
               style={{
                 alignItems: 'center',
@@ -116,13 +125,13 @@ const SettingUpAntennaScreen = () => {
               >
                 {parseTransactionError(
                   solBalance,
-                  solanaPayment?.error?.message,
+                  batchError?.message || 'Transaction failed',
                 )}
               </Text>
             </Animated.View>
           )}
 
-          {solanaPayment && solanaPayment.loading && (
+          {isPending && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -168,7 +177,7 @@ const SettingUpAntennaScreen = () => {
             title={t('collectablesScreen.returnToCollectables')}
             titleColor="white"
             onPress={onReturn}
-            disabled={solanaPayment && solanaPayment.loading}
+            disabled={isPending}
             LeadingComponent={
               <BackArrow width={16} height={15} color="white" />
             }

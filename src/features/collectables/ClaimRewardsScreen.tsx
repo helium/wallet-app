@@ -101,8 +101,8 @@ const ClaimRewardsScreen = () => {
       }
 
       if (transactions.length > 0) {
-        await submitClaimRewards(transactions)
-        nav.push('ClaimingRewardsScreen')
+        const batchId = await submitClaimRewards(transactions)
+        nav.push('ClaimingRewardsScreen', { batchId })
       } else {
         setClaimError(t('collectablesScreen.claimError'))
       }

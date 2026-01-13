@@ -2533,6 +2533,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@helium/blockchain-api@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@helium/blockchain-api@npm:0.2.0"
+  dependencies:
+    "@orpc/client": "npm:^1.12.2"
+    "@orpc/openapi": "npm:^1.12.2"
+    "@orpc/server": "npm:^1.12.2"
+    zod: "npm:^4.0.5"
+  peerDependencies:
+    "@solana/web3.js": ^1.98.0 || ^2.0.0
+  peerDependenciesMeta:
+    "@solana/web3.js":
+      optional: true
+  checksum: 10/ef5abfba4f35b86118982fe6e809212a2997ec8ab6348eacc9220fe2350ddbb765da5e516deb56e0795fb1e7c5ee3ea4d855ff1fccbfb455347465bab320e5b5
+  languageName: node
+  linkType: hard
+
 "@helium/circuit-breaker-sdk@npm:0.11.4, @helium/circuit-breaker-sdk@npm:^0.11.4":
   version: 0.11.4
   resolution: "@helium/circuit-breaker-sdk@npm:0.11.4"
@@ -4208,6 +4225,176 @@ __metadata:
   version: 1.9.0
   resolution: "@opentelemetry/api@npm:1.9.0"
   checksum: 10/a607f0eef971893c4f2ee2a4c2069aade6ec3e84e2a1f5c2aac19f65c5d9eeea41aa72db917c1029faafdd71789a1a040bdc18f40d63690e22ccae5d7070f194
+  languageName: node
+  linkType: hard
+
+"@orpc/client@npm:1.13.4, @orpc/client@npm:^1.12.2":
+  version: 1.13.4
+  resolution: "@orpc/client@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+    "@orpc/standard-server-fetch": "npm:1.13.4"
+    "@orpc/standard-server-peer": "npm:1.13.4"
+  checksum: 10/556910bcbcf840b3da3fcb572300333efe1920f71bc1eb3b233df49fcb73a8e7a21bd97c25c30e3263df3a537177641fc2697a844e2f5f8218a4492f01d0d33c
+  languageName: node
+  linkType: hard
+
+"@orpc/contract@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/contract@npm:1.13.4"
+  dependencies:
+    "@orpc/client": "npm:1.13.4"
+    "@orpc/shared": "npm:1.13.4"
+    "@standard-schema/spec": "npm:^1.1.0"
+    openapi-types: "npm:^12.1.3"
+  checksum: 10/10fd4f5e429c2a00aaa7f2402462caa29e7e60163e046e9117c01574367506ea8be1a11768b03485c79bffb79d294fde724cc6b18267247aa6eb42490db47363
+  languageName: node
+  linkType: hard
+
+"@orpc/interop@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/interop@npm:1.13.4"
+  checksum: 10/58ee50a8b5322574816a7463ece6b4b90e0b49f05cfad846e326b9ba8d34d5b957f76cb0a2acbc55e2d079eb920199f8303afed28c693d265c18a9277ee9a2fb
+  languageName: node
+  linkType: hard
+
+"@orpc/openapi-client@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/openapi-client@npm:1.13.4"
+  dependencies:
+    "@orpc/client": "npm:1.13.4"
+    "@orpc/contract": "npm:1.13.4"
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+  checksum: 10/2879dcc4f2efd8ab4976d41c4ca3cfab341af8ea0b6681fc25fd688c8a08124f3fad5cdcc72ef4fb65bada8a6284c8ee22420d2a0e318bdefde4256a852a6f2d
+  languageName: node
+  linkType: hard
+
+"@orpc/openapi@npm:^1.12.2":
+  version: 1.13.4
+  resolution: "@orpc/openapi@npm:1.13.4"
+  dependencies:
+    "@orpc/client": "npm:1.13.4"
+    "@orpc/contract": "npm:1.13.4"
+    "@orpc/interop": "npm:1.13.4"
+    "@orpc/openapi-client": "npm:1.13.4"
+    "@orpc/server": "npm:1.13.4"
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+    json-schema-typed: "npm:^8.0.2"
+    rou3: "npm:^0.7.12"
+  checksum: 10/58bfae423c37160d16e47ced532600c5e27d2063873d9de507f8dcea778cd9f698c57f0b353be285353c41303ae85bfad786515552f9671803c5f6d60de82c97
+  languageName: node
+  linkType: hard
+
+"@orpc/server@npm:1.13.4, @orpc/server@npm:^1.12.2":
+  version: 1.13.4
+  resolution: "@orpc/server@npm:1.13.4"
+  dependencies:
+    "@orpc/client": "npm:1.13.4"
+    "@orpc/contract": "npm:1.13.4"
+    "@orpc/interop": "npm:1.13.4"
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+    "@orpc/standard-server-aws-lambda": "npm:1.13.4"
+    "@orpc/standard-server-fastify": "npm:1.13.4"
+    "@orpc/standard-server-fetch": "npm:1.13.4"
+    "@orpc/standard-server-node": "npm:1.13.4"
+    "@orpc/standard-server-peer": "npm:1.13.4"
+    cookie: "npm:^1.1.1"
+  peerDependencies:
+    crossws: ">=0.3.4"
+    ws: ">=8.18.1"
+  peerDependenciesMeta:
+    crossws:
+      optional: true
+    ws:
+      optional: true
+  checksum: 10/fe86117c240290efec518b42791b181c7d6498eba9e46a85878e9b9262dffcd4877db6c1fd9341588aa8f2dd636f67b6ad770c16526c29627950bd34666a17f6
+  languageName: node
+  linkType: hard
+
+"@orpc/shared@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/shared@npm:1.13.4"
+  dependencies:
+    radash: "npm:^12.1.1"
+    type-fest: "npm:^5.3.1"
+  peerDependencies:
+    "@opentelemetry/api": ">=1.9.0"
+  peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+  checksum: 10/180212d778b3c7e0cd49a45d0e4b0dca22cec705847a7149e1db1c63f43c1e6de6301879ce699646b525717e653a8bdb4303428afb4c9e2b6f4300988de278c6
+  languageName: node
+  linkType: hard
+
+"@orpc/standard-server-aws-lambda@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/standard-server-aws-lambda@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+    "@orpc/standard-server-fetch": "npm:1.13.4"
+    "@orpc/standard-server-node": "npm:1.13.4"
+  checksum: 10/8532c591068dc12ca6b6df009fbecb3d7cc0b36f734c2888b336dc563f581f47b88b338b00d62983f4cb89f489773260d41a9c40c9c4a49f8abda8ba01e59ecf
+  languageName: node
+  linkType: hard
+
+"@orpc/standard-server-fastify@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/standard-server-fastify@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+    "@orpc/standard-server-node": "npm:1.13.4"
+  peerDependencies:
+    fastify: ">=5.6.1"
+  peerDependenciesMeta:
+    fastify:
+      optional: true
+  checksum: 10/b2c7cd995a4f6cdc52013dba30988ca9704a97ecd000acc06af73b24ba96f7929244af266c3c81588a8bbad555968b943640c4ef35306e7d183d17f97562d901
+  languageName: node
+  linkType: hard
+
+"@orpc/standard-server-fetch@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/standard-server-fetch@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+  checksum: 10/b75bf35db34524e9b6c7b9b99080af694b89324372af7f97f4d311c276b73f3780bfae5dc099767d865fb46bae4780e6524ff540c7ed81d5f9fee0515aeb1f9b
+  languageName: node
+  linkType: hard
+
+"@orpc/standard-server-node@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/standard-server-node@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+    "@orpc/standard-server-fetch": "npm:1.13.4"
+  checksum: 10/70c69fd4cb9f567427e5d269614a87a7b288744ba287cc73a52060db4ee9a2c6335cfd474bb0737ff6c4b857112af6e71c450548e7833f31c5d8ce848b7ebc9e
+  languageName: node
+  linkType: hard
+
+"@orpc/standard-server-peer@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/standard-server-peer@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+    "@orpc/standard-server": "npm:1.13.4"
+  checksum: 10/de774587ac5242236a78ed10fde27321e8229e284ed25780aec2af19d5376e45e5d2d6d232059f8bc463d131fb12c93a1f1026444e186cf0f29729adcaf85afe
+  languageName: node
+  linkType: hard
+
+"@orpc/standard-server@npm:1.13.4":
+  version: 1.13.4
+  resolution: "@orpc/standard-server@npm:1.13.4"
+  dependencies:
+    "@orpc/shared": "npm:1.13.4"
+  checksum: 10/ca67463b86ce7ad66dd5a883ed5fa6b2b2cd369fafdf182e9842482a701a2723680253e8e9a342c058eab0c8a7f3a587558038170faa64a636a8e05f26d0a978
   languageName: node
   linkType: hard
 
@@ -5897,6 +6084,13 @@ __metadata:
     "@stablelib/random": "npm:^1.0.2"
     "@stablelib/wipe": "npm:^1.0.1"
   checksum: 10/fb5469e390ee2515d926633e3e179038894ac4f5e8c8cd2c2fc912022e34a051112eab0fe80c4dbc6e59129679844182562a036abff89444e5c4a05dd42ed329
+  languageName: node
+  linkType: hard
+
+"@standard-schema/spec@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@standard-schema/spec@npm:1.1.0"
+  checksum: 10/a209615c9e8b2ea535d7db0a5f6aa0f962fd4ab73ee86a46c100fb78116964af1f55a27c1794d4801e534a196794223daa25ff5135021e03c7828aa3d95e1763
   languageName: node
   linkType: hard
 
@@ -9425,6 +9619,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "cookie@npm:1.1.1"
+  checksum: 10/85538153054791155cf4d38d2e807e3b9382d71bf71d92fc46fca348515ea574049d0d9ef8eb84d2d54a681ad1d7a7316b1989b901dace50a6c0f4c3858dbdb2
+  languageName: node
+  linkType: hard
+
 "copy-descriptor@npm:^0.1.0":
   version: 0.1.1
   resolution: "copy-descriptor@npm:0.1.1"
@@ -12511,6 +12712,7 @@ __metadata:
     "@helium/account-fetch-cache-hooks": "npm:0.11.4"
     "@helium/address": "npm:^5.0.4"
     "@helium/automation-hooks": "npm:^0.11.4"
+    "@helium/blockchain-api": "npm:^0.2.0"
     "@helium/circuit-breaker-sdk": "npm:0.11.4"
     "@helium/cron-sdk": "npm:^0.0.8"
     "@helium/crypto-react-native": "npm:^5.0.4"
@@ -12727,6 +12929,7 @@ __metadata:
     tinycolor2: "npm:^1.6.0"
     typescript: "npm:5.0.4"
     use-debounce: "npm:^10.0.4"
+    web-streams-polyfill: "npm:^4.2.0"
   languageName: unknown
   linkType: soft
 
@@ -14424,6 +14627,13 @@ __metadata:
   version: 1.0.0
   resolution: "json-schema-traverse@npm:1.0.0"
   checksum: 10/02f2f466cdb0362558b2f1fd5e15cce82ef55d60cd7f8fa828cf35ba74330f8d767fcae5c5c2adb7851fa811766c694b9405810879bc4e1ddd78a7c0e03658ad
+  languageName: node
+  linkType: hard
+
+"json-schema-typed@npm:^8.0.2":
+  version: 8.0.2
+  resolution: "json-schema-typed@npm:8.0.2"
+  checksum: 10/fa866d1fe91e3a94aa4fe007861475cd03dcaf47b719861cab171ef2f8598478007c634d29ae45de94ee34ddff4e13414c63ea5ff06c5b868b613142c699d511
   languageName: node
   linkType: hard
 
@@ -16492,6 +16702,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-types@npm:^12.1.3":
+  version: 12.1.3
+  resolution: "openapi-types@npm:12.1.3"
+  checksum: 10/9d1d7ed848622b63d0a4c3f881689161b99427133054e46b8e3241e137f1c78bb0031c5d80b420ee79ac2e91d2e727ffd6fc13c553d1b0488ddc8ad389dcbef8
+  languageName: node
+  linkType: hard
+
 "optionator@npm:^0.9.1":
   version: 0.9.4
   resolution: "optionator@npm:0.9.4"
@@ -17546,6 +17763,13 @@ __metadata:
   version: 4.0.1
   resolution: "quick-lru@npm:4.0.1"
   checksum: 10/5c7c75f1c696750f619b165cc9957382f919e4207dabf04597a64f0298861391cdc5ee91a1dde1a5d460ecf7ee1af7fc36fef6d155bef2be66f05d43fd63d4f0
+  languageName: node
+  linkType: hard
+
+"radash@npm:^12.1.1":
+  version: 12.1.1
+  resolution: "radash@npm:12.1.1"
+  checksum: 10/2145709ac952009b58ff9135661cffd695ee02ee0820c8de577c10372d8c91549a74c97e2743e58910572ed3ea3aab598a8c03217313b04f6073f9257f3d965b
   languageName: node
   linkType: hard
 
@@ -18983,6 +19207,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rou3@npm:^0.7.12":
+  version: 0.7.12
+  resolution: "rou3@npm:0.7.12"
+  checksum: 10/567969f8bb5ebcc9a0c5a1b6964d90ca6883a9e17302b0e66a263b415da4291d8a3c421e8f4214fe290386311c13fdd73db2729bc96bbac0e2dd502d41c25980
+  languageName: node
+  linkType: hard
+
 "rpc-websockets@npm:^7.5.1":
   version: 7.11.2
   resolution: "rpc-websockets@npm:7.11.2"
@@ -20296,6 +20527,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tagged-tag@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "tagged-tag@npm:1.0.0"
+  checksum: 10/e37653df3e495daa7ea7790cb161b810b00075bba2e4d6c93fb06a709e747e3ae9da11a120d0489833203926511b39e038a2affbd9d279cfb7a2f3fcccd30b5d
+  languageName: node
+  linkType: hard
+
 "tar@npm:^7.4.3":
   version: 7.4.3
   resolution: "tar@npm:7.4.3"
@@ -20712,6 +20950,15 @@ __metadata:
   version: 3.13.1
   resolution: "type-fest@npm:3.13.1"
   checksum: 10/9a8a2359ada34c9b3affcaf3a8f73ee14c52779e89950db337ce66fb74c3399776c697c99f2532e9b16e10e61cfdba3b1c19daffb93b338b742f0acd0117ce12
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^5.3.1":
+  version: 5.4.0
+  resolution: "type-fest@npm:5.4.0"
+  dependencies:
+    tagged-tag: "npm:^1.0.0"
+  checksum: 10/7012a9d6031420e41b39546c713d2d91a08959e76343273e13ccc44ea76ef17efda2779e690549b453ecb3170c1b5e46ce3b0a5d0234443ecfd227e47c4bf781
   languageName: node
   linkType: hard
 
@@ -21330,6 +21577,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"web-streams-polyfill@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "web-streams-polyfill@npm:4.2.0"
+  checksum: 10/137e79549d0b567d7af08711e91956379b168f2c66d8d08d25498f3bd0b63859b7305bc3ea9e82ed6587ed41fad9435eedd7f1d0a25647c9acf2b3922c0963b6
+  languageName: node
+  linkType: hard
+
 "webidl-conversions@npm:^3.0.0":
   version: 3.0.1
   resolution: "webidl-conversions@npm:3.0.1"
@@ -21766,5 +22020,12 @@ __metadata:
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10/f0c963ec40cd96858451d1690404d603d36507c1fc9682f2dae59ab38b578687d542708a7fdbf645f77926f78c9ed558f57c3d3aa226c285f798df0c4da16995
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.0.5":
+  version: 4.3.5
+  resolution: "zod@npm:4.3.5"
+  checksum: 10/3148bd52e56ab7c1641ec397e6be6eddbb1d8f5db71e95baab9bb9622a0ea49d8a385885fc1c22b90fa6d8c5234e051f4ef5d469cfe3fb90198d5a91402fd89c
   languageName: node
   linkType: hard

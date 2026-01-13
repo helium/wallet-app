@@ -13,16 +13,7 @@ import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
 import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
 import { organizationKey } from '@helium/organization-sdk'
-import {
-  HNT_MINT,
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
-  humanReadable,
-  populateMissingDraftInfo,
-  sendAndConfirmWithRetry,
-  toNumber,
-  toVersionedTx,
-} from '@helium/spl-utils'
+import { HNT_MINT, humanReadable, toNumber } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   SubDaoWithMeta,
@@ -46,10 +37,7 @@ import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
-import {
-  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-  MOBILE_SUB_DAO_KEY,
-} from '@utils/constants'
+import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import {
   daysToSecs,
   getFormattedStringFromDays,
@@ -58,16 +46,12 @@ import {
   secsToDays,
 } from '@utils/dateTools'
 import { shortenAddress } from '@utils/formatting'
-import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
+import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { MessagePreview } from '../../solana/MessagePreview'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
@@ -86,7 +70,8 @@ export const PositionCard = ({
   const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
-  const { walletSignBottomSheetRef } = useWalletSign()
+  const { execute: executeGovernanceTx, isPending: isGovernanceTxPending } =
+    useSubmitInstructions()
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionRef = useRef<
     null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
@@ -191,8 +176,6 @@ export const PositionCard = ({
 
   const { info: registrar = null } = useRegistrar(position.registrar)
 
-  const { anchorProvider } = useSolana()
-
   const decideAndExecute = async ({
     header,
     message,
@@ -206,72 +189,14 @@ export const PositionCard = ({
     sigs?: Keypair[]
     sequentially?: boolean
   }) => {
-    if (!anchorProvider || !walletSignBottomSheetRef) return
-
-    const transactions = await batchInstructionsToTxsWithPriorityFee(
-      anchorProvider,
-      instructions,
-      {
-        basePriorityFee: await getBasePriorityFee(),
-      },
-    )
-
-    const populatedDrafts = await Promise.all(
-      transactions.map((tx) =>
-        populateMissingDraftInfo(anchorProvider.connection, tx),
-      ),
-    )
-
-    const asVersionedTx = populatedDrafts.map(toVersionedTx)
-    const decision = await walletSignBottomSheetRef.show({
-      type: WalletStandardMessageTypes.signTransaction,
-      url: '',
+    await executeGovernanceTx({
       header,
-      renderer: () => <MessagePreview message={message} />,
-      suppressWarnings: sequentially,
-      serializedTxs: asVersionedTx.map((transaction) =>
-        Buffer.from(transaction.serialize()),
-      ),
+      message,
+      instructions,
+      sigs,
+      sequentially,
+      tag: 'governance-position',
     })
-
-    if (decision) {
-      if (transactions.length > 1 && sequentially) {
-        let i = 0
-        // eslint-disable-next-line no-restricted-syntax
-        for (const tx of await anchorProvider.wallet.signAllTransactions(
-          asVersionedTx,
-        )) {
-          const draft = transactions[i]
-          sigs.forEach((sig) => {
-            if (draft.signers?.some((s) => s.publicKey.equals(sig.publicKey))) {
-              tx.sign([sig])
-            }
-          })
-
-          await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            Buffer.from(tx.serialize()),
-            {
-              skipPreflight: false,
-            },
-            'confirmed',
-          )
-          // eslint-disable-next-line no-plusplus
-          i++
-        }
-      } else {
-        await bulkSendTransactions(
-          anchorProvider,
-          transactions,
-          undefined,
-          undefined,
-          sigs,
-          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-      }
-    } else {
-      throw new Error('User rejected transaction')
-    }
   }
 
   const handleCalcLockupMultiplier = useCallback(
