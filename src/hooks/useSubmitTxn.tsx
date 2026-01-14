@@ -22,9 +22,10 @@ import {
   HNT_LAZY_KEY,
   IOT_LAZY_KEY,
   MOBILE_LAZY_KEY,
+  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
   Mints,
 } from '@utils/constants'
-import { toAsset } from '@utils/solanaUtils'
+import { toAsset, getCachedKeyToAssets } from '@utils/solanaUtils'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
@@ -70,6 +71,51 @@ async function getEntityKeyFromCompressedNFT(
   }
 
   return entityKey
+}
+
+// Helper to batch and submit transactions in chunks to prevent blockhash expiration
+async function batchAndSubmitTransactions(
+  anchorProvider: AnchorProvider,
+  client: ReturnType<typeof useBlockchainApi>,
+  queryClient: ReturnType<typeof useQueryClient>,
+  transactions: VersionedTransaction[],
+  tag: string,
+  metadata: { type: string; description: string },
+): Promise<string> {
+  if (transactions.length === 0) {
+    throw new Error('No transactions to submit')
+  }
+
+  // If we have fewer transactions than the batch size, submit all at once
+  if (transactions.length <= MAX_TRANSACTIONS_PER_SIGNATURE_BATCH) {
+    const signedTxns = await anchorProvider.wallet.signAllTransactions(
+      transactions,
+    )
+    const txnData = toTransactionData(signedTxns, { tag, metadata })
+    const { batchId } = await client.transactions.submit(txnData)
+    queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+    return batchId
+  }
+
+  // Otherwise, batch them
+  const chunkCount = Math.ceil(
+    transactions.length / MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+  )
+  const batchPromises = Array.from({ length: chunkCount }, async (_, index) => {
+    const start = index * MAX_TRANSACTIONS_PER_SIGNATURE_BATCH
+    const chunk = transactions.slice(
+      start,
+      start + MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+    )
+    const signedTxns = await anchorProvider.wallet.signAllTransactions(chunk)
+    const txnData = toTransactionData(signedTxns, { tag, metadata })
+    const { batchId } = await client.transactions.submit(txnData)
+    queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+    return batchId
+  })
+
+  const batchIds = await Promise.all(batchPromises)
+  return batchIds[batchIds.length - 1]
 }
 
 export default () => {
@@ -130,10 +176,13 @@ export default () => {
 
       // Combine all transactions
       const allTxns = txnDataList.flatMap((td) => td.transactions)
+      const paymentSummary = payments
+        .map((p) => `${p.payee}-${p.balanceAmount.toString()}`)
+        .join('_')
       const combinedTxnData = {
         transactions: allTxns,
         parallel: false,
-        tag: 'payment',
+        tag: `payment-${mint.toBase58()}-${paymentSummary}`,
       }
 
       const serializedTxs = combinedTxnData.transactions.map((tx) =>
@@ -221,10 +270,15 @@ export default () => {
         )
         const populatedTxn = await populateMissingDraftInfo(
           anchorProvider.connection,
-          transferTxn,
+          {
+            ...transferTxn,
+            recentBlockhash: (
+              await anchorProvider.connection.getLatestBlockhash('finalized')
+            ).blockhash,
+          },
         )
         txnData = toTransactionData([toVersionedTx(populatedTxn)], {
-          tag: 'collectable-transfer',
+          tag: `collectable-transfer-${nft.id || nft.address}-${payee}`,
           metadata: {
             type: 'transfer',
             description: 'Transfer collectable',
@@ -317,7 +371,7 @@ export default () => {
 
       const signed = await anchorProvider.wallet.signTransaction(swapTxn)
       const txnData = toTransactionData([signed], {
-        tag: 'jupiter-swap',
+        tag: `jupiter-swap-${inputMint.toBase58()}-${inputAmount}-${outputMint.toBase58()}-${outputAmount}`,
         metadata: { type: 'swap', description: 'Jupiter swap' },
       })
 
@@ -368,8 +422,12 @@ export default () => {
         recipient,
       )
 
+      const { blockhash } = await connection.getLatestBlockhash('finalized')
       const serializedTx = toVersionedTx(
-        await populateMissingDraftInfo(connection, swapTxn),
+        await populateMissingDraftInfo(connection, {
+          ...swapTxn,
+          recentBlockhash: blockhash,
+        }),
       ).serialize()
 
       const decision = await walletSignBottomSheetRef.show({
@@ -390,7 +448,7 @@ export default () => {
       )
 
       const txnData = toTransactionData([signed], {
-        tag: 'treasury-swap',
+        tag: `treasury-swap-${fromMint.toBase58()}-${amount}-${recipient.toBase58()}`,
         metadata: { type: 'swap', description: 'Treasury swap' },
       })
 
@@ -431,15 +489,15 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      const signedTxns = await anchorProvider.wallet.signAllTransactions(txns)
-      const txnData = toTransactionData(signedTxns, {
-        tag: 'claim-rewards',
-        metadata: { type: 'claim', description: 'Claim rewards' },
-      })
-
-      const { batchId } = await client.transactions.submit(txnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-      return batchId
+      // Batch transactions to prevent blockhash expiration
+      return batchAndSubmitTransactions(
+        anchorProvider,
+        client,
+        queryClient,
+        txns,
+        'claim-rewards',
+        { type: 'claim', description: 'Claim rewards' },
+      )
     },
   })
 
@@ -464,7 +522,8 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const allTxns: VersionedTransaction[] = []
+      const hntTxns: VersionedTransaction[] = []
+      const iotMobileTxns: VersionedTransaction[] = []
 
       // Check which distributors are requested
       const claimHnt = lazyDistributors.some((ld) => ld.equals(HNT_LAZY_KEY))
@@ -480,13 +539,13 @@ export default () => {
             walletAddress: currentAccount.solanaAddress!,
           })
           // Deserialize the transactions from the API response
-          const hntTxns = transactionData.transactions.map(
+          const hntTxnsFromApi = transactionData.transactions.map(
             ({ serializedTransaction }) =>
               VersionedTransaction.deserialize(
                 Buffer.from(serializedTransaction, 'base64'),
               ),
           )
-          allTxns.push(...hntTxns)
+          hntTxns.push(...hntTxnsFromApi)
         } catch (e) {
           // If API fails, continue with IOT/MOBILE
           console.warn('HNT claim API failed, skipping:', e)
@@ -496,9 +555,12 @@ export default () => {
       // For IOT and MOBILE, build transactions using SDK bulk operations
       if (claimIot || claimMobile) {
         const lazyProgram = await initLazyDistributor(anchorProvider)
+        const hemProgram = (await initHem(
+          anchorProvider,
+        )) as unknown as Program<HeliumEntityManager>
         const { connection } = anchorProvider
 
-        // Filter hotspots with pending rewards and collect asset IDs
+        // Filter hotspots with pending rewards
         const iotHotspots = claimIot
           ? hotspots.filter(
               (h) =>
@@ -514,17 +576,36 @@ export default () => {
             )
           : []
 
+        // Get entity keys from hotspots in bulk
+        const getEntityKeys = async (
+          hotspotList: HotspotWithPendingRewards[],
+        ): Promise<string[]> => {
+          if (hotspotList.length === 0) return []
+          const keyToAssets = hotspotList.map((h) =>
+            keyToAssetForAsset(toAsset(h as CompressedNFT), DAO_KEY),
+          )
+          const ktaAccs = await getCachedKeyToAssets(
+            hemProgram as any,
+            keyToAssets,
+          )
+          return ktaAccs.map(
+            (kta) =>
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              decodeEntityKey(kta.entityKey, kta.keySerialization)!,
+          )
+        }
+
         // Build IOT bulk transactions
         if (iotHotspots.length > 0) {
           try {
-            const iotAssetIds = iotHotspots.map((h) => h.id)
+            const iotEntityKeys = await getEntityKeys(iotHotspots)
             const iotBulkRewards = await distributorOracle.getBulkRewards(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               lazyProgram as any,
               IOT_LAZY_KEY,
-              iotAssetIds,
+              iotEntityKeys,
             )
-            const iotAssets = iotAssetIds.map((id) => new PublicKey(id))
+            const iotAssets = iotHotspots.map((h) => new PublicKey(h.id))
             const iotTxns = await distributorOracle.formBulkTransactions({
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               program: lazyProgram as any,
@@ -535,7 +616,7 @@ export default () => {
               payer: anchorProvider.wallet.publicKey,
               assetEndpoint: connection.rpcEndpoint,
             })
-            allTxns.push(...iotTxns)
+            iotMobileTxns.push(...iotTxns)
           } catch (e) {
             console.warn('Failed to build IOT bulk claims:', e)
           }
@@ -544,14 +625,14 @@ export default () => {
         // Build MOBILE bulk transactions
         if (mobileHotspots.length > 0) {
           try {
-            const mobileAssetIds = mobileHotspots.map((h) => h.id)
+            const mobileEntityKeys = await getEntityKeys(mobileHotspots)
             const mobileBulkRewards = await distributorOracle.getBulkRewards(
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               lazyProgram as any,
               MOBILE_LAZY_KEY,
-              mobileAssetIds,
+              mobileEntityKeys,
             )
-            const mobileAssets = mobileAssetIds.map((id) => new PublicKey(id))
+            const mobileAssets = mobileHotspots.map((h) => new PublicKey(h.id))
             const mobileTxns = await distributorOracle.formBulkTransactions({
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               program: lazyProgram as any,
@@ -562,18 +643,22 @@ export default () => {
               payer: anchorProvider.wallet.publicKey,
               assetEndpoint: connection.rpcEndpoint,
             })
-            allTxns.push(...mobileTxns)
+            iotMobileTxns.push(...mobileTxns)
           } catch (e) {
             console.warn('Failed to build MOBILE bulk claims:', e)
           }
         }
       }
 
-      if (allTxns.length === 0) {
+      if (hntTxns.length === 0 && iotMobileTxns.length === 0) {
         throw new Error('No rewards to claim')
       }
 
-      const serializedTxs = allTxns.map((txn) => Buffer.from(txn.serialize()))
+      // Show wallet approval for all transactions
+      const allTxnsForApproval = [...hntTxns, ...iotMobileTxns]
+      const serializedTxs = allTxnsForApproval.map((txn) =>
+        Buffer.from(txn.serialize()),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -590,17 +675,40 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      const signedTxns = await anchorProvider.wallet.signAllTransactions(
-        allTxns,
-      )
-      const txnData = toTransactionData(signedTxns, {
-        tag: 'claim-all-rewards',
-        metadata: { type: 'claim', description: 'Claim all rewards' },
-      })
+      let lastBatchId: string | undefined
 
-      const { batchId } = await client.transactions.submit(txnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-      return batchId
+      // Submit HNT transactions (from API, no batching needed)
+      if (hntTxns.length > 0) {
+        const signedHntTxns = await anchorProvider.wallet.signAllTransactions(
+          hntTxns,
+        )
+        const hntTxnData = toTransactionData(signedHntTxns, {
+          tag: 'claim-all-rewards-hnt',
+          metadata: { type: 'claim', description: 'Claim HNT rewards' },
+        })
+        const { batchId } = await client.transactions.submit(hntTxnData)
+        queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+        lastBatchId = batchId
+      }
+
+      // Batch and submit IOT/MOBILE transactions to prevent blockhash expiration
+      if (iotMobileTxns.length > 0) {
+        const iotMobileBatchId = await batchAndSubmitTransactions(
+          anchorProvider,
+          client,
+          queryClient,
+          iotMobileTxns,
+          'claim-all-rewards-iot-mobile',
+          { type: 'claim', description: 'Claim IOT/MOBILE rewards' },
+        )
+        lastBatchId = iotMobileBatchId
+      }
+
+      if (!lastBatchId) {
+        throw new Error('No transactions were submitted')
+      }
+
+      return lastBatchId
     },
   })
 
@@ -680,7 +788,7 @@ export default () => {
       )
 
       const txnData = toTransactionData(signedTxs, {
-        tag: 'mint-dc',
+        tag: `mint-dc-${dcAmount.toString()}-${recipient.toBase58()}`,
         metadata: { type: 'mint', description: 'Mint data credits' },
       })
 
@@ -714,25 +822,42 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const delegateDCTxn = await populateMissingDraftInfo(
-        anchorProvider.connection,
-        await solUtils.delegateDataCredits(
-          anchorProvider,
-          delegateAddress,
-          amount,
-          mint,
-          memo,
-        ),
+      // Build the draft transaction
+      const delegateDCTxnDraft = await solUtils.delegateDataCredits(
+        anchorProvider,
+        delegateAddress,
+        amount,
+        mint,
+        memo,
       )
 
-      const serializedTx = toVersionedTx(delegateDCTxn).serialize()
+      // Populate blockhash and other missing info
+      const delegateDCTxn = await populateMissingDraftInfo(
+        anchorProvider.connection,
+        {
+          ...delegateDCTxnDraft,
+          recentBlockhash: (
+            await anchorProvider.connection.getLatestBlockhash('finalized')
+          ).blockhash,
+        },
+      )
+
+      // Convert to TransactionData format
+      const txnData = toTransactionData([toVersionedTx(delegateDCTxn)], {
+        tag: `delegate-dc-${delegateAddress}-${Date.now()}`,
+        metadata: { type: 'delegate', description: 'Delegate data credits' },
+      })
+
+      const serializedTxs = txnData.transactions.map((tx) =>
+        Buffer.from(tx.serializedTransaction, 'base64'),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         header: t('transactions.delegateDC'),
         message: t('transactions.signDelegateDCTxn'),
-        serializedTxs: [Buffer.from(serializedTx)],
+        serializedTxs,
         renderer: () => (
           <PaymentPreivew
             {...{
@@ -752,16 +877,12 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      const signed = await anchorProvider.wallet.signTransaction(
-        VersionedTransaction.deserialize(serializedTx),
+      // Sign and submit via API
+      const signedTxnData = await signTransactionData(
+        anchorProvider.wallet,
+        txnData,
       )
-
-      const txnData = toTransactionData([signed], {
-        tag: 'delegate-dc',
-        metadata: { type: 'delegate', description: 'Delegate data credits' },
-      })
-
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await client.transactions.submit(signedTxnData)
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -864,8 +985,11 @@ export default () => {
         throw new Error('No transactions to sign')
       }
 
+      const locationKey = `${lat}-${lng}${elevation ? `-${elevation}` : ''}${
+        decimalGain ? `-${decimalGain}` : ''
+      }`
       const txnData = toTransactionData(signedTxns, {
-        tag: 'assert-location',
+        tag: `assert-location-${entityKey}-${locationKey}`,
         metadata: { type: 'assert', description: 'Assert hotspot location' },
       })
 

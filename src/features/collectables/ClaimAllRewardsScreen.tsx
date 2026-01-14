@@ -24,6 +24,7 @@ import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
+import { PublicKey } from '@solana/web3.js'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const ClaimAllRewardsScreen = () => {
@@ -63,8 +64,19 @@ const ClaimAllRewardsScreen = () => {
       setClaimError(undefined)
       setRedeeming(true)
       const claim = async () => {
+        const lazyKeys: PublicKey[] = []
+        if (pendingHntRewards && pendingHntRewards.gt(new BN(0))) {
+          lazyKeys.push(HNT_LAZY_KEY)
+        }
+        if (pendingIotRewards && pendingIotRewards.gt(new BN(0))) {
+          lazyKeys.push(IOT_LAZY_KEY)
+        }
+        if (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) {
+          lazyKeys.push(MOBILE_LAZY_KEY)
+        }
+
         const batchId = await submitClaimAllRewards(
-          [HNT_LAZY_KEY, IOT_LAZY_KEY, MOBILE_LAZY_KEY],
+          lazyKeys,
           hotspotsWithMeta,
           totalHotspots,
         )
@@ -97,6 +109,9 @@ const ClaimAllRewardsScreen = () => {
     totalHotspots,
     navigation,
     showModal,
+    pendingHntRewards,
+    pendingIotRewards,
+    pendingMobileRewards,
   ])
   const hasMore = hotspots.length < (totalHotspots || 0)
 

@@ -5,7 +5,6 @@ import NotificationsBellIco from '@assets/images/notificationBell.svg'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import IconPressedContainer from '@components/IconPressedContainer'
-import PendingTransactionsIcon from '@components/PendingTransactionsIcon'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useHaptic from '@hooks/useHaptic'
@@ -18,9 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import PendingTransactionsModal from '../transactions/PendingTransactionsModal'
-import { HomeNavigationProp } from '../home/homeTypes'
 import { RootState } from '../../store/rootReducer'
+import { HomeNavigationProp } from '../home/homeTypes'
 
 type Props = {
   onPressWallet: () => void
@@ -126,7 +124,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
       <Box flexDirection="row" alignItems="center">
-        <PendingTransactionsIcon onPress={handlePendingTxnsPress} />
         <Box position="relative">
           <IconPressedContainer onPress={navToNotifs}>
             <NotificationsBellIco color="white" />
@@ -156,10 +153,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
           <AccountIco color="white" />
         </IconPressedContainer>
       </Box>
-      <PendingTransactionsModal
-        visible={showPendingTxns}
-        onClose={handleClosePendingTxns}
-      />
     </Box>
   )
 }
