@@ -316,23 +316,23 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-              // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
+                    parent.removeEventListener('message', listener)
                     reject(new Error('Signature declined'))
+                    return
                 }
-                const { data } = JSON.parse(message.data)
+                if (parsedData.type !== 'transactionSigned') return
 
-                const signatures = data.map(({ signature }) => {
+                parent.removeEventListener('message', listener)
+                const signatures = parsedData.data.map(({ signature }) => {
                     return {
                         signature: new Uint8Array(Object.keys(signature).map((key) => {
                             return signature[key]
                         })),
                     }
                 })
-
                 resolve(signatures)
               }
             }
@@ -350,20 +350,21 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-              // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
+                    parent.removeEventListener('message', listener)
                     reject(new Error('Signature declined'))
+                    return
                 }
-                const { data } = JSON.parse(message.data)
+                if (parsedData.type !== 'transactionSigned') return
 
-                const signedTxns = data.map(({ signedTransaction }) => {
+                parent.removeEventListener('message', listener)
+                const signedTxns = parsedData.data.map(({ signedTransaction }) => {
                     return {
-                        signedTransaction: Object.keys(signedTransaction).map((key) => {
+                        signedTransaction: new Uint8Array(Object.keys(signedTransaction).map((key) => {
                             return signedTransaction[key]
-                        }),
+                        })),
                     }
                 })
                 resolve(signedTxns)
@@ -382,22 +383,22 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-              // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
+                    parent.removeEventListener('message', listener)
                     reject(new Error('Signature declined'))
+                    return
                 }
-                const { data } = JSON.parse(message.data)
+                if (parsedData.type !== 'messageSigned') return
 
-                const signedMessages = data.map(({ signature, signedMessage }) => {
+                parent.removeEventListener('message', listener)
+                const signedMessages = parsedData.data.map(({ signature, signedMessage }) => {
                     return {
                         signedMessage: new Uint8Array(signedMessage),
                         signature: new Uint8Array(signature),
                     }
                 })
-
                 resolve(signedMessages)
               }
             }
