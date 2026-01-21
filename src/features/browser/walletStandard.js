@@ -49,17 +49,8 @@ const SOLANA_CHAINS = [
     SOLANA_TESTNET_CHAIN,
     SOLANA_LOCALNET_CHAIN,
 ]
-/**
- * Check if a chain corresponds with one of the Solana clusters.
- */
-function isSolanaChain(chain) {
-    return SOLANA_CHAINS.includes(chain)
-}
 
-// This is copied with modification from @wallet-standard/wallet
-const chains = SOLANA_CHAINS
-
-const features = [
+const WALLET_FEATURES = [
     'solana:signAndSendTransaction',
     'solana:signTransaction',
     'solana:signMessage',
@@ -129,8 +120,8 @@ class HeliumWalletAccount {
         }
         this.#address = address
         this.#publicKey = publicKey
-        this.#chains = chains
-        this.#features = features
+        this.#chains = SOLANA_CHAINS
+        this.#features = WALLET_FEATURES
         this.#label = label
         this.#icon = icon
     }
@@ -269,14 +260,6 @@ class HeliumWallet {
         if (this.#account) {
             this.#account = null
             this.#emit('change', { accounts: this.accounts })
-        }
-    }
-
-    #reconnected = () => {
-        if (this.#helium.publicKey) {
-            this.#connected()
-        } else {
-            this.#disconnected()
         }
     }
 
