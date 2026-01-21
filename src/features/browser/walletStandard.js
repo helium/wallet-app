@@ -157,8 +157,6 @@ const wallet = {
     off: () => { },
 }
 
-const p = new PublicKey(wallet.publicKey)
-
 class HeliumWallet {
     #listeners = {}
 
@@ -222,6 +220,10 @@ class HeliumWallet {
                 helium: this.#helium,
             },
         }
+    }
+
+    get chains() {
+        return SOLANA_CHAINS
     }
 
     get accounts() {
@@ -308,7 +310,6 @@ class HeliumWallet {
 
     #signAndSendTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const outputs = []
 
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'signAndSendTransaction', inputs }),
@@ -342,7 +343,6 @@ class HeliumWallet {
 
     #signTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const outputs = []
 
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'signTransaction', inputs }),
@@ -376,7 +376,6 @@ class HeliumWallet {
 
     #signMessage = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const outputs = []
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'signMessage', inputs }),
         )
@@ -410,22 +409,32 @@ class HeliumWallet {
 const walletObj = new HeliumWallet(wallet)
 
 try {
-    Object.defineProperty(window, 'heliumWallet', { value: wallet })
+    if (!Object.prototype.hasOwnProperty.call(window, 'heliumWallet')) {
+        Object.defineProperty(window, 'heliumWallet', { value: wallet, configurable: true })
+    }
 } catch (error) {
-    console.error(error)
+    // Silently fail - this is non-critical
 }
 
-// Listen for the 'wallet-standard:app-ready' event
-window.addEventListener('wallet-standard:app-ready', function (event) {
-    const registerEvent = new CustomEvent('wallet-standard:register-wallet', {
+// Register wallet immediately for apps that already initialized
+try {
+    window.dispatchEvent(new CustomEvent('wallet-standard:register-wallet', {
         bubbles: false,
         cancelable: false,
         composed: false,
         detail: ({ register }) => register(walletObj),
-    })
+    }))
+} catch (error) {
+    // Silently fail
+}
 
-    window.dispatchEvent(registerEvent)
-    event.detail.register(walletObj)
+// Also listen for future app-ready events
+window.addEventListener('wallet-standard:app-ready', function (event) {
+    try {
+        event.detail.register(walletObj)
+    } catch (error) {
+        // Silently fail
+    }
 })
 
 window.heliumWalletInjected = true;
