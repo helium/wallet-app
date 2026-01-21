@@ -41,6 +41,7 @@ async function migrateWallet(
     try {
       // eslint-disable-next-line no-await-in-loop
       const { transactions, count } = (await axios.get(url)).data
+      if (count === 0) break
       const txs = transactions.map((tx: number[]) =>
         VersionedTransaction.deserialize(Buffer.from(tx)),
       )
