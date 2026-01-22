@@ -70,8 +70,7 @@ export const PositionCard = ({
   const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
-  const { execute: executeGovernanceTx, isPending: isGovernanceTxPending } =
-    useSubmitInstructions()
+  const { execute: executeGovernanceTx } = useSubmitInstructions()
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionRef = useRef<
     null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'

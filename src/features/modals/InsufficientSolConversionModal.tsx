@@ -35,7 +35,12 @@ const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const { hideModal, onCancel, onSuccess } = useModal()
-  const { submitAndAwait, isLoading: swapping, error: submitError, reset: resetSubmit } = useSubmitAndAwait()
+  const {
+    submitAndAwait,
+    isPending: swapping,
+    error: submitError,
+    reset: resetSubmit,
+  } = useSubmitAndAwait()
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const [inputMint, setInputMint] = useState<PublicKey | undefined>()
   const { symbol } = useMetaplexMetadata(inputMint)
@@ -121,15 +126,9 @@ const InsufficientSolConversionModal: FC = () => {
       metadata: { type: 'swap', description: 'SOL Conversion' },
     })
 
-    const status = await submitAndAwait(transactionData, {
-      onNeedsResign: async () =>
-        toTransactionData([swapTx], {
-          tag: 'sol-convert',
-          metadata: { type: 'swap', description: 'SOL Conversion' },
-        }),
-    })
+    const { signatures } = await submitAndAwait({ transactionData })
 
-    if (status === 'confirmed') {
+    if (signatures.length > 0) {
       hideModal()
       if (onSuccess) await onSuccess()
     }
@@ -274,7 +273,7 @@ const InsufficientSolConversionModal: FC = () => {
                     </Box>
                   </Box>
                   <Text
-                    opacity={transactionError || solConvertError ? 100 : 0}
+                    opacity={submitError || solConvertError ? 100 : 0}
                     marginHorizontal="m"
                     variant="body3Medium"
                     marginBottom="l"

@@ -11,7 +11,7 @@ import useHaptic from '@hooks/useHaptic'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
 import { useColors } from '@theme/themeHooks'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
@@ -32,7 +32,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { triggerImpact } = useHaptic()
   const { showBanner } = useSelector((state: RootState) => state.app)
   const { isHealthy } = useSolanaHealth()
-  const [showPendingTxns, setShowPendingTxns] = useState(false)
 
   const notificationsByResource = useSelector(
     (appState: RootState) => appState.notifications.notifications,
@@ -61,15 +60,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
     triggerImpact('light')
     navigation.push('AddressBookNavigator')
   }, [navigation, triggerImpact])
-
-  const handlePendingTxnsPress = useCallback(() => {
-    triggerImpact('light')
-    setShowPendingTxns(true)
-  }, [triggerImpact])
-
-  const handleClosePendingTxns = useCallback(() => {
-    setShowPendingTxns(false)
-  }, [])
 
   const { top } = useSafeAreaInsets()
 

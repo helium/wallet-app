@@ -7,10 +7,7 @@ import {
   createAsyncThunk,
   createSlice,
 } from '@reduxjs/toolkit'
-import {
-  Cluster,
-  SignaturesForAddressOptions,
-} from '@solana/web3.js'
+import { SignaturesForAddressOptions } from '@solana/web3.js'
 import { first, last } from 'lodash'
 import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'

@@ -6,11 +6,11 @@ import structuredClone from '@ungap/structured-clone'
 
 // Web Streams API polyfill for React Native
 if (typeof global.TransformStream === 'undefined') {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const {
     TransformStream,
     ReadableStream,
     WritableStream,
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
   } = require('web-streams-polyfill')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(global as any).TransformStream = TransformStream
