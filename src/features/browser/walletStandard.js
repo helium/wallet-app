@@ -49,17 +49,8 @@ const SOLANA_CHAINS = [
     SOLANA_TESTNET_CHAIN,
     SOLANA_LOCALNET_CHAIN,
 ]
-/**
- * Check if a chain corresponds with one of the Solana clusters.
- */
-function isSolanaChain(chain) {
-    return SOLANA_CHAINS.includes(chain)
-}
 
-// This is copied with modification from @wallet-standard/wallet
-const chains = SOLANA_CHAINS
-
-const features = [
+const WALLET_FEATURES = [
     'solana:signAndSendTransaction',
     'solana:signTransaction',
     'solana:signMessage',
@@ -129,8 +120,8 @@ class HeliumWalletAccount {
         }
         this.#address = address
         this.#publicKey = publicKey
-        this.#chains = chains
-        this.#features = features
+        this.#chains = SOLANA_CHAINS
+        this.#features = WALLET_FEATURES
         this.#label = label
         this.#icon = icon
     }
@@ -156,8 +147,6 @@ const wallet = {
     on: () => { },
     off: () => { },
 }
-
-const p = new PublicKey(wallet.publicKey)
 
 class HeliumWallet {
     #listeners = {}
@@ -224,6 +213,10 @@ class HeliumWallet {
         }
     }
 
+    get chains() {
+        return SOLANA_CHAINS
+    }
+
     get accounts() {
         return this.#account ? [this.#account] : []
     }
@@ -270,14 +263,6 @@ class HeliumWallet {
         }
     }
 
-    #reconnected = () => {
-        if (this.#helium.publicKey) {
-            this.#connected()
-        } else {
-            this.#disconnected()
-        }
-    }
-
     #connect = async ({ silent } = {}) => {
         isConnecting = true
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'connect' }))
@@ -308,7 +293,6 @@ class HeliumWallet {
 
     #signAndSendTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const outputs = []
 
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'signAndSendTransaction', inputs }),
@@ -316,23 +300,23 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-              // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
+                    parent.removeEventListener('message', listener)
                     reject(new Error('Signature declined'))
+                    return
                 }
-                const { data } = JSON.parse(message.data)
+                if (parsedData.type !== 'transactionSigned') return
 
-                const signatures = data.map(({ signature }) => {
+                parent.removeEventListener('message', listener)
+                const signatures = parsedData.data.map(({ signature }) => {
                     return {
                         signature: new Uint8Array(Object.keys(signature).map((key) => {
                             return signature[key]
                         })),
                     }
                 })
-
                 resolve(signatures)
               }
             }
@@ -342,7 +326,6 @@ class HeliumWallet {
 
     #signTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const outputs = []
 
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'signTransaction', inputs }),
@@ -350,20 +333,21 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-              // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
+                    parent.removeEventListener('message', listener)
                     reject(new Error('Signature declined'))
+                    return
                 }
-                const { data } = JSON.parse(message.data)
+                if (parsedData.type !== 'transactionSigned') return
 
-                const signedTxns = data.map(({ signedTransaction }) => {
+                parent.removeEventListener('message', listener)
+                const signedTxns = parsedData.data.map(({ signedTransaction }) => {
                     return {
-                        signedTransaction: Object.keys(signedTransaction).map((key) => {
+                        signedTransaction: new Uint8Array(Object.keys(signedTransaction).map((key) => {
                             return signedTransaction[key]
-                        }),
+                        })),
                     }
                 })
                 resolve(signedTxns)
@@ -375,29 +359,28 @@ class HeliumWallet {
 
     #signMessage = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const outputs = []
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ type: 'signMessage', inputs }),
         )
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
-              // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
-                parent.removeEventListener('message', listener)
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
+                    parent.removeEventListener('message', listener)
                     reject(new Error('Signature declined'))
+                    return
                 }
-                const { data } = JSON.parse(message.data)
+                if (parsedData.type !== 'messageSigned') return
 
-                const signedMessages = data.map(({ signature, signedMessage }) => {
+                parent.removeEventListener('message', listener)
+                const signedMessages = parsedData.data.map(({ signature, signedMessage }) => {
                     return {
                         signedMessage: new Uint8Array(signedMessage),
                         signature: new Uint8Array(signature),
                     }
                 })
-
                 resolve(signedMessages)
               }
             }
@@ -409,22 +392,32 @@ class HeliumWallet {
 const walletObj = new HeliumWallet(wallet)
 
 try {
-    Object.defineProperty(window, 'heliumWallet', { value: wallet })
+    if (!Object.prototype.hasOwnProperty.call(window, 'heliumWallet')) {
+        Object.defineProperty(window, 'heliumWallet', { value: wallet, configurable: true })
+    }
 } catch (error) {
-    console.error(error)
+    // Silently fail - this is non-critical
 }
 
-// Listen for the 'wallet-standard:app-ready' event
-window.addEventListener('wallet-standard:app-ready', function (event) {
-    const registerEvent = new CustomEvent('wallet-standard:register-wallet', {
+// Register wallet immediately for apps that already initialized
+try {
+    window.dispatchEvent(new CustomEvent('wallet-standard:register-wallet', {
         bubbles: false,
         cancelable: false,
         composed: false,
         detail: ({ register }) => register(walletObj),
-    })
+    }))
+} catch (error) {
+    // Silently fail
+}
 
-    window.dispatchEvent(registerEvent)
-    event.detail.register(walletObj)
+// Also listen for future app-ready events
+window.addEventListener('wallet-standard:app-ready', function (event) {
+    try {
+        event.detail.register(walletObj)
+    } catch (error) {
+        // Silently fail
+    }
 })
 
 window.heliumWalletInjected = true;
