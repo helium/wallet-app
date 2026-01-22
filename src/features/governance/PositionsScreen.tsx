@@ -201,7 +201,7 @@ export const PositionsScreen = () => {
   )
 
   useEffect(() => {
-    if (!subDaos || !delegatedPositions || delegateAllSubDao) return
+    if (!subDaos || !delegatedPositions) return
     const mobileSubDao = subDaos.find((sd) =>
       sd.pubkey.equals(MOBILE_SUB_DAO_KEY),
     )
@@ -236,7 +236,7 @@ export const PositionsScreen = () => {
     } else {
       setDelegateAllSubDao(mobileSubDao)
     }
-  }, [subDaos, delegatedPositions, delegateAllSubDao])
+  }, [subDaos, delegatedPositions])
 
   const {
     delegatePositions,

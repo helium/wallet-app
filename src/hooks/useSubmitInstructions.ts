@@ -17,6 +17,7 @@ import { toTransactionData } from '../utils/transactionUtils'
 import { getBasePriorityFee } from '../utils/walletApiV2'
 import { MessagePreview } from '../solana/MessagePreview'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '../utils/constants'
+import type { BatchStatus } from './useTransactionBatchStatus'
 
 interface SubmitInstructionsParams {
   header: string
@@ -31,6 +32,41 @@ interface SubmitInstructionsParams {
   addressLookupTableAddresses?: PublicKey[]
   onProgress?: (status: Status) => void
   batchTransactions?: boolean // If true, batch transactions to prevent blockhash expiration
+}
+
+async function pollForCompletion(
+  client: ReturnType<typeof useBlockchainApi>,
+  batchId: string,
+  pollIntervalMs = 2000,
+  maxPollTime = 60000,
+): Promise<{ status: BatchStatus; signatures: string[] }> {
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < maxPollTime) {
+    const result = await client.transactions.get({
+      id: batchId,
+      commitment: 'confirmed',
+    })
+
+    const status = result.status as BatchStatus
+
+    if (
+      status === 'confirmed' ||
+      status === 'failed' ||
+      status === 'expired' ||
+      status === 'partial'
+    ) {
+      return {
+        status,
+        signatures: result.transactions?.map((t) => t.signature) ?? [],
+      }
+    }
+
+    // Wait before polling again
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+  }
+
+  throw new Error('Transaction polling timeout')
 }
 
 export function useSubmitInstructions() {
@@ -158,12 +194,27 @@ export function useSubmitInstructions() {
             queryClient.invalidateQueries({
               queryKey: ['pendingTransactions'],
             })
-            return batchId
+
+            // Poll for completion
+            const { status, signatures } = await pollForCompletion(
+              client,
+              batchId,
+            )
+
+            if (status === 'failed' || status === 'partial') {
+              throw new Error('Transaction failed')
+            }
+
+            if (status === 'expired') {
+              throw new Error('Transaction expired')
+            }
+
+            return { batchId, signatures }
           },
         )
 
-        const batchIds = await Promise.all(batchPromises)
-        return batchIds[batchIds.length - 1]
+        const results = await Promise.all(batchPromises)
+        return results[results.length - 1]
       }
 
       // Sign all transactions (no batching)
@@ -194,7 +245,19 @@ export function useSubmitInstructions() {
       // Submit via API
       const { batchId } = await client.transactions.submit(txnData)
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-      return batchId
+
+      // Poll for completion
+      const { status, signatures } = await pollForCompletion(client, batchId)
+
+      if (status === 'failed' || status === 'partial') {
+        throw new Error('Transaction failed')
+      }
+
+      if (status === 'expired') {
+        throw new Error('Transaction expired')
+      }
+
+      return { batchId, signatures }
     },
   })
 
