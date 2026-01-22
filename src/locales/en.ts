@@ -312,8 +312,11 @@ export default {
   automationScreen: {
     setupAutomation: 'Setup Automation',
     removeAutomation: 'Remove Automation',
+    fundAutomation: 'Fund Automation',
     setupAutomationMessage:
-      'Claim your rewards on a {{schedule}} schedule for {{duration}} {{interval}}. This will cost {{rentFee}} SOL that can be reclaimed, and {{solFee}} SOL for transaction fees.',
+      'Claim your rewards on a {{schedule}} schedule for {{duration}} {{interval}}. This will cost {{rentFee}} SOL that can be reclaimed, {{recipientFee}} SOL for permanent on-chain structs, and {{solFee}} SOL for transaction fees.',
+    fundAutomationMessage:
+      'Add {{duration}} {{interval}} of funding to your automation. This will cost {{totalFunding}} SOL.',
     reclaimableSol: 'Reclaimable SOL',
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
@@ -325,7 +328,17 @@ export default {
       'Set up automatic claiming of your hotspot rewards on a schedule. You will need to fund the automation with SOL for the transaction fees.',
     selectSchedule: 'Select Claim Schedule',
     enterDuration: 'Enter Duration',
+    enterAdditionalDuration: 'Enter Additional Duration',
     currentAutomation: 'Current Automation',
+    remainingClaims: 'Remaining Claims',
+    cronJobBalance: 'Cron Job Balance',
+    pdaWalletBalance: 'PDA Wallet Balance',
+    fundingEstimate: 'Funding Estimate',
+    estimatedCosts: 'Estimated Costs',
+    cronJobFunding: 'Cron Job Funding',
+    pdaWalletFunding: 'PDA Wallet Funding',
+    totalFunding: 'Total Funding',
+    calculating: 'Calculating',
     schedule: {
       daily: 'Daily',
       weekly: 'Weekly',

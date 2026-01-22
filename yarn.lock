@@ -2533,20 +2533,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/blockchain-api@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@helium/blockchain-api@npm:0.2.0"
+"@helium/blockchain-api@npm:^0.2.4":
+  version: 0.2.4
+  resolution: "@helium/blockchain-api@npm:0.2.4"
   dependencies:
-    "@orpc/client": "npm:^1.12.2"
-    "@orpc/openapi": "npm:^1.12.2"
-    "@orpc/server": "npm:^1.12.2"
-    zod: "npm:^4.0.5"
-  peerDependencies:
-    "@solana/web3.js": ^1.98.0 || ^2.0.0
-  peerDependenciesMeta:
-    "@solana/web3.js":
-      optional: true
-  checksum: 10/ef5abfba4f35b86118982fe6e809212a2997ec8ab6348eacc9220fe2350ddbb765da5e516deb56e0795fb1e7c5ee3ea4d855ff1fccbfb455347465bab320e5b5
+    "@orpc/client": "npm:^1.13.2"
+    "@orpc/contract": "npm:^1.13.2"
+    "@orpc/server": "npm:^1.13.2"
+    zod: "npm:^4.3.5"
+  checksum: 10/9851ce6c71946a44b778ec4e7bf2836bd9658368f70abb67e86e6a54aa53a045d56c6c9fa27b7023865a5179b203178f9ed639dbeabe2f9d11deeaba06dfd4db
   languageName: node
   linkType: hard
 
@@ -4228,7 +4223,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/client@npm:1.13.4, @orpc/client@npm:^1.12.2":
+"@orpc/client@npm:1.13.4, @orpc/client@npm:^1.13.2":
   version: 1.13.4
   resolution: "@orpc/client@npm:1.13.4"
   dependencies:
@@ -4240,7 +4235,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/contract@npm:1.13.4":
+"@orpc/contract@npm:1.13.4, @orpc/contract@npm:^1.13.2":
   version: 1.13.4
   resolution: "@orpc/contract@npm:1.13.4"
   dependencies:
@@ -4259,36 +4254,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/openapi-client@npm:1.13.4":
-  version: 1.13.4
-  resolution: "@orpc/openapi-client@npm:1.13.4"
-  dependencies:
-    "@orpc/client": "npm:1.13.4"
-    "@orpc/contract": "npm:1.13.4"
-    "@orpc/shared": "npm:1.13.4"
-    "@orpc/standard-server": "npm:1.13.4"
-  checksum: 10/2879dcc4f2efd8ab4976d41c4ca3cfab341af8ea0b6681fc25fd688c8a08124f3fad5cdcc72ef4fb65bada8a6284c8ee22420d2a0e318bdefde4256a852a6f2d
-  languageName: node
-  linkType: hard
-
-"@orpc/openapi@npm:^1.12.2":
-  version: 1.13.4
-  resolution: "@orpc/openapi@npm:1.13.4"
-  dependencies:
-    "@orpc/client": "npm:1.13.4"
-    "@orpc/contract": "npm:1.13.4"
-    "@orpc/interop": "npm:1.13.4"
-    "@orpc/openapi-client": "npm:1.13.4"
-    "@orpc/server": "npm:1.13.4"
-    "@orpc/shared": "npm:1.13.4"
-    "@orpc/standard-server": "npm:1.13.4"
-    json-schema-typed: "npm:^8.0.2"
-    rou3: "npm:^0.7.12"
-  checksum: 10/58bfae423c37160d16e47ced532600c5e27d2063873d9de507f8dcea778cd9f698c57f0b353be285353c41303ae85bfad786515552f9671803c5f6d60de82c97
-  languageName: node
-  linkType: hard
-
-"@orpc/server@npm:1.13.4, @orpc/server@npm:^1.12.2":
+"@orpc/server@npm:^1.13.2":
   version: 1.13.4
   resolution: "@orpc/server@npm:1.13.4"
   dependencies:
@@ -12712,7 +12678,7 @@ __metadata:
     "@helium/account-fetch-cache-hooks": "npm:0.11.4"
     "@helium/address": "npm:^5.0.4"
     "@helium/automation-hooks": "npm:^0.11.4"
-    "@helium/blockchain-api": "npm:^0.2.0"
+    "@helium/blockchain-api": "npm:^0.2.4"
     "@helium/circuit-breaker-sdk": "npm:0.11.4"
     "@helium/cron-sdk": "npm:^0.0.8"
     "@helium/crypto-react-native": "npm:^5.0.4"
@@ -14627,13 +14593,6 @@ __metadata:
   version: 1.0.0
   resolution: "json-schema-traverse@npm:1.0.0"
   checksum: 10/02f2f466cdb0362558b2f1fd5e15cce82ef55d60cd7f8fa828cf35ba74330f8d767fcae5c5c2adb7851fa811766c694b9405810879bc4e1ddd78a7c0e03658ad
-  languageName: node
-  linkType: hard
-
-"json-schema-typed@npm:^8.0.2":
-  version: 8.0.2
-  resolution: "json-schema-typed@npm:8.0.2"
-  checksum: 10/fa866d1fe91e3a94aa4fe007861475cd03dcaf47b719861cab171ef2f8598478007c634d29ae45de94ee34ddff4e13414c63ea5ff06c5b868b613142c699d511
   languageName: node
   linkType: hard
 
@@ -19207,13 +19166,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rou3@npm:^0.7.12":
-  version: 0.7.12
-  resolution: "rou3@npm:0.7.12"
-  checksum: 10/567969f8bb5ebcc9a0c5a1b6964d90ca6883a9e17302b0e66a263b415da4291d8a3c421e8f4214fe290386311c13fdd73db2729bc96bbac0e2dd502d41c25980
-  languageName: node
-  linkType: hard
-
 "rpc-websockets@npm:^7.5.1":
   version: 7.11.2
   resolution: "rpc-websockets@npm:7.11.2"
@@ -22023,7 +21975,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^4.0.5":
+"zod@npm:^4.3.5":
   version: 4.3.5
   resolution: "zod@npm:4.3.5"
   checksum: 10/3148bd52e56ab7c1641ec397e6be6eddbb1d8f5db71e95baab9bb9622a0ea49d8a385885fc1c22b90fa6d8c5234e051f4ef5d469cfe3fb90198d5a91402fd89c

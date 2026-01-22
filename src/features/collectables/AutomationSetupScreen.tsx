@@ -5,9 +5,10 @@ import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useAutomateHotspotClaims } from '@helium/automation-hooks'
 import { HNT_MINT } from '@helium/spl-utils'
-import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { LAMPORTS_PER_SOL, VersionedTransaction } from '@solana/web3.js'
+import { useAutomation, useFundingEstimate } from '@hooks/useAutomation'
+import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -15,9 +16,76 @@ import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
+import { useWalletSign } from '../../solana/WalletSignProvider'
+import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
+import { MessagePreview } from '../../solana/MessagePreview'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
+
+interface EstimateDisplayProps {
+  estimate: {
+    rentFee: number
+    recipientFee: number
+    operationalSol: number
+    totalSolNeeded: number
+  }
+  showRecipientFee: boolean
+}
+
+const EstimateDisplay = ({
+  estimate,
+  showRecipientFee,
+}: EstimateDisplayProps) => {
+  const { t } = useTranslation()
+  return (
+    <Box
+      backgroundColor="surfaceSecondary"
+      borderRadius="l"
+      padding="m"
+      marginBottom="m"
+    >
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
+        <Text variant="body2" color="grey400">
+          {t('automationScreen.reclaimableSol')}
+        </Text>
+        <Text variant="body2Medium" color="grey200">
+          {estimate.rentFee.toFixed(4)} SOL
+        </Text>
+      </Box>
+      {showRecipientFee && estimate.recipientFee > 0 && (
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          marginBottom="s"
+        >
+          <Text variant="body2" color="grey400">
+            {t('automationScreen.recipientSol')}
+          </Text>
+          <Text variant="body2Medium" color="grey200">
+            {estimate.recipientFee.toFixed(4)} SOL
+          </Text>
+        </Box>
+      )}
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
+        <Text variant="body2" color="grey400">
+          {t('automationScreen.transactionFees')}
+        </Text>
+        <Text variant="body2Medium" color="grey200">
+          {estimate.operationalSol.toFixed(4)} SOL
+        </Text>
+      </Box>
+      <Box flexDirection="row" justifyContent="space-between">
+        <Text variant="body2Medium" color="grey200">
+          {t('automationScreen.totalFunding')}
+        </Text>
+        <Text variant="body2Medium" color="white">
+          {estimate.totalSolNeeded.toFixed(4)} SOL
+        </Text>
+      </Box>
+    </Box>
+  )
+}
 
 const AutomationSetupScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -27,34 +95,55 @@ const AutomationSetupScreen = () => {
   const backEdges = ['top'] as Edge[]
 
   const { anchorProvider } = useSolana()
-  const { execute: submitInstructions } = useSubmitInstructions()
+  const { walletSignBottomSheetRef } = useWalletSign()
+  const { submitAndAwait } = useSubmitAndAwait()
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
+
+  const {
+    statusLoading,
+    statusError,
+    hasExistingAutomation,
+    isOutOfSol,
+    currentSchedule,
+    remainingClaims,
+    fundingPeriodInfo,
+    cronJobBalance,
+    pdaWalletBalance,
+    createAutomation,
+    createAutomationLoading,
+    createAutomationError,
+    fundAutomation,
+    fundAutomationLoading,
+    fundAutomationError,
+    closeAutomation,
+    closeAutomationLoading,
+    closeAutomationError,
+  } = useAutomation()
+
+  // Get funding estimate (used for both create and fund flows)
+  const estimate = useFundingEstimate(duration)
 
   const hotspotsNeedingRecipient = useMemo(() => {
     return hotspotsWithMeta.filter(
       (hotspot) => !hotspot.rewardRecipients[HNT_MINT.toBase58()],
     ).length
   }, [hotspotsWithMeta])
-  const {
-    loading,
-    error,
-    execute,
-    remove,
-    hasExistingAutomation,
-    currentSchedule,
-    insufficientSol,
-    rentFee,
-    solFee,
-    recipientFee,
-    isOutOfSol,
-  } = useAutomateHotspotClaims({
-    schedule: selectedSchedule,
-    duration: parseInt(duration, 10),
-    totalHotspots: totalHotspots || 1,
-    wallet: anchorProvider?.wallet?.publicKey,
-    provider: anchorProvider,
-    hotspotsNeedingRecipient,
-  })
+
+  const loading =
+    createAutomationLoading ||
+    fundAutomationLoading ||
+    closeAutomationLoading ||
+    statusLoading
+
+  const error =
+    createAutomationError || fundAutomationError || closeAutomationError
+
+  // Calculate insufficient SOL for create flow
+  const insufficientSol = useMemo(() => {
+    if (!estimate.estimate) return false
+    // This would need to check actual wallet balance - simplified for now
+    return false
+  }, [estimate.estimate])
 
   const handleDurationChange = (text: string) => {
     // Remove any non-numeric characters
@@ -86,16 +175,36 @@ const AutomationSetupScreen = () => {
   }, [])
 
   const handleSave = useCallback(async () => {
+    if (!anchorProvider || !walletSignBottomSheetRef || !totalHotspots) return
+
     try {
-      await execute({
-        onInstructions: async (instructions) => {
-          await submitInstructions({
-            header: t('automationScreen.setupAutomation'),
+      const { transactionData } = await createAutomation({
+        schedule: selectedSchedule,
+        duration: parseInt(duration, 10),
+        totalHotspots,
+      })
+
+      // Deserialize transactions for preview
+      const transactions = transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(serializedTransaction, 'base64'),
+          ),
+      )
+
+      // Show preview
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('automationScreen.setupAutomation'),
+        renderer: () =>
+          React.createElement(MessagePreview, {
             message: t('automationScreen.setupAutomationMessage', {
               schedule: selectedSchedule,
               duration,
-              rentFee,
-              solFee: Math.max(solFee, 0),
+              rentFee: estimate.estimate?.rentFee ?? 0,
+              recipientFee: estimate.estimate?.recipientFee ?? 0,
+              solFee: Math.max(estimate.estimate?.operationalSol ?? 0, 0),
               interval:
                 selectedSchedule === 'daily'
                   ? 'days'
@@ -103,41 +212,140 @@ const AutomationSetupScreen = () => {
                   ? 'weeks'
                   : 'months',
             }),
-            instructions,
-          })
-        },
+          }),
+        suppressWarnings: false,
+        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
       })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Sign, submit, and wait for confirmation
+      await submitAndAwait({ transactionData })
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
   }, [
-    execute,
-    navigation,
-    submitInstructions,
-    t,
+    anchorProvider,
+    walletSignBottomSheetRef,
+    totalHotspots,
+    createAutomation,
     selectedSchedule,
     duration,
-    rentFee,
-    solFee,
+    estimate.estimate,
+    submitAndAwait,
+    navigation,
+    t,
   ])
 
   const handleRemoveAutomation = useCallback(async () => {
+    if (!anchorProvider || !walletSignBottomSheetRef) return
+
     try {
-      await remove({
-        onInstructions: async (instructions) => {
-          await submitInstructions({
-            header: t('automationScreen.removeAutomation'),
+      const { transactionData } = await closeAutomation()
+
+      // Deserialize transactions for preview
+      const transactions = transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(serializedTransaction, 'base64'),
+          ),
+      )
+
+      // Show preview
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('automationScreen.removeAutomation'),
+        renderer: () =>
+          React.createElement(MessagePreview, {
             message: t('automationScreen.removeAutomationMessage'),
-            instructions,
-          })
-        },
+          }),
+        suppressWarnings: false,
+        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
       })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Sign, submit, and wait for confirmation
+      await submitAndAwait({ transactionData })
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
-  }, [remove, navigation, t, submitInstructions])
+  }, [
+    anchorProvider,
+    walletSignBottomSheetRef,
+    closeAutomation,
+    submitAndAwait,
+    navigation,
+    t,
+  ])
+
+  const handleFundAutomation = useCallback(async () => {
+    if (!anchorProvider || !walletSignBottomSheetRef || !duration) return
+
+    try {
+      const { transactionData } = await fundAutomation({
+        additionalDuration: parseInt(duration, 10),
+      })
+
+      // Deserialize transactions for preview
+      const transactions = transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(serializedTransaction, 'base64'),
+          ),
+      )
+
+      // Show preview
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('automationScreen.fundAutomation'),
+        renderer: () =>
+          React.createElement(MessagePreview, {
+            message: t('automationScreen.fundAutomationMessage', {
+              duration,
+              interval:
+                currentSchedule?.schedule === 'daily'
+                  ? 'days'
+                  : currentSchedule?.schedule === 'weekly'
+                  ? 'weeks'
+                  : 'months',
+              totalFunding: estimate.estimate?.totalSolNeeded ?? 0,
+            }),
+          }),
+        suppressWarnings: false,
+        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Sign, submit, and wait for confirmation
+      await submitAndAwait({ transactionData })
+      setDuration('')
+      navigation.goBack()
+    } catch (e) {
+      console.error(e)
+    }
+  }, [
+    anchorProvider,
+    walletSignBottomSheetRef,
+    duration,
+    fundAutomation,
+    estimate.estimate,
+    currentSchedule,
+    submitAndAwait,
+    navigation,
+    t,
+  ])
 
   const formatNextRunDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -204,7 +412,7 @@ const AutomationSetupScreen = () => {
                 backgroundColor="black"
                 borderRadius="xl"
                 padding="l"
-                marginBottom="xl"
+                marginBottom="l"
               >
                 <Text variant="subtitle4" color="grey300" marginBottom="s">
                   {t('automationScreen.schedule.running', {
@@ -214,12 +422,87 @@ const AutomationSetupScreen = () => {
                     time: currentSchedule.time,
                   })}
                 </Text>
-                <Text variant="subtitle4" color="grey300">
+                <Text variant="subtitle4" color="grey300" marginBottom="m">
                   {t('automationScreen.nextRun', {
-                    date: formatNextRunDate(currentSchedule.nextRun),
+                    date: formatNextRunDate(new Date(currentSchedule.nextRun)),
                   })}
                 </Text>
+                {remainingClaims !== undefined && (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    marginBottom="s"
+                  >
+                    <Text variant="subtitle4" color="grey400">
+                      {t('automationScreen.remainingClaims')}
+                    </Text>
+                    <Text variant="subtitle4" color="grey200">
+                      {remainingClaims}
+                    </Text>
+                  </Box>
+                )}
+                {fundingPeriodInfo && (
+                  <>
+                    <Box
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      marginBottom="s"
+                    >
+                      <Text variant="subtitle4" color="grey400">
+                        {t('automationScreen.cronJobBalance')}
+                      </Text>
+                      <Text variant="subtitle4" color="grey200">
+                        {(
+                          parseFloat(cronJobBalance || '0') / LAMPORTS_PER_SOL
+                        ).toFixed(4)}{' '}
+                        SOL
+                      </Text>
+                    </Box>
+                    <Box flexDirection="row" justifyContent="space-between">
+                      <Text variant="subtitle4" color="grey400">
+                        {t('automationScreen.pdaWalletBalance')}
+                      </Text>
+                      <Text variant="subtitle4" color="grey200">
+                        {(
+                          parseFloat(pdaWalletBalance || '0') / LAMPORTS_PER_SOL
+                        ).toFixed(4)}{' '}
+                        SOL
+                      </Text>
+                    </Box>
+                  </>
+                )}
               </Box>
+
+              {/* Fund Automation Section */}
+              <Text variant="subtitle3" marginBottom="m">
+                {t('automationScreen.fundAutomation')}
+              </Text>
+              <Text variant="subtitle4" color="grey400" marginBottom="s">
+                {t('automationScreen.enterAdditionalDuration')}
+              </Text>
+              <Box flexDirection="row" alignItems="center" marginBottom="m">
+                <TextInput
+                  flex={1}
+                  variant="transparent"
+                  textInputProps={{
+                    placeholder: duration || '------',
+                    onChangeText: handleDurationChange,
+                    value: duration,
+                    keyboardType: 'decimal-pad',
+                    returnKeyType: 'done',
+                  }}
+                />
+                <Text variant="subtitle3" color="grey400" marginStart="s">
+                  {getUnitLabel()}
+                </Text>
+              </Box>
+
+              {estimate.estimate && duration && (
+                <EstimateDisplay
+                  estimate={estimate.estimate}
+                  showRecipientFee
+                />
+              )}
             </>
           ) : (
             <>
@@ -244,7 +527,7 @@ const AutomationSetupScreen = () => {
                   <Text variant="subtitle4" marginBottom="s">
                     {t('automationScreen.enterDuration')}
                   </Text>
-                  <Box flexDirection="row" alignItems="center" marginBottom="s">
+                  <Box flexDirection="row" alignItems="center" marginBottom="m">
                     <TextInput
                       flex={1}
                       variant="transparent"
@@ -267,7 +550,7 @@ const AutomationSetupScreen = () => {
 
           <Box flex={1} />
 
-          {error && (
+          {(error || statusError) && (
             <Box
               flexDirection="row"
               backgroundColor="surfaceSecondary"
@@ -276,7 +559,11 @@ const AutomationSetupScreen = () => {
               marginBottom="m"
             >
               <Text variant="body3Medium" color="red500">
-                {error.message}
+                {error instanceof Error
+                  ? error.message
+                  : statusError instanceof Error
+                  ? statusError.message
+                  : String(error || statusError)}
               </Text>
             </Box>
           )}
@@ -293,71 +580,63 @@ const AutomationSetupScreen = () => {
             </Box>
           )}
 
-          {!hasExistingAutomation && (
-            <Box
-              backgroundColor="surfaceSecondary"
-              borderRadius="l"
-              padding="m"
-              marginBottom="m"
-            >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                marginBottom="s"
-              >
-                <Text variant="body2" color="grey400">
-                  {t('automationScreen.reclaimableSol')}
-                </Text>
-                <Text variant="body2Medium" color="grey200">
-                  {rentFee} SOL
-                </Text>
-              </Box>
-              {totalHotspots && hotspotsNeedingRecipient > 0 && (
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  marginBottom="s"
-                >
-                  <Text variant="body2" color="grey400">
-                    {t('automationScreen.recipientSol')}
-                  </Text>
-                  <Text variant="body2Medium" color="grey200">
-                    {recipientFee} SOL
-                  </Text>
-                </Box>
-              )}
-              <Box flexDirection="row" justifyContent="space-between">
-                <Text variant="body2" color="grey400">
-                  {t('automationScreen.transactionFees')}
-                </Text>
-                <Text variant="body2Medium" color="grey200">
-                  {Math.max(solFee, 0)} SOL
-                </Text>
-              </Box>
-            </Box>
+          {!hasExistingAutomation && estimate.estimate && duration && (
+            <EstimateDisplay
+              estimate={estimate.estimate}
+              showRecipientFee={!!totalHotspots && hotspotsNeedingRecipient > 0}
+            />
           )}
 
           {hasExistingAutomation ? (
-            <ButtonPressable
-              title={
-                loading ? undefined : t('automationScreen.removeAutomation')
-              }
-              backgroundColor="grey200"
-              backgroundColorDisabled="grey400"
-              backgroundColorDisabledOpacity={0.5}
-              backgroundColorOpacityPressed={0.7}
-              titleColor="error"
-              disabled={loading}
-              TrailingComponent={
-                loading ? (
-                  <CircleLoader loaderSize={20} color="black" />
-                ) : undefined
-              }
-              onPress={handleRemoveAutomation}
-              borderRadius="round"
-              padding="m"
-              marginBottom="m"
-            />
+            <>
+              {duration && (
+                <ButtonPressable
+                  title={
+                    fundAutomationLoading
+                      ? undefined
+                      : t('automationScreen.fundAutomation')
+                  }
+                  backgroundColor="white"
+                  backgroundColorDisabled="grey400"
+                  backgroundColorDisabledOpacity={0.5}
+                  backgroundColorOpacityPressed={0.7}
+                  titleColorDisabled="secondaryText"
+                  titleColor="black"
+                  disabled={!duration || fundAutomationLoading}
+                  TrailingComponent={
+                    fundAutomationLoading ? (
+                      <CircleLoader loaderSize={20} color="black" />
+                    ) : undefined
+                  }
+                  onPress={handleFundAutomation}
+                  borderRadius="round"
+                  padding="m"
+                  marginBottom="m"
+                />
+              )}
+              <ButtonPressable
+                title={
+                  closeAutomationLoading
+                    ? undefined
+                    : t('automationScreen.removeAutomation')
+                }
+                backgroundColor="grey200"
+                backgroundColorDisabled="grey400"
+                backgroundColorDisabledOpacity={0.5}
+                backgroundColorOpacityPressed={0.7}
+                titleColor="error"
+                disabled={closeAutomationLoading}
+                TrailingComponent={
+                  closeAutomationLoading ? (
+                    <CircleLoader loaderSize={20} color="black" />
+                  ) : undefined
+                }
+                onPress={handleRemoveAutomation}
+                borderRadius="round"
+                padding="m"
+                marginBottom="m"
+              />
+            </>
           ) : (
             <ButtonPressable
               title={

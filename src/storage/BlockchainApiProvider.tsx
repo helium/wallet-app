@@ -1,10 +1,15 @@
-import { createClient, type APIRouter } from '@helium/blockchain-api'
+import { apiContract } from '@helium/blockchain-api'
+import { createORPCClient, onError } from '@orpc/client'
+import { RPCLink } from '@orpc/client/fetch'
+import { ContractRouterClient } from '@orpc/contract'
 import React, { createContext, useContext, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import Config from 'react-native-config'
 import { RootState } from '../store/rootReducer'
 
-const BlockchainApiContext = createContext<APIRouter | null>(null)
+const BlockchainApiContext = createContext<ContractRouterClient<
+  typeof apiContract
+> | null>(null)
 
 export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
   children,
@@ -13,7 +18,7 @@ export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
     (state: RootState) => state.app.cluster || 'mainnet-beta',
   )
 
-  const client = useMemo<APIRouter | null>(() => {
+  const client = useMemo(() => {
     const url =
       cluster === 'devnet'
         ? Config.DEVNET_HELIUM_TRANSACTION_API ||
@@ -31,7 +36,21 @@ export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
     }
 
     try {
-      return createClient({ url: url.trim() })
+      const link = new RPCLink({
+        url: `${url.trim()}/rpc`,
+        headers: () => ({
+          'Content-Type': 'application/json',
+        }),
+        interceptors: [
+          onError((error) => {
+            console.error(error)
+          }),
+        ],
+      })
+      const orpcClient: ContractRouterClient<typeof apiContract> =
+        createORPCClient(link)
+
+      return orpcClient
     } catch (error) {
       console.error('Failed to create blockchain API client:', error)
       return null
@@ -45,7 +64,9 @@ export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
   )
 }
 
-export const useBlockchainApi = (): APIRouter => {
+export const useBlockchainApi = (): ContractRouterClient<
+  typeof apiContract
+> => {
   const context = useContext(BlockchainApiContext)
 
   if (!context) {
