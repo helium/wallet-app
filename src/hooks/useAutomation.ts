@@ -2,14 +2,28 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import { useDebounce } from 'use-debounce'
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
+import { sleep } from '@helium/spl-utils'
+import { VersionedTransaction } from '@solana/web3.js'
+import { useTranslation } from 'react-i18next'
+import { useSolana } from '../solana/SolanaProvider'
+import { useWalletSign } from '../solana/WalletSignProvider'
+import { useSubmitAndAwait } from './useSubmitAndAwait'
+import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
+import { MessagePreview } from '../solana/MessagePreview'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
+
+const INVALIDATE_QUERY_CACHE_DELAY = 3000
 
 export function useAutomation() {
   const { currentAccount } = useAccountStorage()
   const client = useBlockchainApi()
   const queryClient = useQueryClient()
+  const { anchorProvider } = useSolana()
+  const { walletSignBottomSheetRef } = useWalletSign()
+  const { submitAndAwait } = useSubmitAndAwait()
+  const { t } = useTranslation()
 
   const walletAddress = currentAccount?.solanaAddress
 
@@ -35,21 +49,72 @@ export function useAutomation() {
       schedule,
       duration,
       totalHotspots,
+      estimate,
     }: {
       schedule: Schedule
       duration: number
       totalHotspots: number
+      estimate?: {
+        rentFee: number
+        recipientFee: number
+        operationalSol: number
+      }
     }) => {
       if (!walletAddress) throw new Error('Wallet address required')
-      return client.hotspots.createAutomation({
+      if (!anchorProvider) throw new Error('Wallet not connected')
+      if (!walletSignBottomSheetRef)
+        throw new Error('Wallet sign not available')
+
+      const { transactionData } = await client.hotspots.createAutomation({
         walletAddress,
         schedule,
         duration,
         totalHotspots,
       })
+
+      // Deserialize transactions for preview
+      const transactions = transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(serializedTransaction, 'base64'),
+          ),
+      )
+
+      // Show preview
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('automationScreen.setupAutomation'),
+        renderer: () =>
+          React.createElement(MessagePreview, {
+            message: t('automationScreen.setupAutomationMessage', {
+              schedule,
+              duration,
+              rentFee: estimate?.rentFee ?? 0,
+              recipientFee: estimate?.recipientFee ?? 0,
+              solFee: Math.max(estimate?.operationalSol ?? 0, 0),
+              interval:
+                schedule === 'daily'
+                  ? 'days'
+                  : schedule === 'weekly'
+                  ? 'weeks'
+                  : 'months',
+            }),
+          }),
+        suppressWarnings: false,
+        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Sign, submit, and wait for confirmation
+      await submitAndAwait({ transactionData })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+    onSuccess: async () => {
+      await sleep(INVALIDATE_QUERY_CACHE_DELAY)
+      await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
     },
   })
 
@@ -57,17 +122,63 @@ export function useAutomation() {
   const fundAutomationMutation = useMutation({
     mutationFn: async ({
       additionalDuration,
+      currentSchedule,
+      estimate,
     }: {
       additionalDuration: number
+      currentSchedule?: { schedule: Schedule }
+      estimate?: { totalSolNeeded: number }
     }) => {
       if (!walletAddress) throw new Error('Wallet address required')
-      return client.hotspots.fundAutomation({
+      if (!anchorProvider) throw new Error('Wallet not connected')
+      if (!walletSignBottomSheetRef)
+        throw new Error('Wallet sign not available')
+
+      const { transactionData } = await client.hotspots.fundAutomation({
         walletAddress,
         additionalDuration,
       })
+
+      // Deserialize transactions for preview
+      const transactions = transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(serializedTransaction, 'base64'),
+          ),
+      )
+
+      // Show preview
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('automationScreen.fundAutomation'),
+        renderer: () =>
+          React.createElement(MessagePreview, {
+            message: t('automationScreen.fundAutomationMessage', {
+              duration: additionalDuration,
+              interval:
+                currentSchedule?.schedule === 'daily'
+                  ? 'days'
+                  : currentSchedule?.schedule === 'weekly'
+                  ? 'weeks'
+                  : 'months',
+              totalFunding: estimate?.totalSolNeeded ?? 0,
+            }),
+          }),
+        suppressWarnings: false,
+        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Sign, submit, and wait for confirmation
+      await submitAndAwait({ transactionData })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+    onSuccess: async () => {
+      await sleep(INVALIDATE_QUERY_CACHE_DELAY)
+      await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
     },
   })
 
@@ -75,10 +186,45 @@ export function useAutomation() {
   const closeAutomationMutation = useMutation({
     mutationFn: async () => {
       if (!walletAddress) throw new Error('Wallet address required')
-      return client.hotspots.closeAutomation({ walletAddress })
+      if (!anchorProvider) throw new Error('Wallet not connected')
+      if (!walletSignBottomSheetRef)
+        throw new Error('Wallet sign not available')
+
+      const { transactionData } = await client.hotspots.closeAutomation({
+        walletAddress,
+      })
+
+      // Deserialize transactions for preview
+      const transactions = transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(serializedTransaction, 'base64'),
+          ),
+      )
+
+      // Show preview
+      const decision = await walletSignBottomSheetRef.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        url: '',
+        header: t('automationScreen.removeAutomation'),
+        renderer: () =>
+          React.createElement(MessagePreview, {
+            message: t('automationScreen.removeAutomationMessage'),
+          }),
+        suppressWarnings: false,
+        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
+      })
+
+      if (!decision) {
+        throw new Error('User rejected transaction')
+      }
+
+      // Sign, submit, and wait for confirmation
+      await submitAndAwait({ transactionData })
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+    onSuccess: async () => {
+      await sleep(INVALIDATE_QUERY_CACHE_DELAY)
+      await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
     },
   })
 

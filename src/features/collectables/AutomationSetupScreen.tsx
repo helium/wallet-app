@@ -6,19 +6,14 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { HNT_MINT } from '@helium/spl-utils'
-import { LAMPORTS_PER_SOL, VersionedTransaction } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useAutomation, useFundingEstimate } from '@hooks/useAutomation'
-import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
-import { MessagePreview } from '../../solana/MessagePreview'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
@@ -94,13 +89,9 @@ const AutomationSetupScreen = () => {
   const [duration, setDuration] = useState('10')
   const backEdges = ['top'] as Edge[]
 
-  const { anchorProvider } = useSolana()
-  const { walletSignBottomSheetRef } = useWalletSign()
-  const { submitAndAwait } = useSubmitAndAwait()
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
 
   const {
-    statusLoading,
     statusError,
     hasExistingAutomation,
     isOutOfSol,
@@ -128,12 +119,6 @@ const AutomationSetupScreen = () => {
       (hotspot) => !hotspot.rewardRecipients[HNT_MINT.toBase58()],
     ).length
   }, [hotspotsWithMeta])
-
-  const loading =
-    createAutomationLoading ||
-    fundAutomationLoading ||
-    closeAutomationLoading ||
-    statusLoading
 
   const error =
     createAutomationError || fundAutomationError || closeAutomationError
@@ -175,177 +160,60 @@ const AutomationSetupScreen = () => {
   }, [])
 
   const handleSave = useCallback(async () => {
-    if (!anchorProvider || !walletSignBottomSheetRef || !totalHotspots) return
+    if (!totalHotspots) return
 
     try {
-      const { transactionData } = await createAutomation({
+      await createAutomation({
         schedule: selectedSchedule,
         duration: parseInt(duration, 10),
         totalHotspots,
+        estimate: estimate.estimate
+          ? {
+              rentFee: estimate.estimate.rentFee,
+              recipientFee: estimate.estimate.recipientFee,
+              operationalSol: estimate.estimate.operationalSol,
+            }
+          : undefined,
       })
-
-      // Deserialize transactions for preview
-      const transactions = transactionData.transactions.map(
-        ({ serializedTransaction }) =>
-          VersionedTransaction.deserialize(
-            Buffer.from(serializedTransaction, 'base64'),
-          ),
-      )
-
-      // Show preview
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header: t('automationScreen.setupAutomation'),
-        renderer: () =>
-          React.createElement(MessagePreview, {
-            message: t('automationScreen.setupAutomationMessage', {
-              schedule: selectedSchedule,
-              duration,
-              rentFee: estimate.estimate?.rentFee ?? 0,
-              recipientFee: estimate.estimate?.recipientFee ?? 0,
-              solFee: Math.max(estimate.estimate?.operationalSol ?? 0, 0),
-              interval:
-                selectedSchedule === 'daily'
-                  ? 'days'
-                  : selectedSchedule === 'weekly'
-                  ? 'weeks'
-                  : 'months',
-            }),
-          }),
-        suppressWarnings: false,
-        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
-      // Sign, submit, and wait for confirmation
-      await submitAndAwait({ transactionData })
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
   }, [
-    anchorProvider,
-    walletSignBottomSheetRef,
     totalHotspots,
     createAutomation,
     selectedSchedule,
     duration,
     estimate.estimate,
-    submitAndAwait,
     navigation,
-    t,
   ])
 
   const handleRemoveAutomation = useCallback(async () => {
-    if (!anchorProvider || !walletSignBottomSheetRef) return
-
     try {
-      const { transactionData } = await closeAutomation()
-
-      // Deserialize transactions for preview
-      const transactions = transactionData.transactions.map(
-        ({ serializedTransaction }) =>
-          VersionedTransaction.deserialize(
-            Buffer.from(serializedTransaction, 'base64'),
-          ),
-      )
-
-      // Show preview
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header: t('automationScreen.removeAutomation'),
-        renderer: () =>
-          React.createElement(MessagePreview, {
-            message: t('automationScreen.removeAutomationMessage'),
-          }),
-        suppressWarnings: false,
-        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
-      // Sign, submit, and wait for confirmation
-      await submitAndAwait({ transactionData })
+      await closeAutomation()
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
-  }, [
-    anchorProvider,
-    walletSignBottomSheetRef,
-    closeAutomation,
-    submitAndAwait,
-    navigation,
-    t,
-  ])
+  }, [closeAutomation, navigation])
 
   const handleFundAutomation = useCallback(async () => {
-    if (!anchorProvider || !walletSignBottomSheetRef || !duration) return
+    if (!duration) return
 
     try {
-      const { transactionData } = await fundAutomation({
+      await fundAutomation({
         additionalDuration: parseInt(duration, 10),
+        currentSchedule,
+        estimate: estimate.estimate
+          ? { totalSolNeeded: estimate.estimate.totalSolNeeded }
+          : undefined,
       })
-
-      // Deserialize transactions for preview
-      const transactions = transactionData.transactions.map(
-        ({ serializedTransaction }) =>
-          VersionedTransaction.deserialize(
-            Buffer.from(serializedTransaction, 'base64'),
-          ),
-      )
-
-      // Show preview
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header: t('automationScreen.fundAutomation'),
-        renderer: () =>
-          React.createElement(MessagePreview, {
-            message: t('automationScreen.fundAutomationMessage', {
-              duration,
-              interval:
-                currentSchedule?.schedule === 'daily'
-                  ? 'days'
-                  : currentSchedule?.schedule === 'weekly'
-                  ? 'weeks'
-                  : 'months',
-              totalFunding: estimate.estimate?.totalSolNeeded ?? 0,
-            }),
-          }),
-        suppressWarnings: false,
-        serializedTxs: transactions.map((tx) => Buffer.from(tx.serialize())),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
-      // Sign, submit, and wait for confirmation
-      await submitAndAwait({ transactionData })
       setDuration('')
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
-  }, [
-    anchorProvider,
-    walletSignBottomSheetRef,
-    duration,
-    fundAutomation,
-    estimate.estimate,
-    currentSchedule,
-    submitAndAwait,
-    navigation,
-    t,
-  ])
+  }, [duration, fundAutomation, currentSchedule, estimate.estimate, navigation])
 
   const formatNextRunDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -620,7 +488,7 @@ const AutomationSetupScreen = () => {
                     ? undefined
                     : t('automationScreen.removeAutomation')
                 }
-                backgroundColor="grey200"
+                backgroundColor="black"
                 backgroundColorDisabled="grey400"
                 backgroundColorDisabledOpacity={0.5}
                 backgroundColorOpacityPressed={0.7}
@@ -628,7 +496,7 @@ const AutomationSetupScreen = () => {
                 disabled={closeAutomationLoading}
                 TrailingComponent={
                   closeAutomationLoading ? (
-                    <CircleLoader loaderSize={20} color="black" />
+                    <CircleLoader loaderSize={20} color="error" />
                   ) : undefined
                 }
                 onPress={handleRemoveAutomation}
@@ -642,7 +510,7 @@ const AutomationSetupScreen = () => {
               title={
                 insufficientSol
                   ? t('generic.insufficientSol')
-                  : loading
+                  : createAutomationLoading
                   ? undefined
                   : t('generic.save')
               }
@@ -653,10 +521,13 @@ const AutomationSetupScreen = () => {
               titleColorDisabled="secondaryText"
               titleColor="black"
               disabled={
-                insufficientSol || !selectedSchedule || !duration || loading
+                insufficientSol ||
+                !selectedSchedule ||
+                !duration ||
+                createAutomationLoading
               }
               TrailingComponent={
-                loading ? (
+                createAutomationLoading ? (
                   <CircleLoader loaderSize={20} color="black" />
                 ) : undefined
               }
