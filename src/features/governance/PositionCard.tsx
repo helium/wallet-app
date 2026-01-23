@@ -48,6 +48,7 @@ import {
 import { shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
 import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -70,7 +71,8 @@ export const PositionCard = ({
   const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
-  const { execute: executeGovernanceTx } = useSubmitInstructions()
+  const { execute: executeGovernanceTx, isPending: isSubmittingInstructions } =
+    useSubmitInstructions()
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionRef = useRef<
     null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
@@ -181,20 +183,26 @@ export const PositionCard = ({
     instructions,
     sigs = [],
     sequentially = false,
+    actionType,
+    actionParams,
   }: {
     header: string
     message: string
     instructions: TransactionInstruction[] | TransactionInstruction[][]
     sigs?: Keypair[]
     sequentially?: boolean
+    actionType: string
+    actionParams: Record<string, string | number | undefined>
   }) => {
+    const paramsHash = hashTagParams(actionParams)
+    const tag = `gov-${actionType}-${paramsHash}`
     await executeGovernanceTx({
       header,
       message,
       instructions,
       sigs,
       sequentially,
-      tag: 'governance-position',
+      tag,
     })
   }
 
@@ -342,6 +350,10 @@ export const PositionCard = ({
           header: t('gov.transactions.closePosition'),
           message: t('gov.positions.closeMessage'),
           instructions: ixs,
+          actionType: 'close',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+          },
         })
         if (!closingError) {
           refetchState()
@@ -365,6 +377,11 @@ export const PositionCard = ({
             action: isConstant ? 'let it decay' : 'pause it',
           }),
           instructions: ixs,
+          actionType: 'flipLockupKind',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            fromKind: isConstant ? 'constant' : 'decaying',
+          },
         })
 
         if (!flippingError) {
@@ -391,6 +408,11 @@ export const PositionCard = ({
             new: getFormattedStringFromDays(values.lockupPeriodInDays),
           }),
           instructions: ixs,
+          actionType: 'extend',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            lockupPeriodInDays: values.lockupPeriodInDays,
+          },
         })
         if (!extendingError) {
           refetchState()
@@ -417,6 +439,13 @@ export const PositionCard = ({
           }),
           instructions: ixs,
           sigs,
+          actionType: 'split',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            amount: values.amount,
+            lockupKind: values.lockupKind.value,
+            lockupPeriodInDays: values.lockupPeriodInDays,
+          },
         })
 
         if (!splitingError) {
@@ -447,6 +476,12 @@ export const PositionCard = ({
             ),
           }),
           instructions: ixs,
+          actionType: 'transfer',
+          actionParams: {
+            sourcePosition: position.pubkey.toBase58(),
+            targetPosition: targetPosition.pubkey.toBase58(),
+            amount,
+          },
         })
 
         if (!transferingError) {
@@ -467,6 +502,12 @@ export const PositionCard = ({
             subdao: subDao?.dntMetadata.name,
           }),
           instructions: ixs,
+          actionType: 'delegate',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            subDao: subDao?.pubkey.toBase58(),
+            automationEnabled: automationEnabled ? 1 : 0,
+          },
         })
 
         if (!delegatingError) {
@@ -490,6 +531,10 @@ export const PositionCard = ({
           }),
           sequentially: hasClaims,
           instructions: hasClaims ? [...claims, undelegate] : [undelegate],
+          actionType: 'undelegate',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+          },
         })
 
         if (!undelegatingError) {
@@ -508,6 +553,11 @@ export const PositionCard = ({
           header: t('gov.transactions.relinquishPosition'),
           message: t('gov.positions.relinquishVotesMessage'),
           instructions: ixs,
+          actionType: 'relinquish',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            organization: organization.toBase58(),
+          },
         })
 
         if (!relinquishingError) {
@@ -764,7 +814,8 @@ export const PositionCard = ({
       isFlipping ||
       isDelegating ||
       isUndelegating ||
-      isRelinquishing,
+      isRelinquishing ||
+      isSubmittingInstructions,
     [
       loadingMetadata,
       isExtending,
@@ -775,6 +826,7 @@ export const PositionCard = ({
       isDelegating,
       isUndelegating,
       isRelinquishing,
+      isSubmittingInstructions,
     ],
   )
 

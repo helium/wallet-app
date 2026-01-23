@@ -15,6 +15,7 @@ import {
   useResolutionSettings,
 } from '@helium/modular-governance-hooks'
 import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import {
   useRegistrar,
   useRelinquishVote,
@@ -169,16 +170,22 @@ export const ProposalScreen = () => {
     header,
     message,
     instructions,
+    actionType,
+    actionParams,
   }: {
     header: string
     message: string
     instructions: TransactionInstruction[] | TransactionInstruction[][]
+    actionType: string
+    actionParams: Record<string, string | number | undefined>
   }) => {
+    const paramsHash = hashTagParams(actionParams)
+    const tag = `proposal-${actionType}-${paramsHash}`
     await executeGovernanceTx({
       header,
       message,
       instructions,
-      tag: 'proposal-vote',
+      tag,
     })
   }
 
@@ -192,6 +199,11 @@ export const ProposalScreen = () => {
             header: t('gov.transactions.castVote'),
             message: t('gov.proposals.castVoteFor', { choice: choice.name }),
             instructions: ixs,
+            actionType: 'vote',
+            actionParams: {
+              proposal: proposalKey.toBase58(),
+              choice: choice.index,
+            },
           }),
       })
     }
@@ -209,6 +221,11 @@ export const ProposalScreen = () => {
               choice: choice.name,
             }),
             instructions,
+            actionType: 'relinquish',
+            actionParams: {
+              proposal: proposalKey.toBase58(),
+              choice: choice.index,
+            },
           }),
       })
     }

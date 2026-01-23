@@ -121,7 +121,7 @@ const DeprecatedTokensModal: FC = () => {
     language,
   ])
 
-  const { mutateAsync: closePosition } = useClosePosition()
+  const { closePosition } = useClosePosition()
 
   // Calculate estimated HNT from swaps
   const calculateEstimatedHnt = useCallback(async () => {
@@ -308,15 +308,7 @@ const DeprecatedTokensModal: FC = () => {
 
         const minReceived = outputAmount - outputAmount * (50 / 100 / 100)
 
-        const iotSwapTxn = await getSwapTx(
-          {
-            swapRequest: {
-              quoteResponse: iotRoute,
-              userPublicKey: wallet.toBase58(),
-            },
-          },
-          iotRoute,
-        )
+        const iotSwapTxn = await getSwapTx(iotRoute)
 
         if (!iotSwapTxn) {
           throw new Error('Failed to generate swap transaction for IOT')
@@ -361,15 +353,7 @@ const DeprecatedTokensModal: FC = () => {
 
         const minReceived = outputAmount - outputAmount * (50 / 100 / 100)
 
-        const mobileSwapTxn = await getSwapTx(
-          {
-            swapRequest: {
-              quoteResponse: mobileRoute,
-              userPublicKey: wallet.toBase58(),
-            },
-          },
-          mobileRoute,
-        )
+        const mobileSwapTxn = await getSwapTx(mobileRoute)
 
         if (!mobileSwapTxn) {
           throw new Error('Failed to generate swap transaction for MOBILE')

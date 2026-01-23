@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   batchInstructionsToTxsWithPriorityFee,
+  chunks,
   HELIUM_COMMON_LUT,
   HELIUM_COMMON_LUT_DEVNET,
   populateMissingDraftInfo,
@@ -31,7 +32,6 @@ interface SubmitInstructionsParams {
   useFirstEstimateForAll?: boolean
   addressLookupTableAddresses?: PublicKey[]
   onProgress?: (status: Status) => void
-  batchTransactions?: boolean // If true, batch transactions to prevent blockhash expiration
 }
 
 async function pollForCompletion(
@@ -87,7 +87,6 @@ export function useSubmitInstructions() {
       maxInstructionsPerTx,
       useFirstEstimateForAll,
       addressLookupTableAddresses,
-      batchTransactions = false,
     }: SubmitInstructionsParams) => {
       if (!anchorProvider || !walletSignBottomSheetRef) {
         throw new Error('Wallet not connected')
@@ -142,79 +141,67 @@ export function useSubmitInstructions() {
         throw new Error('User rejected transaction')
       }
 
-      // If batching is enabled and we have more transactions than the batch size, batch them
-      if (
-        batchTransactions &&
-        asVersionedTx.length > MAX_TRANSACTIONS_PER_SIGNATURE_BATCH
-      ) {
-        const chunkCount = Math.ceil(
-          asVersionedTx.length / MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-        const batchPromises = Array.from(
-          { length: chunkCount },
-          async (_, index) => {
-            const start = index * MAX_TRANSACTIONS_PER_SIGNATURE_BATCH
-            const chunk = asVersionedTx.slice(
-              start,
-              start + MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-            )
-            const chunkDrafts = transactions.slice(
-              start,
-              start + MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-            )
+      if (asVersionedTx.length > MAX_TRANSACTIONS_PER_SIGNATURE_BATCH) {
+        let batchId: string
+        // eslint-disable-next-line no-restricted-syntax
+        for (const chunk of chunks(
+          asVersionedTx.map((i, index) => ({
+            transaction: i,
+            draft: transactions[index],
+          })),
+          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+        )) {
+          // Sign chunk
+          const signedChunk = await anchorProvider.wallet.signAllTransactions(
+            chunk.map(({ transaction }) => transaction),
+          )
 
-            // Sign chunk
-            const signedChunk = await anchorProvider.wallet.signAllTransactions(
-              chunk,
-            )
-
-            // Apply additional keypair signers if needed
-            signedChunk.forEach((tx, j) => {
-              const draft = chunkDrafts[j]
-              sigs.forEach((sig) => {
-                if (
-                  draft.signers?.some((s) => s.publicKey.equals(sig.publicKey))
-                ) {
-                  tx.sign([sig])
-                }
-              })
+          // Apply additional keypair signers if needed
+          signedChunk.forEach((tx, j) => {
+            const { draft } = chunk[j]
+            sigs.forEach((sig) => {
+              if (
+                draft.signers?.some((s) => s.publicKey.equals(sig.publicKey))
+              ) {
+                tx.sign([sig])
+              }
             })
+          })
 
-            // Convert to TransactionData format and submit
-            const txnData = toTransactionData(signedChunk, {
-              parallel: !sequentially,
-              tag,
-              metadata: {
-                type: tag,
-                description: message,
-              },
-            })
+          // Convert to TransactionData format and submit
+          const txnData = toTransactionData(signedChunk, {
+            parallel: !sequentially,
+            tag,
+            metadata: {
+              type: tag,
+              description: message,
+            },
+          })
 
-            const { batchId } = await client.transactions.submit(txnData)
-            queryClient.invalidateQueries({
-              queryKey: ['pendingTransactions'],
-            })
+          const { batchId: currentBatchId } = await client.transactions.submit(
+            txnData,
+          )
 
-            // Poll for completion
-            const { status, signatures } = await pollForCompletion(
-              client,
-              batchId,
-            )
+          batchId = currentBatchId
+          // Poll for completion
+          const { status, signatures } = await pollForCompletion(
+            client,
+            batchId,
+          )
 
-            if (status === 'failed' || status === 'partial') {
-              throw new Error('Transaction failed')
-            }
+          if (status === 'failed' || status === 'partial') {
+            throw new Error('Transaction failed')
+          }
 
-            if (status === 'expired') {
-              throw new Error('Transaction expired')
-            }
+          if (status === 'expired') {
+            throw new Error('Transaction expired')
+          }
 
-            return { batchId, signatures }
-          },
-        )
+          return { batchId, signatures }
+        }
 
-        const results = await Promise.all(batchPromises)
-        return results[results.length - 1]
+        // Only invalidate queries after ALL batches are complete
+        queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       }
 
       // Sign all transactions (no batching)

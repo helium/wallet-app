@@ -160,7 +160,6 @@ export const PositionsScreen = () => {
             onProgress: setStatusOfClaim,
             computeScaleUp: 1.4,
             maxInstructionsPerTx: 8,
-            batchTransactions: true, // Batch to prevent blockhash expiration
           })
         },
       })

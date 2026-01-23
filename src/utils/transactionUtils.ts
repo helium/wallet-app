@@ -1,5 +1,6 @@
 import { VersionedTransaction, Transaction } from '@solana/web3.js'
 import type { TransactionData } from '@helium/blockchain-api'
+import { createHash } from 'crypto'
 
 interface TransactionMetadata {
   type: string
@@ -56,4 +57,20 @@ export async function signTransactionData(
       metadata: transactionData.transactions[i].metadata,
     })),
   }
+}
+
+/**
+ * Creates a short hash from action parameters for use in transaction tags
+ * @param params Object with string/number values to hash
+ * @returns Short hex hash (first 12 characters of sha256)
+ */
+export function hashTagParams(
+  params: Record<string, string | number | undefined>,
+): string {
+  const paramsString = Object.entries(params)
+    .filter(([_, value]) => value !== undefined)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}:${value}`)
+    .join(',')
+  return createHash('sha256').update(paramsString).digest('hex').slice(0, 12)
 }

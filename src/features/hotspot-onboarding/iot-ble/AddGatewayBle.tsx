@@ -35,7 +35,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import sleep from '@utils/sleep'
 import { calculateRequiredSol, getHotspotWithRewards } from '@utils/solanaUtils'
-import { toTransactionData } from '@utils/transactionUtils'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React, { useMemo, useState } from 'react'
@@ -194,8 +194,11 @@ const AddGatewayBle = () => {
     // eslint-disable-next-line no-restricted-syntax
     for (const txn of createHotspotTxns || []) {
       const tx = VersionedTransaction.deserialize(txn)
+      const hotspotAddress = onboardingAddress || 'unknown'
+      const paramsHash = hashTagParams({ hotspot: hotspotAddress })
+      const tag = `create-hotspot-${paramsHash}`
       const transactionData = toTransactionData([tx], {
-        tag: 'create-hotspot',
+        tag,
         metadata: { type: 'hotspot', description: 'Create Hotspot' },
       })
       // eslint-disable-next-line no-await-in-loop
@@ -237,8 +240,10 @@ const AddGatewayBle = () => {
       }
 
       if (solanaSignedTransactions) {
+        const paramsHash = hashTagParams({ hotspot: onboardingAddress })
+        const tag = `onboard-hotspot-${paramsHash}`
         const transactionData = toTransactionData(solanaSignedTransactions, {
-          tag: 'onboard-hotspot',
+          tag,
           metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
         })
         await submitAndAwait({ transactionData })

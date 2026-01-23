@@ -12,7 +12,7 @@ import { ContractRouterClient } from '@orpc/contract'
 import { BoxProps } from '@shopify/restyle'
 import { VersionedTransaction } from '@solana/web3.js'
 import { Theme } from '@theme/theme'
-import { toTransactionData } from '@utils/transactionUtils'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import React, { memo, ReactNode, useCallback, useState } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -45,8 +45,10 @@ async function migrateWallet(
       const txs = transactions.map((tx: number[]) =>
         VersionedTransaction.deserialize(Buffer.from(tx)),
       )
+      const paramsHash = hashTagParams({ wallet })
+      const tag = `migration-${paramsHash}`
       const transactionData = toTransactionData(txs, {
-        tag: 'migration',
+        tag,
         metadata: { type: 'migration', description: 'Solana Migration' },
       })
       // eslint-disable-next-line no-await-in-loop

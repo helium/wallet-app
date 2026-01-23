@@ -15,7 +15,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { toTransactionData } from '@utils/transactionUtils'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import React, {
   FC,
@@ -116,13 +116,20 @@ const InsufficientSolConversionModal: FC = () => {
   )
 
   const handleSwapTokens = useCallback(async () => {
-    if (!anchorProvider || !swapTx) return
+    if (!anchorProvider || !swapTx || !inputMint) return
 
     if (useAuto) {
       await updateAutoGasManagementToken(inputMint)
     }
+    const walletAddress = anchorProvider.wallet.publicKey.toBase58()
+    const paramsHash = hashTagParams({
+      wallet: walletAddress,
+      mint: inputMint.toBase58(),
+      amount: inputAmount,
+    })
+    const tag = `sol-convert-${paramsHash}`
     const transactionData = toTransactionData([swapTx], {
-      tag: 'sol-convert',
+      tag,
       metadata: { type: 'swap', description: 'SOL Conversion' },
     })
 
@@ -135,11 +142,12 @@ const InsufficientSolConversionModal: FC = () => {
   }, [
     anchorProvider,
     swapTx,
+    inputMint,
+    inputAmount,
     useAuto,
     hideModal,
     onSuccess,
     updateAutoGasManagementToken,
-    inputMint,
     submitAndAwait,
   ])
 

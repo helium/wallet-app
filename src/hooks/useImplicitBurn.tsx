@@ -10,7 +10,7 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { useBalance } from '@utils/Balance'
 import { humanReadable } from '@utils/formatting'
-import { toTransactionData } from '@utils/transactionUtils'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React from 'react'
@@ -77,10 +77,15 @@ export function useImplicitBurn(): {
         ),
       })
       if (decision) {
+        const paramsHash = hashTagParams({
+          wallet: wallet.toBase58(),
+          dcAmount: dcDeficit.toString(),
+        })
+        const tag = `implicit-burn-${paramsHash}`
         const transactionData = toTransactionData(
           txs.map(({ tx }) => tx),
           {
-            tag: 'implicit-burn',
+            tag,
             metadata: { type: 'mint', description: 'Implicit DC Burn' },
           },
         )
@@ -99,7 +104,7 @@ export function useImplicitBurn(): {
             return toTransactionData(
               freshTxs.map(({ tx }) => tx),
               {
-                tag: 'implicit-burn',
+                tag,
                 metadata: { type: 'mint', description: 'Implicit DC Burn' },
               },
             )

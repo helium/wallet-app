@@ -13,7 +13,7 @@ import { Connection, VersionedTransaction } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Theme } from '@theme/theme'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
-import { toTransactionData } from '@utils/transactionUtils'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -123,8 +123,16 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
           header: t('transactions.autoGasConvertHeader'),
         })
         if (decision) {
+          const walletAddress = anchorProvider.wallet.publicKey.toBase58()
+          const mintAddress = autoGasManagementToken.toBase58()
+          const paramsHash = hashTagParams({
+            wallet: walletAddress,
+            mint: mintAddress,
+            amount: amount || 0,
+          })
+          const tag = `auto-gas-${paramsHash}`
           const transactionData = toTransactionData([tx], {
-            tag: 'auto-gas',
+            tag,
             metadata: { type: 'swap', description: 'Auto Gas Conversion' },
           })
           await submitAndAwait({ transactionData })

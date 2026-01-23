@@ -45,6 +45,7 @@ import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 import {
   signTransactionData,
   toTransactionData,
+  hashTagParams,
 } from '../utils/transactionUtils'
 import {
   Collectable,
@@ -277,8 +278,12 @@ export default () => {
             ).blockhash,
           },
         )
+        const transferParamsHash = hashTagParams({
+          nft: nft.id || nft.address,
+          payee,
+        })
         txnData = toTransactionData([toVersionedTx(populatedTxn)], {
-          tag: `collectable-transfer-${nft.id || nft.address}-${payee}`,
+          tag: `collectable-transfer-${transferParamsHash}`,
           metadata: {
             type: 'transfer',
             description: 'Transfer collectable',
@@ -370,8 +375,14 @@ export default () => {
       }
 
       const signed = await anchorProvider.wallet.signTransaction(swapTxn)
+      const swapParamsHash = hashTagParams({
+        inputMint: inputMint.toBase58(),
+        inputAmount,
+        outputMint: outputMint.toBase58(),
+        outputAmount,
+      })
       const txnData = toTransactionData([signed], {
-        tag: `jupiter-swap-${inputMint.toBase58()}-${inputAmount}-${outputMint.toBase58()}-${outputAmount}`,
+        tag: `jupiter-swap-${swapParamsHash}`,
         metadata: { type: 'swap', description: 'Jupiter swap' },
       })
 
@@ -447,8 +458,13 @@ export default () => {
         VersionedTransaction.deserialize(serializedTx),
       )
 
+      const treasuryParamsHash = hashTagParams({
+        fromMint: fromMint.toBase58(),
+        amount,
+        recipient: recipient.toBase58(),
+      })
       const txnData = toTransactionData([signed], {
-        tag: `treasury-swap-${fromMint.toBase58()}-${amount}-${recipient.toBase58()}`,
+        tag: `treasury-swap-${treasuryParamsHash}`,
         metadata: { type: 'swap', description: 'Treasury swap' },
       })
 
@@ -682,8 +698,12 @@ export default () => {
         const signedHntTxns = await anchorProvider.wallet.signAllTransactions(
           hntTxns,
         )
+        const walletAddress =
+          currentAccount.solanaAddress ||
+          anchorProvider.wallet.publicKey.toBase58()
+        const paramsHash = hashTagParams({ wallet: walletAddress })
         const hntTxnData = toTransactionData(signedHntTxns, {
-          tag: 'claim-all-rewards-hnt',
+          tag: `claim-hnt-${paramsHash}`,
           metadata: { type: 'claim', description: 'Claim HNT rewards' },
         })
         const { batchId } = await client.transactions.submit(hntTxnData)
@@ -787,8 +807,12 @@ export default () => {
         }),
       )
 
+      const mintParamsHash = hashTagParams({
+        dcAmount: dcAmount.toString(),
+        recipient: recipient.toBase58(),
+      })
       const txnData = toTransactionData(signedTxs, {
-        tag: `mint-dc-${dcAmount.toString()}-${recipient.toBase58()}`,
+        tag: `mint-dc-${mintParamsHash}`,
         metadata: { type: 'mint', description: 'Mint data credits' },
       })
 
@@ -843,8 +867,12 @@ export default () => {
       )
 
       // Convert to TransactionData format
+      const delegateParamsHash = hashTagParams({
+        delegateAddress,
+        timestamp: Date.now(),
+      })
       const txnData = toTransactionData([toVersionedTx(delegateDCTxn)], {
-        tag: `delegate-dc-${delegateAddress}-${Date.now()}`,
+        tag: `delegate-dc-${delegateParamsHash}`,
         metadata: { type: 'delegate', description: 'Delegate data credits' },
       })
 
@@ -985,11 +1013,15 @@ export default () => {
         throw new Error('No transactions to sign')
       }
 
-      const locationKey = `${lat}-${lng}${elevation ? `-${elevation}` : ''}${
-        decimalGain ? `-${decimalGain}` : ''
-      }`
+      const locationParamsHash = hashTagParams({
+        entityKey,
+        lat,
+        lng,
+        elevation: elevation || undefined,
+        decimalGain: decimalGain || undefined,
+      })
       const txnData = toTransactionData(signedTxns, {
-        tag: `assert-location-${entityKey}-${locationKey}`,
+        tag: `assert-location-${locationParamsHash}`,
         metadata: { type: 'assert', description: 'Assert hotspot location' },
       })
 

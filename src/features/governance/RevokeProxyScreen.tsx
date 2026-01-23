@@ -13,6 +13,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import sleep from '@utils/sleep'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -96,12 +97,22 @@ export const RevokeProxyScreen = () => {
   } = useUnassignProxies()
 
   const decideAndExecute = useCallback(
-    async (header: string, instructions: TransactionInstruction[]) => {
+    async (
+      header: string,
+      instructions: TransactionInstruction[],
+      positionKeys: string[],
+      proxyWalletParam: string,
+    ) => {
+      const paramsHash = hashTagParams({
+        proxyWallet: proxyWalletParam,
+        positions: positionKeys.sort().join(','),
+      })
+      const tag = `revoke-proxy-${paramsHash}`
       await executeGovernanceTx({
         header,
         message: header,
         instructions,
-        tag: 'revoke-proxy',
+        tag,
       })
       // Give time for indexer
       await sleep(2000)
@@ -117,10 +128,16 @@ export const RevokeProxyScreen = () => {
         acc[p.pubkey.toString()] = p
         return acc
       }, {} as Record<string, PositionWithMeta>)
+      const selectedPositionKeys = Array.from(selectedPositions)
       await unassignProxies({
-        positions: Array.from(selectedPositions).map((p) => positionsByKey[p]),
+        positions: selectedPositionKeys.map((p) => positionsByKey[p]),
         onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transactions.revokeProxy'), ixs),
+          decideAndExecute(
+            t('gov.transactions.revokeProxy'),
+            ixs,
+            selectedPositionKeys,
+            proxyWallet,
+          ),
       })
     }
   }, [

@@ -13,6 +13,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import sleep from '@utils/sleep'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -140,12 +141,24 @@ export const AssignProxyScreen = () => {
   } = useAssignProxies()
 
   const decideAndExecute = useCallback(
-    async (header: string, instructions: TransactionInstruction[]) => {
+    async (
+      header: string,
+      instructions: TransactionInstruction[],
+      positionKeys: string[],
+      proxyWalletParam: string,
+      expirationTimeParam: number,
+    ) => {
+      const paramsHash = hashTagParams({
+        proxyWallet: proxyWalletParam,
+        expirationTime: expirationTimeParam,
+        positions: positionKeys.sort().join(','),
+      })
+      const tag = `assign-proxy-${paramsHash}`
       await executeGovernanceTx({
         header,
         message: header,
         instructions,
-        tag: 'assign-proxy',
+        tag,
       })
       // Give time for indexer
       await sleep(2000)
@@ -161,14 +174,23 @@ export const AssignProxyScreen = () => {
         acc[p.pubkey.toString()] = p
         return acc
       }, {} as Record<string, PositionWithMeta>)
+      const selectedPositionKeys = Array.from(selectedPositions)
+      const finalExpirationTime = Math.min(
+        expirationTime,
+        maxDate.valueOf() / 1000,
+      )
       await assignProxies({
-        positions: Array.from(selectedPositions).map((p) => positionsByKey[p]),
+        positions: selectedPositionKeys.map((p) => positionsByKey[p]),
         recipient: new PublicKey(proxyWallet),
-        expirationTime: new BN(
-          Math.min(expirationTime, maxDate.valueOf() / 1000),
-        ),
+        expirationTime: new BN(finalExpirationTime),
         onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transactions.assignProxy'), ixs),
+          decideAndExecute(
+            t('gov.transactions.assignProxy'),
+            ixs,
+            selectedPositionKeys,
+            proxyWallet,
+            finalExpirationTime,
+          ),
       })
     }
   }, [
