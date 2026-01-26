@@ -5,6 +5,7 @@ import { createHash } from 'crypto'
 interface TransactionMetadata {
   type: string
   description: string
+  [x: string]: unknown
 }
 
 interface ToTransactionDataOptions {
