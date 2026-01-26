@@ -119,13 +119,13 @@ export const DelegateTokensModal = ({
         setIsSubmitting(true)
         await onSubmit()
 
-        onClose()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         setIsSubmitting(false)
         setTransactionError(e.message || t('gov.errors.delegatePositions'))
       }
     }
+    onClose()
   }
 
   const showError = useMemo(() => {

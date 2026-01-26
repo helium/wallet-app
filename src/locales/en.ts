@@ -249,7 +249,8 @@ export default {
     claimingRewardsBody:
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
-    claimCompleteBody: 'Your tokens have been added to your wallet.',
+    claimCompleteBody:
+      'It may take a moment for your rewards to appear in your wallet.',
     claimError: 'Claim failed. Please try again later.',
     transferCollectableAlertTitle:
       'Are you sure you will like to transfer your collectable?',
