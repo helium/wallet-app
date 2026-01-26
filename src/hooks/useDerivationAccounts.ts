@@ -64,6 +64,7 @@ export const HELIUM_DERIVATION = 'Helium L1'
 export const MAIN_DERIVATION_PATHS = [
   HELIUM_DERIVATION,
   heliumDerivation(-1),
+  heliumDerivation(0),
   solanaDerivation(-1, undefined),
 ]
 export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {

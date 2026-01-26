@@ -3,19 +3,15 @@ import AccountIcon from '@components/AccountIcon'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
+import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { toNumber } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import useHotspots from '@hooks/useHotspots'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import globalStyles from '@theme/globalStyles'
 import { parseTransactionError } from '@utils/solanaUtils'
-import LottieView from 'lottie-react-native'
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -23,9 +19,6 @@ import 'text-encoding-polyfill'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import iotMobileTokens from './animations/iot-mobile-tokens.json'
-import iotTokens from './animations/iot-tokens.json'
-import mobileTokens from './animations/mobile-tokens.json'
 import { CollectableStackParamList } from './collectablesTypes'
 
 const ClaimingRewardsScreen = () => {
@@ -50,25 +43,6 @@ const ClaimingRewardsScreen = () => {
     status === 'partial'
   const isConfirmed = status === 'confirmed'
   const isPending = isLoading || status === 'pending'
-  const { pendingIotRewards, pendingMobileRewards, pendingHntRewards } =
-    useHotspots()
-  const pendingIotRewardsNum = pendingIotRewards
-    ? toNumber(pendingIotRewards, 6)
-    : 0
-  const pendingMobileRewardsNum = pendingMobileRewards
-    ? toNumber(pendingMobileRewards, 6)
-    : 0
-  const pendingHntRewardsNum = pendingHntRewards
-    ? toNumber(pendingHntRewards, 8)
-    : 0
-
-  const video =
-    (pendingIotRewardsNum && pendingMobileRewardsNum) || pendingHntRewardsNum
-      ? iotMobileTokens
-      : pendingMobileRewardsNum
-      ? mobileTokens
-      : iotTokens
-
   const onReturn = useCallback(() => {
     // Reset Collectables stack to first screen
     navigation.reset({
@@ -76,17 +50,6 @@ const ClaimingRewardsScreen = () => {
       routes: [{ name: 'Collectables' }],
     })
   }, [navigation])
-
-  // Don't start the video until the screen has been up for 500ms
-  const [videoEnded, setVideoEnded] = useState(false)
-  const animationRef = useRef<LottieView>(null)
-
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      animationRef.current?.play()
-    }, 800) // 1000 milliseconds delay
-    return () => clearTimeout(delay)
-  }, [animationRef])
 
   if (!currentAccount) {
     return null
@@ -199,35 +162,14 @@ const ClaimingRewardsScreen = () => {
                 </Text>
               </Box>
 
-              {videoEnded ? (
-                <Box
-                  height={240}
-                  flexDirection="row"
-                  marginHorizontal="xxl"
-                  marginTop="m"
-                >
-                  <IndeterminateProgressBar paddingHorizontal="l" />
-                </Box>
-              ) : (
-                <Box
-                  style={{ marginBottom: -40 }}
-                  width="100%"
-                  aspectRatio={1.4}
-                  height={240}
-                >
-                  <FadeInOut style={globalStyles.container}>
-                    <LottieView
-                      ref={animationRef}
-                      source={video}
-                      loop={false}
-                      style={{ width: '100%', height: '100%' }}
-                      onAnimationFinish={() => {
-                        setVideoEnded(true)
-                      }}
-                    />
-                  </FadeInOut>
-                </Box>
-              )}
+              <Box
+                height={240}
+                flexDirection="row"
+                marginHorizontal="xxl"
+                marginTop="m"
+              >
+                <IndeterminateProgressBar paddingHorizontal="l" />
+              </Box>
             </Animated.View>
           ) : null}
         </Box>

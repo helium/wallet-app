@@ -11,6 +11,7 @@ type QuoteGetRequest = {
   outputMint: string
   amount: number
   slippageBps?: number
+  platformFeeBps?: number
 }
 
 interface IJupiterContextState {
