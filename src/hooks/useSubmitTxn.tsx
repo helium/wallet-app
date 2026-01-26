@@ -679,11 +679,13 @@ export default () => {
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        header: t('transactions.claimAllRewards'),
+        header: t('collectablesScreen.hotspots.claimAllRewards'),
         message: t('transactions.signClaimRewardsTxn'),
         serializedTxs,
         renderer: () => (
-          <MessagePreview warning={t('transactions.claimAllRewards')} />
+          <MessagePreview
+            warning={t('collectablesScreen.hotspots.claimAllRewards')}
+          />
         ),
       })
 
