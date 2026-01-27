@@ -18,23 +18,24 @@ import {
   MOBILE_MINT,
   bufferToTransaction,
   getAsset,
-  sendAndConfirmWithRetry,
   truthy,
 } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useImplicitBurn } from '@hooks/useImplicitBurn'
 import { useKeyToAsset } from '@hooks/useKeyToAsset'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
+import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js'
+import {
+  LAMPORTS_PER_SOL,
+  Transaction,
+  VersionedTransaction,
+} from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import sleep from '@utils/sleep'
-import {
-  calculateRequiredSol,
-  getHotspotWithRewards,
-  isInsufficientBal,
-} from '@utils/solanaUtils'
+import { calculateRequiredSol, getHotspotWithRewards } from '@utils/solanaUtils'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React, { useMemo, useState } from 'react'
@@ -116,6 +117,7 @@ const AddGatewayBle = () => {
     (myDcWithHnt || new BN(0)).lt(requiredDc)
 
   const { implicitBurn } = useImplicitBurn()
+  const { submitAndAwait } = useSubmitAndAwait()
 
   // eslint-disable-next-line no-nested-ternary
   const balError = maker
@@ -177,22 +179,6 @@ const AddGatewayBle = () => {
     // })
     // const tx = AddGatewayV1.fromStr()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function wrapProgramError(e: any) {
-      if (isInsufficientBal(e)) {
-        throw new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissing', {
-            name: maker?.name,
-            tokens: 'DC or SOL',
-          }),
-        )
-      }
-      if (e.InstructionError) {
-        throw new Error(`Program Error: ${JSON.stringify(e)}`)
-      }
-      throw e
-    }
-
     let createHotspotTxns: Buffer[] = []
     if (txnStr) {
       const createTxns = await onboardingClient.createHotspot({
@@ -205,22 +191,18 @@ const AddGatewayBle = () => {
         ) || []
     }
 
-    try {
-      // eslint-disable-next-line no-restricted-syntax
-      for (const txn of createHotspotTxns || []) {
-        // eslint-disable-next-line no-await-in-loop
-        await sendAndConfirmWithRetry(
-          anchorProvider.connection,
-          txn,
-          {
-            skipPreflight: false,
-          },
-          'confirmed',
-        )
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
-      wrapProgramError(e)
+    // eslint-disable-next-line no-restricted-syntax
+    for (const txn of createHotspotTxns || []) {
+      const tx = VersionedTransaction.deserialize(txn)
+      const hotspotAddress = onboardingAddress || 'unknown'
+      const paramsHash = hashTagParams({ hotspot: hotspotAddress })
+      const tag = `create-hotspot-${paramsHash}`
+      const transactionData = toTransactionData([tx], {
+        tag,
+        metadata: { type: 'hotspot', description: 'Create Hotspot' },
+      })
+      // eslint-disable-next-line no-await-in-loop
+      await submitAndAwait({ transactionData })
     }
 
     const configKey = network === 'IOT' ? IOT_CONFIG_KEY : MOBILE_CONFIG_KEY
@@ -258,23 +240,13 @@ const AddGatewayBle = () => {
       }
 
       if (solanaSignedTransactions) {
-        try {
-          // eslint-disable-next-line no-restricted-syntax
-          for (const txn of solanaSignedTransactions) {
-            // eslint-disable-next-line no-await-in-loop
-            await sendAndConfirmWithRetry(
-              anchorProvider.connection,
-              txn.serialize(),
-              {
-                skipPreflight: true,
-              },
-              'confirmed',
-            )
-          }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (e: any) {
-          wrapProgramError(e)
-        }
+        const paramsHash = hashTagParams({ hotspot: onboardingAddress })
+        const tag = `onboard-hotspot-${paramsHash}`
+        const transactionData = toTransactionData(solanaSignedTransactions, {
+          tag,
+          metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
+        })
+        await submitAndAwait({ transactionData })
       }
     }
 

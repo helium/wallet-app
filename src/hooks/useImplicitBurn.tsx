@@ -5,10 +5,12 @@ import {
 } from '@helium/data-credits-sdk'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DataCredits } from '@helium/idls/lib/types/data_credits'
-import { DC_MINT, sendAndConfirmWithRetry } from '@helium/spl-utils'
+import { DC_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { useBalance } from '@utils/Balance'
 import { humanReadable } from '@utils/formatting'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React from 'react'
@@ -30,6 +32,7 @@ export function useImplicitBurn(): {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const { amount: myDc, loading: loadingDc } = useOwnedAmount(wallet, DC_MINT)
+  const { submitAndAwait } = useSubmitAndAwait()
 
   const {
     execute: implicitBurn,
@@ -46,6 +49,7 @@ export function useImplicitBurn(): {
       )) as unknown as Program<DataCredits>
       const dcDeficit = BigInt(totalDcReq) - (myDc || BigInt(0))
       const hntAmount = dcToNetworkTokens(new BN(dcDeficit.toString()))
+
       const { txs } = await mintDataCredits({
         dcAmount: new BN(dcDeficit.toString()),
         dcMint: DC_MINT,
@@ -73,20 +77,39 @@ export function useImplicitBurn(): {
         ),
       })
       if (decision) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const tx of txs) {
-          const signed = await anchorProvider.wallet.signTransaction(tx.tx)
-          if (tx.signers.length > 0) {
-            await tx.tx.sign(tx.signers)
-          }
-          const serializedTx = Buffer.from(signed.serialize())
-          await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            serializedTx,
-            { skipPreflight: true },
-            'confirmed',
-          )
-        }
+        const paramsHash = hashTagParams({
+          wallet: wallet.toBase58(),
+          dcAmount: dcDeficit.toString(),
+        })
+        const tag = `implicit-burn-${paramsHash}`
+        const transactionData = toTransactionData(
+          txs.map(({ tx }) => tx),
+          {
+            tag,
+            metadata: { type: 'mint', description: 'Implicit DC Burn' },
+          },
+        )
+        // This will await completion and handle blockhash expiration with retry
+        await submitAndAwait({
+          transactionData,
+          onNeedsResign: async () => {
+            const { txs: freshTxs } = await mintDataCredits({
+              dcAmount: new BN(dcDeficit.toString()),
+              dcMint: DC_MINT,
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              program,
+              recipient: wallet,
+            })
+            return toTransactionData(
+              freshTxs.map(({ tx }) => tx),
+              {
+                tag,
+                metadata: { type: 'mint', description: 'Implicit DC Burn' },
+              },
+            )
+          },
+        })
       } else {
         throw new Error('User rejected transaction')
       }

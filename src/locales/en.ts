@@ -249,7 +249,8 @@ export default {
     claimingRewardsBody:
       'You can exit this screen while you wait. We’ll update your Wallet momentarily.',
     claimComplete: 'Rewards Claimed!',
-    claimCompleteBody: 'Your tokens have been added to your wallet.',
+    claimCompleteBody:
+      'It may take a moment for your rewards to appear in your wallet.',
     claimError: 'Claim failed. Please try again later.',
     transferCollectableAlertTitle:
       'Are you sure you will like to transfer your collectable?',
@@ -312,8 +313,11 @@ export default {
   automationScreen: {
     setupAutomation: 'Setup Automation',
     removeAutomation: 'Remove Automation',
+    fundAutomation: 'Fund Automation',
     setupAutomationMessage:
-      'Claim your rewards on a {{schedule}} schedule for {{duration}} {{interval}}. This will cost {{rentFee}} SOL that can be reclaimed, and {{solFee}} SOL for transaction fees.',
+      'Claim your rewards on a {{schedule}} schedule for {{duration}} {{interval}}. This will cost {{rentFee}} SOL that can be reclaimed, {{recipientFee}} SOL for permanent on-chain structs, and {{solFee}} SOL for transaction fees.',
+    fundAutomationMessage:
+      'Add {{duration}} {{interval}} of funding to your automation. This will cost {{totalFunding}} SOL.',
     reclaimableSol: 'Reclaimable SOL',
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
@@ -325,7 +329,17 @@ export default {
       'Set up automatic claiming of your hotspot rewards on a schedule. You will need to fund the automation with SOL for the transaction fees.',
     selectSchedule: 'Select Claim Schedule',
     enterDuration: 'Enter Duration',
+    enterAdditionalDuration: 'Enter Additional Duration',
     currentAutomation: 'Current Automation',
+    remainingClaims: 'Remaining Claims',
+    cronJobBalance: 'Cron Job Balance',
+    pdaWalletBalance: 'PDA Wallet Balance',
+    fundingEstimate: 'Funding Estimate',
+    estimatedCosts: 'Estimated Costs',
+    cronJobFunding: 'Cron Job Funding',
+    pdaWalletFunding: 'PDA Wallet Funding',
+    totalFunding: 'Total Funding',
+    calculating: 'Calculating',
     schedule: {
       daily: 'Daily',
       weekly: 'Weekly',

@@ -3,13 +3,7 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
-import {
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
-  populateMissingDraftInfo,
-  toVersionedTx,
-  truthy,
-} from '@helium/spl-utils'
+import { truthy } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   useUnassignProxies,
@@ -18,16 +12,13 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
+import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import sleep from '@utils/sleep'
-import { getBasePriorityFee } from '@utils/walletApiV2'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
 import {
@@ -38,8 +29,7 @@ import {
 type Route = RouteProp<GovernanceStackParamList, 'RevokeProxyScreen'>
 
 export const RevokeProxyScreen = () => {
-  const { walletSignBottomSheetRef } = useWalletSign()
-  const { anchorProvider } = useSolana()
+  const { execute: executeGovernanceTx } = useSubmitInstructions()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
   const { wallet, position } = route.params
@@ -107,52 +97,29 @@ export const RevokeProxyScreen = () => {
   } = useUnassignProxies()
 
   const decideAndExecute = useCallback(
-    async (header: string, instructions: TransactionInstruction[]) => {
-      if (!anchorProvider || !walletSignBottomSheetRef) return
-
-      const transactions = await batchInstructionsToTxsWithPriorityFee(
-        anchorProvider,
-        instructions,
-        {
-          basePriorityFee: await getBasePriorityFee(),
-          useFirstEstimateForAll: true,
-          computeScaleUp: 1.4,
-        },
-      )
-      const populatedTxs = await Promise.all(
-        transactions.map((tx) =>
-          populateMissingDraftInfo(anchorProvider.connection, tx),
-        ),
-      )
-      const txs = populatedTxs.map((tx) => toVersionedTx(tx))
-
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header,
-        serializedTxs: txs.map((transaction) =>
-          Buffer.from(transaction.serialize()),
-        ),
+    async (
+      header: string,
+      instructions: TransactionInstruction[],
+      positionKeys: string[],
+      proxyWalletParam: string,
+    ) => {
+      const paramsHash = hashTagParams({
+        proxyWallet: proxyWalletParam,
+        positions: positionKeys.sort().join(','),
       })
-
-      if (decision) {
-        await bulkSendTransactions(
-          anchorProvider,
-          transactions,
-          undefined,
-          10,
-          [],
-          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-        // Give time for indexer
-        await sleep(2000)
-        refetch()
-        navigation.goBack()
-      } else {
-        throw new Error('User rejected transaction')
-      }
+      const tag = `revoke-proxy-${paramsHash}`
+      await executeGovernanceTx({
+        header,
+        message: header,
+        instructions,
+        tag,
+      })
+      // Give time for indexer
+      await sleep(2000)
+      refetch()
+      navigation.goBack()
     },
-    [anchorProvider, navigation, refetch, walletSignBottomSheetRef],
+    [executeGovernanceTx, navigation, refetch],
   )
 
   const handleSubmit = useCallback(async () => {
@@ -161,10 +128,16 @@ export const RevokeProxyScreen = () => {
         acc[p.pubkey.toString()] = p
         return acc
       }, {} as Record<string, PositionWithMeta>)
+      const selectedPositionKeys = Array.from(selectedPositions)
       await unassignProxies({
-        positions: Array.from(selectedPositions).map((p) => positionsByKey[p]),
+        positions: selectedPositionKeys.map((p) => positionsByKey[p]),
         onInstructions: (ixs) =>
-          decideAndExecute(t('gov.transactions.revokeProxy'), ixs),
+          decideAndExecute(
+            t('gov.transactions.revokeProxy'),
+            ixs,
+            selectedPositionKeys,
+            proxyWallet,
+          ),
       })
     }
   }, [

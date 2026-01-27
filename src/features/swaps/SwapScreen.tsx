@@ -624,19 +624,24 @@ const SwapScreen = () => {
           ? new PublicKey(recipient)
           : new PublicKey(currentAccount.solanaAddress)
 
+        let batchId: string | undefined
         if (
           inputMint.equals(HNT_MINT) &&
           outputMint.equals(DC_MINT) &&
           outputAmount
         ) {
-          await submitMintDataCredits({
+          batchId = await submitMintDataCredits({
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             hntAmount: dcToNetworkTokens(new BN(outputAmount))!,
             dcAmount: new BN(outputAmount),
             recipient: recipientAddr,
           })
         } else if (isDevnet) {
-          await submitTreasurySwap(inputMint, inputAmount, recipientAddr)
+          batchId = await submitTreasurySwap(
+            inputMint,
+            inputAmount,
+            recipientAddr,
+          )
         } else {
           const swapTxn = await getSwapTx()
 
@@ -644,7 +649,7 @@ const SwapScreen = () => {
             throw new Error(t('errors.swap.tx'))
           }
 
-          await submitJupiterSwap({
+          batchId = await submitJupiterSwap({
             inputMint,
             inputAmount,
             outputMint,
@@ -659,6 +664,7 @@ const SwapScreen = () => {
         navigation.push('SwappingScreen', {
           tokenA: inputMint.toBase58(),
           tokenB: outputMint.toBase58(),
+          batchId,
         })
       } catch (error) {
         setSwapping(false)

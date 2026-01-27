@@ -93,9 +93,6 @@ export const TransferTokensModal = ({
         setIsSubmitting(false)
         setTransactionError(e.message || t('gov.errors.transferPosition'))
       }
-
-      // error handling on postiion card
-      onClose()
     }
   }
 

@@ -7,15 +7,13 @@ import {
 } from '@helium/helium-react-hooks'
 import { toNumber } from '@helium/spl-utils'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { BoxProps } from '@shopify/restyle'
-import {
-  Connection,
-  VersionedTransaction,
-  sendAndConfirmRawTransaction,
-} from '@solana/web3.js'
+import { Connection, VersionedTransaction } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Theme } from '@theme/theme'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
+import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -58,6 +56,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   )
   const decimals = useMint(autoGasManagementToken)?.info?.decimals
   const { walletSignBottomSheetRef } = useWalletSign()
+  const { submitAndAwait } = useSubmitAndAwait()
   const needsSwap = useMemo(
     () =>
       autoGasManagementToken &&
@@ -115,8 +114,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
         ).data
 
         const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
-        const signed = await anchorProvider.wallet.signTransaction(tx)
-        const serializedTx = Buffer.from(signed.serialize())
+        const serializedTx = Buffer.from(tx.serialize())
         const decision = await walletSignBottomSheetRef.show({
           type: WalletStandardMessageTypes.signTransaction,
           url: '',
@@ -125,10 +123,19 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
           header: t('transactions.autoGasConvertHeader'),
         })
         if (decision) {
-          await sendAndConfirmRawTransaction(
-            anchorProvider.connection,
-            serializedTx,
-          )
+          const walletAddress = anchorProvider.wallet.publicKey.toBase58()
+          const mintAddress = autoGasManagementToken.toBase58()
+          const paramsHash = hashTagParams({
+            wallet: walletAddress,
+            mint: mintAddress,
+            amount: amount || 0,
+          })
+          const tag = `auto-gas-${paramsHash}`
+          const transactionData = toTransactionData([tx], {
+            tag,
+            metadata: { type: 'swap', description: 'Auto Gas Conversion' },
+          })
+          await submitAndAwait({ transactionData })
         }
       }
 
@@ -141,6 +148,10 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
     anchorProvider,
     decimals,
     tokenBalance,
+    submitAndAwait,
+    symbol,
+    t,
+    baseUrl,
   ])
   const swapping = useMemo(
     () => Boolean(autoGasManagementToken && needsSwap && loading),

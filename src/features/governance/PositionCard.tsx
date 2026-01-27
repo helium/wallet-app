@@ -13,16 +13,7 @@ import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
 import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
 import { organizationKey } from '@helium/organization-sdk'
-import {
-  HNT_MINT,
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
-  humanReadable,
-  populateMissingDraftInfo,
-  sendAndConfirmWithRetry,
-  toNumber,
-  toVersionedTx,
-} from '@helium/spl-utils'
+import { HNT_MINT, humanReadable, toNumber } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   SubDaoWithMeta,
@@ -46,10 +37,7 @@ import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
-import {
-  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-  MOBILE_SUB_DAO_KEY,
-} from '@utils/constants'
+import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import {
   daysToSecs,
   getFormattedStringFromDays,
@@ -58,16 +46,13 @@ import {
   secsToDays,
 } from '@utils/dateTools'
 import { shortenAddress } from '@utils/formatting'
-import { getBasePriorityFee } from '@utils/walletApiV2'
 import BN from 'bn.js'
+import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { MessagePreview } from '../../solana/MessagePreview'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
@@ -86,7 +71,8 @@ export const PositionCard = ({
   const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
-  const { walletSignBottomSheetRef } = useWalletSign()
+  const { execute: executeGovernanceTx, isPending: isSubmittingInstructions } =
+    useSubmitInstructions()
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionRef = useRef<
     null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
@@ -191,87 +177,33 @@ export const PositionCard = ({
 
   const { info: registrar = null } = useRegistrar(position.registrar)
 
-  const { anchorProvider } = useSolana()
-
   const decideAndExecute = async ({
     header,
     message,
     instructions,
     sigs = [],
     sequentially = false,
+    actionType,
+    actionParams,
   }: {
     header: string
     message: string
     instructions: TransactionInstruction[] | TransactionInstruction[][]
     sigs?: Keypair[]
     sequentially?: boolean
+    actionType: string
+    actionParams: Record<string, string | number | undefined>
   }) => {
-    if (!anchorProvider || !walletSignBottomSheetRef) return
-
-    const transactions = await batchInstructionsToTxsWithPriorityFee(
-      anchorProvider,
-      instructions,
-      {
-        basePriorityFee: await getBasePriorityFee(),
-      },
-    )
-
-    const populatedDrafts = await Promise.all(
-      transactions.map((tx) =>
-        populateMissingDraftInfo(anchorProvider.connection, tx),
-      ),
-    )
-
-    const asVersionedTx = populatedDrafts.map(toVersionedTx)
-    const decision = await walletSignBottomSheetRef.show({
-      type: WalletStandardMessageTypes.signTransaction,
-      url: '',
+    const paramsHash = hashTagParams(actionParams)
+    const tag = `gov-${actionType}-${paramsHash}`
+    await executeGovernanceTx({
       header,
-      renderer: () => <MessagePreview message={message} />,
-      suppressWarnings: sequentially,
-      serializedTxs: asVersionedTx.map((transaction) =>
-        Buffer.from(transaction.serialize()),
-      ),
+      message,
+      instructions,
+      sigs,
+      sequentially,
+      tag,
     })
-
-    if (decision) {
-      if (transactions.length > 1 && sequentially) {
-        let i = 0
-        // eslint-disable-next-line no-restricted-syntax
-        for (const tx of await anchorProvider.wallet.signAllTransactions(
-          asVersionedTx,
-        )) {
-          const draft = transactions[i]
-          sigs.forEach((sig) => {
-            if (draft.signers?.some((s) => s.publicKey.equals(sig.publicKey))) {
-              tx.sign([sig])
-            }
-          })
-
-          await sendAndConfirmWithRetry(
-            anchorProvider.connection,
-            Buffer.from(tx.serialize()),
-            {
-              skipPreflight: false,
-            },
-            'confirmed',
-          )
-          // eslint-disable-next-line no-plusplus
-          i++
-        }
-      } else {
-        await bulkSendTransactions(
-          anchorProvider,
-          transactions,
-          undefined,
-          undefined,
-          sigs,
-          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-      }
-    } else {
-      throw new Error('User rejected transaction')
-    }
   }
 
   const handleCalcLockupMultiplier = useCallback(
@@ -418,6 +350,10 @@ export const PositionCard = ({
           header: t('gov.transactions.closePosition'),
           message: t('gov.positions.closeMessage'),
           instructions: ixs,
+          actionType: 'close',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+          },
         })
         if (!closingError) {
           refetchState()
@@ -441,6 +377,11 @@ export const PositionCard = ({
             action: isConstant ? 'let it decay' : 'pause it',
           }),
           instructions: ixs,
+          actionType: 'flipLockupKind',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            fromKind: isConstant ? 'constant' : 'decaying',
+          },
         })
 
         if (!flippingError) {
@@ -467,6 +408,11 @@ export const PositionCard = ({
             new: getFormattedStringFromDays(values.lockupPeriodInDays),
           }),
           instructions: ixs,
+          actionType: 'extend',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            lockupPeriodInDays: values.lockupPeriodInDays,
+          },
         })
         if (!extendingError) {
           refetchState()
@@ -493,6 +439,13 @@ export const PositionCard = ({
           }),
           instructions: ixs,
           sigs,
+          actionType: 'split',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            amount: values.amount,
+            lockupKind: values.lockupKind.value,
+            lockupPeriodInDays: values.lockupPeriodInDays,
+          },
         })
 
         if (!splitingError) {
@@ -523,6 +476,12 @@ export const PositionCard = ({
             ),
           }),
           instructions: ixs,
+          actionType: 'transfer',
+          actionParams: {
+            sourcePosition: position.pubkey.toBase58(),
+            targetPosition: targetPosition.pubkey.toBase58(),
+            amount,
+          },
         })
 
         if (!transferingError) {
@@ -543,6 +502,12 @@ export const PositionCard = ({
             subdao: subDao?.dntMetadata.name,
           }),
           instructions: ixs,
+          actionType: 'delegate',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            subDao: subDao?.pubkey.toBase58(),
+            automationEnabled: automationEnabled ? 1 : 0,
+          },
         })
 
         if (!delegatingError) {
@@ -566,6 +531,10 @@ export const PositionCard = ({
           }),
           sequentially: hasClaims,
           instructions: hasClaims ? [...claims, undelegate] : [undelegate],
+          actionType: 'undelegate',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+          },
         })
 
         if (!undelegatingError) {
@@ -584,6 +553,11 @@ export const PositionCard = ({
           header: t('gov.transactions.relinquishPosition'),
           message: t('gov.positions.relinquishVotesMessage'),
           instructions: ixs,
+          actionType: 'relinquish',
+          actionParams: {
+            position: position.pubkey.toBase58(),
+            organization: organization.toBase58(),
+          },
         })
 
         if (!relinquishingError) {
@@ -840,7 +814,8 @@ export const PositionCard = ({
       isFlipping ||
       isDelegating ||
       isUndelegating ||
-      isRelinquishing,
+      isRelinquishing ||
+      isSubmittingInstructions,
     [
       loadingMetadata,
       isExtending,
@@ -851,6 +826,7 @@ export const PositionCard = ({
       isDelegating,
       isUndelegating,
       isRelinquishing,
+      isSubmittingInstructions,
     ],
   )
 

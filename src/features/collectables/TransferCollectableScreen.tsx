@@ -164,10 +164,11 @@ const TransferCollectableScreen = () => {
   const handleTransfer = useCallback(async () => {
     setTransferring(true)
     try {
-      await submitCollectable(collectable, recipient)
+      const batchId = await submitCollectable(collectable, recipient)
       setTransferring(false)
       navigation.navigate('TransferCompleteScreen', {
         collectable,
+        batchId,
       })
     } catch (error) {
       setTransferring(false)

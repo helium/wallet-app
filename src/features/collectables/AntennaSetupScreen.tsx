@@ -71,7 +71,7 @@ const AntennaSetupScreen = () => {
       setTransactionError(undefined)
       setUpdating(true)
       try {
-        await submitUpdateEntityInfo({
+        const batchId = await submitUpdateEntityInfo({
           type: 'IOT',
           entityKey,
           lng: iotLocation[0],
@@ -79,7 +79,7 @@ const AntennaSetupScreen = () => {
           elevation,
           decimalGain: gain,
         })
-        nav.push('SettingUpAntennaScreen')
+        nav.push('SettingUpAntennaScreen', { batchId })
       } catch (error) {
         setUpdating(false)
         Logger.error(error)

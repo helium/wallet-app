@@ -49,13 +49,12 @@ import { Keyboard, Platform } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
-import { useSelector } from 'react-redux'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
+import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import { RootState } from '../../store/rootReducer'
 import { solanaSlice } from '../../store/slices/solanaSlice'
 import { useAppDispatch } from '../../store/store'
 import {
@@ -187,12 +186,17 @@ const PaymentScreen = () => {
     })
   }, [dispatch, balance, mint])
 
-  const { submitPayment } = useSubmitTxn()
-
-  const solanaPayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.payment,
-  )
+  const { submitPayment, paymentMutation } = useSubmitTxn()
   const { symbol } = useMetaplexMetadata(mint)
+
+  // Track batchId when mutation succeeds - only show loading after submission
+  const batchId = paymentMutation.data
+  const { status, isLoading: batchLoading } = useTransactionBatchStatus(
+    batchId || null,
+  )
+
+  // Only show loading after we have a batchId (transaction submitted)
+  const isSubmitting = batchId ? batchLoading || status === 'pending' : false
 
   const { top } = useSafeAreaInsets()
 
@@ -303,6 +307,8 @@ const PaymentScreen = () => {
   )
 
   const handleSubmit = useCallback(async () => {
+    // Reset mutation state on retry
+    paymentMutation.reset()
     try {
       await submitPayment(
         paymentState.payments
@@ -320,7 +326,7 @@ const PaymentScreen = () => {
     } catch (e) {
       logger.error(e)
     }
-  }, [submitPayment, paymentState.mint, paymentState.payments])
+  }, [submitPayment, paymentState.mint, paymentState.payments, paymentMutation])
 
   const insufficientFunds = useMemo((): [
     value: boolean,
@@ -826,9 +832,14 @@ const PaymentScreen = () => {
       </HNTKeyboard>
       <PaymentSubmit
         mint={mint}
-        submitLoading={!!solanaPayment?.loading}
-        submitSucceeded={!!solanaPayment?.success}
-        submitError={solanaPayment?.error}
+        submitLoading={isSubmitting}
+        submitSucceeded={status === 'confirmed'}
+        submitError={
+          paymentMutation.error ||
+          (batchId && status === 'failed'
+            ? new Error('Transaction failed')
+            : undefined)
+        }
         totalBalance={paymentState.totalAmount}
         payments={paymentState.payments}
         feeTokenBalance={paymentState.networkFee}

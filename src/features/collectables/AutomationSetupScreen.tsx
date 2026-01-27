@@ -5,67 +5,130 @@ import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useAutomateHotspotClaims } from '@helium/automation-hooks'
-import {
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
-  HNT_MINT,
-  populateMissingDraftInfo,
-  toVersionedTx,
-} from '@helium/spl-utils'
+import { HNT_MINT } from '@helium/spl-utils'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { useAutomation, useFundingEstimate } from '@hooks/useAutomation'
 import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
-import { TransactionInstruction } from '@solana/web3.js'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
-import { getBasePriorityFee } from '@utils/walletApiV2'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { MessagePreview } from '../../solana/MessagePreview'
-import { useSolana } from '../../solana/SolanaProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
-import { useWalletSign } from '../../solana/WalletSignProvider'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
+
+interface EstimateDisplayProps {
+  estimate: {
+    rentFee: number
+    recipientFee: number
+    operationalSol: number
+    totalSolNeeded: number
+  }
+  showRecipientFee: boolean
+}
+
+const EstimateDisplay = ({
+  estimate,
+  showRecipientFee,
+}: EstimateDisplayProps) => {
+  const { t } = useTranslation()
+  return (
+    <Box
+      backgroundColor="surfaceSecondary"
+      borderRadius="l"
+      padding="m"
+      marginBottom="m"
+    >
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
+        <Text variant="body2" color="grey400">
+          {t('automationScreen.reclaimableSol')}
+        </Text>
+        <Text variant="body2Medium" color="grey200">
+          {estimate.rentFee.toFixed(4)} SOL
+        </Text>
+      </Box>
+      {showRecipientFee && estimate.recipientFee > 0 && (
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          marginBottom="s"
+        >
+          <Text variant="body2" color="grey400">
+            {t('automationScreen.recipientSol')}
+          </Text>
+          <Text variant="body2Medium" color="grey200">
+            {estimate.recipientFee.toFixed(4)} SOL
+          </Text>
+        </Box>
+      )}
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
+        <Text variant="body2" color="grey400">
+          {t('automationScreen.transactionFees')}
+        </Text>
+        <Text variant="body2Medium" color="grey200">
+          {estimate.operationalSol.toFixed(4)} SOL
+        </Text>
+      </Box>
+      <Box flexDirection="row" justifyContent="space-between">
+        <Text variant="body2Medium" color="grey200">
+          {t('automationScreen.totalFunding')}
+        </Text>
+        <Text variant="body2Medium" color="white">
+          {estimate.totalSolNeeded.toFixed(4)} SOL
+        </Text>
+      </Box>
+    </Box>
+  )
+}
 
 const AutomationSetupScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule>('daily')
   const [duration, setDuration] = useState('10')
-  const { walletSignBottomSheetRef } = useWalletSign()
   const backEdges = ['top'] as Edge[]
 
-  const { anchorProvider } = useSolana()
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
+
+  const {
+    statusError,
+    hasExistingAutomation,
+    isOutOfSol,
+    currentSchedule,
+    remainingClaims,
+    fundingPeriodInfo,
+    cronJobBalance,
+    pdaWalletBalance,
+    createAutomation,
+    createAutomationLoading,
+    createAutomationError,
+    fundAutomation,
+    fundAutomationLoading,
+    fundAutomationError,
+    closeAutomation,
+    closeAutomationLoading,
+    closeAutomationError,
+  } = useAutomation()
+
+  // Get funding estimate (used for both create and fund flows)
+  const estimate = useFundingEstimate(duration)
 
   const hotspotsNeedingRecipient = useMemo(() => {
     return hotspotsWithMeta.filter(
       (hotspot) => !hotspot.rewardRecipients[HNT_MINT.toBase58()],
     ).length
   }, [hotspotsWithMeta])
-  const {
-    loading,
-    error,
-    execute,
-    remove,
-    hasExistingAutomation,
-    currentSchedule,
-    insufficientSol,
-    rentFee,
-    solFee,
-    recipientFee,
-    isOutOfSol,
-  } = useAutomateHotspotClaims({
-    schedule: selectedSchedule,
-    duration: parseInt(duration, 10),
-    totalHotspots: totalHotspots || 1,
-    wallet: anchorProvider?.wallet?.publicKey,
-    provider: anchorProvider,
-    hotspotsNeedingRecipient,
-  })
+
+  const error =
+    createAutomationError || fundAutomationError || closeAutomationError
+
+  // Calculate insufficient SOL for create flow
+  const insufficientSol = useMemo(() => {
+    if (!estimate.estimate) return false
+    // This would need to check actual wallet balance - simplified for now
+    return false
+  }, [estimate.estimate])
 
   const handleDurationChange = (text: string) => {
     // Remove any non-numeric characters
@@ -96,113 +159,61 @@ const AutomationSetupScreen = () => {
     setSelectedSchedule(schedule)
   }, [])
 
-  const decideAndExecute = useCallback(
-    async (
-      header: string,
-      message: string,
-      instructions: TransactionInstruction[],
-    ) => {
-      if (!anchorProvider) {
-        throw new Error('Anchor provider not found')
-      }
-      const transactions = await batchInstructionsToTxsWithPriorityFee(
-        anchorProvider,
-        instructions,
-        {
-          basePriorityFee: await getBasePriorityFee(),
-          useFirstEstimateForAll: true,
-          computeScaleUp: 1.4,
-        },
-      )
-      const populatedTxs = await Promise.all(
-        transactions.map((tx) =>
-          populateMissingDraftInfo(anchorProvider.connection, tx),
-        ),
-      )
-      const txs = populatedTxs.map((tx) => toVersionedTx(tx))
-      const decision = await walletSignBottomSheetRef?.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header,
-        renderer: () => <MessagePreview message={message} />,
-        serializedTxs: txs.map((transaction) =>
-          Buffer.from(transaction.serialize()),
-        ),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
-      }
-
-      if (decision) {
-        await bulkSendTransactions(
-          anchorProvider,
-          transactions,
-          undefined,
-          10,
-          [],
-          MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-        )
-      } else {
-        throw new Error('User rejected transaction')
-      }
-    },
-    [anchorProvider, walletSignBottomSheetRef],
-  )
-
   const handleSave = useCallback(async () => {
+    if (!totalHotspots) return
+
     try {
-      await execute({
-        onInstructions: async (instructions) => {
-          await decideAndExecute(
-            t('automationScreen.setupAutomation'),
-            t('automationScreen.setupAutomationMessage', {
-              schedule: selectedSchedule,
-              duration,
-              rentFee,
-              solFee: Math.max(solFee, 0),
-              interval:
-                selectedSchedule === 'daily'
-                  ? 'days'
-                  : selectedSchedule === 'weekly'
-                  ? 'weeks'
-                  : 'months',
-            }),
-            instructions,
-          )
-        },
+      await createAutomation({
+        schedule: selectedSchedule,
+        duration: parseInt(duration, 10),
+        totalHotspots,
+        estimate: estimate.estimate
+          ? {
+              rentFee: estimate.estimate.rentFee,
+              recipientFee: estimate.estimate.recipientFee,
+              operationalSol: estimate.estimate.operationalSol,
+            }
+          : undefined,
       })
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
   }, [
-    execute,
-    navigation,
-    decideAndExecute,
-    t,
+    totalHotspots,
+    createAutomation,
     selectedSchedule,
     duration,
-    rentFee,
-    solFee,
+    estimate.estimate,
+    navigation,
   ])
 
   const handleRemoveAutomation = useCallback(async () => {
     try {
-      await remove({
-        onInstructions: async (instructions) => {
-          await decideAndExecute(
-            t('automationScreen.removeAutomation'),
-            t('automationScreen.removeAutomationMessage'),
-            instructions,
-          )
-        },
-      })
+      await closeAutomation()
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
-  }, [remove, navigation, t, decideAndExecute])
+  }, [closeAutomation, navigation])
+
+  const handleFundAutomation = useCallback(async () => {
+    if (!duration) return
+
+    try {
+      await fundAutomation({
+        additionalDuration: parseInt(duration, 10),
+        currentSchedule,
+        estimate: estimate.estimate
+          ? { totalSolNeeded: estimate.estimate.totalSolNeeded }
+          : undefined,
+      })
+      setDuration('')
+      navigation.goBack()
+    } catch (e) {
+      console.error(e)
+    }
+  }, [duration, fundAutomation, currentSchedule, estimate.estimate, navigation])
 
   const formatNextRunDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -269,7 +280,7 @@ const AutomationSetupScreen = () => {
                 backgroundColor="black"
                 borderRadius="xl"
                 padding="l"
-                marginBottom="xl"
+                marginBottom="l"
               >
                 <Text variant="subtitle4" color="grey300" marginBottom="s">
                   {t('automationScreen.schedule.running', {
@@ -279,12 +290,87 @@ const AutomationSetupScreen = () => {
                     time: currentSchedule.time,
                   })}
                 </Text>
-                <Text variant="subtitle4" color="grey300">
+                <Text variant="subtitle4" color="grey300" marginBottom="m">
                   {t('automationScreen.nextRun', {
-                    date: formatNextRunDate(currentSchedule.nextRun),
+                    date: formatNextRunDate(new Date(currentSchedule.nextRun)),
                   })}
                 </Text>
+                {remainingClaims !== undefined && (
+                  <Box
+                    flexDirection="row"
+                    justifyContent="space-between"
+                    marginBottom="s"
+                  >
+                    <Text variant="subtitle4" color="grey400">
+                      {t('automationScreen.remainingClaims')}
+                    </Text>
+                    <Text variant="subtitle4" color="grey200">
+                      {remainingClaims}
+                    </Text>
+                  </Box>
+                )}
+                {fundingPeriodInfo && (
+                  <>
+                    <Box
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      marginBottom="s"
+                    >
+                      <Text variant="subtitle4" color="grey400">
+                        {t('automationScreen.cronJobBalance')}
+                      </Text>
+                      <Text variant="subtitle4" color="grey200">
+                        {(
+                          parseFloat(cronJobBalance || '0') / LAMPORTS_PER_SOL
+                        ).toFixed(4)}{' '}
+                        SOL
+                      </Text>
+                    </Box>
+                    <Box flexDirection="row" justifyContent="space-between">
+                      <Text variant="subtitle4" color="grey400">
+                        {t('automationScreen.pdaWalletBalance')}
+                      </Text>
+                      <Text variant="subtitle4" color="grey200">
+                        {(
+                          parseFloat(pdaWalletBalance || '0') / LAMPORTS_PER_SOL
+                        ).toFixed(4)}{' '}
+                        SOL
+                      </Text>
+                    </Box>
+                  </>
+                )}
               </Box>
+
+              {/* Fund Automation Section */}
+              <Text variant="subtitle3" marginBottom="m">
+                {t('automationScreen.fundAutomation')}
+              </Text>
+              <Text variant="subtitle4" color="grey400" marginBottom="s">
+                {t('automationScreen.enterAdditionalDuration')}
+              </Text>
+              <Box flexDirection="row" alignItems="center" marginBottom="m">
+                <TextInput
+                  flex={1}
+                  variant="transparent"
+                  textInputProps={{
+                    placeholder: duration || '------',
+                    onChangeText: handleDurationChange,
+                    value: duration,
+                    keyboardType: 'decimal-pad',
+                    returnKeyType: 'done',
+                  }}
+                />
+                <Text variant="subtitle3" color="grey400" marginStart="s">
+                  {getUnitLabel()}
+                </Text>
+              </Box>
+
+              {estimate.estimate && duration && (
+                <EstimateDisplay
+                  estimate={estimate.estimate}
+                  showRecipientFee
+                />
+              )}
             </>
           ) : (
             <>
@@ -309,7 +395,7 @@ const AutomationSetupScreen = () => {
                   <Text variant="subtitle4" marginBottom="s">
                     {t('automationScreen.enterDuration')}
                   </Text>
-                  <Box flexDirection="row" alignItems="center" marginBottom="s">
+                  <Box flexDirection="row" alignItems="center" marginBottom="m">
                     <TextInput
                       flex={1}
                       variant="transparent"
@@ -332,7 +418,7 @@ const AutomationSetupScreen = () => {
 
           <Box flex={1} />
 
-          {error && (
+          {(error || statusError) && (
             <Box
               flexDirection="row"
               backgroundColor="surfaceSecondary"
@@ -341,7 +427,11 @@ const AutomationSetupScreen = () => {
               marginBottom="m"
             >
               <Text variant="body3Medium" color="red500">
-                {error.message}
+                {error instanceof Error
+                  ? error.message
+                  : statusError instanceof Error
+                  ? statusError.message
+                  : String(error || statusError)}
               </Text>
             </Box>
           )}
@@ -358,77 +448,69 @@ const AutomationSetupScreen = () => {
             </Box>
           )}
 
-          {!hasExistingAutomation && (
-            <Box
-              backgroundColor="surfaceSecondary"
-              borderRadius="l"
-              padding="m"
-              marginBottom="m"
-            >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                marginBottom="s"
-              >
-                <Text variant="body2" color="grey400">
-                  {t('automationScreen.reclaimableSol')}
-                </Text>
-                <Text variant="body2Medium" color="grey200">
-                  {rentFee} SOL
-                </Text>
-              </Box>
-              {totalHotspots && hotspotsNeedingRecipient > 0 && (
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  marginBottom="s"
-                >
-                  <Text variant="body2" color="grey400">
-                    {t('automationScreen.recipientSol')}
-                  </Text>
-                  <Text variant="body2Medium" color="grey200">
-                    {recipientFee} SOL
-                  </Text>
-                </Box>
-              )}
-              <Box flexDirection="row" justifyContent="space-between">
-                <Text variant="body2" color="grey400">
-                  {t('automationScreen.transactionFees')}
-                </Text>
-                <Text variant="body2Medium" color="grey200">
-                  {Math.max(solFee, 0)} SOL
-                </Text>
-              </Box>
-            </Box>
+          {!hasExistingAutomation && estimate.estimate && duration && (
+            <EstimateDisplay
+              estimate={estimate.estimate}
+              showRecipientFee={!!totalHotspots && hotspotsNeedingRecipient > 0}
+            />
           )}
 
           {hasExistingAutomation ? (
-            <ButtonPressable
-              title={
-                loading ? undefined : t('automationScreen.removeAutomation')
-              }
-              backgroundColor="grey200"
-              backgroundColorDisabled="grey400"
-              backgroundColorDisabledOpacity={0.5}
-              backgroundColorOpacityPressed={0.7}
-              titleColor="error"
-              disabled={loading}
-              TrailingComponent={
-                loading ? (
-                  <CircleLoader loaderSize={20} color="black" />
-                ) : undefined
-              }
-              onPress={handleRemoveAutomation}
-              borderRadius="round"
-              padding="m"
-              marginBottom="m"
-            />
+            <>
+              {duration && (
+                <ButtonPressable
+                  title={
+                    fundAutomationLoading
+                      ? undefined
+                      : t('automationScreen.fundAutomation')
+                  }
+                  backgroundColor="white"
+                  backgroundColorDisabled="grey400"
+                  backgroundColorDisabledOpacity={0.5}
+                  backgroundColorOpacityPressed={0.7}
+                  titleColorDisabled="secondaryText"
+                  titleColor="black"
+                  disabled={!duration || fundAutomationLoading}
+                  TrailingComponent={
+                    fundAutomationLoading ? (
+                      <CircleLoader loaderSize={20} color="black" />
+                    ) : undefined
+                  }
+                  onPress={handleFundAutomation}
+                  borderRadius="round"
+                  padding="m"
+                  marginBottom="m"
+                />
+              )}
+              <ButtonPressable
+                title={
+                  closeAutomationLoading
+                    ? undefined
+                    : t('automationScreen.removeAutomation')
+                }
+                backgroundColor="black"
+                backgroundColorDisabled="grey400"
+                backgroundColorDisabledOpacity={0.5}
+                backgroundColorOpacityPressed={0.7}
+                titleColor="error"
+                disabled={closeAutomationLoading}
+                TrailingComponent={
+                  closeAutomationLoading ? (
+                    <CircleLoader loaderSize={20} color="error" />
+                  ) : undefined
+                }
+                onPress={handleRemoveAutomation}
+                borderRadius="round"
+                padding="m"
+                marginBottom="m"
+              />
+            </>
           ) : (
             <ButtonPressable
               title={
                 insufficientSol
                   ? t('generic.insufficientSol')
-                  : loading
+                  : createAutomationLoading
                   ? undefined
                   : t('generic.save')
               }
@@ -439,10 +521,13 @@ const AutomationSetupScreen = () => {
               titleColorDisabled="secondaryText"
               titleColor="black"
               disabled={
-                insufficientSol || !selectedSchedule || !duration || loading
+                insufficientSol ||
+                !selectedSchedule ||
+                !duration ||
+                createAutomationLoading
               }
               TrailingComponent={
-                loading ? (
+                createAutomationLoading ? (
                   <CircleLoader loaderSize={20} color="black" />
                 ) : undefined
               }

@@ -17,8 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { HomeNavigationProp } from '../home/homeTypes'
 import { RootState } from '../../store/rootReducer'
+import { HomeNavigationProp } from '../home/homeTypes'
 
 type Props = {
   onPressWallet: () => void
@@ -113,7 +113,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
         </Text>
         <CarotDown color={primaryText} />
       </TouchableOpacityBox>
-      <Box flexDirection="row">
+      <Box flexDirection="row" alignItems="center">
         <Box position="relative">
           <IconPressedContainer onPress={navToNotifs}>
             <NotificationsBellIco color="white" />

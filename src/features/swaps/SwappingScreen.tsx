@@ -17,12 +17,11 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 import 'text-encoding-polyfill'
 import ArrowRight from '../../assets/images/arrowRight.svg'
 import BackArrow from '../../assets/images/backArrow.svg'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
-import { RootState } from '../../store/rootReducer'
+import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { SwapStackParamList } from './swapTypes'
 
 type Route = RouteProp<SwapStackParamList, 'SwappingScreen'>
@@ -34,13 +33,23 @@ const SwappingScreen = () => {
   const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
 
   const { t } = useTranslation()
-  const { tokenA, tokenB } = route.params
+  const { tokenA, tokenB, batchId } = route.params
   const { json: jsonA } = useMetaplexMetadata(usePublicKey(tokenA))
   const { json: jsonB } = useMetaplexMetadata(usePublicKey(tokenB))
 
-  const solanaPayment = useSelector(
-    (reduxState: RootState) => reduxState.solana.payment,
-  )
+  const {
+    status,
+    error: batchError,
+    isLoading,
+  } = useTransactionBatchStatus(batchId || null)
+
+  const hasError =
+    batchError ||
+    status === 'failed' ||
+    status === 'expired' ||
+    status === 'partial'
+  const isConfirmed = status === 'confirmed'
+  const isPending = isLoading || status === 'pending'
 
   const onReturn = useCallback(() => {
     // Reset Swap stack to first screen
@@ -87,7 +96,7 @@ const SwappingScreen = () => {
       >
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           {TokensSwappedContainer}
-          {solanaPayment && !solanaPayment.error && !solanaPayment.loading && (
+          {isConfirmed && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -107,7 +116,7 @@ const SwappingScreen = () => {
             </Animated.View>
           )}
 
-          {solanaPayment?.error && (
+          {hasError && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -129,13 +138,13 @@ const SwappingScreen = () => {
               >
                 {parseTransactionError(
                   solBalance,
-                  solanaPayment?.error?.message,
+                  batchError?.message || 'Transaction failed',
                 )}
               </Text>
             </Animated.View>
           )}
 
-          {!solanaPayment && (
+          {!batchId && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}
@@ -152,7 +161,7 @@ const SwappingScreen = () => {
             </Animated.View>
           )}
 
-          {solanaPayment && solanaPayment.loading && (
+          {isPending && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}

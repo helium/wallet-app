@@ -14,12 +14,8 @@ import {
   useProposalConfig,
   useResolutionSettings,
 } from '@helium/modular-governance-hooks'
-import {
-  batchInstructionsToTxsWithPriorityFee,
-  bulkSendTransactions,
-  populateMissingDraftInfo,
-  toVersionedTx,
-} from '@helium/spl-utils'
+import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import { hashTagParams } from '@utils/transactionUtils'
 import {
   useRegistrar,
   useRelinquishVote,
@@ -30,11 +26,9 @@ import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
-import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '@utils/constants'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import { getDerivedProposalState } from '@utils/governanceUtils'
-import { getBasePriorityFee } from '@utils/walletApiV2'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -42,10 +36,6 @@ import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { MessagePreview } from '../../solana/MessagePreview'
-import { useSolana } from '../../solana/SolanaProvider'
-import { useWalletSign } from '../../solana/WalletSignProvider'
-import { WalletStandardMessageTypes } from '../../solana/walletSignBottomSheetTypes'
 import { VoteOption } from './VoteOption'
 import {
   GovernanceNavigationProp,
@@ -68,8 +58,7 @@ export const ProposalScreen = () => {
     () => new PublicKey(route.params.proposal),
     [route.params.proposal],
   )
-  const { anchorProvider } = useSolana()
-  const { walletSignBottomSheetRef } = useWalletSign()
+  const { execute: executeGovernanceTx } = useSubmitInstructions()
   const { mint, loading, votingPower } = useGovernance()
   const handleBrowseProxies = useCallback(() => {
     navigation.navigate('ProxiesScreen', {
@@ -181,51 +170,23 @@ export const ProposalScreen = () => {
     header,
     message,
     instructions,
+    actionType,
+    actionParams,
   }: {
     header: string
     message: string
     instructions: TransactionInstruction[] | TransactionInstruction[][]
+    actionType: string
+    actionParams: Record<string, string | number | undefined>
   }) => {
-    if (!anchorProvider || !walletSignBottomSheetRef) return
-
-    const transactions = await batchInstructionsToTxsWithPriorityFee(
-      anchorProvider,
-      instructions,
-      {
-        basePriorityFee: await getBasePriorityFee(),
-        useFirstEstimateForAll: true,
-        computeScaleUp: 1.5,
-      },
-    )
-    const populatedTxs = await Promise.all(
-      transactions.map((tx) =>
-        populateMissingDraftInfo(anchorProvider.connection, tx),
-      ),
-    )
-    const txs = populatedTxs.map((tx) => toVersionedTx(tx))
-
-    const decision = await walletSignBottomSheetRef.show({
-      type: WalletStandardMessageTypes.signTransaction,
-      url: '',
+    const paramsHash = hashTagParams(actionParams)
+    const tag = `proposal-${actionType}-${paramsHash}`
+    await executeGovernanceTx({
       header,
-      renderer: () => <MessagePreview message={message} />,
-      serializedTxs: txs.map((transaction) =>
-        Buffer.from(transaction.serialize()),
-      ),
+      message,
+      instructions,
+      tag,
     })
-
-    if (decision) {
-      await bulkSendTransactions(
-        anchorProvider,
-        transactions,
-        undefined,
-        10,
-        [],
-        MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-      )
-    } else {
-      throw new Error('User rejected transaction')
-    }
   }
 
   const handleVote = (choice: VoteChoiceWithMeta) => async () => {
@@ -238,6 +199,11 @@ export const ProposalScreen = () => {
             header: t('gov.transactions.castVote'),
             message: t('gov.proposals.castVoteFor', { choice: choice.name }),
             instructions: ixs,
+            actionType: 'vote',
+            actionParams: {
+              proposal: proposalKey.toBase58(),
+              choice: choice.index,
+            },
           }),
       })
     }
@@ -255,6 +221,11 @@ export const ProposalScreen = () => {
               choice: choice.name,
             }),
             instructions,
+            actionType: 'relinquish',
+            actionParams: {
+              proposal: proposalKey.toBase58(),
+              choice: choice.index,
+            },
           }),
       })
     }
