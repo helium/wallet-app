@@ -81,7 +81,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
         canPreventDefault: true,
       })
 
-      // Check if activty tab is selected and has new transactions
+      // Check if activity tab is selected and has new transactions
       if (selectedValue === 'activity' && hasNewTransactions) {
         resetNewTransactions()
       }

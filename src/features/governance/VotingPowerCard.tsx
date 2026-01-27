@@ -185,7 +185,7 @@ export const VotingPowerCard = ({
                               myVotingPower &&
                               amountLocked &&
                               mintAcc &&
-                              // Add 2 decimals to the mulitiplier
+                              // Add 2 decimals to the multiplier
                               humanReadable(
                                 myVotingPower
                                   .mul(new BN(100))
