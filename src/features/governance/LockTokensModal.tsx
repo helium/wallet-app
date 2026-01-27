@@ -240,6 +240,11 @@ export const LockTokensModal = ({
     } catch (e: any) {
       setIsSubmitting(false)
       setTransactionError(e.message || t('gov.errors.lockTokens'))
+
+      // error handling handled on position card
+      if (['split', 'extend'].includes(mode)) {
+        onClose()
+      }
     }
   }
 
