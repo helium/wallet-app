@@ -5,6 +5,7 @@ import Plus from '@assets/images/plus.svg'
 import DownArrow from '@assets/images/importIcon.svg'
 import Ledger from '@assets/images/ledger.svg'
 import Keystone from '@assets/images/keystoneLogo.svg'
+import Terminal from '@assets/images/terminal.svg'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import Text from '@components/Text'
@@ -16,9 +17,16 @@ import FinePrint from '@components/FinePrint'
 import NetTypeSegment from './NetTypeSegment'
 import { OnboardingNavigationProp } from './onboardingTypes'
 
-const CreateImportAccountScreen = () => {
+type NavigationProp = OnboardingNavigationProp | any
+
+type Props = {
+  navigation?: NavigationProp
+}
+
+const CreateImportAccountScreen = ({ navigation: propNavigation }: Props) => {
   const { t } = useTranslation()
-  const navigation = useNavigation<OnboardingNavigationProp>()
+  const defaultNavigation = useNavigation<OnboardingNavigationProp>()
+  const navigation = propNavigation || defaultNavigation
   const colors = useColors()
   const { bottom } = useSafeAreaInsets()
 
@@ -36,6 +44,10 @@ const CreateImportAccountScreen = () => {
 
   const connectKeystone = useCallback(() => {
     navigation.navigate('KeystoneNavigator')
+  }, [navigation])
+
+  const connectCLI = useCallback(() => {
+    navigation.navigate('CLIAccountNavigator')
   }, [navigation])
 
   return (
@@ -77,6 +89,15 @@ const CreateImportAccountScreen = () => {
               {t('accountSetup.createImport.ledger')}
             </Text>
             <Ledger height={20} width={20} color={colors.primaryText} />
+          </Box>
+        </TouchableOpacityBox>
+        <Box height={1} backgroundColor="primaryBackground" />
+        <TouchableOpacityBox onPress={connectCLI} padding="lm">
+          <Box flexDirection="row" alignItems="center">
+            <Text variant="subtitle1" flex={1}>
+              {t('accountSetup.createImport.cli')}
+            </Text>
+            <Terminal height={20} width={20} color={colors.primaryText} />
           </Box>
         </TouchableOpacityBox>
       </Box>

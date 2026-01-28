@@ -5,7 +5,7 @@ import { Animated, FlatList } from 'react-native'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import CloseButton from '@components/CloseButton'
+import BackButton from '@components/BackButton'
 import { Color } from '@theme/theme'
 import { useColors, usePaddingStyle } from '@theme/themeHooks'
 import { upperCase } from 'lodash'
@@ -194,8 +194,8 @@ const ConfirmWordsScreen: React.FC<Props> = ({
 
   return (
     <Box flex={1} backgroundColor="secondaryBackground">
-      <Box width="100%" alignItems="flex-end">
-        <CloseButton onPress={onClose} />
+      <Box width="100%" alignItems="flex-start">
+        <BackButton onPress={onClose} />
       </Box>
       <KeyboardAwareScrollView
         extraScrollHeight={80}

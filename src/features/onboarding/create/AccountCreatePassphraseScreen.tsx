@@ -1,10 +1,10 @@
-import Close from '@assets/images/close.svg'
 import InfoError from '@assets/images/infoError.svg'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import RevealWords from '@components/RevealWords'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import BackButton from '@components/BackButton'
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_DERIVATION_PATH, createKeypair } from '@storage/secureStorage'
@@ -61,13 +61,7 @@ const AccountCreatePassphraseScreen = () => {
   const ListHeaderComponent = useMemo(() => {
     return (
       <>
-        <TouchableOpacityBox
-          padding="l"
-          onPress={navToTop}
-          alignItems="flex-end"
-        >
-          <Close color={colors.primaryText} height={16} width={16} />
-        </TouchableOpacityBox>
+        <BackButton onPress={navToTop} paddingHorizontal="l" />
         <Box justifyContent="center" alignItems="center" marginBottom="xl">
           <InfoError />
         </Box>

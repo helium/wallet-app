@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo } from 'react'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { Image } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -8,15 +8,12 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import TextTransform from '@components/TextTransform'
 import SafeAreaBox from '@components/SafeAreaBox'
-import CloseButton from '@components/CloseButton'
+import BackButton from '@components/BackButton'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { useOnboarding } from '../OnboardingProvider'
-import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigatorTypes'
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
-
-type Route = RouteProp<MultiAccountStackParamList, 'AccountImportStartScreen'>
 
 const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const { setOnboardingData } = useOnboarding()
@@ -25,7 +22,6 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const addNewAcctNav = useNavigation<AddNewAccountNavigationProp>()
   const { hasAccounts, reachedAccountLimit } = useAccountStorage()
   const { t } = useTranslation()
-  const { params } = useRoute<Route>()
 
   useEffect(() => {
     return navigation.addListener('focus', () => {
@@ -71,8 +67,8 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
   const edges = useMemo((): Edge[] => ['bottom'], [])
 
   const isInline = useMemo(() => {
-    return inline || params?.inline
-  }, [inline, params])
+    return inline
+  }, [inline])
 
   return (
     <SafeAreaBox
@@ -82,7 +78,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       backgroundColor="secondaryBackground"
     >
       {isInline ? null : (
-        <CloseButton alignSelf="flex-end" padding="l" onPress={onClose} />
+        <BackButton onPress={onClose} paddingHorizontal="l" />
       )}
       <Box
         flex={1}

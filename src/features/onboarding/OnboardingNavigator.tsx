@@ -9,6 +9,7 @@ import CreateImportAccountScreen from './CreateImportAccountScreen'
 import CreateAccountNavigator from './create/CreateAccountNavigator'
 import ImportAccountNavigator from './import/ImportAccountNavigator'
 import ImportPrivateKey from './import/ImportPrivateKey'
+import CLIAccountNavigator from './cli-import/CLIAccountNavigator'
 import { OnboardingStackParamList } from './onboardingTypes'
 import KeystoneNavigator from '../keystone/KeystoneNavigator'
 
@@ -54,6 +55,11 @@ const OnboardingNavigator = () => {
       <OnboardingStack.Screen
         name="KeystoneNavigator"
         component={KeystoneNavigator}
+        options={subScreenOptions}
+      />
+      <OnboardingStack.Screen
+        name="CLIAccountNavigator"
+        component={CLIAccountNavigator}
         options={subScreenOptions}
       />
       <OnboardingStack.Screen
