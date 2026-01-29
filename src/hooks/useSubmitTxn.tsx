@@ -1,3 +1,4 @@
+import type { AnchorProvider, Program } from '@coral-xyz/anchor'
 import * as distributorOracle from '@helium/distributor-oracle'
 import {
   decodeEntityKey,
@@ -13,45 +14,43 @@ import {
   populateMissingDraftInfo,
   toVersionedTx,
 } from '@helium/spl-utils'
-import type { AnchorProvider, Program } from '@coral-xyz/anchor'
-import { getMint } from '@solana/spl-token'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { WrappedConnection } from '@utils/WrappedConnection'
+import { ellipsizeAddress } from '@utils/accountUtils'
 import {
   DAO_KEY,
   HNT_LAZY_KEY,
   IOT_LAZY_KEY,
-  MOBILE_LAZY_KEY,
   MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
   Mints,
+  MOBILE_LAZY_KEY,
 } from '@utils/constants'
-import { toAsset, getCachedKeyToAssets } from '@utils/solanaUtils'
-import { WrappedConnection } from '@utils/WrappedConnection'
+import { humanReadable } from '@utils/formatting'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
+import { getCachedKeyToAssets, toAsset } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
-import { ellipsizeAddress } from '@utils/accountUtils'
-import { humanReadable } from '@utils/formatting'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { SwapPreview } from '../solana/SwapPreview'
 import { CollectablePreview } from '../solana/CollectablePreview'
 import { MessagePreview } from '../solana/MessagePreview'
 import { PaymentPreivew } from '../solana/PaymentPreview'
 import { useSolana } from '../solana/SolanaProvider'
+import { SwapPreview } from '../solana/SwapPreview'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
-import {
-  signTransactionData,
-  toTransactionData,
-  hashTagParams,
-} from '../utils/transactionUtils'
 import {
   Collectable,
   CompressedNFT,
   HotspotWithPendingRewards,
 } from '../types/solana'
+import {
+  hashTagParams,
+  signTransactionData,
+  toTransactionData,
+} from '../utils/transactionUtils'
 
 // Helper to get entityKey from a CompressedNFT
 async function getEntityKeyFromCompressedNFT(
@@ -145,30 +144,18 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      // Get mint decimals
-      const mintInfo = await getMint(anchorProvider.connection, mint)
-
       // For each payment, get transaction data from API
       const txnDataPromises = payments.map(async (payment) => {
         // Convert BN amount to decimal string
         const amountStr = payment.balanceAmount.toString()
-        const paddedAmount =
-          amountStr.length < mintInfo.decimals
-            ? amountStr.padStart(mintInfo.decimals, '0')
-            : amountStr
-        const integerPart =
-          paddedAmount.length > mintInfo.decimals
-            ? paddedAmount.slice(0, paddedAmount.length - mintInfo.decimals)
-            : '0'
-        const decimalPart = paddedAmount.slice(-mintInfo.decimals)
-        const decimalAmount = `${integerPart}.${decimalPart}`
-
         const { transactionData } = await client.tokens.transfer({
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           walletAddress: currentAccount.solanaAddress!,
-          mint: mint.toBase58(),
+          tokenAmount: {
+            amount: amountStr,
+            mint: mint.toBase58(),
+          },
           destination: payment.payee,
-          amount: decimalAmount,
-          decimals: mintInfo.decimals,
         })
         return transactionData
       })
