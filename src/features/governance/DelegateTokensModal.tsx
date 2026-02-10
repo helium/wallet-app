@@ -15,22 +15,21 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform, ScrollView, Switch } from 'react-native'
+import { Platform, ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SplitBar } from './SplitBar'
+import { AutomationFeesWidget } from './components/AutomationFeesWidget'
 
 export const DelegateTokensModal = ({
   onClose,
   onSubmit,
   onSetAutomationEnabled,
   automationEnabled,
-  solFees,
-  prepaidTxFees,
+  estimatedSolFee,
   insufficientBalance,
   subDao: selectedSubDao,
   setSubDao,
@@ -39,8 +38,7 @@ export const DelegateTokensModal = ({
   onSubmit: () => Promise<void>
   onSetAutomationEnabled: (enabled: boolean) => void
   automationEnabled: boolean
-  solFees: number
-  prepaidTxFees: number
+  estimatedSolFee?: string
   insufficientBalance: boolean
   subDao: SubDaoWithMeta | null
   setSubDao: (subDao: SubDaoWithMeta | null) => void
@@ -51,7 +49,6 @@ export const DelegateTokensModal = ({
   const [transactionError, setTransactionError] = useState()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const { voteService } = useGovernance()
-  const { primaryText, primaryBackground } = useColors()
   const { data: revData } = useDataBurnSplit({
     voteService,
   })
@@ -306,65 +303,11 @@ export const DelegateTokensModal = ({
                 </Text>
               </Box>
             )}
-            <Box
-              backgroundColor="surfaceSecondary"
-              borderRadius="l"
-              padding="m"
-              marginTop="m"
-              marginBottom="m"
-            >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                marginBottom="s"
-              >
-                <Box flex={1}>
-                  <Text variant="body2" color="grey400">
-                    {t('gov.automation.enableAutomation')}
-                  </Text>
-                </Box>
-                <Switch
-                  value={automationEnabled}
-                  onValueChange={onSetAutomationEnabled}
-                  thumbColor={
-                    Platform.OS === 'android' ? primaryText : primaryBackground
-                  }
-                  style={
-                    Platform.OS === 'android'
-                      ? undefined
-                      : {
-                          transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-                          marginRight: -8,
-                        }
-                  }
-                />
-              </Box>
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                marginBottom="s"
-              >
-                <Text variant="body2" color="grey400">
-                  {t('gov.automation.rentFees')}
-                </Text>
-                <Text variant="body2Medium" color="grey200">
-                  {solFees.toFixed(6)} SOL
-                </Text>
-              </Box>
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                marginBottom="s"
-              >
-                <Text variant="body2" color="grey400">
-                  {t('gov.automation.prepaidTxFees')}
-                </Text>
-                <Text variant="body2Medium" color="grey200">
-                  {prepaidTxFees.toFixed(6)} SOL
-                </Text>
-              </Box>
-            </Box>
+            <AutomationFeesWidget
+              automationEnabled={automationEnabled}
+              onSetAutomationEnabled={onSetAutomationEnabled}
+              estimatedSolFee={estimatedSolFee}
+            />
             <Box flexDirection="row" paddingTop="m">
               <ButtonPressable
                 flex={1}

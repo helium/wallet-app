@@ -14,15 +14,17 @@ import {
   useProposalConfig,
   useResolutionSettings,
 } from '@helium/modular-governance-hooks'
-import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
-import { hashTagParams } from '@utils/transactionUtils'
 import {
   useRegistrar,
   useRelinquishVote,
   useVote,
 } from '@helium/voter-stake-registry-hooks'
+import {
+  useVoteMutation,
+  useRelinquishVoteMutation,
+} from '@hooks/useGovernanceMutations'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
@@ -58,8 +60,17 @@ export const ProposalScreen = () => {
     () => new PublicKey(route.params.proposal),
     [route.params.proposal],
   )
-  const { execute: executeGovernanceTx } = useSubmitInstructions()
-  const { mint, loading, votingPower } = useGovernance()
+  const { mint, loading, votingPower, positions } = useGovernance()
+  const {
+    mutate: castVote,
+    isPending: voteMutPending,
+    error: voteError,
+  } = useVoteMutation()
+  const {
+    mutate: doRelinquish,
+    isPending: relinquishMutPending,
+    error: relinquishError,
+  } = useRelinquishVoteMutation()
   const handleBrowseProxies = useCallback(() => {
     navigation.navigate('ProxiesScreen', {
       mint: mint.toBase58(),
@@ -97,21 +108,8 @@ export const ProposalScreen = () => {
     }
   }, [hasSeen])
 
-  const {
-    didVote,
-    canVote,
-    vote,
-    loading: voting,
-    error: voteErr,
-    voters,
-  } = useVote(proposalKey)
-
-  const {
-    canRelinquishVote,
-    relinquishVote,
-    loading: relinquishing,
-    error: relErr,
-  } = useRelinquishVote(proposalKey)
+  const { didVote, canVote, voters } = useVote(proposalKey)
+  const { canRelinquishVote } = useRelinquishVote(proposalKey)
 
   const { error: markdownErr, result: markdown } = useAsync(async () => {
     if (proposal && proposal.uri) {
@@ -127,16 +125,16 @@ export const ProposalScreen = () => {
       return markdownErr.message || t('gov.errors.markdown')
     }
 
-    if (voteErr) {
-      return voteErr.message || t('gov.errors.castVote')
+    if (voteError) {
+      return voteError.message || t('gov.errors.castVote')
     }
 
-    if (relErr) {
-      return relErr.message || t('gov.errors.relinquishVote')
+    if (relinquishError) {
+      return relinquishError.message || t('gov.errors.relinquishVote')
     }
 
     return undefined
-  }, [t, voteErr, relErr, markdownErr])
+  }, [t, voteError, relinquishError, markdownErr])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
@@ -166,68 +164,47 @@ export const ProposalScreen = () => {
     [proposal],
   )
 
-  const decideAndExecute = async ({
-    header,
-    message,
-    instructions,
-    actionType,
-    actionParams,
-  }: {
-    header: string
-    message: string
-    instructions: TransactionInstruction[] | TransactionInstruction[][]
-    actionType: string
-    actionParams: Record<string, string | number | undefined>
-  }) => {
-    const paramsHash = hashTagParams(actionParams)
-    const tag = `proposal-${actionType}-${paramsHash}`
-    await executeGovernanceTx({
-      header,
-      message,
-      instructions,
-      tag,
-    })
-  }
+  const positionMints = useMemo(
+    () =>
+      positions
+        ?.filter((p) => !p.isProxiedToMe)
+        .map((p) => p.mint.toBase58()) || [],
+    [positions],
+  )
 
   const handleVote = (choice: VoteChoiceWithMeta) => async () => {
     if (canVote(choice.index)) {
       setCurrVote(choice.index)
-      await vote({
-        choice: choice.index,
-        onInstructions: (ixs) =>
-          decideAndExecute({
-            header: t('gov.transactions.castVote'),
-            message: t('gov.proposals.castVoteFor', { choice: choice.name }),
-            instructions: ixs,
-            actionType: 'vote',
-            actionParams: {
-              proposal: proposalKey.toBase58(),
-              choice: choice.index,
-            },
-          }),
-      })
+      await castVote(
+        {
+          proposalKey: proposalKey.toBase58(),
+          positionMints,
+          choice: choice.index,
+        },
+        {
+          header: t('gov.transactions.castVote'),
+          message: t('gov.proposals.castVoteFor', { choice: choice.name }),
+        },
+      )
     }
   }
 
   const handleRelinquish = (choice: VoteChoiceWithMeta) => async () => {
     if (canRelinquishVote(choice.index)) {
       setCurrVote(choice.index)
-      relinquishVote({
-        choice: choice.index,
-        onInstructions: async (instructions) =>
-          decideAndExecute({
-            header: t('gov.transactions.relinquishVote'),
-            message: t('gov.proposals.relinquishVoteFor', {
-              choice: choice.name,
-            }),
-            instructions,
-            actionType: 'relinquish',
-            actionParams: {
-              proposal: proposalKey.toBase58(),
-              choice: choice.index,
-            },
+      await doRelinquish(
+        {
+          proposalKey: proposalKey.toBase58(),
+          positionMints,
+          choice: choice.index,
+        },
+        {
+          header: t('gov.transactions.relinquishVote'),
+          message: t('gov.proposals.relinquishVoteFor', {
+            choice: choice.name,
           }),
-      })
+        },
+      )
     }
   }
 
@@ -243,7 +220,7 @@ export const ProposalScreen = () => {
 
   const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
   const noVotingPower = !loading && (!votingPower || votingPower.isZero())
-  const voted = !voting && didVote?.some((n) => n)
+  const voted = !voteMutPending && didVote?.some((n) => n)
   const showVoteResults =
     derivedState !== 'cancelled' &&
     (voted ||
@@ -521,7 +498,8 @@ export const ProposalScreen = () => {
                             voters={voters?.[r.index] || []}
                             key={r.name}
                             voting={
-                              currVote === r.index && (voting || relinquishing)
+                              currVote === r.index &&
+                              (voteMutPending || relinquishMutPending)
                             }
                             option={r}
                             didVote={didVote?.[r.index]}

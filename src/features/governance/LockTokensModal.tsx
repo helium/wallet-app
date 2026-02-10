@@ -98,8 +98,7 @@ export const LockTokensModal = ({
   onSubmit,
   automationEnabled,
   onSetAutomationEnabled,
-  solFees,
-  prepaidTxFees,
+  estimatedSolFee,
   insufficientBalance = false,
 }: {
   insufficientBalance: boolean
@@ -113,8 +112,7 @@ export const LockTokensModal = ({
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
   automationEnabled: boolean
   onSetAutomationEnabled: (enabled: boolean) => void
-  solFees: number
-  prepaidTxFees: number
+  estimatedSolFee?: string
 }) => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
@@ -749,8 +747,7 @@ export const LockTokensModal = ({
                     <AutomationFeesWidget
                       automationEnabled={automationEnabled}
                       onSetAutomationEnabled={onSetAutomationEnabled}
-                      solFees={solFees}
-                      prepaidTxFees={prepaidTxFees}
+                      estimatedSolFee={estimatedSolFee}
                     />
                   </>
                 )}

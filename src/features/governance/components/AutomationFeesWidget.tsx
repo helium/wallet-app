@@ -8,15 +8,13 @@ import React from 'react'
 type Props = {
   automationEnabled: boolean
   onSetAutomationEnabled: (enabled: boolean) => void
-  solFees: number
-  prepaidTxFees: number
+  estimatedSolFee?: string
 }
 
 export const AutomationFeesWidget = ({
   automationEnabled,
   onSetAutomationEnabled,
-  solFees,
-  prepaidTxFees,
+  estimatedSolFee,
 }: Props) => {
   const { t } = useTranslation()
   const { primaryText, primaryBackground } = useColors()
@@ -56,22 +54,20 @@ export const AutomationFeesWidget = ({
           }
         />
       </Box>
-      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
-        <Text variant="body2" color="grey400">
-          {t('gov.automation.rentFees')}
-        </Text>
-        <Text variant="body2Medium" color="grey200">
-          {solFees.toFixed(6)} SOL
-        </Text>
-      </Box>
-      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
-        <Text variant="body2" color="grey400">
-          {t('gov.automation.prepaidTxFees')}
-        </Text>
-        <Text variant="body2Medium" color="grey200">
-          {prepaidTxFees.toFixed(6)} SOL
-        </Text>
-      </Box>
+      {estimatedSolFee && (
+        <Box
+          flexDirection="row"
+          justifyContent="space-between"
+          marginBottom="s"
+        >
+          <Text variant="body2" color="grey400">
+            {t('gov.automation.estimatedFee')}
+          </Text>
+          <Text variant="body2Medium" color="grey200">
+            {estimatedSolFee} SOL
+          </Text>
+        </Box>
+      )}
     </Box>
   )
 }
