@@ -83,14 +83,15 @@ export const ProposalCard = ({
           )?.offsetFromStartTs?.offset ?? new BN(0),
         ))
 
+  const proposalUri = useMemo(() => proposal?.uri, [proposal])
   const {
     error: descError,
     loading: descLoading,
     result: desc,
   } = useAsync(async () => {
-    if (proposal && proposal.uri) {
+    if (proposalUri) {
       // Force HTTPS for security - convert any HTTP URLs to HTTPS
-      const secureUri = proposal.uri.replace(/^http:\/\//, 'https://')
+      const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
       const { data } = await axios.get(secureUri)
       const htmlContent = markdownParser.render(data)
       const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
@@ -98,7 +99,7 @@ export const ProposalCard = ({
         ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
         : t('gov.proposals.noDescription')
     }
-  }, [proposal])
+  }, [proposalUri])
 
   const votingResults = useMemo(() => {
     const totalVotes: BN = [...(proposal?.choices || [])].reduce(
