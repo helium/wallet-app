@@ -1397,6 +1397,7 @@ export default {
       prepaidTxFees: 'Prepaid Transaction Fees',
       delegationSplit: 'HNT Emissions Split from Delegations',
       networkRevenue: 'Network Revenue (30 days)',
+      estimatedFee: 'Estimated Fee',
     },
     positions: {
       proxyAll: 'Proxy All',

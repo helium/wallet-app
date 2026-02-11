@@ -13,7 +13,7 @@ import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
 import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
 import { organizationKey } from '@helium/organization-sdk'
-import { HNT_MINT, humanReadable, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   SubDaoWithMeta,
@@ -99,11 +99,7 @@ export const PositionCard = ({
     useDelegationClaimBot(delegationClaimBotK)
   const [automationEnabled, setAutomationEnabled] = useState(true)
   useEffect(() => {
-    if (delegationClaimBot) {
-      setAutomationEnabled(true)
-    } else {
-      setAutomationEnabled(false)
-    }
+    setAutomationEnabled(!!delegationClaimBot)
   }, [delegationClaimBot])
   const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
   useEffect(() => {
@@ -222,44 +218,24 @@ export const PositionCard = ({
   }, [actionRef.current])
 
   const transactionError = useMemo(() => {
-    if (extendMutation.error) {
-      return extendMutation.error.message || t('gov.errors.extendLockup')
-    }
-
-    if (splitMutation.error) {
-      return splitMutation.error.message || t('gov.errors.splitTokens')
-    }
-
-    if (flipMutation.error) {
-      return (
-        flipMutation.error.message ||
-        (isConstant
+    const sources: [Error | null, string][] = [
+      [extendMutation.error, t('gov.errors.extendLockup')],
+      [splitMutation.error, t('gov.errors.splitTokens')],
+      [
+        flipMutation.error,
+        isConstant
           ? t('gov.errors.pauseLockup')
-          : t('gov.errors.unpauseLockup'))
-      )
-    }
-
-    if (transferMutation.error) {
-      return transferMutation.error.message || t('gov.errors.transferPosition')
-    }
-
-    if (closeMutation.error) {
-      return closeMutation.error.message || t('gov.errors.closePosition')
-    }
-
-    if (delegateMutation.error) {
-      return delegateMutation.error.message || t('gov.errors.delegatePosition')
-    }
-
-    if (undelegateMutation.error) {
-      return (
-        undelegateMutation.error.message || t('gov.errors.undelegatePosition')
-      )
-    }
-
-    if (relinquishMutation.error) {
-      return relinquishMutation.error.message || t('gov.errors.relinquishVotes')
-    }
+          : t('gov.errors.unpauseLockup'),
+      ],
+      [transferMutation.error, t('gov.errors.transferPosition')],
+      [closeMutation.error, t('gov.errors.closePosition')],
+      [delegateMutation.error, t('gov.errors.delegatePosition')],
+      [undelegateMutation.error, t('gov.errors.undelegatePosition')],
+      [relinquishMutation.error, t('gov.errors.relinquishVotes')],
+    ]
+    const found = sources.find(([err]) => err)
+    if (!found) return undefined
+    return found[0]!.message || found[1]
   }, [
     t,
     isConstant,
@@ -272,10 +248,6 @@ export const PositionCard = ({
     undelegateMutation.error,
     relinquishMutation.error,
   ])
-
-  const showError = useMemo(() => {
-    if (transactionError) return transactionError
-  }, [transactionError])
 
   const handleClosePosition = async () => {
     await closeMutation.mutate(
@@ -329,7 +301,7 @@ export const PositionCard = ({
     await splitMutation.mutate(
       {
         sourcePositionMint: position.mint.toBase58(),
-        amount: values.amount.toString(),
+        amount: toBN(values.amount, mintAcc!.decimals).toString(),
         lockupKind: values.lockupKind.value,
         lockupPeriodsInDays: values.lockupPeriodInDays,
       },
@@ -354,7 +326,7 @@ export const PositionCard = ({
       {
         sourcePositionMint: position.mint.toBase58(),
         targetPositionMint: targetPosition.mint.toBase58(),
-        amount: amount.toString(),
+        amount: toBN(amount, mintAcc!.decimals).toString(),
       },
       {
         header: t('gov.transactions.transferPosition'),
@@ -684,6 +656,32 @@ export const PositionCard = ({
     ],
   )
 
+  const loadingText = useMemo(() => {
+    if (splitMutation.isPending) return t('gov.positions.splitting')
+    if (extendMutation.isPending) return t('gov.positions.extending')
+    if (transferMutation.isPending) return t('gov.positions.transfering')
+    if (closeMutation.isPending) return t('gov.positions.closing')
+    if (flipMutation.isPending)
+      return isConstant
+        ? t('gov.positions.unlocking')
+        : t('gov.positions.pausing')
+    if (delegateMutation.isPending) return t('gov.positions.delegating')
+    if (undelegateMutation.isPending) return t('gov.positions.undelegating')
+    if (relinquishMutation.isPending) return t('gov.positions.relinquishing')
+    return null
+  }, [
+    t,
+    isConstant,
+    splitMutation.isPending,
+    extendMutation.isPending,
+    transferMutation.isPending,
+    closeMutation.isPending,
+    flipMutation.isPending,
+    delegateMutation.isPending,
+    undelegateMutation.isPending,
+    relinquishMutation.isPending,
+  ])
+
   return (
     <>
       {isLoading && (
@@ -696,19 +694,7 @@ export const PositionCard = ({
         >
           <Box flex={1} alignItems="center">
             <Text variant="body2" color="primaryText">
-              {splitMutation.isPending && t('gov.positions.splitting')}
-              {extendMutation.isPending && t('gov.positions.extending')}
-              {transferMutation.isPending && t('gov.positions.transfering')}
-              {closeMutation.isPending && t('gov.positions.closing')}
-              {flipMutation.isPending &&
-                isConstant &&
-                t('gov.positions.unlocking')}
-              {flipMutation.isPending &&
-                !isConstant &&
-                t('gov.positions.pausing')}
-              {delegateMutation.isPending && t('gov.positions.delegating')}
-              {undelegateMutation.isPending && t('gov.positions.undelegating')}
-              {relinquishMutation.isPending && t('gov.positions.relinquishing')}
+              {loadingText}
             </Text>
             <Box flex={1} marginTop="ms" width="100%">
               <IndeterminateProgressBar height={6} />
@@ -757,67 +743,49 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
-                {/* Add status warnings */}
-                {(showProxyExpiringWarning ||
-                  showProxyExpiredWarning ||
-                  showDelegationExpiringWarning ||
-                  showDelegationExpiredWarning) && (
-                  <Box flexDirection="row" marginBottom="s">
-                    {showProxyExpiringWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="warning"
-                        borderRadius="m"
-                        marginRight="s"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t('gov.positions.proxyExpiringSoon').toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                    {showProxyExpiredWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="error"
-                        borderRadius="m"
-                        marginRight="s"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t('gov.positions.proxyExpired').toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                    {showDelegationExpiringWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="warning"
-                        borderRadius="m"
-                        marginRight="s"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t(
-                            'gov.positions.delegationExpiringSoon',
-                          ).toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                    {showDelegationExpiredWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="error"
-                        borderRadius="m"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t('gov.positions.delegationExpired').toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                  </Box>
-                )}
+                {(() => {
+                  const pills = [
+                    {
+                      show: showProxyExpiringWarning,
+                      bg: 'warning' as const,
+                      label: t('gov.positions.proxyExpiringSoon'),
+                    },
+                    {
+                      show: showProxyExpiredWarning,
+                      bg: 'error' as const,
+                      label: t('gov.positions.proxyExpired'),
+                    },
+                    {
+                      show: showDelegationExpiringWarning,
+                      bg: 'warning' as const,
+                      label: t('gov.positions.delegationExpiringSoon'),
+                    },
+                    {
+                      show: showDelegationExpiredWarning,
+                      bg: 'error' as const,
+                      label: t('gov.positions.delegationExpired'),
+                    },
+                  ].filter((p) => p.show)
+                  if (!pills.length) return null
+                  return (
+                    <Box flexDirection="row" marginBottom="s">
+                      {pills.map((p) => (
+                        <Box
+                          key={p.label}
+                          padding="s"
+                          paddingHorizontal="m"
+                          backgroundColor={p.bg}
+                          borderRadius="m"
+                          marginRight="s"
+                        >
+                          <Text variant="body3" fontSize={10} color="black">
+                            {p.label.toUpperCase()}
+                          </Text>
+                        </Box>
+                      ))}
+                    </Box>
+                  )
+                })()}
                 <Box
                   flexDirection="row"
                   justifyContent="space-between"
@@ -949,7 +917,7 @@ export const PositionCard = ({
                 </Box>
               </Box>
             </TouchableOpacityBox>
-            {showError && (
+            {transactionError && (
               <Box
                 flex={1}
                 flexDirection="row"
@@ -963,7 +931,7 @@ export const PositionCard = ({
               >
                 <Box flexDirection="row" alignSelf="center" marginRight="s">
                   <Text fontSize={10} color="error" marginLeft="s">
-                    {showError}
+                    {transactionError}
                   </Text>
                 </Box>
               </Box>
