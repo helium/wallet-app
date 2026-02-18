@@ -106,7 +106,7 @@ export function useCreatePositionMutation() {
       if (!wallet) return
       try {
         const { amount, mint, ...rest } = params
-        const response = await client.governance.positions.create({
+        const response = await client.governance.createPosition({
           walletAddress: wallet.toBase58(),
           tokenAmount: { amount, mint },
           ...rest,
@@ -135,7 +135,7 @@ export function useCreatePositionMutation() {
       wrapMutate(async () => {
         const walletAddress = requireWallet(wallet)
         const { amount, mint, ...rest } = params
-        const response = await client.governance.positions.create({
+        const response = await client.governance.createPosition({
           walletAddress,
           tokenAmount: { amount, mint },
           ...rest,
@@ -158,7 +158,7 @@ export function useCreatePositionMutation() {
 
 const CLOSE_POSITION_CONFIG: MutationConfig<{ positionMint: string }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.positions.close({ walletAddress, ...params }),
+    client.governance.closePosition({ walletAddress, ...params }),
   buildTag: (params) =>
     `gov-close-${hashTagParams({ position: params.positionMint })}`,
 }
@@ -172,7 +172,7 @@ const EXTEND_POSITION_CONFIG: MutationConfig<{
   lockupPeriodsInDays: number
 }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.positions.extend({ walletAddress, ...params }),
+    client.governance.extendPosition({ walletAddress, ...params }),
   buildTag: (params) =>
     `gov-extend-${hashTagParams({
       position: params.positionMint,
@@ -186,7 +186,7 @@ export function useExtendPositionMutation() {
 
 const FLIP_LOCKUP_KIND_CONFIG: MutationConfig<{ positionMint: string }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.positions.flipLockupKind({ walletAddress, ...params }),
+    client.governance.flipLockupKind({ walletAddress, ...params }),
   buildTag: (params) =>
     `gov-flipLockupKind-${hashTagParams({ position: params.positionMint })}`,
 }
@@ -201,8 +201,12 @@ const SPLIT_POSITION_CONFIG: MutationConfig<{
   lockupKind: 'cliff' | 'constant'
   lockupPeriodsInDays: number
 }> = {
-  apiCall: (client, walletAddress, params) =>
-    client.governance.positions.split({ walletAddress, ...params }),
+  apiCall: (client, walletAddress, { sourcePositionMint, ...rest }) =>
+    client.governance.splitPosition({
+      walletAddress,
+      positionMint: sourcePositionMint,
+      ...rest,
+    }),
   buildTag: (params) =>
     `gov-split-${hashTagParams({
       position: params.sourcePositionMint,
@@ -221,8 +225,12 @@ const TRANSFER_POSITION_CONFIG: MutationConfig<{
   targetPositionMint: string
   amount: string
 }> = {
-  apiCall: (client, walletAddress, params) =>
-    client.governance.positions.transfer({ walletAddress, ...params }),
+  apiCall: (client, walletAddress, { sourcePositionMint, ...rest }) =>
+    client.governance.transferPosition({
+      walletAddress,
+      positionMint: sourcePositionMint,
+      ...rest,
+    }),
   buildTag: (params) =>
     `gov-transfer-${hashTagParams({
       sourcePosition: params.sourcePositionMint,
@@ -253,7 +261,7 @@ export function useDelegatePositionMutation() {
     }) => {
       if (!wallet) return
       try {
-        const response = await client.governance.delegation.delegate({
+        const response = await client.governance.delegatePositions({
           walletAddress: wallet.toBase58(),
           ...params,
         })
@@ -277,7 +285,7 @@ export function useDelegatePositionMutation() {
     ) =>
       wrapMutate(async () => {
         const walletAddress = requireWallet(wallet)
-        const response = await client.governance.delegation.delegate({
+        const response = await client.governance.delegatePositions({
           walletAddress,
           ...params,
         })
@@ -290,7 +298,7 @@ export function useDelegatePositionMutation() {
 
         const fetchMore = response.hasMore
           ? () =>
-              client.governance.delegation.delegate({
+              client.governance.delegatePositions({
                 walletAddress,
                 ...params,
               })
@@ -306,7 +314,7 @@ export function useDelegatePositionMutation() {
 
 const EXTEND_DELEGATION_CONFIG: MutationConfig<{ positionMint: string }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.delegation.extend({ walletAddress, ...params }),
+    client.governance.extendDelegation({ walletAddress, ...params }),
   buildTag: (params) =>
     `gov-extendDelegation-${hashTagParams({ position: params.positionMint })}`,
 }
@@ -317,7 +325,7 @@ export function useExtendDelegationMutation() {
 
 const UNDELEGATE_POSITION_CONFIG: MutationConfig<{ positionMint: string }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.delegation.undelegate({ walletAddress, ...params }),
+    client.governance.undelegatePosition({ walletAddress, ...params }),
   buildTag: (params) =>
     `gov-undelegate-${hashTagParams({ position: params.positionMint })}`,
   hasFetchMore: true,
@@ -329,7 +337,7 @@ export function useUndelegatePositionMutation() {
 
 const CLAIM_REWARDS_CONFIG: MutationConfig<{ positionMints: string[] }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.delegation.claimRewards({ walletAddress, ...params }),
+    client.governance.claimDelegationRewards({ walletAddress, ...params }),
   buildTag: (params) =>
     `gov-claimRewards-${hashTagParams({
       positions: params.positionMints.sort().join(','),
@@ -349,7 +357,7 @@ const VOTE_CONFIG: MutationConfig<{
   choice: number
 }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.voting.vote({ walletAddress, ...params }),
+    client.governance.vote({ walletAddress, ...params }),
   buildTag: (params) =>
     `proposal-vote-${hashTagParams({
       proposal: params.proposalKey,
@@ -367,7 +375,7 @@ const RELINQUISH_VOTE_CONFIG: MutationConfig<{
   choice: number
 }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.voting.relinquishVote({ walletAddress, ...params }),
+    client.governance.relinquishVote({ walletAddress, ...params }),
   buildTag: (params) =>
     `proposal-relinquish-${hashTagParams({
       proposal: params.proposalKey,
@@ -384,7 +392,7 @@ const RELINQUISH_POSITION_VOTES_CONFIG: MutationConfig<{
   organization: string
 }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.voting.relinquishPositionVotes({
+    client.governance.relinquishPositionVotes({
       walletAddress,
       ...params,
     }),
@@ -407,7 +415,7 @@ const ASSIGN_PROXIES_CONFIG: MutationConfig<{
   expirationTime: number
 }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.proxy.assign({ walletAddress, ...params }),
+    client.governance.assignProxies({ walletAddress, ...params }),
   buildTag: (params) =>
     `assign-proxy-${hashTagParams({
       proxyWallet: params.recipient,
@@ -422,7 +430,7 @@ export function useAssignProxiesMutation() {
 
 const UNASSIGN_PROXIES_CONFIG: MutationConfig<{ positionMints: string[] }> = {
   apiCall: (client, walletAddress, params) =>
-    client.governance.proxy.unassign({ walletAddress, ...params }),
+    client.governance.unassignProxies({ walletAddress, ...params }),
   buildTag: (params) =>
     `revoke-proxy-${hashTagParams({
       positions: params.positionMints.sort().join(','),
