@@ -67,40 +67,51 @@ function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
   const { isPending, error, reset, wrapMutate } = useMutationState()
   const [estimatedSolFee, setEstimatedSolFee] =
     useState<TokenAmountOutput | null>(null)
+  const [prefetchError, setPrefetchError] = useState<Error | null>(null)
+
+  const callApi = useCallback(
+    async (params: TParams): Promise<GovernanceTransactionResponse> => {
+      const walletAddress = requireWallet(wallet)
+      const response = await config.apiCall(client, walletAddress, params)
+      setEstimatedSolFee(response.estimatedSolFee ?? null)
+      return response
+    },
+    [client, wallet, config],
+  )
 
   const prefetch = useCallback(
     async (params: TParams) => {
-      if (!wallet) return
+      setPrefetchError(null)
       try {
-        const response = await config.apiCall(client, wallet.toBase58(), params)
-        setEstimatedSolFee(response.estimatedSolFee ?? null)
-        return response
-      } catch {
+        return await callApi(params)
+      } catch (e) {
+        const err = e instanceof Error ? e : new Error(String(e))
+        setPrefetchError(err)
         setEstimatedSolFee(null)
       }
     },
-    [client, wallet, config],
+    [callApi],
   )
 
   const mutate = useCallback(
     (params: TParams, options: GovernanceSubmitOptions) =>
       wrapMutate(async () => {
-        const walletAddress = requireWallet(wallet)
-        const response = await config.apiCall(client, walletAddress, params)
-        setEstimatedSolFee(response.estimatedSolFee ?? null)
+        const response = await callApi(params)
         const tag = config.buildTag(params)
+        const walletAddress = requireWallet(wallet)
         const fetchMore =
           config.hasFetchMore && response.hasMore
             ? () => config.apiCall(client, walletAddress, params)
             : undefined
         return submit(response, { ...options, tag }, fetchMore)
       }),
-    [client, wallet, submit, wrapMutate, config],
+    [client, wallet, submit, wrapMutate, callApi, config],
   )
 
   const resetAll = useCallback(() => {
     reset()
     setEstimatedSolFee(null)
+    setPrefetchError(null)
   }, [reset])
 
   return {
@@ -109,6 +120,7 @@ function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
     estimatedSolFee,
     isPending,
     error,
+    prefetchError,
     reset: resetAll,
   }
 }

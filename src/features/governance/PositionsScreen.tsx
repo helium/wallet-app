@@ -61,12 +61,24 @@ export const PositionsScreen = () => {
       return createPositionMutation.error.message || t('gov.errors.lockTokens')
     }
 
+    if (createPositionMutation.prefetchError) {
+      return (
+        createPositionMutation.prefetchError.message ||
+        t('gov.errors.lockTokens')
+      )
+    }
+
     if (claimRewardsMutation.error) {
       return claimRewardsMutation.error.message || t('gov.errors.claimRewards')
     }
 
     return undefined
-  }, [createPositionMutation.error, claimRewardsMutation.error, t])
+  }, [
+    createPositionMutation.error,
+    createPositionMutation.prefetchError,
+    claimRewardsMutation.error,
+    t,
+  ])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError

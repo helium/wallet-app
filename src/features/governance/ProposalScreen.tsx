@@ -60,7 +60,13 @@ export const ProposalScreen = () => {
     () => new PublicKey(route.params.proposal),
     [route.params.proposal],
   )
-  const { mint, loading, votingPower, positions } = useGovernance()
+  const {
+    mint,
+    loading,
+    votingPower,
+    positions,
+    refetch: refetchState,
+  } = useGovernance()
   const {
     mutate: castVote,
     isPending: voteMutPending,
@@ -186,6 +192,7 @@ export const ProposalScreen = () => {
           message: t('gov.proposals.castVoteFor', { choice: choice.name }),
         },
       )
+      refetchState()
     }
   }
 
@@ -205,6 +212,7 @@ export const ProposalScreen = () => {
           }),
         },
       )
+      refetchState()
     }
   }
 

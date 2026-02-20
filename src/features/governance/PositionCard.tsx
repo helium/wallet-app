@@ -258,7 +258,9 @@ export const PositionCard = ({
   const transactionError = useMemo(() => {
     const sources: [Error | null, string][] = [
       [extendMutation.error, t('gov.errors.extendLockup')],
+      [extendMutation.prefetchError, t('gov.errors.extendLockup')],
       [splitMutation.error, t('gov.errors.splitTokens')],
+      [splitMutation.prefetchError, t('gov.errors.splitTokens')],
       [
         flipMutation.error,
         isConstant
@@ -268,6 +270,7 @@ export const PositionCard = ({
       [transferMutation.error, t('gov.errors.transferPosition')],
       [closeMutation.error, t('gov.errors.closePosition')],
       [delegateMutation.error, t('gov.errors.delegatePosition')],
+      [delegateMutation.prefetchError, t('gov.errors.delegatePosition')],
       [undelegateMutation.error, t('gov.errors.undelegatePosition')],
       [relinquishMutation.error, t('gov.errors.relinquishVotes')],
     ]
@@ -278,11 +281,14 @@ export const PositionCard = ({
     t,
     isConstant,
     extendMutation.error,
+    extendMutation.prefetchError,
     splitMutation.error,
+    splitMutation.prefetchError,
     flipMutation.error,
     transferMutation.error,
     closeMutation.error,
     delegateMutation.error,
+    delegateMutation.prefetchError,
     undelegateMutation.error,
     relinquishMutation.error,
   ])
