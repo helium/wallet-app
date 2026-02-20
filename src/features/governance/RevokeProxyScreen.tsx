@@ -86,7 +86,7 @@ export const RevokeProxyScreen = () => {
   }, [proxiedPositions, selectedAll])
 
   const {
-    mutate: unassignProxy,
+    submit: unassignProxy,
     error,
     isPending: isSubmitting,
   } = useUnassignProxiesMutation()

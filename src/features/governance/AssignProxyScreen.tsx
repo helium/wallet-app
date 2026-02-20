@@ -129,7 +129,7 @@ export const AssignProxyScreen = () => {
   }, [selectablePositions, selectedAll])
 
   const {
-    mutate: assignProxy,
+    submit: assignProxy,
     error,
     isPending: isSubmitting,
   } = useAssignProxiesMutation()

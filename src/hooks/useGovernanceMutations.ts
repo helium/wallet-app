@@ -62,12 +62,11 @@ interface MutationConfig<TParams> {
 
 function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
   const client = useBlockchainApi()
-  const { submit } = useGovernanceSubmit()
+  const { submit: submitTxn } = useGovernanceSubmit()
   const wallet = useCurrentWallet()
   const { isPending, error, reset, wrapMutate } = useMutationState()
   const [estimatedSolFee, setEstimatedSolFee] =
     useState<TokenAmountOutput | null>(null)
-  const [prefetchError, setPrefetchError] = useState<Error | null>(null)
 
   const callApi = useCallback(
     async (params: TParams): Promise<GovernanceTransactionResponse> => {
@@ -79,21 +78,9 @@ function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
     [client, wallet, config],
   )
 
-  const prefetch = useCallback(
-    async (params: TParams) => {
-      setPrefetchError(null)
-      try {
-        return await callApi(params)
-      } catch (e) {
-        const err = e instanceof Error ? e : new Error(String(e))
-        setPrefetchError(err)
-        setEstimatedSolFee(null)
-      }
-    },
-    [callApi],
-  )
+  const prepare = useCallback((params: TParams) => callApi(params), [callApi])
 
-  const mutate = useCallback(
+  const submit = useCallback(
     (params: TParams, options: GovernanceSubmitOptions) =>
       wrapMutate(async () => {
         const response = await callApi(params)
@@ -103,24 +90,22 @@ function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
           config.hasFetchMore && response.hasMore
             ? () => config.apiCall(client, walletAddress, params)
             : undefined
-        return submit(response, { ...options, tag }, fetchMore)
+        return submitTxn(response, { ...options, tag }, fetchMore)
       }),
-    [client, wallet, submit, wrapMutate, callApi, config],
+    [wrapMutate, callApi, client, wallet, submitTxn, config],
   )
 
   const resetAll = useCallback(() => {
     reset()
     setEstimatedSolFee(null)
-    setPrefetchError(null)
   }, [reset])
 
   return {
-    mutate,
-    prefetch,
+    prepare,
+    submit,
     estimatedSolFee,
     isPending,
     error,
-    prefetchError,
     reset: resetAll,
   }
 }

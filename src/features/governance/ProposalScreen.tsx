@@ -68,12 +68,12 @@ export const ProposalScreen = () => {
     refetch: refetchState,
   } = useGovernance()
   const {
-    mutate: castVote,
+    submit: castVote,
     isPending: voteMutPending,
     error: voteError,
   } = useVoteMutation()
   const {
-    mutate: doRelinquish,
+    submit: doRelinquish,
     isPending: relinquishMutPending,
     error: relinquishError,
   } = useRelinquishVoteMutation()

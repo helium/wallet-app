@@ -117,11 +117,13 @@ export const PositionCard = ({
       const subDaoMint = subDao.pubkey.equals(IOT_SUB_DAO_KEY)
         ? Mints.IOT
         : Mints.MOBILE
-      delegateMutation.prefetch({
-        positionMints: [position.mint.toBase58()],
-        subDaoMint,
-        automationEnabled,
-      })
+      delegateMutation
+        .prepare({
+          positionMints: [position.mint.toBase58()],
+          subDaoMint,
+          automationEnabled,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDelegateModalOpen, subDao, automationEnabled])
@@ -136,10 +138,12 @@ export const PositionCard = ({
         : Math.ceil(
             secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
           )
-      extendMutation.prefetch({
-        positionMint: position.mint.toBase58(),
-        lockupPeriodsInDays: minDays,
-      })
+      extendMutation
+        .prepare({
+          positionMint: position.mint.toBase58(),
+          lockupPeriodsInDays: minDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExtendModalOpen])
@@ -154,12 +158,14 @@ export const PositionCard = ({
         : Math.ceil(
             secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
           )
-      splitMutation.prefetch({
-        sourcePositionMint: position.mint.toBase58(),
-        amount: position.amountDepositedNative.toString(),
-        lockupKind: isConstant ? 'constant' : 'cliff',
-        lockupPeriodsInDays: minDays,
-      })
+      splitMutation
+        .prepare({
+          sourcePositionMint: position.mint.toBase58(),
+          amount: position.amountDepositedNative.toString(),
+          lockupKind: isConstant ? 'constant' : 'cliff',
+          lockupPeriodsInDays: minDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSplitModalOpen])
@@ -240,6 +246,35 @@ export const PositionCard = ({
     [votingMint.mint, registrar],
   )
 
+  const handlePrepareExtend = useCallback(
+    (values: LockTokensModalFormValues) => {
+      extendMutation
+        .prepare({
+          positionMint: position.mint.toBase58(),
+          lockupPeriodsInDays: values.lockupPeriodInDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [extendMutation.prepare],
+  )
+
+  const handlePrepareSplit = useCallback(
+    (values: LockTokensModalFormValues) => {
+      if (!mintAcc) return
+      splitMutation
+        .prepare({
+          sourcePositionMint: position.mint.toBase58(),
+          amount: toBN(values.amount, mintAcc.decimals).toString(),
+          lockupKind: values.lockupKind.value,
+          lockupPeriodsInDays: values.lockupPeriodInDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [splitMutation.prepare, mintAcc],
+  )
+
   // used for actions that run right after clicking the action button
   useAsync(async () => {
     const ref = actionRef.current
@@ -258,9 +293,7 @@ export const PositionCard = ({
   const transactionError = useMemo(() => {
     const sources: [Error | null, string][] = [
       [extendMutation.error, t('gov.errors.extendLockup')],
-      [extendMutation.prefetchError, t('gov.errors.extendLockup')],
       [splitMutation.error, t('gov.errors.splitTokens')],
-      [splitMutation.prefetchError, t('gov.errors.splitTokens')],
       [
         flipMutation.error,
         isConstant
@@ -270,7 +303,6 @@ export const PositionCard = ({
       [transferMutation.error, t('gov.errors.transferPosition')],
       [closeMutation.error, t('gov.errors.closePosition')],
       [delegateMutation.error, t('gov.errors.delegatePosition')],
-      [delegateMutation.prefetchError, t('gov.errors.delegatePosition')],
       [undelegateMutation.error, t('gov.errors.undelegatePosition')],
       [relinquishMutation.error, t('gov.errors.relinquishVotes')],
     ]
@@ -281,20 +313,17 @@ export const PositionCard = ({
     t,
     isConstant,
     extendMutation.error,
-    extendMutation.prefetchError,
     splitMutation.error,
-    splitMutation.prefetchError,
     flipMutation.error,
     transferMutation.error,
     closeMutation.error,
     delegateMutation.error,
-    delegateMutation.prefetchError,
     undelegateMutation.error,
     relinquishMutation.error,
   ])
 
   const handleClosePosition = async () => {
-    await closeMutation.mutate(
+    await closeMutation.submit(
       { positionMint: position.mint.toBase58() },
       {
         header: t('gov.transactions.closePosition'),
@@ -305,7 +334,7 @@ export const PositionCard = ({
   }
 
   const handleFlipPositionLockupKind = async () => {
-    await flipMutation.mutate(
+    await flipMutation.submit(
       { positionMint: position.mint.toBase58() },
       {
         header: isConstant
@@ -323,7 +352,7 @@ export const PositionCard = ({
   }
 
   const handleExtendTokens = async (values: LockTokensModalFormValues) => {
-    await extendMutation.mutate(
+    await extendMutation.submit(
       {
         positionMint: position.mint.toBase58(),
         lockupPeriodsInDays: values.lockupPeriodInDays,
@@ -342,7 +371,7 @@ export const PositionCard = ({
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
-    await splitMutation.mutate(
+    await splitMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
         amount: toBN(values.amount, mintAcc!.decimals).toString(),
@@ -366,7 +395,7 @@ export const PositionCard = ({
     targetPosition: PositionWithMeta,
     amount: number,
   ) => {
-    await transferMutation.mutate(
+    await transferMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
         targetPositionMint: targetPosition.mint.toBase58(),
@@ -393,7 +422,7 @@ export const PositionCard = ({
       ? Mints.IOT
       : Mints.MOBILE
 
-    await delegateMutation.mutate(
+    await delegateMutation.submit(
       {
         positionMints: [position.mint.toBase58()],
         subDaoMint,
@@ -412,7 +441,7 @@ export const PositionCard = ({
   }
 
   const handleUndelegateTokens = async () => {
-    await undelegateMutation.mutate(
+    await undelegateMutation.submit(
       { positionMint: position.mint.toBase58() },
       {
         header: t('gov.transactions.undelegatePosition'),
@@ -426,7 +455,7 @@ export const PositionCard = ({
   }
 
   const handleRelinquishVotes = async () => {
-    await relinquishMutation.mutate(
+    await relinquishMutation.submit(
       {
         positionMint: position.mint.toBase58(),
         organization: organization.toBase58(),
@@ -1015,6 +1044,7 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsExtendModalOpen(false)}
               onSubmit={handleExtendTokens}
+              onPrepare={handlePrepareExtend}
               automationEnabled={false}
               onSetAutomationEnabled={() => {}}
               estimatedSolFee={extendMutation.estimatedSolFee?.uiAmountString}
@@ -1047,6 +1077,7 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsSplitModalOpen(false)}
               onSubmit={handleSplitTokens}
+              onPrepare={handlePrepareSplit}
               automationEnabled={false}
               onSetAutomationEnabled={() => {}}
               estimatedSolFee={splitMutation.estimatedSolFee?.uiAmountString}

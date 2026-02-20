@@ -96,7 +96,7 @@ export const LockTokensModal = ({
   calcMultiplierFn,
   onClose,
   onSubmit,
-  onPrefetch,
+  onPrepare,
   automationEnabled,
   onSetAutomationEnabled,
   estimatedSolFee,
@@ -111,7 +111,7 @@ export const LockTokensModal = ({
   calcMultiplierFn: (lockupPeriodInDays: number) => number
   onClose: () => void
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
-  onPrefetch?: (values: LockTokensModalFormValues) => void
+  onPrepare?: (values: LockTokensModalFormValues) => void
   automationEnabled: boolean
   onSetAutomationEnabled: (enabled: boolean) => void
   estimatedSolFee?: string
@@ -189,6 +189,28 @@ export const LockTokensModal = ({
     }
   }, [lockupPeriod, setLockupPeriodInDays])
 
+  const isInitialRender = useRef(true)
+  useEffect(() => {
+    if (mode === 'lock') return
+    if (isInitialRender.current) {
+      isInitialRender.current = false
+      return
+    }
+    if (mode === 'split' && !amount) return
+
+    const timer = setTimeout(() => {
+      onPrepare?.({
+        lockupKind,
+        lockupPeriod,
+        amount: amount ?? 0,
+        lockupPeriodInDays,
+        automationEnabled,
+      })
+    }, 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, lockupPeriodInDays, lockupKind.value, amount])
+
   const handleAmountChange = ({ balance }: { balance: BN }) => {
     if (balance.eq(new BN(0)) || !mintAcc) {
       setAmount(undefined)
@@ -228,7 +250,7 @@ export const LockTokensModal = ({
             }
           : {}),
       }
-      onPrefetch?.(formValues)
+      onPrepare?.(formValues)
       setStep(2)
       return
     }
@@ -634,7 +656,7 @@ export const LockTokensModal = ({
                                 />
                               </Box>
                             </Box>
-                            {estimatedSolFee && mode !== 'lock' && (
+                            {mode !== 'lock' && (
                               <Box
                                 padding="m"
                                 borderTopColor="black200"
@@ -648,7 +670,9 @@ export const LockTokensModal = ({
                                     {t('gov.automation.estimatedFee')}
                                   </Text>
                                   <Text variant="subtitle4" color="white">
-                                    {estimatedSolFee} SOL
+                                    {estimatedSolFee
+                                      ? `${estimatedSolFee} SOL`
+                                      : '-- SOL'}
                                   </Text>
                                 </Box>
                               </Box>

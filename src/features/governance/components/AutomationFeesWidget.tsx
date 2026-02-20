@@ -54,20 +54,14 @@ export const AutomationFeesWidget = ({
           }
         />
       </Box>
-      {estimatedSolFee && (
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          marginBottom="s"
-        >
-          <Text variant="body2" color="grey400">
-            {t('gov.automation.estimatedFee')}
-          </Text>
-          <Text variant="body2Medium" color="grey200">
-            {estimatedSolFee} SOL
-          </Text>
-        </Box>
-      )}
+      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
+        <Text variant="body2" color="grey400">
+          {t('gov.automation.estimatedFee')}
+        </Text>
+        <Text variant="body2Medium" color="grey200">
+          {estimatedSolFee ? `${estimatedSolFee} SOL` : '-- SOL'}
+        </Text>
+      </Box>
     </Box>
   )
 }

@@ -61,24 +61,12 @@ export const PositionsScreen = () => {
       return createPositionMutation.error.message || t('gov.errors.lockTokens')
     }
 
-    if (createPositionMutation.prefetchError) {
-      return (
-        createPositionMutation.prefetchError.message ||
-        t('gov.errors.lockTokens')
-      )
-    }
-
     if (claimRewardsMutation.error) {
       return claimRewardsMutation.error.message || t('gov.errors.claimRewards')
     }
 
     return undefined
-  }, [
-    createPositionMutation.error,
-    createPositionMutation.prefetchError,
-    claimRewardsMutation.error,
-    t,
-  ])
+  }, [createPositionMutation.error, claimRewardsMutation.error, t])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
@@ -101,7 +89,7 @@ export const PositionsScreen = () => {
     [mint, registrar],
   )
 
-  const handlePrefetchCreatePosition = useCallback(
+  const handlePrepareCreatePosition = useCallback(
     (values: LockTokensModalFormValues) => {
       if (!decimals) return
       const amountToLock = toBN(values.amount, decimals)
@@ -111,17 +99,17 @@ export const PositionsScreen = () => {
           : Mints.MOBILE
         : undefined
 
-      createPositionMutation.prefetch({
+      createPositionMutation.prepare({
         amount: amountToLock.toString(),
         lockupKind: values.lockupKind.value,
         lockupPeriodsInDays: values.lockupPeriodInDays,
         mint: mint.toBase58(),
         subDaoMint,
         automationEnabled,
-      })
+      }).catch((e) => console.warn('Fee estimate failed:', e))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [createPositionMutation.prefetch, automationEnabled, decimals, mint],
+    [createPositionMutation.prepare, automationEnabled, decimals, mint],
   )
 
   const handleLockTokens = useCallback(
@@ -135,7 +123,7 @@ export const PositionsScreen = () => {
             : Mints.MOBILE
           : undefined
 
-        await createPositionMutation.mutate(
+        await createPositionMutation.submit(
           {
             amount: amountToLock.toString(),
             lockupKind: lockupKind.value,
@@ -171,7 +159,7 @@ export const PositionsScreen = () => {
   const handleClaimRewards = useCallback(async () => {
     if (positionsWithRewards?.length) {
       const positionMints = positionsWithRewards.map((p) => p.mint.toBase58())
-      await claimRewardsMutation.mutate(
+      await claimRewardsMutation.submit(
         { positionMints },
         {
           header: t('gov.transactions.claimRewards'),
@@ -242,6 +230,27 @@ export const PositionsScreen = () => {
     }
   }, [subDaos, delegatedPositions])
 
+  useEffect(() => {
+    if (
+      isDelegateAllModalOpen &&
+      delegateAllSubDao &&
+      unexpiredPositions?.length
+    ) {
+      const positionMints = unexpiredPositions.map((p) => p.mint.toBase58())
+      const subDaoMint = delegateAllSubDao.pubkey.equals(IOT_SUB_DAO_KEY)
+        ? Mints.IOT
+        : Mints.MOBILE
+      delegateAllMutation
+        .prepare({
+          positionMints,
+          subDaoMint,
+          automationEnabled: delegateAllAutomationEnabled,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDelegateAllModalOpen, delegateAllSubDao, delegateAllAutomationEnabled])
+
   const handleDelegateAll = useCallback(async () => {
     if (!unexpiredPositions?.length || !delegateAllSubDao) return
 
@@ -250,7 +259,7 @@ export const PositionsScreen = () => {
       ? Mints.IOT
       : Mints.MOBILE
 
-    await delegateAllMutation.mutate(
+    await delegateAllMutation.submit(
       {
         positionMints,
         subDaoMint,
@@ -420,7 +429,7 @@ export const PositionsScreen = () => {
             calcMultiplierFn={handleCalcLockupMultiplier}
             onClose={() => setIsLockModalOpen(false)}
             onSubmit={handleLockTokens}
-            onPrefetch={handlePrefetchCreatePosition}
+            onPrepare={handlePrepareCreatePosition}
             automationEnabled={automationEnabled}
             onSetAutomationEnabled={setAutomationEnabled}
             estimatedSolFee={
