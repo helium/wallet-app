@@ -89,6 +89,29 @@ export const PositionsScreen = () => {
     [mint, registrar],
   )
 
+  const handlePrefetchCreatePosition = useCallback(
+    (values: LockTokensModalFormValues) => {
+      if (!decimals) return
+      const amountToLock = toBN(values.amount, decimals)
+      const subDaoMint = values.subDao
+        ? values.subDao.pubkey.equals(IOT_SUB_DAO_KEY)
+          ? Mints.IOT
+          : Mints.MOBILE
+        : undefined
+
+      createPositionMutation.prefetch({
+        amount: amountToLock.toString(),
+        lockupKind: values.lockupKind.value,
+        lockupPeriodsInDays: values.lockupPeriodInDays,
+        mint: mint.toBase58(),
+        subDaoMint,
+        automationEnabled,
+      })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [createPositionMutation.prefetch, automationEnabled, decimals, mint],
+  )
+
   const handleLockTokens = useCallback(
     async (values: LockTokensModalFormValues) => {
       const { amount, lockupPeriodInDays, lockupKind, subDao } = values
@@ -385,6 +408,7 @@ export const PositionsScreen = () => {
             calcMultiplierFn={handleCalcLockupMultiplier}
             onClose={() => setIsLockModalOpen(false)}
             onSubmit={handleLockTokens}
+            onPrefetch={handlePrefetchCreatePosition}
             automationEnabled={automationEnabled}
             onSetAutomationEnabled={setAutomationEnabled}
             estimatedSolFee={

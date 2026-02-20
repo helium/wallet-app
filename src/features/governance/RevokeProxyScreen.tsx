@@ -103,7 +103,7 @@ export const RevokeProxyScreen = () => {
         .filter(Boolean) as string[]
 
       await unassignProxy(
-        { positionMints },
+        { positionMints, proxyKey: proxyWallet },
         {
           header: t('gov.transactions.revokeProxy'),
           message: t('gov.transactions.revokeProxy'),

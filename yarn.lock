@@ -2533,13 +2533,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/blockchain-api@file:.yalc/@helium/blockchain-api::locator=helium-wallet%40workspace%3A.":
-  version: 0.3.7
-  resolution: "@helium/blockchain-api@file:.yalc/@helium/blockchain-api#.yalc/@helium/blockchain-api::hash=e80768&locator=helium-wallet%40workspace%3A."
+"@helium/blockchain-api@npm:^0.3.9":
+  version: 0.3.9
+  resolution: "@helium/blockchain-api@npm:0.3.9"
   dependencies:
     "@orpc/contract": "npm:^1.13.2"
     zod: "npm:^4.3.5"
-  checksum: 10/3610101fa22ad09516db45b259f7985efd4c8f293849cb16c071f320e719ccb72de0cc8f0ac656143902549aecca82ef9aa0f492e126b4e57849672300a86211
+  checksum: 10/ccf6f6de7b12eeb2201e7ac8601a4fde34d6b82a6e902dac0dc144a5d0a114a3a18a909e658785ac2d3312244e65af7ef70489d746b9661e34a8c6ca3f7925f3
   languageName: node
   linkType: hard
 
@@ -12596,7 +12596,7 @@ __metadata:
     "@helium/account-fetch-cache-hooks": "npm:0.11.4"
     "@helium/address": "npm:^5.0.4"
     "@helium/automation-hooks": "npm:^0.11.4"
-    "@helium/blockchain-api": "file:.yalc/@helium/blockchain-api"
+    "@helium/blockchain-api": "npm:^0.3.9"
     "@helium/circuit-breaker-sdk": "npm:0.11.4"
     "@helium/cron-sdk": "npm:^0.0.8"
     "@helium/crypto-react-native": "npm:^5.0.4"

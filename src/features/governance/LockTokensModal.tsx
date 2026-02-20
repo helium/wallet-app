@@ -96,6 +96,7 @@ export const LockTokensModal = ({
   calcMultiplierFn,
   onClose,
   onSubmit,
+  onPrefetch,
   automationEnabled,
   onSetAutomationEnabled,
   estimatedSolFee,
@@ -110,6 +111,7 @@ export const LockTokensModal = ({
   calcMultiplierFn: (lockupPeriodInDays: number) => number
   onClose: () => void
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
+  onPrefetch?: (values: LockTokensModalFormValues) => void
   automationEnabled: boolean
   onSetAutomationEnabled: (enabled: boolean) => void
   estimatedSolFee?: string
@@ -212,6 +214,21 @@ export const LockTokensModal = ({
 
   const handleSubmit = async () => {
     if (mode === 'lock' && step === 1 && mint.equals(HNT_MINT)) {
+      const formValues: LockTokensModalFormValues = {
+        lockupKind,
+        lockupPeriod,
+        amount: amount!,
+        lockupPeriodInDays,
+        automationEnabled,
+        ...(subDaos && selectedSubDaoPk
+          ? {
+              subDao: subDaos.find((subDao) =>
+                subDao.pubkey.equals(selectedSubDaoPk!),
+              )!,
+            }
+          : {}),
+      }
+      onPrefetch?.(formValues)
       setStep(2)
       return
     }
@@ -617,6 +634,25 @@ export const LockTokensModal = ({
                                 />
                               </Box>
                             </Box>
+                            {estimatedSolFee && mode !== 'lock' && (
+                              <Box
+                                padding="m"
+                                borderTopColor="black200"
+                                borderTopWidth={1}
+                              >
+                                <Box
+                                  flexDirection="row"
+                                  justifyContent="space-between"
+                                >
+                                  <Text variant="subtitle4" color="grey600">
+                                    {t('gov.automation.estimatedFee')}
+                                  </Text>
+                                  <Text variant="subtitle4" color="white">
+                                    {estimatedSolFee} SOL
+                                  </Text>
+                                </Box>
+                              </Box>
+                            )}
                           </Box>
                         </Box>
                       )}

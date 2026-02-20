@@ -65,12 +65,29 @@ function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
   const { submit } = useGovernanceSubmit()
   const wallet = useCurrentWallet()
   const { isPending, error, reset, wrapMutate } = useMutationState()
+  const [estimatedSolFee, setEstimatedSolFee] =
+    useState<TokenAmountOutput | null>(null)
+
+  const prefetch = useCallback(
+    async (params: TParams) => {
+      if (!wallet) return
+      try {
+        const response = await config.apiCall(client, wallet.toBase58(), params)
+        setEstimatedSolFee(response.estimatedSolFee ?? null)
+        return response
+      } catch {
+        setEstimatedSolFee(null)
+      }
+    },
+    [client, wallet, config],
+  )
 
   const mutate = useCallback(
     (params: TParams, options: GovernanceSubmitOptions) =>
       wrapMutate(async () => {
         const walletAddress = requireWallet(wallet)
         const response = await config.apiCall(client, walletAddress, params)
+        setEstimatedSolFee(response.estimatedSolFee ?? null)
         const tag = config.buildTag(params)
         const fetchMore =
           config.hasFetchMore && response.hasMore
@@ -81,79 +98,47 @@ function useGovernanceMutation<TParams>(config: MutationConfig<TParams>) {
     [client, wallet, submit, wrapMutate, config],
   )
 
-  return { mutate, isPending, error, reset }
+  const resetAll = useCallback(() => {
+    reset()
+    setEstimatedSolFee(null)
+  }, [reset])
+
+  return {
+    mutate,
+    prefetch,
+    estimatedSolFee,
+    isPending,
+    error,
+    reset: resetAll,
+  }
 }
 
 // ─── Position Mutations ─────────────────────────────────────────────────────
 
+const CREATE_POSITION_CONFIG: MutationConfig<{
+  amount: string
+  lockupKind: 'cliff' | 'constant'
+  lockupPeriodsInDays: number
+  mint: string
+  subDaoMint?: string
+  automationEnabled?: boolean
+}> = {
+  apiCall: (client, walletAddress, { amount, mint, ...rest }) =>
+    client.governance.createPosition({
+      walletAddress,
+      tokenAmount: { amount, mint },
+      ...rest,
+    }),
+  buildTag: (params) =>
+    `gov-createPosition-${hashTagParams({
+      mint: params.mint,
+      lockupKind: params.lockupKind,
+      lockupPeriodsInDays: params.lockupPeriodsInDays,
+    })}`,
+}
+
 export function useCreatePositionMutation() {
-  const client = useBlockchainApi()
-  const { submit } = useGovernanceSubmit()
-  const wallet = useCurrentWallet()
-  const { isPending, error, reset, wrapMutate } = useMutationState()
-  const [estimatedSolFee, setEstimatedSolFee] =
-    useState<TokenAmountOutput | null>(null)
-
-  const prefetch = useCallback(
-    async (params: {
-      amount: string
-      lockupKind: 'cliff' | 'constant'
-      lockupPeriodsInDays: number
-      mint: string
-      subDaoMint?: string
-      automationEnabled?: boolean
-    }) => {
-      if (!wallet) return
-      try {
-        const { amount, mint, ...rest } = params
-        const response = await client.governance.createPosition({
-          walletAddress: wallet.toBase58(),
-          tokenAmount: { amount, mint },
-          ...rest,
-        })
-        setEstimatedSolFee(response.estimatedSolFee ?? null)
-        return response
-      } catch {
-        setEstimatedSolFee(null)
-      }
-    },
-    [client, wallet],
-  )
-
-  const mutate = useCallback(
-    (
-      params: {
-        amount: string
-        lockupKind: 'cliff' | 'constant'
-        lockupPeriodsInDays: number
-        mint: string
-        subDaoMint?: string
-        automationEnabled?: boolean
-      },
-      options: GovernanceSubmitOptions,
-    ) =>
-      wrapMutate(async () => {
-        const walletAddress = requireWallet(wallet)
-        const { amount, mint, ...rest } = params
-        const response = await client.governance.createPosition({
-          walletAddress,
-          tokenAmount: { amount, mint },
-          ...rest,
-        })
-        setEstimatedSolFee(response.estimatedSolFee ?? null)
-
-        const tag = `gov-createPosition-${hashTagParams({
-          mint: params.mint,
-          lockupKind: params.lockupKind,
-          lockupPeriodsInDays: params.lockupPeriodsInDays,
-        })}`
-
-        return submit(response, { ...options, tag })
-      }),
-    [client, wallet, submit, wrapMutate],
-  )
-
-  return { mutate, prefetch, estimatedSolFee, isPending, error, reset }
+  return useGovernanceMutation(CREATE_POSITION_CONFIG)
 }
 
 const CLOSE_POSITION_CONFIG: MutationConfig<{ positionMint: string }> = {
@@ -245,71 +230,23 @@ export function useTransferPositionMutation() {
 
 // ─── Delegation Mutations ───────────────────────────────────────────────────
 
+const DELEGATE_POSITION_CONFIG: MutationConfig<{
+  positionMints: string[]
+  subDaoMint: string
+  automationEnabled?: boolean
+}> = {
+  apiCall: (client, walletAddress, params) =>
+    client.governance.delegatePositions({ walletAddress, ...params }),
+  buildTag: (params) =>
+    `gov-delegate-${hashTagParams({
+      subDao: params.subDaoMint,
+      automationEnabled: params.automationEnabled ? 1 : 0,
+    })}`,
+  hasFetchMore: true,
+}
+
 export function useDelegatePositionMutation() {
-  const client = useBlockchainApi()
-  const { submit } = useGovernanceSubmit()
-  const wallet = useCurrentWallet()
-  const { isPending, error, reset, wrapMutate } = useMutationState()
-  const [estimatedSolFee, setEstimatedSolFee] =
-    useState<TokenAmountOutput | null>(null)
-
-  const prefetch = useCallback(
-    async (params: {
-      positionMints: string[]
-      subDaoMint: string
-      automationEnabled?: boolean
-    }) => {
-      if (!wallet) return
-      try {
-        const response = await client.governance.delegatePositions({
-          walletAddress: wallet.toBase58(),
-          ...params,
-        })
-        setEstimatedSolFee(response.estimatedSolFee ?? null)
-        return response
-      } catch {
-        setEstimatedSolFee(null)
-      }
-    },
-    [client, wallet],
-  )
-
-  const mutate = useCallback(
-    (
-      params: {
-        positionMints: string[]
-        subDaoMint: string
-        automationEnabled?: boolean
-      },
-      options: GovernanceSubmitOptions,
-    ) =>
-      wrapMutate(async () => {
-        const walletAddress = requireWallet(wallet)
-        const response = await client.governance.delegatePositions({
-          walletAddress,
-          ...params,
-        })
-        setEstimatedSolFee(response.estimatedSolFee ?? null)
-
-        const tag = `gov-delegate-${hashTagParams({
-          subDao: params.subDaoMint,
-          automationEnabled: params.automationEnabled ? 1 : 0,
-        })}`
-
-        const fetchMore = response.hasMore
-          ? () =>
-              client.governance.delegatePositions({
-                walletAddress,
-                ...params,
-              })
-          : undefined
-
-        return submit(response, { ...options, tag }, fetchMore)
-      }),
-    [client, wallet, submit, wrapMutate],
-  )
-
-  return { mutate, prefetch, estimatedSolFee, isPending, error, reset }
+  return useGovernanceMutation(DELEGATE_POSITION_CONFIG)
 }
 
 const EXTEND_DELEGATION_CONFIG: MutationConfig<{ positionMint: string }> = {
@@ -411,14 +348,14 @@ export function useRelinquishPositionVotesMutation() {
 
 const ASSIGN_PROXIES_CONFIG: MutationConfig<{
   positionMints: string[]
-  recipient: string
+  proxyKey: string
   expirationTime: number
 }> = {
   apiCall: (client, walletAddress, params) =>
     client.governance.assignProxies({ walletAddress, ...params }),
   buildTag: (params) =>
     `assign-proxy-${hashTagParams({
-      proxyWallet: params.recipient,
+      proxyWallet: params.proxyKey,
       expirationTime: params.expirationTime,
       positions: params.positionMints.sort().join(','),
     })}`,
@@ -428,11 +365,15 @@ export function useAssignProxiesMutation() {
   return useGovernanceMutation(ASSIGN_PROXIES_CONFIG)
 }
 
-const UNASSIGN_PROXIES_CONFIG: MutationConfig<{ positionMints: string[] }> = {
+const UNASSIGN_PROXIES_CONFIG: MutationConfig<{
+  positionMints: string[]
+  proxyKey: string
+}> = {
   apiCall: (client, walletAddress, params) =>
     client.governance.unassignProxies({ walletAddress, ...params }),
   buildTag: (params) =>
     `revoke-proxy-${hashTagParams({
+      proxyKey: params.proxyKey,
       positions: params.positionMints.sort().join(','),
     })}`,
 }

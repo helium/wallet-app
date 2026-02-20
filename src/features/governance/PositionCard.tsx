@@ -125,6 +125,44 @@ export const PositionCard = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDelegateModalOpen, subDao, automationEnabled])
+  useEffect(() => {
+    if (isExtendModalOpen) {
+      const minDays = isConstant
+        ? Math.ceil(
+            secsToDays(
+              position.lockup.endTs.sub(position.lockup.startTs).toNumber(),
+            ),
+          )
+        : Math.ceil(
+            secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
+          )
+      extendMutation.prefetch({
+        positionMint: position.mint.toBase58(),
+        lockupPeriodsInDays: minDays,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExtendModalOpen])
+  useEffect(() => {
+    if (isSplitModalOpen) {
+      const minDays = isConstant
+        ? Math.ceil(
+            secsToDays(
+              position.lockup.endTs.sub(position.lockup.startTs).toNumber() + 1,
+            ),
+          )
+        : Math.ceil(
+            secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
+          )
+      splitMutation.prefetch({
+        sourcePositionMint: position.mint.toBase58(),
+        amount: position.amountDepositedNative.toString(),
+        lockupKind: isConstant ? 'constant' : 'cliff',
+        lockupPeriodsInDays: minDays,
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSplitModalOpen])
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
@@ -973,6 +1011,7 @@ export const PositionCard = ({
               onSubmit={handleExtendTokens}
               automationEnabled={false}
               onSetAutomationEnabled={() => {}}
+              estimatedSolFee={extendMutation.estimatedSolFee?.uiAmountString}
             />
           )}
           {isSplitModalOpen && (
@@ -1004,6 +1043,7 @@ export const PositionCard = ({
               onSubmit={handleSplitTokens}
               automationEnabled={false}
               onSetAutomationEnabled={() => {}}
+              estimatedSolFee={splitMutation.estimatedSolFee?.uiAmountString}
             />
           )}
           {isTransferModalOpen && (

@@ -152,7 +152,7 @@ export const AssignProxyScreen = () => {
       await assignProxy(
         {
           positionMints,
-          recipient: proxyWallet,
+          proxyKey: proxyWallet,
           expirationTime: finalExpirationTime,
         },
         {
