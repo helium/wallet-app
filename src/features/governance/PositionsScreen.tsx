@@ -99,14 +99,16 @@ export const PositionsScreen = () => {
           : Mints.MOBILE
         : undefined
 
-      createPositionMutation.prepare({
-        amount: amountToLock.toString(),
-        lockupKind: values.lockupKind.value,
-        lockupPeriodsInDays: values.lockupPeriodInDays,
-        mint: mint.toBase58(),
-        subDaoMint,
-        automationEnabled,
-      }).catch((e) => console.warn('Fee estimate failed:', e))
+      createPositionMutation
+        .prepare({
+          amount: amountToLock.toString(),
+          lockupKind: values.lockupKind.value,
+          lockupPeriodsInDays: values.lockupPeriodInDays,
+          mint: mint.toBase58(),
+          subDaoMint,
+          automationEnabled,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [createPositionMutation.prepare, automationEnabled, decimals, mint],
