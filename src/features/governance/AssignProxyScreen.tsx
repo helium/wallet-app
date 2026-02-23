@@ -4,18 +4,13 @@ import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import { truthy } from '@helium/spl-utils'
-import {
-  PositionWithMeta,
-  useAssignProxies,
-} from '@helium/voter-stake-registry-hooks'
+import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import Slider from '@react-native-community/slider'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
-import { hashTagParams } from '@utils/transactionUtils'
+import { useAssignProxiesMutation } from '@hooks/useGovernanceMutations'
 import sleep from '@utils/sleep'
-import BN from 'bn.js'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, TextInput, TouchableWithoutFeedback } from 'react-native'
@@ -30,7 +25,6 @@ import {
 type Route = RouteProp<GovernanceStackParamList, 'AssignProxyScreen'>
 
 export const AssignProxyScreen = () => {
-  const { execute: executeGovernanceTx } = useSubmitInstructions()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
   const { wallet, position, includeProxied } = route.params
@@ -135,38 +129,10 @@ export const AssignProxyScreen = () => {
   }, [selectablePositions, selectedAll])
 
   const {
-    mutateAsync: assignProxies,
+    submit: assignProxy,
     error,
     isPending: isSubmitting,
-  } = useAssignProxies()
-
-  const decideAndExecute = useCallback(
-    async (
-      header: string,
-      instructions: TransactionInstruction[],
-      positionKeys: string[],
-      proxyWalletParam: string,
-      expirationTimeParam: number,
-    ) => {
-      const paramsHash = hashTagParams({
-        proxyWallet: proxyWalletParam,
-        expirationTime: expirationTimeParam,
-        positions: positionKeys.sort().join(','),
-      })
-      const tag = `assign-proxy-${paramsHash}`
-      await executeGovernanceTx({
-        header,
-        message: header,
-        instructions,
-        tag,
-      })
-      // Give time for indexer
-      await sleep(2000)
-      refetch()
-      navigation.goBack()
-    },
-    [executeGovernanceTx, navigation, refetch],
-  )
+  } = useAssignProxiesMutation()
 
   const handleSubmit = useCallback(async () => {
     if (proxyWallet && positions) {
@@ -175,32 +141,39 @@ export const AssignProxyScreen = () => {
         return acc
       }, {} as Record<string, PositionWithMeta>)
       const selectedPositionKeys = Array.from(selectedPositions)
+      const positionMints = selectedPositionKeys
+        .map((k) => positionsByKey[k]?.mint.toBase58())
+        .filter(Boolean) as string[]
       const finalExpirationTime = Math.min(
         expirationTime,
         maxDate.valueOf() / 1000,
       )
-      await assignProxies({
-        positions: selectedPositionKeys.map((p) => positionsByKey[p]),
-        recipient: new PublicKey(proxyWallet),
-        expirationTime: new BN(finalExpirationTime),
-        onInstructions: (ixs) =>
-          decideAndExecute(
-            t('gov.transactions.assignProxy'),
-            ixs,
-            selectedPositionKeys,
-            proxyWallet,
-            finalExpirationTime,
-          ),
-      })
+
+      await assignProxy(
+        {
+          positionMints,
+          proxyKey: proxyWallet,
+          expirationTime: finalExpirationTime,
+        },
+        {
+          header: t('gov.transactions.assignProxy'),
+          message: t('gov.transactions.assignProxy'),
+        },
+      )
+
+      await sleep(2000)
+      refetch()
+      navigation.goBack()
     }
   }, [
-    assignProxies,
-    decideAndExecute,
+    assignProxy,
     expirationTime,
     maxDate,
     positions,
     proxyWallet,
     selectedPositions,
+    navigation,
+    refetch,
     t,
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])

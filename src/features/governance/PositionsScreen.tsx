@@ -5,27 +5,22 @@ import Dot from '@components/Dot'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
-import {
-  HNT_MINT,
-  Status,
-  humanReadable,
-  toBN,
-  toNumber,
-} from '@helium/spl-utils'
+import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
 import {
   SubDaoWithMeta,
   calcLockupMultiplier,
-  useClaimAllPositionsRewards,
-  useCreatePosition,
-  useDelegatePositions,
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
+import {
+  useCreatePositionMutation,
+  useClaimRewardsMutation,
+  useDelegatePositionMutation,
+} from '@hooks/useGovernanceMutations'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY } from '@utils/constants'
+import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -43,7 +38,6 @@ export const PositionsScreen = () => {
   const wallet = useCurrentWallet()
   const [isLockModalOpen, setIsLockModalOpen] = useState(false)
   const [automationEnabled, setAutomationEnabled] = useState(true)
-  const [statusOfClaim, setStatusOfClaim] = useState<Status | undefined>()
   const {
     mint,
     registrar,
@@ -53,21 +47,9 @@ export const PositionsScreen = () => {
   } = useGovernance()
   const { symbol } = useMetaplexMetadata(mint)
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
-  const {
-    error: createPositionError,
-    createPosition,
-    rentFee: solFees,
-    prepaidTxFees,
-    insufficientBalance,
-  } = useCreatePosition({
-    automationEnabled,
-  })
-  const {
-    error: claimingAllRewardsError,
-    loading: claimingAllRewards,
-    claimAllPositionsRewards,
-  } = useClaimAllPositionsRewards()
-  const { execute: submitInstructions } = useSubmitInstructions()
+  const createPositionMutation = useCreatePositionMutation()
+  const claimRewardsMutation = useClaimRewardsMutation()
+  const delegateAllMutation = useDelegatePositionMutation()
 
   const positionsWithRewards = useMemo(
     () => positions?.filter((p) => p.hasRewards),
@@ -75,16 +57,16 @@ export const PositionsScreen = () => {
   )
 
   const transactionError = useMemo(() => {
-    if (createPositionError) {
-      return createPositionError.message || t('gov.errors.lockTokens')
+    if (createPositionMutation.error) {
+      return createPositionMutation.error.message || t('gov.errors.lockTokens')
     }
 
-    if (claimingAllRewardsError) {
-      return claimingAllRewardsError.message || t('gov.errors.claimRewards')
+    if (claimRewardsMutation.error) {
+      return claimRewardsMutation.error.message || t('gov.errors.claimRewards')
     }
 
     return undefined
-  }, [createPositionError, claimingAllRewardsError, t])
+  }, [createPositionMutation.error, claimRewardsMutation.error, t])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
@@ -107,39 +89,67 @@ export const PositionsScreen = () => {
     [mint, registrar],
   )
 
+  const handlePrepareCreatePosition = useCallback(
+    (values: LockTokensModalFormValues) => {
+      if (!decimals) return
+      const amountToLock = toBN(values.amount, decimals)
+      const subDaoMint = values.subDao
+        ? values.subDao.pubkey.equals(IOT_SUB_DAO_KEY)
+          ? Mints.IOT
+          : Mints.MOBILE
+        : undefined
+
+      createPositionMutation
+        .prepare({
+          amount: amountToLock.toString(),
+          lockupKind: values.lockupKind.value,
+          lockupPeriodsInDays: values.lockupPeriodInDays,
+          mint: mint.toBase58(),
+          subDaoMint,
+          automationEnabled,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [createPositionMutation.prepare, automationEnabled, decimals, mint],
+  )
+
   const handleLockTokens = useCallback(
     async (values: LockTokensModalFormValues) => {
       const { amount, lockupPeriodInDays, lockupKind, subDao } = values
       if (decimals && symbol) {
         const amountToLock = toBN(amount, decimals)
+        const subDaoMint = subDao
+          ? subDao.pubkey.equals(IOT_SUB_DAO_KEY)
+            ? Mints.IOT
+            : Mints.MOBILE
+          : undefined
 
-        await createPosition({
-          amount: amountToLock,
-          lockupPeriodsInDays: lockupPeriodInDays,
-          lockupKind: lockupKind.value,
-          mint,
-          subDao,
-          onInstructions: async (ixs, sigs) => {
-            await submitInstructions({
-              header: t('gov.transactions.lockTokens'),
-              message: t('gov.votingPower.lockYourTokens', {
-                amount: humanReadable(amountToLock, decimals),
-                symbol,
-                duration: getFormattedStringFromDays(lockupPeriodInDays),
-              }),
-              instructions: ixs,
-              sigs,
-              sequentially: !!subDao,
-            })
+        await createPositionMutation.submit(
+          {
+            amount: amountToLock.toString(),
+            lockupKind: lockupKind.value,
+            lockupPeriodsInDays: lockupPeriodInDays,
+            mint: mint.toBase58(),
+            subDaoMint,
+            automationEnabled,
           },
-        })
+          {
+            header: t('gov.transactions.lockTokens'),
+            message: t('gov.votingPower.lockYourTokens', {
+              amount: humanReadable(amountToLock, decimals),
+              symbol,
+              duration: getFormattedStringFromDays(lockupPeriodInDays),
+            }),
+          },
+        )
 
         refetchState()
       }
     },
     [
-      createPosition,
-      submitInstructions,
+      createPositionMutation,
+      automationEnabled,
       decimals,
       mint,
       refetchState,
@@ -149,33 +159,18 @@ export const PositionsScreen = () => {
   )
 
   const handleClaimRewards = useCallback(async () => {
-    if (positionsWithRewards) {
-      await claimAllPositionsRewards({
-        positions: positionsWithRewards,
-        onInstructions: async (ixs) => {
-          await submitInstructions({
-            header: t('gov.transactions.claimRewards'),
-            message: 'Approve this transaction to claim your rewards',
-            instructions: ixs,
-            onProgress: setStatusOfClaim,
-            computeScaleUp: 1.4,
-            maxInstructionsPerTx: 8,
-          })
+    if (positionsWithRewards?.length) {
+      const positionMints = positionsWithRewards.map((p) => p.mint.toBase58())
+      await claimRewardsMutation.submit(
+        { positionMints },
+        {
+          header: t('gov.transactions.claimRewards'),
+          message: 'Approve this transaction to claim your rewards',
         },
-      })
-
-      if (!claimingAllRewardsError) {
-        refetchState()
-      }
+      )
+      refetchState()
     }
-  }, [
-    claimAllPositionsRewards,
-    claimingAllRewardsError,
-    submitInstructions,
-    positionsWithRewards,
-    refetchState,
-    t,
-  ])
+  }, [claimRewardsMutation, positionsWithRewards, refetchState, t])
 
   const [isDelegateAllModalOpen, setIsDelegateAllModalOpen] = useState(false)
   const [delegateAllSubDao, setDelegateAllSubDao] =
@@ -237,38 +232,55 @@ export const PositionsScreen = () => {
     }
   }, [subDaos, delegatedPositions])
 
-  const {
-    delegatePositions,
-    rentFee: delegateAllSolFees = 0,
-    prepaidTxFees: delegateAllPrepaidTxFees = 0,
-    insufficientBalance: delegateAllInsufficientBalance = false,
-    error: delegateAllError,
-    loading: delegateAllLoading,
-  } = useDelegatePositions({
-    automationEnabled: delegateAllAutomationEnabled,
-    positions: unexpiredPositions || [],
-    subDao: delegateAllSubDao || undefined,
-  })
+  useEffect(() => {
+    if (
+      isDelegateAllModalOpen &&
+      delegateAllSubDao &&
+      unexpiredPositions?.length
+    ) {
+      const positionMints = unexpiredPositions.map((p) => p.mint.toBase58())
+      const subDaoMint = delegateAllSubDao.pubkey.equals(IOT_SUB_DAO_KEY)
+        ? Mints.IOT
+        : Mints.MOBILE
+      delegateAllMutation
+        .prepare({
+          positionMints,
+          subDaoMint,
+          automationEnabled: delegateAllAutomationEnabled,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDelegateAllModalOpen, delegateAllSubDao, delegateAllAutomationEnabled])
 
   const handleDelegateAll = useCallback(async () => {
-    if (!delegatePositions) return
-    await delegatePositions({
-      onInstructions: async (ixs) => {
-        await submitInstructions({
-          header: t('gov.transactions.delegatePosition'),
-          message: t('gov.positions.delegateAllMessage', {
-            subdao: delegateAllSubDao?.dntMetadata.name,
-          }),
-          instructions: ixs,
-        })
+    if (!unexpiredPositions?.length || !delegateAllSubDao) return
+
+    const positionMints = unexpiredPositions.map((p) => p.mint.toBase58())
+    const subDaoMint = delegateAllSubDao.pubkey.equals(IOT_SUB_DAO_KEY)
+      ? Mints.IOT
+      : Mints.MOBILE
+
+    await delegateAllMutation.submit(
+      {
+        positionMints,
+        subDaoMint,
+        automationEnabled: delegateAllAutomationEnabled,
       },
-    })
+      {
+        header: t('gov.transactions.delegatePosition'),
+        message: t('gov.positions.delegateAllMessage', {
+          subdao: delegateAllSubDao.dntMetadata.name,
+        }),
+      },
+    )
     setIsDelegateAllModalOpen(false)
     refetchState()
   }, [
-    submitInstructions,
-    delegateAllSubDao?.dntMetadata.name,
-    delegatePositions,
+    delegateAllMutation,
+    delegateAllSubDao,
+    delegateAllAutomationEnabled,
+    unexpiredPositions,
     refetchState,
     t,
   ])
@@ -286,7 +298,7 @@ export const PositionsScreen = () => {
         setIsManageSheetOpen(false)
         setIsLockModalOpen(true)
       },
-      disabled: claimingAllRewards || loading,
+      disabled: claimRewardsMutation.isPending || loading,
     },
     {
       label: t('gov.positions.delegateAll'),
@@ -295,7 +307,7 @@ export const PositionsScreen = () => {
         setIsManageSheetOpen(false)
         setIsDelegateAllModalOpen(true)
       },
-      disabled: loading || delegateAllLoading,
+      disabled: loading || delegateAllMutation.isPending,
     },
     {
       label: t('gov.positions.proxyAll'),
@@ -316,7 +328,10 @@ export const PositionsScreen = () => {
         setIsManageSheetOpen(false)
         await handleClaimRewards()
       },
-      disabled: !positionsWithRewards?.length || claimingAllRewards || loading,
+      disabled:
+        !positionsWithRewards?.length ||
+        claimRewardsMutation.isPending ||
+        loading,
       SecondaryIcon: positionsWithRewards?.length ? (
         <Dot filled color="green500" size={8} />
       ) : undefined,
@@ -405,19 +420,23 @@ export const PositionsScreen = () => {
             </Box>
           )}
         </Box>
-        {claimingAllRewards && <ClaimingRewardsModal status={statusOfClaim} />}
+        {claimRewardsMutation.isPending && (
+          <ClaimingRewardsModal status={undefined} />
+        )}
         {isLockModalOpen && (
           <LockTokensModal
-            insufficientBalance={!!insufficientBalance}
+            insufficientBalance={false}
             mint={mint}
             maxLockupAmount={maxLockupAmount}
             calcMultiplierFn={handleCalcLockupMultiplier}
             onClose={() => setIsLockModalOpen(false)}
             onSubmit={handleLockTokens}
+            onPrepare={handlePrepareCreatePosition}
             automationEnabled={automationEnabled}
             onSetAutomationEnabled={setAutomationEnabled}
-            solFees={solFees || 0}
-            prepaidTxFees={prepaidTxFees || 0}
+            estimatedSolFee={
+              createPositionMutation.estimatedSolFee?.uiAmountString
+            }
           />
         )}
         {isDelegateAllModalOpen && (
@@ -426,14 +445,15 @@ export const PositionsScreen = () => {
             onSubmit={handleDelegateAll}
             onSetAutomationEnabled={setDelegateAllAutomationEnabled}
             automationEnabled={delegateAllAutomationEnabled}
-            solFees={delegateAllSolFees}
-            prepaidTxFees={delegateAllPrepaidTxFees}
-            insufficientBalance={!!delegateAllInsufficientBalance}
+            estimatedSolFee={
+              delegateAllMutation.estimatedSolFee?.uiAmountString
+            }
+            insufficientBalance={false}
             subDao={delegateAllSubDao}
             setSubDao={setDelegateAllSubDao}
           />
         )}
-        {delegateAllError && (
+        {delegateAllMutation.error && (
           <Box
             flexDirection="row"
             justifyContent="center"
@@ -441,7 +461,7 @@ export const PositionsScreen = () => {
             paddingTop="ms"
           >
             <Text variant="body3Medium" color="red500">
-              {delegateAllError.message}
+              {delegateAllMutation.error.message}
             </Text>
           </Box>
         )}

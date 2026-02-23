@@ -96,10 +96,10 @@ export const LockTokensModal = ({
   calcMultiplierFn,
   onClose,
   onSubmit,
+  onPrepare,
   automationEnabled,
   onSetAutomationEnabled,
-  solFees,
-  prepaidTxFees,
+  estimatedSolFee,
   insufficientBalance = false,
 }: {
   insufficientBalance: boolean
@@ -111,10 +111,10 @@ export const LockTokensModal = ({
   calcMultiplierFn: (lockupPeriodInDays: number) => number
   onClose: () => void
   onSubmit: (values: LockTokensModalFormValues) => Promise<void>
+  onPrepare?: (values: LockTokensModalFormValues) => void
   automationEnabled: boolean
   onSetAutomationEnabled: (enabled: boolean) => void
-  solFees: number
-  prepaidTxFees: number
+  estimatedSolFee?: string
 }) => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
@@ -189,6 +189,28 @@ export const LockTokensModal = ({
     }
   }, [lockupPeriod, setLockupPeriodInDays])
 
+  const isInitialRender = useRef(true)
+  useEffect(() => {
+    if (mode === 'lock') return
+    if (isInitialRender.current) {
+      isInitialRender.current = false
+      return
+    }
+    if (mode === 'split' && !amount) return
+
+    const timer = setTimeout(() => {
+      onPrepare?.({
+        lockupKind,
+        lockupPeriod,
+        amount: amount ?? 0,
+        lockupPeriodInDays,
+        automationEnabled,
+      })
+    }, 300)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, lockupPeriodInDays, lockupKind.value, amount])
+
   const handleAmountChange = ({ balance }: { balance: BN }) => {
     if (balance.eq(new BN(0)) || !mintAcc) {
       setAmount(undefined)
@@ -214,6 +236,21 @@ export const LockTokensModal = ({
 
   const handleSubmit = async () => {
     if (mode === 'lock' && step === 1 && mint.equals(HNT_MINT)) {
+      const formValues: LockTokensModalFormValues = {
+        lockupKind,
+        lockupPeriod,
+        amount: amount!,
+        lockupPeriodInDays,
+        automationEnabled,
+        ...(subDaos && selectedSubDaoPk
+          ? {
+              subDao: subDaos.find((subDao) =>
+                subDao.pubkey.equals(selectedSubDaoPk!),
+              )!,
+            }
+          : {}),
+      }
+      onPrepare?.(formValues)
       setStep(2)
       return
     }
@@ -619,6 +656,27 @@ export const LockTokensModal = ({
                                 />
                               </Box>
                             </Box>
+                            {mode !== 'lock' && (
+                              <Box
+                                padding="m"
+                                borderTopColor="black200"
+                                borderTopWidth={1}
+                              >
+                                <Box
+                                  flexDirection="row"
+                                  justifyContent="space-between"
+                                >
+                                  <Text variant="subtitle4" color="grey600">
+                                    {t('gov.automation.estimatedFee')}
+                                  </Text>
+                                  <Text variant="subtitle4" color="white">
+                                    {estimatedSolFee
+                                      ? `${estimatedSolFee} SOL`
+                                      : '-- SOL'}
+                                  </Text>
+                                </Box>
+                              </Box>
+                            )}
                           </Box>
                         </Box>
                       )}
@@ -749,8 +807,7 @@ export const LockTokensModal = ({
                     <AutomationFeesWidget
                       automationEnabled={automationEnabled}
                       onSetAutomationEnabled={onSetAutomationEnabled}
-                      solFees={solFees}
-                      prepaidTxFees={prepaidTxFees}
+                      estimatedSolFee={estimatedSolFee}
                     />
                   </>
                 )}

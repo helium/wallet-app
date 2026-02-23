@@ -13,31 +13,23 @@ import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
 import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
 import { organizationKey } from '@helium/organization-sdk'
-import { HNT_MINT, humanReadable, toNumber } from '@helium/spl-utils'
+import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
 import {
   PositionWithMeta,
   SubDaoWithMeta,
   calcLockupMultiplier,
-  useClosePosition,
-  useDelegatePosition,
-  useExtendPosition,
-  useFlipPositionLockupKind,
   useKnownProxy,
   useRegistrar,
-  useRelinquishPositionVotes,
-  useSplitPosition,
-  useTransferPosition,
-  useUndelegatePosition,
 } from '@helium/voter-stake-registry-hooks'
 import useAlert from '@hooks/useAlert'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
-import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { useCreateOpacity } from '@theme/themeHooks'
-import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
+import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
 import {
   daysToSecs,
   getFormattedStringFromDays,
@@ -47,8 +39,16 @@ import {
 } from '@utils/dateTools'
 import { shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
-import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
-import { hashTagParams } from '@utils/transactionUtils'
+import {
+  useExtendPositionMutation,
+  useSplitPositionMutation,
+  useFlipLockupKindMutation,
+  useTransferPositionMutation,
+  useClosePositionMutation,
+  useDelegatePositionMutation,
+  useUndelegatePositionMutation,
+  useRelinquishPositionVotesMutation,
+} from '@hooks/useGovernanceMutations'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
@@ -71,8 +71,14 @@ export const PositionCard = ({
   const { t } = useTranslation()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
   const { showOKAlert } = useAlert()
-  const { execute: executeGovernanceTx, isPending: isSubmittingInstructions } =
-    useSubmitInstructions()
+  const extendMutation = useExtendPositionMutation()
+  const splitMutation = useSplitPositionMutation()
+  const flipMutation = useFlipLockupKindMutation()
+  const transferMutation = useTransferPositionMutation()
+  const closeMutation = useClosePositionMutation()
+  const delegateMutation = useDelegatePositionMutation()
+  const undelegateMutation = useUndelegatePositionMutation()
+  const relinquishMutation = useRelinquishPositionVotesMutation()
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionRef = useRef<
     null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
@@ -93,11 +99,7 @@ export const PositionCard = ({
     useDelegationClaimBot(delegationClaimBotK)
   const [automationEnabled, setAutomationEnabled] = useState(true)
   useEffect(() => {
-    if (delegationClaimBot) {
-      setAutomationEnabled(true)
-    } else {
-      setAutomationEnabled(false)
-    }
+    setAutomationEnabled(!!delegationClaimBot)
   }, [delegationClaimBot])
   const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
   useEffect(() => {
@@ -110,6 +112,63 @@ export const PositionCard = ({
     }
   }, [subDaos, subDao, position?.delegatedSubDao])
   const { positions, mint, network, refetch: refetchState } = useGovernance()
+  useEffect(() => {
+    if (isDelegateModalOpen && subDao) {
+      const subDaoMint = subDao.pubkey.equals(IOT_SUB_DAO_KEY)
+        ? Mints.IOT
+        : Mints.MOBILE
+      delegateMutation
+        .prepare({
+          positionMints: [position.mint.toBase58()],
+          subDaoMint,
+          automationEnabled,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDelegateModalOpen, subDao, automationEnabled])
+  useEffect(() => {
+    if (isExtendModalOpen) {
+      const minDays = isConstant
+        ? Math.ceil(
+            secsToDays(
+              position.lockup.endTs.sub(position.lockup.startTs).toNumber(),
+            ),
+          )
+        : Math.ceil(
+            secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
+          )
+      extendMutation
+        .prepare({
+          positionMint: position.mint.toBase58(),
+          lockupPeriodsInDays: minDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isExtendModalOpen])
+  useEffect(() => {
+    if (isSplitModalOpen) {
+      const minDays = isConstant
+        ? Math.ceil(
+            secsToDays(
+              position.lockup.endTs.sub(position.lockup.startTs).toNumber() + 1,
+            ),
+          )
+        : Math.ceil(
+            secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
+          )
+      splitMutation
+        .prepare({
+          sourcePositionMint: position.mint.toBase58(),
+          amount: position.amountDepositedNative.toString(),
+          lockupKind: isConstant ? 'constant' : 'cliff',
+          lockupPeriodsInDays: minDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSplitModalOpen])
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
@@ -177,35 +236,6 @@ export const PositionCard = ({
 
   const { info: registrar = null } = useRegistrar(position.registrar)
 
-  const decideAndExecute = async ({
-    header,
-    message,
-    instructions,
-    sigs = [],
-    sequentially = false,
-    actionType,
-    actionParams,
-  }: {
-    header: string
-    message: string
-    instructions: TransactionInstruction[] | TransactionInstruction[][]
-    sigs?: Keypair[]
-    sequentially?: boolean
-    actionType: string
-    actionParams: Record<string, string | number | undefined>
-  }) => {
-    const paramsHash = hashTagParams(actionParams)
-    const tag = `gov-${actionType}-${paramsHash}`
-    await executeGovernanceTx({
-      header,
-      message,
-      instructions,
-      sigs,
-      sequentially,
-      tag,
-    })
-  }
-
   const handleCalcLockupMultiplier = useCallback(
     (lockupPeriodInDays: number) =>
       calcLockupMultiplier({
@@ -216,62 +246,34 @@ export const PositionCard = ({
     [votingMint.mint, registrar],
   )
 
-  const {
-    loading: isExtending,
-    error: extendingError,
-    extendPosition,
-  } = useExtendPosition()
+  const handlePrepareExtend = useCallback(
+    (values: LockTokensModalFormValues) => {
+      extendMutation
+        .prepare({
+          positionMint: position.mint.toBase58(),
+          lockupPeriodsInDays: values.lockupPeriodInDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [extendMutation.prepare],
+  )
 
-  const {
-    loading: isSpliting,
-    error: splitingError,
-    splitPosition,
-  } = useSplitPosition()
-
-  const {
-    loading: isFlipping,
-    error: flippingError,
-    flipPositionLockupKind,
-  } = useFlipPositionLockupKind()
-
-  const {
-    loading: isTransfering,
-    error: transferingError,
-    transferPosition,
-  } = useTransferPosition()
-
-  const {
-    loading: isClosing,
-    error: closingError,
-    closePosition,
-  } = useClosePosition()
-
-  const {
-    loading: isDelegating,
-    error: delegatingError,
-    delegatePosition,
-    rentFee: delegationFees,
-    prepaidTxFees,
-    insufficientBalance: insufficientDelegationBalance,
-  } = useDelegatePosition({
-    automationEnabled,
-    position,
-    subDao: subDao || undefined,
-  })
-
-  const {
-    loading: isUndelegating,
-    error: undelegatingError,
-    undelegatePosition,
-  } = useUndelegatePosition({
-    position,
-  })
-
-  const {
-    loading: isRelinquishing,
-    error: relinquishingError,
-    relinquishPositionVotes,
-  } = useRelinquishPositionVotes()
+  const handlePrepareSplit = useCallback(
+    (values: LockTokensModalFormValues) => {
+      if (!mintAcc) return
+      splitMutation
+        .prepare({
+          sourcePositionMint: position.mint.toBase58(),
+          amount: toBN(values.amount, mintAcc.decimals).toString(),
+          lockupKind: values.lockupKind.value,
+          lockupPeriodsInDays: values.lockupPeriodInDays,
+        })
+        .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [splitMutation.prepare, mintAcc],
+  )
 
   // used for actions that run right after clicking the action button
   useAsync(async () => {
@@ -289,282 +291,181 @@ export const PositionCard = ({
   }, [actionRef.current])
 
   const transactionError = useMemo(() => {
-    if (extendingError) {
-      return extendingError.message || t('gov.errors.extendLockup')
-    }
-
-    if (splitingError) {
-      return splitingError.message || t('gov.errors.splitTokens')
-    }
-
-    if (flippingError) {
-      return (
-        flippingError.message ||
-        (isConstant
+    const sources: [Error | null, string][] = [
+      [extendMutation.error, t('gov.errors.extendLockup')],
+      [splitMutation.error, t('gov.errors.splitTokens')],
+      [
+        flipMutation.error,
+        isConstant
           ? t('gov.errors.pauseLockup')
-          : t('gov.errors.unpauseLockup'))
-      )
-    }
-
-    if (transferingError) {
-      return transferingError.message || t('gov.errors.transferPosition')
-    }
-
-    if (closingError) {
-      return closingError.message || t('gov.errors.closePosition')
-    }
-
-    if (delegatingError) {
-      return delegatingError.message || t('gov.errors.delegatePosition')
-    }
-
-    if (undelegatingError) {
-      return undelegatingError.message || t('gov.errors.undelegatePosition')
-    }
-
-    if (relinquishingError) {
-      return relinquishingError.message || t('gov.errors.relinquishVotes')
-    }
+          : t('gov.errors.unpauseLockup'),
+      ],
+      [transferMutation.error, t('gov.errors.transferPosition')],
+      [closeMutation.error, t('gov.errors.closePosition')],
+      [delegateMutation.error, t('gov.errors.delegatePosition')],
+      [undelegateMutation.error, t('gov.errors.undelegatePosition')],
+      [relinquishMutation.error, t('gov.errors.relinquishVotes')],
+    ]
+    const found = sources.find(([err]) => err)
+    if (!found) return undefined
+    return found[0]!.message || found[1]
   }, [
     t,
     isConstant,
-    extendingError,
-    splitingError,
-    flippingError,
-    transferingError,
-    closingError,
-    delegatingError,
-    undelegatingError,
-    relinquishingError,
+    extendMutation.error,
+    splitMutation.error,
+    flipMutation.error,
+    transferMutation.error,
+    closeMutation.error,
+    delegateMutation.error,
+    undelegateMutation.error,
+    relinquishMutation.error,
   ])
 
-  const showError = useMemo(() => {
-    if (transactionError) return transactionError
-  }, [transactionError])
-
   const handleClosePosition = async () => {
-    await closePosition({
-      position,
-      onInstructions: async (ixs) => {
-        await decideAndExecute({
-          header: t('gov.transactions.closePosition'),
-          message: t('gov.positions.closeMessage'),
-          instructions: ixs,
-          actionType: 'close',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-          },
-        })
-        if (!closingError) {
-          refetchState()
-        }
+    await closeMutation.submit(
+      { positionMint: position.mint.toBase58() },
+      {
+        header: t('gov.transactions.closePosition'),
+        message: t('gov.positions.closeMessage'),
       },
-    })
+    )
+    refetchState()
   }
 
   const handleFlipPositionLockupKind = async () => {
-    await flipPositionLockupKind({
-      position,
-      onInstructions: async (ixs) => {
-        await decideAndExecute({
-          header: isConstant
-            ? t('gov.transactions.unpauseLockup')
-            : t('gov.transactions.pauseLockup'),
-          message: t('gov.positions.flipLockupMessage', {
-            amount: lockedTokens,
-            symbol,
-            status: isConstant ? 'paused' : 'decaying',
-            action: isConstant ? 'let it decay' : 'pause it',
-          }),
-          instructions: ixs,
-          actionType: 'flipLockupKind',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-            fromKind: isConstant ? 'constant' : 'decaying',
-          },
-        })
-
-        if (!flippingError) {
-          refetchState()
-        }
+    await flipMutation.submit(
+      { positionMint: position.mint.toBase58() },
+      {
+        header: isConstant
+          ? t('gov.transactions.unpauseLockup')
+          : t('gov.transactions.pauseLockup'),
+        message: t('gov.positions.flipLockupMessage', {
+          amount: lockedTokens,
+          symbol,
+          status: isConstant ? 'paused' : 'decaying',
+          action: isConstant ? 'let it decay' : 'pause it',
+        }),
       },
-    })
+    )
+    refetchState()
   }
 
   const handleExtendTokens = async (values: LockTokensModalFormValues) => {
-    await extendPosition({
-      position,
-      lockupPeriodsInDays: values.lockupPeriodInDays,
-      onInstructions: async (ixs) => {
-        await decideAndExecute({
-          header: t('gov.transactions.extendPosition'),
-          message: t('gov.positions.extendMessage', {
-            existing: isConstant
-              ? getMinDurationFmt(
-                  position.lockup.startTs,
-                  position.lockup.endTs,
-                )
-              : getTimeLeftFromNowFmt(position.lockup.endTs),
-            new: getFormattedStringFromDays(values.lockupPeriodInDays),
-          }),
-          instructions: ixs,
-          actionType: 'extend',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-            lockupPeriodInDays: values.lockupPeriodInDays,
-          },
-        })
-        if (!extendingError) {
-          refetchState()
-        }
+    await extendMutation.submit(
+      {
+        positionMint: position.mint.toBase58(),
+        lockupPeriodsInDays: values.lockupPeriodInDays,
       },
-    })
+      {
+        header: t('gov.transactions.extendPosition'),
+        message: t('gov.positions.extendMessage', {
+          existing: isConstant
+            ? getMinDurationFmt(position.lockup.startTs, position.lockup.endTs)
+            : getTimeLeftFromNowFmt(position.lockup.endTs),
+          new: getFormattedStringFromDays(values.lockupPeriodInDays),
+        }),
+      },
+    )
+    refetchState()
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
-    await splitPosition({
-      sourcePosition: position,
-      amount: values.amount,
-      lockupKind: values.lockupKind.value,
-      lockupPeriodsInDays: values.lockupPeriodInDays,
-      onInstructions: async (ixs, sigs) => {
-        await decideAndExecute({
-          header: t('gov.transactions.splitPosition'),
-          sequentially: true,
-          message: t('gov.positions.splitMessage', {
-            amount: values.amount,
-            symbol,
-            lockupKind: values.lockupKind.display.toLocaleLowerCase(),
-            duration: getFormattedStringFromDays(values.lockupPeriodInDays),
-          }),
-          instructions: ixs,
-          sigs,
-          actionType: 'split',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-            amount: values.amount,
-            lockupKind: values.lockupKind.value,
-            lockupPeriodInDays: values.lockupPeriodInDays,
-          },
-        })
-
-        if (!splitingError) {
-          refetchState()
-        }
+    await splitMutation.submit(
+      {
+        sourcePositionMint: position.mint.toBase58(),
+        amount: toBN(values.amount, mintAcc!.decimals).toString(),
+        lockupKind: values.lockupKind.value,
+        lockupPeriodsInDays: values.lockupPeriodInDays,
       },
-    })
+      {
+        header: t('gov.transactions.splitPosition'),
+        message: t('gov.positions.splitMessage', {
+          amount: values.amount,
+          symbol,
+          lockupKind: values.lockupKind.display.toLocaleLowerCase(),
+          duration: getFormattedStringFromDays(values.lockupPeriodInDays),
+        }),
+      },
+    )
+    refetchState()
   }
 
   const handleTransferTokens = async (
     targetPosition: PositionWithMeta,
     amount: number,
   ) => {
-    await transferPosition({
-      sourcePosition: position,
-      amount,
-      targetPosition,
-      onInstructions: async (ixs) => {
-        await decideAndExecute({
-          header: t('gov.transactions.transferPosition'),
-          message: t('gov.positions.transferMessage', {
-            amount,
-            symbol,
-            targetAmount: humanReadable(
-              targetPosition.amountDepositedNative,
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              mintAcc!.decimals,
-            ),
-          }),
-          instructions: ixs,
-          actionType: 'transfer',
-          actionParams: {
-            sourcePosition: position.pubkey.toBase58(),
-            targetPosition: targetPosition.pubkey.toBase58(),
-            amount,
-          },
-        })
-
-        if (!transferingError) {
-          refetchState()
-        }
+    await transferMutation.submit(
+      {
+        sourcePositionMint: position.mint.toBase58(),
+        targetPositionMint: targetPosition.mint.toBase58(),
+        amount: toBN(amount, mintAcc!.decimals).toString(),
       },
-    })
+      {
+        header: t('gov.transactions.transferPosition'),
+        message: t('gov.positions.transferMessage', {
+          amount,
+          symbol,
+          targetAmount: humanReadable(
+            targetPosition.amountDepositedNative,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            mintAcc!.decimals,
+          ),
+        }),
+      },
+    )
+    refetchState()
   }
 
   const handleDelegateTokens = async () => {
-    await delegatePosition({
-      onInstructions: async (ixs) => {
-        await decideAndExecute({
-          header: t('gov.transactions.delegatePosition'),
-          message: t('gov.positions.delegateMessage', {
-            amount: lockedTokens,
-            symbol,
-            subdao: subDao?.dntMetadata.name,
-          }),
-          instructions: ixs,
-          actionType: 'delegate',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-            subDao: subDao?.pubkey.toBase58(),
-            automationEnabled: automationEnabled ? 1 : 0,
-          },
-        })
+    const subDaoMint = subDao?.pubkey.equals(IOT_SUB_DAO_KEY)
+      ? Mints.IOT
+      : Mints.MOBILE
 
-        if (!delegatingError) {
-          refetchState()
-        }
+    await delegateMutation.submit(
+      {
+        positionMints: [position.mint.toBase58()],
+        subDaoMint,
+        automationEnabled,
       },
-    })
+      {
+        header: t('gov.transactions.delegatePosition'),
+        message: t('gov.positions.delegateMessage', {
+          amount: lockedTokens,
+          symbol,
+          subdao: subDao?.dntMetadata.name,
+        }),
+      },
+    )
+    refetchState()
   }
 
   const handleUndelegateTokens = async () => {
-    await undelegatePosition({
-      onInstructions: async (ixs) => {
-        const undelegate = ixs[ixs.length - 1]
-        const claims = ixs.slice(0, ixs.length - 1)
-        const hasClaims = claims.length > 0
-        await decideAndExecute({
-          header: t('gov.transactions.undelegatePosition'),
-          message: t('gov.positions.undelegateMessage', {
-            amount: lockedTokens,
-            symbol,
-          }),
-          sequentially: hasClaims,
-          instructions: hasClaims ? [...claims, undelegate] : [undelegate],
-          actionType: 'undelegate',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-          },
-        })
-
-        if (!undelegatingError) {
-          refetchState()
-        }
+    await undelegateMutation.submit(
+      { positionMint: position.mint.toBase58() },
+      {
+        header: t('gov.transactions.undelegatePosition'),
+        message: t('gov.positions.undelegateMessage', {
+          amount: lockedTokens,
+          symbol,
+        }),
       },
-    })
+    )
+    refetchState()
   }
 
   const handleRelinquishVotes = async () => {
-    await relinquishPositionVotes({
-      position,
-      organization,
-      onInstructions: async (ixs) => {
-        await decideAndExecute({
-          header: t('gov.transactions.relinquishPosition'),
-          message: t('gov.positions.relinquishVotesMessage'),
-          instructions: ixs,
-          actionType: 'relinquish',
-          actionParams: {
-            position: position.pubkey.toBase58(),
-            organization: organization.toBase58(),
-          },
-        })
-
-        if (!relinquishingError) {
-          refetchState()
-        }
+    await relinquishMutation.submit(
+      {
+        positionMint: position.mint.toBase58(),
+        organization: organization.toBase58(),
       },
-    })
+      {
+        header: t('gov.transactions.relinquishPosition'),
+        message: t('gov.positions.relinquishVotesMessage'),
+      },
+    )
+    refetchState()
   }
 
   const govNavigation = useNavigation<GovernanceNavigationProp>()
@@ -807,28 +708,52 @@ export const PositionCard = ({
   const isLoading = useMemo(
     () =>
       loadingMetadata ||
-      isExtending ||
-      isSpliting ||
-      isClosing ||
-      isTransfering ||
-      isFlipping ||
-      isDelegating ||
-      isUndelegating ||
-      isRelinquishing ||
-      isSubmittingInstructions,
+      extendMutation.isPending ||
+      splitMutation.isPending ||
+      closeMutation.isPending ||
+      transferMutation.isPending ||
+      flipMutation.isPending ||
+      delegateMutation.isPending ||
+      undelegateMutation.isPending ||
+      relinquishMutation.isPending,
     [
       loadingMetadata,
-      isExtending,
-      isSpliting,
-      isClosing,
-      isTransfering,
-      isFlipping,
-      isDelegating,
-      isUndelegating,
-      isRelinquishing,
-      isSubmittingInstructions,
+      extendMutation.isPending,
+      splitMutation.isPending,
+      closeMutation.isPending,
+      transferMutation.isPending,
+      flipMutation.isPending,
+      delegateMutation.isPending,
+      undelegateMutation.isPending,
+      relinquishMutation.isPending,
     ],
   )
+
+  const loadingText = useMemo(() => {
+    if (splitMutation.isPending) return t('gov.positions.splitting')
+    if (extendMutation.isPending) return t('gov.positions.extending')
+    if (transferMutation.isPending) return t('gov.positions.transfering')
+    if (closeMutation.isPending) return t('gov.positions.closing')
+    if (flipMutation.isPending)
+      return isConstant
+        ? t('gov.positions.unlocking')
+        : t('gov.positions.pausing')
+    if (delegateMutation.isPending) return t('gov.positions.delegating')
+    if (undelegateMutation.isPending) return t('gov.positions.undelegating')
+    if (relinquishMutation.isPending) return t('gov.positions.relinquishing')
+    return null
+  }, [
+    t,
+    isConstant,
+    splitMutation.isPending,
+    extendMutation.isPending,
+    transferMutation.isPending,
+    closeMutation.isPending,
+    flipMutation.isPending,
+    delegateMutation.isPending,
+    undelegateMutation.isPending,
+    relinquishMutation.isPending,
+  ])
 
   return (
     <>
@@ -842,15 +767,7 @@ export const PositionCard = ({
         >
           <Box flex={1} alignItems="center">
             <Text variant="body2" color="primaryText">
-              {isSpliting && t('gov.positions.splitting')}
-              {isExtending && t('gov.positions.extending')}
-              {isTransfering && t('gov.positions.transfering')}
-              {isClosing && t('gov.positions.closing')}
-              {isFlipping && isConstant && t('gov.positions.unlocking')}
-              {isFlipping && !isConstant && t('gov.positions.pausing')}
-              {isDelegating && t('gov.positions.delegating')}
-              {isUndelegating && t('gov.positions.undelegating')}
-              {isRelinquishing && t('gov.positions.relinquishing')}
+              {loadingText}
             </Text>
             <Box flex={1} marginTop="ms" width="100%">
               <IndeterminateProgressBar height={6} />
@@ -899,67 +816,49 @@ export const PositionCard = ({
                     </Box>
                   )}
                 </Box>
-                {/* Add status warnings */}
-                {(showProxyExpiringWarning ||
-                  showProxyExpiredWarning ||
-                  showDelegationExpiringWarning ||
-                  showDelegationExpiredWarning) && (
-                  <Box flexDirection="row" marginBottom="s">
-                    {showProxyExpiringWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="warning"
-                        borderRadius="m"
-                        marginRight="s"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t('gov.positions.proxyExpiringSoon').toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                    {showProxyExpiredWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="error"
-                        borderRadius="m"
-                        marginRight="s"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t('gov.positions.proxyExpired').toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                    {showDelegationExpiringWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="warning"
-                        borderRadius="m"
-                        marginRight="s"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t(
-                            'gov.positions.delegationExpiringSoon',
-                          ).toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                    {showDelegationExpiredWarning && (
-                      <Box
-                        padding="s"
-                        paddingHorizontal="m"
-                        backgroundColor="error"
-                        borderRadius="m"
-                      >
-                        <Text variant="body3" fontSize={10} color="black">
-                          {t('gov.positions.delegationExpired').toUpperCase()}
-                        </Text>
-                      </Box>
-                    )}
-                  </Box>
-                )}
+                {(() => {
+                  const pills = [
+                    {
+                      show: showProxyExpiringWarning,
+                      bg: 'warning' as const,
+                      label: t('gov.positions.proxyExpiringSoon'),
+                    },
+                    {
+                      show: showProxyExpiredWarning,
+                      bg: 'error' as const,
+                      label: t('gov.positions.proxyExpired'),
+                    },
+                    {
+                      show: showDelegationExpiringWarning,
+                      bg: 'warning' as const,
+                      label: t('gov.positions.delegationExpiringSoon'),
+                    },
+                    {
+                      show: showDelegationExpiredWarning,
+                      bg: 'error' as const,
+                      label: t('gov.positions.delegationExpired'),
+                    },
+                  ].filter((p) => p.show)
+                  if (!pills.length) return null
+                  return (
+                    <Box flexDirection="row" marginBottom="s">
+                      {pills.map((p) => (
+                        <Box
+                          key={p.label}
+                          padding="s"
+                          paddingHorizontal="m"
+                          backgroundColor={p.bg}
+                          borderRadius="m"
+                          marginRight="s"
+                        >
+                          <Text variant="body3" fontSize={10} color="black">
+                            {p.label.toUpperCase()}
+                          </Text>
+                        </Box>
+                      ))}
+                    </Box>
+                  )
+                })()}
                 <Box
                   flexDirection="row"
                   justifyContent="space-between"
@@ -1091,7 +990,7 @@ export const PositionCard = ({
                 </Box>
               </Box>
             </TouchableOpacityBox>
-            {showError && (
+            {transactionError && (
               <Box
                 flex={1}
                 flexDirection="row"
@@ -1105,7 +1004,7 @@ export const PositionCard = ({
               >
                 <Box flexDirection="row" alignSelf="center" marginRight="s">
                   <Text fontSize={10} color="error" marginLeft="s">
-                    {showError}
+                    {transactionError}
                   </Text>
                 </Box>
               </Box>
@@ -1145,10 +1044,10 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsExtendModalOpen(false)}
               onSubmit={handleExtendTokens}
+              onPrepare={handlePrepareExtend}
               automationEnabled={false}
               onSetAutomationEnabled={() => {}}
-              solFees={0}
-              prepaidTxFees={0}
+              estimatedSolFee={extendMutation.estimatedSolFee?.uiAmountString}
             />
           )}
           {isSplitModalOpen && (
@@ -1178,10 +1077,10 @@ export const PositionCard = ({
               calcMultiplierFn={handleCalcLockupMultiplier}
               onClose={() => setIsSplitModalOpen(false)}
               onSubmit={handleSplitTokens}
+              onPrepare={handlePrepareSplit}
               automationEnabled={false}
               onSetAutomationEnabled={() => {}}
-              solFees={0}
-              prepaidTxFees={0}
+              estimatedSolFee={splitMutation.estimatedSolFee?.uiAmountString}
             />
           )}
           {isTransferModalOpen && (
@@ -1195,13 +1094,12 @@ export const PositionCard = ({
           )}
           {isDelegateModalOpen && (
             <DelegateTokensModal
-              prepaidTxFees={prepaidTxFees}
               automationEnabled={automationEnabled}
               onSetAutomationEnabled={setAutomationEnabled}
               onClose={() => setIsDelegateModalOpen(false)}
               onSubmit={handleDelegateTokens}
-              solFees={delegationFees}
-              insufficientBalance={!!insufficientDelegationBalance}
+              estimatedSolFee={delegateMutation.estimatedSolFee?.uiAmountString}
+              insufficientBalance={false}
               subDao={subDao}
               setSubDao={setSubDao}
             />

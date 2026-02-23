@@ -8,6 +8,13 @@ export type BatchStatus =
   | 'expired'
   | 'partial'
 
+export const TERMINAL_STATUSES: BatchStatus[] = [
+  'confirmed',
+  'failed',
+  'expired',
+  'partial',
+]
+
 export function useTransactionBatchStatus(batchId: string | null) {
   const client = useBlockchainApi()
 
@@ -17,17 +24,11 @@ export function useTransactionBatchStatus(batchId: string | null) {
       client.transactions.get({ id: batchId!, commitment: 'confirmed' }),
     enabled: !!batchId,
     refetchInterval: ({ state }) => {
-      // Stop polling when terminal state reached
       const { status } = state.data ?? {}
-      if (
-        status === 'confirmed' ||
-        status === 'failed' ||
-        status === 'expired' ||
-        status === 'partial'
-      ) {
+      if (status && TERMINAL_STATUSES.includes(status as BatchStatus)) {
         return false
       }
-      return 2000 // Poll every 2s while pending
+      return 2000
     },
   })
 

@@ -4,16 +4,12 @@ import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import { truthy } from '@helium/spl-utils'
-import {
-  PositionWithMeta,
-  useUnassignProxies,
-} from '@helium/voter-stake-registry-hooks'
+import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { PublicKey, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { useSubmitInstructions } from '@hooks/useSubmitInstructions'
-import { hashTagParams } from '@utils/transactionUtils'
+import { useUnassignProxiesMutation } from '@hooks/useGovernanceMutations'
 import sleep from '@utils/sleep'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -29,7 +25,6 @@ import {
 type Route = RouteProp<GovernanceStackParamList, 'RevokeProxyScreen'>
 
 export const RevokeProxyScreen = () => {
-  const { execute: executeGovernanceTx } = useSubmitInstructions()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
   const { wallet, position } = route.params
@@ -91,36 +86,10 @@ export const RevokeProxyScreen = () => {
   }, [proxiedPositions, selectedAll])
 
   const {
-    mutateAsync: unassignProxies,
+    submit: unassignProxy,
     error,
     isPending: isSubmitting,
-  } = useUnassignProxies()
-
-  const decideAndExecute = useCallback(
-    async (
-      header: string,
-      instructions: TransactionInstruction[],
-      positionKeys: string[],
-      proxyWalletParam: string,
-    ) => {
-      const paramsHash = hashTagParams({
-        proxyWallet: proxyWalletParam,
-        positions: positionKeys.sort().join(','),
-      })
-      const tag = `revoke-proxy-${paramsHash}`
-      await executeGovernanceTx({
-        header,
-        message: header,
-        instructions,
-        tag,
-      })
-      // Give time for indexer
-      await sleep(2000)
-      refetch()
-      navigation.goBack()
-    },
-    [executeGovernanceTx, navigation, refetch],
-  )
+  } = useUnassignProxiesMutation()
 
   const handleSubmit = useCallback(async () => {
     if (proxyWallet && positions) {
@@ -129,24 +98,30 @@ export const RevokeProxyScreen = () => {
         return acc
       }, {} as Record<string, PositionWithMeta>)
       const selectedPositionKeys = Array.from(selectedPositions)
-      await unassignProxies({
-        positions: selectedPositionKeys.map((p) => positionsByKey[p]),
-        onInstructions: (ixs) =>
-          decideAndExecute(
-            t('gov.transactions.revokeProxy'),
-            ixs,
-            selectedPositionKeys,
-            proxyWallet,
-          ),
-      })
+      const positionMints = selectedPositionKeys
+        .map((k) => positionsByKey[k]?.mint.toBase58())
+        .filter(Boolean) as string[]
+
+      await unassignProxy(
+        { positionMints, proxyKey: proxyWallet },
+        {
+          header: t('gov.transactions.revokeProxy'),
+          message: t('gov.transactions.revokeProxy'),
+        },
+      )
+
+      await sleep(2000)
+      refetch()
+      navigation.goBack()
     }
   }, [
-    decideAndExecute,
+    unassignProxy,
     positions,
     proxyWallet,
     selectedPositions,
+    navigation,
+    refetch,
     t,
-    unassignProxies,
   ])
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
