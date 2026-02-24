@@ -297,6 +297,7 @@ const VOTE_CONFIG: MutationConfig<{
       proposal: params.proposalKey,
       choice: params.choice,
     })}`,
+  hasFetchMore: true,
 }
 
 export function useVoteMutation() {
@@ -315,6 +316,7 @@ const RELINQUISH_VOTE_CONFIG: MutationConfig<{
       proposal: params.proposalKey,
       choice: params.choice,
     })}`,
+  hasFetchMore: true,
 }
 
 export function useRelinquishVoteMutation() {
