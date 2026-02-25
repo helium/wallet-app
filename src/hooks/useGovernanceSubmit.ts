@@ -1,4 +1,4 @@
-import type { GovernanceTransactionResponse } from '@helium/blockchain-api'
+import type { TransactionData, TokenAmountOutput } from '@helium/blockchain-api'
 import { useQueryClient } from '@tanstack/react-query'
 import React, { useCallback } from 'react'
 import { useSolana } from '../solana/SolanaProvider'
@@ -11,6 +11,12 @@ import {
   TERMINAL_STATUSES,
   type BatchStatus,
 } from './useTransactionBatchStatus'
+
+type SubmittableResponse = {
+  transactionData: TransactionData
+  estimatedSolFee?: TokenAmountOutput
+  hasMore?: boolean
+}
 
 export interface GovernanceSubmitOptions {
   header: string
@@ -49,9 +55,9 @@ async function pollForCompletion(
 
 export function useGovernanceSubmit(): {
   submit: (
-    response: GovernanceTransactionResponse,
+    response: SubmittableResponse,
     options: GovernanceSubmitOptions,
-    fetchMore?: () => Promise<GovernanceTransactionResponse>,
+    fetchMore?: () => Promise<SubmittableResponse>,
   ) => Promise<{ signatures: string[] }>
 } {
   const { anchorProvider } = useSolana()
@@ -61,9 +67,9 @@ export function useGovernanceSubmit(): {
 
   const submit = useCallback(
     async (
-      response: GovernanceTransactionResponse,
+      response: SubmittableResponse,
       options: GovernanceSubmitOptions,
-      fetchMore?: () => Promise<GovernanceTransactionResponse>,
+      fetchMore?: () => Promise<SubmittableResponse>,
     ): Promise<{ signatures: string[] }> => {
       if (!anchorProvider || !walletSignBottomSheetRef) {
         throw new Error('Wallet not connected')
