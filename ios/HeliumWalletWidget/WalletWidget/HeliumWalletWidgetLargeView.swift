@@ -5,7 +5,6 @@
 //  Created by Luis Perrone on 6/9/22.
 //
 
-import Charts
 import Intents
 import SwiftUI
 import WidgetKit
@@ -63,42 +62,6 @@ struct AssetListItemView: View {
         }.frame(width: .infinity, height: 40).background(.clear).clipShape(Rectangle())
     }
 }
-
-private struct CompositeChartDemo: View {
-    @State var data4: [CGFloat] = (0 ..< 100).map { _ in .random(in: 0.4 ... 1.0) }
-    @State var data5: [CGFloat] = (0 ..< 100).map { _ in .random(in: 0.1 ... 0.3) }
-    @State var data6: [CGFloat] = (0 ..< 100).map { _ in .random(in: 0.3 ... 0.4) }
-
-    var body: some View {
-        ZStack {
-            Chart(data: data4)
-                .chartStyle(
-                    LineChartStyle(.quadCurve, lineColor: .purple, lineWidth: 3)
-                )
-
-            Chart(data: data4)
-                .chartStyle(
-                    AreaChartStyle(.quadCurve, fill:
-                        LinearGradient(gradient: .init(colors: [Color.purple.opacity(0.8), Color.purple.opacity(0.2)]), startPoint: .top, endPoint: .bottom))
-                )
-
-            Chart(data: data5)
-                .chartStyle(
-                    ColumnChartStyle(column: Color.white.opacity(0.5), spacing: 2)
-                )
-
-            Chart(data: data6)
-                .chartStyle(
-                    LineChartStyle(.line, lineColor: Color.white.opacity(0.2), lineWidth: 3)
-                )
-        }
-        .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(16)
-        .padding()
-    }
-}
-
 
 // Wallet Large Widget View
 struct HeliumWalletWidgetLargeView: View {

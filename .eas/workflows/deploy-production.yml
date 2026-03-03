@@ -1,0 +1,111 @@
+name: Deploy to production
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  fingerprint:
+    name: Fingerprint
+    environment: production
+    outputs:
+      android_fingerprint_hash: ${{ steps.fingerprint_android.outputs.hash }}
+      ios_fingerprint_hash: ${{ steps.fingerprint_ios.outputs.hash }}
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - id: fingerprint_android
+        name: Calculate Android fingerprint
+        run: |
+          HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
+          echo "Android fingerprint: $HASH"
+          set-output hash "$HASH"
+      - id: fingerprint_ios
+        name: Calculate iOS fingerprint
+        run: |
+          HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
+          echo "iOS fingerprint: $HASH"
+          set-output hash "$HASH"
+
+  get_android_build:
+    name: Get Android build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
+      profile: production
+
+  get_ios_build:
+    name: Get iOS build
+    needs: [fingerprint]
+    type: get-build
+    params:
+      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
+      profile: production
+
+  sync_version:
+    name: Sync build version
+    needs: [get_android_build, get_ios_build]
+    if: ${{ !needs.get_ios_build.outputs.build_id || !needs.get_android_build.outputs.build_id }}
+    environment: production
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - id: sync
+        name: Increment and sync build number
+        run: |
+          npm install -g eas-cli
+
+          PROJECT_ID="737e4e9e-0a70-4685-b6cd-4ac3e91b0286"
+          APP_ID="com.helium.wallet.app"
+          STORE_VERSION=$(node -p "require('./package.json').version")
+
+          IOS_VERSION=$(eas build:version:get -p ios -e production --json --non-interactive 2>/dev/null | jq -r '.buildNumber // "0"') || IOS_VERSION="0"
+          ANDROID_VERSION=$(eas build:version:get -p android -e production --json --non-interactive 2>/dev/null | jq -r '.versionCode // "0"') || ANDROID_VERSION="0"
+
+          CURRENT_MAX=$(( IOS_VERSION > ANDROID_VERSION ? IOS_VERSION : ANDROID_VERSION ))
+          NEXT_VERSION=$(( CURRENT_MAX + 1 ))
+
+          echo "iOS: $IOS_VERSION, Android: $ANDROID_VERSION -> Next: $NEXT_VERSION"
+
+          for PLATFORM in IOS ANDROID; do
+            RESPONSE=$(curl -sf -X POST https://api.expo.dev/graphql \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $EXPO_TOKEN" \
+              -d "{\"query\":\"mutation(\$input:AppVersionInput!){appVersion{createAppVersion(appVersionInput:\$input){id}}}\",\"variables\":{\"input\":{\"appId\":\"$PROJECT_ID\",\"platform\":\"$PLATFORM\",\"applicationIdentifier\":\"$APP_ID\",\"storeVersion\":\"$STORE_VERSION\",\"buildVersion\":\"$NEXT_VERSION\"}}}")
+            echo "Set $PLATFORM version to $NEXT_VERSION: $RESPONSE"
+          done
+
+  build_android:
+    name: Build Android
+    needs: [get_android_build, sync_version]
+    if: ${{ !needs.get_android_build.outputs.build_id }}
+    type: build
+    params:
+      platform: android
+      profile: production
+
+  build_ios:
+    name: Build iOS
+    needs: [get_ios_build, sync_version]
+    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    type: build
+    params:
+      platform: ios
+      profile: production
+
+  submit_android:
+    name: Submit Android
+    needs: [build_android]
+    type: submit
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      profile: production
+
+  submit_ios:
+    name: Submit iOS
+    needs: [build_ios]
+    type: submit
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      profile: production

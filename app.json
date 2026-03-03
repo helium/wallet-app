@@ -8,9 +8,18 @@
       "react-native-ble-plx",
       {
         "isBackgroundEnabled": true,
-        "modes": ["peripheral", "central"],
+        "modes": [
+          "peripheral",
+          "central"
+        ],
         "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
       }
     ]
-  ]
+  ],
+  "extra": {
+    "eas": {
+      "projectId": "737e4e9e-0a70-4685-b6cd-4ac3e91b0286"
+    }
+  },
+  "owner": "nova-labs"
 }

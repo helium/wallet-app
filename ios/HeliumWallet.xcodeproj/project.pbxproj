@@ -52,7 +52,7 @@
 		9DB500B7285D341D009C8341 /* HeliumBalanceWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B3285D341D009C8341 /* HeliumBalanceWidget.swift */; };
 		9DB500B8285D341D009C8341 /* HeliumBalanceWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */; };
 		9DB50127285D885B009C8341 /* SmallWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB50126285D885B009C8341 /* SmallWidgetViews.swift */; };
-		9DCA365F28E6781D000F2A66 /* Charts in Frameworks */ = {isa = PBXBuildFile; productRef = 9DCA365E28E6781D000F2A66 /* Charts */; };
+		AABB000128E6781D000F2A66 /* SimpleCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB000028E6781D000F2A66 /* SimpleCharts.swift */; };
 		9DE3051C28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */; };
 		9DE3051E28510E3900E46F9B /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051D28510E3900E46F9B /* Utils.swift */; };
 		9DE305212851187D00E46F9B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DE305232851187D00E46F9B /* Localizable.strings */; };
@@ -161,6 +161,7 @@
 		9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumBalanceWidgetProvider.swift; sourceTree = "<group>"; };
 		9DB50126285D885B009C8341 /* SmallWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallWidgetViews.swift; sourceTree = "<group>"; };
 		9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetBundle.swift; sourceTree = "<group>"; };
+		AABB000028E6781D000F2A66 /* SimpleCharts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCharts.swift; sourceTree = "<group>"; };
 		9DE3051D28510E3900E46F9B /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9DE305222851187D00E46F9B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9DE3052628511C6600E46F9B /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -204,7 +205,6 @@
 				962862732BDCCAF70073839C /* BuildFile in Frameworks */,
 				9D7DB3B02850EC14004D9409 /* SwiftUI.framework in Frameworks */,
 				9D7DB3AF2850EC14004D9409 /* WidgetKit.framework in Frameworks */,
-				9DCA365F28E6781D000F2A66 /* Charts in Frameworks */,
 				2188894242E2A9D6200928CF /* libPods-HeliumWalletWidgetExtension.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -353,6 +353,14 @@
 			path = API;
 			sourceTree = "<group>";
 		};
+		AABB000228E6781D000F2A66 /* Charts */ = {
+			isa = PBXGroup;
+			children = (
+				AABB000028E6781D000F2A66 /* SimpleCharts.swift */,
+			);
+			path = Charts;
+			sourceTree = "<group>";
+		};
 		9D7DB3B12850EC14004D9409 /* HeliumWalletWidget */ = {
 			isa = PBXGroup;
 			children = (
@@ -363,6 +371,7 @@
 				9D7DB3B52850EC15004D9409 /* Assets.xcassets */,
 				9D235EA229E5B0CB00749F56 /* API */,
 				9D1EF61D2861BFDF00E4A111 /* Jazzicon */,
+				AABB000228E6781D000F2A66 /* Charts */,
 				9D05C88228527CF5008198FC /* WalletWidget */,
 				9D05C88328527D02008198FC /* HNTBalanceWidget */,
 				9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */,
@@ -476,7 +485,6 @@
 			);
 			name = HeliumWalletWidgetExtension;
 			packageProductDependencies = (
-				9DCA365E28E6781D000F2A66 /* Charts */,
 				20D8E26035C09788368A96AB /* MapLibre */,
 			);
 			productName = HeliumWalletWidgetExtension;
@@ -507,7 +515,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "heliumwallet" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "HeliumWallet" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -519,7 +527,6 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */,
 				06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -807,6 +814,7 @@
 				9D05C88B28527E6A008198FC /* HeliumWalletWidgetLargeView.swift in Sources */,
 				9D05C88728527E1E008198FC /* HeliumWalletWidgetSmallView.swift in Sources */,
 				9DF6297E28D1782D002601C9 /* HeliumTickerAccessoryRectangularView.swift in Sources */,
+				AABB000128E6781D000F2A66 /* SimpleCharts.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1255,7 +1263,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "heliumwallet" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "HeliumWallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
@@ -1293,14 +1301,6 @@
 				version = 6.11.0;
 			};
 		};
-		9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/spacenation/swiftui-charts";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1318,11 +1318,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 06CFEDB773A247562D147D60 /* XCRemoteSwiftPackageReference "maplibre-gl-native-distribution" */;
 			productName = MapLibre;
-		};
-		9DCA365E28E6781D000F2A66 /* Charts */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 9DCA365B28E67516000F2A66 /* XCRemoteSwiftPackageReference "swiftui-charts" */;
-			productName = Charts;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

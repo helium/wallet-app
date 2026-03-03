@@ -3,6 +3,7 @@
   "version": "2.15.0",
   "private": true,
   "scripts": {
+    "eas-build-post-install": "./scripts/eas-build-setup.sh",
     "postinstall": "patch-package",
     "android": "react-native run-android",
     "ios": "react-native run-ios",
