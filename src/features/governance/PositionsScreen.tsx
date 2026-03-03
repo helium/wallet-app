@@ -4,8 +4,10 @@ import ButtonPressable from '@components/ButtonPressable'
 import Dot from '@components/Dot'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
+import type { TokenAmountOutput } from '@helium/blockchain-api'
 import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
+import { NATIVE_MINT } from '@solana/spl-token'
 import {
   SubDaoWithMeta,
   calcLockupMultiplier,
@@ -47,6 +49,7 @@ export const PositionsScreen = () => {
   } = useGovernance()
   const { symbol } = useMetaplexMetadata(mint)
   const { amount: ownedAmount, decimals } = useOwnedAmount(wallet, mint)
+  const { amount: solBalance } = useOwnedAmount(wallet, NATIVE_MINT)
   const createPositionMutation = useCreatePositionMutation()
   const claimRewardsMutation = useClaimRewardsMutation()
   const delegateAllMutation = useDelegatePositionMutation()
@@ -71,6 +74,14 @@ export const PositionsScreen = () => {
   const showError = useMemo(() => {
     if (transactionError) return transactionError
   }, [transactionError])
+
+  const isInsufficientSol = useCallback(
+    (fee: TokenAmountOutput | null) => {
+      if (!fee || typeof solBalance === 'undefined') return false
+      return BigInt(fee.amount) > solBalance
+    },
+    [solBalance],
+  )
 
   const maxLockupAmount =
     ownedAmount && decimals
@@ -425,7 +436,9 @@ export const PositionsScreen = () => {
         )}
         {isLockModalOpen && (
           <LockTokensModal
-            insufficientBalance={false}
+            insufficientBalance={isInsufficientSol(
+              createPositionMutation.estimatedSolFee,
+            )}
             mint={mint}
             maxLockupAmount={maxLockupAmount}
             calcMultiplierFn={handleCalcLockupMultiplier}
@@ -448,7 +461,9 @@ export const PositionsScreen = () => {
             estimatedSolFee={
               delegateAllMutation.estimatedSolFee?.uiAmountString
             }
-            insufficientBalance={false}
+            insufficientBalance={isInsufficientSol(
+              delegateAllMutation.estimatedSolFee,
+            )}
             subDao={delegateAllSubDao}
             setSubDao={setDelegateAllSubDao}
           />
