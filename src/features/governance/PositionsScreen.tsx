@@ -431,9 +431,7 @@ export const PositionsScreen = () => {
             </Box>
           )}
         </Box>
-        {claimRewardsMutation.isPending && (
-          <ClaimingRewardsModal status={undefined} />
-        )}
+        {claimRewardsMutation.isPending && <ClaimingRewardsModal />}
         {isLockModalOpen && (
           <LockTokensModal
             insufficientBalance={isInsufficientSol(
