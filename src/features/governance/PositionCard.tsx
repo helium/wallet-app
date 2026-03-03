@@ -558,7 +558,7 @@ export const PositionCard = ({
               selected={false}
               hasPressedState={false}
             />
-            {canDelegate && (
+            {canDelegate && !isDecayed && (
               <>
                 {(showDelegationExpiringWarning ||
                   showDelegationExpiredWarning) && (
