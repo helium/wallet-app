@@ -2,6 +2,12 @@
   "name": "HeliumWallet",
   "displayName": "Helium Wallet",
   "scheme": "heliumwallet",
+  "ios": {
+    "bundleIdentifier": "com.helium.wallet.app"
+  },
+  "android": {
+    "package": "com.helium.wallet.app"
+  },
   "plugins": [
     "@maplibre/maplibre-react-native",
     [
