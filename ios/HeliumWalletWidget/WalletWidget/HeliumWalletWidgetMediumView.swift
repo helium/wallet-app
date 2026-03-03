@@ -5,7 +5,6 @@
 //  Created by Luis Perrone on 6/9/22.
 //
 
-import Charts
 import Intents
 import SwiftUI
 import WidgetKit
