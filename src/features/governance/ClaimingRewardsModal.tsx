@@ -9,29 +9,12 @@ import { Edge } from 'react-native-safe-area-context'
 import AccountIcon from '@components/AccountIcon'
 import { useTranslation } from 'react-i18next'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Status } from '@helium/spl-utils'
-import ProgressBar from '@components/ProgressBar'
 import { Platform } from 'react-native'
 
-export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
+export const ClaimingRewardsModal = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
   const edges = useMemo(() => ['bottom'] as Edge[], [])
-  const { helpText, percent } = useMemo(() => {
-    if (!status) return { helpText: 'Preparing Transactions...', percent: 0 }
-    const { totalTxs, totalProgress, currentBatchSize } = status
-
-    const remainingTxs = totalTxs - totalProgress
-    const actualBatchSize =
-      totalTxs < currentBatchSize ? totalTxs : currentBatchSize
-
-    return {
-      helpText: `Sending batch of ${actualBatchSize} transactions.\n${remainingTxs} total transaction${
-        remainingTxs > 1 ? 's' : ''
-      } remaining.`,
-      percent: (totalProgress * 100) / totalTxs,
-    }
-  }, [status])
 
   return (
     <Portal hostName="GovernancePortalHost">
@@ -93,20 +76,6 @@ export const ClaimingRewardsModal = ({ status }: { status?: Status }) => {
               </Text>
               <Text variant="subtitle4" color="flamenco" textAlign="center">
                 {t('gov.claiming.multiple')}
-              </Text>
-            </Box>
-
-            <Box alignItems="center" marginTop="m">
-              <Box flexDirection="row">
-                <ProgressBar progress={percent} />
-              </Box>
-              <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="s"
-                textAlign="center"
-              >
-                {helpText}
               </Text>
             </Box>
           </Box>

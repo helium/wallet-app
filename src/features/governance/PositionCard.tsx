@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
+import type { TokenAmountOutput } from '@helium/blockchain-api'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
@@ -9,7 +10,11 @@ import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { TASK_QUEUE, useDelegationClaimBot } from '@helium/automation-hooks'
-import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
+import {
+  useMint,
+  useOwnedAmount,
+  useSolanaUnixNow,
+} from '@helium/helium-react-hooks'
 import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
 import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
 import { organizationKey } from '@helium/organization-sdk'
@@ -22,9 +27,11 @@ import {
   useRegistrar,
 } from '@helium/voter-stake-registry-hooks'
 import useAlert from '@hooks/useAlert'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
@@ -69,7 +76,9 @@ export const PositionCard = ({
   ...boxProps
 }: IPositionCardProps) => {
   const { t } = useTranslation()
+  const wallet = useCurrentWallet()
   const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
+  const { amount: solBalance } = useOwnedAmount(wallet, NATIVE_MINT)
   const { showOKAlert } = useAlert()
   const extendMutation = useExtendPositionMutation()
   const splitMutation = useSplitPositionMutation()
@@ -232,6 +241,13 @@ export const PositionCard = ({
   const maxActionableAmount = mintAcc
     ? toNumber(position.amountDepositedNative, mintAcc)
     : 0
+  const isInsufficientSol = useCallback(
+    (fee: TokenAmountOutput | null) => {
+      if (!fee || typeof solBalance === 'undefined') return false
+      return BigInt(fee.amount) > solBalance
+    },
+    [solBalance],
+  )
   const canDelegate = votingMint.mint.equals(HNT_MINT)
 
   const { info: registrar = null } = useRegistrar(position.registrar)
@@ -542,7 +558,7 @@ export const PositionCard = ({
               selected={false}
               hasPressedState={false}
             />
-            {canDelegate && (
+            {canDelegate && !isDecayed && (
               <>
                 {(showDelegationExpiringWarning ||
                   showDelegationExpiredWarning) && (
@@ -1019,7 +1035,9 @@ export const PositionCard = ({
           </BlurActionSheet>
           {isExtendModalOpen && (
             <LockTokensModal
-              insufficientBalance={false}
+              insufficientBalance={isInsufficientSol(
+                extendMutation.estimatedSolFee,
+              )}
               mint={mint}
               mode="extend"
               minLockupTimeInDays={
@@ -1052,7 +1070,9 @@ export const PositionCard = ({
           )}
           {isSplitModalOpen && (
             <LockTokensModal
-              insufficientBalance={false}
+              insufficientBalance={isInsufficientSol(
+                splitMutation.estimatedSolFee,
+              )}
               mint={mint}
               mode="split"
               minLockupTimeInDays={
@@ -1099,7 +1119,9 @@ export const PositionCard = ({
               onClose={() => setIsDelegateModalOpen(false)}
               onSubmit={handleDelegateTokens}
               estimatedSolFee={delegateMutation.estimatedSolFee?.uiAmountString}
-              insufficientBalance={false}
+              insufficientBalance={isInsufficientSol(
+                delegateMutation.estimatedSolFee,
+              )}
               subDao={subDao}
               setSubDao={setSubDao}
             />
