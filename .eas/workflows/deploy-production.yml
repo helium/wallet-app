@@ -56,29 +56,23 @@ jobs:
           VERSION_CODE=$(date +%s)
           echo "Setting version code to $VERSION_CODE"
 
+          PROJECT_ID="737e4e9e-0a70-4685-b6cd-4ac3e91b0286"
           STORE_VERSION=$(node -p "require('./package.json').version")
 
-          # Update app.json with the timestamp version code
-          node -e "
-            const fs = require('fs');
-            const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
-            app.ios = app.ios || {};
-            app.ios.buildNumber = '$VERSION_CODE';
-            app.android = app.android || {};
-            app.android.versionCode = $VERSION_CODE;
-            app.version = '$STORE_VERSION';
-            fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
-          "
-
-          cat app.json
+          APP_ID="com.helium.wallet.app"
+          for PLATFORM in IOS ANDROID; do
+            RESPONSE=$(curl -sf -X POST https://api.expo.dev/graphql \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer $EXPO_TOKEN" \
+              -d "{\"query\":\"mutation(\$input:AppVersionInput!){appVersion{createAppVersion(appVersionInput:\$input){id}}}\",\"variables\":{\"input\":{\"appId\":\"$PROJECT_ID\",\"platform\":\"$PLATFORM\",\"applicationIdentifier\":\"$APP_ID\",\"storeVersion\":\"$STORE_VERSION\",\"buildVersion\":\"$VERSION_CODE\"}}}")
+            echo "Set $PLATFORM version to $VERSION_CODE: $RESPONSE"
+          done
 
   build_android:
     name: Build Android
     needs: [get_android_build, set_version]
     if: ${{ !needs.get_android_build.outputs.build_id }}
     type: build
-    env:
-      EXPO_DEBUG: '1'
     params:
       platform: android
       profile: production
