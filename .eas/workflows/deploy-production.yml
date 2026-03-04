@@ -81,6 +81,8 @@ jobs:
     needs: [get_android_build, sync_version]
     if: ${{ !needs.get_android_build.outputs.build_id }}
     type: build
+    env:
+      EXPO_DEBUG: '1'
     params:
       platform: android
       profile: production
