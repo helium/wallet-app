@@ -43,42 +43,34 @@ jobs:
       fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
       profile: production
 
-  sync_version:
-    name: Sync build version
+  set_version:
+    name: Set version code to timestamp
     needs: [get_android_build, get_ios_build]
     if: ${{ !needs.get_ios_build.outputs.build_id || !needs.get_android_build.outputs.build_id }}
     environment: production
     steps:
       - uses: eas/checkout
       - uses: eas/install_node_modules
-      - id: sync
-        name: Increment and sync build number
+      - name: Set version code as unix timestamp
         run: |
-          npm install -g eas-cli
+          VERSION_CODE=$(date +%s)
+          echo "Setting version code to $VERSION_CODE"
 
           PROJECT_ID="737e4e9e-0a70-4685-b6cd-4ac3e91b0286"
-          APP_ID="com.helium.wallet.app"
           STORE_VERSION=$(node -p "require('./package.json').version")
 
-          IOS_VERSION=$(eas build:version:get -p ios -e production --json --non-interactive 2>/dev/null | jq -r '.buildNumber // "0"') || IOS_VERSION="0"
-          ANDROID_VERSION=$(eas build:version:get -p android -e production --json --non-interactive 2>/dev/null | jq -r '.versionCode // "0"') || ANDROID_VERSION="0"
-
-          CURRENT_MAX=$(( IOS_VERSION > ANDROID_VERSION ? IOS_VERSION : ANDROID_VERSION ))
-          NEXT_VERSION=$(( CURRENT_MAX + 1 ))
-
-          echo "iOS: $IOS_VERSION, Android: $ANDROID_VERSION -> Next: $NEXT_VERSION"
-
+          APP_ID="com.helium.wallet.app"
           for PLATFORM in IOS ANDROID; do
             RESPONSE=$(curl -sf -X POST https://api.expo.dev/graphql \
               -H "Content-Type: application/json" \
               -H "Authorization: Bearer $EXPO_TOKEN" \
-              -d "{\"query\":\"mutation(\$input:AppVersionInput!){appVersion{createAppVersion(appVersionInput:\$input){id}}}\",\"variables\":{\"input\":{\"appId\":\"$PROJECT_ID\",\"platform\":\"$PLATFORM\",\"applicationIdentifier\":\"$APP_ID\",\"storeVersion\":\"$STORE_VERSION\",\"buildVersion\":\"$NEXT_VERSION\"}}}")
-            echo "Set $PLATFORM version to $NEXT_VERSION: $RESPONSE"
+              -d "{\"query\":\"mutation(\$input:AppVersionInput!){appVersion{createAppVersion(appVersionInput:\$input){id}}}\",\"variables\":{\"input\":{\"appId\":\"$PROJECT_ID\",\"platform\":\"$PLATFORM\",\"applicationIdentifier\":\"$APP_ID\",\"storeVersion\":\"$STORE_VERSION\",\"buildVersion\":\"$VERSION_CODE\"}}}")
+            echo "Set $PLATFORM version to $VERSION_CODE: $RESPONSE"
           done
 
   build_android:
     name: Build Android
-    needs: [get_android_build, sync_version]
+    needs: [get_android_build, set_version]
     if: ${{ !needs.get_android_build.outputs.build_id }}
     type: build
     params:
@@ -87,7 +79,7 @@ jobs:
 
   build_ios:
     name: Build iOS
-    needs: [get_ios_build, sync_version]
+    needs: [get_ios_build, set_version]
     if: ${{ !needs.get_ios_build.outputs.build_id }}
     type: build
     params:
