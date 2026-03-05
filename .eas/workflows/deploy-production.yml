@@ -57,9 +57,9 @@ jobs:
           echo "Setting version code to $VERSION_CODE"
 
           PROJECT_ID="737e4e9e-0a70-4685-b6cd-4ac3e91b0286"
-          APP_ID="com.helium.wallet.app"
           STORE_VERSION=$(node -p "require('./package.json').version")
 
+          APP_ID="com.helium.wallet.app"
           for PLATFORM in IOS ANDROID; do
             RESPONSE=$(curl -sf -X POST https://api.expo.dev/graphql \
               -H "Content-Type: application/json" \
