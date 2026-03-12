@@ -131,6 +131,7 @@ const KeystoneModal = forwardRef(
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
+            enableDynamicSizing={false}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
             snapPoints={snapPoints}

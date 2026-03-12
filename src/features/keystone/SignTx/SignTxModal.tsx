@@ -61,17 +61,21 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
 
   return (
     <SafeAreaBox flex={1} edges={['top']}>
-      <CameraView
-        onBarcodeScanned={handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ['qr'],
-        }}
-        style={StyleSheet.absoluteFillObject}
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        ratio="16:9"
-      />
-      <CameraScannerLayout />
+      {hasPermission === true && (
+        <>
+          <CameraView
+            onBarcodeScanned={handleBarCodeScanned}
+            barcodeScannerSettings={{
+              barcodeTypes: ['qr'],
+            }}
+            style={StyleSheet.absoluteFillObject}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            ratio="16:9"
+          />
+          <CameraScannerLayout />
+        </>
+      )}
       {progress > 0 && (
         <Box position="absolute" bottom="25%" width="70%" alignSelf="center">
           <ProgressBar progress={progress} />
@@ -103,6 +107,7 @@ const ScanTxQrcodeScreen = ({
   const keystoneSDK = useMemo(() => new KeystoneSDK(), [])
   const decoder = useMemo(() => new URDecoder(), [])
   const solSignRequestUr = useMemo(() => {
+    if (!solSignRequest?.requestId) return undefined
     return keystoneSDK.sol.generateSignRequest(solSignRequest)
   }, [keystoneSDK, solSignRequest])
   const [openQrCodeScanner, setOpenQrCodeScanner] = useState(false)
