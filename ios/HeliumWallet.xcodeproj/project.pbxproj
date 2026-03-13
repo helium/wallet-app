@@ -52,13 +52,13 @@
 		9DB500B7285D341D009C8341 /* HeliumBalanceWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B3285D341D009C8341 /* HeliumBalanceWidget.swift */; };
 		9DB500B8285D341D009C8341 /* HeliumBalanceWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */; };
 		9DB50127285D885B009C8341 /* SmallWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DB50126285D885B009C8341 /* SmallWidgetViews.swift */; };
-		AABB000128E6781D000F2A66 /* SimpleCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB000028E6781D000F2A66 /* SimpleCharts.swift */; };
 		9DE3051C28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */; };
 		9DE3051E28510E3900E46F9B /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE3051D28510E3900E46F9B /* Utils.swift */; };
 		9DE305212851187D00E46F9B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9DE305232851187D00E46F9B /* Localizable.strings */; };
 		9DF6297C28D159FD002601C9 /* HeliumTickerAccessoryCornerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF6297B28D159FD002601C9 /* HeliumTickerAccessoryCornerView.swift */; };
 		9DF6297E28D1782D002601C9 /* HeliumTickerAccessoryRectangularView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF6297D28D1782D002601C9 /* HeliumTickerAccessoryRectangularView.swift */; };
 		9DF6298128D1787A002601C9 /* HeliumTickerAccessoryInlineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF6298028D1787A002601C9 /* HeliumTickerAccessoryInlineView.swift */; };
+		AABB000128E6781D000F2A66 /* SimpleCharts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB000028E6781D000F2A66 /* SimpleCharts.swift */; };
 		AB02F1297F7F91A0FD2532BD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 99ED3018E9DBF6106B1DE1A7 /* PrivacyInfo.xcprivacy */; };
 		C966C050E605941611E660B7 /* libPods-HeliumWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BFE31CB750C75D3C767C1700 /* libPods-HeliumWallet.a */; };
 		DA5931993F79BF7C6BB768B8 /* libPods-OneSignalNotificationServiceExtension.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E14ED35CC787A3A8771C2FBA /* libPods-OneSignalNotificationServiceExtension.a */; };
@@ -161,7 +161,6 @@
 		9DB500B4285D341D009C8341 /* HeliumBalanceWidgetProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeliumBalanceWidgetProvider.swift; sourceTree = "<group>"; };
 		9DB50126285D885B009C8341 /* SmallWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmallWidgetViews.swift; sourceTree = "<group>"; };
 		9DE3051B28510B8E00E46F9B /* HeliumWalletWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetBundle.swift; sourceTree = "<group>"; };
-		AABB000028E6781D000F2A66 /* SimpleCharts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCharts.swift; sourceTree = "<group>"; };
 		9DE3051D28510E3900E46F9B /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		9DE305222851187D00E46F9B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		9DE3052628511C6600E46F9B /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -169,6 +168,7 @@
 		9DF6297B28D159FD002601C9 /* HeliumTickerAccessoryCornerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumTickerAccessoryCornerView.swift; sourceTree = "<group>"; };
 		9DF6297D28D1782D002601C9 /* HeliumTickerAccessoryRectangularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumTickerAccessoryRectangularView.swift; sourceTree = "<group>"; };
 		9DF6298028D1787A002601C9 /* HeliumTickerAccessoryInlineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumTickerAccessoryInlineView.swift; sourceTree = "<group>"; };
+		AABB000028E6781D000F2A66 /* SimpleCharts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleCharts.swift; sourceTree = "<group>"; };
 		B35755030E7A27395A4C88DF /* Pods-HeliumWalletWidgetExtension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWalletWidgetExtension.release.xcconfig"; path = "Target Support Files/Pods-HeliumWalletWidgetExtension/Pods-HeliumWalletWidgetExtension.release.xcconfig"; sourceTree = "<group>"; };
 		BFE31CB750C75D3C767C1700 /* libPods-HeliumWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HeliumWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E14ED35CC787A3A8771C2FBA /* libPods-OneSignalNotificationServiceExtension.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-OneSignalNotificationServiceExtension.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -353,14 +353,6 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		AABB000228E6781D000F2A66 /* Charts */ = {
-			isa = PBXGroup;
-			children = (
-				AABB000028E6781D000F2A66 /* SimpleCharts.swift */,
-			);
-			path = Charts;
-			sourceTree = "<group>";
-		};
 		9D7DB3B12850EC14004D9409 /* HeliumWalletWidget */ = {
 			isa = PBXGroup;
 			children = (
@@ -391,6 +383,14 @@
 				9DF6297B28D159FD002601C9 /* HeliumTickerAccessoryCornerView.swift */,
 			);
 			path = AccessoryViews;
+			sourceTree = "<group>";
+		};
+		AABB000228E6781D000F2A66 /* Charts */ = {
+			isa = PBXGroup;
+			children = (
+				AABB000028E6781D000F2A66 /* SimpleCharts.swift */,
+			);
+			path = Charts;
 			sourceTree = "<group>";
 		};
 		D467E3A104C283AE1AD782AF /* HeliumWallet */ = {
@@ -515,7 +515,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "HeliumWallet" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "heliumwallet" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -1263,7 +1263,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "HeliumWallet" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "heliumwallet" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
