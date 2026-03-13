@@ -2367,9 +2367,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gorhom/bottom-sheet@npm:5.2.8":
-  version: 5.2.8
-  resolution: "@gorhom/bottom-sheet@npm:5.2.8"
+"@gorhom/bottom-sheet@npm:5.1.2":
+  version: 5.1.2
+  resolution: "@gorhom/bottom-sheet@npm:5.1.2"
   dependencies:
     "@gorhom/portal": "npm:1.0.14"
     invariant: "npm:^2.2.4"
@@ -2379,13 +2379,13 @@ __metadata:
     react: "*"
     react-native: "*"
     react-native-gesture-handler: ">=2.16.1"
-    react-native-reanimated: "*"
+    react-native-reanimated: ">=3.16.0"
   peerDependenciesMeta:
     "@types/react":
       optional: true
     "@types/react-native":
       optional: true
-  checksum: 10/b237f04dfd2b7ea2a24b12d2186f38b8debf95a5ef660802f7c2a19998ec8a7f7d599cd9079b9ba5bba2c6958cee2040d3d1adc3d3ace8c4964a469c751f4a5a
+  checksum: 10/dee116bdb749643bde163dd88c7fb800988472d58cf38532bc1b034ca1153cb250f2c8c83f2c4b393e39019f6205ca28be018eed47ae4767c75ff4983de8a151
   languageName: node
   linkType: hard
 
@@ -12637,7 +12637,7 @@ __metadata:
     "@babel/runtime": "npm:7.26.10"
     "@bonfida/spl-name-service": "npm:1.1.1"
     "@coral-xyz/anchor": "npm:0.31.0"
-    "@gorhom/bottom-sheet": "npm:5.2.8"
+    "@gorhom/bottom-sheet": "npm:5.1.2"
     "@gorhom/portal": "npm:1.0.14"
     "@helium/account-fetch-cache": "npm:0.11.4"
     "@helium/account-fetch-cache-hooks": "npm:0.11.4"
