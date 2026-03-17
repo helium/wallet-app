@@ -30,8 +30,7 @@ jobs:
 
   build_android:
     name: Build Android
-    needs: [get_android_build, set_version]
-    if: ${{ !needs.get_android_build.outputs.build_id }}
+    needs: [set_version]
     type: build
     params:
       platform: android
@@ -39,8 +38,7 @@ jobs:
 
   build_ios:
     name: Build iOS
-    needs: [get_ios_build, set_version]
-    if: ${{ !needs.get_ios_build.outputs.build_id }}
+    needs: [set_version]
     type: build
     params:
       platform: ios
