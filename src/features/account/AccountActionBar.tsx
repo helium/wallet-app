@@ -127,8 +127,7 @@ const AccountActionBar = ({
             iconColor="greenBright500"
             title={compact || maxCompact ? undefined : t('accountView.deposit')}
             onPress={handleAction('request')}
-            width={maxCompact ? 47.5 : undefined}
-            height={maxCompact ? 47.5 : undefined}
+            {...(maxCompact && { width: 47.5, height: 47.5 })}
             justifyContent="center"
           />
           {hasBottomTitle && (
@@ -158,8 +157,7 @@ const AccountActionBar = ({
             iconColor="orange500"
             title={compact || maxCompact ? undefined : t('accountView.swaps')}
             onPress={handleAction('swaps')}
-            width={maxCompact ? 47.5 : undefined}
-            height={maxCompact ? 47.5 : undefined}
+            {...(maxCompact && { width: 47.5, height: 47.5 })}
             justifyContent="center"
           />
           {hasBottomTitle && (
@@ -191,8 +189,7 @@ const AccountActionBar = ({
               compact || maxCompact ? undefined : t('airdropScreen.airdrop')
             }
             onPress={handleAction('airdrop')}
-            width={maxCompact ? 47.5 : undefined}
-            height={maxCompact ? 47.5 : undefined}
+            {...(maxCompact && { width: 47.5, height: 47.5 })}
             justifyContent="center"
           />
           {hasBottomTitle && (
@@ -223,8 +220,7 @@ const AccountActionBar = ({
             title={compact || maxCompact ? undefined : t('accountView.send')}
             onPress={handleAction('send')}
             reverse
-            width={maxCompact ? 47.5 : undefined}
-            height={maxCompact ? 47.5 : undefined}
+            {...(maxCompact && { width: 47.5, height: 47.5 })}
             justifyContent="center"
           />
           {hasBottomTitle && (
@@ -250,8 +246,7 @@ const AccountActionBar = ({
           title={compact || maxCompact ? undefined : t('accountView.delegate')}
           onPress={handleAction('delegate')}
           reverse
-          width={maxCompact ? 47.5 : undefined}
-          height={maxCompact ? 47.5 : undefined}
+          {...(maxCompact && { width: 47.5, height: 47.5 })}
           justifyContent="center"
         />
       )}
