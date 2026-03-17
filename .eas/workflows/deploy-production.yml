@@ -5,48 +5,8 @@ on:
     branches: ['main']
 
 jobs:
-  fingerprint:
-    name: Fingerprint
-    environment: production
-    outputs:
-      android_fingerprint_hash: ${{ steps.fingerprint_android.outputs.hash }}
-      ios_fingerprint_hash: ${{ steps.fingerprint_ios.outputs.hash }}
-    steps:
-      - uses: eas/checkout
-      - uses: eas/install_node_modules
-      - id: fingerprint_android
-        name: Calculate Android fingerprint
-        run: |
-          HASH=$(npx @expo/fingerprint fingerprint:generate --platform android | jq -r '.hash')
-          echo "Android fingerprint: $HASH"
-          set-output hash "$HASH"
-      - id: fingerprint_ios
-        name: Calculate iOS fingerprint
-        run: |
-          HASH=$(npx @expo/fingerprint fingerprint:generate --platform ios | jq -r '.hash')
-          echo "iOS fingerprint: $HASH"
-          set-output hash "$HASH"
-
-  get_android_build:
-    name: Get Android build
-    needs: [fingerprint]
-    type: get-build
-    params:
-      fingerprint_hash: ${{ needs.fingerprint.outputs.android_fingerprint_hash }}
-      profile: production
-
-  get_ios_build:
-    name: Get iOS build
-    needs: [fingerprint]
-    type: get-build
-    params:
-      fingerprint_hash: ${{ needs.fingerprint.outputs.ios_fingerprint_hash }}
-      profile: production
-
   set_version:
     name: Set version code to timestamp
-    needs: [get_android_build, get_ios_build]
-    if: ${{ !needs.get_ios_build.outputs.build_id || !needs.get_android_build.outputs.build_id }}
     environment: production
     steps:
       - uses: eas/checkout
