@@ -735,6 +735,7 @@ export default {
     dBi: 'dBi',
     gain: 'Gain',
     maker: 'Maker',
+    dismiss: 'Dismiss',
     elevation: 'Elevation',
     radioType: 'Radio Type',
     coverage: 'Coverage',
@@ -1118,6 +1119,7 @@ export default {
         },
         title: '{{alias}} Wallet Settings',
         migrateWallet: 'Migrate Wallet',
+        migrateToWorld: 'Migrate to Helium World',
       },
       app: {
         convertHntToCurrency: 'Convert HNT to Currency',
@@ -1551,5 +1553,86 @@ export default {
     error: 'An error occurred. Please try again.',
     estimatedReceive: 'Estimated HNT you will receive',
     calculatingEstimate: 'Calculating estimate...',
+  },
+  migrateToWorldModal: {
+    welcome: {
+      title: 'Helium World is Here',
+      body: "We're moving to a new web experience with improved analytics about your hotspots, rewards, and deployment locations — plus new features like rewards splitting.\n\nThis wallet app will eventually be sunset. Let's get you set up on Helium World.",
+      next: 'Get Started',
+    },
+    choosePath: {
+      title: 'How would you like to continue?',
+      emailTitle: 'Login with Email',
+      emailBody:
+        "Create a Helium World account linked to your email. We'll migrate your assets for you.",
+      selfCustodyTitle: 'Use Your Own Wallet',
+      selfCustodyBody:
+        'Export your private key and import it into Phantom or Solflare, then use that wallet on Helium World.',
+    },
+    selfCustody: {
+      title: 'Set Up Your Wallet',
+      step1Title: '1. Get a wallet app',
+      step1Body:
+        'Download Phantom (phantom.app) or Solflare (solflare.com) on your phone or as a browser extension.',
+      step2Title: '2. Export your private key',
+      step2Body:
+        'In this app, go to Settings > Reveal Private Key. Copy it somewhere safe — never share it with anyone.',
+      step2Button: 'Go to Reveal Private Key',
+      step3Title: '3. Import into your new wallet',
+      step3Body:
+        'In Phantom or Solflare, choose "Import Wallet" and paste your private key. Your assets will appear automatically.',
+      step4Title: '4. Log in to Helium World',
+      step4Body:
+        "Go to world.helium.com and connect your Phantom or Solflare wallet. You're all set.",
+      openPhantom: 'Visit phantom.app',
+      openSolflare: 'Visit solflare.com',
+      warning:
+        'Your private key gives full access to your wallet. Never share it, screenshot it, or paste it anywhere other than a trusted wallet app.',
+    },
+    dismiss: 'Dismiss',
+    findInSettings: 'You can find this later in Settings',
+  },
+  migrateToWorld: {
+    linkEmail: {
+      title: 'Link Your Email',
+      body: 'Link an email address to create your Helium World account.',
+      button: 'Link Email',
+    },
+    createWallet: {
+      title: 'Create Wallet',
+      body: 'Creating a wallet linked to your email address.',
+      button: 'Create Wallet',
+    },
+    selectAssets: {
+      title: 'Select Assets to Migrate',
+      hotspots: 'Hotspots',
+      tokens: 'Tokens',
+      selectAll: 'Select All',
+      deselectAll: 'Deselect All',
+      noHotspots: 'No hotspots found.',
+      noTokens: 'No token balances found.',
+      loading: 'Loading assets...',
+      review: 'Review Migration',
+    },
+    confirm: {
+      title: 'Confirm Migration',
+      source: 'From',
+      destination: 'To',
+      button: 'Confirm & Migrate',
+      back: 'Back',
+    },
+    migrating: {
+      title: 'Migrating...',
+      batch: 'Processing batch {{num}}',
+    },
+    success: {
+      title: 'Migration Complete',
+      body: 'Your assets have been successfully migrated to Helium World.',
+      goToWorld: 'Go to Helium World',
+    },
+    error: {
+      signFailed: 'Wallet failed to sign the transaction.',
+      generic: 'Migration failed. Please try again.',
+    },
   },
 }

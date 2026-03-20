@@ -18,6 +18,7 @@ import {
 const VOTE_TUTORIAL_SHOWN = 'voteTutorialShown'
 const DAPP_TUTORIAL_SHOWN = 'dAppTutorialShown'
 const DEPRECATED_TOKENS_DISMISSED = 'deprecatedTokensDismissedByWallet'
+const MIGRATE_TO_WORLD_DISMISSED = 'migrateToWorldDismissedByWallet'
 
 const useAppStorageHook = () => {
   const [autoGasManagementToken, setAutoGasManagementToken] = useState<
@@ -52,6 +53,9 @@ const useAppStorageHook = () => {
   const [showNumericChange, setShowNumericChange] = useState(false)
   const [deprecatedTokensDismissed, setDeprecatedTokensDismissed] = useState<
     Record<string, { dismissCount: number; lastDismissedAt: number }>
+  >({})
+  const [migrateToWorldDismissed, setMigrateToWorldDismissed] = useState<
+    Record<string, boolean>
   >({})
   const [doneSolanaMigration, setDoneSolanaMigration] = useState<
     Record<Cluster, string[]>
@@ -94,6 +98,12 @@ const useAppStorageHook = () => {
       const nextDeprecatedTokensDismissed = nextDeprecatedTokensDismissedStr
         ? JSON.parse(nextDeprecatedTokensDismissedStr)
         : {}
+      const nextMigrateToWorldDismissedStr = await AsyncStorage.getItem(
+        MIGRATE_TO_WORLD_DISMISSED,
+      )
+      const nextMigrateToWorldDismissed = nextMigrateToWorldDismissedStr
+        ? JSON.parse(nextMigrateToWorldDismissedStr)
+        : {}
       const nextShowNumericChange = await getSecureItem('showNumericChange')
       const nextDoneSolanaMigration = await getSecureItem(
         SecureStorageKeys.DONE_SOLANA_MIGRATION,
@@ -129,6 +139,7 @@ const useAppStorageHook = () => {
       )
       setVoteTutorialShown(nextVoteShown === 'true')
       setDeprecatedTokensDismissed(nextDeprecatedTokensDismissed)
+      setMigrateToWorldDismissed(nextMigrateToWorldDismissed)
       setShowNumericChange(nextShowNumericChange === 'true')
       setSessionKey(nextSessionKey || '')
       setDoneSolanaMigration(
@@ -256,6 +267,28 @@ const useAppStorageHook = () => {
     [deprecatedTokensDismissed],
   )
 
+  const dismissMigrateToWorld = useCallback(
+    async (walletAddress: string) => {
+      const updated = {
+        ...migrateToWorldDismissed,
+        [walletAddress]: true,
+      }
+      setMigrateToWorldDismissed(updated)
+      return AsyncStorage.setItem(
+        MIGRATE_TO_WORLD_DISMISSED,
+        JSON.stringify(updated),
+      )
+    },
+    [migrateToWorldDismissed],
+  )
+
+  const shouldShowMigrateToWorld = useCallback(
+    (walletAddress: string) => {
+      return !migrateToWorldDismissed[walletAddress]
+    },
+    [migrateToWorldDismissed],
+  )
+
   const updateShowNumericChange = useCallback(async (useNumeric: boolean) => {
     setShowNumericChange(useNumeric)
     return storeSecureItem('showNumericChange', useNumeric ? 'true' : 'false')
@@ -319,6 +352,8 @@ const useAppStorageHook = () => {
     deprecatedTokensDismissed,
     dismissDeprecatedTokens,
     shouldShowDeprecatedTokens,
+    dismissMigrateToWorld,
+    shouldShowMigrateToWorld,
     showNumericChange,
     sessionKey,
     doneSolanaMigration,
@@ -357,6 +392,8 @@ const initialState = {
   deprecatedTokensDismissed: {},
   dismissDeprecatedTokens: async () => undefined,
   shouldShowDeprecatedTokens: () => true,
+  dismissMigrateToWorld: async () => undefined,
+  shouldShowMigrateToWorld: () => true,
   updateEnableHaptic: async () => undefined,
   updateAutoGasManagementToken: async () => undefined,
   updateAuthInterval: async () => undefined,

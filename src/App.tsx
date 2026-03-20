@@ -28,6 +28,8 @@ import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingPr
 import LockScreen from './features/lock/LockScreen'
 import DeprecatedTokensCheck from './features/modals/DeprecatedTokensCheck'
 import DeprecatedTokensModal from './features/modals/DeprecatedTokensModal'
+import MigrateToWorldCheck from './features/modals/MigrateToWorldCheck'
+import MigrateToWorldModal from './features/modals/MigrateToWorldModal'
 import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
 import { DeprecatedTokensProvider } from './storage/DeprecatedTokensProvider'
 import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
@@ -153,6 +155,8 @@ const App = () => {
 
                                                 {/* place app specific modals here */}
                                                 <InsufficientSolConversionModal />
+                                                <MigrateToWorldModal />
+                                                <MigrateToWorldCheck />
                                                 <JupiterProvider>
                                                   <DeprecatedTokensProvider>
                                                     <DeprecatedTokensModal />
