@@ -7,7 +7,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
-import { apiContract } from '@helium/blockchain-api'
+import { fullApiContract } from '@helium/blockchain-api'
 import { ContractRouterClient } from '@orpc/contract'
 import { BoxProps } from '@shopify/restyle'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -29,7 +29,7 @@ import { useAppDispatch } from '../../store/store'
 import * as Logger from '../../utils/logger'
 
 async function migrateWallet(
-  client: ContractRouterClient<typeof apiContract>,
+  client: ContractRouterClient<typeof fullApiContract>,
   wallet: string,
   onProgress: (progress: number, total: number) => void,
 ) {
@@ -106,7 +106,33 @@ const SolanaMigration = ({
         !manual)
     )
       return
-    // eslint-disable-next-line no-console
+
+    // Check if there are actually transactions to migrate before proceeding
+    try {
+      const url = `${Config.MIGRATION_SERVER_URL}/migrate/${currentAccount.solanaAddress}`
+      const { transactions } = (await axios.get(url)).data
+      if (!transactions || transactions.length === 0) {
+        // No transactions to migrate — mark as done so overlay doesn't show again
+        if (!manual) {
+          await updateDoneSolanaMigration({
+            cluster,
+            address: currentAccount.solanaAddress,
+          })
+        }
+        return
+      }
+    } catch (e) {
+      Logger.error(e)
+      // If check fails, mark as done to avoid blocking the user
+      if (!manual) {
+        await updateDoneSolanaMigration({
+          cluster,
+          address: currentAccount.solanaAddress,
+        })
+      }
+      return
+    }
+
     try {
       await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
 

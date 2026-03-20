@@ -20,7 +20,10 @@
         ],
         "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
       }
-    ]
+    ],
+    "expo-font",
+    "expo-secure-store",
+    "expo-web-browser"
   ],
   "extra": {
     "eas": {
