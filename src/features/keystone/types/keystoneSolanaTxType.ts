@@ -4,6 +4,5 @@ export type KeystoneSolSignRequest = {
   dataType: number
   path: string
   xfp: string
-  chainId: number
   origin: string
 }
