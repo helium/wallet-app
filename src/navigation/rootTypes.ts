@@ -1,6 +1,5 @@
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { KeystoneAccountType } from 'src/features/keystone/SelectKeystoneAccountsScreen'
 import { PaymentRouteParam } from '../features/home/homeTypes'
 
 export type RootStackParamList = {
@@ -12,8 +11,6 @@ export type RootStackParamList = {
   RequestScreen: undefined
   DappLoginScreen: { uri: string; callback: string }
   ImportPrivateKey: { key?: string }
-  SelectKeystoneAccounts: { derivationAccounts: KeystoneAccountType[] }
-  ScanQrCode: undefined
 }
 
 export type TabBarStackParamList = {

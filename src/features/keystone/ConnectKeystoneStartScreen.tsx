@@ -20,7 +20,7 @@ import { useOpacity, useSpacing } from '@theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
 import { t } from 'i18next'
-import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 import { Image, Linking, Platform } from 'react-native'
 
 type CameraPermissionBottomSheetAlertRef = {
@@ -127,14 +127,14 @@ const ConnectKeystoneStart = () => {
   const { hasPermission } = useCamera()
   const cameraPermissionBottomSheetAlertRef =
     useRef<CameraPermissionBottomSheetAlertRef>(null)
-  const rootNav = useNavigation<RootNavigationProp>()
+  const navigation = useNavigation<AddNewAccountNavigationProp>()
   const handleStart = useCallback(() => {
     if (!hasPermission) {
       cameraPermissionBottomSheetAlertRef.current?.show()
     } else {
-      rootNav.navigate('ScanQrCode')
+      navigation.navigate('KeystoneNavigator')
     }
-  }, [rootNav, hasPermission])
+  }, [navigation, hasPermission])
   return (
     <SafeAreaBox
       flex={1}

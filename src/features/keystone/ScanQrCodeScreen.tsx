@@ -3,15 +3,21 @@ import DynamicQrScanner from '@components/DynamicQrScanner'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { URDecoder } from '@ngraveio/bc-ur'
 import KeystoneSDK, { MultiAccounts, UR } from '@keystonehq/keystone-sdk'
-import { RootNavigationProp } from 'src/navigation/rootTypes'
 import { useNavigation } from '@react-navigation/native'
+import { StackNavigationProp } from '@react-navigation/stack'
 import { Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { KeystoneAccountType } from './SelectKeystoneAccountsScreen'
 
+type KeystoneStackParamList = {
+  ScanQrCode: undefined
+  SelectKeystoneAccounts: { derivationAccounts: KeystoneAccountType[] }
+}
+
 const ScanQrCodeScreen = () => {
   const { t } = useTranslation()
-  const navigation = useNavigation<RootNavigationProp>()
+  const navigation =
+    useNavigation<StackNavigationProp<KeystoneStackParamList>>()
   const [multiAccounts, setMultiAccounts] = useState<MultiAccounts>()
   const decoder = useMemo(() => new URDecoder(), [])
   const [isScanQrCodeComplete, setIsScanQrCodeComplete] = useState(false)

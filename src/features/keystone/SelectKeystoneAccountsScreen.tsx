@@ -12,10 +12,7 @@ import TouchableContainer from '@components/TouchableContainer'
 import { humanReadable } from '@helium/spl-utils'
 import BN from 'bn.js'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import {
-  RootNavigationProp,
-  RootStackParamList,
-} from 'src/navigation/rootTypes'
+import { RootNavigationProp } from 'src/navigation/rootTypes'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import base58 from 'bs58'
@@ -33,8 +30,12 @@ export type KeystoneAccountType = {
   balanceSol?: string
 }
 
+type KeystoneStackParamList = {
+  SelectKeystoneAccounts: { derivationAccounts: KeystoneAccountType[] }
+}
+
 type SelectKeystoneAccountsScreenRouteProp = RouteProp<
-  RootStackParamList,
+  KeystoneStackParamList,
   'SelectKeystoneAccounts'
 >
 
