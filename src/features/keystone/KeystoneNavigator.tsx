@@ -3,8 +3,9 @@ import { createStackNavigator } from '@react-navigation/stack'
 import ScanQrCode from './ScanQrCodeScreen'
 import SelectKeystoneAccountsScreen from './SelectKeystoneAccountsScreen'
 import KeystoneAccountAssignScreen from './KeystoneAccountAssignScreen'
+import { KeystoneStackParamList } from './keystoneNavigatorTypes'
 
-const KeystoneStack = createStackNavigator()
+const KeystoneStack = createStackNavigator<KeystoneStackParamList>()
 
 const KeystoneNavigator = () => {
   return (
