@@ -65,10 +65,9 @@ const KeystoneModal = forwardRef(
           setSolSignRequest({
             requestId,
             signData: transaction.toString('hex'),
-            dataType: KeystoneSolanaSDK.DataType.Message,
+            dataType: KeystoneSolanaSDK.DataType.Transaction,
             path: currentAccount?.derivationPath || '',
             xfp: currentAccount?.keystoneDevice?.masterFingerprint || '',
-            chainId: 1,
             origin: 'Helium',
           })
         }
@@ -79,7 +78,6 @@ const KeystoneModal = forwardRef(
             dataType: KeystoneSolanaSDK.DataType.Message,
             path: currentAccount?.derivationPath || '',
             xfp: currentAccount?.keystoneDevice?.masterFingerprint as string,
-            chainId: 1,
             origin: 'Helium',
           })
         }

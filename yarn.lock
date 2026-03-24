@@ -3789,29 +3789,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keystonehq/bc-ur-registry@npm:^0.6.4":
-  version: 0.6.4
-  resolution: "@keystonehq/bc-ur-registry@npm:0.6.4"
-  dependencies:
-    "@ngraveio/bc-ur": "npm:^1.1.5"
-    bs58check: "npm:^2.1.2"
-    tslib: "npm:^2.3.0"
-  checksum: 10/d4cdbefc14f3305543340d509564e1a795eb458327d46aad8665927999150df7e282939dcb714b81fea386061019e3b9f41eedbbb09a59d404355711c33159b2
-  languageName: node
-  linkType: hard
-
-"@keystonehq/bc-ur-registry@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "@keystonehq/bc-ur-registry@npm:0.7.0"
-  dependencies:
-    "@ngraveio/bc-ur": "npm:^1.1.5"
-    bs58check: "npm:^2.1.2"
-    tslib: "npm:^2.3.0"
-  checksum: 10/44bb60d0e8471ec3148fab47bc3484406ea43b378c4e5bfbadc8978ed898ed387ad5d1c4f6b2983dced8ead4c26414e28a3b80c45364b6d066e0050a910e89d4
-  languageName: node
-  linkType: hard
-
-"@keystonehq/bc-ur-registry@npm:^0.7.1":
+"@keystonehq/bc-ur-registry@npm:0.7.1":
   version: 0.7.1
   resolution: "@keystonehq/bc-ur-registry@npm:0.7.1"
   dependencies:
@@ -3822,9 +3800,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@keystonehq/keystone-sdk@npm:0.11.6":
-  version: 0.11.6
-  resolution: "@keystonehq/keystone-sdk@npm:0.11.6"
+"@keystonehq/keystone-sdk@npm:0.11.7":
+  version: 0.11.7
+  resolution: "@keystonehq/keystone-sdk@npm:0.11.7"
   dependencies:
     "@bufbuild/protobuf": "npm:^1.2.0"
     "@keystonehq/bc-ur-registry": "npm:^0.7.1"
@@ -3851,7 +3829,7 @@ __metadata:
     pako: "npm:^2.1.0"
     ripple-binary-codec: "npm:^1.4.3"
     uuid: "npm:^9.0.0"
-  checksum: 10/8550a3b03140de40025d0aeaccf8323577cdcb9dea7244f26521cb69375431aed18b00d5c0680ce769a85a3a2911ce90d126b9a7531fcc5571a5b9b0d9d2325c
+  checksum: 10/4dde87196a7f69df58414c2f3804383c84e9ad9f2883326f4613a3b6a07a360d361a06d936c2cd9f70d6eaf2c6e1cd1e2253ca5faf4dae485d5cd144e34e6f3b
   languageName: node
   linkType: hard
 
@@ -12676,7 +12654,7 @@ __metadata:
     "@helium/voter-stake-registry-sdk": "npm:0.11.4"
     "@helium/wallet-link": "npm:^5.0.4"
     "@jup-ag/api": "npm:6.0.6"
-    "@keystonehq/keystone-sdk": "npm:0.11.6"
+    "@keystonehq/keystone-sdk": "npm:0.11.7"
     "@ledgerhq/hw-app-solana": "npm:7.5.2"
     "@ledgerhq/hw-transport-mocker": "npm:6.29.8"
     "@ledgerhq/react-native-hid": "npm:6.32.9"
