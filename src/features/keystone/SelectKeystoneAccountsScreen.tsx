@@ -21,6 +21,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
+import { KeystoneStackParamList } from './keystoneNavigatorTypes'
 
 export type KeystoneAccountType = {
   path: string
@@ -28,10 +29,6 @@ export type KeystoneAccountType = {
   masterFingerprint: string
   device: string
   balanceSol?: string
-}
-
-type KeystoneStackParamList = {
-  SelectKeystoneAccounts: { derivationAccounts: KeystoneAccountType[] }
 }
 
 type SelectKeystoneAccountsScreenRouteProp = RouteProp<

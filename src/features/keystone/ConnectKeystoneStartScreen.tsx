@@ -20,8 +20,8 @@ import { useOpacity, useSpacing } from '@theme/themeHooks'
 import useBackHandler from '@hooks/useBackHandler'
 import { useTheme } from '@shopify/restyle'
 import { t } from 'i18next'
-import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 import { Image, Linking, Platform } from 'react-native'
+import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
 type CameraPermissionBottomSheetAlertRef = {
   show: () => void
