@@ -751,7 +751,11 @@ export default () => {
       dcAmount: BN
       recipient: PublicKey
     }) => {
-      if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
+      if (
+        !currentAccount?.solanaAddress ||
+        !anchorProvider ||
+        !walletSignBottomSheetRef
+      ) {
         throw new Error(t('errors.account'))
       }
 
@@ -760,18 +764,22 @@ export default () => {
         await connection.getAccountInfo(recipient),
       )
 
-      const txs = await solUtils.mintDataCredits({
-        anchorProvider,
-        dcAmount,
-        recipient,
+      const transactionData = await client.dataCredits.mint({
+        owner: currentAccount.solanaAddress,
+        dcAmount: dcAmount.toString(),
+        recipient: recipient.toBase58(),
       })
+
+      const serializedTxs = transactionData.transactions.map((tx) =>
+        Buffer.from(tx.serializedTransaction, 'base64'),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         warning: recipientExists ? '' : t('transactions.recipientNonExistent'),
         message: t('transactions.signMintDataCreditsTxn'),
-        serializedTxs: txs.map(({ tx }) => Buffer.from(tx.serialize())),
+        serializedTxs,
         renderer: () => (
           <MessagePreview
             message={t('transactions.signMintDataCreditsTxnPreview', {
@@ -786,26 +794,12 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      const signedTxs = await Promise.all(
-        txs.map(async ({ tx, signers }) => {
-          const signed = await anchorProvider.wallet.signTransaction(tx)
-          if (signers.length > 0) {
-            await signed.sign(signers)
-          }
-          return signed
-        }),
+      const signedTxnData = await signTransactionData(
+        anchorProvider.wallet,
+        transactionData,
       )
 
-      const mintParamsHash = hashTagParams({
-        dcAmount: dcAmount.toString(),
-        recipient: recipient.toBase58(),
-      })
-      const txnData = toTransactionData(signedTxs, {
-        tag: `mint-dc-${mintParamsHash}`,
-        metadata: { type: 'mint', description: 'Mint data credits' },
-      })
-
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await client.transactions.submit(signedTxnData)
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -831,41 +825,23 @@ export default () => {
       mint: PublicKey
       memo?: string
     }) => {
-      if (!currentAccount || !anchorProvider || !walletSignBottomSheetRef) {
+      if (
+        !currentAccount?.solanaAddress ||
+        !anchorProvider ||
+        !walletSignBottomSheetRef
+      ) {
         throw new Error(t('errors.account'))
       }
 
-      // Build the draft transaction
-      const delegateDCTxnDraft = await solUtils.delegateDataCredits(
-        anchorProvider,
-        delegateAddress,
-        amount,
-        mint,
+      const transactionData = await client.dataCredits.delegate({
+        owner: currentAccount.solanaAddress,
+        routerKey: delegateAddress,
+        amount: amount.toString(),
+        mint: mint.toBase58(),
         memo,
-      )
-
-      // Populate blockhash and other missing info
-      const delegateDCTxn = await populateMissingDraftInfo(
-        anchorProvider.connection,
-        {
-          ...delegateDCTxnDraft,
-          recentBlockhash: (
-            await anchorProvider.connection.getLatestBlockhash('finalized')
-          ).blockhash,
-        },
-      )
-
-      // Convert to TransactionData format
-      const delegateParamsHash = hashTagParams({
-        delegateAddress,
-        timestamp: Date.now(),
-      })
-      const txnData = toTransactionData([toVersionedTx(delegateDCTxn)], {
-        tag: `delegate-dc-${delegateParamsHash}`,
-        metadata: { type: 'delegate', description: 'Delegate data credits' },
       })
 
-      const serializedTxs = txnData.transactions.map((tx) =>
+      const serializedTxs = transactionData.transactions.map((tx) =>
         Buffer.from(tx.serializedTransaction, 'base64'),
       )
 
@@ -894,10 +870,9 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      // Sign and submit via API
       const signedTxnData = await signTransactionData(
         anchorProvider.wallet,
-        txnData,
+        transactionData,
       )
       const { batchId } = await client.transactions.submit(signedTxnData)
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })

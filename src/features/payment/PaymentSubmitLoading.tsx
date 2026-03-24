@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useEffect, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Video from 'react-native-video'
 import videoSource from '@assets/videos/paymentSent.mp4'
@@ -13,6 +13,8 @@ type Props = {
   onVideoEnd: () => void
 }
 
+const VIDEO_TIMEOUT_MS = 5000
+
 const PaymentSubmitLoading = ({ onVideoEnd }: Props) => {
   const { t } = useTranslation()
   const [videoEnded, setVideoEnded] = useState(false)
@@ -21,6 +23,12 @@ const PaymentSubmitLoading = ({ onVideoEnd }: Props) => {
     setVideoEnded(true)
     onVideoEnd()
   }, [onVideoEnd])
+
+  // Fallback timeout in case video onEnd never fires
+  useEffect(() => {
+    const timer = setTimeout(handleVideoEnded, VIDEO_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [handleVideoEnded])
 
   return (
     <>

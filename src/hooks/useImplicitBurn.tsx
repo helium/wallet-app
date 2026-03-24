@@ -1,16 +1,9 @@
-import { Program } from '@coral-xyz/anchor'
-import {
-  init as initDataCredits,
-  mintDataCredits,
-} from '@helium/data-credits-sdk'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
-import { DataCredits } from '@helium/idls/lib/types/data_credits'
 import { DC_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { useBalance } from '@utils/Balance'
 import { humanReadable } from '@utils/formatting'
-import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import React from 'react'
@@ -20,6 +13,7 @@ import { MessagePreview } from '../solana/MessagePreview'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
+import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 
 export function useImplicitBurn(): {
   implicitBurn: (requiredDc: number) => void
@@ -33,6 +27,7 @@ export function useImplicitBurn(): {
   const wallet = useCurrentWallet()
   const { amount: myDc, loading: loadingDc } = useOwnedAmount(wallet, DC_MINT)
   const { submitAndAwait } = useSubmitAndAwait()
+  const client = useBlockchainApi()
 
   const {
     execute: implicitBurn,
@@ -44,27 +39,28 @@ export function useImplicitBurn(): {
     if (!wallet) throw new Error('No wallet')
 
     if ((myDc || BigInt(0)) < BigInt(totalDcReq)) {
-      const program = (await initDataCredits(
-        anchorProvider,
-      )) as unknown as Program<DataCredits>
       const dcDeficit = BigInt(totalDcReq) - (myDc || BigInt(0))
       const hntAmount = dcToNetworkTokens(new BN(dcDeficit.toString()))
+      const ownerAddress = wallet.toBase58()
 
-      const { txs } = await mintDataCredits({
-        dcAmount: new BN(dcDeficit.toString()),
-        dcMint: DC_MINT,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        program,
-        recipient: wallet,
+      const transactionData = await client.dataCredits.mint({
+        owner: ownerAddress,
+        dcAmount: dcDeficit.toString(),
+        recipient: ownerAddress,
       })
+
       if (!walletSignBottomSheetRef) {
         throw new Error('No wallet bottom sheet')
       }
+
+      const serializedTxs = transactionData.transactions.map((tx) =>
+        Buffer.from(tx.serializedTransaction, 'base64'),
+      )
+
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
-        serializedTxs: txs.map(({ tx }) => Buffer.from(tx.serialize())),
+        serializedTxs,
         header: t('transactions.buyDc'),
         message: t('transactions.signMintDataCreditsTxn'),
         renderer: () => (
@@ -77,37 +73,15 @@ export function useImplicitBurn(): {
         ),
       })
       if (decision) {
-        const paramsHash = hashTagParams({
-          wallet: wallet.toBase58(),
-          dcAmount: dcDeficit.toString(),
-        })
-        const tag = `implicit-burn-${paramsHash}`
-        const transactionData = toTransactionData(
-          txs.map(({ tx }) => tx),
-          {
-            tag,
-            metadata: { type: 'mint', description: 'Implicit DC Burn' },
-          },
-        )
         // This will await completion and handle blockhash expiration with retry
         await submitAndAwait({
           transactionData,
           onNeedsResign: async () => {
-            const { txs: freshTxs } = await mintDataCredits({
-              dcAmount: new BN(dcDeficit.toString()),
-              dcMint: DC_MINT,
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              program,
-              recipient: wallet,
+            return client.dataCredits.mint({
+              owner: ownerAddress,
+              dcAmount: dcDeficit.toString(),
+              recipient: ownerAddress,
             })
-            return toTransactionData(
-              freshTxs.map(({ tx }) => tx),
-              {
-                tag,
-                metadata: { type: 'mint', description: 'Implicit DC Burn' },
-              },
-            )
           },
         })
       } else {
