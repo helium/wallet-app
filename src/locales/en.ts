@@ -1557,7 +1557,7 @@ export default {
   migrateToWorldModal: {
     welcome: {
       title: 'Helium World is Here',
-      body: "We're moving to a new web experience with improved analytics about your hotspots, rewards, and deployment locations — plus new features like rewards splitting.\n\nThis wallet app will eventually be sunset. Let's get you set up on Helium World.",
+      body: "We're moving to a new web experience with improved analytics about your Hotspots, rewards, and deployment locations — plus new features like rewards splitting.\n\nThis wallet app will eventually be sunset. Let's get you set up on Helium World.",
       next: 'Get Started',
     },
     choosePath: {
@@ -1609,7 +1609,7 @@ export default {
       tokens: 'Tokens',
       selectAll: 'Select All',
       deselectAll: 'Deselect All',
-      noHotspots: 'No hotspots found.',
+      noHotspots: 'No Hotspots found.',
       noTokens: 'No token balances found.',
       loading: 'Loading assets...',
       review: 'Review Migration',

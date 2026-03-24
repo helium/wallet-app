@@ -834,7 +834,7 @@ const MigrateToWorld = () => {
             Hotspots
           </Text>
           <Text variant="body2Medium" color="white">
-            {selectedHotspots.size} hotspot
+            {selectedHotspots.size} Hotspot
             {selectedHotspots.size !== 1 ? 's' : ''}
           </Text>
         </Box>
