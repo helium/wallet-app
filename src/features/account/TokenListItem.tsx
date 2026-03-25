@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useColors } from '@theme/themeHooks'
+import { useBalance } from '@utils/Balance'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
@@ -67,14 +68,23 @@ export const TokenSkeleton = () => {
 export const TokenListItem = ({ mint }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const wallet = useCurrentWallet()
+  const { tokenAccounts } = useBalance()
+  const reduxAccount = tokenAccounts?.find((ta) => ta.mint === mint.toBase58())
+  // Only use cache hook as fallback when Redux has no data for this mint.
+  // When ATA is closed (balance 0), the cache hook can throw since the
+  // account no longer exists on-chain.
   const {
-    amount,
-    decimals,
+    amount: cacheAmount,
+    decimals: cacheDecimals,
     loading: loadingOwned,
-  } = useOwnedAmount(wallet, mint)
+  } = useOwnedAmount(reduxAccount ? undefined : wallet, mint)
   const { triggerImpact } = useHaptic()
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()
+
+  // Prefer Redux balance (updated on pull-to-refresh) over cache balance
+  const amount = reduxAccount ? BigInt(reduxAccount.balance) : cacheAmount
+  const decimals = reduxAccount?.decimals ?? cacheDecimals
 
   const handleNavigation = useCallback(() => {
     triggerImpact('light')

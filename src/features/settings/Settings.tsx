@@ -21,6 +21,7 @@ import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useModal } from '../../storage/ModalsProvider'
 import { useLanguageStorage } from '../../storage/LanguageProvider'
 import {
   checkSecureAccount,
@@ -328,6 +329,11 @@ const Settings = () => {
     settingsNav.navigate('MigrateWallet')
   }, [settingsNav])
 
+  const { showModal } = useModal()
+  const handleMigrateToWorld = useCallback(() => {
+    showModal({ type: 'MigrateToWorld' })
+  }, [showModal])
+
   const SectionData = useMemo((): {
     title: string
     icon: React.ReactNode | null
@@ -434,6 +440,11 @@ const Settings = () => {
     accountSettings.push({
       title: t('settings.sections.account.migrateWallet'),
       onPress: handleMigrateWallet,
+    })
+
+    accountSettings.push({
+      title: t('settings.sections.account.migrateToWorld'),
+      onPress: handleMigrateToWorld,
     })
 
     accountSettings.push({
@@ -570,6 +581,7 @@ const Settings = () => {
     isDefaultAccount,
     handleShareAddress,
     handleMigrateWallet,
+    handleMigrateToWorld,
     handleSignOut,
     hasWords,
     handleRevealWords,

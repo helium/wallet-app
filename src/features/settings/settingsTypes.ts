@@ -19,6 +19,7 @@ export type SettingsStackParamList = {
   ShareAddress: undefined
   ConfirmSignout: undefined
   MigrateWallet: undefined
+  MigrateToWorld: undefined
   AutoGasManager: undefined
 }
 
