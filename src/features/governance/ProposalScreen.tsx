@@ -511,8 +511,10 @@ export const ProposalScreen = () => {
                             }
                             option={r}
                             didVote={didVote?.[r.index]}
-                            canVote={canVote(r.index)}
-                            canRelinquishVote={canRelinquishVote(r.index)}
+                            canVote={canVote(r.index) ?? false}
+                            canRelinquishVote={
+                              canRelinquishVote(r.index) ?? false
+                            }
                             onVote={handleVote(r)}
                             onRelinquishVote={handleRelinquish(r)}
                           />

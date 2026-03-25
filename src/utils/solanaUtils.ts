@@ -5,11 +5,8 @@ import { getSingleton } from '@helium/account-fetch-cache'
 import {
   delegatedDataCreditsKey,
   escrowAccountKey,
-  init as initDc,
-  mintDataCredits as sdkMintDataCredits,
 } from '@helium/data-credits-sdk'
 import { getPendingRewards } from '@helium/distributor-oracle'
-import { DataCredits } from '@helium/idls/lib/types/data_credits'
 import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import {
   PROGRAM_ID as FanoutProgramId,
@@ -22,7 +19,6 @@ import {
   init as initHem,
   keyToAssetForAsset,
 } from '@helium/helium-entity-manager-sdk'
-import { subDaoKey } from '@helium/helium-sub-daos-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
 import {
   init as initLazy,
@@ -31,7 +27,6 @@ import {
 } from '@helium/lazy-distributor-sdk'
 import {
   Asset,
-  DC_MINT,
   HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
@@ -72,7 +67,6 @@ import {
   SPL_ACCOUNT_COMPRESSION_PROGRAM_ID,
   SPL_NOOP_PROGRAM_ID,
 } from '@solana/spl-account-compression'
-import { createMemoInstruction } from '@solana/spl-memo'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   AccountLayout,
@@ -100,7 +94,6 @@ import {
   PublicKey,
   SignatureResult,
   SignaturesForAddressOptions,
-  Signer,
   SystemProgram,
   Transaction,
   TransactionInstruction,
@@ -630,80 +623,6 @@ export const getAtaAccountCreationFee = async ({
     return new BN(0)
   } catch {
     return new BN(0.00203928 * LAMPORTS_PER_SOL)
-  }
-}
-
-export const mintDataCredits = async ({
-  anchorProvider,
-  dcAmount,
-  recipient,
-}: {
-  anchorProvider: AnchorProvider
-  dcAmount: BN
-  recipient: PublicKey
-}): Promise<{ tx: VersionedTransaction; signers: Signer[] }[]> => {
-  try {
-    const program = (await initDc(
-      anchorProvider,
-    )) as unknown as Program<DataCredits>
-
-    const { txs } = await sdkMintDataCredits({
-      dcAmount,
-      dcMint: DC_MINT,
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      program,
-      recipient,
-    })
-
-    return txs
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
-  }
-}
-
-export const delegateDataCredits = async (
-  anchorProvider: AnchorProvider,
-  delegateAddress: string,
-  amount: number,
-  mint: PublicKey,
-  memo?: string,
-) => {
-  try {
-    const { publicKey: payer } = anchorProvider.wallet
-    const program = await initDc(anchorProvider)
-    const subDao = subDaoKey(mint)[0]
-
-    const instructions: TransactionInstruction[] = []
-
-    if (memo) {
-      instructions.push(createMemoInstruction(memo, [payer]))
-    }
-
-    instructions.push(
-      await program.methods
-        .delegateDataCreditsV0({
-          amount: new BN(amount, 0),
-          routerKey: delegateAddress,
-        })
-        .accountsPartial({
-          subDao,
-        })
-        .instruction(),
-    )
-
-    return {
-      instructions: await withPriorityFees({
-        feePayer: payer,
-        connection: anchorProvider.connection,
-        instructions,
-      }),
-      feePayer: payer,
-    }
-  } catch (e) {
-    Logger.error(e)
-    throw e as Error
   }
 }
 
