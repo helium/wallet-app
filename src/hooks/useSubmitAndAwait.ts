@@ -18,7 +18,7 @@ interface SubmitAndAwaitParams {
   maxRetries?: number
 }
 
-async function pollForCompletion(
+export async function pollForCompletion(
   client: ReturnType<typeof useBlockchainApi>,
   batchId: string,
   pollIntervalMs = 2000,
