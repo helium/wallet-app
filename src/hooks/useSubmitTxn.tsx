@@ -1,12 +1,10 @@
 import type { AnchorProvider, Program } from '@coral-xyz/anchor'
-import * as distributorOracle from '@helium/distributor-oracle'
 import {
   decodeEntityKey,
   init as initHem,
   keyToAssetForAsset,
 } from '@helium/helium-entity-manager-sdk'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'
-import { init as initLazyDistributor } from '@helium/lazy-distributor-sdk'
 import { NetworkType } from '@helium/onboarding'
 import { useOnboarding } from '@helium/react-native-sdk'
 import {
@@ -24,13 +22,12 @@ import {
   HNT_LAZY_KEY,
   IOT_LAZY_KEY,
   MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-  Mints,
   MOBILE_LAZY_KEY,
 } from '@utils/constants'
 import { humanReadable } from '@utils/formatting'
 import i18n from '@utils/i18n'
 import * as solUtils from '@utils/solanaUtils'
-import { getCachedKeyToAssets, toAsset } from '@utils/solanaUtils'
+import { toAsset } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
 import { CollectablePreview } from '../solana/CollectablePreview'
@@ -51,6 +48,7 @@ import {
   signTransactionData,
   toTransactionData,
 } from '../utils/transactionUtils'
+import { pollForCompletion } from './useSubmitAndAwait'
 
 // Helper to get entityKey from a CompressedNFT
 async function getEntityKeyFromCompressedNFT(
@@ -511,11 +509,10 @@ export default () => {
     [claimRewardsMutation],
   )
 
-  // Claim all rewards mutation - uses API for HNT, SDK for IOT/MOBILE
+  // Claim all rewards mutation - uses API for all reward types
   const claimAllRewardsMutation = useMutation({
     mutationFn: async ({
       lazyDistributors,
-      hotspots,
     }: {
       lazyDistributors: PublicKey[]
       hotspots: HotspotWithPendingRewards[]
@@ -525,196 +522,102 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const hntTxns: VersionedTransaction[] = []
-      const iotMobileTxns: VersionedTransaction[] = []
+      const walletAddress = currentAccount.solanaAddress!
 
-      // Check which distributors are requested
-      const claimHnt = lazyDistributors.some((ld) => ld.equals(HNT_LAZY_KEY))
-      const claimIot = lazyDistributors.some((ld) => ld.equals(IOT_LAZY_KEY))
-      const claimMobile = lazyDistributors.some((ld) =>
-        ld.equals(MOBILE_LAZY_KEY),
+      // Map lazy distributor keys to network names
+      const networks = lazyDistributors.reduce<Array<'hnt' | 'iot' | 'mobile'>>(
+        (acc, ld) => {
+          if (ld.equals(HNT_LAZY_KEY)) acc.push('hnt')
+          else if (ld.equals(IOT_LAZY_KEY)) acc.push('iot')
+          else if (ld.equals(MOBILE_LAZY_KEY)) acc.push('mobile')
+          return acc
+        },
+        [],
       )
 
-      // For HNT, use the API
-      if (claimHnt) {
-        try {
-          const { transactionData } = await client.hotspots.claimRewards({
-            walletAddress: currentAccount.solanaAddress!,
-          })
-          // Deserialize the transactions from the API response
-          const hntTxnsFromApi = transactionData.transactions.map(
-            ({ serializedTransaction }) =>
-              VersionedTransaction.deserialize(
-                Buffer.from(serializedTransaction, 'base64'),
-              ),
-          )
-          hntTxns.push(...hntTxnsFromApi)
-        } catch (e) {
-          // If API fails, continue with IOT/MOBILE
-          console.warn('HNT claim API failed, skipping:', e)
-        }
-      }
-
-      // For IOT and MOBILE, build transactions using SDK bulk operations
-      if (claimIot || claimMobile) {
-        const lazyProgram = await initLazyDistributor(anchorProvider)
-        const hemProgram = (await initHem(
-          anchorProvider,
-        )) as unknown as Program<HeliumEntityManager>
-        const { connection } = anchorProvider
-
-        // Filter hotspots with pending rewards
-        const iotHotspots = claimIot
-          ? hotspots.filter(
-              (h) =>
-                h.pendingRewards?.[Mints.IOT] &&
-                new BN(h.pendingRewards[Mints.IOT]).gt(new BN(0)),
-            )
-          : []
-        const mobileHotspots = claimMobile
-          ? hotspots.filter(
-              (h) =>
-                h.pendingRewards?.[Mints.MOBILE] &&
-                new BN(h.pendingRewards[Mints.MOBILE]).gt(new BN(0)),
-            )
-          : []
-
-        // Get entity keys from hotspots in bulk
-        const getEntityKeys = async (
-          hotspotList: HotspotWithPendingRewards[],
-        ): Promise<string[]> => {
-          if (hotspotList.length === 0) return []
-          const keyToAssets = hotspotList.map((h) =>
-            keyToAssetForAsset(toAsset(h as CompressedNFT), DAO_KEY),
-          )
-          const ktaAccs = await getCachedKeyToAssets(
-            hemProgram as any,
-            keyToAssets,
-          )
-          return ktaAccs.map(
-            (kta) =>
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              decodeEntityKey(kta.entityKey, kta.keySerialization)!,
-          )
-        }
-
-        // Build IOT bulk transactions
-        if (iotHotspots.length > 0) {
-          try {
-            const iotEntityKeys = await getEntityKeys(iotHotspots)
-            const iotBulkRewards = await distributorOracle.getBulkRewards(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              lazyProgram as any,
-              IOT_LAZY_KEY,
-              iotEntityKeys,
-            )
-            const iotAssets = iotHotspots.map((h) => new PublicKey(h.id))
-            const iotTxns = await distributorOracle.formBulkTransactions({
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              program: lazyProgram as any,
-              rewards: iotBulkRewards,
-              assets: iotAssets,
-              lazyDistributor: IOT_LAZY_KEY,
-              wallet: anchorProvider.wallet.publicKey,
-              payer: anchorProvider.wallet.publicKey,
-              assetEndpoint: connection.rpcEndpoint,
-            })
-            iotMobileTxns.push(...iotTxns)
-          } catch (e) {
-            console.warn('Failed to build IOT bulk claims:', e)
-          }
-        }
-
-        // Build MOBILE bulk transactions
-        if (mobileHotspots.length > 0) {
-          try {
-            const mobileEntityKeys = await getEntityKeys(mobileHotspots)
-            const mobileBulkRewards = await distributorOracle.getBulkRewards(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              lazyProgram as any,
-              MOBILE_LAZY_KEY,
-              mobileEntityKeys,
-            )
-            const mobileAssets = mobileHotspots.map((h) => new PublicKey(h.id))
-            const mobileTxns = await distributorOracle.formBulkTransactions({
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              program: lazyProgram as any,
-              rewards: mobileBulkRewards,
-              assets: mobileAssets,
-              lazyDistributor: MOBILE_LAZY_KEY,
-              wallet: anchorProvider.wallet.publicKey,
-              payer: anchorProvider.wallet.publicKey,
-              assetEndpoint: connection.rpcEndpoint,
-            })
-            iotMobileTxns.push(...mobileTxns)
-          } catch (e) {
-            console.warn('Failed to build MOBILE bulk claims:', e)
-          }
-        }
-      }
-
-      if (hntTxns.length === 0 && iotMobileTxns.length === 0) {
+      if (networks.length === 0) {
         throw new Error('No rewards to claim')
-      }
-
-      // Show wallet approval for all transactions
-      const allTxnsForApproval = [...hntTxns, ...iotMobileTxns]
-      const serializedTxs = allTxnsForApproval.map((txn) =>
-        Buffer.from(txn.serialize()),
-      )
-
-      const decision = await walletSignBottomSheetRef.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: '',
-        header: t('collectablesScreen.hotspots.claimAllRewards'),
-        message: t('transactions.signClaimRewardsTxn'),
-        serializedTxs,
-        renderer: () => (
-          <MessagePreview
-            warning={t('collectablesScreen.hotspots.claimAllRewards')}
-          />
-        ),
-      })
-
-      if (!decision) {
-        throw new Error('User rejected transaction')
       }
 
       let lastBatchId: string | undefined
 
-      // Submit HNT transactions (from API, no batching needed)
-      if (hntTxns.length > 0) {
-        const signedHntTxns = await anchorProvider.wallet.signAllTransactions(
-          hntTxns,
-        )
-        const walletAddress =
-          currentAccount.solanaAddress ||
-          anchorProvider.wallet.publicKey.toBase58()
-        const paramsHash = hashTagParams({ wallet: walletAddress })
-        const hntTxnData = toTransactionData(signedHntTxns, {
-          tag: `claim-hnt-${paramsHash}`,
-          metadata: { type: 'claim', description: 'Claim HNT rewards' },
+      // Process each network sequentially, handling hasMore pagination
+      const processNetwork = async (network: 'hnt' | 'iot' | 'mobile') => {
+        let response = await client.hotspots.claimRewards({
+          walletAddress,
+          network,
         })
-        const { batchId } = await client.transactions.submit(hntTxnData)
-        queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-        lastBatchId = batchId
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { transactionData } = response
+
+          if (transactionData.transactions.length === 0) {
+            break
+          }
+
+          const serializedTxs = transactionData.transactions.map(
+            ({ serializedTransaction }) =>
+              Buffer.from(serializedTransaction, 'base64'),
+          )
+
+          const decision = await walletSignBottomSheetRef.show({
+            type: WalletStandardMessageTypes.signTransaction,
+            url: '',
+            header: t('collectablesScreen.hotspots.claimAllRewards'),
+            message: t('transactions.signClaimRewardsTxn'),
+            serializedTxs,
+            renderer: () => (
+              <MessagePreview
+                warning={t('collectablesScreen.hotspots.claimAllRewards')}
+              />
+            ),
+          })
+
+          if (!decision) {
+            throw new Error('User rejected transaction')
+          }
+
+          const signed = await signTransactionData(
+            anchorProvider.wallet,
+            transactionData,
+          )
+
+          const tag = transactionData.tag || `claim-rewards-${network}`
+          const { batchId } = await client.transactions.submit({
+            ...signed,
+            tag,
+          })
+          queryClient.invalidateQueries({
+            queryKey: ['pendingTransactions'],
+          })
+          lastBatchId = batchId
+
+          if (!response.hasMore) {
+            break
+          }
+
+          // Poll for completion before fetching more
+          const { status } = await pollForCompletion(client, batchId)
+          if (status === 'failed' || status === 'expired') {
+            throw new Error(`Transaction batch ${status}`)
+          }
+
+          response = await client.hotspots.claimRewards({
+            walletAddress,
+            network,
+          })
+        }
       }
 
-      // Batch and submit IOT/MOBILE transactions to prevent blockhash expiration
-      if (iotMobileTxns.length > 0) {
-        const iotMobileBatchId = await batchAndSubmitTransactions(
-          anchorProvider,
-          client,
-          queryClient,
-          iotMobileTxns,
-          'claim-all-rewards-iot-mobile',
-          { type: 'claim', description: 'Claim IOT/MOBILE rewards' },
-        )
-        lastBatchId = iotMobileBatchId
-      }
+      // Process networks sequentially (can't parallelize due to wallet signing)
+      await networks.reduce(
+        (prev, network) => prev.then(() => processNetwork(network)),
+        Promise.resolve(),
+      )
 
       if (!lastBatchId) {
-        throw new Error('No transactions were submitted')
+        throw new Error('No rewards to claim')
       }
 
       return lastBatchId
