@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.15.1",
+  "version": "2.15.2",
   "private": true,
   "scripts": {
     "eas-build-post-install": "./scripts/eas-build-setup.sh",
