@@ -7,7 +7,7 @@ import Text from '@components/Text'
 import SafeAreaBox from '@components/SafeAreaBox'
 import ButtonPressable from '@components/ButtonPressable'
 import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
+import BackButton from '@components/BackButton'
 import TextTransform from '@components/TextTransform'
 import { CLIAccountNavigationProp } from './CLIAccountNavigatorTypes'
 
@@ -27,8 +27,8 @@ const CLIAccountImportStartScreen = () => {
   return (
     <SafeAreaBox flex={1} edges={edges} backgroundColor="secondary">
       <Box flex={1} marginHorizontal="l">
-        <Box width="100%" alignItems="flex-end" paddingTop="l">
-          <CloseButton onPress={onClose} />
+        <Box width="100%" alignItems="flex-start" paddingTop="l">
+          <BackButton onPress={onClose} />
         </Box>
         <Box flexGrow={1} alignItems="center">
           <Terminal width={98} height={98} />

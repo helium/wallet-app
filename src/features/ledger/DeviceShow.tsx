@@ -146,8 +146,9 @@ const DeviceShow = () => {
       <>
         <BackButton
           marginVertical="m"
-          paddingHorizontal="m"
+          paddingHorizontal="l"
           marginHorizontal="s"
+          color="primaryText"
           onPress={navigation.goBack}
         />
         <Box
