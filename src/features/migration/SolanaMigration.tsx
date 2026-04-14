@@ -51,6 +51,9 @@ async function migrateWallet(
         tag,
         metadata: { type: 'migration', description: 'Solana Migration' },
       })
+      if (transactionData.transactions.length === 0) {
+        break
+      }
       // eslint-disable-next-line no-await-in-loop
       await client.transactions.submit(transactionData)
       onProgress(offset, count)
