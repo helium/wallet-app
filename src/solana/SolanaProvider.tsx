@@ -41,7 +41,11 @@ import {
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import { getConnection, isVersionedTransaction } from '../utils/solanaUtils'
+import {
+  getConnection,
+  isRequiredSigner,
+  isVersionedTransaction,
+} from '../utils/solanaUtils'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
@@ -71,6 +75,16 @@ const useSolanaHook = () => {
 
   const signTxn = useCallback(
     async (transaction: Transaction | VersionedTransaction) => {
+      // Some flows (e.g. createHotspot, maker-paid asserts) return transactions
+      // already fully signed by the maker where the user is not a required
+      // signer. Re-signing these throws "Cannot sign with non signer key".
+      if (currentAccount?.solanaAddress) {
+        const userPubkey = new PublicKey(currentAccount.solanaAddress)
+        if (!isRequiredSigner(transaction, userPubkey)) {
+          return transaction
+        }
+      }
+
       // ledger device and keystone device will use cold wallet sign tx
       if (
         (!currentAccount?.ledgerDevice?.id ||
