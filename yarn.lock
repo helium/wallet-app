@@ -2533,13 +2533,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/blockchain-api@npm:0.11.15":
-  version: 0.11.15
-  resolution: "@helium/blockchain-api@npm:0.11.15"
+"@helium/blockchain-api@npm:0.11.18":
+  version: 0.11.18
+  resolution: "@helium/blockchain-api@npm:0.11.18"
   dependencies:
     "@orpc/contract": "npm:^1.13.2"
     zod: "npm:^4.3.5"
-  checksum: 10/f348688f701027e4e7dd2257d58152610c1bcbf7b438a076678ec8a69b036c2f4bc2285c103e1cfc9a7b9f8215975ffff0ff0ccbe0bb06700b150eed2681a9c3
+  checksum: 10/0efe80b1433020cb1a9f42d86e05e77502db6a1a77203ed06718d679b931ce18d2e82d27d6fc1d30d98484052465b727477a053cb9cea05907716c3540819688
   languageName: node
   linkType: hard
 
@@ -12621,7 +12621,7 @@ __metadata:
     "@helium/account-fetch-cache-hooks": "npm:0.11.14"
     "@helium/address": "npm:^5.0.4"
     "@helium/automation-hooks": "npm:^0.11.14"
-    "@helium/blockchain-api": "npm:0.11.15"
+    "@helium/blockchain-api": "npm:0.11.18"
     "@helium/circuit-breaker-sdk": "npm:0.11.14"
     "@helium/cron-sdk": "npm:^0.0.8"
     "@helium/crypto-react-native": "npm:^5.0.4"
