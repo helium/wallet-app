@@ -142,33 +142,23 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      // For each payment, get transaction data from API
-      const txnDataPromises = payments.map(async (payment) => {
-        // Convert BN amount to decimal string
-        const amountStr = payment.balanceAmount.toString()
-        const { transactionData } = await client.tokens.transfer({
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          walletAddress: currentAccount.solanaAddress!,
-          tokenAmount: {
-            amount: amountStr,
-            mint: mint.toBase58(),
-          },
+      const { transactionData } = await client.tokens.multiTransfer({
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        walletAddress: currentAccount.solanaAddress!,
+        mint: mint.toBase58(),
+        recipients: payments.map((payment) => ({
           destination: payment.payee,
-        })
-        return transactionData
+          amount: payment.balanceAmount.toString(),
+        })),
       })
 
-      const txnDataList = await Promise.all(txnDataPromises)
-
-      // Combine all transactions
-      const allTxns = txnDataList.flatMap((td) => td.transactions)
       const paymentSummary = payments
         .map((p) => `${p.payee}-${p.balanceAmount.toString()}`)
         .join('_')
       const combinedTxnData = {
-        transactions: allTxns,
-        parallel: false,
-        tag: `payment-${mint.toBase58()}-${paymentSummary}`,
+        ...transactionData,
+        tag:
+          transactionData.tag || `payment-${mint.toBase58()}-${paymentSummary}`,
       }
 
       const serializedTxs = combinedTxnData.transactions.map((tx) =>
