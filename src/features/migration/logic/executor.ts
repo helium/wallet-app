@@ -1,7 +1,7 @@
+import defaultSleep from '../../../utils/sleep'
 import { summarizeBatch, BatchStatus } from './batches'
 import { MigrateInput, MigrationSession } from './session'
-import { signersOrDefault } from './signers'
-import { MigrationTransaction, SignerRole, TransactionData } from './types'
+import { TransactionData } from './types'
 
 export type MigrateOutput = {
   transactionData: TransactionData
@@ -18,10 +18,7 @@ export type ExecutorProgress =
 
 export type ExecutorDeps<TSigned = unknown> = {
   requestMigrate: (input: MigrateInput) => Promise<MigrateOutput>
-  signBatch: (
-    items: { tx: MigrationTransaction; signers: SignerRole[] }[],
-    data: TransactionData,
-  ) => Promise<TSigned[]>
+  signBatch: (data: TransactionData) => Promise<TSigned[]>
   submitBatch: (
     signed: TSigned[],
     data: TransactionData,
@@ -29,21 +26,37 @@ export type ExecutorDeps<TSigned = unknown> = {
   pollStatus: (batchId: string) => Promise<BatchStatus>
   persist: (session: MigrationSession) => Promise<void>
   onProgress: (progress: ExecutorProgress) => void
-  // Resolves once the device is online. Awaited before each batch is
-  // requested and before it is submitted so a network drop auto-pauses the
-  // run instead of surfacing a transient RPC failure.
-  waitForOnline?: () => Promise<void>
   // Injectable so retry backoff is instant in tests.
   sleep?: (ms: number) => Promise<void>
 }
+
+// Wrap every network-facing dep so it awaits connectivity first. A network drop
+// then auto-pauses the whole run (request/submit/poll) instead of surfacing a
+// transient RPC failure — gating lives in one place, not hand-picked awaits.
+export const gateOnDeps = <TSigned>(
+  deps: ExecutorDeps<TSigned>,
+  waitForOnline: () => Promise<void>,
+): ExecutorDeps<TSigned> => ({
+  ...deps,
+  requestMigrate: async (input) => {
+    await waitForOnline()
+    return deps.requestMigrate(input)
+  },
+  submitBatch: async (signed, data) => {
+    await waitForOnline()
+    return deps.submitBatch(signed, data)
+  },
+  pollStatus: async (batchId) => {
+    await waitForOnline()
+    return deps.pollStatus(batchId)
+  },
+})
 
 export type RunOutcome = {
   status: 'complete' | 'partial' | 'failed' | 'pending'
   confirmedSignatures: string[]
   failedSignatures: string[]
   pendingSignatures?: string[]
-  failedBatch?: number
-  reason?: 'failed' | 'expired'
   // The input for the batch that failed / went pending, so a same-session retry
   // resumes from it instead of rebuilding from the first batch.
   nextInput?: MigrateInput
@@ -51,14 +64,11 @@ export type RunOutcome = {
 
 const now = (): number => Date.now()
 
-const defaultSleep = (ms: number): Promise<void> =>
-  new Promise((r) => setTimeout(r, ms))
-
 // Retry a transient async op with exponential backoff. Used for the RPC-facing
 // migrate/submit calls so a flaky network doesn't abort an otherwise-fine run.
 const withRetry = async <T>(
   fn: () => Promise<T>,
-  sleep: (ms: number) => Promise<void>,
+  sleep: (ms: number) => Promise<unknown>,
   attempts = 3,
   baseDelayMs = 500,
 ): Promise<T> => {
@@ -102,8 +112,6 @@ export const runMigration = async <TSigned = unknown>(
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    // eslint-disable-next-line no-await-in-loop
-    if (deps.waitForOnline) await deps.waitForOnline()
     deps.onProgress({ phase: 'requesting', batch })
     // Bind to a loop-local const so the retry closure captures this batch's
     // input, not the reassigned outer `input`.
@@ -111,18 +119,16 @@ export const runMigration = async <TSigned = unknown>(
     // eslint-disable-next-line no-await-in-loop
     const out = await withRetry(() => deps.requestMigrate(batchInput), sleep)
     const data = out.transactionData
-    const items = data.transactions.map((t) => ({
-      tx: t,
-      signers: signersOrDefault(t.metadata),
-    }))
 
-    deps.onProgress({ phase: 'signing', batch, count: items.length })
+    deps.onProgress({
+      phase: 'signing',
+      batch,
+      count: data.transactions.length,
+    })
     // eslint-disable-next-line no-await-in-loop
-    const signed = await deps.signBatch(items, data)
+    const signed = await deps.signBatch(data)
 
     deps.onProgress({ phase: 'submitting', batch })
-    // eslint-disable-next-line no-await-in-loop
-    if (deps.waitForOnline) await deps.waitForOnline()
     // eslint-disable-next-line no-await-in-loop
     const { batchId } = await withRetry(
       () => deps.submitBatch(signed, data),
@@ -149,8 +155,6 @@ export const runMigration = async <TSigned = unknown>(
         status: 'failed',
         confirmedSignatures,
         failedSignatures,
-        failedBatch: batch,
-        reason: status.status,
         nextInput: input,
       }
     }

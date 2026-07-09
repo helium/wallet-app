@@ -735,7 +735,6 @@ export default {
     dBi: 'dBi',
     gain: 'Gain',
     maker: 'Maker',
-    dismiss: 'Dismiss',
     elevation: 'Elevation',
     radioType: 'Radio Type',
     coverage: 'Coverage',
@@ -1604,9 +1603,6 @@ export default {
       resendIn: 'Resend code in {{seconds}}s',
     },
     createWallet: {
-      title: 'Create Wallet',
-      body: 'Creating a wallet linked to your email address.',
-      button: 'Create Wallet',
       errorTitle: "Couldn't create your World wallet",
       errorBody:
         'Something went wrong setting up your World wallet. You need one to continue.',
@@ -1616,7 +1612,6 @@ export default {
       support: 'Get help',
     },
     selectAssets: {
-      title: 'Select Assets to Migrate',
       readyTitle: 'Ready to move',
       readyBody: "Everything's selected. Tap a group to fine-tune.",
       hotspots: 'Hotspots',
@@ -1628,10 +1623,6 @@ export default {
         "{{count}} token can't move automatically — it stays in your wallet.",
       leftBehind_other:
         "{{count}} tokens can't move automatically — they stay in your wallet.",
-      selectAll: 'Select All',
-      deselectAll: 'Deselect All',
-      noHotspots: 'No Hotspots found.',
-      noTokens: 'No token balances found.',
       loading: 'Loading assets...',
       review: 'Review Migration',
       approxValue: '≈ {{value}}',
@@ -1648,13 +1639,11 @@ export default {
       fees: 'Fees',
       free: 'Free',
       button: 'Confirm & Migrate',
-      back: 'Back',
     },
     migrating: {
       title: 'Migrating...',
       creatingWallet: 'Setting up your World wallet…',
       walletReady: 'World wallet ready',
-      batch: 'Processing batch {{num}}',
     },
     pending: {
       title: 'Still processing',
@@ -1671,10 +1660,6 @@ export default {
       body: 'Your assets have been successfully migrated to Helium World.',
       wallet: 'New wallet: {{address}}',
       goToWorld: 'Go to Helium World',
-    },
-    error: {
-      signFailed: 'Wallet failed to sign the transaction.',
-      generic: 'Migration failed. Please try again.',
     },
   },
 }

@@ -1,4 +1,9 @@
-import { ExecutorDeps, MigrateOutput, runMigration } from '../executor'
+import {
+  ExecutorDeps,
+  gateOnDeps,
+  MigrateOutput,
+  runMigration,
+} from '../executor'
 import { MigrateInput, MigrationSession } from '../session'
 
 const input: MigrateInput = {
@@ -23,9 +28,9 @@ const makeDeps = (
   const deps: ExecutorDeps = {
     requestMigrate: async () =>
       ({ transactionData: txData(1) } as MigrateOutput),
-    signBatch: async (items) => {
-      log.push(`sign:${items.length}`)
-      return items.map((i) => i.tx)
+    signBatch: async (data) => {
+      log.push(`sign:${data.transactions.length}`)
+      return data.transactions
     },
     submitBatch: async () => {
       log.push('submit')
@@ -112,8 +117,8 @@ describe('runMigration', () => {
     })
     const outcome = await runMigration(input, deps)
     expect(outcome.status).toBe('failed')
-    expect(outcome.reason).toBe('expired')
-    expect(outcome.failedBatch).toBe(1)
+    expect(outcome.confirmedSignatures).toEqual([])
+    expect(outcome.failedSignatures).toEqual(['x'])
   })
 
   it('reports pending (not partial) when a batch is still confirming', async () => {
@@ -203,26 +208,37 @@ describe('runMigration', () => {
     expect(calls).toBe(3)
   })
 
-  it('waits for waitForOnline before requesting a batch', async () => {
+  it('gates every network dep on connectivity via gateOnDeps', async () => {
     let release: () => void = () => {}
     const gate = new Promise<void>((r) => {
       release = r
     })
-    let requested = false
+    const order: string[] = []
     const { deps } = makeDeps({
-      waitForOnline: () => gate,
       requestMigrate: async () => {
-        requested = true
+        order.push('request')
         return { transactionData: txData(1) } as MigrateOutput
       },
+      submitBatch: async () => {
+        order.push('submit')
+        return { batchId: 'b1' }
+      },
+      pollStatus: async () => {
+        order.push('poll')
+        return {
+          status: 'confirmed',
+          transactions: [{ signature: 'sig1', status: 'confirmed' }],
+        }
+      },
     })
-    const p = runMigration(input, deps)
-    // The loop is parked on waitForOnline — no request until it resolves.
+    const gated = gateOnDeps(deps, () => gate)
+    const p = runMigration(input, gated)
+    // Every network-facing dep is parked on the gate — nothing runs yet.
     await Promise.resolve()
-    expect(requested).toBe(false)
+    expect(order).toEqual([])
     release()
     const outcome = await p
-    expect(requested).toBe(true)
+    expect(order).toEqual(['request', 'submit', 'poll'])
     expect(outcome.status).toBe('complete')
   })
 

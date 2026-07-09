@@ -15,10 +15,11 @@ export type TxSigners<T> = {
 
 export type SignableTx<T> = { tx: T; signers: SignerRole[] }
 
-// Sign each transaction with exactly the wallets its metadata names, chaining
-// when both are required. Empty signers defaults to source. Runs sequentially
-// so a chained tx keeps both partial signatures. Assumes each signer sets only
-// its own signature slot (true for anchorProvider.wallet + Privy provider).
+// Sign each transaction with exactly the wallets its resolved `signers` name,
+// chaining when both are required. Signers are already defaulted upstream (see
+// deserializeBatchTxs / signersOrDefault). Runs sequentially so a chained tx
+// keeps both partial signatures. Assumes each signer sets only its own
+// signature slot (true for anchorProvider.wallet + Privy provider).
 export const signBatchTransactions = async <T>(
   items: SignableTx<T>[],
   { signWithSource, signWithDestination }: TxSigners<T>,
@@ -28,7 +29,7 @@ export const signBatchTransactions = async <T>(
   // signatures, so we cannot parallelize with Promise.all here.
   // eslint-disable-next-line no-restricted-syntax
   for (const item of items) {
-    const roles = signersOrDefault({ signers: item.signers })
+    const roles = item.signers
     let signed = item.tx
     if (roles.includes('source')) {
       // eslint-disable-next-line no-await-in-loop

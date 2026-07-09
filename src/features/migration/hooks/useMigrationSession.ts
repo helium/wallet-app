@@ -15,6 +15,7 @@ const NO_RESUME: ResumeInfo = {
   input: null,
   movedCount: 0,
   failedCount: 0,
+  status: 'idle',
 }
 
 export const useMigrationSession = (sourceWallet: string | undefined) => {

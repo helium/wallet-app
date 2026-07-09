@@ -36,6 +36,9 @@ const forceSingleCopy = (context, moduleName, platform, pkg) => {
   )
 }
 
+// Packages that must resolve to this app's single node_modules copy (see below).
+const SINGLE_COPY_PKGS = ['@tanstack/react-query', '@privy-io/expo']
+
 // Dedups @tanstack/react-query, @privy-io/expo, and jose to a single copy so Privy/Solana
 // providers share one module instance (avoids duplicate React contexts); revisit if those
 // upstream deps stop requiring a forced single resolution.
@@ -44,24 +47,13 @@ defaultConfig.resolver = {
   assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie', 'ico'],
   sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
   resolveRequest: (context, moduleName, platform) => {
-    // Force single copy of @tanstack/react-query to avoid duplicate contexts
-    if (
-      moduleName === '@tanstack/react-query' ||
-      moduleName.startsWith('@tanstack/react-query/')
-    ) {
-      return forceSingleCopy(
-        context,
-        moduleName,
-        platform,
-        '@tanstack/react-query',
-      )
-    }
-    // Force single copy of @privy-io/expo to avoid duplicate contexts
-    if (
-      moduleName === '@privy-io/expo' ||
-      moduleName.startsWith('@privy-io/expo/')
-    ) {
-      return forceSingleCopy(context, moduleName, platform, '@privy-io/expo')
+    // Force a single copy of these packages so Privy/Solana providers share one
+    // module instance (avoids duplicate React contexts).
+    const singleCopyPkg = SINGLE_COPY_PKGS.find(
+      (p) => moduleName === p || moduleName.startsWith(`${p}/`),
+    )
+    if (singleCopyPkg) {
+      return forceSingleCopy(context, moduleName, platform, singleCopyPkg)
     }
     // Redirect jose to its browser build (avoids Node.js 'https' dependency)
     if (moduleName === 'jose' || moduleName.startsWith('jose/')) {

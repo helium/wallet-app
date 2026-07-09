@@ -92,15 +92,14 @@ const useAppStorageHook = () => {
       const nextExplorer = await getSecureItem('explorer')
       const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
       const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
-      const nextDeprecatedTokensDismissedStr = await AsyncStorage.getItem(
-        DEPRECATED_TOKENS_DISMISSED,
-      )
+      const [nextDeprecatedTokensDismissedStr, nextMigrateToWorldDismissedStr] =
+        await Promise.all([
+          AsyncStorage.getItem(DEPRECATED_TOKENS_DISMISSED),
+          AsyncStorage.getItem(MIGRATE_TO_WORLD_DISMISSED),
+        ])
       const nextDeprecatedTokensDismissed = nextDeprecatedTokensDismissedStr
         ? JSON.parse(nextDeprecatedTokensDismissedStr)
         : {}
-      const nextMigrateToWorldDismissedStr = await AsyncStorage.getItem(
-        MIGRATE_TO_WORLD_DISMISSED,
-      )
       const nextMigrateToWorldDismissed = nextMigrateToWorldDismissedStr
         ? JSON.parse(nextMigrateToWorldDismissedStr)
         : {}

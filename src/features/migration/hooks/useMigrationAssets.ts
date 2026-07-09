@@ -1,6 +1,6 @@
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import { useBalance } from '@utils/Balance'
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { classifyHoldings } from '../logic/assets'
 import { SelectableToken } from '../logic/types'
@@ -16,7 +16,7 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
   const { tokenAccounts } = useBalance()
 
-  const { execute, loading, error, result } = useAsyncCallback(async () => {
+  const { execute, loading, result } = useAsyncCallback(async () => {
     if (!sourceWallet) {
       return {
         hotspots: [] as MigratableHotspot[],
@@ -46,10 +46,6 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
     }
   })
 
-  const reload = useCallback(() => {
-    execute()
-  }, [execute])
-
   useEffect(() => {
     if (sourceWallet) execute()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,10 +53,8 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
 
   return {
     loading,
-    error,
     hotspots: result?.hotspots ?? [],
     tokens: result?.tokens ?? [],
     leftBehindMints: result?.leftBehindMints ?? [],
-    reload,
   }
 }

@@ -51,15 +51,8 @@ describe('signBatchTransactions', () => {
     expect(calls).toEqual(['source:c', 'dest:c'])
   })
 
-  it('defaults to source when signers is empty', async () => {
-    const { calls, signers } = makeSigners()
-    const out = await signBatchTransactions(
-      [{ tx: { id: 'd', sigs: [] }, signers: [] }],
-      signers,
-    )
-    expect(out[0].sigs).toEqual(['source'])
-    expect(calls).toEqual(['source:d'])
-  })
+  // The empty-signers → ['source'] default lives in deserializeBatchTxs (see
+  // batches.test); signBatchTransactions consumes already-resolved signers.
 
   it('preserves order across a mixed batch', async () => {
     const { signers } = makeSigners()

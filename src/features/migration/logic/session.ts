@@ -1,10 +1,8 @@
-export type MigrateInput = {
-  sourceWallet: string
-  destinationWallet: string
-  hotspots: string[]
-  tokens: { mint: string; amount: string }[]
-  password?: string
-}
+import type { MigrateInput } from '@helium/blockchain-api'
+
+// The migrate request/resume payload is the API's own input type — kept in sync
+// with the deployed schema instead of re-declared here.
+export type { MigrateInput }
 
 export type MigrationStatus =
   | 'idle'
@@ -58,6 +56,7 @@ export type ResumeInfo = {
   input: MigrateInput | null
   movedCount: number
   failedCount: number
+  status: MigrationStatus
 }
 
 export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
@@ -67,6 +66,34 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       input: s.nextInput ?? s.originalInput,
       movedCount: s.confirmedSignatures.length,
       failedCount: s.failedSignatures.length,
+      status: s.status,
     }
-  return { canResume: false, input: null, movedCount: 0, failedCount: 0 }
+  return {
+    canResume: false,
+    input: null,
+    movedCount: 0,
+    failedCount: 0,
+    status: 'idle',
+  }
+}
+
+export type OutcomeStep = 'success' | 'pending' | 'partial'
+
+// Single source of truth for the run-outcome/session-status → screen mapping,
+// shared by the live run and the resume path so they can't drift. A batch-level
+// 'failed' (zero failed signatures) still routes to the retry screen, not the
+// reassuring "still processing" one.
+export const stepForOutcome = (
+  status: MigrationStatus | 'pending',
+): OutcomeStep => {
+  switch (status) {
+    case 'complete':
+      return 'success'
+    case 'partial':
+    case 'failed':
+      return 'partial'
+    default:
+      // running | pending | idle — nothing terminally failed, still confirming.
+      return 'pending'
+  }
 }

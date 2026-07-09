@@ -2,14 +2,20 @@ import NetInfo from '@react-native-community/netinfo'
 import { useEmbeddedSolanaWallet } from '@privy-io/expo'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
-import { useCallback, useState } from 'react'
+import sleep from '@utils/sleep'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSolana } from '../../../solana/SolanaProvider'
 import {
   BatchStatus,
   deserializeBatchTxs,
   serializeSignedBatch,
 } from '../logic/batches'
-import { ExecutorProgress, runMigration, RunOutcome } from '../logic/executor'
+import {
+  ExecutorProgress,
+  gateOnDeps,
+  runMigration,
+  RunOutcome,
+} from '../logic/executor'
 import { MigrateInput, MigrationSession } from '../logic/session'
 import { signBatchTransactions } from '../logic/signers'
 
@@ -24,6 +30,19 @@ export const useMigrationExecutor = (
   const solanaWallet = useEmbeddedSolanaWallet()
   const [progress, setProgress] = useState<ExecutorProgress>()
 
+  // Set on unmount so an in-flight connectivity wait drops its NetInfo listener
+  // and releases the executor closure instead of staying parked until reconnect.
+  const abortedRef = useRef(false)
+  const cleanupRef = useRef<(() => void) | null>(null)
+  useEffect(
+    () => () => {
+      abortedRef.current = true
+      cleanupRef.current?.()
+      cleanupRef.current = null
+    },
+    [],
+  )
+
   const run = useCallback(
     async (input: MigrateInput): Promise<RunOutcome> => {
       if (!anchorProvider) throw new Error('Source wallet unavailable')
@@ -33,6 +52,9 @@ export const useMigrationExecutor = (
       ) {
         throw new Error('Destination wallet unavailable')
       }
+
+      // Clear any prior attempt's phase so a retry never flashes stale progress.
+      setProgress(undefined)
 
       const destProvider = await solanaWallet.wallets[0].getProvider()
 
@@ -47,20 +69,30 @@ export const useMigrationExecutor = (
       }
 
       // Resolve immediately when connected, otherwise on the next connected
-      // event — auto-pausing the run through a network drop.
+      // event — auto-pausing the run through a network drop. Unmounting releases
+      // the waiter (see cleanupRef) so the listener never leaks.
       const waitForOnline = () =>
         new Promise<void>((resolve) => {
+          if (abortedRef.current) {
+            resolve()
+            return
+          }
           NetInfo.fetch().then((state) => {
-            if (state.isConnected) {
+            if (abortedRef.current || state.isConnected) {
               resolve()
               return
             }
             const unsubscribe = NetInfo.addEventListener((s) => {
               if (s.isConnected) {
                 unsubscribe()
+                cleanupRef.current = null
                 resolve()
               }
             })
+            cleanupRef.current = () => {
+              unsubscribe()
+              resolve()
+            }
           })
         })
 
@@ -76,24 +108,29 @@ export const useMigrationExecutor = (
           if (status.status !== 'pending') return status
           if (Date.now() - start > POLL_TIMEOUT_MS) return status
           // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS))
+          await sleep(POLL_INTERVAL_MS)
         }
       }
 
-      return runMigration<VersionedTransaction>(input, {
-        requestMigrate: (i) => client.migration.migrate(i),
-        signBatch: (_items, data) =>
-          signBatchTransactions(deserializeBatchTxs(data), {
-            signWithSource,
-            signWithDestination,
-          }),
-        submitBatch: (signed, data) =>
-          client.transactions.submit(serializeSignedBatch(signed, data)),
-        pollStatus,
-        persist,
-        onProgress: setProgress,
-        waitForOnline,
-      })
+      return runMigration<VersionedTransaction>(
+        input,
+        gateOnDeps(
+          {
+            requestMigrate: (i) => client.migration.migrate(i),
+            signBatch: (data) =>
+              signBatchTransactions(deserializeBatchTxs(data), {
+                signWithSource,
+                signWithDestination,
+              }),
+            submitBatch: (signed, data) =>
+              client.transactions.submit(serializeSignedBatch(signed, data)),
+            pollStatus,
+            persist,
+            onProgress: setProgress,
+          },
+          waitForOnline,
+        ),
+      )
     },
     [anchorProvider, solanaWallet, client, persist],
   )

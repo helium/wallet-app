@@ -31,7 +31,7 @@ import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
 import { shouldShowSupport } from './logic/retry'
-import { MigrateInput } from './logic/session'
+import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
 
 const WORLD_URL = 'https://world.helium.com'
@@ -46,6 +46,7 @@ export type FlowStep =
   | 'pending'
   | 'partial'
   | 'success'
+  | 'walletError'
 
 // The tokens the user chose to migrate (nonzero amount), each paired with its
 // resolved SelectableToken when we can find it. Shared by the input builder and
@@ -87,23 +88,22 @@ const MigrateToWorld = () => {
   const [lastRunNextInput, setLastRunNextInput] = useState<MigrateInput>()
   const [outcome, setOutcome] = useState<{ moved: number; failed: number }>()
   const [error, setError] = useState<string>()
-  const [progressLabel, setProgressLabel] = useState('')
-  const [createError, setCreateError] = useState(false)
   const createAttempts = useRef(0)
   const creating = useRef(false)
 
   // Ensure a destination embedded wallet exists once the user is logged in.
   // Creation can fail (network/Privy) and there is no destination without it,
-  // so failures surface a retry/support state rather than being swallowed.
+  // so failures route to the 'walletError' step. A successful retry returns to
+  // 'select' (an initial background create leaves the current step untouched).
   const createWallet = useCallback(async () => {
     if (!solanaWallet.create || creating.current) return
     creating.current = true
-    setCreateError(false)
     try {
       await solanaWallet.create()
+      setStep((s) => (s === 'walletError' ? 'select' : s))
     } catch {
       createAttempts.current += 1
-      setCreateError(true)
+      setStep('walletError')
     } finally {
       creating.current = false
     }
@@ -114,32 +114,22 @@ const MigrateToWorld = () => {
       user &&
       solanaWallet.status === 'not-created' &&
       !creating.current &&
-      !createError
+      step !== 'walletError'
     ) {
       createWallet()
     }
-  }, [user, solanaWallet, createError, createWallet])
+  }, [user, solanaWallet, step, createWallet])
 
   // An interrupted session (app closed mid-migration) resumes straight to the
-  // partial screen, where retry re-runs the persisted input.
+  // screen its persisted status maps to — the same mapping the live run uses,
+  // so a batch-level failure lands on retry, not the "still processing" screen.
   useEffect(() => {
     if (resume.canResume) {
       setOutcome({ moved: resume.movedCount, failed: resume.failedCount })
-      // A resumable session with nothing failed was interrupted mid-confirm
-      // (or timed out still pending) — show the honest "still processing"
-      // screen, not the retry-failed framing. Only real failures go to partial.
-      setStep(resume.failedCount > 0 ? 'partial' : 'pending')
+      setStep(stepForOutcome(resume.status))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resume.canResume])
-
-  // Track the label locally rather than reading `progress` directly: the
-  // executor hook doesn't reset `progress` at the start of run(), so on a
-  // retry it would otherwise briefly show the prior attempt's stale phase.
-  useEffect(() => {
-    if (progress)
-      setProgressLabel(`${progress.phase} · batch ${progress.batch}`)
-  }, [progress])
 
   const buildInput = useCallback(
     (sel: AssetSelection): MigrateInput => ({
@@ -160,7 +150,6 @@ const MigrateToWorld = () => {
   const execute = useCallback(
     async (input: MigrateInput) => {
       setError(undefined)
-      setProgressLabel('')
       setStep('migrating')
       try {
         const result = await run(input)
@@ -169,21 +158,14 @@ const MigrateToWorld = () => {
           // stale 'complete' record around.
           setLastRunNextInput(undefined)
           await clear()
-          setStep('success')
-        } else if (result.status === 'pending') {
-          // Nothing failed — txs are still confirming. Show honest
-          // "still processing" messaging, not a failure/retry screen.
-          setLastRunNextInput(result.nextInput)
-          setOutcome({ moved: result.confirmedSignatures.length, failed: 0 })
-          setStep('pending')
         } else {
           setLastRunNextInput(result.nextInput)
           setOutcome({
             moved: result.confirmedSignatures.length,
             failed: result.failedSignatures.length,
           })
-          setStep('partial')
         }
+        setStep(stepForOutcome(result.status))
       } catch (err) {
         setError((err as Error).message)
         setStep('review')
@@ -221,16 +203,6 @@ const MigrateToWorld = () => {
   const isLoggedIn = !!user && !!destinationWallet
 
   const render = () => {
-    // A logged-in user with no destination wallet is stuck until creation
-    // succeeds — surface the retry/support state over any post-login step.
-    if (createError) {
-      return (
-        <WalletCreateErrorStep
-          onRetry={createWallet}
-          showSupport={shouldShowSupport(createAttempts.current)}
-        />
-      )
-    }
     switch (step) {
       case 'intro':
         return (
@@ -285,7 +257,9 @@ const MigrateToWorld = () => {
         return (
           <ProgressStep
             walletReady={!!destinationWallet}
-            label={progressLabel}
+            label={
+              progress ? `${progress.phase} · batch ${progress.batch}` : ''
+            }
           />
         )
       case 'pending':
@@ -311,6 +285,15 @@ const MigrateToWorld = () => {
             destinationWallet={destinationWallet || ''}
             onGoToWorld={goToWorld}
             onDone={dismiss}
+          />
+        )
+      case 'walletError':
+        // A logged-in user with no destination wallet is stuck until creation
+        // succeeds — offer retry, and a support link after repeated failures.
+        return (
+          <WalletCreateErrorStep
+            onRetry={createWallet}
+            showSupport={shouldShowSupport(createAttempts.current)}
           />
         )
       default:

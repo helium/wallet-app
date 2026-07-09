@@ -1,10 +1,11 @@
 import { VersionedTransaction } from '@solana/web3.js'
 import { Buffer } from 'buffer'
+import type { BatchStatus as BatchStatusValue } from '@hooks/useTransactionBatchStatus'
 import { signersOrDefault } from './signers'
 import { SignerRole, TransactionData } from './types'
 
 export type BatchStatus = {
-  status: 'pending' | 'confirmed' | 'failed' | 'expired' | 'partial'
+  status: BatchStatusValue
   transactions: { signature: string; status: string }[]
 }
 
