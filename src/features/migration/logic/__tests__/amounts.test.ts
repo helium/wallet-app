@@ -13,6 +13,9 @@ describe('uiToRaw', () => {
   it('handles decimals = 0', () => {
     expect(uiToRaw('5000', 0)).toBe('5000')
   })
+  it('truncates the fractional part for decimals = 0', () => {
+    expect(uiToRaw('5.7', 0)).toBe('5')
+  })
   it('handles a leading-dot value', () => {
     expect(uiToRaw('.5', 6)).toBe('500000')
   })

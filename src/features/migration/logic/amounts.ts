@@ -5,7 +5,9 @@
 export const uiToRaw = (ui: string, decimals: number): string => {
   const trimmed = (ui ?? '').trim()
   if (!trimmed) return '0'
-  if (decimals === 0) return trimmed.replace(/\D/g, '') || '0'
+  // For 0-decimal mints, keep only the integer part — stripping non-digits
+  // from "5.7" would yield "57", a 10x error on a funds-moving path.
+  if (decimals === 0) return trimmed.split('.')[0].replace(/\D/g, '') || '0'
   const [intPart = '0', fracPart = ''] = trimmed.split('.')
   const paddedFrac = fracPart.slice(0, decimals).padEnd(decimals, '0')
   const raw = `${intPart}${paddedFrac}`.replace(/^0+/, '')
