@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Migrate to Helium World — Flow Design Board</title>
+    <style>
+      :root {
+        --purple: #7c3aed; /* worldPurple — migration CTA token */
+        --purple-soft: #ede6fd;
+        --ink: #14121a;
+        --muted: #6b6577;
+        --line: #e4e0ec;
+        --bg: #ffffff;
+        --screen: #fbfafe;
+        --ok: #16a34a;
+        --warn: #d97706;
+        --pending: #2563eb;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      body {
+        font-family: -apple-system, "SF Pro Text", "Helvetica Neue", Arial,
+          sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      @page {
+        size: 1400px 990px;
+        margin: 0;
+      }
+      .page {
+        width: 1400px;
+        height: 990px;
+        padding: 46px 54px;
+        page-break-after: always;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+      }
+      .page:last-child {
+        page-break-after: auto;
+      }
+
+      /* ---------- header ---------- */
+      .head {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        border-bottom: 2px solid var(--line);
+        padding-bottom: 16px;
+        margin-bottom: 8px;
+      }
+      .brandmark {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: var(--purple);
+        display: inline-block;
+        position: relative;
+        top: 4px;
+      }
+      .head h1 {
+        font-size: 27px;
+        letter-spacing: -0.4px;
+        font-weight: 700;
+      }
+      .head .sub {
+        font-size: 14px;
+        color: var(--muted);
+        margin-left: auto;
+        text-align: right;
+        line-height: 1.4;
+      }
+      .kicker {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1.6px;
+        color: var(--purple);
+        font-weight: 700;
+        margin: 22px 0 4px;
+      }
+
+      /* ---------- flow rail ---------- */
+      .rail {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        flex: 1;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+      .arrow {
+        align-self: center;
+        color: var(--purple);
+        font-size: 30px;
+        font-weight: 300;
+        padding: 0 4px;
+        margin-top: 200px;
+      }
+
+      /* ---------- phone ---------- */
+      .phone {
+        width: 186px;
+        height: 388px;
+        border: 2px solid var(--ink);
+        border-radius: 26px;
+        background: var(--screen);
+        padding: 14px 14px 16px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 6px 18px rgba(20, 18, 26, 0.08);
+      }
+      .notch {
+        width: 54px;
+        height: 5px;
+        border-radius: 3px;
+        background: var(--ink);
+        opacity: 0.35;
+        margin: 2px auto 12px;
+      }
+      .screentag {
+        position: absolute;
+        top: -11px;
+        left: 12px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        padding: 3px 8px;
+        border-radius: 7px;
+      }
+      .screentag.alt {
+        background: var(--purple);
+      }
+      .stepname {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        margin-top: 12px;
+        letter-spacing: 0.3px;
+        text-align: center;
+      }
+
+      .s-title {
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 8px;
+      }
+      .s-body {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.4;
+        margin-bottom: 10px;
+      }
+      .grow {
+        flex: 1;
+      }
+
+      .btn {
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 700;
+        text-align: center;
+        padding: 9px 8px;
+      }
+      .btn.primary {
+        background: var(--purple);
+        color: #fff;
+      }
+      .btn.ghost {
+        color: var(--muted);
+        border: none;
+        padding-top: 8px;
+      }
+      .btn.outline {
+        border: 1.5px solid var(--purple);
+        color: var(--purple);
+      }
+      .btn + .btn {
+        margin-top: 7px;
+      }
+
+      .field {
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        padding: 9px 10px;
+        font-size: 11px;
+        color: var(--muted);
+        background: #fff;
+        margin-bottom: 8px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .row .k {
+        color: var(--muted);
+      }
+      .row .v {
+        font-weight: 600;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+      .pill.free {
+        background: #e7f7ee;
+        color: var(--ok);
+      }
+      .chip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 11px;
+        margin-bottom: 7px;
+      }
+      .chip .ct {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .badge-check {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--purple);
+        color: #fff;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .spinner {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 4px solid var(--purple-soft);
+        border-top-color: var(--purple);
+        margin: 8px auto 12px;
+      }
+      .icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 6px auto 14px;
+      }
+      .icon svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .icon.brand {
+        background: var(--purple-soft);
+      }
+      .icon.brand svg {
+        stroke: var(--purple);
+      }
+      .icon.ok {
+        background: #e7f7ee;
+      }
+      .icon.ok svg {
+        stroke: var(--ok);
+      }
+      .icon.pending {
+        background: #e7eefc;
+      }
+      .icon.pending svg {
+        stroke: var(--pending);
+      }
+      .icon.warn {
+        background: #fdf1e1;
+      }
+      .icon.warn svg {
+        stroke: var(--warn);
+      }
+      .center {
+        text-align: center;
+      }
+
+      .statusline {
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+        padding: 6px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .statusline.ok {
+        background: #e7f7ee;
+        color: var(--ok);
+      }
+      .statusline.pending {
+        background: #e7eefc;
+        color: var(--pending);
+      }
+      .statusline.warn {
+        background: #fdf1e1;
+        color: var(--warn);
+      }
+
+      /* ---------- page 2 branch ---------- */
+      .branchwrap {
+        display: flex;
+        gap: 30px;
+        flex: 1;
+        margin-top: 6px;
+      }
+      .branchcol {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .branchhead {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.pending {
+        background: var(--pending);
+      }
+      .dot.warn {
+        background: var(--warn);
+      }
+      .branchdesc {
+        font-size: 11.5px;
+        color: var(--muted);
+        line-height: 1.5;
+        margin-bottom: 14px;
+        min-height: 62px;
+      }
+      .branchcol .phone {
+        align-self: center;
+      }
+
+      /* ---------- notes / legend ---------- */
+      .notes {
+        display: flex;
+        gap: 22px;
+        margin-top: 20px;
+      }
+      .note {
+        flex: 1;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--purple);
+        border-radius: 10px;
+        padding: 14px 16px;
+        background: #fff;
+      }
+      .note h3 {
+        font-size: 13px;
+        margin-bottom: 6px;
+      }
+      .note p {
+        font-size: 11.5px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .note code {
+        background: var(--purple-soft);
+        color: var(--purple);
+        padding: 1px 5px;
+        border-radius: 5px;
+        font-size: 10.5px;
+        font-weight: 600;
+      }
+
+      .legend {
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        margin-top: auto;
+        padding-top: 18px;
+        border-top: 2px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .legend .sw {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .legend .box {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+      }
+      .foot {
+        position: absolute;
+        bottom: 20px;
+        right: 54px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .resume {
+        margin-top: 16px;
+        border: 1.5px dashed var(--purple);
+        border-radius: 12px;
+        padding: 12px 18px;
+        background: var(--purple-soft);
+        font-size: 12px;
+        color: var(--ink);
+        line-height: 1.5;
+      }
+      .resume b {
+        color: var(--purple);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============ PAGE 1 — HAPPY PATH ============ -->
+    <section class="page">
+      <div class="head">
+        <span class="brandmark"></span>
+        <h1>Migrate to Helium World</h1>
+        <div class="sub">
+          Flow Design Board · v1<br />React Native · Privy embedded wallet ·
+          non-destructive
+        </div>
+      </div>
+      <div class="kicker">Happy path — email onboarding → assets moved</div>
+
+      <div class="rail">
+        <div class="col">
+          <div class="phone">
+            <span class="screentag">01</span>
+            <div class="notch"></div>
+            <div class="icon brand">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18" />
+                <path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18" />
+              </svg>
+            </div>
+            <div class="s-title">Welcome to Helium World</div>
+            <div class="s-body">
+              A new home for your Hotspots and rewards. We’ll bring everything
+              over — no fees, we cover them.
+            </div>
+            <div class="grow"></div>
+            <div class="btn primary">Continue</div>
+            <div class="btn ghost">Not now</div>
+          </div>
+          <div class="stepname">IntroStep</div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="col">
+          <div class="phone">
+            <span class="screentag">02</span>
+            <div class="notch"></div>
+            <div class="s-title">Link your email</div>
+            <div class="s-body">
+              Link an email to create your Helium World account.
+            </div>
+            <div class="field">you@email.com</div>
+            <div class="btn primary">Link Email</div>
+            <div class="s-body" style="margin-top: 10px">Enter code</div>
+            <div class="field">• • • • • •</div>
+            <div class="grow"></div>
+            <div class="btn outline">Verify</div>
+            <div class="btn ghost">Use a different email</div>
+          </div>
+          <div class="stepname">EmailLoginStep · Privy OTP</div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="col">
+          <div class="phone">
+            <span class="screentag">03</span>
+            <div class="notch"></div>
+            <div class="s-title">Ready to move</div>
+            <div class="s-body">
+              Everything’s selected. Tap a group to fine-tune.
+            </div>
+            <div class="chip">
+              <span>Hotspots</span><span class="badge-check">✓</span>
+            </div>
+            <div class="chip">
+              <span>Tokens</span><span class="ct">Balance · MAX</span>
+            </div>
+            <div class="chip" style="border-style: dashed">
+              <span class="ct">1 token can’t move — stays put</span>
+            </div>
+            <div class="grow"></div>
+            <div class="btn primary">Review Migration</div>
+          </div>
+          <div class="stepname">AssetSelectionStep</div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="col">
+          <div class="phone">
+            <span class="screentag">04</span>
+            <div class="notch"></div>
+            <div class="s-title">Confirm migration</div>
+            <div class="row">
+              <span class="k">From</span><span class="v">wallet…a1b2</span>
+            </div>
+            <div class="row">
+              <span class="k">To</span><span class="v">world…9f0c</span>
+            </div>
+            <div class="row">
+              <span class="k">Hotspots</span><span class="v">3</span>
+            </div>
+            <div class="row">
+              <span class="k">Tokens</span><span class="v">142.5 IOT</span>
+            </div>
+            <div class="row">
+              <span class="k">Fees</span><span class="pill free">Free</span>
+            </div>
+            <div class="grow"></div>
+            <div class="btn primary">Confirm &amp; Migrate</div>
+            <div class="btn ghost">Back</div>
+          </div>
+          <div class="stepname">ReviewStep</div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="col">
+          <div class="phone">
+            <span class="screentag">05</span>
+            <div class="notch"></div>
+            <div class="grow"></div>
+            <div class="spinner"></div>
+            <div class="s-title center">Migrating…</div>
+            <div class="statusline ok">World wallet ready</div>
+            <div class="s-body center">Processing batch 2</div>
+            <div class="grow"></div>
+          </div>
+          <div class="stepname">ProgressStep · batched</div>
+        </div>
+
+        <div class="arrow">→</div>
+
+        <div class="col">
+          <div class="phone">
+            <span class="screentag alt">06</span>
+            <div class="notch"></div>
+            <div class="grow"></div>
+            <div class="icon ok">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8.5 12.5l2.5 2.5l4.5-5" />
+              </svg>
+            </div>
+            <div class="s-title center">Migration complete</div>
+            <div class="s-body center">
+              Your assets have been migrated to Helium World.
+            </div>
+            <div class="s-body center">New wallet: world…9f0c</div>
+            <div class="grow"></div>
+            <div class="btn primary">Go to Helium World</div>
+            <div class="btn ghost">Done</div>
+          </div>
+          <div class="stepname">SuccessStep</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="sw"
+          ><span class="box" style="background: #7c3aed"></span> worldPurple
+          <code
+            style="
+              background: #ede6fd;
+              color: #7c3aed;
+              padding: 1px 5px;
+              border-radius: 5px;
+              font-size: 11px;
+            "
+            >#7C3AED</code
+          >
+          — migration CTA token (shared purple500 untouched)</span
+        >
+        <span class="sw"
+          ><span class="box" style="background: #14121a"></span>
+          primaryText</span
+        >
+        <span class="sw"
+          ><span class="box" style="background: #6b6577"></span>
+          secondaryText</span
+        >
+        <span class="sw"
+          ><span
+            class="box free"
+            style="background: #e7f7ee; border: 1px solid #16a34a"
+          ></span>
+          Fees always “Free / $0.00” — never gated on SOL balance</span
+        >
+      </div>
+      <div class="foot">Helium Wallet · feat/migrate</div>
+    </section>
+
+    <!-- ============ PAGE 2 — TERMINAL STATES + LOGIC ============ -->
+    <section class="page">
+      <div class="head">
+        <span class="brandmark"></span>
+        <h1>Migration outcomes &amp; resume</h1>
+        <div class="sub">
+          Three honest terminal states<br />pending ≠ failed · every state
+          resumable
+        </div>
+      </div>
+      <div class="kicker">
+        After “Migrating…” — the executor resolves to exactly one of three
+        states
+      </div>
+
+      <div class="branchwrap">
+        <div class="branchcol">
+          <div class="branchhead"><span class="dot ok"></span> Complete</div>
+          <div class="branchdesc">
+            All transactions confirmed. Session cleared. User is sent to Helium
+            World.
+          </div>
+          <div class="phone">
+            <span class="screentag alt">A</span>
+            <div class="notch"></div>
+            <div class="grow"></div>
+            <div class="icon ok">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M8.5 12.5l2.5 2.5l4.5-5" />
+              </svg>
+            </div>
+            <div class="s-title center">Migration complete</div>
+            <div class="statusline ok">All items confirmed</div>
+            <div class="grow"></div>
+            <div class="btn primary">Go to Helium World</div>
+            <div class="btn ghost">Done</div>
+          </div>
+          <div class="stepname">SuccessStep</div>
+        </div>
+
+        <div class="branchcol">
+          <div class="branchhead">
+            <span class="dot pending"></span> Pending — still confirming
+          </div>
+          <div class="branchdesc">
+            A status poll timed out with transactions still <b>pending</b> (not
+            failed). Confirmed items are safe; session stays
+            <code
+              style="
+                background: #e7eefc;
+                color: #2563eb;
+                padding: 0 4px;
+                border-radius: 4px;
+              "
+              >running</code
+            >
+            &amp; resumable. No false-failure framing.
+          </div>
+          <div class="phone">
+            <span class="screentag">B</span>
+            <div class="notch"></div>
+            <div class="grow"></div>
+            <div class="icon pending">
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7.5V12l3 2" />
+              </svg>
+            </div>
+            <div class="s-title center">Still processing</div>
+            <div class="statusline pending">2 moved so far</div>
+            <div class="s-body center">
+              The rest are still confirming on the network. Your moved items are
+              safe — it’s fine to close this and check back.
+            </div>
+            <div class="grow"></div>
+            <div class="btn primary">Check status</div>
+            <div class="btn ghost">Dismiss</div>
+          </div>
+          <div class="stepname">PendingStep · NEW</div>
+        </div>
+
+        <div class="branchcol">
+          <div class="branchhead">
+            <span class="dot warn"></span> Partial — real failures
+          </div>
+          <div class="branchdesc">
+            One or more transactions <b>terminally failed</b> (failed /
+            expired). Confirmed items kept; only the failures retry. Idempotent
+            re-run of the persisted input.
+          </div>
+          <div class="phone">
+            <span class="screentag">C</span>
+            <div class="notch"></div>
+            <div class="grow"></div>
+            <div class="icon warn">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3.5L21.5 20H2.5L12 3.5z" />
+                <path d="M12 10v4" />
+                <path d="M12 17.5v.01" />
+              </svg>
+            </div>
+            <div class="s-title center">Almost there</div>
+            <div class="statusline warn">2 moved · 1 needs a retry</div>
+            <div class="s-body center">
+              Some items didn’t go through. Retry just those — nothing already
+              moved is touched.
+            </div>
+            <div class="grow"></div>
+            <div class="btn primary">Retry failed items</div>
+            <div class="btn ghost">Dismiss</div>
+          </div>
+          <div class="stepname">PartialRetryStep</div>
+        </div>
+      </div>
+
+      <div class="resume">
+        <b>Resume path</b> — on relaunch, a persisted session routes by outcome:
+        real failures → <b>Almost there</b> (retry); nothing failed (interrupted
+        mid-confirm, or timed-out pending) → <b>Still processing</b>. A
+        <code style="background: #fff">running</code> snapshot is written
+        <i>before</i> the first batch confirms, so even a kill during batch 1
+        stays resumable. Counts (moved / failed) are surfaced from the session —
+        never a bare 0 / 0.
+      </div>
+
+      <div class="notes">
+        <div class="note">
+          <h3>Non-destructive by construction</h3>
+          <p>
+            Destination is the user’s own wallet. Source keeps its keys. Only
+            <code>MIGRATABLE_MINTS</code> move; unresolvable mints are dropped,
+            never shipped as a corrupted raw amount.
+          </p>
+        </div>
+        <div class="note">
+          <h3>pending ≠ failed</h3>
+          <p>
+            <code>summarizeBatch</code> splits <code>pending</code> from
+            terminal-failed. A slow confirmation is “still processing,” never a
+            retry screen — no phantom failures.
+          </p>
+        </div>
+        <div class="note">
+          <h3>Amount safety</h3>
+          <p>
+            Integer-string math only, no float.
+            <code>uiToRaw("5.7", 0) → "5"</code> — the fractional part is
+            truncated, not concatenated, on the funds-moving path.
+          </p>
+        </div>
+        <div class="note">
+          <h3>Open everyone-first</h3>
+          <p>
+            No eligibility gate. Email OTP → auto-created embedded wallet, or
+            connect an external self-custody wallet. Fees presented as Free.
+          </p>
+        </div>
+      </div>
+
+      <div class="foot">
+        Helium Wallet · feat/migrate · review verdict: SHIP
+      </div>
+    </section>
+  </body>
+</html>
