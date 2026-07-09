@@ -6,10 +6,9 @@ import { useTranslation } from 'react-i18next'
 
 const PendingStep: FC<{
   movedCount: number
-  pendingCount: number
   onCheckStatus: () => void
   onDismiss: () => void
-}> = ({ movedCount, pendingCount, onCheckStatus, onDismiss }) => {
+}> = ({ movedCount, onCheckStatus, onDismiss }) => {
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="center" paddingHorizontal="l">
@@ -22,10 +21,7 @@ const PendingStep: FC<{
         textAlign="center"
         marginTop="m"
       >
-        {t('migrateToWorld.pending.body', {
-          moved: movedCount,
-          pending: pendingCount,
-        })}
+        {t('migrateToWorld.pending.body', { moved: movedCount })}
       </Text>
       <ButtonPressable
         width="100%"

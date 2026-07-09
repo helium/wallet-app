@@ -1650,7 +1650,7 @@ export default {
     },
     pending: {
       title: 'Still processing',
-      body: '{{moved}} moved · {{pending}} still confirming. Your moved items are safe — this can take a little while.',
+      body: "{{moved}} moved so far — the rest are still confirming on the network. Your moved items are safe, and this can take a little while. It's fine to close this and check back.",
       checkStatus: 'Check status',
     },
     partial: {
