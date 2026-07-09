@@ -3,10 +3,9 @@ import Text from '@components/Text'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking, ScrollView } from 'react-native'
+import { WORLD_URL } from '../constants'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
-
-const WORLD_URL = 'https://world.helium.com'
 
 // Guided, branched instructions to connect an existing external wallet as the
 // World destination via World Explorer's wallet-standard / SIWS connect model.

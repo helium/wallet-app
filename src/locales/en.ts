@@ -1598,6 +1598,7 @@ export default {
       verify: 'Verify',
       codePlaceholder: 'Enter code',
       loggingIn: 'Signing in…',
+      emailPlaceholder: 'you@example.com',
       differentEmail: 'Use a different email',
       resend: 'Resend code',
       resendIn: 'Resend code in {{seconds}}s',
@@ -1626,6 +1627,10 @@ export default {
       loading: 'Loading assets...',
       review: 'Review Migration',
       approxValue: '≈ {{value}}',
+      loadErrorTitle: "Couldn't load your assets",
+      loadErrorBody:
+        'Something went wrong loading your assets. Check your connection and try again.',
+      retry: 'Try again',
     },
     nothingToMigrate: {
       title: "You're all set",
@@ -1644,6 +1649,13 @@ export default {
       title: 'Migrating...',
       creatingWallet: 'Setting up your World wallet…',
       walletReady: 'World wallet ready',
+      phases: {
+        requesting: 'Preparing',
+        signing: 'Signing',
+        submitting: 'Submitting',
+        confirming: 'Confirming',
+      },
+      batchLabel: '{{phase}} · batch {{batch}}',
     },
     pending: {
       title: 'Still processing',

@@ -12,8 +12,9 @@ const SUPPORT_URL = 'https://docs.helium.com'
 // after repeated failures, a support link.
 const WalletCreateErrorStep: FC<{
   onRetry: () => void
+  onDismiss: () => void
   showSupport: boolean
-}> = ({ onRetry, showSupport }) => {
+}> = ({ onRetry, onDismiss, showSupport }) => {
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="center" paddingHorizontal="l">
@@ -49,8 +50,14 @@ const WalletCreateErrorStep: FC<{
           variant="secondary"
           title={t('migrateToWorld.createWallet.support')}
           onPress={() => Linking.openURL(SUPPORT_URL)}
+          marginBottom="m"
         />
       )}
+      <WorldButton
+        variant="secondary"
+        title={t('migrateToWorld.intro.later')}
+        onPress={onDismiss}
+      />
     </Box>
   )
 }

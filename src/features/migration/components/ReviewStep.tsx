@@ -3,7 +3,6 @@ import Text from '@components/Text'
 import { shortenAddress } from '@utils/formatting'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
-import { WORLD } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
 
@@ -67,7 +66,7 @@ const ReviewStep: FC<{
           <Text variant="body3" color="secondaryText">
             {t('migrateToWorld.confirm.fees')}
           </Text>
-          <Text variant="body2Medium" style={{ color: WORLD.success }}>
+          <Text variant="body2Medium" color="worldSuccess">
             {t('migrateToWorld.confirm.free')}
           </Text>
         </Box>

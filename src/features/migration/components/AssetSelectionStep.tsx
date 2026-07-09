@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
 import { MINT_PRICE_KEY } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
-import { WORLD } from '../migrationTheme'
 import HotspotsEditSheet from './HotspotsEditSheet'
 import StepBackHeader from './StepBackHeader'
 import TokensEditSheet from './TokensEditSheet'
@@ -51,7 +50,7 @@ const SummaryCard: FC<{
           </Text>
         </Box>
         <TouchableOpacityBox onPress={onEdit}>
-          <Text variant="body3Medium" style={{ color: WORLD.purple }}>
+          <Text variant="body3Medium" color="worldPurple">
             {t('migrateToWorld.selectAssets.edit')} ›
           </Text>
         </TouchableOpacityBox>
@@ -177,12 +176,8 @@ const AssetSelectionStep: FC<{
         />
 
         {leftBehindCount > 0 && (
-          <Box
-            borderRadius="l"
-            padding="m"
-            style={{ backgroundColor: WORLD.warnBg }}
-          >
-            <Text variant="body3" style={{ color: WORLD.warnInk }}>
+          <Box borderRadius="l" padding="m" backgroundColor="worldWarnBg">
+            <Text variant="body3" color="worldWarnInk">
               ⚠{' '}
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,

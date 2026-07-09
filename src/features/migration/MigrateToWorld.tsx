@@ -12,6 +12,7 @@ import React, {
 } from 'react'
 import { Linking } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
 import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo'
 import AssetSelectionStep, {
   AssetSelection,
@@ -20,12 +21,14 @@ import ConnectStep from './components/ConnectStep'
 import EmailLoginStep from './components/EmailLoginStep'
 import IntroStep from './components/IntroStep'
 import NothingToMigrateStep from './components/NothingToMigrateStep'
+import OutcomeStep from './components/OutcomeStep'
 import PartialRetryStep from './components/PartialRetryStep'
 import PendingStep from './components/PendingStep'
 import ProgressStep from './components/ProgressStep'
 import ReviewStep from './components/ReviewStep'
 import SuccessStep from './components/SuccessStep'
 import WalletCreateErrorStep from './components/WalletCreateErrorStep'
+import { WORLD_URL } from './constants'
 import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { useMigrationSession } from './hooks/useMigrationSession'
@@ -33,8 +36,6 @@ import { uiToRaw } from './logic/amounts'
 import { shouldShowSupport } from './logic/retry'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
-
-const WORLD_URL = 'https://world.helium.com'
 
 export type FlowStep =
   | 'intro'
@@ -64,6 +65,7 @@ const selectedTokens = (
     }))
 
 const MigrateToWorld = () => {
+  const { t } = useTranslation()
   const navigation = useNavigation()
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const wallet = useCurrentWallet()
@@ -88,7 +90,10 @@ const MigrateToWorld = () => {
   const [lastRunNextInput, setLastRunNextInput] = useState<MigrateInput>()
   const [outcome, setOutcome] = useState<{ moved: number; failed: number }>()
   const [error, setError] = useState<string>()
-  const createAttempts = useRef(0)
+  // Tracked in state (not just a ref) so each failed attempt re-renders — the
+  // support link needs to appear once attempts cross the threshold even while
+  // the step is already 'walletError'.
+  const [createAttempts, setCreateAttempts] = useState(0)
   const creating = useRef(false)
 
   // Ensure a destination embedded wallet exists once the user is logged in.
@@ -102,7 +107,7 @@ const MigrateToWorld = () => {
       await solanaWallet.create()
       setStep((s) => (s === 'walletError' ? 'select' : s))
     } catch {
-      createAttempts.current += 1
+      setCreateAttempts((n) => n + 1)
       setStep('walletError')
     } finally {
       creating.current = false
@@ -222,6 +227,19 @@ const MigrateToWorld = () => {
           />
         )
       case 'select':
+        // A failed asset load must not read as "nothing to migrate" — offer a
+        // retry instead so a user with assets isn't wrongly told they're done.
+        if (assets.error) {
+          return (
+            <OutcomeStep
+              title={t('migrateToWorld.selectAssets.loadErrorTitle')}
+              body={t('migrateToWorld.selectAssets.loadErrorBody')}
+              primaryTitle={t('migrateToWorld.selectAssets.retry')}
+              onPrimary={assets.reload}
+              onDismiss={dismiss}
+            />
+          )
+        }
         if (
           !assets.loading &&
           assets.hotspots.length === 0 &&
@@ -258,7 +276,14 @@ const MigrateToWorld = () => {
           <ProgressStep
             walletReady={!!destinationWallet}
             label={
-              progress ? `${progress.phase} · batch ${progress.batch}` : ''
+              progress
+                ? t('migrateToWorld.migrating.batchLabel', {
+                    phase: t(
+                      `migrateToWorld.migrating.phases.${progress.phase}`,
+                    ),
+                    batch: progress.batch,
+                  })
+                : ''
             }
           />
         )
@@ -293,7 +318,8 @@ const MigrateToWorld = () => {
         return (
           <WalletCreateErrorStep
             onRetry={createWallet}
-            showSupport={shouldShowSupport(createAttempts.current)}
+            onDismiss={dismiss}
+            showSupport={shouldShowSupport(createAttempts)}
           />
         )
       default:

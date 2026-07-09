@@ -266,5 +266,29 @@ describe('runMigration', () => {
     const last = sessions[sessions.length - 1]
     expect(last.nextInput?.hotspots).toEqual(['h2'])
     expect(last.batch).toBe(2)
+    // The hasMore-branch snapshot (2nd persist) must already carry the NEXT
+    // batch's input — persisting before advancing would record the confirmed
+    // batch 1 and make a crash-resume re-request already-confirmed work.
+    expect(sessions[1].batch).toBe(2)
+    expect(sessions[1].nextInput?.hotspots).toEqual(['h2'])
+  })
+
+  it('retries a transient pollStatus failure then succeeds', async () => {
+    let calls = 0
+    const { deps } = makeDeps({
+      sleep: async () => {},
+      pollStatus: async () => {
+        calls += 1
+        if (calls === 1) throw new Error('poll flaky')
+        return {
+          status: 'confirmed',
+          transactions: [{ signature: 'sig1', status: 'confirmed' }],
+        }
+      },
+    })
+    const outcome = await runMigration(input, deps)
+    expect(calls).toBe(2)
+    expect(outcome.status).toBe('complete')
+    expect(outcome.confirmedSignatures).toEqual(['sig1'])
   })
 })

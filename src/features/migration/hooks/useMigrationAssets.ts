@@ -16,7 +16,7 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
   const { tokenAccounts } = useBalance()
 
-  const { execute, loading, result } = useAsyncCallback(async () => {
+  const { execute, loading, result, error } = useAsyncCallback(async () => {
     if (!sourceWallet) {
       return {
         hotspots: [] as MigratableHotspot[],
@@ -53,6 +53,8 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
 
   return {
     loading,
+    error,
+    reload: execute,
     hotspots: result?.hotspots ?? [],
     tokens: result?.tokens ?? [],
     leftBehindMints: result?.leftBehindMints ?? [],

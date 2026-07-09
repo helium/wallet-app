@@ -135,7 +135,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
               placeholder={
                 codeSent
                   ? t('migrateToWorld.linkEmail.codePlaceholder')
-                  : 'you@example.com'
+                  : t('migrateToWorld.linkEmail.emailPlaceholder')
               }
               placeholderTextColor={WORLD.inkFaint}
               style={{ color: WORLD.ink, fontSize: 16, paddingVertical: 14 }}

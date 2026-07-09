@@ -143,7 +143,7 @@ export const runMigration = async <TSigned = unknown>(
 
     deps.onProgress({ phase: 'confirming', batch })
     // eslint-disable-next-line no-await-in-loop
-    const status = await deps.pollStatus(batchId)
+    const status = await withRetry(() => deps.pollStatus(batchId), sleep)
     const summary = summarizeBatch(status)
     confirmedSignatures.push(...summary.confirmedSignatures)
     failedSignatures.push(...summary.failedSignatures)
@@ -191,10 +191,13 @@ export const runMigration = async <TSigned = unknown>(
     }
 
     if (out.hasMore && out.nextParams) {
-      // eslint-disable-next-line no-await-in-loop
-      await deps.persist(snapshot('running'))
+      // Advance to the next batch BEFORE persisting so the snapshot carries the
+      // next batch's input. Persisting first would record the just-confirmed
+      // batch, making a crash-resume re-request already-confirmed work.
       input = out.nextParams
       batch += 1
+      // eslint-disable-next-line no-await-in-loop
+      await deps.persist(snapshot('running'))
       // eslint-disable-next-line no-continue
       continue
     }

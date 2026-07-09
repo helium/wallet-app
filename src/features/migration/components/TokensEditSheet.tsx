@@ -42,11 +42,7 @@ const TokensEditSheet = forwardRef<BottomSheet, Props>(
                   {tk.label}
                 </Text>
                 <TouchableOpacityBox onPress={() => onMax(tk.mint)}>
-                  <Text
-                    variant="body3"
-                    style={{ color: WORLD.purple }}
-                    fontWeight="700"
-                  >
+                  <Text variant="body3" color="worldPurple" fontWeight="700">
                     {t('migrateToWorld.selectAssets.max')}
                   </Text>
                 </TouchableOpacityBox>

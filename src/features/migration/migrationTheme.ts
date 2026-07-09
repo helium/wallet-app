@@ -1,11 +1,8 @@
-import { worldPurpleHex } from '@theme/theme'
-
 // World-Light visual tokens for the migration flow (design doc B · World Light).
+// Only the values consumed by TextInput `style`/`placeholderTextColor` props
+// live here — those can't take Restyle color props. Everything Restyle-capable
+// uses palette entries from @theme/theme instead.
 export const WORLD = {
-  purple: worldPurpleHex,
   ink: '#17131f',
   inkFaint: '#9a94a6',
-  warnBg: 'rgba(255,196,0,0.14)',
-  warnInk: '#8a6d00',
-  success: '#16a34a',
 } as const
