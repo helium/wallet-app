@@ -74,9 +74,12 @@ const MigrateToWorld = () => {
       hotspots: Array.from(sel.hotspotKeys),
       tokens: Object.entries(sel.tokenAmounts)
         .filter(([, amt]) => amt && amt !== '0')
-        .map(([mint, amt]) => {
+        .flatMap(([mint, amt]) => {
+          // Drop any mint we can't resolve decimals for — shipping an
+          // unconverted UI decimal as a raw base-unit amount would corrupt
+          // the transfer on a funds-moving path.
           const tk = assets.tokens.find((x) => x.mint === mint)
-          return { mint, amount: tk ? uiToRaw(amt, tk.decimals) : amt }
+          return tk ? [{ mint, amount: uiToRaw(amt, tk.decimals) }] : []
         }),
     }),
     [sourceWallet, destinationWallet, assets.tokens],
