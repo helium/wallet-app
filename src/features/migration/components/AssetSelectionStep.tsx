@@ -4,7 +4,7 @@ import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet from '@gorhom/bottom-sheet'
-import React, { FC, useMemo, useRef, useState } from 'react'
+import React, { FC, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
 import { SelectableToken } from '../logic/types'
@@ -75,16 +75,14 @@ const AssetSelectionStep: FC<{
   const [tokenAmounts, setTokenAmounts] = useState<Record<string, string>>({})
   const [primed, setPrimed] = useState(false)
 
-  // Pre-select everything the first time assets arrive.
-  useMemo(() => {
-    if (!primed && (hotspots.length || tokens.length)) {
-      setHotspotKeys(new Set(hotspots.map((h) => h.entityKey)))
-      setTokenAmounts(
-        Object.fromEntries(tokens.map((tk) => [tk.mint, tk.maxUi])),
-      )
-      setPrimed(true)
-    }
-  }, [primed, hotspots, tokens])
+  // Pre-select everything the first time assets arrive. Adjusting state
+  // during render (guarded so it runs once) is the idiomatic React pattern
+  // for deriving state from new props without an extra effect pass.
+  if (!primed && (hotspots.length || tokens.length)) {
+    setHotspotKeys(new Set(hotspots.map((h) => h.entityKey)))
+    setTokenAmounts(Object.fromEntries(tokens.map((tk) => [tk.mint, tk.maxUi])))
+    setPrimed(true)
+  }
 
   const toggleHotspot = (key: string) =>
     setHotspotKeys((prev) => {
