@@ -16,6 +16,9 @@ export const signBatchTransactions = async <T>(
   { signWithSource, signWithDestination }: TxSigners<T>,
 ): Promise<T[]> => {
   const result: T[] = []
+  // Sequential by design (see above): each chained tx must keep both partial
+  // signatures, so we cannot parallelize with Promise.all here.
+  // eslint-disable-next-line no-restricted-syntax
   for (const item of items) {
     const roles = item.signers.length
       ? item.signers

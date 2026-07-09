@@ -49,11 +49,11 @@ export const serializeSignedBatch = (
 export const summarizeBatch = (
   status: BatchStatus,
 ): { confirmedSignatures: string[]; failedSignatures: string[] } => {
-  const confirmedSignatures: string[] = []
-  const failedSignatures: string[] = []
-  for (const t of status.transactions) {
-    if (t.status === 'confirmed') confirmedSignatures.push(t.signature)
-    else failedSignatures.push(t.signature)
-  }
+  const confirmedSignatures = status.transactions
+    .filter((t) => t.status === 'confirmed')
+    .map((t) => t.signature)
+  const failedSignatures = status.transactions
+    .filter((t) => t.status !== 'confirmed')
+    .map((t) => t.signature)
   return { confirmedSignatures, failedSignatures }
 }
