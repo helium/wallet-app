@@ -1593,10 +1593,20 @@ export default {
     findInSettings: 'You can find this later in Settings',
   },
   migrateToWorld: {
+    intro: {
+      title: 'Welcome to Helium World',
+      body: "A new home for your Hotspots and rewards. We'll bring everything over — no fees, we cover them.",
+      continue: 'Continue',
+      later: 'Not now',
+    },
     linkEmail: {
       title: 'Link Your Email',
       body: 'Link an email address to create your Helium World account.',
       button: 'Link Email',
+      verify: 'Verify',
+      codePlaceholder: 'Enter code',
+      loggingIn: 'Signing in…',
+      differentEmail: 'Use a different email',
     },
     createWallet: {
       title: 'Create Wallet',
@@ -1605,8 +1615,17 @@ export default {
     },
     selectAssets: {
       title: 'Select Assets to Migrate',
+      readyTitle: 'Ready to move',
+      readyBody: "Everything's selected. Tap a group to fine-tune.",
       hotspots: 'Hotspots',
       tokens: 'Tokens',
+      edit: 'Edit',
+      max: 'MAX',
+      balance: 'Balance: {{amount}}',
+      leftBehind:
+        "{{count}} token can't move automatically — it stays in your wallet.",
+      leftBehind_other:
+        "{{count}} tokens can't move automatically — they stay in your wallet.",
       selectAll: 'Select All',
       deselectAll: 'Deselect All',
       noHotspots: 'No Hotspots found.',
@@ -1618,16 +1637,26 @@ export default {
       title: 'Confirm Migration',
       source: 'From',
       destination: 'To',
+      fees: 'Fees',
+      free: 'Free',
       button: 'Confirm & Migrate',
       back: 'Back',
     },
     migrating: {
       title: 'Migrating...',
+      creatingWallet: 'Setting up your World wallet…',
+      walletReady: 'World wallet ready',
       batch: 'Processing batch {{num}}',
+    },
+    partial: {
+      title: 'Almost there',
+      body: '{{moved}} moved · {{failed}} need a retry.',
+      retry: 'Retry failed items',
     },
     success: {
       title: 'Migration Complete',
       body: 'Your assets have been successfully migrated to Helium World.',
+      wallet: 'New wallet: {{address}}',
       goToWorld: 'Go to Helium World',
     },
     error: {

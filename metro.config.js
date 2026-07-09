@@ -23,6 +23,9 @@ defaultConfig.transformer = {
 
 const originalResolveRequest = defaultConfig.resolver.resolveRequest
 
+// Dedups @tanstack/react-query, @privy-io/expo, and jose to a single copy so Privy/Solana
+// providers share one module instance (avoids duplicate React contexts); revisit if those
+// upstream deps stop requiring a forced single resolution.
 defaultConfig.resolver = {
   ...defaultConfig.resolver,
   assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie', 'ico'],
