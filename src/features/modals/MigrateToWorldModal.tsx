@@ -45,12 +45,9 @@ const MigrateToWorldModal: FC = () => {
     // Email linked, navigate to the full migration flow
     dismissMigrateToWorld(wallet?.toBase58() || '')
     hideModal()
-    homeNav.navigate(
-      'SettingsNavigator' as any,
-      {
-        screen: 'MigrateToWorld',
-      } as any,
-    )
+    homeNav.navigate('SettingsNavigator', {
+      screen: 'MigrateToWorld',
+    })
   }, [dismissMigrateToWorld, wallet, hideModal, homeNav])
 
   const handleChooseEmail = useCallback(() => {
@@ -61,6 +58,16 @@ const MigrateToWorldModal: FC = () => {
       setStep('emailLogin')
     }
   }, [user, handleEmailSuccess])
+
+  const dismissButton = (
+    <WorldButton
+      variant="secondary"
+      backgroundColorOpacityPressed={0.05}
+      titleColorPressedOpacity={0.3}
+      title={t('migrateToWorldModal.dismiss')}
+      onPress={handleDismiss}
+    />
+  )
 
   const renderWelcome = () => (
     <Box flex={1} justifyContent="space-between">
@@ -86,13 +93,7 @@ const MigrateToWorldModal: FC = () => {
           onPress={() => setStep('choosePath')}
           marginBottom="m"
         />
-        <WorldButton
-          variant="secondary"
-          backgroundColorOpacityPressed={0.05}
-          titleColorPressedOpacity={0.3}
-          title={t('migrateToWorldModal.dismiss')}
-          onPress={handleDismiss}
-        />
+        {dismissButton}
         <Text
           variant="body3"
           color="secondaryText"
@@ -151,13 +152,7 @@ const MigrateToWorldModal: FC = () => {
         </Box>
       </Box>
       <Box paddingHorizontal="l" paddingBottom="m">
-        <WorldButton
-          variant="secondary"
-          backgroundColorOpacityPressed={0.05}
-          titleColorPressedOpacity={0.3}
-          title={t('migrateToWorldModal.dismiss')}
-          onPress={handleDismiss}
-        />
+        {dismissButton}
       </Box>
     </Box>
   )

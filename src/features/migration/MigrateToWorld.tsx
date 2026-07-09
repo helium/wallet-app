@@ -30,6 +30,7 @@ import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
+import { shouldShowSupport } from './logic/retry'
 import { MigrateInput } from './logic/session'
 import { SelectableToken } from './logic/types'
 
@@ -80,6 +81,10 @@ const MigrateToWorld = () => {
   const { run, progress } = useMigrationExecutor(persist)
 
   const [selection, setSelection] = useState<AssetSelection>()
+  // The resume point reported by the last run when it ended partial/pending in
+  // this session (no app restart, so `resume` hasn't been reloaded). Retry
+  // prefers it so it never re-sends already-confirmed batches.
+  const [lastRunNextInput, setLastRunNextInput] = useState<MigrateInput>()
   const [outcome, setOutcome] = useState<{ moved: number; failed: number }>()
   const [error, setError] = useState<string>()
   const [progressLabel, setProgressLabel] = useState('')
@@ -162,14 +167,17 @@ const MigrateToWorld = () => {
         if (result.status === 'complete') {
           // Finished cleanly — drop the persisted session instead of leaving a
           // stale 'complete' record around.
+          setLastRunNextInput(undefined)
           await clear()
           setStep('success')
         } else if (result.status === 'pending') {
           // Nothing failed — txs are still confirming. Show honest
           // "still processing" messaging, not a failure/retry screen.
+          setLastRunNextInput(result.nextInput)
           setOutcome({ moved: result.confirmedSignatures.length, failed: 0 })
           setStep('pending')
         } else {
+          setLastRunNextInput(result.nextInput)
           setOutcome({
             moved: result.confirmedSignatures.length,
             failed: result.failedSignatures.length,
@@ -189,9 +197,12 @@ const MigrateToWorld = () => {
   }, [selection, buildInput, execute])
 
   const onRetry = useCallback(() => {
-    if (resume.input) execute(resume.input)
-    else if (selection) execute(buildInput(selection))
-  }, [resume.input, selection, buildInput, execute])
+    const retryInput =
+      lastRunNextInput ??
+      resume.input ??
+      (selection ? buildInput(selection) : undefined)
+    if (retryInput) execute(retryInput)
+  }, [lastRunNextInput, resume.input, selection, buildInput, execute])
 
   const goToWorld = useCallback(() => Linking.openURL(WORLD_URL), [])
   const dismiss = useCallback(() => navigation.goBack(), [navigation])
@@ -216,7 +227,7 @@ const MigrateToWorld = () => {
       return (
         <WalletCreateErrorStep
           onRetry={createWallet}
-          showSupport={createAttempts.current >= 3}
+          showSupport={shouldShowSupport(createAttempts.current)}
         />
       )
     }

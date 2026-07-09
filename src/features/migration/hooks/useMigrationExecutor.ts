@@ -2,13 +2,12 @@ import NetInfo from '@react-native-community/netinfo'
 import { useEmbeddedSolanaWallet } from '@privy-io/expo'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
-import { Buffer } from 'buffer'
 import { useCallback, useState } from 'react'
 import { useSolana } from '../../../solana/SolanaProvider'
 import {
   BatchStatus,
+  deserializeBatchTxs,
   serializeSignedBatch,
-  TransactionData,
 } from '../logic/batches'
 import { ExecutorProgress, runMigration, RunOutcome } from '../logic/executor'
 import { MigrateInput, MigrationSession } from '../logic/session'
@@ -81,25 +80,15 @@ export const useMigrationExecutor = (
         }
       }
 
-      return runMigration(input, {
+      return runMigration<VersionedTransaction>(input, {
         requestMigrate: (i) => client.migration.migrate(i),
-        signBatch: (items) =>
-          signBatchTransactions(
-            items.map((item) => ({
-              tx: VersionedTransaction.deserialize(
-                Buffer.from(item.tx.serializedTransaction, 'base64'),
-              ),
-              signers: item.signers,
-            })),
-            { signWithSource, signWithDestination },
-          ),
+        signBatch: (_items, data) =>
+          signBatchTransactions(deserializeBatchTxs(data), {
+            signWithSource,
+            signWithDestination,
+          }),
         submitBatch: (signed, data) =>
-          client.transactions.submit(
-            serializeSignedBatch(
-              signed as VersionedTransaction[],
-              data as TransactionData,
-            ) as Parameters<typeof client.transactions.submit>[0],
-          ),
+          client.transactions.submit(serializeSignedBatch(signed, data)),
         pollStatus,
         persist,
         onProgress: setProgress,

@@ -1,25 +1,14 @@
 import { summarizeBatch, BatchStatus } from './batches'
 import { MigrateInput, MigrationSession } from './session'
 import { signersOrDefault } from './signers'
-import { SignerRole } from './types'
+import { MigrationTransaction, SignerRole, TransactionData } from './types'
 
 export type MigrateOutput = {
-  transactionData: {
-    transactions: {
-      serializedTransaction: string
-      metadata?: { signers?: SignerRole[] } & Record<string, unknown>
-    }[]
-    parallel: boolean
-    tag?: string
-  }
+  transactionData: TransactionData
   hasMore?: boolean
   nextParams?: MigrateInput
   warnings?: string[]
 }
-
-// One serialized transaction as returned by the migrate API.
-export type MigrationTransaction =
-  MigrateOutput['transactionData']['transactions'][number]
 
 export type ExecutorProgress =
   | { phase: 'requesting'; batch: number }
@@ -27,15 +16,15 @@ export type ExecutorProgress =
   | { phase: 'submitting'; batch: number }
   | { phase: 'confirming'; batch: number }
 
-export type ExecutorDeps = {
+export type ExecutorDeps<TSigned = unknown> = {
   requestMigrate: (input: MigrateInput) => Promise<MigrateOutput>
   signBatch: (
     items: { tx: MigrationTransaction; signers: SignerRole[] }[],
-    data: MigrateOutput['transactionData'],
-  ) => Promise<unknown[]>
+    data: TransactionData,
+  ) => Promise<TSigned[]>
   submitBatch: (
-    signed: unknown[],
-    data: MigrateOutput['transactionData'],
+    signed: TSigned[],
+    data: TransactionData,
   ) => Promise<{ batchId: string }>
   pollStatus: (batchId: string) => Promise<BatchStatus>
   persist: (session: MigrationSession) => Promise<void>
@@ -55,6 +44,9 @@ export type RunOutcome = {
   pendingSignatures?: string[]
   failedBatch?: number
   reason?: 'failed' | 'expired'
+  // The input for the batch that failed / went pending, so a same-session retry
+  // resumes from it instead of rebuilding from the first batch.
+  nextInput?: MigrateInput
 }
 
 const now = (): number => Date.now()
@@ -86,9 +78,9 @@ const withRetry = async <T>(
   throw lastError
 }
 
-export const runMigration = async (
+export const runMigration = async <TSigned = unknown>(
   originalInput: MigrateInput,
-  deps: ExecutorDeps,
+  deps: ExecutorDeps<TSigned>,
 ): Promise<RunOutcome> => {
   const confirmedSignatures: string[] = []
   const failedSignatures: string[] = []
@@ -159,13 +151,19 @@ export const runMigration = async (
         failedSignatures,
         failedBatch: batch,
         reason: status.status,
+        nextInput: input,
       }
     }
 
     if (summary.failedSignatures.length > 0) {
       // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('partial'))
-      return { status: 'partial', confirmedSignatures, failedSignatures }
+      return {
+        status: 'partial',
+        confirmedSignatures,
+        failedSignatures,
+        nextInput: input,
+      }
     }
 
     // Nothing terminally failed, but the batch isn't fully confirmed yet —
@@ -184,6 +182,7 @@ export const runMigration = async (
         confirmedSignatures,
         failedSignatures,
         pendingSignatures: summary.pendingSignatures,
+        nextInput: input,
       }
     }
 

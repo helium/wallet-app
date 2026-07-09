@@ -1,22 +1,7 @@
 import { VersionedTransaction } from '@solana/web3.js'
 import { Buffer } from 'buffer'
 import { signersOrDefault } from './signers'
-import { SignerRole } from './types'
-
-export type MigrateTxData = {
-  serializedTransaction: string
-  metadata?: {
-    type?: string
-    description?: string
-    signers?: SignerRole[]
-  } & Record<string, unknown>
-}
-
-export type TransactionData = {
-  transactions: MigrateTxData[]
-  parallel: boolean
-  tag?: string
-}
+import { SignerRole, TransactionData } from './types'
 
 export type BatchStatus = {
   status: 'pending' | 'confirmed' | 'failed' | 'expired' | 'partial'

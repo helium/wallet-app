@@ -51,7 +51,11 @@ describe('deserializeBatchTxs', () => {
       transactions: [
         {
           serializedTransaction: 'AA==',
-          metadata: { signers: ['source', 'destination'] },
+          metadata: {
+            type: 'transfer',
+            description: 'd',
+            signers: ['source', 'destination'],
+          },
         },
         { serializedTransaction: 'AA==' },
       ],

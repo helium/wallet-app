@@ -7,6 +7,7 @@ import * as Logger from '@utils/logger'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
+import { resendBackoffSeconds } from '../logic/retry'
 import { WORLD } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
@@ -43,9 +44,6 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
   const sending = emailState.status === 'sending-code'
   const verifying = emailState.status === 'submitting-code'
 
-  // Resend backoff: 30s, doubling per resend, capped at 300s.
-  const backoffSeconds = (count: number) => Math.min(30 * 2 ** count, 300)
-
   useEffect(() => {
     if (secondsLeft <= 0) return undefined
     const id = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000)
@@ -61,7 +59,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
         else await loginSendCode({ email })
         setCodeSent(true)
         setResendCount(count)
-        setSecondsLeft(backoffSeconds(count))
+        setSecondsLeft(resendBackoffSeconds(count))
       } catch (err) {
         Logger.error(err)
         setError((err as Error).message)

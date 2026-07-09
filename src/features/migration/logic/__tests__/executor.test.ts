@@ -99,6 +99,8 @@ describe('runMigration', () => {
     expect(outcome.status).toBe('partial')
     expect(outcome.confirmedSignatures).toEqual(['ok'])
     expect(outcome.failedSignatures).toEqual(['bad'])
+    // Carries the failed batch's input so a same-session retry resumes from it.
+    expect(outcome.nextInput).toEqual(input)
   })
 
   it('stops and reports failed on a failed/expired batch', async () => {
@@ -133,6 +135,9 @@ describe('runMigration', () => {
     expect(outcome.confirmedSignatures).toEqual(['done'])
     expect(outcome.failedSignatures).toEqual([])
     expect(outcome.pendingSignatures).toEqual(['wait'])
+    // Carries the still-pending batch's input so a same-session check/retry
+    // resumes from it rather than rebuilding from the first batch.
+    expect(outcome.nextInput).toEqual(input)
     // Session stays resumable, never marked partial/failed.
     expect(persisted).not.toContain('partial')
     expect(persisted).not.toContain('failed')
