@@ -1,10 +1,11 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { shortenAddress } from '@utils/formatting'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
+import { WORLD } from '../migrationTheme'
+import StepBackHeader from './StepBackHeader'
+import WorldButton from './WorldButton'
 
 const Row: FC<{ label: string; value: string }> = ({ label, value }) => (
   <Box flexDirection="row" justifyContent="space-between" marginBottom="m">
@@ -35,15 +36,7 @@ const ReviewStep: FC<{
   const { t } = useTranslation()
   return (
     <Box flex={1}>
-      <TouchableOpacityBox
-        onPress={onBack}
-        paddingHorizontal="l"
-        paddingVertical="m"
-      >
-        <Text variant="body2" color="secondaryText">
-          ← {t('generic.back')}
-        </Text>
-      </TouchableOpacityBox>
+      <StepBackHeader onBack={onBack} />
       <Box flex={1} paddingHorizontal="l">
         <Text variant="h4" color="primaryText" marginBottom="l">
           {t('migrateToWorld.confirm.title')}
@@ -74,18 +67,12 @@ const ReviewStep: FC<{
           <Text variant="body3" color="secondaryText">
             {t('migrateToWorld.confirm.fees')}
           </Text>
-          <Text variant="body2Medium" style={{ color: '#16a34a' }}>
+          <Text variant="body2Medium" style={{ color: WORLD.success }}>
             {t('migrateToWorld.confirm.free')}
           </Text>
         </Box>
         <Box flex={1} />
-        <ButtonPressable
-          width="100%"
-          height={60}
-          borderRadius="round"
-          backgroundColor="worldPurple"
-          backgroundColorOpacityPressed={0.7}
-          titleColor="white"
+        <WorldButton
           title={t('migrateToWorld.confirm.button')}
           onPress={onConfirm}
           marginBottom="l"

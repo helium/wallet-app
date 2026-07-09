@@ -1,16 +1,22 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet from '@gorhom/bottom-sheet'
-import React, { FC, useRef, useState } from 'react'
+import { useAppStorage } from '@storage/AppStorageProvider'
+import { numberFormat } from '@utils/Balance'
+import { useLanguage } from '@utils/i18n'
+import { usePollTokenPrices } from '@utils/usePollTokenPrices'
+import React, { FC, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
+import { MINT_PRICE_KEY } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
 import { WORLD } from '../migrationTheme'
 import HotspotsEditSheet from './HotspotsEditSheet'
+import StepBackHeader from './StepBackHeader'
 import TokensEditSheet from './TokensEditSheet'
+import WorldButton from './WorldButton'
 
 export type AssetSelection = {
   hotspotKeys: Set<string>
@@ -68,6 +74,9 @@ const AssetSelectionStep: FC<{
   onReview: (sel: AssetSelection) => void
 }> = ({ hotspots, tokens, leftBehindCount, loading, onBack, onReview }) => {
   const { t } = useTranslation()
+  const { currency } = useAppStorage()
+  const { language } = useLanguage()
+  const { tokenPrices } = usePollTokenPrices()
   const hotspotsRef = useRef<BottomSheet>(null)
   const tokensRef = useRef<BottomSheet>(null)
 
@@ -102,6 +111,30 @@ const AssetSelectionStep: FC<{
     return a && a !== '0'
   }).length
 
+  // Approximate USD value of the selected token amounts, summed over the mints
+  // we have a price for. Omitted entirely when no price is available.
+  const cur = currency?.toLowerCase()
+  const tokensUsd = useMemo(() => {
+    if (!cur || !tokenPrices) return undefined
+    let total = 0
+    let priced = false
+    tokens.forEach((tk) => {
+      const key = MINT_PRICE_KEY[tk.mint]
+      const price = key
+        ? tokenPrices[key as keyof typeof tokenPrices]?.[cur]
+        : undefined
+      const amt = parseFloat(tokenAmounts[tk.mint] ?? '')
+      if (price && amt > 0) {
+        total += price * amt
+        priced = true
+      }
+    })
+    if (!priced) return undefined
+    return t('migrateToWorld.selectAssets.approxValue', {
+      value: numberFormat(language, cur, total),
+    })
+  }, [tokens, tokenAmounts, tokenPrices, cur, language, t])
+
   const canReview = hotspotKeys.size > 0 || activeTokenCount > 0
 
   if (loading) {
@@ -117,15 +150,7 @@ const AssetSelectionStep: FC<{
 
   return (
     <Box flex={1}>
-      <TouchableOpacityBox
-        onPress={onBack}
-        paddingHorizontal="l"
-        paddingVertical="m"
-      >
-        <Text variant="body2" color="secondaryText">
-          ← {t('generic.back')}
-        </Text>
-      </TouchableOpacityBox>
+      <StepBackHeader onBack={onBack} />
       <Box flex={1} paddingHorizontal="l">
         <Text variant="h4" color="primaryText">
           {t('migrateToWorld.selectAssets.readyTitle')}
@@ -147,6 +172,7 @@ const AssetSelectionStep: FC<{
         <SummaryCard
           count={activeTokenCount}
           label={t('migrateToWorld.selectAssets.tokens')}
+          sub={tokensUsd}
           onEdit={() => tokensRef.current?.expand()}
         />
 
@@ -166,13 +192,7 @@ const AssetSelectionStep: FC<{
         )}
 
         <Box flex={1} />
-        <ButtonPressable
-          width="100%"
-          height={60}
-          borderRadius="round"
-          backgroundColor="worldPurple"
-          backgroundColorOpacityPressed={0.7}
-          titleColor="white"
+        <WorldButton
           title={t('migrateToWorld.selectAssets.review')}
           onPress={() => onReview({ hotspotKeys, tokenAmounts })}
           disabled={!canReview}

@@ -3,39 +3,25 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   deriveResume,
   deserializeSession,
-  MigrateInput,
   MigrationSession,
+  ResumeInfo,
   serializeSession,
 } from '../logic/session'
 
-export type FlowStep =
-  | 'intro'
-  | 'login'
-  | 'select'
-  | 'review'
-  | 'migrating'
-  | 'pending'
-  | 'partial'
-  | 'success'
-
 const keyFor = (wallet: string) => `migrateToWorldSession:${wallet}`
 
+const NO_RESUME: ResumeInfo = {
+  canResume: false,
+  input: null,
+  movedCount: 0,
+  failedCount: 0,
+}
+
 export const useMigrationSession = (sourceWallet: string | undefined) => {
-  const [step, setStep] = useState<FlowStep>('intro')
-  const [resume, setResume] = useState<{
-    canResume: boolean
-    input: MigrateInput | null
-    movedCount: number
-    failedCount: number
-  }>({
-    canResume: false,
-    input: null,
-    movedCount: 0,
-    failedCount: 0,
-  })
+  const [resume, setResume] = useState<ResumeInfo>(NO_RESUME)
 
   useEffect(() => {
-    if (!sourceWallet) return
+    if (!sourceWallet) return undefined
     let cancelled = false
     AsyncStorage.getItem(keyFor(sourceWallet)).then((raw) => {
       if (!cancelled) {
@@ -61,8 +47,8 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
   const clear = useCallback(async () => {
     if (!sourceWallet) return
     await AsyncStorage.removeItem(keyFor(sourceWallet))
-    setResume({ canResume: false, input: null, movedCount: 0, failedCount: 0 })
+    setResume(NO_RESUME)
   }, [sourceWallet])
 
-  return { step, setStep, persist, resume, clear }
+  return { persist, resume, clear }
 }

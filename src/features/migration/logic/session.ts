@@ -15,6 +15,10 @@ export type MigrationStatus =
 
 export type MigrationSession = {
   originalInput: MigrateInput
+  // The input for the last unconfirmed batch (originalInput's nextParams as the
+  // run paginates). Resume picks up from here so confirmed work is never re-sent.
+  nextInput?: MigrateInput
+  batch?: number
   status: MigrationStatus
   confirmedSignatures: string[]
   failedSignatures: string[]
@@ -49,18 +53,18 @@ export const deserializeSession = (
   }
 }
 
-export const deriveResume = (
-  s: MigrationSession | null,
-): {
+export type ResumeInfo = {
   canResume: boolean
   input: MigrateInput | null
   movedCount: number
   failedCount: number
-} => {
+}
+
+export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
   if (s && RESUMABLE.has(s.status))
     return {
       canResume: true,
-      input: s.originalInput,
+      input: s.nextInput ?? s.originalInput,
       movedCount: s.confirmedSignatures.length,
       failedCount: s.failedSignatures.length,
     }

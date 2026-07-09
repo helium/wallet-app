@@ -1,5 +1,5 @@
 import { ExecutorDeps, MigrateOutput, runMigration } from '../executor'
-import { MigrateInput } from '../session'
+import { MigrateInput, MigrationSession } from '../session'
 
 const input: MigrateInput = {
   sourceWallet: 'src',
@@ -168,5 +168,82 @@ describe('runMigration', () => {
     })
     await runMigration(input, deps)
     expect(snapshots[snapshots.length - 1]).toEqual(['sig1'])
+  })
+
+  it('retries a transient requestMigrate failure then succeeds', async () => {
+    let calls = 0
+    const { deps } = makeDeps({
+      sleep: async () => {},
+      requestMigrate: async () => {
+        calls += 1
+        if (calls === 1) throw new Error('rpc flaky')
+        return { transactionData: txData(1) } as MigrateOutput
+      },
+    })
+    const outcome = await runMigration(input, deps)
+    expect(calls).toBe(2)
+    expect(outcome.status).toBe('complete')
+  })
+
+  it('propagates the error when retries are exhausted', async () => {
+    let calls = 0
+    const { deps } = makeDeps({
+      sleep: async () => {},
+      requestMigrate: async () => {
+        calls += 1
+        throw new Error('rpc down')
+      },
+    })
+    await expect(runMigration(input, deps)).rejects.toThrow('rpc down')
+    expect(calls).toBe(3)
+  })
+
+  it('waits for waitForOnline before requesting a batch', async () => {
+    let release: () => void = () => {}
+    const gate = new Promise<void>((r) => {
+      release = r
+    })
+    let requested = false
+    const { deps } = makeDeps({
+      waitForOnline: () => gate,
+      requestMigrate: async () => {
+        requested = true
+        return { transactionData: txData(1) } as MigrateOutput
+      },
+    })
+    const p = runMigration(input, deps)
+    // The loop is parked on waitForOnline — no request until it resolves.
+    await Promise.resolve()
+    expect(requested).toBe(false)
+    release()
+    const outcome = await p
+    expect(requested).toBe(true)
+    expect(outcome.status).toBe('complete')
+  })
+
+  it('persists the current batch input as nextInput for resume', async () => {
+    const sessions: MigrationSession[] = []
+    let call = 0
+    const { deps } = makeDeps({
+      requestMigrate: async () => {
+        call += 1
+        return call === 1
+          ? ({
+              transactionData: txData(1),
+              hasMore: true,
+              nextParams: { ...input, hotspots: ['h2'] },
+            } as MigrateOutput)
+          : ({ transactionData: txData(1) } as MigrateOutput)
+      },
+      persist: async (session) => {
+        sessions.push(session)
+      },
+    })
+    await runMigration(input, deps)
+    // The snapshot written while on batch 2 carries the batch-2 input so a
+    // resume never re-sends the confirmed first batch.
+    const last = sessions[sessions.length - 1]
+    expect(last.nextInput?.hotspots).toEqual(['h2'])
+    expect(last.batch).toBe(2)
   })
 })

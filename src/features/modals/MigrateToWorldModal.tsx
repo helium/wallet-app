@@ -1,20 +1,20 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking, ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { usePrivy } from '@privy-io/expo'
 import PrivyAppProvider from '../../providers/PrivyProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
+import ConnectStep from '../migration/components/ConnectStep'
 import EmailLoginStep from '../migration/components/EmailLoginStep'
+import StepBackHeader from '../migration/components/StepBackHeader'
+import WorldButton from '../migration/components/WorldButton'
 
 type Step = 'welcome' | 'choosePath' | 'selfCustody' | 'emailLogin'
 
@@ -62,16 +62,6 @@ const MigrateToWorldModal: FC = () => {
     }
   }, [user, handleEmailSuccess])
 
-  const handleRevealPrivateKey = useCallback(() => {
-    hideModal()
-    homeNav.navigate(
-      'SettingsNavigator' as any,
-      {
-        screen: 'RevealPrivateKey',
-      } as any,
-    )
-  }, [hideModal, homeNav])
-
   const renderWelcome = () => (
     <Box flex={1} justifyContent="space-between">
       <Box flex={1} justifyContent="center" paddingHorizontal="l">
@@ -88,26 +78,18 @@ const MigrateToWorldModal: FC = () => {
         </Text>
       </Box>
       <Box paddingHorizontal="l" paddingBottom="m">
-        <ButtonPressable
-          width="100%"
-          height={60}
-          borderRadius="round"
+        <WorldButton
           backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
           titleColorPressedOpacity={0.3}
           titleColor="black"
           title={t('migrateToWorldModal.welcome.next')}
           onPress={() => setStep('choosePath')}
           marginBottom="m"
         />
-        <ButtonPressable
-          width="100%"
-          height={48}
-          borderRadius="round"
-          backgroundColor="transparent"
+        <WorldButton
+          variant="secondary"
           backgroundColorOpacityPressed={0.05}
           titleColorPressedOpacity={0.3}
-          titleColor="secondaryText"
           title={t('migrateToWorldModal.dismiss')}
           onPress={handleDismiss}
         />
@@ -126,27 +108,15 @@ const MigrateToWorldModal: FC = () => {
 
   const renderChoosePath = () => (
     <Box flex={1} justifyContent="space-between">
-      <TouchableOpacityBox
-        onPress={handleBack}
-        paddingHorizontal="l"
-        paddingVertical="m"
-      >
-        <Text variant="body2" color="secondaryText">
-          ← Back
-        </Text>
-      </TouchableOpacityBox>
+      <StepBackHeader onBack={handleBack} />
       <Box paddingHorizontal="l" flex={1} justifyContent="center">
         <Text variant="h4" color="primaryText" textAlign="center">
           {t('migrateToWorldModal.choosePath.title')}
         </Text>
 
         <Box marginTop="xl">
-          <ButtonPressable
-            width="100%"
-            height={60}
-            borderRadius="round"
+          <WorldButton
             backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
             titleColorPressedOpacity={0.3}
             titleColor="black"
             title={t('migrateToWorldModal.choosePath.emailTitle')}
@@ -163,12 +133,8 @@ const MigrateToWorldModal: FC = () => {
         </Box>
 
         <Box marginTop="l">
-          <ButtonPressable
-            width="100%"
-            height={60}
-            borderRadius="round"
+          <WorldButton
             backgroundColor="surfaceSecondary"
-            backgroundColorOpacityPressed={0.7}
             titleColorPressedOpacity={0.3}
             titleColor="primaryText"
             title={t('migrateToWorldModal.choosePath.selfCustodyTitle')}
@@ -185,147 +151,10 @@ const MigrateToWorldModal: FC = () => {
         </Box>
       </Box>
       <Box paddingHorizontal="l" paddingBottom="m">
-        <ButtonPressable
-          width="100%"
-          height={48}
-          borderRadius="round"
-          backgroundColor="transparent"
+        <WorldButton
+          variant="secondary"
           backgroundColorOpacityPressed={0.05}
           titleColorPressedOpacity={0.3}
-          titleColor="secondaryText"
-          title={t('migrateToWorldModal.dismiss')}
-          onPress={handleDismiss}
-        />
-      </Box>
-    </Box>
-  )
-
-  const renderSelfCustody = () => (
-    <Box flex={1}>
-      <TouchableOpacityBox
-        onPress={handleBack}
-        paddingHorizontal="l"
-        paddingVertical="m"
-      >
-        <Text variant="body2" color="secondaryText">
-          ← Back
-        </Text>
-      </TouchableOpacityBox>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <Box paddingHorizontal="l">
-          <Text variant="h4" color="primaryText">
-            {t('migrateToWorldModal.selfCustody.title')}
-          </Text>
-
-          <Text variant="body3" color="orange500" marginTop="m" lineHeight={20}>
-            ⚠ {t('migrateToWorldModal.selfCustody.warning')}
-          </Text>
-
-          <Box marginTop="l">
-            <Text variant="subtitle2" color="primaryText">
-              {t('migrateToWorldModal.selfCustody.step1Title')}
-            </Text>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              marginTop="xs"
-              lineHeight={22}
-            >
-              {t('migrateToWorldModal.selfCustody.step1Body')}
-            </Text>
-            <Box flexDirection="row" marginTop="s" gap="l">
-              <Text
-                variant="body2"
-                color="blueBright500"
-                onPress={() => Linking.openURL('https://phantom.app')}
-              >
-                phantom.app
-              </Text>
-              <Text
-                variant="body2"
-                color="blueBright500"
-                onPress={() => Linking.openURL('https://solflare.com')}
-              >
-                solflare.com
-              </Text>
-            </Box>
-          </Box>
-
-          <Box
-            marginTop="xl"
-            borderTopColor="primaryBackground"
-            borderTopWidth={1}
-            paddingTop="l"
-          >
-            <Text variant="subtitle2" color="primaryText">
-              {t('migrateToWorldModal.selfCustody.step2Title')}
-            </Text>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              marginTop="xs"
-              lineHeight={22}
-            >
-              {t('migrateToWorldModal.selfCustody.step2Body')}
-            </Text>
-            <Text
-              variant="body2"
-              color="blueBright500"
-              marginTop="s"
-              onPress={handleRevealPrivateKey}
-            >
-              {t('migrateToWorldModal.selfCustody.step2Button')} →
-            </Text>
-          </Box>
-
-          <Box
-            marginTop="xl"
-            borderTopColor="primaryBackground"
-            borderTopWidth={1}
-            paddingTop="l"
-          >
-            <Text variant="subtitle2" color="primaryText">
-              {t('migrateToWorldModal.selfCustody.step3Title')}
-            </Text>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              marginTop="xs"
-              lineHeight={22}
-            >
-              {t('migrateToWorldModal.selfCustody.step3Body')}
-            </Text>
-          </Box>
-
-          <Box
-            marginTop="xl"
-            borderTopColor="primaryBackground"
-            borderTopWidth={1}
-            paddingTop="l"
-          >
-            <Text variant="subtitle2" color="primaryText">
-              {t('migrateToWorldModal.selfCustody.step4Title')}
-            </Text>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              marginTop="xs"
-              lineHeight={22}
-            >
-              {t('migrateToWorldModal.selfCustody.step4Body')}
-            </Text>
-          </Box>
-        </Box>
-      </ScrollView>
-      <Box paddingHorizontal="l" paddingBottom="m">
-        <ButtonPressable
-          width="100%"
-          height={48}
-          borderRadius="round"
-          backgroundColor="transparent"
-          backgroundColorOpacityPressed={0.05}
-          titleColorPressedOpacity={0.3}
-          titleColor="secondaryText"
           title={t('migrateToWorldModal.dismiss')}
           onPress={handleDismiss}
         />
@@ -346,7 +175,9 @@ const MigrateToWorldModal: FC = () => {
       <SafeAreaBox edges={edges} flex={1}>
         {step === 'welcome' && renderWelcome()}
         {step === 'choosePath' && renderChoosePath()}
-        {step === 'selfCustody' && renderSelfCustody()}
+        {step === 'selfCustody' && (
+          <ConnectStep onBack={handleBack} onDismiss={handleDismiss} />
+        )}
         {step === 'emailLogin' && (
           <EmailLoginStep onBack={handleBack} onSuccess={handleEmailSuccess} />
         )}

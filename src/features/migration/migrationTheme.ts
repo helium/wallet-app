@@ -1,6 +1,8 @@
+import { worldPurpleHex } from '@theme/theme'
+
 // World-Light visual tokens for the migration flow (design doc B · World Light).
 export const WORLD = {
-  purple: '#7C3AED',
+  purple: worldPurpleHex,
   purpleDeep: '#5B21B6',
   gradientTop: '#faf9ff',
   gradientBottom: '#f1edff',
@@ -10,4 +12,5 @@ export const WORLD = {
   card: '#ffffff',
   warnBg: 'rgba(255,196,0,0.14)',
   warnInk: '#8a6d00',
+  success: '#16a34a',
 } as const

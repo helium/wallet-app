@@ -1,9 +1,9 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
 import { shortenAddress } from '@utils/formatting'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
+import WorldButton from './WorldButton'
 
 const SuccessStep: FC<{
   destinationWallet: string
@@ -39,23 +39,13 @@ const SuccessStep: FC<{
           address: shortenAddress(destinationWallet, 6),
         })}
       </Text>
-      <ButtonPressable
-        width="100%"
-        height={60}
-        borderRadius="round"
-        backgroundColor="worldPurple"
-        backgroundColorOpacityPressed={0.7}
-        titleColor="white"
+      <WorldButton
         title={t('migrateToWorld.success.goToWorld')}
         onPress={onGoToWorld}
         marginBottom="m"
       />
-      <ButtonPressable
-        width="100%"
-        height={48}
-        borderRadius="round"
-        backgroundColor="transparent"
-        titleColor="secondaryText"
+      <WorldButton
+        variant="secondary"
         title={t('migrateToWorldModal.dismiss')}
         onPress={onDone}
       />

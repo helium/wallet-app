@@ -1567,27 +1567,7 @@ export default {
         "Create a Helium World account linked to your email. We'll migrate your assets for you.",
       selfCustodyTitle: 'Use Your Own Wallet',
       selfCustodyBody:
-        'Export your private key and import it into Phantom or Solflare, then use that wallet on Helium World.',
-    },
-    selfCustody: {
-      title: 'Set Up Your Wallet',
-      step1Title: '1. Get a wallet app',
-      step1Body:
-        'Download Phantom (phantom.app) or Solflare (solflare.com) on your phone or as a browser extension.',
-      step2Title: '2. Export your private key',
-      step2Body:
-        'In this app, go to Settings > Reveal Private Key. Copy it somewhere safe — never share it with anyone.',
-      step2Button: 'Go to Reveal Private Key',
-      step3Title: '3. Import into your new wallet',
-      step3Body:
-        'In Phantom or Solflare, choose "Import Wallet" and paste your private key. Your assets will appear automatically.',
-      step4Title: '4. Log in to Helium World',
-      step4Body:
-        "Go to world.helium.com and connect your Phantom or Solflare wallet. You're all set.",
-      openPhantom: 'Visit phantom.app',
-      openSolflare: 'Visit solflare.com',
-      warning:
-        'Your private key gives full access to your wallet. Never share it, screenshot it, or paste it anywhere other than a trusted wallet app.',
+        'Connect a wallet you already control on Helium World — nothing to export, no funds move.',
     },
     dismiss: 'Dismiss',
     findInSettings: 'You can find this later in Settings',
@@ -1598,6 +1578,19 @@ export default {
       body: "A new home for your Hotspots and rewards. We'll bring everything over — no fees, we cover them.",
       continue: 'Continue',
       later: 'Not now',
+      useOwnWallet: "I'll use my own wallet",
+    },
+    connect: {
+      title: 'Connect Your Own Wallet',
+      reassurance:
+        "No funds move here — you're just signing in with a wallet you already control.",
+      softwareTitle: 'I use Phantom or Solflare',
+      softwareBody:
+        'Open world.helium.com, choose Connect Wallet, pick your wallet, and approve the sign-in signature.',
+      hardwareTitle: 'I use a Ledger or Keystone hardware wallet',
+      hardwareBody:
+        'Connect your hardware wallet to a desktop wallet that supports it (like Phantom or Solflare), then open world.helium.com and connect that wallet.',
+      openWorld: 'Open World',
     },
     linkEmail: {
       title: 'Link Your Email',
@@ -1607,11 +1600,20 @@ export default {
       codePlaceholder: 'Enter code',
       loggingIn: 'Signing in…',
       differentEmail: 'Use a different email',
+      resend: 'Resend code',
+      resendIn: 'Resend code in {{seconds}}s',
     },
     createWallet: {
       title: 'Create Wallet',
       body: 'Creating a wallet linked to your email address.',
       button: 'Create Wallet',
+      errorTitle: "Couldn't create your World wallet",
+      errorBody:
+        'Something went wrong setting up your World wallet. You need one to continue.',
+      retry: 'Try again',
+      supportBody:
+        "Still not working? Visit docs.helium.com for help — we'll get you sorted.",
+      support: 'Get help',
     },
     selectAssets: {
       title: 'Select Assets to Migrate',
@@ -1632,6 +1634,12 @@ export default {
       noTokens: 'No token balances found.',
       loading: 'Loading assets...',
       review: 'Review Migration',
+      approxValue: '≈ {{value}}',
+    },
+    nothingToMigrate: {
+      title: "You're all set",
+      body: 'There is nothing to migrate from this wallet.',
+      done: 'Done',
     },
     confirm: {
       title: 'Confirm Migration',

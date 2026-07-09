@@ -1,11 +1,12 @@
+import NetInfo from '@react-native-community/netinfo'
 import { useEmbeddedSolanaWallet } from '@privy-io/expo'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
+import { Buffer } from 'buffer'
 import { useCallback, useState } from 'react'
 import { useSolana } from '../../../solana/SolanaProvider'
 import {
   BatchStatus,
-  deserializeBatchTxs,
   serializeSignedBatch,
   TransactionData,
 } from '../logic/batches'
@@ -46,6 +47,24 @@ export const useMigrationExecutor = (
         return signedTransaction
       }
 
+      // Resolve immediately when connected, otherwise on the next connected
+      // event — auto-pausing the run through a network drop.
+      const waitForOnline = () =>
+        new Promise<void>((resolve) => {
+          NetInfo.fetch().then((state) => {
+            if (state.isConnected) {
+              resolve()
+              return
+            }
+            const unsubscribe = NetInfo.addEventListener((s) => {
+              if (s.isConnected) {
+                unsubscribe()
+                resolve()
+              }
+            })
+          })
+        })
+
       const pollStatus = async (batchId: string): Promise<BatchStatus> => {
         const start = Date.now()
         // eslint-disable-next-line no-constant-condition
@@ -64,11 +83,13 @@ export const useMigrationExecutor = (
 
       return runMigration(input, {
         requestMigrate: (i) => client.migration.migrate(i),
-        signBatch: (items, data) =>
+        signBatch: (items) =>
           signBatchTransactions(
-            deserializeBatchTxs(data as TransactionData).map((d, idx) => ({
-              tx: d.tx,
-              signers: items[idx].signers,
+            items.map((item) => ({
+              tx: VersionedTransaction.deserialize(
+                Buffer.from(item.tx.serializedTransaction, 'base64'),
+              ),
+              signers: item.signers,
             })),
             { signWithSource, signWithDestination },
           ),
@@ -82,6 +103,7 @@ export const useMigrationExecutor = (
         pollStatus,
         persist,
         onProgress: setProgress,
+        waitForOnline,
       })
     },
     [anchorProvider, solanaWallet, client, persist],

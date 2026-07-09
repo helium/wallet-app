@@ -51,6 +51,14 @@ describe('deriveResume', () => {
   it('offers resume for a failed session', () => {
     expect(deriveResume({ ...base, status: 'failed' }).canResume).toBe(true)
   })
+  it('resumes from nextInput (last unconfirmed batch) when present', () => {
+    const withNext: MigrationSession = {
+      ...base,
+      nextInput: { ...base.originalInput, hotspots: ['h3'] },
+      batch: 2,
+    }
+    expect(deriveResume(withNext).input).toEqual(withNext.nextInput)
+  })
   it('does not offer resume for complete/idle/null', () => {
     expect(deriveResume({ ...base, status: 'complete' }).canResume).toBe(false)
     expect(deriveResume({ ...base, status: 'idle' }).canResume).toBe(false)

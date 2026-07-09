@@ -1,5 +1,6 @@
 import { VersionedTransaction } from '@solana/web3.js'
 import { Buffer } from 'buffer'
+import { signersOrDefault } from './signers'
 import { SignerRole } from './types'
 
 export type MigrateTxData = {
@@ -29,9 +30,7 @@ export const deserializeBatchTxs = (
     tx: VersionedTransaction.deserialize(
       Buffer.from(t.serializedTransaction, 'base64'),
     ),
-    signers: t.metadata?.signers?.length
-      ? t.metadata.signers
-      : (['source'] as SignerRole[]),
+    signers: signersOrDefault(t.metadata),
   }))
 
 export const serializeSignedBatch = (

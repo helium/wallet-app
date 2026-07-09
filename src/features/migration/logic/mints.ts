@@ -12,3 +12,12 @@ export const MIGRATABLE_MINTS: ReadonlySet<string> = new Set([
   'iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns', // IOT
   'dcuc8Amr83Wz27ZkQ2K9NS6r8zRpf1J6cvArEBDZDmm', // DC
 ])
+
+// Maps a migratable mint to its coingecko key in redux `balances.tokenPrices`.
+// Only mints we have a price feed for appear here (USDC/USDT/DC are omitted).
+export const MINT_PRICE_KEY: Readonly<Record<string, string>> = {
+  [WSOL_MINT]: 'solana',
+  hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux: 'helium',
+  mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6: 'helium-mobile',
+  iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns: 'helium-iot',
+}

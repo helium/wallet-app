@@ -109,33 +109,7 @@ const SolanaMigration = ({
         !manual)
     )
       return
-
-    // Check if there are actually transactions to migrate before proceeding
-    try {
-      const url = `${Config.MIGRATION_SERVER_URL}/migrate/${currentAccount.solanaAddress}`
-      const { transactions } = (await axios.get(url)).data
-      if (!transactions || transactions.length === 0) {
-        // No transactions to migrate — mark as done so overlay doesn't show again
-        if (!manual) {
-          await updateDoneSolanaMigration({
-            cluster,
-            address: currentAccount.solanaAddress,
-          })
-        }
-        return
-      }
-    } catch (e) {
-      Logger.error(e)
-      // If check fails, mark as done to avoid blocking the user
-      if (!manual) {
-        await updateDoneSolanaMigration({
-          cluster,
-          address: currentAccount.solanaAddress,
-        })
-      }
-      return
-    }
-
+    // eslint-disable-next-line no-console
     try {
       await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
 

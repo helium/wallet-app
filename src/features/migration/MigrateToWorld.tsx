@@ -2,27 +2,64 @@ import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Linking } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo'
 import AssetSelectionStep, {
   AssetSelection,
 } from './components/AssetSelectionStep'
+import ConnectStep from './components/ConnectStep'
 import EmailLoginStep from './components/EmailLoginStep'
 import IntroStep from './components/IntroStep'
+import NothingToMigrateStep from './components/NothingToMigrateStep'
 import PartialRetryStep from './components/PartialRetryStep'
 import PendingStep from './components/PendingStep'
 import ProgressStep from './components/ProgressStep'
 import ReviewStep from './components/ReviewStep'
 import SuccessStep from './components/SuccessStep'
+import WalletCreateErrorStep from './components/WalletCreateErrorStep'
 import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
 import { MigrateInput } from './logic/session'
+import { SelectableToken } from './logic/types'
 
 const WORLD_URL = 'https://world.helium.com'
+
+export type FlowStep =
+  | 'intro'
+  | 'connect'
+  | 'login'
+  | 'select'
+  | 'review'
+  | 'migrating'
+  | 'pending'
+  | 'partial'
+  | 'success'
+
+// The tokens the user chose to migrate (nonzero amount), each paired with its
+// resolved SelectableToken when we can find it. Shared by the input builder and
+// the review summary so both walk the selection identically.
+const selectedTokens = (
+  tokenAmounts: Record<string, string>,
+  tokens: SelectableToken[],
+): { mint: string; amount: string; token?: SelectableToken }[] =>
+  Object.entries(tokenAmounts)
+    .filter(([, amt]) => amt && amt !== '0')
+    .map(([mint, amount]) => ({
+      mint,
+      amount,
+      token: tokens.find((x) => x.mint === mint),
+    }))
 
 const MigrateToWorld = () => {
   const navigation = useNavigation()
@@ -37,7 +74,8 @@ const MigrateToWorld = () => {
       ? solanaWallet.wallets?.[0]?.address
       : undefined
 
-  const { step, setStep, persist, resume } = useMigrationSession(sourceWallet)
+  const [step, setStep] = useState<FlowStep>('intro')
+  const { persist, resume, clear } = useMigrationSession(sourceWallet)
   const assets = useMigrationAssets(sourceWallet)
   const { run, progress } = useMigrationExecutor(persist)
 
@@ -45,13 +83,37 @@ const MigrateToWorld = () => {
   const [outcome, setOutcome] = useState<{ moved: number; failed: number }>()
   const [error, setError] = useState<string>()
   const [progressLabel, setProgressLabel] = useState('')
+  const [createError, setCreateError] = useState(false)
+  const createAttempts = useRef(0)
+  const creating = useRef(false)
 
   // Ensure a destination embedded wallet exists once the user is logged in.
-  useEffect(() => {
-    if (user && solanaWallet.status === 'not-created' && solanaWallet.create) {
-      solanaWallet.create()
+  // Creation can fail (network/Privy) and there is no destination without it,
+  // so failures surface a retry/support state rather than being swallowed.
+  const createWallet = useCallback(async () => {
+    if (!solanaWallet.create || creating.current) return
+    creating.current = true
+    setCreateError(false)
+    try {
+      await solanaWallet.create()
+    } catch {
+      createAttempts.current += 1
+      setCreateError(true)
+    } finally {
+      creating.current = false
     }
-  }, [user, solanaWallet])
+  }, [solanaWallet])
+
+  useEffect(() => {
+    if (
+      user &&
+      solanaWallet.status === 'not-created' &&
+      !creating.current &&
+      !createError
+    ) {
+      createWallet()
+    }
+  }, [user, solanaWallet, createError, createWallet])
 
   // An interrupted session (app closed mid-migration) resumes straight to the
   // partial screen, where retry re-runs the persisted input.
@@ -79,15 +141,13 @@ const MigrateToWorld = () => {
       sourceWallet: sourceWallet || '',
       destinationWallet: destinationWallet || '',
       hotspots: Array.from(sel.hotspotKeys),
-      tokens: Object.entries(sel.tokenAmounts)
-        .filter(([, amt]) => amt && amt !== '0')
-        .flatMap(([mint, amt]) => {
-          // Drop any mint we can't resolve decimals for — shipping an
-          // unconverted UI decimal as a raw base-unit amount would corrupt
-          // the transfer on a funds-moving path.
-          const tk = assets.tokens.find((x) => x.mint === mint)
-          return tk ? [{ mint, amount: uiToRaw(amt, tk.decimals) }] : []
-        }),
+      // Drop any mint we can't resolve decimals for — shipping an unconverted
+      // UI decimal as a raw base-unit amount would corrupt the transfer on a
+      // funds-moving path.
+      tokens: selectedTokens(sel.tokenAmounts, assets.tokens).flatMap(
+        ({ mint, amount, token }) =>
+          token ? [{ mint, amount: uiToRaw(amount, token.decimals) }] : [],
+      ),
     }),
     [sourceWallet, destinationWallet, assets.tokens],
   )
@@ -100,6 +160,9 @@ const MigrateToWorld = () => {
       try {
         const result = await run(input)
         if (result.status === 'complete') {
+          // Finished cleanly — drop the persisted session instead of leaving a
+          // stale 'complete' record around.
+          await clear()
           setStep('success')
         } else if (result.status === 'pending') {
           // Nothing failed — txs are still confirming. Show honest
@@ -118,7 +181,7 @@ const MigrateToWorld = () => {
         setStep('review')
       }
     },
-    [run, setStep],
+    [run, setStep, clear],
   )
 
   const onConfirm = useCallback(() => {
@@ -136,12 +199,10 @@ const MigrateToWorld = () => {
   const tokenLines = useMemo(
     () =>
       selection
-        ? Object.entries(selection.tokenAmounts)
-            .filter(([, amt]) => amt && amt !== '0')
-            .map(([mint, amt]) => {
-              const tk = assets.tokens.find((x) => x.mint === mint)
-              return `${amt} ${tk?.label ?? mint.slice(0, 4)}`
-            })
+        ? selectedTokens(selection.tokenAmounts, assets.tokens).map(
+            ({ mint, amount, token }) =>
+              `${amount} ${token?.label ?? mint.slice(0, 4)}`,
+          )
         : [],
     [selection, assets.tokens],
   )
@@ -149,14 +210,27 @@ const MigrateToWorld = () => {
   const isLoggedIn = !!user && !!destinationWallet
 
   const render = () => {
+    // A logged-in user with no destination wallet is stuck until creation
+    // succeeds — surface the retry/support state over any post-login step.
+    if (createError) {
+      return (
+        <WalletCreateErrorStep
+          onRetry={createWallet}
+          showSupport={createAttempts.current >= 3}
+        />
+      )
+    }
     switch (step) {
       case 'intro':
         return (
           <IntroStep
             onContinue={() => setStep(isLoggedIn ? 'select' : 'login')}
+            onUseOwnWallet={() => setStep('connect')}
             onDismiss={dismiss}
           />
         )
+      case 'connect':
+        return <ConnectStep onBack={() => setStep('intro')} />
       case 'login':
         return (
           <EmailLoginStep
@@ -165,6 +239,13 @@ const MigrateToWorld = () => {
           />
         )
       case 'select':
+        if (
+          !assets.loading &&
+          assets.hotspots.length === 0 &&
+          assets.tokens.length === 0
+        ) {
+          return <NothingToMigrateStep onDone={dismiss} />
+        }
         return (
           <AssetSelectionStep
             hotspots={assets.hotspots}

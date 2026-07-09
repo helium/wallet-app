@@ -1,14 +1,15 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useLinkEmail, useLoginWithEmail, usePrivy } from '@privy-io/expo'
-import React, { FC, useCallback, useState } from 'react'
+import * as Logger from '@utils/logger'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
-import * as Logger from '../../../utils/logger'
 import { WORLD } from '../migrationTheme'
+import StepBackHeader from './StepBackHeader'
+import WorldButton from './WorldButton'
 
 // Shared email → OTP login. Uses link-email when a Privy user already exists,
 // otherwise login-email. Replaces the duplicated inline component that lived in
@@ -35,23 +36,46 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
   const [codeSent, setCodeSent] = useState(false)
   const [completing, setCompleting] = useState(false)
   const [error, setError] = useState<string>()
+  const [resendCount, setResendCount] = useState(0)
+  const [secondsLeft, setSecondsLeft] = useState(0)
 
   const emailState = user ? linkState : loginState
   const sending = emailState.status === 'sending-code'
   const verifying = emailState.status === 'submitting-code'
 
-  const handleSend = useCallback(async () => {
-    if (!email) return
-    try {
-      setError(undefined)
-      if (user) await linkSendCode({ email })
-      else await loginSendCode({ email })
-      setCodeSent(true)
-    } catch (err) {
-      Logger.error(err)
-      setError((err as Error).message)
-    }
-  }, [email, user, linkSendCode, loginSendCode])
+  // Resend backoff: 30s, doubling per resend, capped at 300s.
+  const backoffSeconds = (count: number) => Math.min(30 * 2 ** count, 300)
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return undefined
+    const id = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000)
+    return () => clearTimeout(id)
+  }, [secondsLeft])
+
+  const sendCodeFor = useCallback(
+    async (count: number) => {
+      if (!email) return
+      try {
+        setError(undefined)
+        if (user) await linkSendCode({ email })
+        else await loginSendCode({ email })
+        setCodeSent(true)
+        setResendCount(count)
+        setSecondsLeft(backoffSeconds(count))
+      } catch (err) {
+        Logger.error(err)
+        setError((err as Error).message)
+      }
+    },
+    [email, user, linkSendCode, loginSendCode],
+  )
+
+  const handleSend = useCallback(() => sendCodeFor(0), [sendCodeFor])
+
+  const handleResend = useCallback(() => {
+    if (secondsLeft > 0) return
+    sendCodeFor(resendCount + 1)
+  }, [secondsLeft, resendCount, sendCodeFor])
 
   const handleVerify = useCallback(async () => {
     if (!code) return
@@ -83,15 +107,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
 
   return (
     <Box flex={1}>
-      <TouchableOpacityBox
-        onPress={onBack}
-        paddingHorizontal="l"
-        paddingVertical="m"
-      >
-        <Text variant="body2" color="secondaryText">
-          ← {t('generic.back')}
-        </Text>
-      </TouchableOpacityBox>
+      <StepBackHeader onBack={onBack} />
       <Box flex={1} justifyContent="center" paddingHorizontal="l">
         <Text variant="h4" color="primaryText" textAlign="center">
           {t('migrateToWorld.linkEmail.title')}
@@ -130,13 +146,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
               autoCorrect={false}
             />
           </Box>
-          <ButtonPressable
-            width="100%"
-            height={60}
-            borderRadius="round"
-            backgroundColor="worldPurple"
-            backgroundColorOpacityPressed={0.7}
-            titleColor="white"
+          <WorldButton
             title={
               codeSent
                 ? t('migrateToWorld.linkEmail.verify')
@@ -151,6 +161,26 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
               ) : undefined
             }
           />
+          {codeSent && (
+            <TouchableOpacityBox
+              onPress={handleResend}
+              disabled={secondsLeft > 0 || sending}
+              marginTop="m"
+              alignItems="center"
+            >
+              <Text
+                variant="body3"
+                color="secondaryText"
+                opacity={secondsLeft > 0 ? 0.5 : 1}
+              >
+                {secondsLeft > 0
+                  ? t('migrateToWorld.linkEmail.resendIn', {
+                      seconds: secondsLeft,
+                    })
+                  : t('migrateToWorld.linkEmail.resend')}
+              </Text>
+            </TouchableOpacityBox>
+          )}
           {codeSent && (
             <TouchableOpacityBox
               onPress={() => {

@@ -1,13 +1,14 @@
 import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import Text from '@components/Text'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
+import WorldButton from './WorldButton'
 
-const IntroStep: FC<{ onContinue: () => void; onDismiss: () => void }> = ({
-  onContinue,
-  onDismiss,
-}) => {
+const IntroStep: FC<{
+  onContinue: () => void
+  onUseOwnWallet: () => void
+  onDismiss: () => void
+}> = ({ onContinue, onUseOwnWallet, onDismiss }) => {
   const { t } = useTranslation()
   return (
     <Box
@@ -30,23 +31,20 @@ const IntroStep: FC<{ onContinue: () => void; onDismiss: () => void }> = ({
         </Text>
       </Box>
       <Box>
-        <ButtonPressable
-          width="100%"
-          height={60}
-          borderRadius="round"
-          backgroundColor="worldPurple"
-          backgroundColorOpacityPressed={0.7}
-          titleColor="white"
+        <WorldButton
           title={t('migrateToWorld.intro.continue')}
           onPress={onContinue}
           marginBottom="m"
         />
-        <ButtonPressable
-          width="100%"
-          height={48}
-          borderRadius="round"
-          backgroundColor="transparent"
-          titleColor="secondaryText"
+        <WorldButton
+          variant="secondary"
+          titleColor="worldPurple"
+          title={t('migrateToWorld.intro.useOwnWallet')}
+          onPress={onUseOwnWallet}
+          marginBottom="xs"
+        />
+        <WorldButton
+          variant="secondary"
           title={t('migrateToWorld.intro.later')}
           onPress={onDismiss}
         />
