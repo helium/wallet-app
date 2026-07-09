@@ -186,6 +186,7 @@ const palette = {
   persianRose: '#FF2DB7',
   purple500: '#B556FF',
   purpleHeart: '#3E42E5',
+  worldPurple: '#7C3AED',
   red200: '#F59CA2',
   red300: '#F97570',
   red400: '#FF6666',
