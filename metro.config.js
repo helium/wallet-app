@@ -23,6 +23,19 @@ defaultConfig.transformer = {
 
 const originalResolveRequest = defaultConfig.resolver.resolveRequest
 
+// Resolve `pkg` (and its subpaths) to this app's single node_modules copy so
+// hoisted duplicates collapse to one module instance (avoids duplicate React
+// contexts).
+const forceSingleCopy = (context, moduleName, platform, pkg) => {
+  const suffix = moduleName.replace(pkg, '')
+  const resolved = path.resolve(__dirname, 'node_modules/' + pkg + suffix)
+  return context.resolveRequest(
+    { ...context, resolveRequest: undefined },
+    resolved,
+    platform,
+  )
+}
+
 // Dedups @tanstack/react-query, @privy-io/expo, and jose to a single copy so Privy/Solana
 // providers share one module instance (avoids duplicate React contexts); revisit if those
 // upstream deps stop requiring a forced single resolution.
@@ -36,15 +49,11 @@ defaultConfig.resolver = {
       moduleName === '@tanstack/react-query' ||
       moduleName.startsWith('@tanstack/react-query/')
     ) {
-      const suffix = moduleName.replace('@tanstack/react-query', '')
-      const resolved = path.resolve(
-        __dirname,
-        'node_modules/@tanstack/react-query' + suffix,
-      )
-      return context.resolveRequest(
-        { ...context, resolveRequest: undefined },
-        resolved,
+      return forceSingleCopy(
+        context,
+        moduleName,
         platform,
+        '@tanstack/react-query',
       )
     }
     // Force single copy of @privy-io/expo to avoid duplicate contexts
@@ -52,16 +61,7 @@ defaultConfig.resolver = {
       moduleName === '@privy-io/expo' ||
       moduleName.startsWith('@privy-io/expo/')
     ) {
-      const suffix = moduleName.replace('@privy-io/expo', '')
-      const resolved = path.resolve(
-        __dirname,
-        'node_modules/@privy-io/expo' + suffix,
-      )
-      return context.resolveRequest(
-        { ...context, resolveRequest: undefined },
-        resolved,
-        platform,
-      )
+      return forceSingleCopy(context, moduleName, platform, '@privy-io/expo')
     }
     // Redirect jose to its browser build (avoids Node.js 'https' dependency)
     if (moduleName === 'jose' || moduleName.startsWith('jose/')) {
