@@ -31,9 +31,15 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
 
   useEffect(() => {
     if (!sourceWallet) return
+    let cancelled = false
     AsyncStorage.getItem(keyFor(sourceWallet)).then((raw) => {
-      setResume(deriveResume(deserializeSession(raw)))
+      if (!cancelled) {
+        setResume(deriveResume(deserializeSession(raw)))
+      }
     })
+    return () => {
+      cancelled = true
+    }
   }, [sourceWallet])
 
   const persist = useCallback(
