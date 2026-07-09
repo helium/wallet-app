@@ -12,6 +12,7 @@ import AssetSelectionStep, {
 import EmailLoginStep from './components/EmailLoginStep'
 import IntroStep from './components/IntroStep'
 import PartialRetryStep from './components/PartialRetryStep'
+import PendingStep from './components/PendingStep'
 import ProgressStep from './components/ProgressStep'
 import ReviewStep from './components/ReviewStep'
 import SuccessStep from './components/SuccessStep'
@@ -41,7 +42,11 @@ const MigrateToWorld = () => {
   const { run, progress } = useMigrationExecutor(persist)
 
   const [selection, setSelection] = useState<AssetSelection>()
-  const [outcome, setOutcome] = useState<{ moved: number; failed: number }>()
+  const [outcome, setOutcome] = useState<{
+    moved: number
+    failed: number
+    pending: number
+  }>()
   const [error, setError] = useState<string>()
   const [progressLabel, setProgressLabel] = useState('')
 
@@ -55,7 +60,14 @@ const MigrateToWorld = () => {
   // An interrupted session (app closed mid-migration) resumes straight to the
   // partial screen, where retry re-runs the persisted input.
   useEffect(() => {
-    if (resume.canResume) setStep('partial')
+    if (resume.canResume) {
+      setOutcome({
+        moved: resume.movedCount,
+        failed: resume.failedCount,
+        pending: 0,
+      })
+      setStep('partial')
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resume.canResume])
 
@@ -94,10 +106,20 @@ const MigrateToWorld = () => {
         const result = await run(input)
         if (result.status === 'complete') {
           setStep('success')
+        } else if (result.status === 'pending') {
+          // Nothing failed — txs are still confirming. Show honest
+          // "still processing" messaging, not a failure/retry screen.
+          setOutcome({
+            moved: result.confirmedSignatures.length,
+            failed: 0,
+            pending: result.pendingSignatures?.length ?? 0,
+          })
+          setStep('pending')
         } else {
           setOutcome({
             moved: result.confirmedSignatures.length,
             failed: result.failedSignatures.length,
+            pending: 0,
           })
           setStep('partial')
         }
@@ -182,6 +204,15 @@ const MigrateToWorld = () => {
           <ProgressStep
             walletReady={!!destinationWallet}
             label={progressLabel}
+          />
+        )
+      case 'pending':
+        return (
+          <PendingStep
+            movedCount={outcome?.moved ?? 0}
+            pendingCount={outcome?.pending ?? 0}
+            onCheckStatus={onRetry}
+            onDismiss={dismiss}
           />
         )
       case 'partial':

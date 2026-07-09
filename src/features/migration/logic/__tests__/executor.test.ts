@@ -114,6 +114,51 @@ describe('runMigration', () => {
     expect(outcome.failedBatch).toBe(1)
   })
 
+  it('reports pending (not partial) when a batch is still confirming', async () => {
+    const persisted: string[] = []
+    const { deps } = makeDeps({
+      pollStatus: async () => ({
+        status: 'pending',
+        transactions: [
+          { signature: 'done', status: 'confirmed' },
+          { signature: 'wait', status: 'pending' },
+        ],
+      }),
+      persist: async (session) => {
+        persisted.push(session.status)
+      },
+    })
+    const outcome = await runMigration(input, deps)
+    expect(outcome.status).toBe('pending')
+    expect(outcome.confirmedSignatures).toEqual(['done'])
+    expect(outcome.failedSignatures).toEqual([])
+    expect(outcome.pendingSignatures).toEqual(['wait'])
+    // Session stays resumable, never marked partial/failed.
+    expect(persisted).not.toContain('partial')
+    expect(persisted).not.toContain('failed')
+    expect(persisted[persisted.length - 1]).toBe('running')
+  })
+
+  it('persists a resumable snapshot before the first batch confirms', async () => {
+    const statusesAtConfirm: string[] = []
+    let confirmed = false
+    const { deps } = makeDeps({
+      persist: async (session) => {
+        // Capture snapshots written before pollStatus resolves.
+        if (!confirmed) statusesAtConfirm.push(session.status)
+      },
+      pollStatus: async () => {
+        confirmed = true
+        return {
+          status: 'confirmed',
+          transactions: [{ signature: 'sig1', status: 'confirmed' }],
+        }
+      },
+    })
+    await runMigration(input, deps)
+    expect(statusesAtConfirm).toContain('running')
+  })
+
   it('persists a snapshot after each batch with accumulated signatures', async () => {
     const snapshots: string[][] = []
     const { deps } = makeDeps({

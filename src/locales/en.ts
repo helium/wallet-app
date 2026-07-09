@@ -1648,6 +1648,11 @@ export default {
       walletReady: 'World wallet ready',
       batch: 'Processing batch {{num}}',
     },
+    pending: {
+      title: 'Still processing',
+      body: '{{moved}} moved · {{pending}} still confirming. Your moved items are safe — this can take a little while.',
+      checkStatus: 'Check status',
+    },
     partial: {
       title: 'Almost there',
       body: '{{moved}} moved · {{failed}} need a retry.',

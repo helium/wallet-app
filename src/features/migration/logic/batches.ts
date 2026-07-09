@@ -48,12 +48,22 @@ export const serializeSignedBatch = (
 
 export const summarizeBatch = (
   status: BatchStatus,
-): { confirmedSignatures: string[]; failedSignatures: string[] } => {
+): {
+  confirmedSignatures: string[]
+  failedSignatures: string[]
+  pendingSignatures: string[]
+} => {
   const confirmedSignatures = status.transactions
     .filter((t) => t.status === 'confirmed')
     .map((t) => t.signature)
-  const failedSignatures = status.transactions
-    .filter((t) => t.status !== 'confirmed')
+  // A still-'pending' tx has not failed — a poll can time out with the
+  // network still confirming. Counting it as failed would push the user to a
+  // false-failure retry screen. Only terminal statuses count as failed.
+  const pendingSignatures = status.transactions
+    .filter((t) => t.status === 'pending')
     .map((t) => t.signature)
-  return { confirmedSignatures, failedSignatures }
+  const failedSignatures = status.transactions
+    .filter((t) => t.status !== 'confirmed' && t.status !== 'pending')
+    .map((t) => t.signature)
+  return { confirmedSignatures, failedSignatures, pendingSignatures }
 }

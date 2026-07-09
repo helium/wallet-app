@@ -32,16 +32,20 @@ describe('session serialization', () => {
 })
 
 describe('deriveResume', () => {
-  it('offers resume for a running session', () => {
+  it('offers resume for a running session with confirmed/failed counts', () => {
     expect(deriveResume(base)).toEqual({
       canResume: true,
       input: base.originalInput,
+      movedCount: 1,
+      failedCount: 0,
     })
   })
   it('offers resume for a partial session', () => {
     expect(deriveResume({ ...base, status: 'partial' })).toEqual({
       canResume: true,
       input: base.originalInput,
+      movedCount: 1,
+      failedCount: 0,
     })
   })
   it('offers resume for a failed session', () => {
@@ -50,6 +54,11 @@ describe('deriveResume', () => {
   it('does not offer resume for complete/idle/null', () => {
     expect(deriveResume({ ...base, status: 'complete' }).canResume).toBe(false)
     expect(deriveResume({ ...base, status: 'idle' }).canResume).toBe(false)
-    expect(deriveResume(null)).toEqual({ canResume: false, input: null })
+    expect(deriveResume(null)).toEqual({
+      canResume: false,
+      input: null,
+      movedCount: 0,
+      failedCount: 0,
+    })
   })
 })

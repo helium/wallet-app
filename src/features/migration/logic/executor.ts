@@ -38,9 +38,10 @@ export type ExecutorDeps = {
 }
 
 export type RunOutcome = {
-  status: 'complete' | 'partial' | 'failed'
+  status: 'complete' | 'partial' | 'failed' | 'pending'
   confirmedSignatures: string[]
   failedSignatures: string[]
+  pendingSignatures?: string[]
   failedBatch?: number
   reason?: 'failed' | 'expired'
 }
@@ -85,6 +86,12 @@ export const runMigration = async (
     // eslint-disable-next-line no-await-in-loop
     const { batchId } = await deps.submitBatch(signed, data)
 
+    // Persist a resumable snapshot BEFORE confirmation: if the app is killed
+    // while the first batch is still confirming, this leaves a 'running'
+    // session to resume from instead of an orphaned in-flight submission.
+    // eslint-disable-next-line no-await-in-loop
+    await deps.persist(snapshot('running'))
+
     deps.onProgress({ phase: 'confirming', batch })
     // eslint-disable-next-line no-await-in-loop
     const status = await deps.pollStatus(batchId)
@@ -104,10 +111,29 @@ export const runMigration = async (
       }
     }
 
-    if (status.status === 'partial' || summary.failedSignatures.length > 0) {
+    if (summary.failedSignatures.length > 0) {
       // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('partial'))
       return { status: 'partial', confirmedSignatures, failedSignatures }
+    }
+
+    // Nothing terminally failed, but the batch isn't fully confirmed yet —
+    // txs are still pending (a poll timed out mid-confirmation). Report this
+    // as still-processing, not a partial failure. The 'running' session stays
+    // resumable so the user can check back and continue idempotently.
+    if (
+      status.status === 'pending' ||
+      status.status === 'partial' ||
+      summary.pendingSignatures.length > 0
+    ) {
+      // eslint-disable-next-line no-await-in-loop
+      await deps.persist(snapshot('running'))
+      return {
+        status: 'pending',
+        confirmedSignatures,
+        failedSignatures,
+        pendingSignatures: summary.pendingSignatures,
+      }
     }
 
     if (out.hasMore && out.nextParams) {

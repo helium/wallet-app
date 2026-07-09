@@ -14,6 +14,7 @@ export type FlowStep =
   | 'select'
   | 'review'
   | 'migrating'
+  | 'pending'
   | 'partial'
   | 'success'
 
@@ -24,9 +25,13 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
   const [resume, setResume] = useState<{
     canResume: boolean
     input: MigrateInput | null
+    movedCount: number
+    failedCount: number
   }>({
     canResume: false,
     input: null,
+    movedCount: 0,
+    failedCount: 0,
   })
 
   useEffect(() => {
@@ -56,7 +61,7 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
   const clear = useCallback(async () => {
     if (!sourceWallet) return
     await AsyncStorage.removeItem(keyFor(sourceWallet))
-    setResume({ canResume: false, input: null })
+    setResume({ canResume: false, input: null, movedCount: 0, failedCount: 0 })
   }, [sourceWallet])
 
   return { step, setStep, persist, resume, clear }

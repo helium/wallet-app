@@ -19,13 +19,28 @@ describe('summarizeBatch', () => {
     expect(r.failedSignatures).toEqual(['sigB'])
   })
 
-  it('treats non-confirmed statuses as failed', () => {
+  it('treats terminal non-confirmed statuses as failed', () => {
     const r = summarizeBatch({
       status: 'expired',
       transactions: [{ signature: 'x', status: 'expired' }],
     })
     expect(r.confirmedSignatures).toEqual([])
     expect(r.failedSignatures).toEqual(['x'])
+    expect(r.pendingSignatures).toEqual([])
+  })
+
+  it('keeps still-pending txs out of the failed bucket', () => {
+    const r = summarizeBatch({
+      status: 'partial',
+      transactions: [
+        { signature: 'ok', status: 'confirmed' },
+        { signature: 'wait', status: 'pending' },
+        { signature: 'bad', status: 'failed' },
+      ],
+    })
+    expect(r.confirmedSignatures).toEqual(['ok'])
+    expect(r.pendingSignatures).toEqual(['wait'])
+    expect(r.failedSignatures).toEqual(['bad'])
   })
 })
 

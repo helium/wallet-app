@@ -51,8 +51,18 @@ export const deserializeSession = (
 
 export const deriveResume = (
   s: MigrationSession | null,
-): { canResume: boolean; input: MigrateInput | null } => {
+): {
+  canResume: boolean
+  input: MigrateInput | null
+  movedCount: number
+  failedCount: number
+} => {
   if (s && RESUMABLE.has(s.status))
-    return { canResume: true, input: s.originalInput }
-  return { canResume: false, input: null }
+    return {
+      canResume: true,
+      input: s.originalInput,
+      movedCount: s.confirmedSignatures.length,
+      failedCount: s.failedSignatures.length,
+    }
+  return { canResume: false, input: null, movedCount: 0, failedCount: 0 }
 }
