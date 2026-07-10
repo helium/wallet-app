@@ -55,6 +55,28 @@ describe('classifyHoldings', () => {
     expect(r.leftBehindMints).toEqual([UNKNOWN])
   })
 
+  it('excludes NFT-shaped holdings (decimals 0, balance 1) from left behind', () => {
+    const NFT = 'NFTmint11111111111111111111111111111111111'
+    const r = classifyHoldings({
+      migratable: [],
+      solBalance: 0,
+      holdings: [
+        { mint: NFT, balance: 1, decimals: 0 }, // NFT → not a token
+        { mint: UNKNOWN, balance: 5000, decimals: 6 },
+      ],
+    })
+    expect(r.leftBehindMints).toEqual([UNKNOWN])
+  })
+
+  it('keeps decimals-0 fungible balances above 1 as left behind', () => {
+    const r = classifyHoldings({
+      migratable: [],
+      solBalance: 0,
+      holdings: [{ mint: UNKNOWN, balance: 42, decimals: 0 }],
+    })
+    expect(r.leftBehindMints).toEqual([UNKNOWN])
+  })
+
   it('ignores zero-balance unsupported holdings', () => {
     const r = classifyHoldings({
       migratable: [],

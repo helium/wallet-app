@@ -122,10 +122,6 @@ const generateFontVariants = (baseVariants: typeof textVariants) => {
  * https://elektrobild.org/tools/sort-colors can be used to sort colors.
  */
 
-// Single source of truth for the World-migration purple; also consumed by the
-// migration flow's non-Restyle styles (see features/migration/migrationTheme).
-export const worldPurpleHex = '#7C3AED'
-
 const palette = {
   aquaMarine: '#69DBB3',
   black200: '#414141',
@@ -190,7 +186,7 @@ const palette = {
   persianRose: '#FF2DB7',
   purple500: '#B556FF',
   purpleHeart: '#3E42E5',
-  worldPurple: worldPurpleHex,
+  worldPurple: '#7C3AED',
   worldSuccess: '#16a34a',
   worldWarnBg: 'rgba(255,196,0,0.14)',
   worldWarnInk: '#8a6d00',

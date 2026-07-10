@@ -11,6 +11,7 @@ import { resendBackoffSeconds } from '../logic/retry'
 import { WORLD } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
+import WorldLoader from './WorldLoader'
 
 // Shared email → OTP login. Uses link-email when a Privy user already exists,
 // otherwise login-email. Replaces the duplicated inline component that lived in
@@ -92,14 +93,14 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
 
   if (!isReady || completing) {
     return (
-      <Box flex={1} justifyContent="center" alignItems="center">
-        <CircleLoader loaderSize={30} color="worldPurple" />
-        <Text variant="body2" color="secondaryText" marginTop="m">
-          {completing
+      <WorldLoader
+        captionVariant="body2"
+        caption={
+          completing
             ? t('migrateToWorld.linkEmail.loggingIn')
-            : t('generic.loading')}
-        </Text>
-      </Box>
+            : t('generic.loading')
+        }
+      />
     )
   }
 
@@ -119,7 +120,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
           {t('migrateToWorld.linkEmail.body')}
         </Text>
         {error && (
-          <Text variant="body3" color="red500" textAlign="center" marginTop="m">
+          <Text variant="body3" color="error" textAlign="center" marginTop="m">
             {error}
           </Text>
         )}

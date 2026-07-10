@@ -3,9 +3,8 @@ import Text from '@components/Text'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
+import { SUPPORT_URL } from '../constants'
 import WorldButton from './WorldButton'
-
-const SUPPORT_URL = 'https://docs.helium.com'
 
 // Shown when the Privy embedded (destination) wallet fails to create. Without a
 // destination the migration cannot proceed, so the only paths are Retry and,

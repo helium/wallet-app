@@ -61,9 +61,7 @@ const MigrateToWorldModal: FC = () => {
 
   const dismissButton = (
     <WorldButton
-      variant="secondary"
-      backgroundColorOpacityPressed={0.05}
-      titleColorPressedOpacity={0.3}
+      variant="dismiss"
       title={t('migrateToWorldModal.dismiss')}
       onPress={handleDismiss}
     />

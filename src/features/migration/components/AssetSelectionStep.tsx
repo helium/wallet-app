@@ -1,5 +1,4 @@
 import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet from '@gorhom/bottom-sheet'
@@ -16,6 +15,7 @@ import HotspotsEditSheet from './HotspotsEditSheet'
 import StepBackHeader from './StepBackHeader'
 import TokensEditSheet from './TokensEditSheet'
 import WorldButton from './WorldButton'
+import WorldLoader from './WorldLoader'
 
 export type AssetSelection = {
   hotspotKeys: Set<string>
@@ -137,14 +137,7 @@ const AssetSelectionStep: FC<{
   const canReview = hotspotKeys.size > 0 || activeTokenCount > 0
 
   if (loading) {
-    return (
-      <Box flex={1} justifyContent="center" alignItems="center">
-        <CircleLoader loaderSize={30} color="worldPurple" />
-        <Text variant="body3" color="secondaryText" marginTop="m">
-          {t('migrateToWorld.selectAssets.loading')}
-        </Text>
-      </Box>
-    )
+    return <WorldLoader caption={t('migrateToWorld.selectAssets.loading')} />
   }
 
   return (

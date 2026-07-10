@@ -173,10 +173,13 @@ const MigrateToWorld = () => {
         setStep(stepForOutcome(result.status))
       } catch (err) {
         setError((err as Error).message)
-        setStep('review')
+        // 'review' only recovers a live selection (the Confirm path). A resumed
+        // retry has no selection — send it back to the retry screen it came from
+        // instead of an empty Review with a no-op Confirm.
+        setStep(selection || !outcome ? 'review' : 'partial')
       }
     },
-    [run, setStep, clear],
+    [run, setStep, clear, selection, outcome],
   )
 
   const onConfirm = useCallback(() => {
@@ -184,12 +187,31 @@ const MigrateToWorld = () => {
   }, [selection, buildInput, execute])
 
   const onRetry = useCallback(() => {
+    // A resumed session can outlive its Privy embedded wallet (expired session).
+    // Without a destination, run() would throw 'Destination wallet unavailable'
+    // and dead-end on an empty Review, so recover the login/create path instead.
+    // createWallet leaves the current outcome step intact on success, so the
+    // user simply re-taps Retry once a destination exists.
+    if (!destinationWallet) {
+      if (!user) setStep('login')
+      else createWallet()
+      return
+    }
     const retryInput =
       lastRunNextInput ??
       resume.input ??
       (selection ? buildInput(selection) : undefined)
     if (retryInput) execute(retryInput)
-  }, [lastRunNextInput, resume.input, selection, buildInput, execute])
+  }, [
+    destinationWallet,
+    user,
+    createWallet,
+    lastRunNextInput,
+    resume.input,
+    selection,
+    buildInput,
+    execute,
+  ])
 
   const goToWorld = useCallback(() => Linking.openURL(WORLD_URL), [])
   const dismiss = useCallback(() => navigation.goBack(), [navigation])

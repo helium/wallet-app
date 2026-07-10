@@ -12,6 +12,20 @@ describe('resendBackoffSeconds', () => {
     expect(resendBackoffSeconds(4)).toBe(300)
     expect(resendBackoffSeconds(10)).toBe(300)
   })
+
+  it('is monotonic non-decreasing across successive resends', () => {
+    // Each resend (handleResend) advances the count by one, so the gating
+    // window the user waits through must never shrink between attempts.
+    const schedule = [0, 1, 2, 3, 4, 5, 6].map(resendBackoffSeconds)
+    const sorted = [...schedule].sort((a, b) => a - b)
+    expect(schedule).toEqual(sorted)
+  })
+
+  it('caps exactly at the resend index where doubling first exceeds 300', () => {
+    expect(resendBackoffSeconds(3)).toBe(240) // last uncapped value
+    expect(resendBackoffSeconds(4)).toBe(300) // first capped value
+    expect(resendBackoffSeconds(4)).toBeLessThan(30 * 2 ** 4)
+  })
 })
 
 describe('shouldShowSupport', () => {

@@ -75,9 +75,7 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
         />
         {onDismiss ? (
           <WorldButton
-            variant="secondary"
-            backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
+            variant="dismiss"
             title={t('migrateToWorldModal.dismiss')}
             onPress={onDismiss}
             marginTop="s"

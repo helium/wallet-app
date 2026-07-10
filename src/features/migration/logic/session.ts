@@ -77,7 +77,7 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
   }
 }
 
-export type OutcomeStep = 'success' | 'pending' | 'partial'
+export type OutcomeScreen = 'success' | 'pending' | 'partial'
 
 // Single source of truth for the run-outcome/session-status → screen mapping,
 // shared by the live run and the resume path so they can't drift. A batch-level
@@ -85,7 +85,7 @@ export type OutcomeStep = 'success' | 'pending' | 'partial'
 // reassuring "still processing" one.
 export const stepForOutcome = (
   status: MigrationStatus | 'pending',
-): OutcomeStep => {
+): OutcomeScreen => {
   switch (status) {
     case 'complete':
       return 'success'

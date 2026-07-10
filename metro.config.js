@@ -24,8 +24,7 @@ defaultConfig.transformer = {
 const originalResolveRequest = defaultConfig.resolver.resolveRequest
 
 // Resolve `pkg` (and its subpaths) to this app's single node_modules copy so
-// hoisted duplicates collapse to one module instance (avoids duplicate React
-// contexts).
+// hoisted duplicates collapse to one module instance (see SINGLE_COPY_PKGS).
 const forceSingleCopy = (context, moduleName, platform, pkg) => {
   const suffix = moduleName.replace(pkg, '')
   const resolved = path.resolve(__dirname, 'node_modules/' + pkg + suffix)
@@ -47,8 +46,6 @@ defaultConfig.resolver = {
   assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie', 'ico'],
   sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
   resolveRequest: (context, moduleName, platform) => {
-    // Force a single copy of these packages so Privy/Solana providers share one
-    // module instance (avoids duplicate React contexts).
     const singleCopyPkg = SINGLE_COPY_PKGS.find(
       (p) => moduleName === p || moduleName.startsWith(`${p}/`),
     )

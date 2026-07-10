@@ -38,10 +38,16 @@ export const classifyHoldings = (args: {
     ...migratable.filter((t) => t.uiAmount > 0).map(tokenToSelectable),
   ]
 
+  // The warning counts fungible tokens that can't move. tokenAccounts includes
+  // NFT ATAs (decimals 0, supply 1) which aren't tokens, so exclude them.
+  const isNft = (h: WalletHolding) => h.decimals === 0 && h.balance === 1
+
   const leftBehindMints = Array.from(
     new Set(
       holdings
-        .filter((h) => h.balance > 0 && !MIGRATABLE_MINTS.has(h.mint))
+        .filter(
+          (h) => h.balance > 0 && !MIGRATABLE_MINTS.has(h.mint) && !isNft(h),
+        )
         .map((h) => h.mint),
     ),
   )
