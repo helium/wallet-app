@@ -32,35 +32,43 @@ const SummaryCard: FC<{
   const { t } = useTranslation()
   return (
     <Box
-      backgroundColor="surfaceSecondary"
+      backgroundColor="grey100"
       borderRadius="xl"
-      padding="l"
-      marginBottom="m"
+      borderWidth={1}
+      borderColor="worldBorder"
+      paddingHorizontal="l"
+      paddingVertical="m"
+      marginBottom="s"
+      flexDirection="row"
+      alignItems="center"
     >
       <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="flex-start"
+        width={40}
+        height={40}
+        borderRadius="round"
+        backgroundColor="worldAccentBg"
+        alignItems="center"
+        justifyContent="center"
       >
-        <Box>
-          <Text variant="h1" color="primaryText">
-            {count}
-          </Text>
-          <Text variant="body3" color="secondaryText" marginTop="xs">
-            {label}
-          </Text>
-        </Box>
-        <TouchableOpacityBox onPress={onEdit}>
-          <Text variant="body3Medium" color="worldPurple">
-            {t('migrateToWorld.selectAssets.edit')}
-          </Text>
-        </TouchableOpacityBox>
-      </Box>
-      {sub ? (
-        <Text variant="body3" color="secondaryText" marginTop="s">
-          {sub}
+        <Text variant="body1" fontWeight="700" color="worldPurple">
+          {count}
         </Text>
-      ) : null}
+      </Box>
+      <Box flex={1} marginLeft="m">
+        <Text variant="body2Medium" color="worldInk">
+          {label}
+        </Text>
+        {sub ? (
+          <Text variant="body3" color="worldSecondaryInk" marginTop="xxs">
+            {sub}
+          </Text>
+        ) : null}
+      </Box>
+      <TouchableOpacityBox onPress={onEdit}>
+        <Text variant="body3Medium" color="worldPurple">
+          {t('migrateToWorld.selectAssets.edit')}
+        </Text>
+      </TouchableOpacityBox>
     </Box>
   )
 }
@@ -147,7 +155,7 @@ const AssetSelectionStep: FC<{
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
       <Box flex={1} paddingHorizontal="l">
-        <Text variant="h4" color="primaryText">
+        <Text variant="h4" color="worldInk">
           {t('migrateToWorld.selectAssets.readyTitle')}
         </Text>
         <Text

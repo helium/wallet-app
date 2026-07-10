@@ -4,7 +4,6 @@ import React, { memo } from 'react'
 import SecretKeyWarningScreen from '@components/SecretKeyWarningScreen'
 import SolanaMigration from '../migration/SolanaMigration'
 import MigrateToWorldScreen from '../migration/MigrateToWorld'
-import PrivyAppProvider from '../../providers/PrivyProvider'
 import AutoGasManager from './AutoGasManager'
 import ConfirmSignoutScreen from './ConfirmSignoutScreen'
 import RevealPrivateKeyScreen from './RevealPrivateKeyScreen'
@@ -19,14 +18,6 @@ const SettingsStack = createNativeStackNavigator()
 
 const SolanaMigrationWrapper = () => {
   return <SolanaMigration hideBack={false} manual />
-}
-
-const MigrateToWorldWrapper = () => {
-  return (
-    <PrivyAppProvider>
-      <MigrateToWorldScreen />
-    </PrivyAppProvider>
-  )
 }
 
 const RevealWordsWrapper = () => {
@@ -91,7 +82,7 @@ const SettingsNavigator = () => {
       />
       <SettingsStack.Screen
         name="MigrateToWorld"
-        component={MigrateToWorldWrapper}
+        component={MigrateToWorldScreen}
         options={{ presentation: 'fullScreenModal' }}
       />
       <SettingsStack.Screen

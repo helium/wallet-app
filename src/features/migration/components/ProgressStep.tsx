@@ -14,15 +14,39 @@ const ProgressStep: FC<{ label: string }> = ({ label }) => {
       paddingHorizontal="l"
     >
       <CircleLoader loaderSize={40} color="worldPurple" />
-      <Text variant="h4" color="primaryText" marginTop="l">
+      <Text variant="h3" color="worldInk" marginTop="l">
         {t('migrateToWorld.migrating.title')}
       </Text>
-      <Text variant="body3" color="secondaryText" marginTop="m">
-        {t('migrateToWorld.migrating.walletReady')}
-      </Text>
-      <Text variant="body3" color="secondaryText" marginTop="xs">
-        {label}
-      </Text>
+
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        backgroundColor="worldSuccessBg"
+        borderRadius="round"
+        paddingHorizontal="m"
+        paddingVertical="xs"
+        marginTop="l"
+      >
+        <Text variant="body3" color="worldSuccess" fontWeight="700">
+          {t('migrateToWorld.migrating.walletReady')}
+        </Text>
+      </Box>
+
+      {label ? (
+        <Box
+          backgroundColor="grey100"
+          borderWidth={1}
+          borderColor="worldBorder"
+          borderRadius="round"
+          paddingHorizontal="m"
+          paddingVertical="xs"
+          marginTop="s"
+        >
+          <Text variant="body3" color="worldSecondaryInk" fontWeight="500">
+            {label}
+          </Text>
+        </Box>
+      ) : null}
     </Box>
   )
 }

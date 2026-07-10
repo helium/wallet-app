@@ -1658,7 +1658,7 @@ export default {
       button: 'Confirm & Migrate',
     },
     migrating: {
-      title: 'Migrating...',
+      title: 'Migrating',
       walletReady: '✓ World wallet ready',
       phases: {
         requesting: 'Preparing',

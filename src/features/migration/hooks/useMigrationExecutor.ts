@@ -1,10 +1,9 @@
 import { TERMINAL_STATUSES } from '@hooks/useTransactionBatchStatus'
-import NetInfo from '@react-native-community/netinfo'
 import { useEmbeddedSolanaWallet } from '@privy-io/expo'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import sleep from '@utils/sleep'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useSolana } from '../../../solana/SolanaProvider'
 import {
   BatchStatus,
@@ -13,7 +12,6 @@ import {
 } from '../logic/batches'
 import {
   ExecutorProgress,
-  gateOnDeps,
   RunOptions,
   runMigration,
   RunOutcome,
@@ -32,19 +30,6 @@ export const useMigrationExecutor = (
   const { anchorProvider } = useSolana()
   const solanaWallet = useEmbeddedSolanaWallet()
   const [progress, setProgress] = useState<ExecutorProgress>()
-
-  // Set on unmount so an in-flight connectivity wait drops its NetInfo listener
-  // and releases the executor closure instead of staying parked until reconnect.
-  const abortedRef = useRef(false)
-  const cleanupRef = useRef<(() => void) | null>(null)
-  useEffect(
-    () => () => {
-      abortedRef.current = true
-      cleanupRef.current?.()
-      cleanupRef.current = null
-    },
-    [],
-  )
 
   const run = useCallback(
     async (input: MigrateInput, opts?: RunOptions): Promise<RunOutcome> => {
@@ -67,34 +52,6 @@ export const useMigrationExecutor = (
         return signedTransaction
       }
 
-      // Resolve immediately when connected, otherwise on the next connected
-      // event — auto-pausing the run through a network drop. Unmounting releases
-      // the waiter (see cleanupRef) so the listener never leaks.
-      const waitForOnline = () =>
-        new Promise<void>((resolve) => {
-          if (abortedRef.current) {
-            resolve()
-            return
-          }
-          NetInfo.fetch().then((state) => {
-            if (abortedRef.current || state.isConnected) {
-              resolve()
-              return
-            }
-            const unsubscribe = NetInfo.addEventListener((s) => {
-              if (s.isConnected) {
-                unsubscribe()
-                cleanupRef.current = null
-                resolve()
-              }
-            })
-            cleanupRef.current = () => {
-              unsubscribe()
-              resolve()
-            }
-          })
-        })
-
       const pollStatus = async (batchId: string): Promise<BatchStatus> => {
         const start = Date.now()
         // eslint-disable-next-line no-constant-condition
@@ -113,22 +70,19 @@ export const useMigrationExecutor = (
 
       return runMigration<VersionedTransaction>(
         input,
-        gateOnDeps(
-          {
-            requestMigrate: (i) => client.migration.migrate(i),
-            signBatch: (data) =>
-              signBatchTransactions(deserializeBatchTxs(data), {
-                signWithSource,
-                signWithDestination,
-              }),
-            submitBatch: (signed, data) =>
-              client.transactions.submit(serializeSignedBatch(signed, data)),
-            pollStatus,
-            persist,
-            onProgress: setProgress,
-          },
-          waitForOnline,
-        ),
+        {
+          requestMigrate: (i) => client.migration.migrate(i),
+          signBatch: (data) =>
+            signBatchTransactions(deserializeBatchTxs(data), {
+              signWithSource,
+              signWithDestination,
+            }),
+          submitBatch: (signed, data) =>
+            client.transactions.submit(serializeSignedBatch(signed, data)),
+          pollStatus,
+          persist,
+          onProgress: setProgress,
+        },
         opts,
       )
     },

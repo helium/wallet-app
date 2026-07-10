@@ -1,6 +1,6 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
-import React, { FC } from 'react'
+import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking, ScrollView } from 'react-native'
 import { WORLD_URL } from '../constants'
@@ -11,16 +11,45 @@ import WorldButton from './WorldButton'
 // World destination via World Explorer's wallet-standard / SIWS connect model.
 // No keys are exported and no funds move here — the user just signs in with a
 // wallet they already control. Hardware-wallet users are routed here too.
-// A numbered instruction row: "1." gutter + the step text, both in the
-// secondary World-Light body styling used across this screen.
+// A numbered instruction row: a small World-purple numeral badge + the step
+// text, in the secondary World-Light body styling used across this screen.
 const StepRow: FC<{ index: number; text: string }> = ({ index, text }) => (
-  <Box flexDirection="row" marginTop="s">
-    <Text variant="body2" color="secondaryText" lineHeight={22} marginRight="s">
-      {`${index}.`}
-    </Text>
-    <Text variant="body2" color="secondaryText" lineHeight={22} flex={1}>
+  <Box flexDirection="row" marginTop="m" alignItems="flex-start">
+    <Box
+      width={24}
+      height={24}
+      borderRadius="round"
+      backgroundColor="worldAccentBg"
+      alignItems="center"
+      justifyContent="center"
+      marginRight="s"
+    >
+      <Text variant="body3" color="worldPurple" fontWeight="700">
+        {index}
+      </Text>
+    </Box>
+    <Text
+      variant="body2"
+      color="worldSecondaryInk"
+      lineHeight={22}
+      flex={1}
+      marginTop="xxs"
+    >
       {text}
     </Text>
+  </Box>
+)
+
+// A titled instruction card grouping one connection route's steps.
+const StepCard: FC<{ title: string; children: ReactNode }> = ({
+  title,
+  children,
+}) => (
+  <Box backgroundColor="grey100" borderRadius="xl" padding="l" marginTop="m">
+    <Text variant="subtitle2" color="worldInk">
+      {title}
+    </Text>
+    {children}
   </Box>
 )
 
@@ -47,40 +76,29 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
       <StepBackHeader onBack={onBack} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <Box paddingHorizontal="l">
-          <Text variant="h4" color="primaryText">
+          <Text variant="h4" color="worldInk">
             {t('migrateToWorld.connect.title')}
           </Text>
           <Text
             variant="body2"
-            color="secondaryText"
+            color="worldSecondaryInk"
             marginTop="xs"
             lineHeight={22}
           >
             {t('migrateToWorld.connect.reassurance')}
           </Text>
 
-          <Box marginTop="xl">
-            <Text variant="subtitle2" color="primaryText">
-              {t('migrateToWorld.connect.softwareTitle')}
-            </Text>
+          <StepCard title={t('migrateToWorld.connect.softwareTitle')}>
             {softwareSteps.map((step, i) => (
               <StepRow key={step} index={i + 1} text={step} />
             ))}
-          </Box>
+          </StepCard>
 
-          <Box
-            marginTop="xl"
-            borderTopColor="primaryBackground"
-            borderTopWidth={1}
-            paddingTop="l"
-          >
-            <Text variant="subtitle2" color="primaryText">
-              {t('migrateToWorld.connect.hardwareTitle')}
-            </Text>
+          <StepCard title={t('migrateToWorld.connect.hardwareTitle')}>
             {hardwareSteps.map((step, i) => (
               <StepRow key={step} index={i + 1} text={step} />
             ))}
-          </Box>
+          </StepCard>
         </Box>
       </ScrollView>
       <Box paddingHorizontal="l" paddingBottom="m">

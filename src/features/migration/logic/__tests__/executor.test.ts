@@ -1,9 +1,4 @@
-import {
-  ExecutorDeps,
-  gateOnDeps,
-  MigrateOutput,
-  runMigration,
-} from '../executor'
+import { ExecutorDeps, MigrateOutput, runMigration } from '../executor'
 import { MigrateInput, MigrationSession } from '../session'
 
 const input: MigrateInput = {
@@ -212,38 +207,25 @@ describe('runMigration', () => {
     expect(calls).toBe(3)
   })
 
-  it('gates every network dep on connectivity via gateOnDeps', async () => {
-    let release: () => void = () => {}
-    const gate = new Promise<void>((r) => {
-      release = r
-    })
-    const order: string[] = []
+  it('does not retry a permanent (4xx) error — throws on first attempt', async () => {
+    let calls = 0
     const { deps } = makeDeps({
+      sleep: async () => {},
       requestMigrate: async () => {
-        order.push('request')
-        return { transactionData: txData(1) } as MigrateOutput
-      },
-      submitBatch: async () => {
-        order.push('submit')
-        return { batchId: 'b1' }
-      },
-      pollStatus: async () => {
-        order.push('poll')
-        return {
-          status: 'confirmed',
-          transactions: [{ signature: 'sig1', status: 'confirmed' }],
-        }
+        calls += 1
+        // Shape mirrors an oRPC ORPCError (carries an HTTP `status`).
+        throw Object.assign(
+          new Error('Wallet is not in the migration allowlist'),
+          {
+            status: 403,
+          },
+        )
       },
     })
-    const gated = gateOnDeps(deps, () => gate)
-    const p = runMigration(input, gated)
-    // Every network-facing dep is parked on the gate — nothing runs yet.
-    await Promise.resolve()
-    expect(order).toEqual([])
-    release()
-    const outcome = await p
-    expect(order).toEqual(['request', 'submit', 'poll'])
-    expect(outcome.status).toBe('complete')
+    await expect(runMigration(input, deps)).rejects.toThrow(
+      'Wallet is not in the migration allowlist',
+    )
+    expect(calls).toBe(1)
   })
 
   it('persists the current batch input as nextInput for resume', async () => {

@@ -30,6 +30,7 @@ import DeprecatedTokensCheck from './features/modals/DeprecatedTokensCheck'
 import DeprecatedTokensModal from './features/modals/DeprecatedTokensModal'
 import MigrateToWorldCheck from './features/modals/MigrateToWorldCheck'
 import MigrateToWorldModal from './features/modals/MigrateToWorldModal'
+import PrivyAppProvider from './providers/PrivyProvider'
 import InsufficientSolConversionModal from './features/modals/InsufficientSolConversionModal'
 import { DeprecatedTokensProvider } from './storage/DeprecatedTokensProvider'
 import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
@@ -149,20 +150,31 @@ const App = () => {
                                           <ModalProvider>
                                             <WalletSignProvider>
                                               <GovernanceProvider>
-                                                <AutoGasBanner />
-                                                <NetworkAwareStatusBar />
-                                                <RootNavigator />
+                                                {/* One Privy provider for the
+                                                    whole subtree so the embedded
+                                                    -wallet WebView bridge stays
+                                                    warm across the modal →
+                                                    settings-screen hand-off.
+                                                    Scoping it per screen mounts a
+                                                    cold bridge on navigation and
+                                                    races "proxy not initialized".
+                                                */}
+                                                <PrivyAppProvider>
+                                                  <AutoGasBanner />
+                                                  <NetworkAwareStatusBar />
+                                                  <RootNavigator />
 
-                                                {/* place app specific modals here */}
-                                                <InsufficientSolConversionModal />
-                                                <MigrateToWorldModal />
-                                                <MigrateToWorldCheck />
-                                                <JupiterProvider>
-                                                  <DeprecatedTokensProvider>
-                                                    <DeprecatedTokensModal />
-                                                    <DeprecatedTokensCheck />
-                                                  </DeprecatedTokensProvider>
-                                                </JupiterProvider>
+                                                  {/* place app specific modals here */}
+                                                  <InsufficientSolConversionModal />
+                                                  <MigrateToWorldModal />
+                                                  <MigrateToWorldCheck />
+                                                  <JupiterProvider>
+                                                    <DeprecatedTokensProvider>
+                                                      <DeprecatedTokensModal />
+                                                      <DeprecatedTokensCheck />
+                                                    </DeprecatedTokensProvider>
+                                                  </JupiterProvider>
+                                                </PrivyAppProvider>
                                               </GovernanceProvider>
                                             </WalletSignProvider>
                                           </ModalProvider>

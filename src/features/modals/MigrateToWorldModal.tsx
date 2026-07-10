@@ -5,151 +5,36 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
-import React, { FC, memo, useCallback, useMemo, useState } from 'react'
+import React, { FC, memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edge } from 'react-native-safe-area-context'
-import { usePrivy } from '@privy-io/expo'
-import PrivyAppProvider from '../../providers/PrivyProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
-import ConnectStep from '../migration/components/ConnectStep'
-import EmailLoginStep from '../migration/components/EmailLoginStep'
-import StepBackHeader from '../migration/components/StepBackHeader'
 import WorldButton from '../migration/components/WorldButton'
 
-type Step = 'welcome' | 'choosePath' | 'selfCustody' | 'emailLogin'
-
+// A thin launcher: one welcome screen with a single "Get Started" that hands
+// off to the full migration flow on the settings stack (where the path choice —
+// email vs. own wallet — lives). Keeping the modal to one screen avoids the
+// duplicate welcome/choice the standalone flow already presents.
 const MigrateToWorldModal: FC = () => {
-  const { user } = usePrivy()
   const { t } = useTranslation()
   const { hideModal } = useModal()
   const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
   const wallet = useCurrentWallet()
   const { dismissMigrateToWorld } = useAppStorage()
   const homeNav = useNavigation<HomeNavigationProp>()
-  const [step, setStep] = useState<Step>('welcome')
 
   const handleDismiss = useCallback(() => {
     dismissMigrateToWorld(wallet?.toBase58() || '')
     hideModal()
   }, [dismissMigrateToWorld, wallet, hideModal])
 
-  const handleBack = useCallback(() => {
-    if (step === 'selfCustody' || step === 'emailLogin') {
-      setStep('choosePath')
-    } else if (step === 'choosePath') {
-      setStep('welcome')
-    }
-  }, [step])
-
-  const handleEmailSuccess = useCallback(() => {
-    // Email linked, navigate to the full migration flow
+  const handleGetStarted = useCallback(() => {
     dismissMigrateToWorld(wallet?.toBase58() || '')
     hideModal()
     homeNav.navigate('SettingsNavigator', {
       screen: 'MigrateToWorld',
     })
   }, [dismissMigrateToWorld, wallet, hideModal, homeNav])
-
-  const handleChooseEmail = useCallback(() => {
-    const hasEmail = user?.linked_accounts?.some((a) => a.type === 'email')
-    if (hasEmail) {
-      handleEmailSuccess()
-    } else {
-      setStep('emailLogin')
-    }
-  }, [user, handleEmailSuccess])
-
-  const dismissButton = (
-    <WorldButton
-      variant="dismiss"
-      title={t('migrateToWorldModal.dismiss')}
-      onPress={handleDismiss}
-    />
-  )
-
-  const renderWelcome = () => (
-    <Box flex={1} justifyContent="space-between">
-      <Box flex={1} justifyContent="center" paddingHorizontal="l">
-        <Text variant="h1" color="primaryText" textAlign="center">
-          {t('migrateToWorldModal.welcome.title')}
-        </Text>
-        <Text
-          variant="body1"
-          color="secondaryText"
-          textAlign="center"
-          marginTop="l"
-        >
-          {t('migrateToWorldModal.welcome.body')}
-        </Text>
-      </Box>
-      <Box paddingHorizontal="l" paddingBottom="m">
-        <WorldButton
-          variant="light"
-          title={t('migrateToWorldModal.welcome.next')}
-          onPress={() => setStep('choosePath')}
-          marginBottom="m"
-        />
-        {dismissButton}
-        <Text
-          variant="body3"
-          color="secondaryText"
-          opacity={0.5}
-          textAlign="center"
-          marginTop="s"
-        >
-          {t('migrateToWorldModal.findInSettings')}
-        </Text>
-      </Box>
-    </Box>
-  )
-
-  const renderChoosePath = () => (
-    <Box flex={1} justifyContent="space-between">
-      <StepBackHeader onBack={handleBack} />
-      <Box paddingHorizontal="l" flex={1} justifyContent="center">
-        <Text variant="h4" color="primaryText" textAlign="center">
-          {t('migrateToWorldModal.choosePath.title')}
-        </Text>
-
-        <Box marginTop="xl">
-          <WorldButton
-            variant="light"
-            title={t('migrateToWorldModal.choosePath.emailTitle')}
-            onPress={handleChooseEmail}
-          />
-          <Text
-            variant="body3"
-            color="secondaryText"
-            textAlign="center"
-            marginTop="s"
-          >
-            {t('migrateToWorldModal.choosePath.emailBody')}
-          </Text>
-        </Box>
-
-        <Box marginTop="l">
-          <WorldButton
-            backgroundColor="surfaceSecondary"
-            titleColorPressedOpacity={0.3}
-            titleColor="primaryText"
-            title={t('migrateToWorldModal.choosePath.selfCustodyTitle')}
-            onPress={() => setStep('selfCustody')}
-          />
-          <Text
-            variant="body3"
-            color="secondaryText"
-            textAlign="center"
-            marginTop="s"
-          >
-            {t('migrateToWorldModal.choosePath.selfCustodyBody')}
-          </Text>
-        </Box>
-      </Box>
-      <Box paddingHorizontal="l" paddingBottom="m">
-        {dismissButton}
-      </Box>
-    </Box>
-  )
 
   return (
     <Box
@@ -158,18 +43,47 @@ const MigrateToWorldModal: FC = () => {
       left={0}
       right={0}
       bottom={0}
-      backgroundColor="primaryBackground"
+      backgroundColor="worldSurface"
       zIndex={999}
     >
       <SafeAreaBox edges={edges} flex={1}>
-        {step === 'welcome' && renderWelcome()}
-        {step === 'choosePath' && renderChoosePath()}
-        {step === 'selfCustody' && (
-          <ConnectStep onBack={handleBack} onDismiss={handleDismiss} />
-        )}
-        {step === 'emailLogin' && (
-          <EmailLoginStep onBack={handleBack} onSuccess={handleEmailSuccess} />
-        )}
+        <Box flex={1} justifyContent="space-between">
+          <Box flex={1} justifyContent="center" paddingHorizontal="l">
+            <Text variant="h1" color="worldInk" textAlign="center">
+              {t('migrateToWorldModal.welcome.title')}
+            </Text>
+            <Text
+              variant="body1"
+              color="worldSecondaryInk"
+              textAlign="center"
+              marginTop="l"
+            >
+              {t('migrateToWorldModal.welcome.body')}
+            </Text>
+          </Box>
+          <Box paddingHorizontal="l" paddingBottom="m">
+            <WorldButton
+              variant="primary"
+              title={t('migrateToWorldModal.welcome.next')}
+              onPress={handleGetStarted}
+              marginBottom="m"
+            />
+            <WorldButton
+              variant="dismiss"
+              title={t('migrateToWorldModal.dismiss')}
+              onPress={handleDismiss}
+            />
+            <Text
+              variant="body3"
+              color="worldSecondaryInk"
+              opacity={0.6}
+              textAlign="center"
+              marginTop="m"
+            >
+              {t('migrateToWorldModal.findInSettings')}
+            </Text>
+          </Box>
+        </Box>
       </SafeAreaBox>
     </Box>
   )
@@ -179,9 +93,7 @@ export default memo(() => {
   const { type } = useModal()
 
   if (type !== 'MigrateToWorld') return null
-  return (
-    <PrivyAppProvider>
-      <MigrateToWorldModal />
-    </PrivyAppProvider>
-  )
+  // Privy is provided once at the app root (src/App.tsx) so the embedded-wallet
+  // bridge stays warm across the hand-off to the settings MigrateToWorld screen.
+  return <MigrateToWorldModal />
 })

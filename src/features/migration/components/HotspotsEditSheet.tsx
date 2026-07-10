@@ -1,11 +1,21 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetBackdropProps,
+  BottomSheetFlatList,
+} from '@gorhom/bottom-sheet'
 import React, { forwardRef, memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ListRenderItem } from 'react-native'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
+import { WORLD } from '../migrationTheme'
+
+// World-Light sheet surface + grabber + scrim, matching TokensEditSheet.
+const SHEET_BG = { backgroundColor: WORLD.sheetSurface }
+const SHEET_HANDLE = { backgroundColor: WORLD.inkFaint }
+const SHEET_CORNERS = { borderTopLeftRadius: 24, borderTopRightRadius: 24 }
 
 type Props = {
   hotspots: MigratableHotspot[]
@@ -49,7 +59,7 @@ const HotspotRow = memo(
           borderColor="secondaryText"
         />
         <Box flex={1}>
-          <Text variant="body2Medium" color="primaryText">
+          <Text variant="body2Medium" color="worldInk">
             {name}
           </Text>
           <Text variant="body3" color="secondaryText">
@@ -75,15 +85,29 @@ const HotspotsEditSheet = forwardRef<BottomSheet, Props>(
       ),
       [selected, onToggle],
     )
+    const renderBackdrop = useCallback(
+      (props: BottomSheetBackdropProps) => (
+        <BottomSheetBackdrop
+          {...props}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+        />
+      ),
+      [],
+    )
     return (
       <BottomSheet
         ref={ref}
         index={-1}
         snapPoints={['70%']}
         enablePanDownToClose
+        backgroundStyle={SHEET_BG}
+        handleIndicatorStyle={SHEET_HANDLE}
+        style={SHEET_CORNERS}
+        backdropComponent={renderBackdrop}
       >
         <Box paddingHorizontal="l" paddingBottom="s">
-          <Text variant="h4" color="primaryText">
+          <Text variant="h4" color="worldInk">
             {t('migrateToWorld.selectAssets.hotspots')}
           </Text>
         </Box>

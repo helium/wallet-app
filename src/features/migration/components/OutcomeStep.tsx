@@ -24,6 +24,8 @@ const OutcomeStep: FC<{
   // Rendered between the body and the primary button (e.g. the success screen's
   // new-wallet address line).
   children?: ReactNode
+  // A failed retry's message, shown just above the primary (retry) button.
+  error?: string
 }> = ({
   title,
   body,
@@ -33,11 +35,12 @@ const OutcomeStep: FC<{
   onDismiss,
   dismissTitle,
   children,
+  error,
 }) => {
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="center" paddingHorizontal="l">
-      <Text variant="h4" color="primaryText" textAlign="center">
+      <Text variant="h4" color="worldInk" textAlign="center">
         {title}
       </Text>
       <Text
@@ -49,10 +52,15 @@ const OutcomeStep: FC<{
         {body}
       </Text>
       {children}
+      {error ? (
+        <Text variant="body3" color="error" textAlign="center" marginTop="l">
+          {error}
+        </Text>
+      ) : null}
       <WorldButton
         title={primaryTitle}
         onPress={onPrimary}
-        marginTop="xl"
+        marginTop={error ? 'm' : 'xl'}
         marginBottom="m"
       />
       {secondaryAction ? (
@@ -65,7 +73,7 @@ const OutcomeStep: FC<{
       ) : null}
       {onDismiss ? (
         <WorldButton
-          variant="secondary"
+          variant="dismiss"
           title={dismissTitle ?? t('migrateToWorldModal.dismiss')}
           onPress={onDismiss}
         />

@@ -34,34 +34,25 @@ export type ExecutorDeps<TSigned = unknown> = {
   sleep?: (ms: number) => Promise<void>
 }
 
-// Wrap every network-facing dep so it awaits connectivity first. A network drop
-// then auto-pauses the whole run (request/submit/poll) instead of surfacing a
-// transient RPC failure — gating lives in one place, not hand-picked awaits.
-export const gateOnDeps = <TSigned>(
-  deps: ExecutorDeps<TSigned>,
-  waitForOnline: () => Promise<void>,
-): ExecutorDeps<TSigned> => ({
-  ...deps,
-  requestMigrate: async (input) => {
-    await waitForOnline()
-    return deps.requestMigrate(input)
-  },
-  submitBatch: async (signed, data) => {
-    await waitForOnline()
-    return deps.submitBatch(signed, data)
-  },
-  pollStatus: async (batchId) => {
-    await waitForOnline()
-    return deps.pollStatus(batchId)
-  },
-})
-
 export type RunOutcome = { status: RunStatus } & SignatureTally
 
 const now = (): number => Date.now()
 
+// A retry only helps for a transient failure; a permanent one (client-side
+// rejection like a validation miss or an allowlist denial) should surface
+// immediately, not after three backoffs. oRPC errors carry an HTTP `status`:
+// 4xx are permanent, except 408 (timeout) and 429 (rate limit) which are worth
+// retrying. A missing status means a network-level error — transient.
+const isRetryable = (err: unknown): boolean => {
+  const status = (err as { status?: number } | null)?.status
+  if (typeof status !== 'number') return true
+  if (status === 408 || status === 429) return true
+  return status < 400 || status >= 500
+}
+
 // Retry a transient async op with exponential backoff. Used for the RPC-facing
 // migrate/submit calls so a flaky network doesn't abort an otherwise-fine run.
+// A permanent error short-circuits the loop and throws on the first attempt.
 const withRetry = async <T>(
   fn: () => Promise<T>,
   sleep: (ms: number) => Promise<unknown>,
@@ -75,10 +66,9 @@ const withRetry = async <T>(
       return await fn()
     } catch (err) {
       lastError = err
-      if (attempt < attempts - 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await sleep(baseDelayMs * 2 ** attempt)
-      }
+      if (attempt >= attempts - 1 || !isRetryable(err)) break
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(baseDelayMs * 2 ** attempt)
     }
   }
   throw lastError

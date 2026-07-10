@@ -1,5 +1,4 @@
 import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import React, {
@@ -14,6 +13,7 @@ import { Linking } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo'
+import * as Logger from '@utils/logger'
 import AssetSelectionStep, {
   AssetSelection,
 } from './components/AssetSelectionStep'
@@ -25,6 +25,7 @@ import ProgressStep from './components/ProgressStep'
 import ReviewStep from './components/ReviewStep'
 import SuccessStep from './components/SuccessStep'
 import WalletCreateErrorStep from './components/WalletCreateErrorStep'
+import WorldLoader from './components/WorldLoader'
 import { WORLD_URL } from './constants'
 import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
@@ -54,7 +55,9 @@ const selectedTokens = (
 const MigrateToWorld = () => {
   const { t } = useTranslation()
   const navigation = useNavigation()
-  const edges = useMemo(() => ['top', 'bottom'] as Edge[], [])
+  // Bottom-only so the asset sheets (and their dimming backdrop) fill the full
+  // screen height — the steps' own headers carry the top safe-area inset.
+  const edges = useMemo(() => ['bottom'] as Edge[], [])
   const wallet = useCurrentWallet()
   const sourceWallet = wallet?.toBase58()
 
@@ -88,9 +91,25 @@ const MigrateToWorld = () => {
     if (!solanaWallet.create || creating.current) return
     creating.current = true
     try {
+      // The local hook state can report 'not-created' while the user already
+      // has a Solana wallet server-side (e.g. created in an earlier session) —
+      // create() then rejects rather than handing back the existing wallet.
+      // Probe with recover() first: it resolves if a wallet already exists
+      // and throws harmlessly if not, so we never risk create() minting a
+      // second ("additional") wallet for a user who already has one.
+      if (solanaWallet.recover) {
+        try {
+          await solanaWallet.recover()
+          setStep((s) => (s === 'walletError' ? 'select' : s))
+          return
+        } catch {
+          // No existing wallet to recover — fall through to create().
+        }
+      }
       await solanaWallet.create()
       setStep((s) => (s === 'walletError' ? 'select' : s))
-    } catch {
+    } catch (err) {
+      Logger.error(err)
       setCreateAttempts((n) => n + 1)
       setStep('walletError')
     } finally {
@@ -99,15 +118,37 @@ const MigrateToWorld = () => {
   }, [solanaWallet, setStep])
 
   useEffect(() => {
-    if (
-      user &&
-      solanaWallet.status === 'not-created' &&
-      !creating.current &&
-      step !== 'walletError'
-    ) {
+    if (!user || creating.current || step === 'walletError') return
+    if (solanaWallet.status === 'not-created') {
       createWallet()
+    } else if (solanaWallet.status === 'error') {
+      // Privy can land the wallet in 'error' (e.g. a failed reconnect)
+      // without ever throwing from create() — without this, destinationWallet
+      // never resolves and any screen waiting on it spins forever.
+      Logger.error(new Error(solanaWallet.error))
+      setCreateAttempts((n) => n + 1)
+      setStep('walletError')
     }
-  }, [user, solanaWallet, step, createWallet])
+  }, [user, solanaWallet, step, createWallet, setStep])
+
+  // Backstop for a stuck 'connecting'/'creating' status that never settles
+  // (no error, no success) — otherwise the review/select screens wait on
+  // destinationWallet forever with no way out.
+  useEffect(() => {
+    if (
+      destinationWallet ||
+      (step !== 'review' && step !== 'select') ||
+      (solanaWallet.status !== 'connecting' &&
+        solanaWallet.status !== 'creating')
+    ) {
+      return undefined
+    }
+    const id = setTimeout(() => {
+      setCreateAttempts((n) => n + 1)
+      setStep('walletError')
+    }, 15000)
+    return () => clearTimeout(id)
+  }, [destinationWallet, step, solanaWallet.status, setStep])
 
   const buildInput = useCallback(
     (sel: AssetSelection): MigrateInput => ({
@@ -270,12 +311,19 @@ const MigrateToWorld = () => {
           />
         )
       case 'review':
+        // The embedded wallet can still be connecting right after login (the
+        // 'select' step doesn't block on it) — wait rather than showing a
+        // blank "..." destination address.
+        if (!destinationWallet) {
+          return <WorldLoader caption={t('generic.loading')} />
+        }
         return (
           <ReviewStep
             sourceWallet={sourceWallet || ''}
             destinationWallet={destinationWallet || ''}
             hotspotCount={selection?.hotspotKeys.size ?? 0}
             tokenLines={tokenLines}
+            error={error}
             onBack={() => setStep('select')}
             onConfirm={onConfirm}
           />
@@ -313,6 +361,7 @@ const MigrateToWorld = () => {
             )}
             onPrimary={onRetry}
             onDismiss={dismiss}
+            error={error}
           />
         )
       case 'success':
@@ -339,14 +388,7 @@ const MigrateToWorld = () => {
   }
 
   return (
-    <SafeAreaBox edges={edges} flex={1} backgroundColor="primaryBackground">
-      {error ? (
-        <SafeAreaBox edges={[]} paddingHorizontal="l" paddingTop="m">
-          <Text variant="body3" color="error">
-            {error}
-          </Text>
-        </SafeAreaBox>
-      ) : null}
+    <SafeAreaBox edges={edges} flex={1} backgroundColor="worldSurface">
       {render()}
     </SafeAreaBox>
   )

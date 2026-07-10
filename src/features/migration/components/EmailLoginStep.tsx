@@ -45,6 +45,18 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
   const sending = emailState.status === 'sending-code'
   const verifying = emailState.status === 'submitting-code'
 
+  // A user can only ever link one email to their Privy account. If it's
+  // already linked (e.g. re-entering this step after a resumed session),
+  // sending another link code throws "User already has one email account
+  // linked" — skip straight through instead of showing the form.
+  const hasLinkedEmail = !!user?.linked_accounts?.some(
+    (a) => a.type === 'email',
+  )
+
+  useEffect(() => {
+    if (isReady && hasLinkedEmail) onSuccess()
+  }, [isReady, hasLinkedEmail, onSuccess])
+
   useEffect(() => {
     if (secondsLeft <= 0) return undefined
     const id = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000)
@@ -91,7 +103,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
     }
   }, [code, user, linkWithCode, loginWithCode, onSuccess])
 
-  if (!isReady || completing) {
+  if (!isReady || completing || hasLinkedEmail) {
     return (
       <WorldLoader
         captionVariant="body2"
@@ -108,7 +120,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
       <Box flex={1} justifyContent="center" paddingHorizontal="l">
-        <Text variant="h4" color="primaryText" textAlign="center">
+        <Text variant="h4" color="worldInk" textAlign="center">
           {t('migrateToWorld.linkEmail.title')}
         </Text>
         <Text
@@ -125,11 +137,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
           </Text>
         ) : null}
         <Box marginTop="xl">
-          <Box
-            backgroundColor="surfaceSecondary"
-            borderRadius="l"
-            paddingHorizontal="m"
-          >
+          <Box backgroundColor="grey100" borderRadius="l" paddingHorizontal="m">
             <TextInput
               value={codeSent ? code : email}
               onChangeText={codeSent ? setCode : setEmail}

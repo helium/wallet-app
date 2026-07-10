@@ -1,25 +1,31 @@
 import ButtonPressable from '@components/ButtonPressable'
 import React, { ComponentProps, FC } from 'react'
 
-// The migration flow's pill button. `primary` is the filled World-purple CTA,
-// `light` the filled white CTA, `secondary` the transparent text button,
-// `dismiss` a secondary that fades on press (used for the low-emphasis dismiss
-// action). Any ButtonPressable prop (color, height, spacing, LeadingComponent…)
-// can be passed to override a default.
-type Variant = 'primary' | 'light' | 'secondary' | 'dismiss'
+// The migration flow's pill button. Every variant shares one height so stacked
+// actions line up. `primary` is the filled World-purple CTA, `secondary` a soft
+// tinted CTA, `outline`/`dismiss` a bordered low-emphasis button, and `ghost` a
+// borderless text button (used for "Not now"). Any ButtonPressable prop
+// (color, height, spacing, LeadingComponent…) can be passed to override a
+// default.
+type Variant = 'primary' | 'secondary' | 'outline' | 'dismiss' | 'ghost'
+
+type Color = ComponentProps<typeof ButtonPressable>['backgroundColor']
 
 type Props = ComponentProps<typeof ButtonPressable> & {
   variant?: Variant
 }
 
-type Color = ComponentProps<typeof ButtonPressable>['backgroundColor']
+const HEIGHT = 56
 
 const VARIANTS: Record<
   Variant,
   {
-    background: Color
+    // Omitted for `ghost` — a `transparent` backgroundColor would be run through
+    // tinycolor().setAlpha(1) downstream and resolve to solid black, so ghost
+    // must pass no backgroundColor at all to stay see-through.
+    background?: Color
     titleColor: Color
-    height: number
+    borderColor?: Color
     pressedOpacity?: number
     titleFades?: boolean
   }
@@ -27,26 +33,31 @@ const VARIANTS: Record<
   primary: {
     background: 'worldPurple',
     titleColor: 'white',
-    height: 60,
     pressedOpacity: 0.7,
-  },
-  light: {
-    background: 'white',
-    titleColor: 'black',
-    height: 60,
-    pressedOpacity: 0.7,
-    titleFades: true,
   },
   secondary: {
-    background: 'transparent',
-    titleColor: 'secondaryText',
-    height: 48,
+    background: 'worldAccentBg',
+    titleColor: 'worldPurple',
+    pressedOpacity: 0.5,
+    titleFades: true,
+  },
+  outline: {
+    background: 'worldSurface',
+    titleColor: 'worldInk',
+    borderColor: 'worldBorder',
+    pressedOpacity: 0.4,
+    titleFades: true,
   },
   dismiss: {
-    background: 'transparent',
-    titleColor: 'secondaryText',
-    height: 48,
-    pressedOpacity: 0.05,
+    background: 'worldSurface',
+    titleColor: 'worldSecondaryInk',
+    borderColor: 'worldBorder',
+    pressedOpacity: 0.4,
+    titleFades: true,
+  },
+  ghost: {
+    titleColor: 'worldPurple',
+    pressedOpacity: 0,
     titleFades: true,
   },
 }
@@ -57,9 +68,11 @@ const WorldButton: FC<Props> = ({ variant = 'primary', ...rest }) => {
     <ButtonPressable
       width="100%"
       borderRadius="round"
-      height={v.height}
+      height={HEIGHT}
       backgroundColor={v.background}
       backgroundColorOpacityPressed={v.pressedOpacity}
+      borderColor={v.borderColor}
+      borderWidth={v.borderColor ? 1.5 : undefined}
       titleColorPressedOpacity={v.titleFades ? 0.3 : undefined}
       titleColor={v.titleColor}
       {...rest}
