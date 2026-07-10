@@ -34,6 +34,7 @@ import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
 import { shortenMint } from './logic/assets'
+import { getEmbeddedWallet } from './logic/embeddedWallet'
 import { shouldShowSupport } from './logic/retry'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
@@ -74,10 +75,7 @@ const MigrateToWorld = () => {
 
   const { user } = usePrivy()
   const solanaWallet = useEmbeddedSolanaWallet()
-  const destinationWallet =
-    solanaWallet.status === 'connected'
-      ? solanaWallet.wallets?.[0]?.address
-      : undefined
+  const destinationWallet = getEmbeddedWallet(solanaWallet)?.address
 
   const [step, setStep] = useState<FlowStep>('intro')
   const { persist, resume, clear } = useMigrationSession(sourceWallet)
@@ -155,7 +153,11 @@ const MigrateToWorld = () => {
   )
 
   const execute = useCallback(
-    async (input: MigrateInput, returnStep: FlowStep) => {
+    async (
+      input: MigrateInput,
+      returnStep: FlowStep,
+      opts?: { pendingBatchId?: string },
+    ) => {
       // Single destination-wallet guard. A resumed session can outlive its Privy
       // embedded wallet (expired session); without a destination, run() would
       // throw 'Destination wallet unavailable' and dead-end on an empty Review.
@@ -169,7 +171,7 @@ const MigrateToWorld = () => {
       setError(undefined)
       setStep('migrating')
       try {
-        const result = await run(input)
+        const result = await run(input, opts)
         if (result.status === 'complete') {
           // Finished cleanly — drop the persisted session instead of leaving a
           // stale 'complete' record around.
@@ -199,8 +201,20 @@ const MigrateToWorld = () => {
     const returnStep = step
     const retryInput =
       resume.input ?? (selection ? buildInput(selection) : undefined)
-    if (retryInput) execute(retryInput, returnStep)
-  }, [step, resume.input, selection, buildInput, execute])
+    // Forward the in-flight batch id so the executor re-polls it to terminal
+    // before re-requesting — prevents re-sending a still-pending transfer.
+    if (retryInput)
+      execute(retryInput, returnStep, {
+        pendingBatchId: resume.pendingBatchId,
+      })
+  }, [
+    step,
+    resume.input,
+    resume.pendingBatchId,
+    selection,
+    buildInput,
+    execute,
+  ])
 
   const goToWorld = useCallback(() => Linking.openURL(WORLD_URL), [])
   const dismiss = useCallback(() => navigation.goBack(), [navigation])
@@ -234,7 +248,15 @@ const MigrateToWorld = () => {
         return (
           <EmailLoginStep
             onBack={() => setStep('intro')}
-            onSuccess={() => setStep('select')}
+            // A re-login to recover an expired Privy session must return to the
+            // resume screen, not fresh selection — use the same status→screen
+            // mapping the resume effect uses so the partial/pending context
+            // isn't lost (hasRoutedRef is already latched by then).
+            onSuccess={() =>
+              setStep(
+                resume.canResume ? stepForOutcome(resume.status) : 'select',
+              )
+            }
           />
         )
       case 'select':

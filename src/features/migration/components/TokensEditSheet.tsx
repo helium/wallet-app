@@ -6,7 +6,7 @@ import React, { forwardRef, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
 import { SelectableToken } from '../logic/types'
-import { WORLD } from '../migrationTheme'
+import { WORLD, WORLD_INPUT } from '../migrationTheme'
 
 type Props = {
   tokens: SelectableToken[]
@@ -83,11 +83,7 @@ const TokensEditSheet = forwardRef<BottomSheet, Props>(
                   placeholder="0"
                   placeholderTextColor={WORLD.inkFaint}
                   keyboardType="decimal-pad"
-                  style={{
-                    color: WORLD.ink,
-                    fontSize: 15,
-                    paddingVertical: 12,
-                  }}
+                  style={WORLD_INPUT}
                 />
               </Box>
             </Box>

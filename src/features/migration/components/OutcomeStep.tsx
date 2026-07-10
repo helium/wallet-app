@@ -1,19 +1,25 @@
 import Box from '@components/Box'
 import Text from '@components/Text'
-import React, { FC } from 'react'
+import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import WorldButton from './WorldButton'
 
-// Shared centered layout for the terminal outcome screens (pending / partial):
-// a title, a body line, a primary action and a dismiss. Each screen supplies
+// Shared centered layout for the terminal outcome screens (success / pending /
+// partial / nothing-to-migrate): a title, a body line, an optional slot for
+// extra content, a primary action and an optional dismiss. Each screen supplies
 // its own copy and callbacks — the flow and messaging stay distinct.
 const OutcomeStep: FC<{
   title: string
   body: string
   primaryTitle: string
   onPrimary: () => void
-  onDismiss: () => void
-}> = ({ title, body, primaryTitle, onPrimary, onDismiss }) => {
+  // Omitted on single-action screens (nothing-to-migrate) — the dismiss button
+  // is only rendered when a handler is supplied.
+  onDismiss?: () => void
+  // Rendered between the body and the primary button (e.g. the success screen's
+  // new-wallet address line).
+  children?: ReactNode
+}> = ({ title, body, primaryTitle, onPrimary, onDismiss, children }) => {
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="center" paddingHorizontal="l">
@@ -28,17 +34,20 @@ const OutcomeStep: FC<{
       >
         {body}
       </Text>
+      {children}
       <WorldButton
         title={primaryTitle}
         onPress={onPrimary}
         marginTop="xl"
         marginBottom="m"
       />
-      <WorldButton
-        variant="secondary"
-        title={t('migrateToWorldModal.dismiss')}
-        onPress={onDismiss}
-      />
+      {onDismiss ? (
+        <WorldButton
+          variant="secondary"
+          title={t('migrateToWorldModal.dismiss')}
+          onPress={onDismiss}
+        />
+      ) : null}
     </Box>
   )
 }

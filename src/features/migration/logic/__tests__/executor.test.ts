@@ -270,6 +270,67 @@ describe('runMigration', () => {
     expect(sessions[1].nextInput?.hotspots).toEqual(['h2'])
   })
 
+  it('resume: polls the pending batch to terminal BEFORE re-requesting', async () => {
+    const order: string[] = []
+    let migrateCalls = 0
+    const { deps } = makeDeps({
+      pollStatus: async (batchId) => {
+        order.push(`poll:${batchId}`)
+        return {
+          status: 'confirmed',
+          transactions: [
+            {
+              signature: batchId === 'stale' ? 'resumed-sig' : 'sig1',
+              status: 'confirmed',
+            },
+          ],
+        }
+      },
+      requestMigrate: async () => {
+        order.push('request')
+        migrateCalls += 1
+        return { transactionData: txData(1) } as MigrateOutput
+      },
+    })
+    const outcome = await runMigration(input, deps, { pendingBatchId: 'stale' })
+    expect(outcome.status).toBe('complete')
+    // The stale batch is polled first, and only then is the server asked to
+    // recompute remaining transfers.
+    expect(order[0]).toBe('poll:stale')
+    expect(order.indexOf('poll:stale')).toBeLessThan(order.indexOf('request'))
+    expect(migrateCalls).toBe(1)
+    // The resumed batch's confirmed signature is folded into the totals.
+    expect(outcome.confirmedSignatures).toContain('resumed-sig')
+  })
+
+  it('resume: a still-pending batch is never re-requested', async () => {
+    let migrateCalls = 0
+    const persisted: MigrationSession[] = []
+    const { deps } = makeDeps({
+      pollStatus: async () => ({
+        status: 'pending',
+        transactions: [
+          { signature: 'done', status: 'confirmed' },
+          { signature: 'wait', status: 'pending' },
+        ],
+      }),
+      requestMigrate: async () => {
+        migrateCalls += 1
+        return { transactionData: txData(1) } as MigrateOutput
+      },
+      persist: async (s) => {
+        persisted.push(s)
+      },
+    })
+    const outcome = await runMigration(input, deps, { pendingBatchId: 'stale' })
+    expect(outcome.status).toBe('pending')
+    // No new txs created while the prior batch is still in flight.
+    expect(migrateCalls).toBe(0)
+    expect(outcome.confirmedSignatures).toEqual(['done'])
+    // Re-persists the batch id so a later check re-polls the same batch.
+    expect(persisted[persisted.length - 1].pendingBatchId).toBe('stale')
+  })
+
   it('retries a transient pollStatus failure then succeeds', async () => {
     let calls = 0
     const { deps } = makeDeps({

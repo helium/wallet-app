@@ -13,7 +13,7 @@ const StepBackHeader: FC<{ onBack: () => void }> = ({ onBack }) => {
       paddingVertical="m"
     >
       <Text variant="body2" color="secondaryText">
-        ← {t('generic.back')}
+        {t('migrateToWorld.back')}
       </Text>
     </TouchableOpacityBox>
   )

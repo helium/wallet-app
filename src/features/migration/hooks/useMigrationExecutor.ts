@@ -14,9 +14,11 @@ import {
 import {
   ExecutorProgress,
   gateOnDeps,
+  RunOptions,
   runMigration,
   RunOutcome,
 } from '../logic/executor'
+import { getEmbeddedWallet } from '../logic/embeddedWallet'
 import { MigrateInput, MigrationSession } from '../logic/session'
 import { signBatchTransactions } from '../logic/signers'
 
@@ -45,19 +47,15 @@ export const useMigrationExecutor = (
   )
 
   const run = useCallback(
-    async (input: MigrateInput): Promise<RunOutcome> => {
+    async (input: MigrateInput, opts?: RunOptions): Promise<RunOutcome> => {
       if (!anchorProvider) throw new Error('Source wallet unavailable')
-      if (
-        solanaWallet.status !== 'connected' ||
-        !solanaWallet.wallets?.length
-      ) {
-        throw new Error('Destination wallet unavailable')
-      }
+      const destWallet = getEmbeddedWallet(solanaWallet)
+      if (!destWallet) throw new Error('Destination wallet unavailable')
 
       // Clear any prior attempt's phase so a retry never flashes stale progress.
       setProgress(undefined)
 
-      const destProvider = await solanaWallet.wallets[0].getProvider()
+      const destProvider = await destWallet.getProvider()
 
       const signWithSource = (tx: VersionedTransaction) =>
         anchorProvider.wallet.signTransaction(tx)
@@ -131,6 +129,7 @@ export const useMigrationExecutor = (
           },
           waitForOnline,
         ),
+        opts,
       )
     },
     [anchorProvider, solanaWallet, client, persist],

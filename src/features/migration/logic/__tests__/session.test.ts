@@ -64,6 +64,11 @@ describe('deriveResume', () => {
   it('carries the session status through for the screen mapping', () => {
     expect(deriveResume({ ...base, status: 'failed' }).status).toBe('failed')
   })
+  it('exposes the pending batch id so a resume re-polls it before requesting', () => {
+    expect(
+      deriveResume({ ...base, pendingBatchId: 'batch-9' }).pendingBatchId,
+    ).toBe('batch-9')
+  })
   it('does not offer resume for complete/idle/null', () => {
     expect(deriveResume({ ...base, status: 'complete' }).canResume).toBe(false)
     expect(deriveResume({ ...base, status: 'idle' }).canResume).toBe(false)

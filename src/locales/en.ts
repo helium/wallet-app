@@ -1572,6 +1572,7 @@ export default {
     findInSettings: 'You can find this later in Settings',
   },
   migrateToWorld: {
+    back: '← Back',
     intro: {
       title: 'Welcome to Helium World',
       body: "A new home for your Hotspots and rewards. We'll bring everything over — no fees, we cover them.",
@@ -1617,13 +1618,13 @@ export default {
       readyBody: "Everything's selected. Tap a group to fine-tune.",
       hotspots: 'Hotspots',
       tokens: 'Tokens',
-      edit: 'Edit',
+      edit: 'Edit ›',
       max: 'MAX',
       balance: 'Balance: {{amount}}',
       leftBehind:
-        "{{count}} token can't move automatically — it stays in your wallet.",
+        "⚠ {{count}} token can't move automatically — it stays in your wallet.",
       leftBehind_other:
-        "{{count}} tokens can't move automatically — they stay in your wallet.",
+        "⚠ {{count}} tokens can't move automatically — they stay in your wallet.",
       loading: 'Loading assets...',
       review: 'Review Migration',
       approxValue: '≈ {{value}}',
@@ -1648,7 +1649,7 @@ export default {
     migrating: {
       title: 'Migrating...',
       creatingWallet: 'Setting up your World wallet…',
-      walletReady: 'World wallet ready',
+      walletReady: '✓ World wallet ready',
       phases: {
         requesting: 'Preparing',
         signing: 'Signing',
@@ -1659,12 +1660,12 @@ export default {
     },
     pending: {
       title: 'Still processing',
-      body: "{{moved}} moved so far — the rest are still confirming on the network. Your moved items are safe, and this can take a little while. It's fine to close this and check back.",
+      body: "{{moved}} transfers confirmed so far — the rest are still confirming on the network. Your confirmed transfers are safe, and this can take a little while. It's fine to close this and check back.",
       checkStatus: 'Check status',
     },
     partial: {
       title: 'Almost there',
-      body: '{{moved}} moved · {{failed}} need a retry.',
+      body: '{{moved}} transfers confirmed · {{failed}} need a retry.',
       retry: 'Retry failed items',
     },
     success: {

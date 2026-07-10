@@ -19,6 +19,11 @@ export type MigrationSession = {
   status: MigrationStatus
   confirmedSignatures: string[]
   failedSignatures: string[]
+  // The id of the batch that was submitted but not yet confirmed (a 'pending'
+  // outcome). A resume must re-poll THIS batch to a terminal state before asking
+  // the server to recompute remaining transfers — otherwise a still-in-flight
+  // token transfer gets rebuilt and double-sent. Cleared once a batch confirms.
+  pendingBatchId?: string
   updatedAt: number
 }
 
@@ -56,6 +61,9 @@ export type ResumeInfo = {
   movedCount: number
   failedCount: number
   status: MigrationStatus
+  // Forwarded to the executor so a resumed run re-polls the in-flight batch
+  // before re-requesting (see MigrationSession.pendingBatchId).
+  pendingBatchId?: string
 }
 
 export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
@@ -66,6 +74,7 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       movedCount: s.confirmedSignatures.length,
       failedCount: s.failedSignatures.length,
       status: s.status,
+      pendingBatchId: s.pendingBatchId,
     }
   return {
     canResume: false,
@@ -73,6 +82,7 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
     movedCount: 0,
     failedCount: 0,
     status: 'idle',
+    pendingBatchId: undefined,
   }
 }
 

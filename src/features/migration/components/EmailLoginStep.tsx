@@ -8,7 +8,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
 import { resendBackoffSeconds } from '../logic/retry'
-import { WORLD } from '../migrationTheme'
+import { WORLD, WORLD_INPUT } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
 import WorldLoader from './WorldLoader'
@@ -139,7 +139,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
                   : t('migrateToWorld.linkEmail.emailPlaceholder')
               }
               placeholderTextColor={WORLD.inkFaint}
-              style={{ color: WORLD.ink, fontSize: 16, paddingVertical: 14 }}
+              style={WORLD_INPUT}
               keyboardType={codeSent ? 'number-pad' : 'email-address'}
               autoCapitalize="none"
               autoCorrect={false}

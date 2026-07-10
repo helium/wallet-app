@@ -52,7 +52,7 @@ const SummaryCard: FC<{
         </Box>
         <TouchableOpacityBox onPress={onEdit}>
           <Text variant="body3Medium" color="worldPurple">
-            {t('migrateToWorld.selectAssets.edit')} ›
+            {t('migrateToWorld.selectAssets.edit')}
           </Text>
         </TouchableOpacityBox>
       </Box>
@@ -169,7 +169,6 @@ const AssetSelectionStep: FC<{
         {leftBehindCount > 0 && (
           <Box borderRadius="l" padding="m" backgroundColor="worldWarnBg">
             <Text variant="body3" color="worldWarnInk">
-              ⚠{' '}
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,
               })}

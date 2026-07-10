@@ -22,7 +22,7 @@ const ProgressStep: FC<{ walletReady: boolean; label: string }> = ({
       </Text>
       <Text variant="body3" color="secondaryText" marginTop="m">
         {walletReady
-          ? `✓ ${t('migrateToWorld.migrating.walletReady')}`
+          ? t('migrateToWorld.migrating.walletReady')
           : t('migrateToWorld.migrating.creatingWallet')}
       </Text>
       <Text variant="body3" color="secondaryText" marginTop="xs">

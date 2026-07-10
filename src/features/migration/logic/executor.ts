@@ -86,9 +86,17 @@ const withRetry = async <T>(
   throw lastError
 }
 
+export type RunOptions = {
+  // Set when resuming a session whose last batch went 'pending' (submitted but
+  // unconfirmed). The run re-polls this batch to terminal before re-requesting
+  // so an in-flight token transfer can't be rebuilt and double-sent.
+  pendingBatchId?: string
+}
+
 export const runMigration = async <TSigned = unknown>(
   originalInput: MigrateInput,
   deps: ExecutorDeps<TSigned>,
+  opts: RunOptions = {},
 ): Promise<RunOutcome> => {
   const confirmedSignatures: string[] = []
   const failedSignatures: string[] = []
@@ -96,7 +104,13 @@ export const runMigration = async <TSigned = unknown>(
   let input = originalInput
   let batch = 1
 
-  const snapshot = (status: MigrationSession['status']): MigrationSession => ({
+  // Only the in-flight snapshots (submitted, awaiting confirmation) carry a
+  // pendingBatchId; snapshots written once a batch reaches a terminal state
+  // pass nothing, clearing it so a later resume won't re-poll a settled batch.
+  const snapshot = (
+    status: MigrationSession['status'],
+    pendingBatchId?: string,
+  ): MigrationSession => ({
     originalInput,
     // Persist the batch we're currently on so a resume picks up from the last
     // unconfirmed batch instead of re-running already-confirmed work.
@@ -104,8 +118,32 @@ export const runMigration = async <TSigned = unknown>(
     status,
     confirmedSignatures: [...confirmedSignatures],
     failedSignatures: [...failedSignatures],
+    pendingBatchId,
     updatedAt: now(),
   })
+
+  // Resume guard: a prior run left a batch submitted but unconfirmed. Poll it to
+  // a terminal state FIRST. If anything is still in flight, report pending again
+  // without re-requesting (a fresh requestMigrate would rebuild and double-send
+  // the in-flight transfer). Once terminal, accumulate its signatures and fall
+  // through to the normal request flow — the server recompute is now safe.
+  const resumeBatchId = opts.pendingBatchId
+  if (resumeBatchId) {
+    const status = await withRetry(() => deps.pollStatus(resumeBatchId), sleep)
+    const summary = summarizeBatch(status)
+    confirmedSignatures.push(...summary.confirmedSignatures)
+    failedSignatures.push(...summary.failedSignatures)
+
+    if (status.status === 'pending' || summary.pendingSignatures.length > 0) {
+      await deps.persist(snapshot('running', resumeBatchId))
+      return {
+        status: 'pending',
+        confirmedSignatures,
+        failedSignatures,
+        nextInput: input,
+      }
+    }
+  }
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -132,11 +170,11 @@ export const runMigration = async <TSigned = unknown>(
       sleep,
     )
 
-    // Persist a resumable snapshot BEFORE confirmation: if the app is killed
-    // while the first batch is still confirming, this leaves a 'running'
-    // session to resume from instead of an orphaned in-flight submission.
+    // Persist a resumable snapshot BEFORE confirmation carrying this batch's id:
+    // if the app is killed while the batch is still confirming, the resume
+    // re-polls it instead of re-requesting an orphaned in-flight submission.
     // eslint-disable-next-line no-await-in-loop
-    await deps.persist(snapshot('running'))
+    await deps.persist(snapshot('running', batchId))
 
     deps.onProgress({ phase: 'confirming', batch })
     // eslint-disable-next-line no-await-in-loop
@@ -176,8 +214,10 @@ export const runMigration = async <TSigned = unknown>(
       status.status === 'partial' ||
       summary.pendingSignatures.length > 0
     ) {
+      // Carry the in-flight batch id so a "check status" re-polls it before any
+      // re-request — the funds-safety guard against a double-send.
       // eslint-disable-next-line no-await-in-loop
-      await deps.persist(snapshot('running'))
+      await deps.persist(snapshot('running', batchId))
       return {
         status: 'pending',
         confirmedSignatures,
