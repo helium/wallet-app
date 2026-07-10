@@ -139,7 +139,6 @@ describe('runMigration', () => {
     expect(outcome.status).toBe('pending')
     expect(outcome.confirmedSignatures).toEqual(['done'])
     expect(outcome.failedSignatures).toEqual([])
-    expect(outcome.pendingSignatures).toEqual(['wait'])
     // Carries the still-pending batch's input so a same-session check/retry
     // resumes from it rather than rebuilding from the first batch.
     expect(outcome.nextInput).toEqual(input)
@@ -265,11 +264,9 @@ describe('runMigration', () => {
     // resume never re-sends the confirmed first batch.
     const last = sessions[sessions.length - 1]
     expect(last.nextInput?.hotspots).toEqual(['h2'])
-    expect(last.batch).toBe(2)
     // The hasMore-branch snapshot (2nd persist) must already carry the NEXT
     // batch's input — persisting before advancing would record the confirmed
     // batch 1 and make a crash-resume re-request already-confirmed work.
-    expect(sessions[1].batch).toBe(2)
     expect(sessions[1].nextInput?.hotspots).toEqual(['h2'])
   })
 

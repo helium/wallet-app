@@ -33,6 +33,7 @@ import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
+import { shortenMint } from './logic/assets'
 import { shouldShowSupport } from './logic/retry'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
@@ -84,11 +85,6 @@ const MigrateToWorld = () => {
   const { run, progress } = useMigrationExecutor(persist)
 
   const [selection, setSelection] = useState<AssetSelection>()
-  // The resume point reported by the last run when it ended partial/pending in
-  // this session (no app restart, so `resume` hasn't been reloaded). Retry
-  // prefers it so it never re-sends already-confirmed batches.
-  const [lastRunNextInput, setLastRunNextInput] = useState<MigrateInput>()
-  const [outcome, setOutcome] = useState<{ moved: number; failed: number }>()
   const [error, setError] = useState<string>()
   // Tracked in state (not just a ref) so each failed attempt re-renders — the
   // support link needs to appear once attempts cross the threshold even while
@@ -125,12 +121,18 @@ const MigrateToWorld = () => {
     }
   }, [user, solanaWallet, step, createWallet])
 
+  const hasRoutedRef = useRef(false)
   // An interrupted session (app closed mid-migration) resumes straight to the
   // screen its persisted status maps to — the same mapping the live run uses,
   // so a batch-level failure lands on retry, not the "still processing" screen.
+  // persist() now updates `resume` live, so canResume also flips true DURING a
+  // run; routing off that would yank the user off the 'migrating' screen. Guard
+  // it to the initial load: only route from 'intro' (a live run has already
+  // moved past it) and latch it so it fires exactly once.
   useEffect(() => {
-    if (resume.canResume) {
-      setOutcome({ moved: resume.movedCount, failed: resume.failedCount })
+    if (hasRoutedRef.current) return
+    if (resume.canResume && step === 'intro') {
+      hasRoutedRef.current = true
       setStep(stepForOutcome(resume.status))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -153,7 +155,17 @@ const MigrateToWorld = () => {
   )
 
   const execute = useCallback(
-    async (input: MigrateInput) => {
+    async (input: MigrateInput, returnStep: FlowStep) => {
+      // Single destination-wallet guard. A resumed session can outlive its Privy
+      // embedded wallet (expired session); without a destination, run() would
+      // throw 'Destination wallet unavailable' and dead-end on an empty Review.
+      // Recover the login/create path instead — createWallet leaves the current
+      // step intact on success, so the user re-triggers once a wallet exists.
+      if (!destinationWallet) {
+        if (!user) setStep('login')
+        else createWallet()
+        return
+      }
       setError(undefined)
       setStep('migrating')
       try {
@@ -161,57 +173,34 @@ const MigrateToWorld = () => {
         if (result.status === 'complete') {
           // Finished cleanly — drop the persisted session instead of leaving a
           // stale 'complete' record around.
-          setLastRunNextInput(undefined)
           await clear()
-        } else {
-          setLastRunNextInput(result.nextInput)
-          setOutcome({
-            moved: result.confirmedSignatures.length,
-            failed: result.failedSignatures.length,
-          })
         }
+        // Non-complete outcomes leave `resume` updated by the executor's own
+        // persist calls, so the pending/partial screens read counts from there.
         setStep(stepForOutcome(result.status))
       } catch (err) {
         setError((err as Error).message)
-        // 'review' only recovers a live selection (the Confirm path). A resumed
-        // retry has no selection — send it back to the retry screen it came from
-        // instead of an empty Review with a no-op Confirm.
-        setStep(selection || !outcome ? 'review' : 'partial')
+        // Return to the step the run was launched from: 'review' for a live
+        // Confirm, or the retry screen for a resumed retry — never an empty
+        // Review with a no-op Confirm.
+        setStep(returnStep)
       }
     },
-    [run, setStep, clear, selection, outcome],
+    [run, clear, destinationWallet, user, createWallet],
   )
 
   const onConfirm = useCallback(() => {
-    if (selection) execute(buildInput(selection))
+    if (selection) execute(buildInput(selection), 'review')
   }, [selection, buildInput, execute])
 
   const onRetry = useCallback(() => {
-    // A resumed session can outlive its Privy embedded wallet (expired session).
-    // Without a destination, run() would throw 'Destination wallet unavailable'
-    // and dead-end on an empty Review, so recover the login/create path instead.
-    // createWallet leaves the current outcome step intact on success, so the
-    // user simply re-taps Retry once a destination exists.
-    if (!destinationWallet) {
-      if (!user) setStep('login')
-      else createWallet()
-      return
-    }
+    // Snapshot the screen we're retrying from so a failure returns here instead
+    // of the Confirm screen. The destination-missing recovery lives in execute.
+    const returnStep = step
     const retryInput =
-      lastRunNextInput ??
-      resume.input ??
-      (selection ? buildInput(selection) : undefined)
-    if (retryInput) execute(retryInput)
-  }, [
-    destinationWallet,
-    user,
-    createWallet,
-    lastRunNextInput,
-    resume.input,
-    selection,
-    buildInput,
-    execute,
-  ])
+      resume.input ?? (selection ? buildInput(selection) : undefined)
+    if (retryInput) execute(retryInput, returnStep)
+  }, [step, resume.input, selection, buildInput, execute])
 
   const goToWorld = useCallback(() => Linking.openURL(WORLD_URL), [])
   const dismiss = useCallback(() => navigation.goBack(), [navigation])
@@ -221,7 +210,7 @@ const MigrateToWorld = () => {
       selection
         ? selectedTokens(selection.tokenAmounts, assets.tokens).map(
             ({ mint, amount, token }) =>
-              `${amount} ${token?.label ?? mint.slice(0, 4)}`,
+              `${amount} ${token?.label ?? shortenMint(mint)}`,
           )
         : [],
     [selection, assets.tokens],
@@ -312,7 +301,7 @@ const MigrateToWorld = () => {
       case 'pending':
         return (
           <PendingStep
-            movedCount={outcome?.moved ?? 0}
+            movedCount={resume.movedCount}
             onCheckStatus={onRetry}
             onDismiss={dismiss}
           />
@@ -320,8 +309,8 @@ const MigrateToWorld = () => {
       case 'partial':
         return (
           <PartialRetryStep
-            movedCount={outcome?.moved ?? 0}
-            failedCount={outcome?.failed ?? 0}
+            movedCount={resume.movedCount}
+            failedCount={resume.failedCount}
             onRetry={onRetry}
             onDismiss={dismiss}
           />

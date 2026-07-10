@@ -84,9 +84,7 @@ const MigrateToWorldModal: FC = () => {
       </Box>
       <Box paddingHorizontal="l" paddingBottom="m">
         <WorldButton
-          backgroundColor="white"
-          titleColorPressedOpacity={0.3}
-          titleColor="black"
+          variant="light"
           title={t('migrateToWorldModal.welcome.next')}
           onPress={() => setStep('choosePath')}
           marginBottom="m"
@@ -115,9 +113,7 @@ const MigrateToWorldModal: FC = () => {
 
         <Box marginTop="xl">
           <WorldButton
-            backgroundColor="white"
-            titleColorPressedOpacity={0.3}
-            titleColor="black"
+            variant="light"
             title={t('migrateToWorldModal.choosePath.emailTitle')}
             onPress={handleChooseEmail}
           />

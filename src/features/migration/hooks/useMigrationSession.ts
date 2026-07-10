@@ -10,23 +10,22 @@ import {
 
 const keyFor = (wallet: string) => `migrateToWorldSession:${wallet}`
 
-const NO_RESUME: ResumeInfo = {
-  canResume: false,
-  input: null,
-  movedCount: 0,
-  failedCount: 0,
-  status: 'idle',
-}
+const NO_RESUME: ResumeInfo = deriveResume(null)
 
 export const useMigrationSession = (sourceWallet: string | undefined) => {
   const [resume, setResume] = useState<ResumeInfo>(NO_RESUME)
+  // False until the initial AsyncStorage read resolves. Consumers gate on this
+  // so an in-flight-session check can't lose a race against a UI timer.
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!sourceWallet) return undefined
     let cancelled = false
+    setLoaded(false)
     AsyncStorage.getItem(keyFor(sourceWallet)).then((raw) => {
       if (!cancelled) {
         setResume(deriveResume(deserializeSession(raw)))
+        setLoaded(true)
       }
     })
     return () => {
@@ -41,6 +40,9 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
         keyFor(sourceWallet),
         serializeSession(session),
       )
+      // Keep the in-memory view live with what was just persisted so screens
+      // read from `resume` alone — no shadow copy of the run's progress.
+      setResume(deriveResume(session))
     },
     [sourceWallet],
   )
@@ -51,5 +53,5 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
     setResume(NO_RESUME)
   }, [sourceWallet])
 
-  return { persist, resume, clear }
+  return { persist, resume, clear, loaded }
 }

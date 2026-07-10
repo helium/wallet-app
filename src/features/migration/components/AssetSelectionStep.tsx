@@ -5,9 +5,10 @@ import BottomSheet from '@gorhom/bottom-sheet'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { numberFormat } from '@utils/Balance'
 import { useLanguage } from '@utils/i18n'
-import { usePollTokenPrices } from '@utils/usePollTokenPrices'
 import React, { FC, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../store/rootReducer'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
 import { MINT_PRICE_KEY } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
@@ -75,7 +76,9 @@ const AssetSelectionStep: FC<{
   const { t } = useTranslation()
   const { currency } = useAppStorage()
   const { language } = useLanguage()
-  const { tokenPrices } = usePollTokenPrices()
+  // Read prices straight from the store — BalanceProvider already polls, so a
+  // second app-wide interval just for this subtitle would be redundant.
+  const tokenPrices = useSelector((s: RootState) => s.balances.tokenPrices)
   const hotspotsRef = useRef<BottomSheet>(null)
   const tokensRef = useRef<BottomSheet>(null)
 
@@ -99,11 +102,6 @@ const AssetSelectionStep: FC<{
       else next.add(key)
       return next
     })
-
-  const setMax = (mint: string) => {
-    const tk = tokens.find((x) => x.mint === mint)
-    if (tk) setTokenAmounts((prev) => ({ ...prev, [mint]: tk.maxUi }))
-  }
 
   const activeTokenCount = tokens.filter((tk) => {
     const a = tokenAmounts[tk.mint]
@@ -198,10 +196,7 @@ const AssetSelectionStep: FC<{
         ref={tokensRef}
         tokens={tokens}
         amounts={tokenAmounts}
-        onChange={(mint, ui) =>
-          setTokenAmounts((prev) => ({ ...prev, [mint]: ui }))
-        }
-        onMax={setMax}
+        onCommit={setTokenAmounts}
       />
     </Box>
   )

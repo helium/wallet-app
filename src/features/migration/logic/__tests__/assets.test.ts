@@ -13,7 +13,6 @@ describe('classifyHoldings', () => {
     })
     expect(r.migratableTokens[0].mint).toBe(WSOL_MINT)
     expect(r.migratableTokens[0].maxUi).toBe('1.5')
-    expect(r.migratableTokens[0].maxRaw).toBe('1500000000')
   })
 
   it('omits native SOL when solBalance is 0', () => {
@@ -38,7 +37,6 @@ describe('classifyHoldings', () => {
     const hnt = r.migratableTokens.find((t) => t.mint === HNT)
     expect(hnt).toMatchObject({
       label: 'HNT',
-      maxRaw: '142500000000',
       maxUi: '142.5',
     })
   })

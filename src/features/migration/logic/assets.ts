@@ -7,22 +7,27 @@ import {
   WalletHolding,
 } from './types'
 
+// Local (not @utils/formatting's shortenAddress): logic/ runs under node-jest,
+// and that module's import chain drags react-native-localize, which the node
+// test env can't load. Shared by the token-label fallback and the flow's
+// review lines so mint truncation has one shape.
+export const shortenMint = (mint: string): string =>
+  `${mint.slice(0, 4)}…${mint.slice(-4)}`
+
 const solToSelectable = (solBalance: number): SelectableToken => {
   const raw = String(Math.round(solBalance * 1e9))
   return {
     mint: WSOL_MINT,
     label: 'SOL',
     decimals: 9,
-    maxRaw: raw,
     maxUi: rawToUi(raw, 9),
   }
 }
 
 const tokenToSelectable = (t: MigratableToken): SelectableToken => ({
   mint: t.mint,
-  label: t.symbol || t.name || `${t.mint.slice(0, 4)}…${t.mint.slice(-4)}`,
+  label: t.symbol || t.name || shortenMint(t.mint),
   decimals: t.decimals,
-  maxRaw: t.balance,
   maxUi: rawToUi(t.balance, t.decimals),
 })
 

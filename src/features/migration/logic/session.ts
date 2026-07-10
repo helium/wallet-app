@@ -16,7 +16,6 @@ export type MigrationSession = {
   // The input for the last unconfirmed batch (originalInput's nextParams as the
   // run paginates). Resume picks up from here so confirmed work is never re-sent.
   nextInput?: MigrateInput
-  batch?: number
   status: MigrationStatus
   confirmedSignatures: string[]
   failedSignatures: string[]

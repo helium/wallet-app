@@ -1,3 +1,4 @@
+import { TERMINAL_STATUSES } from '@hooks/useTransactionBatchStatus'
 import NetInfo from '@react-native-community/netinfo'
 import { useEmbeddedSolanaWallet } from '@privy-io/expo'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -105,7 +106,7 @@ export const useMigrationExecutor = (
             id: batchId,
             commitment: 'confirmed',
           })
-          if (status.status !== 'pending') return status
+          if (TERMINAL_STATUSES.includes(status.status)) return status
           if (Date.now() - start > POLL_TIMEOUT_MS) return status
           // eslint-disable-next-line no-await-in-loop
           await sleep(POLL_INTERVAL_MS)

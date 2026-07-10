@@ -7,7 +7,6 @@ export type MigrateOutput = {
   transactionData: TransactionData
   hasMore?: boolean
   nextParams?: MigrateInput
-  warnings?: string[]
 }
 
 export type ExecutorProgress =
@@ -56,7 +55,6 @@ export type RunOutcome = {
   status: 'complete' | 'partial' | 'failed' | 'pending'
   confirmedSignatures: string[]
   failedSignatures: string[]
-  pendingSignatures?: string[]
   // The input for the batch that failed / went pending, so a same-session retry
   // resumes from it instead of rebuilding from the first batch.
   nextInput?: MigrateInput
@@ -103,7 +101,6 @@ export const runMigration = async <TSigned = unknown>(
     // Persist the batch we're currently on so a resume picks up from the last
     // unconfirmed batch instead of re-running already-confirmed work.
     nextInput: input,
-    batch,
     status,
     confirmedSignatures: [...confirmedSignatures],
     failedSignatures: [...failedSignatures],
@@ -185,7 +182,6 @@ export const runMigration = async <TSigned = unknown>(
         status: 'pending',
         confirmedSignatures,
         failedSignatures,
-        pendingSignatures: summary.pendingSignatures,
         nextInput: input,
       }
     }

@@ -14,12 +14,15 @@ const MigrateToWorldCheck: FC = () => {
   const homeNav = useNavigation<HomeNavigationProp>()
   // Reuses the same AsyncStorage parsing/deriveResume as the flow screen so the
   // resumable detection can't drift from what the flow actually resumes.
-  const { resume } = useMigrationSession(walletAddress)
+  const { resume, loaded } = useMigrationSession(walletAddress)
   const hasShown = useRef(false)
 
   useEffect(() => {
     if (hasShown.current) return undefined
     if (!walletAddress || type) return undefined
+    // Wait for the persisted-session read before deciding, so the resume check
+    // always wins by construction instead of racing the announcement timer.
+    if (!loaded) return undefined
 
     // An in-flight migration takes priority over the announcement: drop the user
     // straight into the flow, whose resume effect lands on the right outcome
@@ -45,6 +48,7 @@ const MigrateToWorldCheck: FC = () => {
     type,
     walletAddress,
     resume.canResume,
+    loaded,
     homeNav,
   ])
 

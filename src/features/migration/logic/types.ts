@@ -44,7 +44,6 @@ export type SelectableToken = {
   mint: string
   label: string
   decimals: number
-  maxRaw: string // full balance, raw integer string
   maxUi: string // full balance, human-readable
 }
 

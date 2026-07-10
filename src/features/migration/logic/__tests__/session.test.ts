@@ -58,7 +58,6 @@ describe('deriveResume', () => {
     const withNext: MigrationSession = {
       ...base,
       nextInput: { ...base.originalInput, hotspots: ['h3'] },
-      batch: 2,
     }
     expect(deriveResume(withNext).input).toEqual(withNext.nextInput)
   })
