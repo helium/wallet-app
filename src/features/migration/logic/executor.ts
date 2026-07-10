@@ -1,6 +1,11 @@
 import defaultSleep from '../../../utils/sleep'
 import { summarizeBatch, BatchStatus } from './batches'
-import { MigrateInput, MigrationSession } from './session'
+import {
+  MigrateInput,
+  MigrationSession,
+  RunStatus,
+  SignatureTally,
+} from './session'
 import { TransactionData } from './types'
 
 export type MigrateOutput = {
@@ -51,14 +56,7 @@ export const gateOnDeps = <TSigned>(
   },
 })
 
-export type RunOutcome = {
-  status: 'complete' | 'partial' | 'failed' | 'pending'
-  confirmedSignatures: string[]
-  failedSignatures: string[]
-  // The input for the batch that failed / went pending, so a same-session retry
-  // resumes from it instead of rebuilding from the first batch.
-  nextInput?: MigrateInput
-}
+export type RunOutcome = { status: RunStatus } & SignatureTally
 
 const now = (): number => Date.now()
 
@@ -104,6 +102,15 @@ export const runMigration = async <TSigned = unknown>(
   let input = originalInput
   let batch = 1
 
+  // Fold a polled batch's signatures into the run totals. Shared by the resume
+  // guard and the in-loop confirm so both accumulate identically.
+  const collect = (status: BatchStatus) => {
+    const summary = summarizeBatch(status)
+    confirmedSignatures.push(...summary.confirmedSignatures)
+    failedSignatures.push(...summary.failedSignatures)
+    return summary
+  }
+
   // Only the in-flight snapshots (submitted, awaiting confirmation) carry a
   // pendingBatchId; snapshots written once a batch reaches a terminal state
   // pass nothing, clearing it so a later resume won't re-poll a settled batch.
@@ -130,18 +137,11 @@ export const runMigration = async <TSigned = unknown>(
   const resumeBatchId = opts.pendingBatchId
   if (resumeBatchId) {
     const status = await withRetry(() => deps.pollStatus(resumeBatchId), sleep)
-    const summary = summarizeBatch(status)
-    confirmedSignatures.push(...summary.confirmedSignatures)
-    failedSignatures.push(...summary.failedSignatures)
+    const summary = collect(status)
 
     if (status.status === 'pending' || summary.pendingSignatures.length > 0) {
       await deps.persist(snapshot('running', resumeBatchId))
-      return {
-        status: 'pending',
-        confirmedSignatures,
-        failedSignatures,
-        nextInput: input,
-      }
+      return { status: 'pending', confirmedSignatures, failedSignatures }
     }
   }
 
@@ -179,30 +179,24 @@ export const runMigration = async <TSigned = unknown>(
     deps.onProgress({ phase: 'confirming', batch })
     // eslint-disable-next-line no-await-in-loop
     const status = await withRetry(() => deps.pollStatus(batchId), sleep)
-    const summary = summarizeBatch(status)
-    confirmedSignatures.push(...summary.confirmedSignatures)
-    failedSignatures.push(...summary.failedSignatures)
+    const summary = collect(status)
 
     if (status.status === 'failed' || status.status === 'expired') {
       // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('failed'))
-      return {
-        status: 'failed',
-        confirmedSignatures,
-        failedSignatures,
-        nextInput: input,
-      }
+      return { status: 'failed', confirmedSignatures, failedSignatures }
     }
 
     if (summary.failedSignatures.length > 0) {
+      // A retry replays this batch's full input (explicit token amounts
+      // included); the client can't tell which assets a confirmed signature
+      // covered — transactions.get returns signature + status only. Not
+      // re-sending already-confirmed transfers therefore depends on the server
+      // recomputing remaining work from on-chain state. This is a documented
+      // contract dependency, not something the client can guard here.
       // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('partial'))
-      return {
-        status: 'partial',
-        confirmedSignatures,
-        failedSignatures,
-        nextInput: input,
-      }
+      return { status: 'partial', confirmedSignatures, failedSignatures }
     }
 
     // Nothing terminally failed, but the batch isn't fully confirmed yet —
@@ -218,12 +212,7 @@ export const runMigration = async <TSigned = unknown>(
       // re-request — the funds-safety guard against a double-send.
       // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('running', batchId))
-      return {
-        status: 'pending',
-        confirmedSignatures,
-        failedSignatures,
-        nextInput: input,
-      }
+      return { status: 'pending', confirmedSignatures, failedSignatures }
     }
 
     if (out.hasMore && out.nextParams) {

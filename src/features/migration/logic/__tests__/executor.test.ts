@@ -85,6 +85,7 @@ describe('runMigration', () => {
   })
 
   it('stops and reports partial when a batch has failed txs', async () => {
+    const sessions: MigrationSession[] = []
     const { deps } = makeDeps({
       requestMigrate: async () =>
         ({
@@ -99,13 +100,16 @@ describe('runMigration', () => {
           { signature: 'bad', status: 'failed' },
         ],
       }),
+      persist: async (session) => {
+        sessions.push(session)
+      },
     })
     const outcome = await runMigration(input, deps)
     expect(outcome.status).toBe('partial')
     expect(outcome.confirmedSignatures).toEqual(['ok'])
     expect(outcome.failedSignatures).toEqual(['bad'])
-    // Carries the failed batch's input so a same-session retry resumes from it.
-    expect(outcome.nextInput).toEqual(input)
+    // Persists the failed batch's input so a retry resumes from it.
+    expect(sessions[sessions.length - 1].nextInput).toEqual(input)
   })
 
   it('stops and reports failed on a failed/expired batch', async () => {
@@ -122,7 +126,7 @@ describe('runMigration', () => {
   })
 
   it('reports pending (not partial) when a batch is still confirming', async () => {
-    const persisted: string[] = []
+    const sessions: MigrationSession[] = []
     const { deps } = makeDeps({
       pollStatus: async () => ({
         status: 'pending',
@@ -132,20 +136,21 @@ describe('runMigration', () => {
         ],
       }),
       persist: async (session) => {
-        persisted.push(session.status)
+        sessions.push(session)
       },
     })
     const outcome = await runMigration(input, deps)
     expect(outcome.status).toBe('pending')
     expect(outcome.confirmedSignatures).toEqual(['done'])
     expect(outcome.failedSignatures).toEqual([])
-    // Carries the still-pending batch's input so a same-session check/retry
-    // resumes from it rather than rebuilding from the first batch.
-    expect(outcome.nextInput).toEqual(input)
+    // Persists the still-pending batch's input so a check/retry resumes from
+    // it rather than rebuilding from the first batch.
+    expect(sessions[sessions.length - 1].nextInput).toEqual(input)
     // Session stays resumable, never marked partial/failed.
-    expect(persisted).not.toContain('partial')
-    expect(persisted).not.toContain('failed')
-    expect(persisted[persisted.length - 1]).toBe('running')
+    const statuses = sessions.map((s) => s.status)
+    expect(statuses).not.toContain('partial')
+    expect(statuses).not.toContain('failed')
+    expect(statuses[statuses.length - 1]).toBe('running')
   })
 
   it('persists a resumable snapshot before the first batch confirms', async () => {

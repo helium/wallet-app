@@ -12,6 +12,12 @@ export type MigratableHotspot = {
   deviceType: string
 }
 
+// Stable fallbacks so consumers' memos aren't invalidated by fresh [] identities
+// on every render while the assets are still loading.
+const NO_HOTSPOTS: MigratableHotspot[] = []
+const NO_TOKENS: SelectableToken[] = []
+const NO_MINTS: string[] = []
+
 export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
   const { tokenAccounts } = useBalance()
@@ -52,11 +58,14 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   }, [sourceWallet])
 
   return {
-    loading,
+    // The kick-off effect fires after the first render with a wallet, so count
+    // that not-yet-started gap as loading — an empty pre-fetch snapshot must
+    // not read as a wallet with nothing to migrate.
+    loading: loading || (!!sourceWallet && !result && !error),
     error,
     reload: execute,
-    hotspots: result?.hotspots ?? [],
-    tokens: result?.tokens ?? [],
-    leftBehindMints: result?.leftBehindMints ?? [],
+    hotspots: result?.hotspots ?? NO_HOTSPOTS,
+    tokens: result?.tokens ?? NO_TOKENS,
+    leftBehindMints: result?.leftBehindMints ?? NO_MINTS,
   }
 }

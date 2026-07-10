@@ -1,4 +1,4 @@
-import { classifyHoldings } from '../assets'
+import { classifyHoldings, nothingToMigrate } from '../assets'
 import { WSOL_MINT } from '../mints'
 
 const HNT = 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux'
@@ -82,5 +82,23 @@ describe('classifyHoldings', () => {
       holdings: [{ mint: UNKNOWN, balance: 0, decimals: 6 }],
     })
     expect(r.leftBehindMints).toEqual([])
+  })
+})
+
+describe('nothingToMigrate', () => {
+  it('is true only when loaded and both lists are empty', () => {
+    expect(nothingToMigrate(false, [], [])).toBe(true)
+  })
+
+  it('is false while loading', () => {
+    expect(nothingToMigrate(true, [], [])).toBe(false)
+  })
+
+  it('is false with a hotspot', () => {
+    expect(nothingToMigrate(false, [{}], [])).toBe(false)
+  })
+
+  it('is false with a token', () => {
+    expect(nothingToMigrate(false, [], [{}])).toBe(false)
   })
 })

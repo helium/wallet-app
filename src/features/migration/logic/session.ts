@@ -11,21 +11,26 @@ export type MigrationStatus =
   | 'failed'
   | 'complete'
 
+export type RunStatus = 'complete' | 'partial' | 'failed' | 'pending'
+
+export type SignatureTally = {
+  confirmedSignatures: string[]
+  failedSignatures: string[]
+}
+
 export type MigrationSession = {
   originalInput: MigrateInput
   // The input for the last unconfirmed batch (originalInput's nextParams as the
   // run paginates). Resume picks up from here so confirmed work is never re-sent.
   nextInput?: MigrateInput
   status: MigrationStatus
-  confirmedSignatures: string[]
-  failedSignatures: string[]
   // The id of the batch that was submitted but not yet confirmed (a 'pending'
   // outcome). A resume must re-poll THIS batch to a terminal state before asking
   // the server to recompute remaining transfers — otherwise a still-in-flight
   // token transfer gets rebuilt and double-sent. Cleared once a batch confirms.
   pendingBatchId?: string
   updatedAt: number
-}
+} & SignatureTally
 
 const RESUMABLE: ReadonlySet<MigrationStatus> = new Set([
   'running',
@@ -93,7 +98,7 @@ export type OutcomeScreen = 'success' | 'pending' | 'partial'
 // 'failed' (zero failed signatures) still routes to the retry screen, not the
 // reassuring "still processing" one.
 export const stepForOutcome = (
-  status: MigrationStatus | 'pending',
+  status: MigrationStatus | RunStatus,
 ): OutcomeScreen => {
   switch (status) {
     case 'complete':

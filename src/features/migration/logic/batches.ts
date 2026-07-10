@@ -2,6 +2,7 @@ import { VersionedTransaction } from '@solana/web3.js'
 import { Buffer } from 'buffer'
 import type { BatchStatus as BatchStatusValue } from '@hooks/useTransactionBatchStatus'
 import { signersOrDefault } from './signers'
+import type { SignatureTally } from './session'
 import { SignerRole, TransactionData } from './types'
 
 export type BatchStatus = {
@@ -33,11 +34,7 @@ export const serializeSignedBatch = (
 
 export const summarizeBatch = (
   status: BatchStatus,
-): {
-  confirmedSignatures: string[]
-  failedSignatures: string[]
-  pendingSignatures: string[]
-} => {
+): SignatureTally & { pendingSignatures: string[] } => {
   const confirmedSignatures = status.transactions
     .filter((t) => t.status === 'confirmed')
     .map((t) => t.signature)

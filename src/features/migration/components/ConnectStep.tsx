@@ -11,11 +11,36 @@ import WorldButton from './WorldButton'
 // World destination via World Explorer's wallet-standard / SIWS connect model.
 // No keys are exported and no funds move here — the user just signs in with a
 // wallet they already control. Hardware-wallet users are routed here too.
+// A numbered instruction row: "1." gutter + the step text, both in the
+// secondary World-Light body styling used across this screen.
+const StepRow: FC<{ index: number; text: string }> = ({ index, text }) => (
+  <Box flexDirection="row" marginTop="s">
+    <Text variant="body2" color="secondaryText" lineHeight={22} marginRight="s">
+      {`${index}.`}
+    </Text>
+    <Text variant="body2" color="secondaryText" lineHeight={22} flex={1}>
+      {text}
+    </Text>
+  </Box>
+)
+
 const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
   onBack,
   onDismiss,
 }) => {
   const { t } = useTranslation()
+
+  const softwareSteps = [
+    t('migrateToWorld.connect.softwareStep1'),
+    t('migrateToWorld.connect.softwareStep2'),
+    t('migrateToWorld.connect.softwareStep3'),
+  ]
+  const hardwareSteps = [
+    t('migrateToWorld.connect.hardwareStep1'),
+    t('migrateToWorld.connect.hardwareStep2'),
+    t('migrateToWorld.connect.hardwareStep3'),
+    t('migrateToWorld.connect.hardwareStep4'),
+  ]
 
   return (
     <Box flex={1}>
@@ -38,14 +63,9 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
             <Text variant="subtitle2" color="primaryText">
               {t('migrateToWorld.connect.softwareTitle')}
             </Text>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              marginTop="xs"
-              lineHeight={22}
-            >
-              {t('migrateToWorld.connect.softwareBody')}
-            </Text>
+            {softwareSteps.map((step, i) => (
+              <StepRow key={step} index={i + 1} text={step} />
+            ))}
           </Box>
 
           <Box
@@ -57,14 +77,9 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
             <Text variant="subtitle2" color="primaryText">
               {t('migrateToWorld.connect.hardwareTitle')}
             </Text>
-            <Text
-              variant="body2"
-              color="secondaryText"
-              marginTop="xs"
-              lineHeight={22}
-            >
-              {t('migrateToWorld.connect.hardwareBody')}
-            </Text>
+            {hardwareSteps.map((step, i) => (
+              <StepRow key={step} index={i + 1} text={step} />
+            ))}
           </Box>
         </Box>
       </ScrollView>

@@ -14,6 +14,15 @@ import {
 export const shortenMint = (mint: string): string =>
   `${mint.slice(0, 4)}…${mint.slice(-4)}`
 
+// True once assets have loaded and the wallet holds nothing migratable — the
+// flow short-circuits to the "nothing to migrate" screen. Guards on !loading so
+// an empty in-flight snapshot doesn't read as a done wallet.
+export const nothingToMigrate = (
+  loading: boolean,
+  hotspots: unknown[],
+  tokens: unknown[],
+): boolean => !loading && hotspots.length === 0 && tokens.length === 0
+
 const solToSelectable = (solBalance: number): SelectableToken => {
   const raw = String(Math.round(solBalance * 1e9))
   return {

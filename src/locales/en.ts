@@ -1573,6 +1573,12 @@ export default {
   },
   migrateToWorld: {
     back: '← Back',
+    resumeOffer: {
+      title: 'Finish your migration',
+      body: 'You have a migration in progress. Pick up where you left off?',
+      resume: 'Resume',
+      notNow: 'Not now',
+    },
     intro: {
       title: 'Welcome to Helium World',
       body: "A new home for your Hotspots and rewards. We'll bring everything over — no fees, we cover them.",
@@ -1585,11 +1591,16 @@ export default {
       reassurance:
         "No funds move here — you're just signing in with a wallet you already control.",
       softwareTitle: 'I use Phantom or Solflare',
-      softwareBody:
-        'Open world.helium.com, choose Connect Wallet, pick your wallet, and approve the sign-in signature.',
+      softwareStep1: 'Open world.helium.com and tap Connect Wallet.',
+      softwareStep2: 'Choose your wallet app (e.g. Phantom or Solflare).',
+      softwareStep3:
+        "Approve the sign-in request — signing in doesn't move funds or expose keys.",
       hardwareTitle: 'I use a Ledger or Keystone hardware wallet',
-      hardwareBody:
-        'Connect your hardware wallet to a desktop wallet that supports it (like Phantom or Solflare), then open world.helium.com and connect that wallet.',
+      hardwareStep1:
+        'Connect your Ledger to a wallet app that supports it (e.g. Phantom or Solflare).',
+      hardwareStep2: 'Open world.helium.com and tap Connect Wallet.',
+      hardwareStep3: 'Choose that wallet app and select your hardware account.',
+      hardwareStep4: 'Approve the sign-in on the device.',
       openWorld: 'Open World',
     },
     linkEmail: {
@@ -1648,7 +1659,6 @@ export default {
     },
     migrating: {
       title: 'Migrating...',
-      creatingWallet: 'Setting up your World wallet…',
       walletReady: '✓ World wallet ready',
       phases: {
         requesting: 'Preparing',

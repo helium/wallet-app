@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
-  testMatch: ['**/src/features/migration/logic/__tests__/**/*.test.ts'],
+  testMatch: ['**/src/**/__tests__/**/*.test.ts'],
   transform: {
     '^.+\\.[jt]sx?$': [
       'babel-jest',

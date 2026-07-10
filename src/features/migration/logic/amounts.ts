@@ -1,6 +1,5 @@
 // Lossless conversion between human-readable ("uiAmount") strings and raw
 // integer-string balances. No floating point — mirrors on-chain integer math.
-// Cross-ref: prototype had this inline at MigrateToWorld.tsx:54.
 
 export const uiToRaw = (ui: string, decimals: number): string => {
   const trimmed = (ui ?? '').trim()

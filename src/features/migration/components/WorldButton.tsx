@@ -14,39 +14,54 @@ type Props = ComponentProps<typeof ButtonPressable> & {
 
 type Color = ComponentProps<typeof ButtonPressable>['backgroundColor']
 
-const PRESSED_OPACITY: Record<Variant, number | undefined> = {
-  primary: 0.7,
-  light: 0.7,
-  secondary: undefined,
-  dismiss: 0.05,
-}
-
-const BACKGROUND: Record<Variant, Color> = {
-  primary: 'worldPurple',
-  light: 'white',
-  secondary: 'transparent',
-  dismiss: 'transparent',
-}
-
-const TITLE_COLOR: Record<Variant, Color> = {
-  primary: 'white',
-  light: 'black',
-  secondary: 'secondaryText',
-  dismiss: 'secondaryText',
+const VARIANTS: Record<
+  Variant,
+  {
+    background: Color
+    titleColor: Color
+    height: number
+    pressedOpacity?: number
+    titleFades?: boolean
+  }
+> = {
+  primary: {
+    background: 'worldPurple',
+    titleColor: 'white',
+    height: 60,
+    pressedOpacity: 0.7,
+  },
+  light: {
+    background: 'white',
+    titleColor: 'black',
+    height: 60,
+    pressedOpacity: 0.7,
+    titleFades: true,
+  },
+  secondary: {
+    background: 'transparent',
+    titleColor: 'secondaryText',
+    height: 48,
+  },
+  dismiss: {
+    background: 'transparent',
+    titleColor: 'secondaryText',
+    height: 48,
+    pressedOpacity: 0.05,
+    titleFades: true,
+  },
 }
 
 const WorldButton: FC<Props> = ({ variant = 'primary', ...rest }) => {
-  const filled = variant === 'primary' || variant === 'light'
-  const fades = variant === 'dismiss' || variant === 'light'
+  const v = VARIANTS[variant]
   return (
     <ButtonPressable
       width="100%"
       borderRadius="round"
-      height={filled ? 60 : 48}
-      backgroundColor={BACKGROUND[variant]}
-      backgroundColorOpacityPressed={PRESSED_OPACITY[variant]}
-      titleColorPressedOpacity={fades ? 0.3 : undefined}
-      titleColor={TITLE_COLOR[variant]}
+      height={v.height}
+      backgroundColor={v.background}
+      backgroundColorOpacityPressed={v.pressedOpacity}
+      titleColorPressedOpacity={v.titleFades ? 0.3 : undefined}
+      titleColor={v.titleColor}
       {...rest}
     />
   )

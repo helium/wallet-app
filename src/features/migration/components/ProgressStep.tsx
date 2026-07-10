@@ -4,10 +4,7 @@ import Text from '@components/Text'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 
-const ProgressStep: FC<{ walletReady: boolean; label: string }> = ({
-  walletReady,
-  label,
-}) => {
+const ProgressStep: FC<{ label: string }> = ({ label }) => {
   const { t } = useTranslation()
   return (
     <Box
@@ -21,9 +18,7 @@ const ProgressStep: FC<{ walletReady: boolean; label: string }> = ({
         {t('migrateToWorld.migrating.title')}
       </Text>
       <Text variant="body3" color="secondaryText" marginTop="m">
-        {walletReady
-          ? t('migrateToWorld.migrating.walletReady')
-          : t('migrateToWorld.migrating.creatingWallet')}
+        {t('migrateToWorld.migrating.walletReady')}
       </Text>
       <Text variant="body3" color="secondaryText" marginTop="xs">
         {label}

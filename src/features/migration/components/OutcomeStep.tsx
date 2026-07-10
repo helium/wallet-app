@@ -5,21 +5,35 @@ import { useTranslation } from 'react-i18next'
 import WorldButton from './WorldButton'
 
 // Shared centered layout for the terminal outcome screens (success / pending /
-// partial / nothing-to-migrate): a title, a body line, an optional slot for
-// extra content, a primary action and an optional dismiss. Each screen supplies
-// its own copy and callbacks — the flow and messaging stay distinct.
+// partial / nothing-to-migrate / wallet-create-error): a title, a body line, an
+// optional slot for extra content, a primary action, an optional secondary
+// action and an optional dismiss. Each screen supplies its own copy and
+// callbacks — the flow and messaging stay distinct.
 const OutcomeStep: FC<{
   title: string
   body: string
   primaryTitle: string
   onPrimary: () => void
+  // Rendered between the primary button and dismiss (e.g. the wallet-error
+  // screen's support link).
+  secondaryAction?: { title: string; onPress: () => void }
   // Omitted on single-action screens (nothing-to-migrate) — the dismiss button
   // is only rendered when a handler is supplied.
   onDismiss?: () => void
+  dismissTitle?: string
   // Rendered between the body and the primary button (e.g. the success screen's
   // new-wallet address line).
   children?: ReactNode
-}> = ({ title, body, primaryTitle, onPrimary, onDismiss, children }) => {
+}> = ({
+  title,
+  body,
+  primaryTitle,
+  onPrimary,
+  secondaryAction,
+  onDismiss,
+  dismissTitle,
+  children,
+}) => {
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="center" paddingHorizontal="l">
@@ -41,10 +55,18 @@ const OutcomeStep: FC<{
         marginTop="xl"
         marginBottom="m"
       />
+      {secondaryAction ? (
+        <WorldButton
+          variant="secondary"
+          title={secondaryAction.title}
+          onPress={secondaryAction.onPress}
+          marginBottom="m"
+        />
+      ) : null}
       {onDismiss ? (
         <WorldButton
           variant="secondary"
-          title={t('migrateToWorldModal.dismiss')}
+          title={dismissTitle ?? t('migrateToWorldModal.dismiss')}
           onPress={onDismiss}
         />
       ) : null}

@@ -5,7 +5,7 @@ import BottomSheet from '@gorhom/bottom-sheet'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { numberFormat } from '@utils/Balance'
 import { useLanguage } from '@utils/i18n'
-import React, { FC, useMemo, useRef, useState } from 'react'
+import React, { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store/rootReducer'
@@ -95,13 +95,18 @@ const AssetSelectionStep: FC<{
     setPrimed(true)
   }
 
-  const toggleHotspot = (key: string) =>
-    setHotspotKeys((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
+  // Stable identity so HotspotsEditSheet's memoized rows don't re-render on
+  // every parent render (e.g. price-poll ticks).
+  const toggleHotspot = useCallback(
+    (key: string) =>
+      setHotspotKeys((prev) => {
+        const next = new Set(prev)
+        if (next.has(key)) next.delete(key)
+        else next.add(key)
+        return next
+      }),
+    [],
+  )
 
   const activeTokenCount = tokens.filter((tk) => {
     const a = tokenAmounts[tk.mint]

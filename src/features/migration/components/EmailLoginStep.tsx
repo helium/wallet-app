@@ -119,11 +119,11 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
         >
           {t('migrateToWorld.linkEmail.body')}
         </Text>
-        {error && (
+        {error ? (
           <Text variant="body3" color="error" textAlign="center" marginTop="m">
             {error}
           </Text>
-        )}
+        ) : null}
         <Box marginTop="xl">
           <Box
             backgroundColor="surfaceSecondary"

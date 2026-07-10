@@ -20,10 +20,7 @@ import AssetSelectionStep, {
 import ConnectStep from './components/ConnectStep'
 import EmailLoginStep from './components/EmailLoginStep'
 import IntroStep from './components/IntroStep'
-import NothingToMigrateStep from './components/NothingToMigrateStep'
 import OutcomeStep from './components/OutcomeStep'
-import PartialRetryStep from './components/PartialRetryStep'
-import PendingStep from './components/PendingStep'
 import ProgressStep from './components/ProgressStep'
 import ReviewStep from './components/ReviewStep'
 import SuccessStep from './components/SuccessStep'
@@ -31,25 +28,13 @@ import WalletCreateErrorStep from './components/WalletCreateErrorStep'
 import { WORLD_URL } from './constants'
 import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
-import { useMigrationSession } from './hooks/useMigrationSession'
+import { FlowStep, useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
-import { shortenMint } from './logic/assets'
+import { nothingToMigrate, shortenMint } from './logic/assets'
 import { getEmbeddedWallet } from './logic/embeddedWallet'
 import { shouldShowSupport } from './logic/retry'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
-
-export type FlowStep =
-  | 'intro'
-  | 'connect'
-  | 'login'
-  | 'select'
-  | 'review'
-  | 'migrating'
-  | 'pending'
-  | 'partial'
-  | 'success'
-  | 'walletError'
 
 // The tokens the user chose to migrate (nonzero amount), each paired with its
 // resolved SelectableToken when we can find it. Shared by the input builder and
@@ -77,9 +62,14 @@ const MigrateToWorld = () => {
   const solanaWallet = useEmbeddedSolanaWallet()
   const destinationWallet = getEmbeddedWallet(solanaWallet)?.address
 
-  const [step, setStep] = useState<FlowStep>('intro')
-  const { persist, resume, clear } = useMigrationSession(sourceWallet)
-  const assets = useMigrationAssets(sourceWallet)
+  const { step, setStep, persist, resume, clear } =
+    useMigrationSession(sourceWallet)
+  // Assets are only fetched once the flow moves past the intro/connect/login
+  // steps — a user who opens the screen and bails early shouldn't pay the two
+  // API round-trips, and fetching at selection time keeps the data fresh.
+  const assetsNeeded =
+    step !== 'intro' && step !== 'connect' && step !== 'login'
+  const assets = useMigrationAssets(assetsNeeded ? sourceWallet : undefined)
   const { run, progress } = useMigrationExecutor(persist)
 
   const [selection, setSelection] = useState<AssetSelection>()
@@ -106,7 +96,7 @@ const MigrateToWorld = () => {
     } finally {
       creating.current = false
     }
-  }, [solanaWallet])
+  }, [solanaWallet, setStep])
 
   useEffect(() => {
     if (
@@ -118,23 +108,6 @@ const MigrateToWorld = () => {
       createWallet()
     }
   }, [user, solanaWallet, step, createWallet])
-
-  const hasRoutedRef = useRef(false)
-  // An interrupted session (app closed mid-migration) resumes straight to the
-  // screen its persisted status maps to — the same mapping the live run uses,
-  // so a batch-level failure lands on retry, not the "still processing" screen.
-  // persist() now updates `resume` live, so canResume also flips true DURING a
-  // run; routing off that would yank the user off the 'migrating' screen. Guard
-  // it to the initial load: only route from 'intro' (a live run has already
-  // moved past it) and latch it so it fires exactly once.
-  useEffect(() => {
-    if (hasRoutedRef.current) return
-    if (resume.canResume && step === 'intro') {
-      hasRoutedRef.current = true
-      setStep(stepForOutcome(resume.status))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resume.canResume])
 
   const buildInput = useCallback(
     (sel: AssetSelection): MigrateInput => ({
@@ -188,7 +161,7 @@ const MigrateToWorld = () => {
         setStep(returnStep)
       }
     },
-    [run, clear, destinationWallet, user, createWallet],
+    [run, clear, destinationWallet, user, createWallet, setStep],
   )
 
   const onConfirm = useCallback(() => {
@@ -273,12 +246,15 @@ const MigrateToWorld = () => {
             />
           )
         }
-        if (
-          !assets.loading &&
-          assets.hotspots.length === 0 &&
-          assets.tokens.length === 0
-        ) {
-          return <NothingToMigrateStep onDone={dismiss} />
+        if (nothingToMigrate(assets.loading, assets.hotspots, assets.tokens)) {
+          return (
+            <OutcomeStep
+              title={t('migrateToWorld.nothingToMigrate.title')}
+              body={t('migrateToWorld.nothingToMigrate.body')}
+              primaryTitle={t('migrateToWorld.nothingToMigrate.done')}
+              onPrimary={dismiss}
+            />
+          )
         }
         return (
           <AssetSelectionStep
@@ -307,7 +283,6 @@ const MigrateToWorld = () => {
       case 'migrating':
         return (
           <ProgressStep
-            walletReady={!!destinationWallet}
             label={
               progress
                 ? t('migrateToWorld.migrating.batchLabel', {
@@ -321,19 +296,22 @@ const MigrateToWorld = () => {
           />
         )
       case 'pending':
-        return (
-          <PendingStep
-            movedCount={resume.movedCount}
-            onCheckStatus={onRetry}
-            onDismiss={dismiss}
-          />
-        )
       case 'partial':
+        // Parallel outcome screens keyed on the step: pending's body ignores the
+        // failed count, and each has its own primary action label.
         return (
-          <PartialRetryStep
-            movedCount={resume.movedCount}
-            failedCount={resume.failedCount}
-            onRetry={onRetry}
+          <OutcomeStep
+            title={t(`migrateToWorld.${step}.title`)}
+            body={t(`migrateToWorld.${step}.body`, {
+              moved: resume.movedCount,
+              failed: resume.failedCount,
+            })}
+            primaryTitle={t(
+              step === 'pending'
+                ? 'migrateToWorld.pending.checkStatus'
+                : 'migrateToWorld.partial.retry',
+            )}
+            onPrimary={onRetry}
             onDismiss={dismiss}
           />
         )
@@ -362,13 +340,13 @@ const MigrateToWorld = () => {
 
   return (
     <SafeAreaBox edges={edges} flex={1} backgroundColor="primaryBackground">
-      {error && (
+      {error ? (
         <SafeAreaBox edges={[]} paddingHorizontal="l" paddingTop="m">
           <Text variant="body3" color="error">
             {error}
           </Text>
         </SafeAreaBox>
-      )}
+      ) : null}
       {render()}
     </SafeAreaBox>
   )

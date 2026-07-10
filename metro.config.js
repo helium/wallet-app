@@ -23,16 +23,20 @@ defaultConfig.transformer = {
 
 const originalResolveRequest = defaultConfig.resolver.resolveRequest
 
+// Resolve to an absolute target path, bypassing our own resolveRequest hook.
+const resolveTo = (context, platform, targetPath) =>
+  context.resolveRequest(
+    { ...context, resolveRequest: undefined },
+    targetPath,
+    platform,
+  )
+
 // Resolve `pkg` (and its subpaths) to this app's single node_modules copy so
 // hoisted duplicates collapse to one module instance (see SINGLE_COPY_PKGS).
 const forceSingleCopy = (context, moduleName, platform, pkg) => {
   const suffix = moduleName.replace(pkg, '')
   const resolved = path.resolve(__dirname, 'node_modules/' + pkg + suffix)
-  return context.resolveRequest(
-    { ...context, resolveRequest: undefined },
-    resolved,
-    platform,
-  )
+  return resolveTo(context, platform, resolved)
 }
 
 // Packages that must resolve to this app's single node_modules copy (see below).
@@ -58,20 +62,12 @@ defaultConfig.resolver = {
         /^jose/,
         path.resolve(__dirname, 'node_modules/jose/dist/browser'),
       )
-      return context.resolveRequest(
-        { ...context, resolveRequest: undefined },
-        browserPath,
-        platform,
-      )
+      return resolveTo(context, platform, browserPath)
     }
     if (originalResolveRequest) {
       return originalResolveRequest(context, moduleName, platform)
     }
-    return context.resolveRequest(
-      { ...context, resolveRequest: undefined },
-      moduleName,
-      platform,
-    )
+    return resolveTo(context, platform, moduleName)
   },
 }
 
