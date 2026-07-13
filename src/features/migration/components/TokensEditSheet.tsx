@@ -138,7 +138,7 @@ const TokensEditSheet = forwardRef<BottomSheet, Props>(
       >
         <BottomSheetScrollView>
           <Box paddingHorizontal="l" paddingBottom="s">
-            <Text variant="h4" color="worldInk">
+            <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
               {t('migrateToWorld.selectAssets.tokens')}
             </Text>
           </Box>

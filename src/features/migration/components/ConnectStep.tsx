@@ -76,7 +76,7 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
       <StepBackHeader onBack={onBack} />
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <Box paddingHorizontal="l">
-          <Text variant="h4" color="worldInk">
+          <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
             {t('migrateToWorld.connect.title')}
           </Text>
           <Text

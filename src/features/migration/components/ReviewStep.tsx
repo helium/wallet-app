@@ -82,7 +82,12 @@ const ReviewStep: FC<{
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
       <Box flex={1} paddingHorizontal="l">
-        <Text variant="h4" color="worldInk" marginBottom="l">
+        <Text
+          variant="h4"
+          color="worldInk"
+          letterSpacing={-0.6}
+          marginBottom="l"
+        >
           {t('migrateToWorld.confirm.title')}
         </Text>
 

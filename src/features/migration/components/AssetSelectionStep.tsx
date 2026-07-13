@@ -155,7 +155,7 @@ const AssetSelectionStep: FC<{
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
       <Box flex={1} paddingHorizontal="l">
-        <Text variant="h4" color="worldInk">
+        <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
           {t('migrateToWorld.selectAssets.readyTitle')}
         </Text>
         <Text

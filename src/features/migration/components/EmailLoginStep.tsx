@@ -120,7 +120,12 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
       <Box flex={1} justifyContent="center" paddingHorizontal="l">
-        <Text variant="h4" color="worldInk" textAlign="center">
+        <Text
+          variant="h4"
+          color="worldInk"
+          letterSpacing={-0.6}
+          textAlign="center"
+        >
           {t('migrateToWorld.linkEmail.title')}
         </Text>
         <Text

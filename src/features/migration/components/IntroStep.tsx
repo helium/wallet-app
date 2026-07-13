@@ -21,7 +21,12 @@ const IntroStep: FC<{
       paddingBottom="l"
     >
       <Box flex={1} justifyContent="center">
-        <Text variant="h1" color="worldInk" textAlign="center">
+        <Text
+          variant="h1"
+          color="worldInk"
+          letterSpacing={-1}
+          textAlign="center"
+        >
           {t('migrateToWorldModal.choosePath.title')}
         </Text>
 

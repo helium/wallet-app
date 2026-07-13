@@ -40,7 +40,12 @@ const OutcomeStep: FC<{
   const { t } = useTranslation()
   return (
     <Box flex={1} justifyContent="center" paddingHorizontal="l">
-      <Text variant="h4" color="worldInk" textAlign="center">
+      <Text
+        variant="h4"
+        color="worldInk"
+        letterSpacing={-0.6}
+        textAlign="center"
+      >
         {title}
       </Text>
       <Text

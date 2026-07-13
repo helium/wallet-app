@@ -14,7 +14,7 @@ const ProgressStep: FC<{ label: string }> = ({ label }) => {
       paddingHorizontal="l"
     >
       <CircleLoader loaderSize={40} color="worldPurple" />
-      <Text variant="h3" color="worldInk" marginTop="l">
+      <Text variant="h3" color="worldInk" letterSpacing={-0.8} marginTop="l">
         {t('migrateToWorld.migrating.title')}
       </Text>
 
