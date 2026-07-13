@@ -7,7 +7,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
-import { apiContract } from '@helium/blockchain-api'
+import { fullApiContract } from '@helium/blockchain-api'
 import { ContractRouterClient } from '@orpc/contract'
 import { BoxProps } from '@shopify/restyle'
 import { VersionedTransaction } from '@solana/web3.js'
@@ -29,7 +29,7 @@ import { useAppDispatch } from '../../store/store'
 import * as Logger from '../../utils/logger'
 
 async function migrateWallet(
-  client: ContractRouterClient<typeof apiContract>,
+  client: ContractRouterClient<typeof fullApiContract>,
   wallet: string,
   onProgress: (progress: number, total: number) => void,
 ) {

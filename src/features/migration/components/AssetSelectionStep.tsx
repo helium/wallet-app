@@ -1,0 +1,217 @@
+import Box from '@components/Box'
+import Text from '@components/Text'
+import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import BottomSheet from '@gorhom/bottom-sheet'
+import { useAppStorage } from '@storage/AppStorageProvider'
+import { numberFormat } from '@utils/Balance'
+import { useLanguage } from '@utils/i18n'
+import React, { FC, useCallback, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../store/rootReducer'
+import { MigratableHotspot } from '../hooks/useMigrationAssets'
+import { MINT_PRICE_KEY } from '../logic/mints'
+import { SelectableToken } from '../logic/types'
+import HotspotsEditSheet from './HotspotsEditSheet'
+import StepBackHeader from './StepBackHeader'
+import TokensEditSheet from './TokensEditSheet'
+import WorldButton from './WorldButton'
+import WorldLoader from './WorldLoader'
+
+export type AssetSelection = {
+  hotspotKeys: Set<string>
+  tokenAmounts: Record<string, string>
+}
+
+const SummaryCard: FC<{
+  count: number
+  label: string
+  sub?: string
+  onEdit: () => void
+}> = ({ count, label, sub, onEdit }) => {
+  const { t } = useTranslation()
+  return (
+    <Box
+      backgroundColor="grey100"
+      borderRadius="xl"
+      borderWidth={1}
+      borderColor="worldBorder"
+      paddingHorizontal="l"
+      paddingVertical="m"
+      marginBottom="s"
+      flexDirection="row"
+      alignItems="center"
+    >
+      <Box
+        width={40}
+        height={40}
+        borderRadius="round"
+        backgroundColor="worldAccentBg"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Text variant="body1" fontWeight="700" color="worldPurple">
+          {count}
+        </Text>
+      </Box>
+      <Box flex={1} marginLeft="m">
+        <Text variant="body2Medium" color="worldInk">
+          {label}
+        </Text>
+        {sub ? (
+          <Text variant="body3" color="worldSecondaryInk" marginTop="xxs">
+            {sub}
+          </Text>
+        ) : null}
+      </Box>
+      <TouchableOpacityBox onPress={onEdit}>
+        <Text variant="body3Medium" color="worldPurple">
+          {t('migrateToWorld.selectAssets.edit')}
+        </Text>
+      </TouchableOpacityBox>
+    </Box>
+  )
+}
+
+const AssetSelectionStep: FC<{
+  hotspots: MigratableHotspot[]
+  tokens: SelectableToken[]
+  leftBehindCount: number
+  loading: boolean
+  onBack: () => void
+  onReview: (sel: AssetSelection) => void
+}> = ({ hotspots, tokens, leftBehindCount, loading, onBack, onReview }) => {
+  const { t } = useTranslation()
+  const { currency } = useAppStorage()
+  const { language } = useLanguage()
+  // Read prices straight from the store — BalanceProvider already polls, so a
+  // second app-wide interval just for this subtitle would be redundant.
+  const tokenPrices = useSelector((s: RootState) => s.balances.tokenPrices)
+  const hotspotsRef = useRef<BottomSheet>(null)
+  const tokensRef = useRef<BottomSheet>(null)
+
+  const [hotspotKeys, setHotspotKeys] = useState<Set<string>>(new Set())
+  const [tokenAmounts, setTokenAmounts] = useState<Record<string, string>>({})
+  const [primed, setPrimed] = useState(false)
+
+  // Pre-select everything the first time assets arrive. Adjusting state
+  // during render (guarded so it runs once) is the idiomatic React pattern
+  // for deriving state from new props without an extra effect pass.
+  if (!primed && (hotspots.length || tokens.length)) {
+    setHotspotKeys(new Set(hotspots.map((h) => h.entityKey)))
+    setTokenAmounts(Object.fromEntries(tokens.map((tk) => [tk.mint, tk.maxUi])))
+    setPrimed(true)
+  }
+
+  // Stable identity so HotspotsEditSheet's memoized rows don't re-render on
+  // every parent render (e.g. price-poll ticks).
+  const toggleHotspot = useCallback(
+    (key: string) =>
+      setHotspotKeys((prev) => {
+        const next = new Set(prev)
+        if (next.has(key)) next.delete(key)
+        else next.add(key)
+        return next
+      }),
+    [],
+  )
+
+  const activeTokenCount = tokens.filter((tk) => {
+    const a = tokenAmounts[tk.mint]
+    return a && a !== '0'
+  }).length
+
+  // Approximate USD value of the selected token amounts, summed over the mints
+  // we have a price for. Omitted entirely when no price is available.
+  const cur = currency?.toLowerCase()
+  const tokensUsd = useMemo(() => {
+    if (!cur || !tokenPrices) return undefined
+    let total = 0
+    let priced = false
+    tokens.forEach((tk) => {
+      const key = MINT_PRICE_KEY[tk.mint]
+      const price = key
+        ? tokenPrices[key as keyof typeof tokenPrices]?.[cur]
+        : undefined
+      const amt = parseFloat(tokenAmounts[tk.mint] ?? '')
+      if (price && amt > 0) {
+        total += price * amt
+        priced = true
+      }
+    })
+    if (!priced) return undefined
+    return t('migrateToWorld.selectAssets.approxValue', {
+      value: numberFormat(language, cur, total),
+    })
+  }, [tokens, tokenAmounts, tokenPrices, cur, language, t])
+
+  const canReview = hotspotKeys.size > 0 || activeTokenCount > 0
+
+  if (loading) {
+    return <WorldLoader caption={t('migrateToWorld.selectAssets.loading')} />
+  }
+
+  return (
+    <Box flex={1}>
+      <StepBackHeader onBack={onBack} />
+      <Box flex={1} paddingHorizontal="l">
+        <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
+          {t('migrateToWorld.selectAssets.readyTitle')}
+        </Text>
+        <Text
+          variant="body3"
+          color="secondaryText"
+          marginTop="xs"
+          marginBottom="l"
+        >
+          {t('migrateToWorld.selectAssets.readyBody')}
+        </Text>
+
+        <SummaryCard
+          count={hotspotKeys.size}
+          label={t('migrateToWorld.selectAssets.hotspots')}
+          onEdit={() => hotspotsRef.current?.expand()}
+        />
+        <SummaryCard
+          count={activeTokenCount}
+          label={t('migrateToWorld.selectAssets.tokens')}
+          sub={tokensUsd}
+          onEdit={() => tokensRef.current?.expand()}
+        />
+
+        {leftBehindCount > 0 && (
+          <Box borderRadius="l" padding="m" backgroundColor="worldWarnBg">
+            <Text variant="body3" color="worldWarnInk">
+              {t('migrateToWorld.selectAssets.leftBehind', {
+                count: leftBehindCount,
+              })}
+            </Text>
+          </Box>
+        )}
+
+        <Box flex={1} />
+        <WorldButton
+          title={t('migrateToWorld.selectAssets.review')}
+          onPress={() => onReview({ hotspotKeys, tokenAmounts })}
+          disabled={!canReview}
+          marginBottom="l"
+        />
+      </Box>
+
+      <HotspotsEditSheet
+        ref={hotspotsRef}
+        hotspots={hotspots}
+        selected={hotspotKeys}
+        onToggle={toggleHotspot}
+      />
+      <TokensEditSheet
+        ref={tokensRef}
+        tokens={tokens}
+        amounts={tokenAmounts}
+        onCommit={setTokenAmounts}
+      />
+    </Box>
+  )
+}
+
+export default AssetSelectionStep

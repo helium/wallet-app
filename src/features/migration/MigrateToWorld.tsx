@@ -1,0 +1,397 @@
+import SafeAreaBox from '@components/SafeAreaBox'
+import { useCurrentWallet } from '@hooks/useCurrentWallet'
+import { useNavigation } from '@react-navigation/native'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { Linking } from 'react-native'
+import { Edge } from 'react-native-safe-area-context'
+import { useTranslation } from 'react-i18next'
+import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo'
+import * as Logger from '@utils/logger'
+import AssetSelectionStep, {
+  AssetSelection,
+} from './components/AssetSelectionStep'
+import ConnectStep from './components/ConnectStep'
+import EmailLoginStep from './components/EmailLoginStep'
+import IntroStep from './components/IntroStep'
+import OutcomeStep from './components/OutcomeStep'
+import ProgressStep from './components/ProgressStep'
+import ReviewStep from './components/ReviewStep'
+import SuccessStep from './components/SuccessStep'
+import WalletCreateErrorStep from './components/WalletCreateErrorStep'
+import WorldLoader from './components/WorldLoader'
+import { WORLD_URL } from './constants'
+import { useMigrationAssets } from './hooks/useMigrationAssets'
+import { useMigrationExecutor } from './hooks/useMigrationExecutor'
+import { FlowStep, useMigrationSession } from './hooks/useMigrationSession'
+import { uiToRaw } from './logic/amounts'
+import { nothingToMigrate, shortenMint } from './logic/assets'
+import { getEmbeddedWallet } from './logic/embeddedWallet'
+import { shouldShowSupport } from './logic/retry'
+import { MigrateInput, stepForOutcome } from './logic/session'
+import { SelectableToken } from './logic/types'
+
+// The tokens the user chose to migrate (nonzero amount), each paired with its
+// resolved SelectableToken when we can find it. Shared by the input builder and
+// the review summary so both walk the selection identically.
+const selectedTokens = (
+  tokenAmounts: Record<string, string>,
+  tokens: SelectableToken[],
+): { mint: string; amount: string; token?: SelectableToken }[] =>
+  Object.entries(tokenAmounts)
+    .filter(([, amt]) => amt && amt !== '0')
+    .map(([mint, amount]) => ({
+      mint,
+      amount,
+      token: tokens.find((x) => x.mint === mint),
+    }))
+
+const MigrateToWorld = () => {
+  const { t } = useTranslation()
+  const navigation = useNavigation()
+  // Bottom-only so the asset sheets (and their dimming backdrop) fill the full
+  // screen height — the steps' own headers carry the top safe-area inset.
+  const edges = useMemo(() => ['bottom'] as Edge[], [])
+  const wallet = useCurrentWallet()
+  const sourceWallet = wallet?.toBase58()
+
+  const { user } = usePrivy()
+  const solanaWallet = useEmbeddedSolanaWallet()
+  const destinationWallet = getEmbeddedWallet(solanaWallet)?.address
+
+  const { step, setStep, persist, resume, clear } =
+    useMigrationSession(sourceWallet)
+  // Assets are only fetched once the flow moves past the intro/connect/login
+  // steps — a user who opens the screen and bails early shouldn't pay the two
+  // API round-trips, and fetching at selection time keeps the data fresh.
+  const assetsNeeded =
+    step !== 'intro' && step !== 'connect' && step !== 'login'
+  const assets = useMigrationAssets(assetsNeeded ? sourceWallet : undefined)
+  const { run, progress } = useMigrationExecutor(persist)
+
+  const [selection, setSelection] = useState<AssetSelection>()
+  const [error, setError] = useState<string>()
+  // Tracked in state (not just a ref) so each failed attempt re-renders — the
+  // support link needs to appear once attempts cross the threshold even while
+  // the step is already 'walletError'.
+  const [createAttempts, setCreateAttempts] = useState(0)
+  const creating = useRef(false)
+
+  // Ensure a destination embedded wallet exists once the user is logged in.
+  // Creation can fail (network/Privy) and there is no destination without it,
+  // so failures route to the 'walletError' step. A successful retry returns to
+  // 'select' (an initial background create leaves the current step untouched).
+  const createWallet = useCallback(async () => {
+    if (!solanaWallet.create || creating.current) return
+    creating.current = true
+    try {
+      // The local hook state can report 'not-created' while the user already
+      // has a Solana wallet server-side (e.g. created in an earlier session) —
+      // create() then rejects rather than handing back the existing wallet.
+      // Probe with recover() first: it resolves if a wallet already exists
+      // and throws harmlessly if not, so we never risk create() minting a
+      // second ("additional") wallet for a user who already has one.
+      if (solanaWallet.recover) {
+        try {
+          await solanaWallet.recover()
+          setStep((s) => (s === 'walletError' ? 'select' : s))
+          return
+        } catch {
+          // No existing wallet to recover — fall through to create().
+        }
+      }
+      await solanaWallet.create()
+      setStep((s) => (s === 'walletError' ? 'select' : s))
+    } catch (err) {
+      Logger.error(err)
+      setCreateAttempts((n) => n + 1)
+      setStep('walletError')
+    } finally {
+      creating.current = false
+    }
+  }, [solanaWallet, setStep])
+
+  useEffect(() => {
+    if (!user || creating.current || step === 'walletError') return
+    if (solanaWallet.status === 'not-created') {
+      createWallet()
+    } else if (solanaWallet.status === 'error') {
+      // Privy can land the wallet in 'error' (e.g. a failed reconnect)
+      // without ever throwing from create() — without this, destinationWallet
+      // never resolves and any screen waiting on it spins forever.
+      Logger.error(new Error(solanaWallet.error))
+      setCreateAttempts((n) => n + 1)
+      setStep('walletError')
+    }
+  }, [user, solanaWallet, step, createWallet, setStep])
+
+  // Backstop for a stuck 'connecting'/'creating' status that never settles
+  // (no error, no success) — otherwise the review/select screens wait on
+  // destinationWallet forever with no way out.
+  useEffect(() => {
+    if (
+      destinationWallet ||
+      (step !== 'review' && step !== 'select') ||
+      (solanaWallet.status !== 'connecting' &&
+        solanaWallet.status !== 'creating')
+    ) {
+      return undefined
+    }
+    const id = setTimeout(() => {
+      setCreateAttempts((n) => n + 1)
+      setStep('walletError')
+    }, 15000)
+    return () => clearTimeout(id)
+  }, [destinationWallet, step, solanaWallet.status, setStep])
+
+  const buildInput = useCallback(
+    (sel: AssetSelection): MigrateInput => ({
+      sourceWallet: sourceWallet || '',
+      destinationWallet: destinationWallet || '',
+      hotspots: Array.from(sel.hotspotKeys),
+      // Drop any mint we can't resolve decimals for — shipping an unconverted
+      // UI decimal as a raw base-unit amount would corrupt the transfer on a
+      // funds-moving path.
+      tokens: selectedTokens(sel.tokenAmounts, assets.tokens).flatMap(
+        ({ mint, amount, token }) =>
+          token ? [{ mint, amount: uiToRaw(amount, token.decimals) }] : [],
+      ),
+    }),
+    [sourceWallet, destinationWallet, assets.tokens],
+  )
+
+  const execute = useCallback(
+    async (
+      input: MigrateInput,
+      returnStep: FlowStep,
+      opts?: { pendingBatchId?: string },
+    ) => {
+      // Single destination-wallet guard. A resumed session can outlive its Privy
+      // embedded wallet (expired session); without a destination, run() would
+      // throw 'Destination wallet unavailable' and dead-end on an empty Review.
+      // Recover the login/create path instead — createWallet leaves the current
+      // step intact on success, so the user re-triggers once a wallet exists.
+      if (!destinationWallet) {
+        if (!user) setStep('login')
+        else createWallet()
+        return
+      }
+      setError(undefined)
+      setStep('migrating')
+      try {
+        const result = await run(input, opts)
+        if (result.status === 'complete') {
+          // Finished cleanly — drop the persisted session instead of leaving a
+          // stale 'complete' record around.
+          await clear()
+        }
+        // Non-complete outcomes leave `resume` updated by the executor's own
+        // persist calls, so the pending/partial screens read counts from there.
+        setStep(stepForOutcome(result.status))
+      } catch (err) {
+        setError((err as Error).message)
+        // Return to the step the run was launched from: 'review' for a live
+        // Confirm, or the retry screen for a resumed retry — never an empty
+        // Review with a no-op Confirm.
+        setStep(returnStep)
+      }
+    },
+    [run, clear, destinationWallet, user, createWallet, setStep],
+  )
+
+  const onConfirm = useCallback(() => {
+    if (selection) execute(buildInput(selection), 'review')
+  }, [selection, buildInput, execute])
+
+  const onRetry = useCallback(() => {
+    // Snapshot the screen we're retrying from so a failure returns here instead
+    // of the Confirm screen. The destination-missing recovery lives in execute.
+    const returnStep = step
+    const retryInput =
+      resume.input ?? (selection ? buildInput(selection) : undefined)
+    // Forward the in-flight batch id so the executor re-polls it to terminal
+    // before re-requesting — prevents re-sending a still-pending transfer.
+    if (retryInput)
+      execute(retryInput, returnStep, {
+        pendingBatchId: resume.pendingBatchId,
+      })
+  }, [
+    step,
+    resume.input,
+    resume.pendingBatchId,
+    selection,
+    buildInput,
+    execute,
+  ])
+
+  const goToWorld = useCallback(() => Linking.openURL(WORLD_URL), [])
+  const dismiss = useCallback(() => navigation.goBack(), [navigation])
+
+  const tokenLines = useMemo(
+    () =>
+      selection
+        ? selectedTokens(selection.tokenAmounts, assets.tokens).map(
+            ({ mint, amount, token }) =>
+              `${amount} ${token?.label ?? shortenMint(mint)}`,
+          )
+        : [],
+    [selection, assets.tokens],
+  )
+
+  const isLoggedIn = !!user && !!destinationWallet
+
+  const render = () => {
+    switch (step) {
+      case 'intro':
+        return (
+          <IntroStep
+            onContinue={() => setStep(isLoggedIn ? 'select' : 'login')}
+            onUseOwnWallet={() => setStep('connect')}
+            onDismiss={dismiss}
+          />
+        )
+      case 'connect':
+        return <ConnectStep onBack={() => setStep('intro')} />
+      case 'login':
+        return (
+          <EmailLoginStep
+            onBack={() => setStep('intro')}
+            // A re-login to recover an expired Privy session must return to the
+            // resume screen, not fresh selection — use the same status→screen
+            // mapping the resume effect uses so the partial/pending context
+            // isn't lost (hasRoutedRef is already latched by then).
+            onSuccess={() =>
+              setStep(
+                resume.canResume ? stepForOutcome(resume.status) : 'select',
+              )
+            }
+          />
+        )
+      case 'select':
+        // A failed asset load must not read as "nothing to migrate" — offer a
+        // retry instead so a user with assets isn't wrongly told they're done.
+        if (assets.error) {
+          return (
+            <OutcomeStep
+              title={t('migrateToWorld.selectAssets.loadErrorTitle')}
+              body={t('migrateToWorld.selectAssets.loadErrorBody')}
+              primaryTitle={t('migrateToWorld.selectAssets.retry')}
+              onPrimary={assets.reload}
+              onDismiss={dismiss}
+            />
+          )
+        }
+        if (nothingToMigrate(assets.loading, assets.hotspots, assets.tokens)) {
+          return (
+            <OutcomeStep
+              title={t('migrateToWorld.nothingToMigrate.title')}
+              body={t('migrateToWorld.nothingToMigrate.body')}
+              primaryTitle={t('migrateToWorld.nothingToMigrate.done')}
+              onPrimary={dismiss}
+            />
+          )
+        }
+        return (
+          <AssetSelectionStep
+            hotspots={assets.hotspots}
+            tokens={assets.tokens}
+            leftBehindCount={assets.leftBehindMints.length}
+            loading={assets.loading}
+            onBack={() => setStep('intro')}
+            onReview={(sel) => {
+              setSelection(sel)
+              setStep('review')
+            }}
+          />
+        )
+      case 'review':
+        // The embedded wallet can still be connecting right after login (the
+        // 'select' step doesn't block on it) — wait rather than showing a
+        // blank "..." destination address.
+        if (!destinationWallet) {
+          return <WorldLoader caption={t('generic.loading')} />
+        }
+        return (
+          <ReviewStep
+            sourceWallet={sourceWallet || ''}
+            destinationWallet={destinationWallet || ''}
+            hotspotCount={selection?.hotspotKeys.size ?? 0}
+            tokenLines={tokenLines}
+            error={error}
+            onBack={() => setStep('select')}
+            onConfirm={onConfirm}
+          />
+        )
+      case 'migrating':
+        return (
+          <ProgressStep
+            label={
+              progress
+                ? t('migrateToWorld.migrating.batchLabel', {
+                    phase: t(
+                      `migrateToWorld.migrating.phases.${progress.phase}`,
+                    ),
+                    batch: progress.batch,
+                  })
+                : ''
+            }
+          />
+        )
+      case 'pending':
+      case 'partial':
+        // Parallel outcome screens keyed on the step: pending's body ignores the
+        // failed count, and each has its own primary action label.
+        return (
+          <OutcomeStep
+            title={t(`migrateToWorld.${step}.title`)}
+            body={t(`migrateToWorld.${step}.body`, {
+              moved: resume.movedCount,
+              failed: resume.failedCount,
+            })}
+            primaryTitle={t(
+              step === 'pending'
+                ? 'migrateToWorld.pending.checkStatus'
+                : 'migrateToWorld.partial.retry',
+            )}
+            onPrimary={onRetry}
+            onDismiss={dismiss}
+            error={error}
+          />
+        )
+      case 'success':
+        return (
+          <SuccessStep
+            destinationWallet={destinationWallet || ''}
+            onGoToWorld={goToWorld}
+            onDone={dismiss}
+          />
+        )
+      case 'walletError':
+        // A logged-in user with no destination wallet is stuck until creation
+        // succeeds — offer retry, and a support link after repeated failures.
+        return (
+          <WalletCreateErrorStep
+            onRetry={createWallet}
+            onDismiss={dismiss}
+            showSupport={shouldShowSupport(createAttempts)}
+          />
+        )
+      default:
+        return null
+    }
+  }
+
+  return (
+    <SafeAreaBox edges={edges} flex={1} backgroundColor="worldSurface">
+      {render()}
+    </SafeAreaBox>
+  )
+}
+
+export default memo(MigrateToWorld)

@@ -1,4 +1,4 @@
-import { apiContract } from '@helium/blockchain-api'
+import { fullApiContract } from '@helium/blockchain-api'
 import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { ContractRouterClient } from '@orpc/contract'
@@ -8,7 +8,7 @@ import Config from 'react-native-config'
 import { RootState } from '../store/rootReducer'
 
 const BlockchainApiContext = createContext<ContractRouterClient<
-  typeof apiContract
+  typeof fullApiContract
 > | null>(null)
 
 export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
@@ -47,7 +47,7 @@ export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
           }),
         ],
       })
-      const orpcClient: ContractRouterClient<typeof apiContract> =
+      const orpcClient: ContractRouterClient<typeof fullApiContract> =
         createORPCClient(link)
 
       return orpcClient
@@ -65,7 +65,7 @@ export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
 }
 
 export const useBlockchainApi = (): ContractRouterClient<
-  typeof apiContract
+  typeof fullApiContract
 > => {
   const context = useContext(BlockchainApiContext)
 
