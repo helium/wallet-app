@@ -12,6 +12,7 @@ import { PublicKey } from '@solana/web3.js'
 import React, { FC, forwardRef, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
+import { WSOL_MINT } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
 import { WORLD, WORLD_INPUT } from '../migrationTheme'
 
@@ -27,6 +28,10 @@ type Props = {
   onCommit: (amounts: Record<string, string>) => void
 }
 
+// SOL keeps a free-form amount input (users typically hold back gas on the old
+// wallet); every other token migrates full-balance-or-nothing — the backend
+// only sponsors transfers that close the source ATA — so those rows are a
+// simple include/exclude toggle at max balance.
 const TokenRow: FC<{
   token: SelectableToken
   value: string
@@ -36,6 +41,46 @@ const TokenRow: FC<{
   const { t } = useTranslation()
   const mint = useMemo(() => new PublicKey(token.mint), [token.mint])
   const { json } = useMetaplexMetadata(mint)
+  const isSol = token.mint === WSOL_MINT
+
+  if (!isSol) {
+    const isSelected = value !== '' && value !== '0'
+    return (
+      <TouchableOpacityBox
+        onPress={() => onChange(isSelected ? '0' : token.maxUi)}
+        flexDirection="row"
+        alignItems="center"
+        paddingHorizontal="l"
+        paddingVertical="s"
+      >
+        <TokenIcon size={32} img={json?.image} />
+        <Box flex={1} marginLeft="s">
+          <Text variant="body2Medium" color="worldInk">
+            {token.label}
+          </Text>
+          <Text
+            variant="body3"
+            fontSize={11}
+            color="worldSecondaryInk"
+            marginTop="xxs"
+          >
+            {t('migrateToWorld.selectAssets.balance', {
+              amount: token.maxUi,
+            })}
+          </Text>
+        </Box>
+        <Box
+          width={22}
+          height={22}
+          borderRadius="s"
+          backgroundColor={isSelected ? 'worldPurple' : 'transparent'}
+          borderWidth={isSelected ? 0 : 1.5}
+          borderColor="secondaryText"
+        />
+      </TouchableOpacityBox>
+    )
+  }
+
   return (
     <Box
       flexDirection="row"
