@@ -57,7 +57,7 @@ export const DelegateTokensModal = ({
     mobile: mobileDataUsageRev,
     loading: revLoading,
   } = revData || {}
-  const { data: delegationData, loading: delegationLoading } =
+  const { data: delegationData, isLoading: delegationLoading } =
     useSubDaoDelegationSplit({
       voteService,
     })

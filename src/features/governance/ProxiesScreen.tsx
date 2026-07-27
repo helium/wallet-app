@@ -45,7 +45,7 @@ export default function ProxiesScreen() {
     isLoading,
     isFetchingNextPage,
     refetch,
-  } = useInfiniteQuery<EnhancedProxy>(
+  } = useInfiniteQuery(
     proxiesQuery({
       search: searchDebounced,
       amountPerPage: 100,

@@ -166,7 +166,6 @@ const AutomationSetupScreen = () => {
       await createAutomation({
         schedule: selectedSchedule,
         duration: parseInt(duration, 10),
-        totalHotspots,
         estimate: estimate.estimate
           ? {
               rentFee: estimate.estimate.rentFee,
