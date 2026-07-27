@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Deque subscription for AXE_LINTER_API_KEY is expired; the action executes
+    # the API error message and fails every run. Non-blocking until renewed.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v3
