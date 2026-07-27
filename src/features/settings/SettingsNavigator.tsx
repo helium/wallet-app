@@ -3,6 +3,7 @@ import { useOpacity } from '@theme/themeHooks'
 import React, { memo } from 'react'
 import SecretKeyWarningScreen from '@components/SecretKeyWarningScreen'
 import SolanaMigration from '../migration/SolanaMigration'
+import MigrateToWorldScreen from '../migration/MigrateToWorld'
 import AutoGasManager from './AutoGasManager'
 import ConfirmSignoutScreen from './ConfirmSignoutScreen'
 import RevealPrivateKeyScreen from './RevealPrivateKeyScreen'
@@ -78,6 +79,11 @@ const SettingsNavigator = () => {
         name="MigrateWallet"
         component={SolanaMigrationWrapper}
         options={{ presentation: 'transparentModal' }}
+      />
+      <SettingsStack.Screen
+        name="MigrateToWorld"
+        component={MigrateToWorldScreen}
+        options={{ presentation: 'fullScreenModal' }}
       />
       <SettingsStack.Screen
         name="AutoGasManager"

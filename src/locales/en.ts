@@ -1118,6 +1118,7 @@ export default {
         },
         title: '{{alias}} Wallet Settings',
         migrateWallet: 'Migrate Wallet',
+        migrateToWorld: 'Migrate to Helium World',
       },
       app: {
         convertHntToCurrency: 'Convert HNT to Currency',
@@ -1551,5 +1552,137 @@ export default {
     error: 'An error occurred. Please try again.',
     estimatedReceive: 'Estimated HNT you will receive',
     calculatingEstimate: 'Calculating estimate...',
+  },
+  migrateToWorldModal: {
+    welcome: {
+      title: 'Helium World is Here',
+      body: "We're moving to a new web experience with improved analytics about your Hotspots, rewards, and deployment locations — plus new features like rewards splitting.\n\nThis wallet app will eventually be sunset. Let's get you set up on Helium World.",
+      next: 'Get Started',
+    },
+    choosePath: {
+      title: 'How would you like to continue?',
+      emailTitle: 'Login with Email',
+      emailBody:
+        "Create a Helium World account linked to your email. We'll migrate your assets for you.",
+      selfCustodyTitle: 'Use Your Own Wallet',
+      selfCustodyBody:
+        'Connect a wallet you already control on Helium World — nothing to export, no funds move.',
+    },
+    dismiss: 'Dismiss',
+    findInSettings: 'You can find this later in Settings',
+  },
+  migrateToWorld: {
+    back: '← Back',
+    resumeOffer: {
+      title: 'Finish your migration',
+      body: 'You have a migration in progress. Pick up where you left off?',
+      resume: 'Resume',
+      notNow: 'Not now',
+    },
+    intro: {
+      title: 'Welcome to Helium World',
+      body: "A new home for your Hotspots and rewards. We'll bring everything over — no fees, we cover them.",
+      continue: 'Continue',
+      later: 'Not now',
+      useOwnWallet: "I'll use my own wallet",
+    },
+    connect: {
+      title: 'Connect Your Own Wallet',
+      reassurance:
+        "No funds move here — you're just signing in with a wallet you already control.",
+      softwareTitle: 'I use Phantom or Solflare',
+      softwareStep1: 'Open world.helium.com and tap Connect Wallet.',
+      softwareStep2: 'Choose your wallet app (e.g. Phantom or Solflare).',
+      softwareStep3:
+        "Approve the sign-in request — signing in doesn't move funds or expose keys.",
+      hardwareTitle: 'I use a Ledger or Keystone hardware wallet',
+      hardwareStep1:
+        'Connect your Ledger to a wallet app that supports it (e.g. Phantom or Solflare).',
+      hardwareStep2: 'Open world.helium.com and tap Connect Wallet.',
+      hardwareStep3: 'Choose that wallet app and select your hardware account.',
+      hardwareStep4: 'Approve the sign-in on the device.',
+      openWorld: 'Open World',
+    },
+    linkEmail: {
+      title: 'Link Your Email',
+      body: 'Link an email address to create your Helium World account.',
+      button: 'Link Email',
+      verify: 'Verify',
+      codePlaceholder: 'Enter code',
+      loggingIn: 'Signing in…',
+      emailPlaceholder: 'you@example.com',
+      differentEmail: 'Use a different email',
+      resend: 'Resend code',
+      resendIn: 'Resend code in {{seconds}}s',
+    },
+    createWallet: {
+      errorTitle: "Couldn't create your World wallet",
+      errorBody:
+        'Something went wrong setting up your World wallet. You need one to continue.',
+      retry: 'Try again',
+      supportBody:
+        "Still not working? Visit docs.helium.com for help — we'll get you sorted.",
+      support: 'Get help',
+    },
+    selectAssets: {
+      readyTitle: 'Ready to move',
+      readyBody: "Everything's selected. Tap a group to fine-tune.",
+      hotspots: 'Hotspots',
+      tokens: 'Tokens',
+      edit: 'Edit ›',
+      max: 'MAX',
+      balance: 'Balance: {{amount}}',
+      leftBehind:
+        "⚠ {{count}} token can't move automatically — it stays in your wallet.",
+      leftBehind_other:
+        "⚠ {{count}} tokens can't move automatically — they stay in your wallet.",
+      loading: 'Loading assets...',
+      review: 'Review Migration',
+      approxValue: '≈ {{value}}',
+      loadErrorTitle: "Couldn't load your assets",
+      loadErrorBody:
+        'Something went wrong loading your assets. Check your connection and try again.',
+      retry: 'Try again',
+    },
+    nothingToMigrate: {
+      title: "You're all set",
+      body: 'There is nothing to migrate from this wallet.',
+      done: 'Done',
+    },
+    confirm: {
+      title: 'Confirm Migration',
+      source: 'From',
+      destination: 'To',
+      fees: 'Fees',
+      free: 'Free',
+      button: 'Confirm & Migrate',
+    },
+    migrating: {
+      title: 'Migrating',
+      walletReady: '✓ World wallet ready',
+      phases: {
+        requesting: 'Preparing',
+        signing: 'Signing',
+        submitting: 'Submitting',
+        confirming: 'Confirming',
+      },
+      batchLabel: '{{phase}} · batch {{batch}}',
+    },
+    pending: {
+      title: 'Still processing',
+      body: "{{moved}} transfers confirmed so far — the rest are still confirming on the network. Your confirmed transfers are safe, and this can take a little while. It's fine to close this and check back.",
+      checkStatus: 'Check status',
+    },
+    partial: {
+      title: 'Almost there',
+      body: '{{moved}} transfers confirmed · {{failed}} need a retry.',
+      retry: 'Retry failed items',
+    },
+    success: {
+      title: 'Migration Complete',
+      body: 'Your assets have been successfully migrated to Helium World.',
+      wallet: 'New wallet: {{address}}',
+      goToWorld: 'Go to Helium World',
+    },
   },
 }

@@ -48,12 +48,10 @@ export function useAutomation() {
     mutationFn: async ({
       schedule,
       duration,
-      totalHotspots,
       estimate,
     }: {
       schedule: Schedule
       duration: number
-      totalHotspots: number
       estimate?: {
         rentFee: number
         recipientFee: number
@@ -69,7 +67,6 @@ export function useAutomation() {
         walletAddress,
         schedule,
         duration,
-        totalHotspots,
       })
 
       // Deserialize transactions for preview

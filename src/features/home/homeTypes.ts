@@ -1,5 +1,7 @@
+import { NavigatorScreenParams } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { RouteAccount } from '../onboarding/create/createAccountNavTypes'
+import { SettingsStackParamList } from '../settings/settingsTypes'
 
 export type PaymentRouteParam = {
   payer?: string
@@ -37,7 +39,7 @@ export type HomeStackParamList = {
   OnboardData: undefined
   AddressBookNavigator: undefined
   NotificationsNavigator: undefined
-  SettingsNavigator: undefined
+  SettingsNavigator: NavigatorScreenParams<SettingsStackParamList> | undefined
   AddNewContact: undefined
   AddNewAccountNavigator: undefined
   SwapNavigator: undefined
