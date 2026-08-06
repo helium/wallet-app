@@ -188,7 +188,8 @@ const palette = {
   purpleHeart: '#3E42E5',
   worldPurple: '#661FFB',
   worldPurpleFaint: '#9F75FF',
-  worldSuccess: '#16A34A',
+  // Dark enough for AA contrast as 12pt text on worldSuccessBg.
+  worldSuccess: '#15803D',
   worldSuccessBg: '#E7F6EC',
   worldWarnBg: 'rgba(255,196,0,0.14)',
   worldWarnInk: '#8A6D00',
@@ -196,6 +197,7 @@ const palette = {
   worldSurfaceAlt: '#F5F3F7',
   worldInk: '#17131F',
   worldSecondaryInk: '#575757',
+  worldInkFaint: '#9A94A6',
   worldBorder: '#E5E5E5',
   worldAccentBg: '#F3EEFE',
   red200: '#F59CA2',

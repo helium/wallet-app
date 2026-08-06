@@ -1,15 +1,22 @@
+import DownArrow from '@assets/images/downArrow.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
+import { useColors } from '@theme/themeHooks'
 import { shortenAddress } from '@utils/formatting'
 import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
+import { WORLD_TRACKING } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
 
+export type ReviewTokenLine = { mint: string; label: string; amount: string }
+
+const contentStyle = { paddingBottom: 16 }
+
 const Card: FC<{ children: ReactNode }> = ({ children }) => (
   <Box
-    backgroundColor="grey100"
+    backgroundColor="worldSurfaceAlt"
     borderRadius="xl"
     borderWidth={1}
     borderColor="worldBorder"
@@ -40,31 +47,33 @@ const Line: FC<{ label: string; value: string }> = ({ label, value }) => (
 const Divider = () => <Box height={1} backgroundColor="worldBorder" />
 
 // A hairline divider with a centered down-arrow badge, showing assets flowing
-// from the source wallet into the destination.
-const ArrowDivider = () => (
-  <Box paddingVertical="xs" alignItems="center" justifyContent="center">
-    <Box height={1} backgroundColor="worldBorder" width="100%" />
-    <Box
-      position="absolute"
-      width={26}
-      height={26}
-      borderRadius="round"
-      backgroundColor="worldAccentBg"
-      alignItems="center"
-      justifyContent="center"
-    >
-      <Text variant="body2Medium" color="worldPurple" lineHeight={18}>
-        ↓
-      </Text>
+// from the source wallet into the destination. The container is tall enough to
+// hold the badge so it no longer overhangs the neighboring rows.
+const ArrowDivider = () => {
+  const colors = useColors()
+  return (
+    <Box height={30} alignItems="center" justifyContent="center">
+      <Box height={1} backgroundColor="worldBorder" width="100%" />
+      <Box
+        position="absolute"
+        width={28}
+        height={28}
+        borderRadius="round"
+        backgroundColor="worldAccentBg"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <DownArrow color={colors.worldPurple} width={11} height={13} />
+      </Box>
     </Box>
-  </Box>
-)
+  )
+}
 
 const ReviewStep: FC<{
   sourceWallet: string
   destinationWallet: string
   hotspotCount: number
-  tokenLines: string[]
+  tokenLines: ReviewTokenLine[]
   error?: string
   onBack: () => void
   onConfirm: () => void
@@ -85,13 +94,16 @@ const ReviewStep: FC<{
         <Text
           variant="h4"
           color="worldInk"
-          letterSpacing={-0.6}
+          letterSpacing={WORLD_TRACKING.title}
           marginBottom="l"
         >
           {t('migrateToWorld.confirm.title')}
         </Text>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={contentStyle}
+        >
           <Card>
             <Line
               label={t('migrateToWorld.confirm.source')}
@@ -110,17 +122,9 @@ const ReviewStep: FC<{
               value={String(hotspotCount)}
             />
             {tokenLines.map((line) => (
-              <Box key={line}>
+              <Box key={line.mint}>
                 <Divider />
-                <Box
-                  flexDirection="row"
-                  justifyContent="flex-end"
-                  paddingVertical="s"
-                >
-                  <Text variant="body2Medium" color="worldInk">
-                    {line}
-                  </Text>
-                </Box>
+                <Line label={line.label} value={line.amount} />
               </Box>
             ))}
           </Card>
@@ -130,7 +134,7 @@ const ReviewStep: FC<{
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center"
-              paddingVertical="xs"
+              paddingVertical="s"
             >
               <Text variant="body3" color="worldSecondaryInk">
                 {t('migrateToWorld.confirm.fees')}
@@ -141,7 +145,7 @@ const ReviewStep: FC<{
                 paddingHorizontal="m"
                 paddingVertical="xs"
               >
-                <Text variant="body3" color="worldSuccess" fontWeight="700">
+                <Text variant="body3Bold" color="worldSuccess">
                   {t('migrateToWorld.confirm.free')}
                 </Text>
               </Box>

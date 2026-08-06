@@ -10,12 +10,8 @@ import React, { forwardRef, memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ListRenderItem } from 'react-native'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
-import { WORLD } from '../migrationTheme'
-
-// World-Light sheet surface + grabber + scrim, matching TokensEditSheet.
-const SHEET_BG = { backgroundColor: WORLD.sheetSurface }
-const SHEET_HANDLE = { backgroundColor: WORLD.inkFaint }
-const SHEET_CORNERS = { borderTopLeftRadius: 24, borderTopRightRadius: 24 }
+import { WORLD_SHEET, WORLD_TRACKING } from '../migrationTheme'
+import WorldCheckbox from './WorldCheckbox'
 
 type Props = {
   hotspots: MigratableHotspot[]
@@ -47,22 +43,16 @@ const HotspotRow = memo(
         flexDirection="row"
         alignItems="center"
         paddingHorizontal="l"
-        paddingVertical="m"
+        paddingVertical="ms"
       >
-        <Box
-          width={22}
-          height={22}
-          borderRadius="s"
-          marginRight="m"
-          backgroundColor={isSelected ? 'worldPurple' : 'transparent'}
-          borderWidth={isSelected ? 0 : 1.5}
-          borderColor="secondaryText"
-        />
+        <Box marginRight="m">
+          <WorldCheckbox checked={isSelected} />
+        </Box>
         <Box flex={1}>
           <Text variant="body2Medium" color="worldInk">
             {name}
           </Text>
-          <Text variant="body3" color="secondaryText">
+          <Text variant="body3" color="worldSecondaryInk">
             {type} · {deviceType}
           </Text>
         </Box>
@@ -101,13 +91,16 @@ const HotspotsEditSheet = forwardRef<BottomSheet, Props>(
         index={-1}
         snapPoints={['70%']}
         enablePanDownToClose
-        backgroundStyle={SHEET_BG}
-        handleIndicatorStyle={SHEET_HANDLE}
-        style={SHEET_CORNERS}
+        backgroundStyle={WORLD_SHEET.background}
+        handleIndicatorStyle={WORLD_SHEET.handle}
         backdropComponent={renderBackdrop}
       >
         <Box paddingHorizontal="l" paddingBottom="s">
-          <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
+          <Text
+            variant="h4"
+            color="worldInk"
+            letterSpacing={WORLD_TRACKING.title}
+          >
             {t('migrateToWorld.selectAssets.hotspots')}
           </Text>
         </Box>

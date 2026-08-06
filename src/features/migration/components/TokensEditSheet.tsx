@@ -14,13 +14,13 @@ import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
 import { WSOL_MINT } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
-import { WORLD, WORLD_INPUT } from '../migrationTheme'
-
-// World-Light sheet: a faintly tinted surface + grabber + dimming scrim so it
-// reads as a drawer lifted off the white page rather than part of it.
-const SHEET_BG = { backgroundColor: WORLD.sheetSurface }
-const SHEET_HANDLE = { backgroundColor: WORLD.inkFaint }
-const SHEET_CORNERS = { borderTopLeftRadius: 24, borderTopRightRadius: 24 }
+import {
+  WORLD,
+  WORLD_INPUT,
+  WORLD_SHEET,
+  WORLD_TRACKING,
+} from '../migrationTheme'
+import WorldCheckbox from './WorldCheckbox'
 
 type Props = {
   tokens: SelectableToken[]
@@ -51,32 +51,22 @@ const TokenRow: FC<{
         flexDirection="row"
         alignItems="center"
         paddingHorizontal="l"
-        paddingVertical="s"
+        paddingVertical="ms"
       >
+        <Box marginRight="m">
+          <WorldCheckbox checked={isSelected} />
+        </Box>
         <TokenIcon size={32} img={json?.image} />
         <Box flex={1} marginLeft="s">
           <Text variant="body2Medium" color="worldInk">
             {token.label}
           </Text>
-          <Text
-            variant="body3"
-            fontSize={11}
-            color="worldSecondaryInk"
-            marginTop="xxs"
-          >
+          <Text variant="body3" color="worldSecondaryInk" marginTop="xxs">
             {t('migrateToWorld.selectAssets.balance', {
               amount: token.maxUi,
             })}
           </Text>
         </Box>
-        <Box
-          width={22}
-          height={22}
-          borderRadius="s"
-          backgroundColor={isSelected ? 'worldPurple' : 'transparent'}
-          borderWidth={isSelected ? 0 : 1.5}
-          borderColor="secondaryText"
-        />
       </TouchableOpacityBox>
     )
   }
@@ -86,8 +76,11 @@ const TokenRow: FC<{
       flexDirection="row"
       alignItems="center"
       paddingHorizontal="l"
-      paddingVertical="s"
+      paddingVertical="ms"
     >
+      {/* Spacer matching the checkbox column so the SOL row's icon/label
+          stay aligned with the toggle rows above. */}
+      <Box width={22} marginRight="m" />
       <TokenIcon size={32} img={json?.image} />
       <Box flex={1} marginLeft="s">
         <Text variant="body2Medium" color="worldInk">
@@ -98,16 +91,10 @@ const TokenRow: FC<{
           flexDirection="row"
           marginTop="xxs"
         >
-          <Text variant="body3" fontSize={11} color="worldSecondaryInk">
+          <Text variant="body3" color="worldSecondaryInk">
             {t('migrateToWorld.selectAssets.balance', { amount: token.maxUi })}
           </Text>
-          <Text
-            variant="body3"
-            fontSize={11}
-            color="worldPurple"
-            fontWeight="700"
-            marginLeft="xs"
-          >
+          <Text variant="body3Bold" color="worldPurple" marginLeft="xs">
             {t('migrateToWorld.selectAssets.max')}
           </Text>
         </TouchableOpacityBox>
@@ -174,16 +161,19 @@ const TokensEditSheet = forwardRef<BottomSheet, Props>(
         index={-1}
         snapPoints={['70%']}
         enablePanDownToClose
-        backgroundStyle={SHEET_BG}
-        handleIndicatorStyle={SHEET_HANDLE}
-        style={SHEET_CORNERS}
+        backgroundStyle={WORLD_SHEET.background}
+        handleIndicatorStyle={WORLD_SHEET.handle}
         backdropComponent={renderBackdrop}
         onChange={handleChange}
         onClose={handleClose}
       >
         <BottomSheetScrollView>
           <Box paddingHorizontal="l" paddingBottom="s">
-            <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
+            <Text
+              variant="h4"
+              color="worldInk"
+              letterSpacing={WORLD_TRACKING.title}
+            >
               {t('migrateToWorld.selectAssets.tokens')}
             </Text>
           </Box>

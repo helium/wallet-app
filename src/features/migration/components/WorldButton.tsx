@@ -75,6 +75,11 @@ const WorldButton: FC<Props> = ({ variant = 'primary', ...rest }) => {
       borderWidth={v.borderColor ? 1.5 : undefined}
       titleColorPressedOpacity={v.titleFades ? 0.3 : undefined}
       titleColor={v.titleColor}
+      // Disabled CTAs must read as disabled — without these, ButtonPressable
+      // renders a disabled button pixel-identical to an enabled one. Ghost
+      // stays background-free for the same tinycolor reason as above.
+      backgroundColorDisabled={v.background ? 'worldSurfaceAlt' : undefined}
+      titleColorDisabled="worldInkFaint"
       {...rest}
     />
   )

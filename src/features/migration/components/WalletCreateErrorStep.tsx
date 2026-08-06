@@ -34,7 +34,7 @@ const WalletCreateErrorStep: FC<{
       {showSupport ? (
         <Text
           variant="body3"
-          color="secondaryText"
+          color="worldSecondaryInk"
           textAlign="center"
           marginTop="m"
         >

@@ -8,7 +8,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
 import { resendBackoffSeconds } from '../logic/retry'
-import { WORLD, WORLD_INPUT } from '../migrationTheme'
+import { WORLD, WORLD_INPUT, WORLD_TRACKING } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
 import WorldLoader from './WorldLoader'
@@ -106,7 +106,6 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
   if (!isReady || completing || hasLinkedEmail) {
     return (
       <WorldLoader
-        captionVariant="body2"
         caption={
           completing
             ? t('migrateToWorld.linkEmail.loggingIn')
@@ -119,30 +118,35 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
   return (
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
-      <Box flex={1} justifyContent="center" paddingHorizontal="l">
+      <Box flex={1} paddingHorizontal="l">
         <Text
           variant="h4"
           color="worldInk"
-          letterSpacing={-0.6}
-          textAlign="center"
+          letterSpacing={WORLD_TRACKING.title}
         >
           {t('migrateToWorld.linkEmail.title')}
         </Text>
         <Text
           variant="body2"
-          color="secondaryText"
-          textAlign="center"
-          marginTop="m"
+          color="worldSecondaryInk"
+          lineHeight={22}
+          marginTop="xs"
         >
           {t('migrateToWorld.linkEmail.body')}
         </Text>
         {error ? (
-          <Text variant="body3" color="error" textAlign="center" marginTop="m">
+          <Text variant="body3" color="error" marginTop="m">
             {error}
           </Text>
         ) : null}
-        <Box marginTop="xl">
-          <Box backgroundColor="grey100" borderRadius="l" paddingHorizontal="m">
+        <Box marginTop="l">
+          <Box
+            backgroundColor="worldSurfaceAlt"
+            borderWidth={1}
+            borderColor="worldBorder"
+            borderRadius="l"
+            paddingHorizontal="m"
+          >
             <TextInput
               value={codeSent ? code : email}
               onChangeText={codeSent ? setCode : setEmail}
@@ -169,7 +173,10 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
             marginTop="m"
             LeadingComponent={
               sending || verifying ? (
-                <CircleLoader loaderSize={20} color="white" />
+                // The button is disabled while in flight, which paints the
+                // worldSurfaceAlt disabled background — a white spinner would
+                // be invisible on it.
+                <CircleLoader loaderSize={20} color="worldPurple" />
               ) : undefined
             }
           />
@@ -177,13 +184,13 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
             <TouchableOpacityBox
               onPress={handleResend}
               disabled={secondsLeft > 0 || sending}
-              marginTop="m"
+              marginTop="s"
+              padding="s"
               alignItems="center"
             >
               <Text
-                variant="body3"
-                color="secondaryText"
-                opacity={secondsLeft > 0 ? 0.5 : 1}
+                variant="body3Medium"
+                color={secondsLeft > 0 ? 'worldInkFaint' : 'worldPurple'}
               >
                 {secondsLeft > 0
                   ? t('migrateToWorld.linkEmail.resendIn', {
@@ -199,10 +206,11 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
                 setCodeSent(false)
                 setCode('')
               }}
-              marginTop="m"
+              marginTop="xs"
+              padding="s"
               alignItems="center"
             >
-              <Text variant="body3" color="secondaryText">
+              <Text variant="body3Medium" color="worldPurple">
                 {t('migrateToWorld.linkEmail.differentEmail')}
               </Text>
             </TouchableOpacityBox>
