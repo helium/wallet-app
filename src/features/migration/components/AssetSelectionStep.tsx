@@ -12,6 +12,7 @@ import { RootState } from '../../../store/rootReducer'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
 import { MINT_PRICE_KEY } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
+import { WORLD_TRACKING } from '../migrationTheme'
 import HotspotsEditSheet from './HotspotsEditSheet'
 import StepBackHeader from './StepBackHeader'
 import TokensEditSheet from './TokensEditSheet'
@@ -23,6 +24,10 @@ export type AssetSelection = {
   tokenAmounts: Record<string, string>
 }
 
+const CHEVRON_RIGHT_STYLE = { transform: [{ rotate: '45deg' }] }
+
+// The whole card is the tap target (the old 12pt "Edit" label alone was far
+// below a 44pt target); the trailing Edit affordance is decorative.
 const SummaryCard: FC<{
   count: number
   label: string
@@ -31,8 +36,9 @@ const SummaryCard: FC<{
 }> = ({ count, label, sub, onEdit }) => {
   const { t } = useTranslation()
   return (
-    <Box
-      backgroundColor="grey100"
+    <TouchableOpacityBox
+      onPress={onEdit}
+      backgroundColor="worldSurfaceAlt"
       borderRadius="xl"
       borderWidth={1}
       borderColor="worldBorder"
@@ -50,7 +56,7 @@ const SummaryCard: FC<{
         alignItems="center"
         justifyContent="center"
       >
-        <Text variant="body1" fontWeight="700" color="worldPurple">
+        <Text variant="body1Bold" color="worldPurple">
           {count}
         </Text>
       </Box>
@@ -64,12 +70,20 @@ const SummaryCard: FC<{
           </Text>
         ) : null}
       </Box>
-      <TouchableOpacityBox onPress={onEdit}>
-        <Text variant="body3Medium" color="worldPurple">
+      <Box flexDirection="row" alignItems="center">
+        <Text variant="body3Medium" color="worldPurple" marginRight="xs">
           {t('migrateToWorld.selectAssets.edit')}
         </Text>
-      </TouchableOpacityBox>
-    </Box>
+        <Box
+          width={7}
+          height={7}
+          borderTopWidth={1.5}
+          borderRightWidth={1.5}
+          borderColor="worldPurple"
+          style={CHEVRON_RIGHT_STYLE}
+        />
+      </Box>
+    </TouchableOpacityBox>
   )
 }
 
@@ -155,12 +169,16 @@ const AssetSelectionStep: FC<{
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
       <Box flex={1} paddingHorizontal="l">
-        <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
+        <Text
+          variant="h4"
+          color="worldInk"
+          letterSpacing={WORLD_TRACKING.title}
+        >
           {t('migrateToWorld.selectAssets.readyTitle')}
         </Text>
         <Text
-          variant="body3"
-          color="secondaryText"
+          variant="body2"
+          color="worldSecondaryInk"
           marginTop="xs"
           marginBottom="l"
         >
@@ -180,7 +198,12 @@ const AssetSelectionStep: FC<{
         />
 
         {leftBehindCount > 0 && (
-          <Box borderRadius="l" padding="m" backgroundColor="worldWarnBg">
+          <Box
+            borderRadius="l"
+            padding="m"
+            marginTop="xs"
+            backgroundColor="worldWarnBg"
+          >
             <Text variant="body3" color="worldWarnInk">
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,

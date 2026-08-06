@@ -1555,46 +1555,47 @@ export default {
   },
   migrateToWorldModal: {
     welcome: {
-      title: 'Helium World is Here',
-      body: "We're moving to a new web experience with improved analytics about your Hotspots, rewards, and deployment locations — plus new features like rewards splitting.\n\nThis wallet app will eventually be sunset. Let's get you set up on Helium World.",
-      next: 'Get Started',
+      // \u00A0 keeps the brand name from wrapping across lines in titles.
+      eyebrow: 'Helium\u00A0World',
+      title: 'Move your wallet to Helium\u00A0World',
+      body: 'Helium World is the new home for your Hotspots, tokens, and rewards. Manage everything at world.helium.com with richer analytics, rewards splitting, and the newest features first.',
+      keepsWorking:
+        "This app keeps working as usual. Migration is free, and you can move whenever you're ready.",
+      next: 'Get started',
     },
     choosePath: {
       title: 'How would you like to continue?',
-      emailTitle: 'Login with Email',
+      subtitle: 'Both paths are free. We cover the fees.',
+      emailTitle: 'Log in with email',
       emailBody:
-        "Create a Helium World account linked to your email. We'll migrate your assets for you.",
-      selfCustodyTitle: 'Use Your Own Wallet',
+        "Create a Helium World account linked to your email. We'll move your assets for you.",
+      selfCustodyTitle: 'Use your own wallet',
       selfCustodyBody:
-        'Connect a wallet you already control on Helium World — nothing to export, no funds move.',
+        'Connect a wallet you already control on Helium World. Nothing to export, no funds move.',
     },
-    dismiss: 'Dismiss',
-    findInSettings: 'You can find this later in Settings',
+    dismiss: 'Maybe later',
+    findInSettings: 'Available anytime in Settings',
   },
   migrateToWorld: {
-    back: '← Back',
+    back: 'Back',
     resumeOffer: {
-      title: 'Finish your migration',
-      body: 'You have a migration in progress. Pick up where you left off?',
+      title: 'Pick up where you left off?',
+      body: 'You have a migration in progress.',
       resume: 'Resume',
       notNow: 'Not now',
     },
     intro: {
-      title: 'Welcome to Helium World',
-      body: "A new home for your Hotspots and rewards. We'll bring everything over — no fees, we cover them.",
-      continue: 'Continue',
-      later: 'Not now',
-      useOwnWallet: "I'll use my own wallet",
+      later: 'Maybe later',
     },
     connect: {
-      title: 'Connect Your Own Wallet',
+      title: 'Connect your own wallet',
       reassurance:
-        "No funds move here — you're just signing in with a wallet you already control.",
+        "No funds move here. You're just signing in with a wallet you already control.",
       softwareTitle: 'I use Phantom or Solflare',
       softwareStep1: 'Open world.helium.com and tap Connect Wallet.',
       softwareStep2: 'Choose your wallet app (e.g. Phantom or Solflare).',
       softwareStep3:
-        "Approve the sign-in request — signing in doesn't move funds or expose keys.",
+        "Approve the sign-in request. Signing in doesn't move funds or expose keys.",
       hardwareTitle: 'I use a Ledger or Keystone hardware wallet',
       hardwareStep1:
         'Connect your Ledger to a wallet app that supports it (e.g. Phantom or Solflare).',
@@ -1604,9 +1605,9 @@ export default {
       openWorld: 'Open World',
     },
     linkEmail: {
-      title: 'Link Your Email',
+      title: 'Link your email',
       body: 'Link an email address to create your Helium World account.',
-      button: 'Link Email',
+      button: 'Link email',
       verify: 'Verify',
       codePlaceholder: 'Enter code',
       loggingIn: 'Signing in…',
@@ -1620,8 +1621,7 @@ export default {
       errorBody:
         'Something went wrong setting up your World wallet. You need one to continue.',
       retry: 'Try again',
-      supportBody:
-        "Still not working? Visit docs.helium.com for help — we'll get you sorted.",
+      supportBody: 'Still not working? Visit docs.helium.com for help.',
       support: 'Get help',
     },
     selectAssets: {
@@ -1629,15 +1629,17 @@ export default {
       readyBody: "Everything's selected. Tap a group to fine-tune.",
       hotspots: 'Hotspots',
       tokens: 'Tokens',
-      edit: 'Edit ›',
+      edit: 'Edit',
       max: 'MAX',
       balance: 'Balance: {{amount}}',
       leftBehind:
-        "⚠ {{count}} token can't move automatically — it stays in your wallet.",
+        "{{count}} token can't move automatically. It stays in your wallet.",
       leftBehind_other:
-        "⚠ {{count}} tokens can't move automatically — they stay in your wallet.",
-      loading: 'Loading assets...',
-      review: 'Review Migration',
+        "{{count}} tokens can't move automatically. They stay in your wallet.",
+      leftBehind_plural:
+        "{{count}} tokens can't move automatically. They stay in your wallet.",
+      loading: 'Loading assets…',
+      review: 'Review migration',
       approxValue: '≈ {{value}}',
       loadErrorTitle: "Couldn't load your assets",
       loadErrorBody:
@@ -1650,16 +1652,16 @@ export default {
       done: 'Done',
     },
     confirm: {
-      title: 'Confirm Migration',
+      title: 'Confirm migration',
       source: 'From',
       destination: 'To',
       fees: 'Fees',
       free: 'Free',
-      button: 'Confirm & Migrate',
+      button: 'Confirm & migrate',
     },
     migrating: {
       title: 'Migrating',
-      walletReady: '✓ World wallet ready',
+      walletReady: 'World wallet ready',
       phases: {
         requesting: 'Preparing',
         signing: 'Signing',
@@ -1670,17 +1672,17 @@ export default {
     },
     pending: {
       title: 'Still processing',
-      body: "{{moved}} transfers confirmed so far — the rest are still confirming on the network. Your confirmed transfers are safe, and this can take a little while. It's fine to close this and check back.",
+      body: "{{moved}} transfers confirmed so far. The rest are still confirming on the network, which can take a little while. Your confirmed transfers are safe, and it's fine to close this and check back.",
       checkStatus: 'Check status',
     },
     partial: {
       title: 'Almost there',
-      body: '{{moved}} transfers confirmed · {{failed}} need a retry.',
+      body: '{{moved}} transfers confirmed. {{failed}} need a retry.',
       retry: 'Retry failed items',
     },
     success: {
-      title: 'Migration Complete',
-      body: 'Your assets have been successfully migrated to Helium World.',
+      title: 'Migration complete',
+      body: 'Your assets now live on Helium World.',
       wallet: 'New wallet: {{address}}',
       goToWorld: 'Go to Helium World',
     },

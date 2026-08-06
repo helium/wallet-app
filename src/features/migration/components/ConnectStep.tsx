@@ -4,6 +4,7 @@ import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking, ScrollView } from 'react-native'
 import { WORLD_URL } from '../constants'
+import { WORLD_TRACKING } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
 
@@ -24,7 +25,7 @@ const StepRow: FC<{ index: number; text: string }> = ({ index, text }) => (
       justifyContent="center"
       marginRight="s"
     >
-      <Text variant="body3" color="worldPurple" fontWeight="700">
+      <Text variant="body3Bold" color="worldPurple">
         {index}
       </Text>
     </Box>
@@ -45,7 +46,14 @@ const StepCard: FC<{ title: string; children: ReactNode }> = ({
   title,
   children,
 }) => (
-  <Box backgroundColor="grey100" borderRadius="xl" padding="l" marginTop="m">
+  <Box
+    backgroundColor="worldSurfaceAlt"
+    borderWidth={1}
+    borderColor="worldBorder"
+    borderRadius="xl"
+    padding="l"
+    marginTop="m"
+  >
     <Text variant="subtitle2" color="worldInk">
       {title}
     </Text>
@@ -74,9 +82,13 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
   return (
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <Box paddingHorizontal="l">
-          <Text variant="h4" color="worldInk" letterSpacing={-0.6}>
+          <Text
+            variant="h4"
+            color="worldInk"
+            letterSpacing={WORLD_TRACKING.title}
+          >
             {t('migrateToWorld.connect.title')}
           </Text>
           <Text
@@ -101,15 +113,15 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
           </StepCard>
         </Box>
       </ScrollView>
-      <Box paddingHorizontal="l" paddingBottom="m">
+      <Box paddingHorizontal="l" paddingBottom="l">
         <WorldButton
           title={t('migrateToWorld.connect.openWorld')}
           onPress={() => Linking.openURL(WORLD_URL)}
         />
         {onDismiss ? (
           <WorldButton
-            variant="dismiss"
-            title={t('migrateToWorldModal.dismiss')}
+            variant="ghost"
+            title={t('migrateToWorld.intro.later')}
             onPress={onDismiss}
             marginTop="s"
           />

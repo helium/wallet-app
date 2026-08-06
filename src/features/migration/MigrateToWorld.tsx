@@ -237,8 +237,11 @@ const MigrateToWorld = () => {
     () =>
       selection
         ? selectedTokens(selection.tokenAmounts, assets.tokens).map(
-            ({ mint, amount, token }) =>
-              `${amount} ${token?.label ?? shortenMint(mint)}`,
+            ({ mint, amount, token }) => ({
+              mint,
+              label: token?.label ?? shortenMint(mint),
+              amount,
+            }),
           )
         : [],
     [selection, assets.tokens],
