@@ -218,10 +218,17 @@ const BrowserWebViewScreen = () => {
     async (inputs: SolanaSignAndSendTransactionInput[]) => {
       Logger.breadcrumb('signAndSendTransaction')
 
+      const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
+        Buffer.from(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.keys(transaction).map((k) => (transaction as any)[k]),
+        ),
+      )
+
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signAndSendTransaction,
         url: currentUrl,
-        serializedTxs: undefined,
+        serializedTxs: txBuffers,
       })
 
       if (!decision) {
