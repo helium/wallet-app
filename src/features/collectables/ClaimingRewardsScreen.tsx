@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
+import { useTransactionBatchesStatus } from '../../hooks/useTransactionBatchStatus'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CollectableStackParamList } from './collectablesTypes'
@@ -34,7 +34,7 @@ const ClaimingRewardsScreen = () => {
     status,
     error: batchError,
     isLoading,
-  } = useTransactionBatchStatus(route.params?.batchId || null)
+  } = useTransactionBatchesStatus(route.params?.batchIds ?? null)
 
   const hasError =
     batchError ||
@@ -123,7 +123,7 @@ const ClaimingRewardsScreen = () => {
             </Animated.View>
           ) : null}
 
-          {!route.params?.batchId ? (
+          {!route.params?.batchIds?.length ? (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FadeIn}

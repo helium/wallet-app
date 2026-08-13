@@ -21,7 +21,7 @@ import {
   DAO_KEY,
   HNT_LAZY_KEY,
   IOT_LAZY_KEY,
-  MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
+  Mints,
   MOBILE_LAZY_KEY,
 } from '@utils/constants'
 import { humanReadable } from '@utils/formatting'
@@ -69,51 +69,6 @@ async function getEntityKeyFromCompressedNFT(
   }
 
   return entityKey
-}
-
-// Helper to batch and submit transactions in chunks to prevent blockhash expiration
-async function batchAndSubmitTransactions(
-  anchorProvider: AnchorProvider,
-  client: ReturnType<typeof useBlockchainApi>,
-  queryClient: ReturnType<typeof useQueryClient>,
-  transactions: VersionedTransaction[],
-  tag: string,
-  metadata: { type: string; description: string },
-): Promise<string> {
-  if (transactions.length === 0) {
-    throw new Error('No transactions to submit')
-  }
-
-  // If we have fewer transactions than the batch size, submit all at once
-  if (transactions.length <= MAX_TRANSACTIONS_PER_SIGNATURE_BATCH) {
-    const signedTxns = await anchorProvider.wallet.signAllTransactions(
-      transactions,
-    )
-    const txnData = toTransactionData(signedTxns, { tag, metadata })
-    const { batchId } = await client.transactions.submit(txnData)
-    queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-    return batchId
-  }
-
-  // Otherwise, batch them
-  const chunkCount = Math.ceil(
-    transactions.length / MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-  )
-  const batchPromises = Array.from({ length: chunkCount }, async (_, index) => {
-    const start = index * MAX_TRANSACTIONS_PER_SIGNATURE_BATCH
-    const chunk = transactions.slice(
-      start,
-      start + MAX_TRANSACTIONS_PER_SIGNATURE_BATCH,
-    )
-    const signedTxns = await anchorProvider.wallet.signAllTransactions(chunk)
-    const txnData = toTransactionData(signedTxns, { tag, metadata })
-    const { batchId } = await client.transactions.submit(txnData)
-    queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-    return batchId
-  })
-
-  const batchIds = await Promise.all(batchPromises)
-  return batchIds[batchIds.length - 1]
 }
 
 export default () => {
@@ -456,21 +411,62 @@ export default () => {
     [treasurySwapMutation],
   )
 
-  // Claim rewards mutation - only HNT uses API, IOT/MOBILE use local txns
+  // Claim rewards mutation - server-crafted per-network claims for a single hotspot
   const claimRewardsMutation = useMutation({
-    mutationFn: async ({ txns }: { txns: VersionedTransaction[] }) => {
+    mutationFn: async ({ hotspot }: { hotspot: HotspotWithPendingRewards }) => {
       if (!anchorProvider || !currentAccount || !walletSignBottomSheetRef) {
         throw new Error(t('errors.account'))
       }
 
-      const serializedTxs = txns.map((txn) => Buffer.from(txn.serialize()))
+      const walletAddress = currentAccount.solanaAddress!
+      const entityPubKey = await getEntityKeyFromCompressedNFT(
+        anchorProvider,
+        hotspot,
+      )
+
+      const networks = (
+        [
+          ['iot', Mints.IOT],
+          ['mobile', Mints.MOBILE],
+          ['hnt', Mints.HNT],
+        ] as const
+      )
+        .filter(([, mint]) => {
+          const pending = hotspot.pendingRewards?.[mint]
+          return pending && !new BN(pending).isZero()
+        })
+        .map(([network]) => network)
+
+      const batches = (
+        await Promise.all(
+          networks.map(async (network) => {
+            const { transactionData } =
+              await client.hotspots.claimHotspotRewards({
+                entityPubKey,
+                walletAddress,
+                network,
+              })
+            return { network, transactionData }
+          }),
+        )
+      ).filter(({ transactionData }) => transactionData.transactions.length > 0)
+
+      if (batches.length === 0) {
+        throw new Error('No rewards to claim')
+      }
+
+      const serializedTxs = batches.flatMap(({ transactionData }) =>
+        transactionData.transactions.map(({ serializedTransaction }) =>
+          Buffer.from(serializedTransaction, 'base64'),
+        ),
+      )
 
       const decision = await walletSignBottomSheetRef.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: '',
         header: t('transactions.claimRewards'),
         message: t('transactions.signClaimRewardsTxn'),
-        serializedTxs: serializedTxs.map(Buffer.from),
+        serializedTxs,
         renderer: () => (
           <MessagePreview warning={t('transactions.claimRewards')} />
         ),
@@ -480,21 +476,34 @@ export default () => {
         throw new Error('User rejected transaction')
       }
 
-      // Batch transactions to prevent blockhash expiration
-      return batchAndSubmitTransactions(
-        anchorProvider,
-        client,
-        queryClient,
-        txns,
-        'claim-rewards',
-        { type: 'claim', description: 'Claim rewards' },
+      // Submit each network's batch sequentially, keeping its server-provided tag
+      const batchIds: string[] = []
+      await batches.reduce(
+        (prev, { network, transactionData }) =>
+          prev.then(async () => {
+            const signed = await signTransactionData(
+              anchorProvider.wallet,
+              transactionData,
+            )
+            const { batchId } = await client.transactions.submit({
+              ...signed,
+              tag: signed.tag || `claim-rewards-${network}`,
+            })
+            queryClient.invalidateQueries({
+              queryKey: ['pendingTransactions'],
+            })
+            batchIds.push(batchId)
+          }),
+        Promise.resolve(),
       )
+
+      return batchIds
     },
   })
 
   const submitClaimRewards = useCallback(
-    async (txns: VersionedTransaction[]) => {
-      return claimRewardsMutation.mutateAsync({ txns })
+    async (hotspot: HotspotWithPendingRewards) => {
+      return claimRewardsMutation.mutateAsync({ hotspot })
     },
     [claimRewardsMutation],
   )

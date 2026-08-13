@@ -7,9 +7,7 @@ import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
-import { useHotspot } from '@hooks/useHotspot'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import BN from 'bn.js'
 import React, { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -30,11 +28,7 @@ const ClaimRewardsScreen = () => {
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
   const { hotspot } = route.params
-  const mint = useMemo(() => new PublicKey(hotspot.id), [hotspot.id])
   const { submitClaimRewards } = useSubmitTxn()
-
-  const { createClaimHntTx, createClaimMobileTx, createClaimIotTx } =
-    useHotspot(mint)
 
   const pendingIotRewards = useMemo(
     () =>
@@ -74,39 +68,8 @@ const ClaimRewardsScreen = () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
-      const claimIotTx =
-        pendingIotRewards && !pendingIotRewards.eq(new BN(0))
-          ? await createClaimIotTx()
-          : undefined
-      const claimMobileTx =
-        pendingMobileRewards && !pendingMobileRewards.eq(new BN(0))
-          ? await createClaimMobileTx()
-          : undefined
-      const claimHntTx =
-        pendingHntRewards && !pendingHntRewards.eq(new BN(0))
-          ? await createClaimHntTx()
-          : undefined
-      const transactions: VersionedTransaction[] = []
-
-      if (claimIotTx && pendingIotRewards) {
-        transactions.push(claimIotTx)
-      }
-
-      if (claimMobileTx && pendingMobileRewards) {
-        transactions.push(claimMobileTx)
-      }
-
-      if (claimHntTx && pendingHntRewards) {
-        transactions.push(claimHntTx)
-      }
-
-      if (transactions.length > 0) {
-        const batchId = await submitClaimRewards(transactions)
-        nav.push('ClaimingRewardsScreen', { batchId })
-      } else {
-        setClaimError(t('collectablesScreen.claimError'))
-      }
-
+      const batchIds = await submitClaimRewards(hotspot)
+      nav.push('ClaimingRewardsScreen', { batchIds })
       setRedeeming(false)
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
