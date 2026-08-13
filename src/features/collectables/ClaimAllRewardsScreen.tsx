@@ -81,7 +81,7 @@ const ClaimAllRewardsScreen = () => {
           totalHotspots,
         )
 
-        navigation.replace('ClaimingRewardsScreen', { batchId })
+        navigation.replace('ClaimingRewardsScreen', { batchIds: [batchId] })
 
         setRedeeming(false)
       }

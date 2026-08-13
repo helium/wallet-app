@@ -29,7 +29,7 @@ export type CollectableStackParamList = {
     hotspot: HotspotWithPendingRewards
   }
   ClaimAllRewardsScreen: undefined
-  ClaimingRewardsScreen: { batchId?: string }
+  ClaimingRewardsScreen: { batchIds?: string[] }
   ChangeRewardsRecipientScreen: {
     hotspot: HotspotWithPendingRewards
   }

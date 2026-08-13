@@ -424,39 +424,38 @@ export default () => {
         hotspot,
       )
 
-      const networkMints: Record<'iot' | 'mobile' | 'hnt', string> = {
-        iot: Mints.IOT,
-        mobile: Mints.MOBILE,
-        hnt: Mints.HNT,
-      }
-      const networks = (['iot', 'mobile', 'hnt'] as const).filter((network) => {
-        const pending = hotspot.pendingRewards?.[networkMints[network]]
-        return pending && !new BN(pending).isZero()
-      })
-
-      if (networks.length === 0) {
-        throw new Error('No rewards to claim')
-      }
-
-      const responses = await Promise.all(
-        networks.map((network) =>
-          client.hotspots.claimHotspotRewards({
-            entityPubKey,
-            walletAddress,
-            network,
-          }),
-        ),
+      const networks = (
+        [
+          ['iot', Mints.IOT],
+          ['mobile', Mints.MOBILE],
+          ['hnt', Mints.HNT],
+        ] as const
       )
+        .filter(([, mint]) => {
+          const pending = hotspot.pendingRewards?.[mint]
+          return pending && !new BN(pending).isZero()
+        })
+        .map(([network]) => network)
 
-      const batches = responses
-        .map(({ transactionData }) => transactionData)
-        .filter((transactionData) => transactionData.transactions.length > 0)
+      const batches = (
+        await Promise.all(
+          networks.map(async (network) => {
+            const { transactionData } =
+              await client.hotspots.claimHotspotRewards({
+                entityPubKey,
+                walletAddress,
+                network,
+              })
+            return { network, transactionData }
+          }),
+        )
+      ).filter(({ transactionData }) => transactionData.transactions.length > 0)
 
       if (batches.length === 0) {
         throw new Error('No rewards to claim')
       }
 
-      const serializedTxs = batches.flatMap((transactionData) =>
+      const serializedTxs = batches.flatMap(({ transactionData }) =>
         transactionData.transactions.map(({ serializedTransaction }) =>
           Buffer.from(serializedTransaction, 'base64'),
         ),
@@ -480,20 +479,25 @@ export default () => {
       // Submit each network's batch sequentially, keeping its server-provided tag
       const batchIds: string[] = []
       await batches.reduce(
-        (prev, transactionData) =>
+        (prev, { network, transactionData }) =>
           prev.then(async () => {
             const signed = await signTransactionData(
               anchorProvider.wallet,
               transactionData,
             )
-            const { batchId } = await client.transactions.submit(signed)
+            const { batchId } = await client.transactions.submit({
+              ...signed,
+              tag: signed.tag || `claim-rewards-${network}`,
+            })
+            queryClient.invalidateQueries({
+              queryKey: ['pendingTransactions'],
+            })
             batchIds.push(batchId)
           }),
         Promise.resolve(),
       )
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
 
-      return batchIds[batchIds.length - 1]
+      return batchIds
     },
   })
 

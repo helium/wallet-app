@@ -68,8 +68,8 @@ const ClaimRewardsScreen = () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
-      const batchId = await submitClaimRewards(hotspot)
-      nav.push('ClaimingRewardsScreen', { batchId })
+      const batchIds = await submitClaimRewards(hotspot)
+      nav.push('ClaimingRewardsScreen', { batchIds })
       setRedeeming(false)
     } catch (e) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

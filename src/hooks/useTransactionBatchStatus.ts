@@ -15,30 +15,58 @@ export const TERMINAL_STATUSES: BatchStatus[] = [
   'partial',
 ]
 
-export function useTransactionBatchStatus(batchId: string | null) {
+export function useTransactionBatchesStatus(batchIds: string[] | null) {
   const client = useBlockchainApi()
+  const ids = batchIds ?? []
 
   const { data, error, isLoading, refetch } = useQuery({
-    queryKey: ['transactionBatch', batchId],
+    queryKey: ['transactionBatches', ids],
     queryFn: () =>
-      client.transactions.get({ id: batchId!, commitment: 'confirmed' }),
-    enabled: !!batchId,
+      Promise.all(
+        ids.map((id) =>
+          client.transactions.get({ id, commitment: 'confirmed' }),
+        ),
+      ),
+    enabled: ids.length > 0,
     refetchInterval: ({ state }) => {
-      const { status } = state.data ?? {}
-      if (status && TERMINAL_STATUSES.includes(status as BatchStatus)) {
+      const batches = state.data
+      if (
+        batches &&
+        batches.every((batch) =>
+          TERMINAL_STATUSES.includes(batch.status as BatchStatus),
+        )
+      ) {
         return false
       }
       return 2000
     },
   })
 
-  const { status, transactions } = data ?? {}
+  const statuses = (data ?? []).map((batch) => batch.status as BatchStatus)
+  const [firstStatus] = statuses
+  let status: BatchStatus | undefined
+  if (data) {
+    if (statuses.some((s) => !TERMINAL_STATUSES.includes(s))) {
+      status = 'pending'
+    } else if (statuses.every((s) => s === firstStatus)) {
+      status = firstStatus
+    } else {
+      status = 'partial'
+    }
+  }
 
   return {
-    status: status as BatchStatus | undefined,
-    signatures: transactions?.map((t) => t.signature) ?? [],
+    status,
+    signatures:
+      data?.flatMap(
+        (batch) => batch.transactions?.map((t) => t.signature) ?? [],
+      ) ?? [],
     error,
     isLoading,
     refetch,
   }
+}
+
+export function useTransactionBatchStatus(batchId: string | null) {
+  return useTransactionBatchesStatus(batchId ? [batchId] : null)
 }
