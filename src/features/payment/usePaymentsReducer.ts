@@ -4,7 +4,10 @@ import BN from 'bn.js'
 import { useReducer } from 'react'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { CSAccount } from '../../storage/cloudStorage'
-import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
+import {
+  MIN_WALLET_RENT_LAMPORTS,
+  TXN_FEE_IN_LAMPORTS,
+} from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
 
 type UpdatePayeeAction = {
@@ -130,7 +133,11 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
   let maxBalance = accountBalance?.sub(totalMinusPrevPayment)
 
   if (state.mint.equals(NATIVE_MINT)) {
-    maxBalance = maxBalance?.sub(networkFee)
+    // The wallet must stay above the rent-exempt minimum after the send —
+    // the blockchain-api rejects transfers that would drop it below.
+    maxBalance = maxBalance
+      ?.sub(networkFee)
+      .sub(new BN(MIN_WALLET_RENT_LAMPORTS))
   }
 
   if (maxBalance.lt(new BN(0))) {

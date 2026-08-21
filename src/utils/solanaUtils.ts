@@ -216,6 +216,11 @@ export const confirmTransaction = async (
 export const TXN_FEE_IN_LAMPORTS = 5000
 export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
 
+// Rent-exempt minimum for a 0-data account. The blockchain-api preflight
+// requires the wallet to keep this much SOL after a transfer, so max sends
+// must reserve it.
+export const MIN_WALLET_RENT_LAMPORTS = 890880
+
 export const calculateRequiredSol = async (
   anchorProvider: AnchorProvider,
   tx?: VersionedTransaction | string,
