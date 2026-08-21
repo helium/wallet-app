@@ -8,10 +8,7 @@ export function useRentExempt(dataLength = 0) {
   const { loading, result, error } = useAsync(async () => {
     if (connection) {
       try {
-        const totalSol = await connection?.getMinimumBalanceForRentExemption(
-          dataLength,
-        )
-        return totalSol / LAMPORTS_PER_SOL
+        return await connection?.getMinimumBalanceForRentExemption(dataLength)
       } catch (e) {
         logger.error(e)
       }
@@ -21,6 +18,7 @@ export function useRentExempt(dataLength = 0) {
   return {
     loading,
     error,
-    rentExempt: result,
+    rentExempt: result === undefined ? undefined : result / LAMPORTS_PER_SOL,
+    rentExemptLamports: result,
   }
 }

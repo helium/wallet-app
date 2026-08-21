@@ -221,6 +221,32 @@ export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
 // must reserve it.
 export const MIN_WALLET_RENT_LAMPORTS = 890880
 
+// Fee the transaction's attached ComputeBudget instructions commit it to:
+// base signature fee plus ceil(CU limit × µlamport price / 1e6).
+export const estimateTxnFeeLamports = (serializedTx: Buffer): number => {
+  try {
+    const { message } = VersionedTransaction.deserialize(serializedTx)
+    const keys = message.staticAccountKeys
+    let units: number | undefined
+    let microLamports: number | undefined
+    message.compiledInstructions.forEach((ix) => {
+      if (!keys[ix.programIdIndex]?.equals(ComputeBudgetProgram.programId)) {
+        return
+      }
+      const data = Buffer.from(ix.data)
+      if (data[0] === 2) units = data.readUInt32LE(1)
+      if (data[0] === 3) microLamports = Number(data.readBigUInt64LE(1))
+    })
+    const baseFee = message.header.numRequiredSignatures * TXN_FEE_IN_LAMPORTS
+    const priorityFee = microLamports
+      ? Math.ceil(((units ?? 200000) * microLamports) / 1e6)
+      : 0
+    return baseFee + priorityFee
+  } catch {
+    return TXN_FEE_IN_LAMPORTS
+  }
+}
+
 export const calculateRequiredSol = async (
   anchorProvider: AnchorProvider,
   tx?: VersionedTransaction | string,
