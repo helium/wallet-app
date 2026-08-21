@@ -190,7 +190,7 @@ const PaymentScreen = () => {
   const { symbol } = useMetaplexMetadata(mint)
 
   // Track batchId when mutation succeeds - only show loading after submission
-  const batchId = paymentMutation.data
+  const batchId = paymentMutation.data?.batchId
   const { status, isLoading: batchLoading } = useTransactionBatchStatus(
     batchId || null,
   )
@@ -327,6 +327,29 @@ const PaymentScreen = () => {
       logger.error(e)
     }
   }, [submitPayment, paymentState.mint, paymentState.payments, paymentMutation])
+
+  // Show the amounts actually submitted — a max SOL send may have been
+  // shaved by the server-priced priority fee.
+  const { submittedPayments, submittedTotal } = useMemo(() => {
+    const effective = paymentMutation.data?.payments
+    if (!effective) {
+      return {
+        submittedPayments: paymentState.payments,
+        submittedTotal: paymentState.totalAmount,
+      }
+    }
+    const merged = paymentState.payments.map((p) => {
+      const match = effective.find((e) => e.payee === p.address)
+      return match ? { ...p, amount: match.balanceAmount } : p
+    })
+    return {
+      submittedPayments: merged,
+      submittedTotal: effective.reduce(
+        (sum, p) => sum.add(p.balanceAmount),
+        new BN(0),
+      ),
+    }
+  }, [paymentMutation.data, paymentState.payments, paymentState.totalAmount])
 
   const insufficientFunds = useMemo((): [
     value: boolean,
@@ -840,8 +863,8 @@ const PaymentScreen = () => {
             ? new Error('Transaction failed')
             : undefined)
         }
-        totalBalance={paymentState.totalAmount}
-        payments={paymentState.payments}
+        totalBalance={submittedTotal}
+        payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
         onRetry={handleSubmit}
         onSuccess={navigation.popToTop}

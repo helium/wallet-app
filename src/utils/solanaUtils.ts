@@ -218,7 +218,8 @@ export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
 
 // Rent-exempt minimum for a 0-data account. The blockchain-api preflight
 // requires the wallet to keep this much SOL after a transfer, so max sends
-// must reserve it.
+// must reserve it. Fallback for when the live value from useRentExempt
+// hasn't loaded yet.
 export const MIN_WALLET_RENT_LAMPORTS = 890880
 
 // Fee the transaction's attached ComputeBudget instructions commit it to:
@@ -229,8 +230,10 @@ export const estimateTxnFeeLamports = (serializedTx: Buffer): number => {
     const keys = message.staticAccountKeys
     let units: number | undefined
     let microLamports: number | undefined
+    let nonBudgetIxCount = 0
     message.compiledInstructions.forEach((ix) => {
       if (!keys[ix.programIdIndex]?.equals(ComputeBudgetProgram.programId)) {
+        nonBudgetIxCount += 1
         return
       }
       const data = Buffer.from(ix.data)
@@ -238,8 +241,11 @@ export const estimateTxnFeeLamports = (serializedTx: Buffer): number => {
       if (data[0] === 3) microLamports = Number(data.readBigUInt64LE(1))
     })
     const baseFee = message.header.numRequiredSignatures * TXN_FEE_IN_LAMPORTS
+    // Without a SetComputeUnitLimit ix the runtime grants 200k CU per
+    // non-ComputeBudget instruction, capped at 1.4M.
+    const defaultUnits = Math.min(nonBudgetIxCount * 200000, 1400000)
     const priorityFee = microLamports
-      ? Math.ceil(((units ?? 200000) * microLamports) / 1e6)
+      ? Math.ceil(((units ?? defaultUnits) * microLamports) / 1e6)
       : 0
     return baseFee + priorityFee
   } catch {

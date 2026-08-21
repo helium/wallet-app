@@ -1,8 +1,9 @@
 import { NetTypes } from '@helium/address'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
-import { useReducer } from 'react'
+import { useEffect, useReducer } from 'react'
 import { NATIVE_MINT } from '@solana/spl-token'
+import { useRentExempt } from '@hooks/useRentExempt'
 import { CSAccount } from '../../storage/cloudStorage'
 import {
   MIN_WALLET_RENT_LAMPORTS,
@@ -31,6 +32,11 @@ type UpdateBalanceAction = {
 type UpdateTokenBalanceAction = {
   type: 'updateTokenBalance'
   balance?: BN
+}
+
+type UpdateRentExemptAction = {
+  type: 'updateRentExempt'
+  rentExemptLamports: number
 }
 
 type RemovePayment = {
@@ -77,6 +83,7 @@ type PaymentState = {
   netType: NetTypes.NetType
   networkFee?: BN
   balance: BN
+  rentExemptLamports?: number
 }
 
 const initialState = (opts: {
@@ -84,6 +91,7 @@ const initialState = (opts: {
   payments?: Payment[]
   netType: NetTypes.NetType
   balance?: BN
+  rentExemptLamports?: number
 }): PaymentState => ({
   error: undefined,
   payments: [{}] as Array<Payment>,
@@ -137,7 +145,7 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
     // the blockchain-api rejects transfers that would drop it below.
     maxBalance = maxBalance
       ?.sub(networkFee)
-      .sub(new BN(MIN_WALLET_RENT_LAMPORTS))
+      .sub(new BN(state.rentExemptLamports ?? MIN_WALLET_RENT_LAMPORTS))
   }
 
   if (maxBalance.lt(new BN(0))) {
@@ -159,6 +167,7 @@ function reducer(
     | UpdatePayeeAction
     | UpdateBalanceAction
     | UpdateTokenBalanceAction
+    | UpdateRentExemptAction
     | UpdateErrorAction
     | AddPayee
     | AddLinkedPayments
@@ -216,7 +225,11 @@ function reducer(
 
       const nextPayments = payments.map((p, index) => {
         if (index !== action.index) {
-          return p
+          // Only one payment may be max — a new max displaces any prior one,
+          // clearing its computed amount like toggleMax does.
+          return action.max && p.max
+            ? { ...p, max: false, amount: undefined }
+            : p
         }
         return {
           ...p,
@@ -232,6 +245,15 @@ function reducer(
         ...state,
         balance: action.balance || new BN(0),
       }
+    }
+    case 'updateRentExempt': {
+      if (state.rentExemptLamports === action.rentExemptLamports) return state
+      const nextState = {
+        ...state,
+        rentExemptLamports: action.rentExemptLamports,
+      }
+      // Recompute any max payment with the live rent value
+      return { ...nextState, ...recalculate([...state.payments], nextState) }
     }
     case 'addPayee': {
       if (state.payments.length >= MAX_PAYMENTS) return state
@@ -257,6 +279,7 @@ function reducer(
         payments: newPayments,
         balance: state.balance,
         netType: state.netType,
+        rentExemptLamports: state.rentExemptLamports,
       })
     }
 
@@ -266,6 +289,7 @@ function reducer(
           mint: state.mint,
           balance: state.balance,
           netType: state.netType,
+          rentExemptLamports: state.rentExemptLamports,
         })
       }
 
@@ -318,4 +342,13 @@ export default (opts: {
   netType: NetTypes.NetType
   mint: PublicKey
   balance?: BN
-}) => useReducer(reducer, initialState(opts))
+}) => {
+  const { rentExemptLamports } = useRentExempt()
+  const [state, dispatch] = useReducer(reducer, initialState(opts))
+
+  useEffect(() => {
+    dispatch({ type: 'updateRentExempt', rentExemptLamports })
+  }, [rentExemptLamports])
+
+  return [state, dispatch] as const
+}

@@ -179,6 +179,9 @@ const HNTKeyboardSelector = forwardRef(
         setPaymentIndex(opts.index)
         setPayments(opts.payments)
         setContainerHeight(opts.containerHeight || 0)
+        // Initialize from the payment being edited so a prior payment's max
+        // toggle doesn't leak into this one
+        setMaxEnabled(opts.payments?.[opts.index ?? -1]?.max ?? false)
 
         const val =
           opts.balance && typeof decimals !== 'undefined'

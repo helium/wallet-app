@@ -8,8 +8,8 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useBN } from '@hooks/useBN'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useRentExempt } from '@hooks/useRentExempt'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import BN from 'bn.js'
+import { humanReadable } from '@utils/formatting'
 import { estimateTxnFeeLamports, TXN_FEE_IN_LAMPORTS } from '@utils/solanaUtils'
 import { WalletSignOpts } from './walletSignBottomSheetTypes'
 
@@ -46,7 +46,7 @@ export const WalletSignBottomSheetCompact = ({
     if (solBalance) {
       return new BN(solBalance.toString())
         .sub(new BN(estimatedTotalLamports))
-        .lt(new BN(rentExemptLamports || 0))
+        .lt(new BN(rentExemptLamports))
     }
   }, [solBalance, estimatedTotalLamports, rentExemptLamports])
 
@@ -71,11 +71,9 @@ export const WalletSignBottomSheetCompact = ({
         </Box>
       )}
 
-      {!(insufficientFunds || insufficientRentExempt) && (
-        <Text variant="subtitle2">{header || t('transactions.signTxn')}</Text>
-      )}
+      <Text variant="subtitle2">{header || t('transactions.signTxn')}</Text>
 
-      {!(insufficientFunds || insufficientRentExempt) && message && (
+      {message && (
         <Text variant="body1Medium" color="secondaryText">
           {message}
         </Text>
@@ -103,7 +101,7 @@ export const WalletSignBottomSheetCompact = ({
           <Text variant="body1Bold">{t('browserScreen.totalNetworkFee')}</Text>
         </Box>
         <Text variant="body1Medium" color="blue500">
-          {`~${estimatedTotalLamports / LAMPORTS_PER_SOL} SOL`}
+          {`~${humanReadable(new BN(estimatedTotalLamports), 9)} SOL`}
         </Text>
       </Box>
       <Box alignItems="center" py="l">

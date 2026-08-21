@@ -181,7 +181,7 @@ export const WalletSignBottomSheetSimulated = ({
     if (solBalance) {
       return new BN(solBalance.toString())
         .sub(new BN(estimatedTotalLamports))
-        .lt(new BN(rentExemptLamports || 0))
+        .lt(new BN(rentExemptLamports))
     }
   }, [solBalance, estimatedTotalLamports, rentExemptLamports])
 

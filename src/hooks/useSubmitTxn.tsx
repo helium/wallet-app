@@ -12,6 +12,7 @@ import {
   populateMissingDraftInfo,
   toVersionedTx,
 } from '@helium/spl-utils'
+import { isDefinedError, safe } from '@orpc/client'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -116,35 +117,32 @@ export default () => {
       // max send computed client-side can overshoot by that fee. The
       // INSUFFICIENT_FUNDS error carries the exact shortfall — shave it off
       // the max payment and rebuild.
-      let effectivePayments = payments
-      let response: Awaited<ReturnType<typeof requestTransfer>> | undefined
-      for (let attempt = 0; !response; attempt += 1) {
-        try {
+      const requestTransferShavingMax = async () => {
+        if (!isMaxSolSend) {
+          return { response: await requestTransfer(payments), payments }
+        }
+        let shavedPayments = payments
+        for (let attempt = 0; ; attempt += 1) {
           // eslint-disable-next-line no-await-in-loop
-          response = await requestTransfer(effectivePayments)
-        } catch (e) {
-          const err = e as {
-            code?: unknown
-            data?: { required?: unknown; available?: unknown }
-          }
-          const { required, available } = err?.data ?? {}
+          const { error, data } = await safe(requestTransfer(shavedPayments))
+          if (!error) return { response: data, payments: shavedPayments }
           const shortfall =
-            err?.code === 'INSUFFICIENT_FUNDS' &&
-            typeof required === 'number' &&
-            typeof available === 'number'
-              ? required - available
+            isDefinedError(error) && error.code === 'INSUFFICIENT_FUNDS'
+              ? error.data.required - error.data.available
               : 0
-          if (!isMaxSolSend || attempt >= 2 || shortfall <= 0) throw e
-          effectivePayments = effectivePayments.map((p) =>
+          if (attempt >= 2 || shortfall <= 0) throw error
+          shavedPayments = shavedPayments.map((p) =>
             p.max
               ? { ...p, balanceAmount: p.balanceAmount.sub(new BN(shortfall)) }
               : p,
           )
-          if (effectivePayments.some((p) => p.max && p.balanceAmount.lten(0))) {
-            throw e
+          if (shavedPayments.some((p) => p.max && p.balanceAmount.lten(0))) {
+            throw error
           }
         }
       }
+      const { response, payments: effectivePayments } =
+        await requestTransferShavingMax()
       const { transactionData } = response
 
       const combinedTxnData = {
@@ -186,7 +184,9 @@ export default () => {
 
       const { batchId } = await client.transactions.submit(signedTxnData)
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-      return batchId
+      // Return the payments actually submitted so the success UI can reflect
+      // any max-send shave.
+      return { batchId, payments: effectivePayments }
     },
   })
 
