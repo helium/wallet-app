@@ -72,7 +72,10 @@ import {
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
-import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
+import usePaymentsReducer, {
+  MAX_PAYMENTS,
+  paymentsSum,
+} from './usePaymentsReducer'
 
 type LinkedPayment = {
   amount?: string
@@ -342,13 +345,7 @@ const PaymentScreen = () => {
       const match = effective.find((e) => e.payee === p.address)
       return match ? { ...p, amount: match.balanceAmount } : p
     })
-    return {
-      submittedPayments: merged,
-      submittedTotal: effective.reduce(
-        (sum, p) => sum.add(p.balanceAmount),
-        new BN(0),
-      ),
-    }
+    return { submittedPayments: merged, submittedTotal: paymentsSum(merged) }
   }, [paymentMutation.data, paymentState.payments, paymentState.totalAmount])
 
   const insufficientFunds = useMemo((): [

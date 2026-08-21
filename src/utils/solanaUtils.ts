@@ -27,8 +27,11 @@ import {
 } from '@helium/lazy-distributor-sdk'
 import {
   Asset,
+  COMPUTE_BUDGET_IX_LIMIT,
+  COMPUTE_BUDGET_IX_PRICE,
   HNT_MINT,
   IOT_MINT,
+  MAX_COMPUTE_UNITS,
   MOBILE_MINT,
   TransactionDraft,
   getAsset,
@@ -237,13 +240,15 @@ export const estimateTxnFeeLamports = (serializedTx: Buffer): number => {
         return
       }
       const data = Buffer.from(ix.data)
-      if (data[0] === 2) units = data.readUInt32LE(1)
-      if (data[0] === 3) microLamports = Number(data.readBigUInt64LE(1))
+      if (data[0] === COMPUTE_BUDGET_IX_LIMIT) units = data.readUInt32LE(1)
+      if (data[0] === COMPUTE_BUDGET_IX_PRICE) {
+        microLamports = Number(data.readBigUInt64LE(1))
+      }
     })
     const baseFee = message.header.numRequiredSignatures * TXN_FEE_IN_LAMPORTS
     // Without a SetComputeUnitLimit ix the runtime grants 200k CU per
-    // non-ComputeBudget instruction, capped at 1.4M.
-    const defaultUnits = Math.min(nonBudgetIxCount * 200000, 1400000)
+    // non-ComputeBudget instruction, capped at MAX_COMPUTE_UNITS.
+    const defaultUnits = Math.min(nonBudgetIxCount * 200000, MAX_COMPUTE_UNITS)
     const priorityFee = microLamports
       ? Math.ceil(((units ?? defaultUnits) * microLamports) / 1e6)
       : 0

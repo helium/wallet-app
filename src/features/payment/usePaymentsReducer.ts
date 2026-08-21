@@ -5,10 +5,7 @@ import { useEffect, useReducer } from 'react'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { useRentExempt } from '@hooks/useRentExempt'
 import { CSAccount } from '../../storage/cloudStorage'
-import {
-  MIN_WALLET_RENT_LAMPORTS,
-  TXN_FEE_IN_LAMPORTS,
-} from '../../utils/solanaUtils'
+import { TXN_FEE_IN_LAMPORTS } from '../../utils/solanaUtils'
 import { Payment } from './PaymentItem'
 
 type UpdatePayeeAction = {
@@ -83,7 +80,7 @@ type PaymentState = {
   netType: NetTypes.NetType
   networkFee?: BN
   balance: BN
-  rentExemptLamports?: number
+  rentExemptLamports: number
 }
 
 const initialState = (opts: {
@@ -91,7 +88,7 @@ const initialState = (opts: {
   payments?: Payment[]
   netType: NetTypes.NetType
   balance?: BN
-  rentExemptLamports?: number
+  rentExemptLamports: number
 }): PaymentState => ({
   error: undefined,
   payments: [{}] as Array<Payment>,
@@ -101,7 +98,7 @@ const initialState = (opts: {
   balance: opts.balance || new BN(0),
 })
 
-const paymentsSum = (payments: Payment[]) => {
+export const paymentsSum = (payments: Payment[]) => {
   return payments.reduce((prev, current) => {
     if (!current.amount) {
       return prev
@@ -145,7 +142,7 @@ const recalculate = (payments: Payment[], state: PaymentState) => {
     // the blockchain-api rejects transfers that would drop it below.
     maxBalance = maxBalance
       ?.sub(networkFee)
-      .sub(new BN(state.rentExemptLamports ?? MIN_WALLET_RENT_LAMPORTS))
+      .sub(new BN(state.rentExemptLamports))
   }
 
   if (maxBalance.lt(new BN(0))) {
@@ -344,7 +341,11 @@ export default (opts: {
   balance?: BN
 }) => {
   const { rentExemptLamports } = useRentExempt()
-  const [state, dispatch] = useReducer(reducer, initialState(opts))
+  const [state, dispatch] = useReducer(
+    reducer,
+    { ...opts, rentExemptLamports },
+    initialState,
+  )
 
   useEffect(() => {
     dispatch({ type: 'updateRentExempt', rentExemptLamports })
