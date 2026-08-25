@@ -9,7 +9,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: UNKNOWN, balance: 5000000, decimals: 6 }],
       visibleTokens: new Set([UNKNOWN]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toMatchObject([
       { mint: UNKNOWN, decimals: 6, maxUi: '5' },
@@ -17,21 +17,21 @@ describe('classifyHoldings', () => {
     expect(r.leftBehindMints).toEqual([])
   })
 
-  it('prepends native SOL as WSOL when solBalance > 0', () => {
+  it('prepends native SOL as WSOL when solLamports > 0', () => {
     const r = classifyHoldings({
       holdings: [],
       visibleTokens: new Set<string>(),
-      solBalance: 1.5,
+      solLamports: 1500000000,
     })
     expect(r.migratableTokens[0].mint).toBe(WSOL_MINT)
     expect(r.migratableTokens[0].maxUi).toBe('1.5')
   })
 
-  it('omits native SOL when solBalance is 0', () => {
+  it('omits native SOL when solLamports is 0', () => {
     const r = classifyHoldings({
       holdings: [],
       visibleTokens: new Set<string>(),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toHaveLength(0)
   })
@@ -40,7 +40,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: HNT, balance: 142500000000, decimals: 9 }],
       visibleTokens: new Set([HNT]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toMatchObject([
       { mint: HNT, label: 'hnty…xWux', maxUi: '142.5' },
@@ -54,7 +54,7 @@ describe('classifyHoldings', () => {
         { mint: HNT, balance: 10, decimals: 9 }, // visible → offered
       ],
       visibleTokens: new Set([HNT]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens.map((tk) => tk.mint)).toEqual([HNT])
     expect(r.leftBehindMints).toEqual([UNKNOWN])
@@ -64,7 +64,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: WSOL_MINT, balance: 5000, decimals: 9 }],
       visibleTokens: new Set([WSOL_MINT]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([WSOL_MINT])
@@ -74,7 +74,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: HNT, balance: 10, decimals: 9, frozen: true }],
       visibleTokens: new Set([HNT]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([HNT])
@@ -88,7 +88,7 @@ describe('classifyHoldings', () => {
         { mint: UNKNOWN, balance: 5000, decimals: 6 },
       ],
       visibleTokens: new Set([NFT]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([UNKNOWN])
@@ -98,7 +98,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: UNKNOWN, balance: 42, decimals: 0 }],
       visibleTokens: new Set<string>(),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([])
@@ -109,7 +109,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: DC, balance: 1, decimals: 0, frozen: true }],
       visibleTokens: new Set([DC]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.leftBehindMints).toEqual([DC])
   })
@@ -118,7 +118,7 @@ describe('classifyHoldings', () => {
     const r = classifyHoldings({
       holdings: [{ mint: UNKNOWN, balance: 0, decimals: 6 }],
       visibleTokens: new Set([UNKNOWN]),
-      solBalance: 0,
+      solLamports: 0,
     })
     expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([])

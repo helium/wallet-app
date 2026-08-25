@@ -22,15 +22,12 @@ export const nothingToMigrate = (
   tokens: unknown[],
 ): boolean => !loading && hotspots.length === 0 && tokens.length === 0
 
-const solToSelectable = (solBalance: number): SelectableToken => {
-  const raw = String(Math.round(solBalance * 1e9))
-  return {
-    mint: WSOL_MINT,
-    label: 'SOL',
-    decimals: 9,
-    maxUi: rawToUi(raw, 9),
-  }
-}
+const solToSelectable = (solLamports: bigint | number): SelectableToken => ({
+  mint: WSOL_MINT,
+  label: 'SOL',
+  decimals: 9,
+  maxUi: rawToUi(String(solLamports), 9),
+})
 
 // Holdings carry no metadata, so the label is only ever the fallback; the token
 // rows and review lines resolve symbol/name from the metadata hook on top.
@@ -44,9 +41,9 @@ const holdingToSelectable = (h: WalletHolding): SelectableToken => ({
 export const classifyHoldings = (args: {
   holdings: WalletHolding[]
   visibleTokens: ReadonlySet<string>
-  solBalance: number
+  solLamports: bigint | number
 }): HoldingsClassification => {
-  const { holdings, visibleTokens, solBalance } = args
+  const { holdings, visibleTokens, solLamports } = args
 
   // tokenAccounts includes NFT ATAs, which aren't tokens and belong in neither
   // the offer nor the warning.
@@ -61,7 +58,7 @@ export const classifyHoldings = (args: {
   const byMint = new Map(fungible.map((h) => [h.mint, h]))
 
   const migratableTokens: SelectableToken[] = [
-    ...(solBalance > 0 ? [solToSelectable(solBalance)] : []),
+    ...(solLamports > 0 ? [solToSelectable(solLamports)] : []),
     // The native SOL row already occupies the WSOL mint key.
     ...visibleMints
       .filter((mint) => mint !== WSOL_MINT)

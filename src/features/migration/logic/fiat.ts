@@ -6,7 +6,7 @@ import { FiatEstimate, PriceMap, SelectableToken } from './types'
 export const estimateFiat = (args: {
   tokens: SelectableToken[]
   amounts: Record<string, string>
-  prices?: PriceMap
+  prices: PriceMap
   currency: string
 }): FiatEstimate => {
   const { tokens, amounts, prices, currency } = args
@@ -19,7 +19,7 @@ export const estimateFiat = (args: {
     if (!(amount > 0)) return
 
     const priceKey = MINT_PRICE_KEY[tk.mint]
-    const price = priceKey ? prices?.[priceKey]?.[currency] : undefined
+    const price = priceKey ? prices[priceKey]?.[currency] : undefined
     if (price === undefined) unpricedCount += 1
     else total += price * amount
   })

@@ -1,5 +1,4 @@
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -52,7 +51,7 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
       classifyHoldings({
         holdings: tokenAccounts ?? [],
         visibleTokens,
-        solBalance: Number(lamports ?? 0) / LAMPORTS_PER_SOL,
+        solLamports: lamports ?? 0,
       }),
     [tokenAccounts, visibleTokens, lamports],
   )

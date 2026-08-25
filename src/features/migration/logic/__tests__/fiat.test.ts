@@ -73,15 +73,4 @@ describe('estimateFiat', () => {
       }),
     ).toEqual({ total: 10, unpricedCount: 0 })
   })
-
-  it('counts every selected mint as unpriced when prices have not loaded', () => {
-    expect(
-      estimateFiat({
-        tokens: [token(WSOL_MINT), token(HNT)],
-        amounts: { [WSOL_MINT]: '1', [HNT]: '2' },
-        prices: undefined,
-        currency: 'usd',
-      }),
-    ).toEqual({ total: 0, unpricedCount: 2 })
-  })
 })
