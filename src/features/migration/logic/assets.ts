@@ -1,11 +1,10 @@
-import { rawToUi } from './amounts'
-import { MIGRATABLE_MINTS, WSOL_MINT } from './mints'
 import {
-  HoldingsClassification,
-  MigratableToken,
-  SelectableToken,
-  WalletHolding,
-} from './types'
+  deriveVisibleMints,
+  isNftLike,
+} from '../../account/logic/visibleTokens'
+import { rawToUi } from './amounts'
+import { WSOL_MINT } from './mints'
+import { HoldingsClassification, SelectableToken, WalletHolding } from './types'
 
 // Local (not @utils/formatting's shortenAddress): logic/ runs under node-jest,
 // and that module's import chain drags react-native-localize, which the node
@@ -23,45 +22,59 @@ export const nothingToMigrate = (
   tokens: unknown[],
 ): boolean => !loading && hotspots.length === 0 && tokens.length === 0
 
-const solToSelectable = (solBalance: number): SelectableToken => {
-  const raw = String(Math.round(solBalance * 1e9))
-  return {
-    mint: WSOL_MINT,
-    label: 'SOL',
-    decimals: 9,
-    maxUi: rawToUi(raw, 9),
-  }
-}
+const solToSelectable = (solLamports: bigint | number): SelectableToken => ({
+  mint: WSOL_MINT,
+  label: 'SOL',
+  decimals: 9,
+  maxUi: rawToUi(String(solLamports), 9),
+})
 
-const tokenToSelectable = (t: MigratableToken): SelectableToken => ({
-  mint: t.mint,
-  label: t.symbol || t.name || shortenMint(t.mint),
-  decimals: t.decimals,
-  maxUi: rawToUi(t.balance, t.decimals),
+// Holdings carry no metadata, so the label is only ever the fallback; the token
+// rows and review lines resolve symbol/name from the metadata hook on top.
+const holdingToSelectable = (h: WalletHolding): SelectableToken => ({
+  mint: h.mint,
+  label: shortenMint(h.mint),
+  decimals: h.decimals,
+  maxUi: rawToUi(String(h.balance), h.decimals),
 })
 
 export const classifyHoldings = (args: {
-  migratable: MigratableToken[]
-  solBalance: number
   holdings: WalletHolding[]
+  visibleTokens: ReadonlySet<string>
+  solLamports: bigint | number
 }): HoldingsClassification => {
-  const { migratable, solBalance, holdings } = args
+  const { holdings, visibleTokens, solLamports } = args
+
+  // tokenAccounts includes NFT ATAs, which aren't tokens and belong in neither
+  // the offer nor the warning.
+  const fungible = holdings.filter((h) => h.balance > 0 && !isNftLike(h))
+
+  // Same derivation the account token list uses, so the flow offers exactly the
+  // tokens the user already sees. It orders network tokens first.
+  const visibleMints = deriveVisibleMints({
+    tokenAccounts: holdings,
+    visibleTokens,
+  })
+  const byMint = new Map(fungible.map((h) => [h.mint, h]))
 
   const migratableTokens: SelectableToken[] = [
-    ...(solBalance > 0 ? [solToSelectable(solBalance)] : []),
-    ...migratable.filter((t) => t.uiAmount > 0).map(tokenToSelectable),
+    ...(solLamports > 0 ? [solToSelectable(solLamports)] : []),
+    // The native SOL row already occupies the WSOL mint key.
+    ...visibleMints
+      .filter((mint) => mint !== WSOL_MINT)
+      .flatMap((mint) => {
+        const holding = byMint.get(mint)
+        return holding && !holding.frozen ? [holdingToSelectable(holding)] : []
+      }),
   ]
 
-  // The warning counts fungible tokens that can't move. tokenAccounts includes
-  // NFT ATAs (decimals 0, supply 1) which aren't tokens, so exclude them.
-  const isNft = (h: WalletHolding) => h.decimals === 0 && h.balance === 1
-
+  // A wrapped-SOL ATA is also left behind: the server reads the WSOL mint as
+  // native SOL, so the ATA balance cannot move through this endpoint.
+  const visible = new Set(visibleMints)
   const leftBehindMints = Array.from(
     new Set(
-      holdings
-        .filter(
-          (h) => h.balance > 0 && !MIGRATABLE_MINTS.has(h.mint) && !isNft(h),
-        )
+      fungible
+        .filter((h) => h.frozen || h.mint === WSOL_MINT || !visible.has(h.mint))
         .map((h) => h.mint),
     ),
   )

@@ -5,82 +5,122 @@ const HNT = 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux'
 const UNKNOWN = 'FAKEmint1111111111111111111111111111111111'
 
 describe('classifyHoldings', () => {
-  it('prepends native SOL as WSOL when solBalance > 0', () => {
+  it('offers a visible, non-frozen holding with a balance', () => {
     const r = classifyHoldings({
-      migratable: [],
-      solBalance: 1.5,
+      holdings: [{ mint: UNKNOWN, balance: 5000000, decimals: 6 }],
+      visibleTokens: new Set([UNKNOWN]),
+      solLamports: 0,
+    })
+    expect(r.migratableTokens).toMatchObject([
+      { mint: UNKNOWN, decimals: 6, maxUi: '5' },
+    ])
+    expect(r.leftBehindMints).toEqual([])
+  })
+
+  it('prepends native SOL as WSOL when solLamports > 0', () => {
+    const r = classifyHoldings({
       holdings: [],
+      visibleTokens: new Set<string>(),
+      solLamports: 1500000000,
     })
     expect(r.migratableTokens[0].mint).toBe(WSOL_MINT)
     expect(r.migratableTokens[0].maxUi).toBe('1.5')
   })
 
-  it('omits native SOL when solBalance is 0', () => {
-    const r = classifyHoldings({ migratable: [], solBalance: 0, holdings: [] })
+  it('omits native SOL when solLamports is 0', () => {
+    const r = classifyHoldings({
+      holdings: [],
+      visibleTokens: new Set<string>(),
+      solLamports: 0,
+    })
     expect(r.migratableTokens).toHaveLength(0)
   })
 
-  it('includes migratable tokens with a readable label', () => {
+  it('labels a holding with its shortened mint', () => {
     const r = classifyHoldings({
-      migratable: [
-        {
-          mint: HNT,
-          balance: '142500000000',
-          decimals: 9,
-          uiAmount: 142.5,
-          symbol: 'HNT',
-        },
-      ],
-      solBalance: 0,
-      holdings: [],
+      holdings: [{ mint: HNT, balance: 142500000000, decimals: 9 }],
+      visibleTokens: new Set([HNT]),
+      solLamports: 0,
     })
-    const hnt = r.migratableTokens.find((t) => t.mint === HNT)
-    expect(hnt).toMatchObject({
-      label: 'HNT',
-      maxUi: '142.5',
-    })
+    expect(r.migratableTokens).toMatchObject([
+      { mint: HNT, label: 'hnty…xWux', maxUi: '142.5' },
+    ])
   })
 
-  it('flags nonzero holdings of unsupported mints as left behind', () => {
+  it('leaves behind a hidden holding with a balance', () => {
     const r = classifyHoldings({
-      migratable: [],
-      solBalance: 0,
       holdings: [
         { mint: UNKNOWN, balance: 5000, decimals: 6 },
-        { mint: HNT, balance: 10, decimals: 9 }, // supported → not flagged
+        { mint: HNT, balance: 10, decimals: 9 }, // visible → offered
       ],
+      visibleTokens: new Set([HNT]),
+      solLamports: 0,
     })
+    expect(r.migratableTokens.map((tk) => tk.mint)).toEqual([HNT])
     expect(r.leftBehindMints).toEqual([UNKNOWN])
   })
 
-  it('excludes NFT-shaped holdings (decimals 0, balance 1) from left behind', () => {
+  it('leaves behind a wrapped-SOL ATA with a balance', () => {
+    const r = classifyHoldings({
+      holdings: [{ mint: WSOL_MINT, balance: 5000, decimals: 9 }],
+      visibleTokens: new Set([WSOL_MINT]),
+      solLamports: 0,
+    })
+    expect(r.migratableTokens).toEqual([])
+    expect(r.leftBehindMints).toEqual([WSOL_MINT])
+  })
+
+  it('leaves behind a frozen holding even when it is visible', () => {
+    const r = classifyHoldings({
+      holdings: [{ mint: HNT, balance: 10, decimals: 9, frozen: true }],
+      visibleTokens: new Set([HNT]),
+      solLamports: 0,
+    })
+    expect(r.migratableTokens).toEqual([])
+    expect(r.leftBehindMints).toEqual([HNT])
+  })
+
+  it('ignores NFT-shaped holdings (decimals 0) in both lists', () => {
     const NFT = 'NFTmint11111111111111111111111111111111111'
     const r = classifyHoldings({
-      migratable: [],
-      solBalance: 0,
       holdings: [
         { mint: NFT, balance: 1, decimals: 0 }, // NFT → not a token
         { mint: UNKNOWN, balance: 5000, decimals: 6 },
       ],
+      visibleTokens: new Set([NFT]),
+      solLamports: 0,
     })
+    expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([UNKNOWN])
   })
 
-  it('keeps decimals-0 fungible balances above 1 as left behind', () => {
+  it('treats any decimals-0 holding as an NFT, like the account token list', () => {
     const r = classifyHoldings({
-      migratable: [],
-      solBalance: 0,
       holdings: [{ mint: UNKNOWN, balance: 42, decimals: 0 }],
+      visibleTokens: new Set<string>(),
+      solLamports: 0,
     })
-    expect(r.leftBehindMints).toEqual([UNKNOWN])
+    expect(r.migratableTokens).toEqual([])
+    expect(r.leftBehindMints).toEqual([])
   })
 
-  it('ignores zero-balance unsupported holdings', () => {
+  it('keeps DC as a fungible token despite its zero decimals', () => {
+    const DC = 'dcuc8Amr83Wz27ZkQ2K9NS6r8zRpf1J6cvArEBDZDmm'
     const r = classifyHoldings({
-      migratable: [],
-      solBalance: 0,
-      holdings: [{ mint: UNKNOWN, balance: 0, decimals: 6 }],
+      holdings: [{ mint: DC, balance: 1, decimals: 0, frozen: true }],
+      visibleTokens: new Set([DC]),
+      solLamports: 0,
     })
+    expect(r.leftBehindMints).toEqual([DC])
+  })
+
+  it('omits zero-balance holdings from both lists', () => {
+    const r = classifyHoldings({
+      holdings: [{ mint: UNKNOWN, balance: 0, decimals: 6 }],
+      visibleTokens: new Set([UNKNOWN]),
+      solLamports: 0,
+    })
+    expect(r.migratableTokens).toEqual([])
     expect(r.leftBehindMints).toEqual([])
   })
 })

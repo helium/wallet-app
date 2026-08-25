@@ -3,6 +3,10 @@ export type TokenAccount = {
   mint: string
   balance: number
   decimals: number
+  // Frozen accounts (e.g. Data Credits) can't be transferred, so flows that
+  // move tokens must skip them. Absent on state written before this field
+  // existed, which reads as not frozen.
+  frozen: boolean
 }
 
 export type AccountBalance = {

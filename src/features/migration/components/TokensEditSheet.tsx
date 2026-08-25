@@ -7,11 +7,10 @@ import BottomSheet, {
   BottomSheetBackdropProps,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { PublicKey } from '@solana/web3.js'
-import React, { FC, forwardRef, useCallback, useMemo, useState } from 'react'
+import React, { FC, forwardRef, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TextInput } from 'react-native'
+import { useTokenDisplay } from '../hooks/useTokenDisplay'
 import { WSOL_MINT } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
 import {
@@ -39,8 +38,7 @@ const TokenRow: FC<{
   onMax: () => void
 }> = ({ token, value, onChange, onMax }) => {
   const { t } = useTranslation()
-  const mint = useMemo(() => new PublicKey(token.mint), [token.mint])
-  const { json } = useMetaplexMetadata(mint)
+  const { label, image } = useTokenDisplay(token.mint, token.label)
   const isSol = token.mint === WSOL_MINT
 
   if (!isSol) {
@@ -56,10 +54,10 @@ const TokenRow: FC<{
         <Box marginRight="m">
           <WorldCheckbox checked={isSelected} />
         </Box>
-        <TokenIcon size={32} img={json?.image} />
+        <TokenIcon size={32} img={image} />
         <Box flex={1} marginLeft="s">
           <Text variant="body2Medium" color="worldInk">
-            {token.label}
+            {label}
           </Text>
           <Text variant="body3" color="worldSecondaryInk" marginTop="xxs">
             {t('migrateToWorld.selectAssets.balance', {
@@ -81,10 +79,10 @@ const TokenRow: FC<{
       {/* Spacer matching the checkbox column so the SOL row's icon/label
           stay aligned with the toggle rows above. */}
       <Box width={22} marginRight="m" />
-      <TokenIcon size={32} img={json?.image} />
+      <TokenIcon size={32} img={image} />
       <Box flex={1} marginLeft="s">
         <Text variant="body2Medium" color="worldInk">
-          {token.label}
+          {label}
         </Text>
         <TouchableOpacityBox
           onPress={onMax}

@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store/rootReducer'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
-import { MINT_PRICE_KEY } from '../logic/mints'
+import { estimateFiat } from '../logic/fiat'
 import { SelectableToken } from '../logic/types'
 import { WORLD_TRACKING } from '../migrationTheme'
 import HotspotsEditSheet from './HotspotsEditSheet'
@@ -110,8 +110,10 @@ const AssetSelectionStep: FC<{
 
   // Pre-select everything the first time assets arrive. Adjusting state
   // during render (guarded so it runs once) is the idiomatic React pattern
-  // for deriving state from new props without an extra effect pass.
-  if (!primed && (hotspots.length || tokens.length)) {
+  // for deriving state from new props without an extra effect pass. `loading`
+  // covers hotspots, token accounts and SOL, so nothing arrives after the prime
+  // and lands unselected.
+  if (!primed && !loading && (hotspots.length || tokens.length)) {
     setHotspotKeys(new Set(hotspots.map((h) => h.entityKey)))
     setTokenAmounts(Object.fromEntries(tokens.map((tk) => [tk.mint, tk.maxUi])))
     setPrimed(true)
@@ -135,28 +137,26 @@ const AssetSelectionStep: FC<{
     return a && a !== '0'
   }).length
 
-  // Approximate USD value of the selected token amounts, summed over the mints
-  // we have a price for. Omitted entirely when no price is available.
+  // Approximate value of the selected token amounts over the mints we have a
+  // price for, plus how many selected tokens we cannot price. Omitted entirely
+  // until prices load, and when nothing is selected.
   const cur = currency?.toLowerCase()
   const tokensUsd = useMemo(() => {
     if (!cur || !tokenPrices) return undefined
-    let total = 0
-    let priced = false
-    tokens.forEach((tk) => {
-      const key = MINT_PRICE_KEY[tk.mint]
-      const price = key
-        ? tokenPrices[key as keyof typeof tokenPrices]?.[cur]
-        : undefined
-      const amt = parseFloat(tokenAmounts[tk.mint] ?? '')
-      if (price && amt > 0) {
-        total += price * amt
-        priced = true
-      }
+    const { total, unpricedCount } = estimateFiat({
+      tokens,
+      amounts: tokenAmounts,
+      prices: tokenPrices,
+      currency: cur,
     })
-    if (!priced) return undefined
-    return t('migrateToWorld.selectAssets.approxValue', {
-      value: numberFormat(language, cur, total),
-    })
+    if (!total && !unpricedCount) return undefined
+    const value = numberFormat(language, cur, total)
+    return unpricedCount
+      ? t('migrateToWorld.selectAssets.approxValueUnpriced', {
+          value,
+          unpriced: unpricedCount,
+        })
+      : t('migrateToWorld.selectAssets.approxValue', { value })
   }, [tokens, tokenAmounts, tokenPrices, cur, language, t])
 
   const canReview = hotspotKeys.size > 0 || activeTokenCount > 0
@@ -207,7 +207,8 @@ const AssetSelectionStep: FC<{
             <Text variant="body3" color="worldWarnInk">
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,
-              })}
+              })}{' '}
+              {t('migrateToWorld.selectAssets.leftBehindHint')}
             </Text>
           </Box>
         )}
