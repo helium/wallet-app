@@ -3,12 +3,10 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
-import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
-import { NATIVE_MINT } from '@solana/spl-token'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { DEFAULT_TOKENS, useVisibleTokens } from '@storage/TokensProvider'
+import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { times } from 'lodash'
@@ -23,22 +21,11 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
+import { deriveVisibleMints } from './logic/visibleTokens'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
-
-const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
-}
-
-const sortValues: Record<string, number> = {
-  [HNT_MINT.toBase58()]: 10,
-  [IOT_MINT.toBase58()]: 9,
-  [MOBILE_MINT.toBase58()]: 8,
-  [DC_MINT.toBase58()]: 7,
-}
-export function getSortValue(mint: string): number {
-  return sortValues[mint] || 0
 }
 
 const AccountTokenList = ({ onLayout }: Props) => {
@@ -86,40 +73,13 @@ const AccountTokenList = ({ onLayout }: Props) => {
   }, [navigation])
   const { tokenAccounts } = useBalance()
   const { bottom } = useSafeAreaInsets()
-  const mints = useMemo(() => {
-    const taMints = tokenAccounts
-      ?.filter(
-        (ta) =>
-          visibleTokens.has(ta.mint) &&
-          ta.balance > 0 &&
-          (ta.decimals > 0 || ta.mint === DC_MINT.toBase58()),
-      )
-      .map((ta) => ta.mint)
-
-    // Start with DEFAULT_TOKENS, then filter out any that have zero balance
-    // (unless they're not in tokenAccounts at all, meaning no account exists)
-    const all = [...new Set([...DEFAULT_TOKENS, ...(taMints || [])])]
-      .filter((mintStr) => {
-        // If token has an account, only show if balance > 0
-        const tokenAccount = tokenAccounts?.find((ta) => ta.mint === mintStr)
-        if (tokenAccount) {
-          return (
-            tokenAccount.balance > 0 ||
-            tokenAccount.mint === DC_MINT.toBase58() ||
-            tokenAccount.mint === NATIVE_MINT.toBase58() ||
-            tokenAccount.mint === USDC_MINT.toBase58()
-          )
-        }
-        // If no token account exists, show the default token (user can add it later)
-        return true
-      })
-      .sort((a, b) => {
-        return getSortValue(b) - getSortValue(a)
-      })
-      .map((mint) => new PublicKey(mint))
-
-    return all
-  }, [tokenAccounts, visibleTokens])
+  const mints = useMemo(
+    () =>
+      deriveVisibleMints({ tokenAccounts, visibleTokens }).map(
+        (mint) => new PublicKey(mint),
+      ),
+    [tokenAccounts, visibleTokens],
+  )
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 

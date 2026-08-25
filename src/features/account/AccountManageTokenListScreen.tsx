@@ -29,7 +29,7 @@ import { syncTokenAccounts } from '../../store/slices/balancesSlice'
 import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
-import { getSortValue } from './AccountTokenList'
+import { getSortValue } from './logic/visibleTokens'
 
 const CheckableTokenListItem = ({
   bottomBorder,

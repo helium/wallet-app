@@ -1,5 +1,3 @@
-import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
-import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import React, {
   ReactNode,
@@ -9,6 +7,7 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
+import { DEFAULT_TOKENS } from '../features/account/logic/visibleTokens'
 import * as Logger from '../utils/logger'
 import { useAccountStorage } from './AccountStorageProvider'
 import {
@@ -16,16 +15,6 @@ import {
   restoreVisibleTokens,
   updateVisibleTokens,
 } from './cloudStorage'
-
-const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
-export const DEFAULT_TOKENS = new Set([
-  HNT_MINT.toBase58(),
-  MOBILE_MINT.toBase58(),
-  IOT_MINT.toBase58(),
-  DC_MINT.toBase58(),
-  NATIVE_MINT.toBase58(),
-  USDC_MINT.toBase58(),
-])
 
 const useVisibleTokensHook = () => {
   const { currentAccount } = useAccountStorage()
