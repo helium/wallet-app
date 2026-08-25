@@ -6,6 +6,7 @@ import { shortenAddress } from '@utils/formatting'
 import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
+import { useTokenDisplay } from '../hooks/useTokenDisplay'
 import { WORLD_TRACKING } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
 import WorldButton from './WorldButton'
@@ -45,6 +46,18 @@ const Line: FC<{ label: string; value: string }> = ({ label, value }) => (
 )
 
 const Divider = () => <Box height={1} backgroundColor="worldBorder" />
+
+// Its own component so each line can resolve its token metadata; the label the
+// classifier supplied is the fallback for a token with no metadata.
+const TokenLine: FC<{ line: ReviewTokenLine }> = ({ line }) => {
+  const { label } = useTokenDisplay(line.mint, line.label)
+  return (
+    <Box>
+      <Divider />
+      <Line label={label} value={line.amount} />
+    </Box>
+  )
+}
 
 // A hairline divider with a centered down-arrow badge, showing assets flowing
 // from the source wallet into the destination. The container is tall enough to
@@ -122,10 +135,7 @@ const ReviewStep: FC<{
               value={String(hotspotCount)}
             />
             {tokenLines.map((line) => (
-              <Box key={line.mint}>
-                <Divider />
-                <Line label={line.label} value={line.amount} />
-              </Box>
+              <TokenLine key={line.mint} line={line} />
             ))}
           </Card>
 

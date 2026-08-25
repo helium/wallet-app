@@ -1,11 +1,7 @@
+import { deriveVisibleMints } from '../../account/logic/visibleTokens'
 import { rawToUi } from './amounts'
-import { MIGRATABLE_MINTS, WSOL_MINT } from './mints'
-import {
-  HoldingsClassification,
-  MigratableToken,
-  SelectableToken,
-  WalletHolding,
-} from './types'
+import { WSOL_MINT } from './mints'
+import { HoldingsClassification, SelectableToken, WalletHolding } from './types'
 
 // Local (not @utils/formatting's shortenAddress): logic/ runs under node-jest,
 // and that module's import chain drags react-native-localize, which the node
@@ -33,35 +29,51 @@ const solToSelectable = (solBalance: number): SelectableToken => {
   }
 }
 
-const tokenToSelectable = (t: MigratableToken): SelectableToken => ({
-  mint: t.mint,
-  label: t.symbol || t.name || shortenMint(t.mint),
-  decimals: t.decimals,
-  maxUi: rawToUi(t.balance, t.decimals),
+// Holdings carry no metadata, so the label is only ever the fallback; the token
+// rows and review lines resolve symbol/name from the metadata hook on top.
+const holdingToSelectable = (h: WalletHolding): SelectableToken => ({
+  mint: h.mint,
+  label: shortenMint(h.mint),
+  decimals: h.decimals,
+  maxUi: rawToUi(String(h.balance), h.decimals),
 })
 
 export const classifyHoldings = (args: {
-  migratable: MigratableToken[]
-  solBalance: number
   holdings: WalletHolding[]
+  visibleTokens: ReadonlySet<string>
+  solBalance: number
 }): HoldingsClassification => {
-  const { migratable, solBalance, holdings } = args
+  const { holdings, visibleTokens, solBalance } = args
+
+  // tokenAccounts includes NFT ATAs (decimals 0, supply 1), which aren't tokens
+  // and belong in neither the offer nor the warning.
+  const isNft = (h: WalletHolding) => h.decimals === 0 && h.balance === 1
+  const fungible = holdings.filter((h) => h.balance > 0 && !isNft(h))
+
+  // Same derivation the account token list uses, so the flow offers exactly the
+  // tokens the user already sees. It orders network tokens first.
+  const visibleMints = deriveVisibleMints({
+    tokenAccounts: holdings,
+    visibleTokens,
+  })
+  const byMint = new Map(fungible.map((h) => [h.mint, h]))
 
   const migratableTokens: SelectableToken[] = [
     ...(solBalance > 0 ? [solToSelectable(solBalance)] : []),
-    ...migratable.filter((t) => t.uiAmount > 0).map(tokenToSelectable),
+    // A wrapped-SOL ATA is skipped: the native SOL row already occupies that mint.
+    ...visibleMints
+      .filter((mint) => mint !== WSOL_MINT)
+      .flatMap((mint) => {
+        const holding = byMint.get(mint)
+        return holding && !holding.frozen ? [holdingToSelectable(holding)] : []
+      }),
   ]
 
-  // The warning counts fungible tokens that can't move. tokenAccounts includes
-  // NFT ATAs (decimals 0, supply 1) which aren't tokens, so exclude them.
-  const isNft = (h: WalletHolding) => h.decimals === 0 && h.balance === 1
-
+  const visible = new Set(visibleMints)
   const leftBehindMints = Array.from(
     new Set(
-      holdings
-        .filter(
-          (h) => h.balance > 0 && !MIGRATABLE_MINTS.has(h.mint) && !isNft(h),
-        )
+      fungible
+        .filter((h) => h.frozen || !visible.has(h.mint))
         .map((h) => h.mint),
     ),
   )

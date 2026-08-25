@@ -1638,6 +1638,8 @@ export default {
         "{{count}} tokens can't move automatically. They stay in your wallet.",
       leftBehind_plural:
         "{{count}} tokens can't move automatically. They stay in your wallet.",
+      leftBehindHint:
+        'To include a hidden token, make it visible in Manage Visible Tokens.',
       loading: 'Loading assets…',
       review: 'Review migration',
       approxValue: '≈ {{value}}',

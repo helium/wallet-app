@@ -1,9 +1,12 @@
+import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
+import { useVisibleTokens } from '@storage/TokensProvider'
+import { usePublicKey } from '@hooks/usePublicKey'
 import { useBalance } from '@utils/Balance'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { classifyHoldings } from '../logic/assets'
-import { SelectableToken } from '../logic/types'
 
 export type MigratableHotspot = {
   entityKey: string
@@ -12,50 +15,40 @@ export type MigratableHotspot = {
   deviceType: string
 }
 
-// Stable fallbacks so consumers' memos aren't invalidated by fresh [] identities
-// on every render while the assets are still loading.
+// Stable fallback so consumers' memos aren't invalidated by a fresh []
+// identity on every render while the hotspots are still loading.
 const NO_HOTSPOTS: MigratableHotspot[] = []
-const NO_TOKENS: SelectableToken[] = []
-const NO_MINTS: string[] = []
 
 export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
   const { tokenAccounts } = useBalance()
+  const { visibleTokens } = useVisibleTokens()
+  const { amount: lamports } = useSolOwnedAmount(usePublicKey(sourceWallet))
 
   const { execute, loading, result, error } = useAsyncCallback(async () => {
-    if (!sourceWallet) {
-      return {
-        hotspots: [] as MigratableHotspot[],
-        tokens: [] as SelectableToken[],
-        leftBehindMints: [] as string[],
-      }
-    }
-    const [hotspotsResult, balances] = await Promise.all([
-      client.migration.getHotspots({ walletAddress: sourceWallet }),
-      client.tokens.getBalances({ walletAddress: sourceWallet }),
-    ])
-
-    const { migratableTokens, leftBehindMints } = classifyHoldings({
-      migratable: balances.tokens,
-      solBalance: balances.solBalance,
-      holdings: (tokenAccounts ?? []).map((a) => ({
-        mint: a.mint,
-        balance: a.balance,
-        decimals: a.decimals,
-      })),
+    if (!sourceWallet) return [] as MigratableHotspot[]
+    const { hotspots } = await client.migration.getHotspots({
+      walletAddress: sourceWallet,
     })
-
-    return {
-      hotspots: hotspotsResult.hotspots as MigratableHotspot[],
-      tokens: migratableTokens,
-      leftBehindMints,
-    }
+    return hotspots as MigratableHotspot[]
   })
 
   useEffect(() => {
     if (sourceWallet) execute()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceWallet])
+
+  // The migratable set is the wallet's own view of what it holds — no token
+  // list from the server, so one fewer call that can fail.
+  const { migratableTokens, leftBehindMints } = useMemo(
+    () =>
+      classifyHoldings({
+        holdings: tokenAccounts ?? [],
+        visibleTokens,
+        solBalance: Number(lamports ?? 0) / LAMPORTS_PER_SOL,
+      }),
+    [tokenAccounts, visibleTokens, lamports],
+  )
 
   return {
     // The kick-off effect fires after the first render with a wallet, so count
@@ -64,8 +57,8 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
     loading: loading || (!!sourceWallet && !result && !error),
     error,
     reload: execute,
-    hotspots: result?.hotspots ?? NO_HOTSPOTS,
-    tokens: result?.tokens ?? NO_TOKENS,
-    leftBehindMints: result?.leftBehindMints ?? NO_MINTS,
+    hotspots: result ?? NO_HOTSPOTS,
+    tokens: migratableTokens,
+    leftBehindMints,
   }
 }

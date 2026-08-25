@@ -110,8 +110,10 @@ const AssetSelectionStep: FC<{
 
   // Pre-select everything the first time assets arrive. Adjusting state
   // during render (guarded so it runs once) is the idiomatic React pattern
-  // for deriving state from new props without an extra effect pass.
-  if (!primed && (hotspots.length || tokens.length)) {
+  // for deriving state from new props without an extra effect pass. Tokens are
+  // local and land before the hotspot fetch settles, so wait for the load to
+  // finish or the hotspots would prime as none-selected.
+  if (!primed && !loading && (hotspots.length || tokens.length)) {
     setHotspotKeys(new Set(hotspots.map((h) => h.entityKey)))
     setTokenAmounts(Object.fromEntries(tokens.map((tk) => [tk.mint, tk.maxUi])))
     setPrimed(true)
@@ -207,7 +209,8 @@ const AssetSelectionStep: FC<{
             <Text variant="body3" color="worldWarnInk">
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,
-              })}
+              })}{' '}
+              {t('migrateToWorld.selectAssets.leftBehindHint')}
             </Text>
           </Box>
         )}
