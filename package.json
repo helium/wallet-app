@@ -275,9 +275,9 @@
     "@solana/wallet-adapter-react": "0.15.33",
     "@helium/account-fetch-cache": "0.11.16",
     "@helium/account-fetch-cache-hooks": "0.11.16",
-    "@helium/helium-react-hooks": "0.11.17",
-    "@helium/voter-stake-registry-hooks": "0.11.19",
-    "@helium/voter-stake-registry-sdk": "0.12.1",
+    "@helium/helium-react-hooks": "0.11.18",
+    "@helium/voter-stake-registry-hooks": "0.11.20",
+    "@helium/voter-stake-registry-sdk": "0.12.2",
     "@helium/modular-governance-hooks": "0.1.6",
     "@helium/onboarding": "^5.0.4",
     "@keystonehq/bc-ur-registry": "0.7.1"
