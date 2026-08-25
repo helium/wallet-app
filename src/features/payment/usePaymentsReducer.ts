@@ -245,12 +245,9 @@ function reducer(
     }
     case 'updateRentExempt': {
       if (state.rentExemptLamports === action.rentExemptLamports) return state
-      const nextState = {
-        ...state,
-        rentExemptLamports: action.rentExemptLamports,
-      }
+      const next = { ...state, rentExemptLamports: action.rentExemptLamports }
       // Recompute any max payment with the live rent value
-      return { ...nextState, ...recalculate([...state.payments], nextState) }
+      return { ...next, ...recalculate(state.payments, next) }
     }
     case 'addPayee': {
       if (state.payments.length >= MAX_PAYMENTS) return state

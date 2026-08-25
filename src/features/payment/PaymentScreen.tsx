@@ -182,6 +182,16 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
+  // Keyboard Max must reserve the rent-exempt minimum on SOL sends, matching
+  // the reducer's recalculate
+  const solMinTokens = useMemo(
+    () =>
+      mint?.equals(NATIVE_MINT)
+        ? new BN(paymentState.rentExemptLamports)
+        : undefined,
+    [mint, paymentState.rentExemptLamports],
+  )
+
   useEffect(() => {
     dispatch({
       type: 'updateTokenBalance',
@@ -331,22 +341,19 @@ const PaymentScreen = () => {
     }
   }, [submitPayment, paymentState.mint, paymentState.payments, paymentMutation])
 
-  // Show the amounts actually submitted — a max SOL send may have been
-  // shaved by the server-priced priority fee.
-  const { submittedPayments, submittedTotal } = useMemo(() => {
-    const effective = paymentMutation.data?.payments
-    if (!effective) {
-      return {
-        submittedPayments: paymentState.payments,
-        submittedTotal: paymentState.totalAmount,
-      }
-    }
-    const merged = paymentState.payments.map((p) => {
-      const match = effective.find((e) => e.payee === p.address)
-      return match ? { ...p, amount: match.balanceAmount } : p
-    })
-    return { submittedPayments: merged, submittedTotal: paymentsSum(merged) }
-  }, [paymentMutation.data, paymentState.payments, paymentState.totalAmount])
+  // Show the amounts actually submitted — the server-priced priority fee may
+  // have shaved the max SOL payment.
+  const submittedPayments = useMemo(() => {
+    const shavedMax = paymentMutation.data?.payments.find((p) => p.max)
+    if (!shavedMax) return paymentState.payments
+    return paymentState.payments.map((p) =>
+      p.max ? { ...p, amount: shavedMax.balanceAmount } : p,
+    )
+  }, [paymentMutation.data, paymentState.payments])
+  const submittedTotal = useMemo(
+    () => paymentsSum(submittedPayments),
+    [submittedPayments],
+  )
 
   const insufficientFunds = useMemo((): [
     value: boolean,
@@ -701,6 +708,7 @@ const PaymentScreen = () => {
         onConfirmBalance={handleBalance}
         mint={mint}
         networkFee={paymentState.networkFee}
+        minTokens={solMinTokens}
       >
         <AccountSelector ref={accountSelectorRef}>
           <AddressBookSelector

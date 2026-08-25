@@ -118,19 +118,21 @@ export default () => {
       // INSUFFICIENT_FUNDS error carries the exact shortfall — shave it off
       // the max payment and rebuild.
       const requestTransferShavingMax = async () => {
-        if (!isMaxSolSend) {
-          return { response: await requestTransfer(payments), payments }
-        }
         let shavedPayments = payments
         for (let attempt = 0; ; attempt += 1) {
           // eslint-disable-next-line no-await-in-loop
           const { error, data } = await safe(requestTransfer(shavedPayments))
-          if (!error) return { response: data, payments: shavedPayments }
+          if (!error) {
+            return {
+              transactionData: data.transactionData,
+              payments: shavedPayments,
+            }
+          }
           const shortfall =
             isDefinedError(error) && error.code === 'INSUFFICIENT_FUNDS'
               ? error.data.required - error.data.available
               : 0
-          if (attempt >= 2 || shortfall <= 0) throw error
+          if (!isMaxSolSend || attempt >= 2 || shortfall <= 0) throw error
           shavedPayments = shavedPayments.map((p) =>
             p.max
               ? { ...p, balanceAmount: p.balanceAmount.sub(new BN(shortfall)) }
@@ -141,9 +143,8 @@ export default () => {
           }
         }
       }
-      const { response, payments: effectivePayments } =
+      const { transactionData, payments: effectivePayments } =
         await requestTransferShavingMax()
-      const { transactionData } = response
 
       const combinedTxnData = {
         ...transactionData,
