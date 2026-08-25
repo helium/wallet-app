@@ -72,7 +72,10 @@ import {
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
-import usePaymentsReducer, { MAX_PAYMENTS } from './usePaymentsReducer'
+import usePaymentsReducer, {
+  MAX_PAYMENTS,
+  paymentsSum,
+} from './usePaymentsReducer'
 
 type LinkedPayment = {
   amount?: string
@@ -179,6 +182,16 @@ const PaymentScreen = () => {
     netType: networkType,
   })
 
+  // Keyboard Max must reserve the rent-exempt minimum on SOL sends, matching
+  // the reducer's recalculate
+  const solMinTokens = useMemo(
+    () =>
+      mint?.equals(NATIVE_MINT)
+        ? new BN(paymentState.rentExemptLamports)
+        : undefined,
+    [mint, paymentState.rentExemptLamports],
+  )
+
   useEffect(() => {
     dispatch({
       type: 'updateTokenBalance',
@@ -190,7 +203,7 @@ const PaymentScreen = () => {
   const { symbol } = useMetaplexMetadata(mint)
 
   // Track batchId when mutation succeeds - only show loading after submission
-  const batchId = paymentMutation.data
+  const batchId = paymentMutation.data?.batchId
   const { status, isLoading: batchLoading } = useTransactionBatchStatus(
     batchId || null,
   )
@@ -327,6 +340,20 @@ const PaymentScreen = () => {
       logger.error(e)
     }
   }, [submitPayment, paymentState.mint, paymentState.payments, paymentMutation])
+
+  // Show the amounts actually submitted — the server-priced priority fee may
+  // have shaved the max SOL payment.
+  const submittedPayments = useMemo(() => {
+    const shavedMax = paymentMutation.data?.payments.find((p) => p.max)
+    if (!shavedMax) return paymentState.payments
+    return paymentState.payments.map((p) =>
+      p.max ? { ...p, amount: shavedMax.balanceAmount } : p,
+    )
+  }, [paymentMutation.data, paymentState.payments])
+  const submittedTotal = useMemo(
+    () => paymentsSum(submittedPayments),
+    [submittedPayments],
+  )
 
   const insufficientFunds = useMemo((): [
     value: boolean,
@@ -681,6 +708,7 @@ const PaymentScreen = () => {
         onConfirmBalance={handleBalance}
         mint={mint}
         networkFee={paymentState.networkFee}
+        minTokens={solMinTokens}
       >
         <AccountSelector ref={accountSelectorRef}>
           <AddressBookSelector
@@ -840,8 +868,8 @@ const PaymentScreen = () => {
             ? new Error('Transaction failed')
             : undefined)
         }
-        totalBalance={paymentState.totalAmount}
-        payments={paymentState.payments}
+        totalBalance={submittedTotal}
+        payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
         onRetry={handleSubmit}
         onSuccess={navigation.popToTop}

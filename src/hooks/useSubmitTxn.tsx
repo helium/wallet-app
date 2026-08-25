@@ -12,6 +12,8 @@ import {
   populateMissingDraftInfo,
   toVersionedTx,
 } from '@helium/spl-utils'
+import { isDefinedError, safe } from '@orpc/client'
+import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -97,23 +99,63 @@ export default () => {
         throw new Error(t('errors.account'))
       }
 
-      const { transactionData } = await client.tokens.multiTransfer({
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        walletAddress: currentAccount.solanaAddress!,
-        mint: mint.toBase58(),
-        recipients: payments.map((payment) => ({
-          destination: payment.payee,
-          amount: payment.balanceAmount.toString(),
-        })),
-      })
+      const requestTransfer = (pmts: typeof payments) =>
+        client.tokens.multiTransfer({
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          walletAddress: currentAccount.solanaAddress!,
+          mint: mint.toBase58(),
+          recipients: pmts.map((payment) => ({
+            destination: payment.payee,
+            amount: payment.balanceAmount.toString(),
+          })),
+        })
 
-      const paymentSummary = payments
-        .map((p) => `${p.payee}-${p.balanceAmount.toString()}`)
-        .join('_')
+      const isMaxSolSend =
+        mint.equals(NATIVE_MINT) && payments.some((p) => p.max)
+
+      // The server prices priority fees when it builds the transaction, so a
+      // max send computed client-side can overshoot by that fee. The
+      // INSUFFICIENT_FUNDS error carries the exact shortfall — shave it off
+      // the max payment and rebuild.
+      const requestTransferShavingMax = async () => {
+        let shavedPayments = payments
+        for (let attempt = 0; ; attempt += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          const { error, data } = await safe(requestTransfer(shavedPayments))
+          if (!error) {
+            return {
+              transactionData: data.transactionData,
+              payments: shavedPayments,
+            }
+          }
+          const shortfall =
+            isDefinedError(error) && error.code === 'INSUFFICIENT_FUNDS'
+              ? error.data.required - error.data.available
+              : 0
+          if (!isMaxSolSend || attempt >= 2 || shortfall <= 0) throw error
+          shavedPayments = shavedPayments.map((p) =>
+            p.max
+              ? { ...p, balanceAmount: p.balanceAmount.sub(new BN(shortfall)) }
+              : p,
+          )
+          if (shavedPayments.some((p) => p.max && p.balanceAmount.lten(0))) {
+            throw error
+          }
+        }
+      }
+      const { transactionData, payments: effectivePayments } =
+        await requestTransferShavingMax()
+
       const combinedTxnData = {
         ...transactionData,
         tag:
-          transactionData.tag || `payment-${mint.toBase58()}-${paymentSummary}`,
+          transactionData.tag ||
+          `payment-${hashTagParams({
+            mint: mint.toBase58(),
+            payments: effectivePayments
+              .map((p) => `${p.payee}-${p.balanceAmount.toString()}`)
+              .join('_'),
+          })}`,
       }
 
       const serializedTxs = combinedTxnData.transactions.map((tx) =>
@@ -126,7 +168,9 @@ export default () => {
         header: t('transactions.sendTokens'),
         message: t('transactions.signPaymentTxn'),
         serializedTxs,
-        renderer: () => <PaymentPreivew {...{ payments, mint }} />,
+        renderer: () => (
+          <PaymentPreivew {...{ payments: effectivePayments, mint }} />
+        ),
       })
 
       if (!decision) {
@@ -141,7 +185,9 @@ export default () => {
 
       const { batchId } = await client.transactions.submit(signedTxnData)
       queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
-      return batchId
+      // Return the payments actually submitted so the success UI can reflect
+      // any max-send shave.
+      return { batchId, payments: effectivePayments }
     },
   })
 

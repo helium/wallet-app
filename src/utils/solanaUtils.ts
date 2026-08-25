@@ -27,8 +27,11 @@ import {
 } from '@helium/lazy-distributor-sdk'
 import {
   Asset,
+  COMPUTE_BUDGET_IX_LIMIT,
+  COMPUTE_BUDGET_IX_PRICE,
   HNT_MINT,
   IOT_MINT,
+  MAX_COMPUTE_UNITS,
   MOBILE_MINT,
   TransactionDraft,
   getAsset,
@@ -215,6 +218,39 @@ export const confirmTransaction = async (
 
 export const TXN_FEE_IN_LAMPORTS = 5000
 export const TXN_FEE_IN_SOL = TXN_FEE_IN_LAMPORTS / LAMPORTS_PER_SOL
+
+// Fee the transaction's attached ComputeBudget instructions commit it to:
+// base signature fee plus ceil(CU limit × µlamport price / 1e6).
+export const estimateTxnFeeLamports = (serializedTx: Buffer): number => {
+  try {
+    const { message } = VersionedTransaction.deserialize(serializedTx)
+    const keys = message.staticAccountKeys
+    let units: number | undefined
+    let microLamports: number | undefined
+    let nonBudgetIxCount = 0
+    message.compiledInstructions.forEach((ix) => {
+      if (!keys[ix.programIdIndex]?.equals(ComputeBudgetProgram.programId)) {
+        nonBudgetIxCount += 1
+        return
+      }
+      const data = Buffer.from(ix.data)
+      if (data[0] === COMPUTE_BUDGET_IX_LIMIT) units = data.readUInt32LE(1)
+      if (data[0] === COMPUTE_BUDGET_IX_PRICE) {
+        microLamports = Number(data.readBigUInt64LE(1))
+      }
+    })
+    const baseFee = message.header.numRequiredSignatures * TXN_FEE_IN_LAMPORTS
+    // Without a SetComputeUnitLimit ix the runtime grants 200k CU per
+    // non-ComputeBudget instruction, capped at MAX_COMPUTE_UNITS.
+    const defaultUnits = Math.min(nonBudgetIxCount * 200000, MAX_COMPUTE_UNITS)
+    const priorityFee = microLamports
+      ? Math.ceil(((units ?? defaultUnits) * microLamports) / 1e6)
+      : 0
+    return baseFee + priorityFee
+  } catch {
+    return TXN_FEE_IN_LAMPORTS
+  }
+}
 
 export const calculateRequiredSol = async (
   anchorProvider: AnchorProvider,

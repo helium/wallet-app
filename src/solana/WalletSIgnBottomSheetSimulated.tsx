@@ -55,7 +55,7 @@ export const WalletSignBottomSheetSimulated = ({
   const { connection, cluster } = useSolana()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
-  const { rentExempt } = useRentExempt()
+  const { rentExempt, rentExemptLamports } = useRentExempt()
 
   const [infoVisible, setInfoVisible] = useState(false)
   const [writableInfoVisible, setWritableInfoVisible] = useState(false)
@@ -181,9 +181,9 @@ export const WalletSignBottomSheetSimulated = ({
     if (solBalance) {
       return new BN(solBalance.toString())
         .sub(new BN(estimatedTotalLamports))
-        .lt(new BN(rentExempt || 0))
+        .lt(new BN(rentExemptLamports))
     }
-  }, [solBalance, estimatedTotalLamports, rentExempt])
+  }, [solBalance, estimatedTotalLamports, rentExemptLamports])
 
   const insufficientFunds = useMemo(
     () =>
