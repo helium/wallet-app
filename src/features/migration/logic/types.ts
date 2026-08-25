@@ -42,3 +42,13 @@ export type HoldingsClassification = {
   migratableTokens: SelectableToken[]
   leftBehindMints: string[] // mints the wallet holds (nonzero) but cannot migrate
 }
+
+// Redux `balances.tokenPrices`: price key -> currency code -> price.
+export type PriceMap = Readonly<
+  Record<string, Record<string, number> | undefined>
+>
+
+export type FiatEstimate = {
+  total: number // over the priced mints only
+  unpricedCount: number // selected mints with no price in this currency
+}

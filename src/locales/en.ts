@@ -1643,6 +1643,7 @@ export default {
       loading: 'Loading assets…',
       review: 'Review migration',
       approxValue: '≈ {{value}}',
+      approxValueUnpriced: '≈ {{value}} + {{unpriced}} unpriced',
       loadErrorTitle: "Couldn't load your assets",
       loadErrorBody:
         'Something went wrong loading your assets. Check your connection and try again.',
