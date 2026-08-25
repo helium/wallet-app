@@ -6,6 +6,8 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import { useBalance } from '@utils/Balance'
 import { useEffect, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../../store/rootReducer'
 import { classifyHoldings } from '../logic/assets'
 
 export type MigratableHotspot = {
@@ -23,7 +25,12 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
   const { tokenAccounts } = useBalance()
   const { visibleTokens } = useVisibleTokens()
-  const { amount: lamports } = useSolOwnedAmount(usePublicKey(sourceWallet))
+  const balancesLoading = useSelector(
+    (s: RootState) => s.balances.balancesLoading,
+  )
+  const { amount: lamports, loading: solLoading } = useSolOwnedAmount(
+    usePublicKey(sourceWallet),
+  )
 
   const { execute, loading, result, error } = useAsyncCallback(async () => {
     if (!sourceWallet) return [] as MigratableHotspot[]
@@ -53,8 +60,15 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   return {
     // The kick-off effect fires after the first render with a wallet, so count
     // that not-yet-started gap as loading — an empty pre-fetch snapshot must
-    // not read as a wallet with nothing to migrate.
-    loading: loading || (!!sourceWallet && !result && !error),
+    // not read as a wallet with nothing to migrate. Tokens and SOL come from
+    // their own async sources; the selection step primes once, so all three
+    // must settle before loading clears or late rows arrive unselected.
+    loading:
+      loading ||
+      (!!sourceWallet && !result && !error) ||
+      !!balancesLoading ||
+      solLoading ||
+      tokenAccounts === undefined,
     error,
     reload: execute,
     hotspots: result ?? NO_HOTSPOTS,

@@ -60,6 +60,16 @@ describe('classifyHoldings', () => {
     expect(r.leftBehindMints).toEqual([UNKNOWN])
   })
 
+  it('leaves behind a wrapped-SOL ATA with a balance', () => {
+    const r = classifyHoldings({
+      holdings: [{ mint: WSOL_MINT, balance: 5000, decimals: 9 }],
+      visibleTokens: new Set([WSOL_MINT]),
+      solBalance: 0,
+    })
+    expect(r.migratableTokens).toEqual([])
+    expect(r.leftBehindMints).toEqual([WSOL_MINT])
+  })
+
   it('leaves behind a frozen holding even when it is visible', () => {
     const r = classifyHoldings({
       holdings: [{ mint: HNT, balance: 10, decimals: 9, frozen: true }],

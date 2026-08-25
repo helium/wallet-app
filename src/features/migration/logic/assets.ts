@@ -60,7 +60,7 @@ export const classifyHoldings = (args: {
 
   const migratableTokens: SelectableToken[] = [
     ...(solBalance > 0 ? [solToSelectable(solBalance)] : []),
-    // A wrapped-SOL ATA is skipped: the native SOL row already occupies that mint.
+    // The native SOL row already occupies the WSOL mint key.
     ...visibleMints
       .filter((mint) => mint !== WSOL_MINT)
       .flatMap((mint) => {
@@ -69,11 +69,13 @@ export const classifyHoldings = (args: {
       }),
   ]
 
+  // A wrapped-SOL ATA is also left behind: the server reads the WSOL mint as
+  // native SOL, so the ATA balance cannot move through this endpoint.
   const visible = new Set(visibleMints)
   const leftBehindMints = Array.from(
     new Set(
       fungible
-        .filter((h) => h.frozen || !visible.has(h.mint))
+        .filter((h) => h.frozen || h.mint === WSOL_MINT || !visible.has(h.mint))
         .map((h) => h.mint),
     ),
   )

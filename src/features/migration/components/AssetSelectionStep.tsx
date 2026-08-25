@@ -110,9 +110,9 @@ const AssetSelectionStep: FC<{
 
   // Pre-select everything the first time assets arrive. Adjusting state
   // during render (guarded so it runs once) is the idiomatic React pattern
-  // for deriving state from new props without an extra effect pass. Tokens are
-  // local and land before the hotspot fetch settles, so wait for the load to
-  // finish or the hotspots would prime as none-selected.
+  // for deriving state from new props without an extra effect pass. `loading`
+  // covers hotspots, token accounts and SOL, so nothing arrives after the prime
+  // and lands unselected.
   if (!primed && !loading && (hotspots.length || tokens.length)) {
     setHotspotKeys(new Set(hotspots.map((h) => h.entityKey)))
     setTokenAmounts(Object.fromEntries(tokens.map((tk) => [tk.mint, tk.maxUi])))
