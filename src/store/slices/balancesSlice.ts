@@ -1,10 +1,11 @@
 import { AnchorProvider } from '@coral-xyz/anchor'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import { AccountLayout, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { PURGE } from 'redux-persist'
 import { CSAccount } from '../../storage/cloudStorage'
 import { AccountBalance, Prices, TokenAccount } from '../../types/balance'
+import { decodeTokenAccount } from '../logic/tokenAccounts'
 import { getBalanceHistory, getTokenPrices } from '../../utils/walletApiV2'
 import { SyncGuard } from '../../utils/syncGuard'
 
@@ -75,14 +76,10 @@ export const syncTokenAccounts = createAsyncThunk(
       const solAcct = await connection.getAccountInfo(pubKey)
 
       // Decode all token account data first
-      const tokenAccountsData = tokenAccounts.value.map((tokenAccount) => {
-        const accountData = AccountLayout.decode(tokenAccount.account.data)
-        return {
-          pubkey: tokenAccount.pubkey,
-          mint: accountData.mint,
-          amount: accountData.amount,
-        }
-      })
+      const tokenAccountsData = tokenAccounts.value.map((tokenAccount) => ({
+        pubkey: tokenAccount.pubkey,
+        ...decodeTokenAccount(tokenAccount.account.data),
+      }))
 
       // Extract unique mints and batch fetch their info using getMultipleAccountsInfo
       // Cap at 100 accounts per request due to RPC limits
@@ -146,6 +143,7 @@ export const syncTokenAccounts = createAsyncThunk(
           mint: tokenAccountData.mint.toBase58(),
           balance: Number(tokenAccountData.amount || 0),
           decimals: mintInfoMap.get(tokenAccountData.mint.toBase58()) || 0,
+          frozen: tokenAccountData.frozen,
         }),
       )
 
