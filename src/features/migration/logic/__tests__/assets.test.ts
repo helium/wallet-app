@@ -80,7 +80,7 @@ describe('classifyHoldings', () => {
     expect(r.leftBehindMints).toEqual([HNT])
   })
 
-  it('ignores NFT-shaped holdings (decimals 0, balance 1) in both lists', () => {
+  it('ignores NFT-shaped holdings (decimals 0) in both lists', () => {
     const NFT = 'NFTmint11111111111111111111111111111111111'
     const r = classifyHoldings({
       holdings: [
@@ -94,13 +94,24 @@ describe('classifyHoldings', () => {
     expect(r.leftBehindMints).toEqual([UNKNOWN])
   })
 
-  it('keeps decimals-0 fungible balances above 1 as left behind', () => {
+  it('treats any decimals-0 holding as an NFT, like the account token list', () => {
     const r = classifyHoldings({
       holdings: [{ mint: UNKNOWN, balance: 42, decimals: 0 }],
       visibleTokens: new Set<string>(),
       solBalance: 0,
     })
-    expect(r.leftBehindMints).toEqual([UNKNOWN])
+    expect(r.migratableTokens).toEqual([])
+    expect(r.leftBehindMints).toEqual([])
+  })
+
+  it('keeps DC as a fungible token despite its zero decimals', () => {
+    const DC = 'dcuc8Amr83Wz27ZkQ2K9NS6r8zRpf1J6cvArEBDZDmm'
+    const r = classifyHoldings({
+      holdings: [{ mint: DC, balance: 1, decimals: 0, frozen: true }],
+      visibleTokens: new Set([DC]),
+      solBalance: 0,
+    })
+    expect(r.leftBehindMints).toEqual([DC])
   })
 
   it('omits zero-balance holdings from both lists', () => {

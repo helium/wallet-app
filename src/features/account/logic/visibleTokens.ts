@@ -39,6 +39,12 @@ export type VisibleTokenAccount = {
   decimals: number
 }
 
+// Decimals-less accounts are NFTs, which the token list never shows. DC is the
+// one fungible exception. Migration shares this so both flows agree on what
+// counts as a token.
+export const isNftLike = (ta: Pick<VisibleTokenAccount, 'mint' | 'decimals'>) =>
+  ta.decimals === 0 && ta.mint !== DC
+
 export const deriveVisibleMints = (args: {
   tokenAccounts: VisibleTokenAccount[] | undefined
   visibleTokens: ReadonlySet<string>
@@ -47,11 +53,7 @@ export const deriveVisibleMints = (args: {
 
   const taMints = tokenAccounts
     ?.filter(
-      (ta) =>
-        visibleTokens.has(ta.mint) &&
-        ta.balance > 0 &&
-        // Decimals-less accounts are NFTs, which the token list never shows.
-        (ta.decimals > 0 || ta.mint === DC),
+      (ta) => visibleTokens.has(ta.mint) && ta.balance > 0 && !isNftLike(ta),
     )
     .map((ta) => ta.mint)
 

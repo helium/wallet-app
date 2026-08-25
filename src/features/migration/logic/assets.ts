@@ -1,4 +1,7 @@
-import { deriveVisibleMints } from '../../account/logic/visibleTokens'
+import {
+  deriveVisibleMints,
+  isNftLike,
+} from '../../account/logic/visibleTokens'
 import { rawToUi } from './amounts'
 import { WSOL_MINT } from './mints'
 import { HoldingsClassification, SelectableToken, WalletHolding } from './types'
@@ -45,10 +48,9 @@ export const classifyHoldings = (args: {
 }): HoldingsClassification => {
   const { holdings, visibleTokens, solBalance } = args
 
-  // tokenAccounts includes NFT ATAs (decimals 0, supply 1), which aren't tokens
-  // and belong in neither the offer nor the warning.
-  const isNft = (h: WalletHolding) => h.decimals === 0 && h.balance === 1
-  const fungible = holdings.filter((h) => h.balance > 0 && !isNft(h))
+  // tokenAccounts includes NFT ATAs, which aren't tokens and belong in neither
+  // the offer nor the warning.
+  const fungible = holdings.filter((h) => h.balance > 0 && !isNftLike(h))
 
   // Same derivation the account token list uses, so the flow offers exactly the
   // tokens the user already sees. It orders network tokens first.
