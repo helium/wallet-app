@@ -8,8 +8,7 @@ import { UREncoder } from '@ngraveio/bc-ur'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { SolSignature } from '@keystonehq/bc-ur-registry-sol'
 import { createSignatureScanner } from '../SignTx/signatureScanner'
-
-const MAX_FRAGMENT_CAPACITY = 200
+import { MAX_FRAGMENT_CAPACITY, urToFrames } from './urFrames'
 
 const framesFor = (
   requestId: string,
@@ -20,12 +19,7 @@ const framesFor = (
     Buffer.alloc(64, fill),
     Buffer.from(uuid.parse(requestId) as Uint8Array),
   ).toUR()
-  const encoder = new UREncoder(new UR(ur.cbor, ur.type), fragmentCapacity)
-  const frames: string[] = []
-  for (let i = 0; i < encoder.fragmentsLength; i += 1) {
-    frames.push(encoder.nextPart())
-  }
-  return frames
+  return urToFrames(new UR(ur.cbor, ur.type), fragmentCapacity)
 }
 
 const scanAll = (

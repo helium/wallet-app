@@ -113,7 +113,9 @@ const ScanTxQrcodeScreen = ({
   const [openQrCodeScanner, setOpenQrCodeScanner] = useState(false)
   const [progress, setProgress] = useState<number>(0)
   const [signature, setSignature] = useState<SolSignature | null>(null)
+  const [isUnexpectedQrCode, setIsUnexpectedQrCode] = useState(false)
   const handleGetSignature = () => {
+    setIsUnexpectedQrCode(false)
     setOpenQrCodeScanner(true)
   }
 
@@ -122,6 +124,7 @@ const ScanTxQrcodeScreen = ({
     scanner.reset()
     setSignature(null)
     setProgress(0)
+    setIsUnexpectedQrCode(false)
   }, [scanner, solSignRequest?.requestId])
 
   const handleBarCodeScanned = (qrString: string) => {
@@ -134,12 +137,19 @@ const ScanTxQrcodeScreen = ({
     } else {
       setOpenQrCodeScanner(false)
       setProgress(0)
+      setIsUnexpectedQrCode(true)
+    }
+  }
+  // The camera keeps scanning until it unmounts, so alert once per bad scan
+  useEffect(() => {
+    if (isUnexpectedQrCode) {
       Alert.alert(
         t('keystone.connectKeystoneStart.unexpectedQrCodeTitle'),
         t('keystone.connectKeystoneStart.unexpectedQrCodeContent'),
       )
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isUnexpectedQrCode])
   useEffect(() => {
     if (progress === 100 && signature) {
       setOpenQrCodeScanner(false)

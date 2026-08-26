@@ -35,7 +35,6 @@ export type KeystoneModalRef = {
   }) => Promise<Buffer | undefined>
 }
 
-let promiseResolve: (value: Buffer | PromiseLike<Buffer>) => void
 const KeystoneModal = forwardRef(
   (
     { children }: { children: ReactNode },
@@ -46,6 +45,7 @@ const KeystoneModal = forwardRef(
     const { currentAccount } = useAccountStorage()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const settleRef = useRef<((value: Buffer) => void) | undefined>(undefined)
     const [solSignRequest, setSolSignRequest] =
       useState<KeystoneSolSignRequest>()
     const showKeystoneModal = useCallback(
@@ -81,6 +81,7 @@ const KeystoneModal = forwardRef(
             origin: 'Helium',
           })
         }
+        let promiseResolve: (value: Buffer) => void = () => {}
         const keystonePromise = new Promise<Buffer | undefined>((resolve) => {
           promiseResolve = resolve
         })
@@ -95,9 +96,11 @@ const KeystoneModal = forwardRef(
         const settle = (value: Buffer) => {
           eventEmitter.off(`keystoneSignature_${requestId}`, onSignature)
           eventEmitter.off('closeKeystoneSignatureModal', onClose)
+          settleRef.current = undefined
           bottomSheetModalRef.current?.dismiss()
           promiseResolve(value)
         }
+        settleRef.current = settle
         eventEmitter.on(`keystoneSignature_${requestId}`, onSignature)
         eventEmitter.on('closeKeystoneSignatureModal', onClose)
         return keystonePromise
@@ -123,6 +126,12 @@ const KeystoneModal = forwardRef(
     const { colors } = useTheme()
     const sheetHandleStyle = useMemo(() => ({ padding: m }), [m])
     const { handleDismiss } = useBackHandler(bottomSheetModalRef)
+    // Backdrop tap, swipe down and back button dismiss the sheet without an
+    // event, so the pending sign request has to be settled here.
+    const handleSheetDismiss = useCallback(() => {
+      settleRef.current?.(Buffer.from([]))
+      handleDismiss()
+    }, [handleDismiss])
 
     const handleIndicatorStyle = useMemo(() => {
       return {
@@ -140,7 +149,7 @@ const KeystoneModal = forwardRef(
             backdropComponent={renderBackdrop}
             snapPoints={snapPoints}
             handleStyle={sheetHandleStyle}
-            onDismiss={handleDismiss}
+            onDismiss={handleSheetDismiss}
             handleIndicatorStyle={handleIndicatorStyle}
           >
             <BottomSheetView style={{ flex: 1 }}>

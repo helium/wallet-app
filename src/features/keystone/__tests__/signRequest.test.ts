@@ -9,7 +9,6 @@ import KeystoneSDK, {
   URDecoder,
 } from '@keystonehq/keystone-sdk'
 import { uuid } from '@keystonehq/keystone-sdk/dist/utils'
-import { UREncoder } from '@ngraveio/bc-ur'
 // Transitive deps of @keystonehq/keystone-sdk; used here to decode what the
 // device would receive.
 /* eslint-disable import/no-extraneous-dependencies */
@@ -28,9 +27,8 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js'
 import { KeystoneSolSignRequest } from '../types/keystoneSolanaTxType'
+import { urToFrames } from './urFrames'
 
-// Same value as src/components/StaticQrCode.tsx
-const MAX_FRAGMENT_CAPACITY = 200
 const PATH = "m/44'/501'/0'/0'"
 const XFP = '12345678'
 
@@ -82,11 +80,7 @@ const buildRequest = (
 
 // Mirrors AnimatedQrCode (encode) + SignTxModal.handleBarCodeScanned (decode)
 const roundTripThroughFrames = (ur: UR) => {
-  const encoder = new UREncoder(ur, MAX_FRAGMENT_CAPACITY)
-  const frames: string[] = []
-  for (let i = 0; i < encoder.fragmentsLength; i += 1) {
-    frames.push(encoder.nextPart())
-  }
+  const frames = urToFrames(ur)
   const decoder = new URDecoder()
   frames.forEach((f) => decoder.receivePart(f.toLowerCase()))
   expect(decoder.isComplete()).toBe(true)
@@ -156,9 +150,7 @@ describe('Keystone sol-signature', () => {
     // Device emits frames; app scans them
     const { result } = roundTripThroughFrames(new UR(sigUr.cbor, sigUr.type))
 
-    // Exact code from SignTxModal.handleBarCodeScanned
-    const buffer = Buffer.from(result.cbor.toString('hex'), 'hex')
-    const parsed = sdk.sol.parseSignature(new UR(buffer, result.type))
+    const parsed = sdk.sol.parseSignature(new UR(result.cbor, result.type))
 
     expect(parsed.requestId).toBe(requestId)
     expect(parsed.signature).toBe(sig.toString('hex'))

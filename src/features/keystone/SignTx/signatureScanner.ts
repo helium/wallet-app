@@ -21,6 +21,9 @@ export const createSignatureScanner = (sdk: KeystoneSDK) => {
   const receive = (qrString: string, expectedRequestId: string): ScanResult => {
     try {
       decoder.receivePart(qrString.toLowerCase())
+      if (decoder.isError()) {
+        throw new Error(decoder.resultError())
+      }
       if (!decoder.isComplete()) {
         return {
           status: 'progress',
@@ -29,9 +32,7 @@ export const createSignatureScanner = (sdk: KeystoneSDK) => {
       }
       const ur = decoder.resultUR()
       reset()
-      const signature = sdk.sol.parseSignature(
-        new UR(Buffer.from(ur.cbor.toString('hex'), 'hex'), ur.type),
-      )
+      const signature = sdk.sol.parseSignature(new UR(ur.cbor, ur.type))
       if (signature.requestId !== expectedRequestId) {
         throw new Error(
           `Signature is for request ${signature.requestId}, expected ${expectedRequestId}`,

@@ -151,7 +151,8 @@ const useSolanaHook = () => {
         (!currentAccount?.ledgerDevice?.id ||
           !currentAccount?.ledgerDevice?.type ||
           !currentAccount?.accountIndex) &&
-        secureAcct?.secretKey
+        secureAcct?.secretKey &&
+        !currentAccount?.keystoneDevice
       ) {
         const signer = {
           publicKey: currentAccount?.solanaAddress,
