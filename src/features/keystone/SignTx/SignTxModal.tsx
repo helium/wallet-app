@@ -5,15 +5,11 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import { useTranslation } from 'react-i18next'
-import KeystoneSDK, {
-  SolSignature,
-  UR,
-  URDecoder,
-} from '@keystonehq/keystone-sdk'
+import KeystoneSDK, { SolSignature } from '@keystonehq/keystone-sdk'
 import { AnimatedQrCode } from '@components/StaticQrCode'
 import useAlert from '@hooks/useAlert'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
-import { Linking, Platform, StyleSheet } from 'react-native'
+import { Alert, Linking, Platform, StyleSheet } from 'react-native'
 import ProgressBar from '@components/ProgressBar'
 import { useAsync } from 'react-async-hook'
 import EventEmitter from 'events'
@@ -22,6 +18,7 @@ import CloseButton from '@components/CloseButton'
 import { useHitSlop } from '@theme/themeHooks'
 import { CameraScannerLayout } from '../../../components/CameraScannerLayout'
 import { KeystoneSolSignRequest } from '../types/keystoneSolanaTxType'
+import { createSignatureScanner } from './signatureScanner'
 
 type Props = {
   progress: number
@@ -105,7 +102,10 @@ const ScanTxQrcodeScreen = ({
 }) => {
   const { t } = useTranslation()
   const keystoneSDK = useMemo(() => new KeystoneSDK(), [])
-  const decoder = useMemo(() => new URDecoder(), [])
+  const scanner = useMemo(
+    () => createSignatureScanner(keystoneSDK),
+    [keystoneSDK],
+  )
   const solSignRequestUr = useMemo(() => {
     if (!solSignRequest?.requestId) return undefined
     return keystoneSDK.sol.generateSignRequest(solSignRequest)
@@ -117,14 +117,27 @@ const ScanTxQrcodeScreen = ({
     setOpenQrCodeScanner(true)
   }
 
+  // A half-scanned signature from a previous request must not carry over
+  useEffect(() => {
+    scanner.reset()
+    setSignature(null)
+    setProgress(0)
+  }, [scanner, solSignRequest?.requestId])
+
   const handleBarCodeScanned = (qrString: string) => {
-    decoder.receivePart(qrString.toLowerCase())
-    setProgress(Number((decoder.getProgress() * 100).toFixed(0)))
-    if (decoder.isComplete()) {
-      const ur = decoder.resultUR()
-      const buffer = Buffer.from(ur.cbor.toString('hex'), 'hex')
+    const result = scanner.receive(qrString, solSignRequest.requestId)
+    if (result.status === 'progress') {
+      setProgress(result.progress)
+    } else if (result.status === 'complete') {
       setProgress(100)
-      setSignature(keystoneSDK.sol.parseSignature(new UR(buffer, ur.type)))
+      setSignature(result.signature)
+    } else {
+      setOpenQrCodeScanner(false)
+      setProgress(0)
+      Alert.alert(
+        t('keystone.connectKeystoneStart.unexpectedQrCodeTitle'),
+        t('keystone.connectKeystoneStart.unexpectedQrCodeContent'),
+      )
     }
   }
   useEffect(() => {

@@ -84,16 +84,22 @@ const KeystoneModal = forwardRef(
         const keystonePromise = new Promise<Buffer | undefined>((resolve) => {
           promiseResolve = resolve
         })
-        // listen the keystone signature event
-        eventEmitter.on(`keystoneSignature_${requestId}`, (signature) => {
+        // Listeners are removed on settle so repeated sign requests in one
+        // session do not stack handlers.
+        const onSignature = (signature: string) => {
+          settle(Buffer.from(signature, 'hex'))
+        }
+        const onClose = () => {
+          settle(Buffer.from([]))
+        }
+        const settle = (value: Buffer) => {
+          eventEmitter.off(`keystoneSignature_${requestId}`, onSignature)
+          eventEmitter.off('closeKeystoneSignatureModal', onClose)
           bottomSheetModalRef.current?.dismiss()
-          promiseResolve(Buffer.from(signature, 'hex'))
-        })
-
-        eventEmitter.on('closeKeystoneSignatureModal', () => {
-          bottomSheetModalRef.current?.dismiss()
-          promiseResolve(Buffer.from([]))
-        })
+          promiseResolve(value)
+        }
+        eventEmitter.on(`keystoneSignature_${requestId}`, onSignature)
+        eventEmitter.on('closeKeystoneSignatureModal', onClose)
         return keystonePromise
       },
       [
