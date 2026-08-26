@@ -162,6 +162,16 @@ const useSolanaHook = () => {
         return Buffer.from(signedMessage)
       }
 
+      if (currentAccount?.keystoneDevice) {
+        const signature = await keystoneModalRef.current?.showKeystoneModal({
+          message: msg,
+        })
+        if (!signature || signature.length === 0) {
+          throw new Error('Message not signed')
+        }
+        return signature
+      }
+
       const signedMessage = await ledgerModalRef?.current?.showLedgerModal({
         message: msg,
       })

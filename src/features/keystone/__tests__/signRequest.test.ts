@@ -120,6 +120,16 @@ describe('Keystone sol-sign-request', () => {
     expect(uuid.stringify(decoded.getRequestId() as Buffer)).toBe(req.requestId)
   })
 
+  test('message sign request round-trips with SignType.Message', () => {
+    const msgBytes = Buffer.from('Helium governance vote', 'utf8')
+    const req = buildRequest(msgBytes, KeystoneSolanaSDK.DataType.Message)
+    const ur = sdk.sol.generateSignRequest(req)
+    const { result } = roundTripThroughFrames(ur)
+    const decoded = SolSignRequest.fromCBOR(result.cbor)
+    expect(decoded.getSignData().equals(msgBytes)).toBe(true)
+    expect(decoded.getSignType()).toBe(SignType.Message)
+  })
+
   test('DataType.Transaction is SignType.Transaction (1)', () => {
     expect(KeystoneSolanaSDK.DataType.Transaction).toBe(1)
     expect(KeystoneSolanaSDK.DataType.Message).toBe(2)
