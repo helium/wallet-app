@@ -151,7 +151,8 @@ const useSolanaHook = () => {
         (!currentAccount?.ledgerDevice?.id ||
           !currentAccount?.ledgerDevice?.type ||
           !currentAccount?.accountIndex) &&
-        secureAcct?.secretKey
+        secureAcct?.secretKey &&
+        !currentAccount?.keystoneDevice
       ) {
         const signer = {
           publicKey: currentAccount?.solanaAddress,
@@ -160,6 +161,16 @@ const useSolanaHook = () => {
 
         const signedMessage = await signMessageEd25519(msg, signer.secretKey)
         return Buffer.from(signedMessage)
+      }
+
+      if (currentAccount?.keystoneDevice) {
+        const signature = await keystoneModalRef.current?.showKeystoneModal({
+          message: msg,
+        })
+        if (!signature || signature.length === 0) {
+          throw new Error('Message not signed')
+        }
+        return signature
       }
 
       const signedMessage = await ledgerModalRef?.current?.showLedgerModal({
