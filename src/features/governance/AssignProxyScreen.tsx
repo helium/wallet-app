@@ -84,8 +84,10 @@ export const AssignProxyScreen = () => {
   const expirationTime = useMemo(
     () =>
       selectedDays === maxDays
-        ? maxDate.valueOf() / 1000
-        : new Date().valueOf() / 1000 + selectedDays * (24 * 60 * 60),
+        ? Math.floor(maxDate.valueOf() / 1000)
+        : Math.floor(
+            new Date().valueOf() / 1000 + selectedDays * (24 * 60 * 60),
+          ),
     [selectedDays, maxDays, maxDate],
   )
 
@@ -146,7 +148,7 @@ export const AssignProxyScreen = () => {
         .filter(Boolean) as string[]
       const finalExpirationTime = Math.min(
         expirationTime,
-        maxDate.valueOf() / 1000,
+        Math.floor(maxDate.valueOf() / 1000),
       )
 
       await assignProxy(
