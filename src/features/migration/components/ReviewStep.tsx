@@ -86,6 +86,7 @@ const ReviewStep: FC<{
   sourceWallet: string
   destinationWallet: string
   hotspotCount: number
+  positionCount: number
   tokenLines: ReviewTokenLine[]
   error?: string
   onBack: () => void
@@ -94,6 +95,7 @@ const ReviewStep: FC<{
   sourceWallet,
   destinationWallet,
   hotspotCount,
+  positionCount,
   tokenLines,
   error,
   onBack,
@@ -137,6 +139,18 @@ const ReviewStep: FC<{
             {tokenLines.map((line) => (
               <TokenLine key={line.mint} line={line} />
             ))}
+            {positionCount > 0 && (
+              <Box>
+                <Divider />
+                <Line
+                  label={t('migrateToWorld.confirm.positions')}
+                  value={String(positionCount)}
+                />
+                <Text variant="body3" color="worldSecondaryInk">
+                  {t('migrateToWorld.confirm.positionsNote')}
+                </Text>
+              </Box>
+            )}
           </Card>
 
           <Card>

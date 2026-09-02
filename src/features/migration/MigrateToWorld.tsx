@@ -1,6 +1,7 @@
 import SafeAreaBox from '@components/SafeAreaBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
+import { useGovernance } from '@storage/GovernanceProvider'
 import React, {
   memo,
   useCallback,
@@ -74,6 +75,15 @@ const MigrateToWorld = () => {
     step !== 'intro' && step !== 'connect' && step !== 'login'
   const assets = useMigrationAssets(assetsNeeded ? sourceWallet : undefined)
   const { run, progress } = useMigrationExecutor(persist)
+  // veHNT positions aren't selectable: the migrate API re-enumerates them
+  // on-chain and moves them with everything else. Surface the count on the
+  // review screen so the user isn't surprised. Proxied-to-me positions belong
+  // to someone else and don't move.
+  const { positions } = useGovernance()
+  const positionCount = useMemo(
+    () => positions?.filter((p) => !p.isProxiedToMe).length ?? 0,
+    [positions],
+  )
 
   const [selection, setSelection] = useState<AssetSelection>()
   const [error, setError] = useState<string>()
@@ -325,6 +335,7 @@ const MigrateToWorld = () => {
             sourceWallet={sourceWallet || ''}
             destinationWallet={destinationWallet || ''}
             hotspotCount={selection?.hotspotKeys.size ?? 0}
+            positionCount={positionCount}
             tokenLines={tokenLines}
             error={error}
             onBack={() => setStep('select')}

@@ -1659,6 +1659,9 @@ export default {
       destination: 'To',
       fees: 'Fees',
       free: 'Free',
+      positions: 'veHNT positions',
+      positionsNote:
+        'Your locked HNT positions move to your new wallet automatically.',
       button: 'Confirm & migrate',
     },
     migrating: {
