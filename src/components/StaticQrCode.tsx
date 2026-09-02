@@ -17,7 +17,7 @@ const StaticQrCode = ({ size, data, ecl, quietZone }: StaticQrCodeProps) => {
   const qrCodeQuietZone = quietZone ?? 20
   const qrCodeEcl = ecl ?? 'L'
   return (
-    <Box flex={1} justifyContent="center" alignItems="center">
+    <Box justifyContent="center" alignItems="center">
       <QRCode
         quietZone={qrCodeQuietZone}
         size={Math.max(0, qrCodeSize)}

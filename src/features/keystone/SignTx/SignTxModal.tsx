@@ -214,10 +214,13 @@ const ScanTxQrcodeScreen = ({
               </Text>
               {/* show the sol sign request qrcode  */}
               {solSignRequestUr && (
-                <AnimatedQrCode
-                  qrCodeType={solSignRequestUr.type}
-                  cborData={solSignRequestUr.cbor.toString('hex')}
-                />
+                <Box marginVertical="l">
+                  <AnimatedQrCode
+                    size={240}
+                    qrCodeType={solSignRequestUr.type}
+                    cborData={solSignRequestUr.cbor.toString('hex')}
+                  />
+                </Box>
               )}
               <Text variant="subtitle1" textAlign="center">
                 {t('keystone.payment.scanTxQrcodeScreenSubtitle2')}
