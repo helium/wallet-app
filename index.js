@@ -1,3 +1,9 @@
+// Must be the first import. cbor-sync (reached via the navigator tree ->
+// keystone-sdk -> bc-ur-registry) registers its Buffer reader/writer once, at
+// module load, behind a `typeof Buffer` guard. Anything that loads it before
+// global.Buffer exists leaves the Keystone sign request unable to encode
+// ("Unsupported output format: undefined").
+import './src/polyfill'
 import { ThemeProvider } from '@shopify/restyle'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
