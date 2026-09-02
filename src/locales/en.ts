@@ -828,10 +828,9 @@ export default {
     },
     scanQrCode: 'Scan the QR Code',
     payment: {
-      scanTxQrcodeScreenTitle: 'Scan the QR Code',
-      scanTxQrcodeScreenSubtitle1: 'Scan the QR code via your Keystone device',
-      scanTxQrcodeScreenSubtitle2:
-        "Click on the 'Get Signature' button after signing the transaction with your Keystone device.",
+      scanTxQrcodeScreenTitle: 'Scan QR Code',
+      scanTxQrcodeScreenSubtitle1: 'Scan with your Keystone',
+      scanTxQrcodeScreenSubtitle2: 'Sign on Keystone, then tap Get Signature',
       scanTxQrcodeScreenSubtitle3:
         'Place the QR code from your Keystone device in front of the camera.',
       getSignature: 'Get Signature',
