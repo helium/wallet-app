@@ -3180,9 +3180,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/spl-utils@npm:0.13.1, @helium/spl-utils@npm:^0.13.1":
-  version: 0.13.1
-  resolution: "@helium/spl-utils@npm:0.13.1"
+"@helium/spl-utils@npm:0.13.2":
+  version: 0.13.2
+  resolution: "@helium/spl-utils@npm:0.13.2"
   dependencies:
     "@coral-xyz/anchor": "npm:^0.31.0"
     "@helium/account-fetch-cache": "npm:^0.11.16"
@@ -3196,7 +3196,7 @@ __metadata:
     bn.js: "npm:^5.2.0"
     borsh: "npm:^0.7.0"
     bs58: "npm:^4.0.1"
-  checksum: 10/74803fe20b8b9f0ad0da049b5378d978c6dc434a3656728d9255535e89d6d4f142e50f79d0d41677016bda693bda461f2041a99fb1bd36f1267e95bfaf11abcc
+  checksum: 10/ff211139a9f22d977586e913d0637334f264ec712dc33f4ad66ade27da7494209fe9b056f016303b3d67ff8925865ef60b592d33de33cd37a1dd5d7c9024c71f
   languageName: node
   linkType: hard
 
@@ -3237,6 +3237,26 @@ __metadata:
     borsh: "npm:^0.7.0"
     bs58: "npm:^4.0.1"
   checksum: 10/a121c59dd0b11dd2dd1c55fd10f454e1040e7932099ee268083fc7dbaf38d7ece94e7d6a4b9f0f88eb8efbe48eb22acad0a81d1178053fa67dfa16c61d628e51
+  languageName: node
+  linkType: hard
+
+"@helium/spl-utils@npm:^0.13.1":
+  version: 0.13.1
+  resolution: "@helium/spl-utils@npm:0.13.1"
+  dependencies:
+    "@coral-xyz/anchor": "npm:^0.31.0"
+    "@helium/account-fetch-cache": "npm:^0.11.16"
+    "@helium/address": "npm:^4.12.0"
+    "@helium/anchor-resolvers": "npm:^0.11.16"
+    "@metaplex-foundation/mpl-token-metadata": "npm:^2.10.0"
+    "@solana/spl-account-compression": "npm:^0.1.7"
+    "@solana/spl-token": "npm:^0.3.8"
+    "@solana/web3.js": "npm:^1.91.1"
+    axios: "npm:^1.9.0"
+    bn.js: "npm:^5.2.0"
+    borsh: "npm:^0.7.0"
+    bs58: "npm:^4.0.1"
+  checksum: 10/74803fe20b8b9f0ad0da049b5378d978c6dc434a3656728d9255535e89d6d4f142e50f79d0d41677016bda693bda461f2041a99fb1bd36f1267e95bfaf11abcc
   languageName: node
   linkType: hard
 
@@ -13094,7 +13114,7 @@ __metadata:
     "@helium/organization-sdk": "npm:0.1.6"
     "@helium/proto-ble": "npm:^5.0.4"
     "@helium/react-native-sdk": "npm:^4.0.4"
-    "@helium/spl-utils": "npm:0.13.1"
+    "@helium/spl-utils": "npm:0.13.2"
     "@helium/state-controller-sdk": "npm:0.1.6"
     "@helium/sus": "npm:0.11.18"
     "@helium/transactions": "npm:^5.0.4"
