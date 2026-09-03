@@ -2905,16 +2905,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@helium/idls@npm:0.11.25":
-  version: 0.11.25
-  resolution: "@helium/idls@npm:0.11.25"
+"@helium/idls@npm:0.11.26":
+  version: 0.11.26
+  resolution: "@helium/idls@npm:0.11.26"
   dependencies:
     "@coral-xyz/anchor": "npm:^0.31.0"
     "@solana/web3.js": "npm:^1.91.1"
     bn.js: "npm:^5.2.0"
     borsh: "npm:^0.7.0"
     bs58: "npm:^4.0.1"
-  checksum: 10/2ca198c56fbad684cfc21c1af8190807dcf6f3e4c5727211fdfc3dd310194b1446b8bba76449d02982f997e31713fcb0533e9ad20978bd400fcbba8d438ded53
+  checksum: 10/031e494dfd7a348dd17824bfa0894f36d98ca6454ab576a766305de77d2407c7fb1b850a24442ce154c59b6d584f1269c214811708805e24c8471f7263ca8a2e
   languageName: node
   linkType: hard
 
@@ -13105,7 +13105,7 @@ __metadata:
     "@helium/helium-sub-daos-sdk": "npm:0.11.19"
     "@helium/hpl-crons-sdk": "npm:^0.11.19"
     "@helium/http": "npm:^5.0.4"
-    "@helium/idls": "npm:0.11.25"
+    "@helium/idls": "npm:0.11.26"
     "@helium/lazy-distributor-sdk": "npm:0.11.18"
     "@helium/modular-governance-hooks": "npm:0.1.6"
     "@helium/modular-governance-idls": "npm:0.1.6"
