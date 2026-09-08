@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.15.10",
+  "version": "2.15.11",
   "private": true,
   "scripts": {
     "eas-build-post-install": "./scripts/eas-build-setup.sh",
@@ -69,7 +69,9 @@
     "@helium/wallet-link": "^5.0.4",
     "@jup-ag/api": "6.0.6",
     "@keystonehq/keystone-sdk": "0.12.3",
+    "@ledgerhq/errors": "6.24.0",
     "@ledgerhq/hw-app-solana": "7.5.2",
+    "@ledgerhq/hw-transport": "6.31.9",
     "@ledgerhq/react-native-hid": "6.32.9",
     "@ledgerhq/react-native-hw-transport-ble": "6.35.2",
     "@ledgerhq/types-devices": "6.25.3",

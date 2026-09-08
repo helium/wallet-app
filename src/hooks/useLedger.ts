@@ -1,7 +1,9 @@
 import AppSolana from '@ledgerhq/hw-app-solana'
+import type { DescriptorEvent } from '@ledgerhq/hw-transport'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import TransportHID from '@ledgerhq/react-native-hid'
-import { useCallback, useState } from 'react'
+import type { Device } from 'react-native-ble-plx'
+import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { solAddressToHelium } from '@utils/accountUtils'
@@ -12,8 +14,10 @@ import { HNT_MINT } from '@helium/spl-utils'
 import { useSolana } from '../solana/SolanaProvider'
 import { LedgerDevice } from '../storage/cloudStorage'
 import {
+  classifyLedgerError,
   getDerivationPath,
   getDerivationPathLabel,
+  isRetryableReconnectError,
   type DerivationType,
 } from '../utils/heliumLedger'
 
@@ -31,50 +35,70 @@ export type LedgerAccount = {
 
 export const ManagerAppName = 'Solana'
 
+export type LedgerTransport = TransportBLE | TransportHID
+
+export const BLE_CONNECT_TIMEOUT_MS = 10_000
+const BLE_FIND_TIMEOUT_MS = 15_000
+const RECONNECT_ATTEMPTS = 5
+const RECONNECT_DELAY_MS = 1_000
+const DISCONNECT_WAIT_MS = 1_500
+const APP_READY_ATTEMPTS = 10
+const APP_READY_DELAY_MS = 200
+
+const delay = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms)
+  })
+
+// Resolves on the transport's disconnect event, or after ms if it never comes.
+const waitForDisconnect = (transport: LedgerTransport, ms: number) =>
+  new Promise<void>((resolve) => {
+    const done = () => {
+      clearTimeout(timer)
+      transport.off('disconnect', done)
+      resolve()
+    }
+    const timer = setTimeout(done, ms)
+    transport.on('disconnect', done)
+  })
+
 const useLedger = () => {
-  const [transport, setTransport] = useState<{
-    transport: TransportBLE | TransportHID
-    deviceId: string
-  }>()
+  // BLE transports are cached by the library and evicted on disconnect, so
+  // TransportBLE.open is safe to call on every use. HID has no such cache, so
+  // keep the open USB transport here until it disconnects.
+  const usbTransport = useRef<
+    { transport: TransportHID; deviceId: string } | undefined
+  >(undefined)
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerAccount[]>([])
   const [ledgerAccountsLoading, setLedgerAccountsLoading] = useState(false)
   const { t } = useTranslation()
   const { anchorProvider, connection } = useSolana()
 
-  const openSolanaApp = useCallback(
-    async (trans: TransportBLE | TransportHID) => {
-      await trans.send(
-        0xe0,
-        0xd8,
-        0x00,
-        0x00,
-        Buffer.from(ManagerAppName, 'utf8'),
-      )
-    },
-    [],
-  )
+  const openSolanaApp = useCallback(async (trans: LedgerTransport) => {
+    await trans.send(
+      0xe0,
+      0xd8,
+      0x00,
+      0x00,
+      Buffer.from(ManagerAppName, 'utf8'),
+    )
+  }, [])
 
   const waitForSolanaApp = useCallback(
-    async (trans: TransportBLE | TransportHID, maxAttempts = 10) => {
+    async (trans: LedgerTransport, maxAttempts = APP_READY_ATTEMPTS) => {
       const solana = new AppSolana(trans)
 
       for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         try {
-          // Try to get app configuration - this will succeed when Solana app is ready
+          // eslint-disable-next-line no-await-in-loop
           await solana.getAppConfiguration()
-          return // App is ready
+          return
         } catch (error) {
-          const errorStr = error?.toString() || ''
-
-          // If app is not open yet, wait and retry
-          if (errorStr.includes('0x6e00') || errorStr.includes('0x6d00')) {
-            await new Promise((resolve) => setTimeout(resolve, 200))
-            // eslint-disable-next-line no-continue
-            continue
+          if (classifyLedgerError(error) !== 'appNotOpen') {
+            throw error
           }
-
-          // For other errors, throw immediately
-          throw error
+          // eslint-disable-next-line no-await-in-loop
+          await delay(APP_READY_DELAY_MS)
         }
       }
 
@@ -83,47 +107,111 @@ const useLedger = () => {
     [],
   )
 
+  const closeUsbTransport = useCallback(() => {
+    const { current } = usbTransport
+    usbTransport.current = undefined
+    current?.transport.close().catch(() => {})
+  }, [])
+
   const getTransport = useCallback(
-    async (nextDeviceId: string, type: 'usb' | 'bluetooth') => {
-      // If we have the same device, reuse the existing transport
-      if (transport?.deviceId === nextDeviceId && transport.transport) {
-        return transport.transport
+    async (
+      nextDeviceId: string,
+      type: 'usb' | 'bluetooth',
+    ): Promise<LedgerTransport | undefined> => {
+      if (type === 'bluetooth') {
+        return TransportBLE.open(nextDeviceId, BLE_CONNECT_TIMEOUT_MS)
       }
 
-      // Close existing transport if switching devices
-      if (transport && transport.deviceId !== nextDeviceId) {
-        try {
-          transport.transport.close()
-        } catch (error) {
-          // Ignore close errors
-        }
-        setTransport(undefined)
+      const cached = usbTransport.current
+      if (cached?.deviceId === nextDeviceId) {
+        return cached.transport
+      }
+      if (cached) {
+        closeUsbTransport()
       }
 
-      let newTransport: TransportBLE | TransportHID | null = null
-      if (type === 'usb') {
-        await TransportHID.create()
-        const devices = await TransportHID.list()
-        const device = devices.find(
-          (d) => d.deviceId === parseInt(nextDeviceId, 10),
-        )
-        if (!device) return
-        newTransport = await TransportHID.open(device)
-      } else {
-        newTransport = await TransportBLE.open(nextDeviceId)
-      }
-
+      await TransportHID.create()
+      const devices = await TransportHID.list()
+      const device = devices.find(
+        (d) => d.deviceId === parseInt(nextDeviceId, 10),
+      )
+      if (!device) return
+      const newTransport = await TransportHID.open(device)
       if (!newTransport) return
+
       newTransport.on('disconnect', () => {
-        // Intentionally for the sake of simplicity we use a transport local state
-        // and remove it on disconnect.
-        // A better way is to pass in the device.id and handle the connection internally.
-        setTransport(undefined)
+        if (usbTransport.current?.transport === newTransport) {
+          usbTransport.current = undefined
+        }
       })
-      setTransport({ transport: newTransport, deviceId: nextDeviceId })
+      usbTransport.current = { transport: newTransport, deviceId: nextDeviceId }
       return newTransport
     },
-    [transport],
+    [closeUsbTransport],
+  )
+
+  // BLE ids are per phone. When the stored id no longer resolves, scan for a
+  // device advertising the stored name so it can be paired and opened by
+  // descriptor. Resolves undefined if nothing matches within the timeout.
+  const findBleDevice = useCallback(
+    (name: string): Promise<Device | undefined> =>
+      new Promise((resolve) => {
+        const done = (device?: Device) => {
+          clearTimeout(timer)
+          sub.unsubscribe()
+          resolve(device)
+        }
+        const timer = setTimeout(done, BLE_FIND_TIMEOUT_MS)
+        const sub = TransportBLE.listen({
+          next: (e: DescriptorEvent<Device>) => {
+            if (e.type !== 'add') return
+            const found = e.descriptor
+            if ((found.localName || found.name) === name) done(found)
+          },
+          error: () => done(),
+          complete: () => done(),
+        })
+      }),
+    [],
+  )
+
+  const openBleDevice = useCallback(
+    (device: Device) => TransportBLE.open(device, BLE_CONNECT_TIMEOUT_MS),
+    [],
+  )
+
+  // After the open-app APDU the device re-enumerates. Wait for the drop, then
+  // reopen the transport with retries until the Solana app answers. The BLE
+  // cache may hand back the dying transport if the drop arrives late, so a
+  // disconnect from getAppConfiguration is retried here too.
+  const reconnectAfterAppOpen = useCallback(
+    async (
+      previous: LedgerTransport,
+      nextDeviceId: string,
+      type: 'usb' | 'bluetooth',
+    ): Promise<LedgerTransport> => {
+      await waitForDisconnect(previous, DISCONNECT_WAIT_MS)
+
+      let lastError: unknown = new Error('Transport could not be created')
+      for (let attempt = 1; attempt <= RECONNECT_ATTEMPTS; attempt += 1) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const next = await getTransport(nextDeviceId, type)
+          if (!next) throw new Error('Transport could not be created')
+          // eslint-disable-next-line no-await-in-loop
+          await waitForSolanaApp(next)
+          return next
+        } catch (error) {
+          if (!isRetryableReconnectError(error)) throw error
+          lastError = error
+          // eslint-disable-next-line no-await-in-loop
+          await delay(RECONNECT_DELAY_MS)
+        }
+      }
+
+      throw lastError
+    },
+    [getTransport, waitForSolanaApp],
   )
 
   const createLedgerAccount = useCallback(
@@ -446,7 +534,7 @@ const useLedger = () => {
         // Start checking all derivation paths for each account index
         await getLedgerAccounts(solana, mainAccounts)
       } catch (error) {
-        setTransport(undefined)
+        closeUsbTransport()
         throw error
       } finally {
         setLedgerAccountsLoading(false)
@@ -456,15 +544,17 @@ const useLedger = () => {
       createLedgerAccount,
       getLedgerAccounts,
       getTransport,
-      setTransport,
+      closeUsbTransport,
       ledgerAccountsLoading,
       checkBatchBalances,
     ],
   )
 
   return {
-    transport,
     getTransport,
+    findBleDevice,
+    openBleDevice,
+    reconnectAfterAppOpen,
     ledgerAccounts,
     updateLedgerAccounts,
     ledgerAccountsLoading,

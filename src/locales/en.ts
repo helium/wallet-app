@@ -837,14 +837,14 @@ export default {
     },
   },
   ledger: {
+    lookingForDevice:
+      'Looking for {{ device }}. Make sure it is unlocked and nearby.',
     openTheSolanaApp: 'Open the Solana app on your {{ device }}',
     pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
     pleaseEnterPinCode: 'Please enter pin code on your {{ device }}',
     enableBlindSign:
       'Please enable blind signing in the ledger solana app settings. This error can also occur if your ledger firmware is out of date.',
-    transactionRejected: 'Transaction Rejected',
-    transactionRejectedDescription:
-      'You rejected the transaction on your Ledger device. If you meant to approve it, please try again.',
+    signingFailed: 'Signing Failed',
     chooseType: {
       bluetooth: {
         title: 'Bluetooth',
@@ -857,6 +857,16 @@ export default {
       },
     },
     connectError: {
+      bluetoothOff: {
+        subtitle:
+          'Turn on Bluetooth in your phone settings to scan for your Ledger device.',
+        title: 'Bluetooth Is Off',
+      },
+      permission: {
+        subtitle:
+          'Allow Bluetooth access for this app in your phone settings so it can find your Ledger device.',
+        title: 'Bluetooth Permission Needed',
+      },
       steps: [
         'Check network connection',
         'Check Bluetooth is enabled',

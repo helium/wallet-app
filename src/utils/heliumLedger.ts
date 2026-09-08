@@ -1,6 +1,7 @@
+import { StatusCodes } from '@ledgerhq/errors'
 import AppSolana from '@ledgerhq/hw-app-solana'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import TransportHID from '@ledgerhq/react-native-hid'
+import type TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import type TransportHID from '@ledgerhq/react-native-hid'
 
 export type DerivationType =
   | 'root'
@@ -51,38 +52,6 @@ const FALLBACK_ORDER: DerivationType[] = [
   'change',
 ]
 
-const cleanupTransport = async (
-  transport: TransportBLE | TransportHID,
-): Promise<void> => {
-  try {
-    // Send a cancel command to clear any pending operations
-    await transport.send(0x00, 0x00, 0x00, 0x00, Buffer.alloc(0))
-  } catch (error) {
-    // Ignore cleanup errors - they're expected if device is in weird state
-  }
-}
-
-const prepareTransportForSigning = async (
-  transport: TransportBLE | TransportHID,
-): Promise<void> => {
-  // Try multiple cleanup attempts to handle device lock/unlock scenarios
-  for (let i = 0; i < 3; i += 1) {
-    try {
-      await cleanupTransport(transport)
-      // Add a small delay to ensure cleanup takes effect
-      await new Promise((resolve) => setTimeout(resolve, 150))
-      break // Success, exit the loop
-    } catch (cleanupError) {
-      if (i === 2) {
-        // Last attempt failed, throw the error
-        throw cleanupError
-      }
-      // Wait longer between attempts
-      await new Promise((resolve) => setTimeout(resolve, 300))
-    }
-  }
-}
-
 export const getDerivationPath = (
   account = 0,
   type: DerivationType,
@@ -126,6 +95,88 @@ export const getDerivationPathLabel = (type: DerivationType): string => {
   return DERIVATION_LABELS[type] || 'Default'
 }
 
+export type LedgerErrorKind =
+  | 'userRejected'
+  | 'locked'
+  | 'appNotOpen'
+  | 'blindSign'
+  | 'transport'
+  | 'unknown'
+
+// Message thrown by @ledgerhq/hw-app-solana when blind signing is disabled.
+// The status word (0x6808) is swallowed by the library, so the message is the
+// only signal available.
+const BLIND_SIGN_MESSAGE =
+  'Missing a parameter. Try enabling blind signature in the app'
+
+const TRANSPORT_ERROR_NAMES = [
+  'DisconnectedDevice',
+  'DisconnectedDeviceDuringOperation',
+  'CantOpenDevice',
+  'PairingFailed',
+  'PeerRemovedPairing',
+  'TransportOpenUserCancelled',
+  'TransportExchangeTimeoutError',
+]
+
+const RETRYABLE_RECONNECT_NAMES = [
+  'DisconnectedDevice',
+  'DisconnectedDeviceDuringOperation',
+  'CantOpenDevice',
+]
+
+type ErrorLike = {
+  name?: string
+  message?: string
+  statusCode?: number
+  errorCode?: number
+}
+
+const asErrorLike = (error: unknown): ErrorLike | undefined =>
+  error && typeof error === 'object' ? (error as ErrorLike) : undefined
+
+// react-native-ble-plx errors carry a numeric errorCode and are not always
+// remapped by the ledger transport (for example a connect timeout).
+const isBleError = (error: ErrorLike) => typeof error.errorCode === 'number'
+
+export const classifyLedgerError = (error: unknown): LedgerErrorKind => {
+  const err = asErrorLike(error)
+  if (!err) return 'unknown'
+
+  switch (err.statusCode) {
+    case StatusCodes.CONDITIONS_OF_USE_NOT_SATISFIED:
+      return 'userRejected'
+    case StatusCodes.LOCKED_DEVICE:
+      return 'locked'
+    case StatusCodes.INS_NOT_SUPPORTED:
+    case StatusCodes.CLA_NOT_SUPPORTED:
+      return 'appNotOpen'
+    default:
+      break
+  }
+
+  if (err.message === BLIND_SIGN_MESSAGE) return 'blindSign'
+
+  if (
+    (err.name && TRANSPORT_ERROR_NAMES.includes(err.name)) ||
+    isBleError(err)
+  ) {
+    return 'transport'
+  }
+
+  return 'unknown'
+}
+
+// After the open-app APDU a Nano X drops and re-establishes BLE. During that
+// window connect attempts fail with disconnect / cannot-open errors that are
+// safe to retry.
+export const isRetryableReconnectError = (error: unknown): boolean => {
+  const err = asErrorLike(error)
+  if (!err) return false
+  if (err.name && RETRYABLE_RECONNECT_NAMES.includes(err.name)) return true
+  return isBleError(err)
+}
+
 const trySignWithFallbacks = async (
   solana: AppSolana,
   accountIndex: number,
@@ -148,9 +199,10 @@ const trySignWithFallbacks = async (
           const { signature } = await solana[signMethod](fallbackPath, buffer)
           return signature
         } catch (fallbackError) {
-          // If the fallback fails with 0x6985, it's user rejection
-          if (fallbackError?.toString().includes('0x6985')) {
-            throw new Error('User rejected transaction')
+          // A rejection on the device ends the flow. Rethrow the original so
+          // the caller can classify it by status code.
+          if (classifyLedgerError(fallbackError) === 'userRejected') {
+            throw fallbackError
           }
         }
       }
@@ -171,24 +223,13 @@ export const signLedgerTransaction = async (
   const primaryType =
     derivationType === true ? undefined : (derivationType as DerivationType)
 
-  try {
-    // Prepare transport for signing by cleaning up any stale state
-    await prepareTransportForSigning(transport)
-
-    return await trySignWithFallbacks(
-      solana,
-      accountIndex,
-      txBuffer,
-      'signTransaction',
-      primaryType,
-    )
-  } catch (error) {
-    // If we get a race condition, try to clean up transport and provide helpful error
-    if (error?.toString().includes('TransportRaceCondition')) {
-      await cleanupTransport(transport)
-    }
-    throw error
-  }
+  return trySignWithFallbacks(
+    solana,
+    accountIndex,
+    txBuffer,
+    'signTransaction',
+    primaryType,
+  )
 }
 
 export const signLedgerMessage = async (
@@ -202,24 +243,13 @@ export const signLedgerMessage = async (
   const primaryType =
     derivationType === true ? undefined : (derivationType as DerivationType)
 
-  try {
-    // Prepare transport for signing by cleaning up any stale state
-    await prepareTransportForSigning(transport)
-
-    return await trySignWithFallbacks(
-      solana,
-      accountIndex,
-      msgBuffer,
-      'signOffchainMessage',
-      primaryType,
-    )
-  } catch (error) {
-    // If we get a race condition, try to clean up transport and provide helpful error
-    if (error?.toString().includes('TransportRaceCondition')) {
-      await cleanupTransport(transport)
-    }
-    throw error
-  }
+  return trySignWithFallbacks(
+    solana,
+    accountIndex,
+    msgBuffer,
+    'signOffchainMessage',
+    primaryType,
+  )
 }
 
 export const getDerivationTypeForSigning = (

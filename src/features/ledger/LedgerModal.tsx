@@ -10,7 +10,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import useBackHandler from '@hooks/useBackHandler'
-import useLedger from '@hooks/useLedger'
+import useLedger, { LedgerTransport } from '@hooks/useLedger'
 import { DeviceModelId } from '@ledgerhq/types-devices'
 import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -19,6 +19,7 @@ import { useColors, useOpacity } from '@theme/themeHooks'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { Edge } from 'react-native-safe-area-context'
 import {
+  classifyLedgerError,
   signLedgerMessage,
   signLedgerTransaction,
   getDerivationTypeForSigning,
@@ -39,8 +40,25 @@ import Animation from './Animation'
 import LedgerConnectSteps from './LedgerConnectSteps'
 import { getDeviceAnimation } from './getDeviceAnimation'
 
-let promiseResolve: (value: Buffer | PromiseLike<Buffer>) => void
-let promiseReject: (reason?: Error) => void
+// One signing session per showLedgerModal call. Retries reuse the same
+// session so the caller's promise always settles exactly once.
+type SigningSession = {
+  transaction?: Buffer
+  message?: Buffer
+  settled: boolean
+  resolve: (value: Buffer) => void
+  reject: (reason: Error) => void
+}
+
+type LedgerModalState =
+  | 'loading'
+  | 'scanning'
+  | 'openApp'
+  | 'sign'
+  | 'enterPinCode'
+  | 'error'
+  | 'enableBlindSign'
+  | 'failed'
 
 export type LedgerModalRef = {
   showLedgerModal: ({
@@ -58,165 +76,190 @@ const LedgerModal = forwardRef(
   ({ children }: Props, ref: Ref<LedgerModalRef | undefined>) => {
     useImperativeHandle(ref, () => ({ showLedgerModal }))
 
-    const { currentAccount } = useAccountStorage()
+    const { currentAccount, upsertAccount } = useAccountStorage()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
-    const { setIsShowing } = useBackHandler(bottomSheetModalRef)
+    const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { secondaryText } = useColors()
     const { t } = useTranslation()
-    const { getTransport, openSolanaApp, waitForSolanaApp } = useLedger()
-    const [transactionBuffer, setTransactionBuffer] = useState<Buffer>()
-    const [messageBuffer, setMessageBuffer] = useState<Buffer>()
+    const {
+      getTransport,
+      findBleDevice,
+      openBleDevice,
+      openSolanaApp,
+      reconnectAfterAppOpen,
+      waitForSolanaApp,
+    } = useLedger()
+    const sessionRef = useRef<SigningSession | undefined>(undefined)
+    // Session whose settle triggered our own dismiss(). onDismiss fires after
+    // the close animation, by which time the caller may have started the next
+    // session, which must not be rejected.
+    const settledSessionRef = useRef<SigningSession | undefined>(undefined)
+    const [failureMessage, setFailureMessage] = useState<string>()
 
-    const [ledgerModalState, setLedgerModalState] = useState<
-      | 'loading'
-      | 'openApp'
-      | 'sign'
-      | 'enterPinCode'
-      | 'error'
-      | 'enableBlindSign'
-    >('loading')
+    const [ledgerModalState, setLedgerModalState] =
+      useState<LedgerModalState>('loading')
 
-    const openAppAndSign = useCallback(
-      async ({
-        transactionBuffer: tBuffer,
-        messageBuffer: mBuffer,
-      }: {
-        transactionBuffer?: Buffer
-        messageBuffer?: Buffer
-      }) => {
+    const runSigningSession = useCallback(
+      async (session: SigningSession) => {
         if (
-          (!tBuffer && !mBuffer) ||
           !currentAccount?.ledgerDevice?.id ||
           !currentAccount?.ledgerDevice?.type ||
           currentAccount?.accountIndex === undefined
         ) {
+          session.reject(new Error('Ledger account is not configured'))
           return
         }
-
-        const p = new Promise<Buffer>((resolve, reject) => {
-          promiseResolve = resolve
-          promiseReject = reject
-        })
+        const { id: deviceId, type: deviceType } = currentAccount.ledgerDevice
 
         try {
           setLedgerModalState('loading')
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
 
-          let nextTransport = await getTransport(
-            currentAccount.ledgerDevice.id,
-            currentAccount.ledgerDevice.type,
-          )
-
-          if (!nextTransport) {
+          let transport: LedgerTransport | undefined
+          try {
+            transport = await getTransport(deviceId, deviceType)
+          } catch (error) {
+            if (
+              deviceType !== 'bluetooth' ||
+              classifyLedgerError(error) !== 'transport'
+            ) {
+              throw error
+            }
+            // The stored BLE id may be from another phone or a forgotten
+            // pairing. Find the device by name and pair it by descriptor.
+            setLedgerModalState('scanning')
+            const found = await findBleDevice(currentAccount.ledgerDevice.name)
+            if (!found) throw error
+            transport = await openBleDevice(found)
+            await upsertAccount({
+              ...currentAccount,
+              ledgerDevice: { ...currentAccount.ledgerDevice, id: found.id },
+            })
+          }
+          if (!transport) {
             setLedgerModalState('error')
-            // eslint-disable-next-line @typescript-eslint/return-await
-            return p
+            return
           }
 
+          setLedgerModalState('openApp')
+          let appAlreadyOpen = false
           try {
-            setLedgerModalState('openApp')
-            await openSolanaApp(nextTransport)
-            await waitForSolanaApp(nextTransport)
+            await openSolanaApp(transport)
           } catch (error) {
-            const ledgerError = error as Error
-            switch (ledgerError.message) {
-              case 'Ledger device: Locked device (0x5515)':
-                setLedgerModalState('enterPinCode')
-                return p
-              // Happens when solana app already open
-              case 'Ledger device: INS_NOT_SUPPORTED (0x6d00)':
-                break
-              default:
-                setLedgerModalState('error')
-                break
+            if (classifyLedgerError(error) !== 'appNotOpen') {
+              throw error
             }
+            // 0x6d00 / 0x6e00 here means the Solana app answered: it is open
+            appAlreadyOpen = true
+          }
+
+          if (appAlreadyOpen) {
+            await waitForSolanaApp(transport)
+          } else {
+            transport = await reconnectAfterAppOpen(
+              transport,
+              deviceId,
+              deviceType,
+            )
           }
 
           setLedgerModalState('sign')
 
-          nextTransport = await getTransport(
-            currentAccount.ledgerDevice.id,
-            currentAccount.ledgerDevice.type,
+          const derivationType = getDerivationTypeForSigning(
+            currentAccount.derivationPath,
           )
+          const signature = session.transaction
+            ? await signLedgerTransaction(
+                transport,
+                currentAccount.accountIndex,
+                session.transaction,
+                derivationType,
+              )
+            : await signLedgerMessage(
+                transport,
+                currentAccount.accountIndex,
+                session.message as Buffer,
+                derivationType,
+              )
 
-          if (!nextTransport) {
-            setLedgerModalState('error')
-            // eslint-disable-next-line @typescript-eslint/return-await
-            return p
-          }
-
-          let signature
-
-          if (tBuffer) {
-            signature = await signLedgerTransaction(
-              nextTransport,
-              currentAccount.accountIndex,
-              tBuffer,
-              getDerivationTypeForSigning(currentAccount?.derivationPath),
-            )
-          } else if (mBuffer) {
-            signature = await signLedgerMessage(
-              nextTransport,
-              currentAccount?.accountIndex,
-              mBuffer,
-              getDerivationTypeForSigning(currentAccount?.derivationPath),
-            )
-          }
-
+          session.resolve(signature)
+          settledSessionRef.current = session
           bottomSheetModalRef.current?.dismiss()
-          return signature
         } catch (error) {
           console.error(error)
-          const ledgerError = error as Error
-          switch (ledgerError.message) {
-            case 'Missing a parameter. Try enabling blind signature in the app':
+          switch (classifyLedgerError(error)) {
+            case 'userRejected':
+              session.reject(error as Error)
+              settledSessionRef.current = session
+              bottomSheetModalRef.current?.dismiss()
+              break
+            case 'locked':
+              setLedgerModalState('enterPinCode')
+              break
+            case 'blindSign':
               setLedgerModalState('enableBlindSign')
               break
-            case 'User rejected transaction':
-              // Reject promise immediately and dismiss modal
-              if (promiseReject) {
-                promiseReject(ledgerError)
-              }
-              bottomSheetModalRef.current?.dismiss()
-              return
-            default:
+            case 'transport':
               setLedgerModalState('error')
+              break
+            default:
+              setFailureMessage(
+                error instanceof Error ? error.message : String(error),
+              )
+              setLedgerModalState('failed')
           }
-
-          return p
         }
       },
       [
         currentAccount,
+        upsertAccount,
         setIsShowing,
         getTransport,
+        findBleDevice,
+        openBleDevice,
         openSolanaApp,
+        reconnectAfterAppOpen,
         waitForSolanaApp,
       ],
     )
 
     const showLedgerModal = useCallback(
-      async ({
+      ({
         transaction,
         message,
       }: {
         transaction?: Buffer
         message?: Buffer
       }) => {
-        if (transaction) {
-          setTransactionBuffer(transaction)
+        if (!transaction && !message) {
+          return Promise.resolve(undefined)
         }
-        if (message) {
-          setMessageBuffer(message)
-        }
-        return openAppAndSign({
-          transactionBuffer: transaction,
-          messageBuffer: message,
+
+        const promise = new Promise<Buffer>((resolve, reject) => {
+          const session: SigningSession = {
+            transaction,
+            message,
+            settled: false,
+            resolve: (value) => {
+              if (session.settled) return
+              session.settled = true
+              resolve(value)
+            },
+            reject: (reason) => {
+              if (session.settled) return
+              session.settled = true
+              reject(reason)
+            },
+          }
+          sessionRef.current = session
+          runSigningSession(session)
         })
+
+        return promise
       },
-      [openAppAndSign],
+      [runSigningSession],
     )
 
     const renderBackdrop = useCallback(
@@ -245,7 +288,14 @@ const LedgerModal = forwardRef(
         return model
       }
 
-      if (currentAccount?.ledgerDevice?.name.toLowerCase().includes('nano s')) {
+      // 'nano sp' must be checked before 'nano s', which it also contains
+      if (
+        currentAccount?.ledgerDevice?.name.toLowerCase().includes('nano sp')
+      ) {
+        model = DeviceModelId.nanoSP
+      } else if (
+        currentAccount?.ledgerDevice?.name.toLowerCase().includes('nano s')
+      ) {
         model = DeviceModelId.nanoS
       } else if (
         currentAccount?.ledgerDevice?.name.toLowerCase().includes('nano x')
@@ -259,43 +309,44 @@ const LedgerModal = forwardRef(
         currentAccount?.ledgerDevice?.name.toLowerCase().includes('blue')
       ) {
         model = DeviceModelId.blue
-      } else if (
-        currentAccount?.ledgerDevice?.name.toLowerCase().includes('nano sp')
-      ) {
-        model = DeviceModelId.nanoSP
       }
 
       return model
     }, [currentAccount?.ledgerDevice?.name])
 
-    const handleRetry = useCallback(async () => {
-      try {
-        const buffer = await openAppAndSign({
-          transactionBuffer,
-          messageBuffer,
-        })
+    const handleRetry = useCallback(() => {
+      const session = sessionRef.current
+      if (!session || session.settled) return
+      runSigningSession(session)
+    }, [runSigningSession])
 
-        if (buffer && promiseResolve) {
-          promiseResolve(buffer)
-        }
-      } catch (error) {
-        if (promiseReject) {
-          promiseReject(error as Error)
-        }
-      }
-    }, [openAppAndSign, transactionBuffer, messageBuffer])
-
-    const onDismiss = useCallback(() => {
-      if (promiseReject) {
-        promiseReject(new Error('User closed modal'))
-      }
+    const closeModal = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()
     }, [])
+
+    // Fires for every dismissal: X button, swipe down, backdrop tap, Android
+    // back, and our own dismiss() after settling.
+    const onDismiss = useCallback(() => {
+      handleDismiss()
+      const settled = settledSessionRef.current
+      settledSessionRef.current = undefined
+      if (sessionRef.current !== settled) {
+        sessionRef.current?.reject(new Error('User closed modal'))
+      }
+    }, [handleDismiss])
 
     const LedgerMessage = useCallback(() => {
       switch (ledgerModalState) {
         case 'loading':
           return null
+        case 'scanning':
+          return (
+            <Text variant="h4Medium" color="primaryText">
+              {t('ledger.lookingForDevice', {
+                device: currentAccount?.ledgerDevice?.name,
+              })}
+            </Text>
+          )
         case 'openApp':
           return (
             <Text variant="h4Medium" color="primaryText">
@@ -352,21 +403,38 @@ const LedgerModal = forwardRef(
               </TouchableOpacityBox>
             </Box>
           )
-        case 'error':
+        case 'failed':
           return (
             <Box>
               <Text variant="h4Medium" color="primaryText">
-                {t('ledger.transactionRejected')}
+                {t('ledger.signingFailed')}
               </Text>
               <Text variant="body1Medium" color="secondaryText" marginTop="s">
-                {t('ledger.transactionRejectedDescription')}
+                {failureMessage}
               </Text>
+              <TouchableOpacityBox
+                marginTop="s"
+                onPress={handleRetry}
+                backgroundColor="surface"
+                padding="l"
+                borderRadius="round"
+              >
+                <Text variant="subtitle1" textAlign="center">
+                  {t('generic.tryAgain')}
+                </Text>
+              </TouchableOpacityBox>
             </Box>
           )
         default:
           return null
       }
-    }, [currentAccount?.ledgerDevice?.name, handleRetry, ledgerModalState, t])
+    }, [
+      currentAccount?.ledgerDevice?.name,
+      failureMessage,
+      handleRetry,
+      ledgerModalState,
+      t,
+    ])
 
     return (
       <Box flex={1}>
@@ -378,11 +446,12 @@ const LedgerModal = forwardRef(
             backdropComponent={renderBackdrop}
             handleIndicatorStyle={handleIndicatorStyle}
             enableDynamicSizing
+            onDismiss={onDismiss}
           >
             <BottomSheetScrollView>
               <SafeAreaBox edges={safeEdges} paddingHorizontal="l">
                 <Box alignItems="flex-end" height={24} justifyContent="center">
-                  <CloseButton onPress={onDismiss} />
+                  <CloseButton onPress={closeModal} />
                 </Box>
                 {ledgerModalState === 'loading' && (
                   <Box alignItems="center" justifyContent="center" flex={1}>
@@ -392,32 +461,37 @@ const LedgerModal = forwardRef(
                 {ledgerModalState !== 'loading' &&
                   ledgerModalState !== 'error' && (
                     <>
-                      <Box
-                        alignSelf="stretch"
-                        alignItems="center"
-                        justifyContent="center"
-                        minHeight={120}
-                      >
-                        <Animation
-                          source={getDeviceAnimation({
-                            device: {
-                              deviceId: currentAccount?.ledgerDevice?.id ?? '',
-                              deviceName:
-                                currentAccount?.ledgerDevice?.name ?? '',
-                              modelId: deviceModelId,
-                              wired:
-                                currentAccount?.ledgerDevice?.type === 'usb',
-                            },
-                            key: ledgerModalState,
-                            theme: 'dark',
-                          })}
-                          style={
-                            deviceModelId === DeviceModelId.stax
-                              ? { height: 210 }
-                              : { height: 120 }
-                          }
-                        />
-                      </Box>
+                      {ledgerModalState !== 'failed' &&
+                        ledgerModalState !== 'scanning' && (
+                          <Box
+                            alignSelf="stretch"
+                            alignItems="center"
+                            justifyContent="center"
+                            minHeight={120}
+                          >
+                            <Animation
+                              source={getDeviceAnimation({
+                                device: {
+                                  deviceId:
+                                    currentAccount?.ledgerDevice?.id ?? '',
+                                  deviceName:
+                                    currentAccount?.ledgerDevice?.name ?? '',
+                                  modelId: deviceModelId,
+                                  wired:
+                                    currentAccount?.ledgerDevice?.type ===
+                                    'usb',
+                                },
+                                key: ledgerModalState,
+                                theme: 'dark',
+                              })}
+                              style={
+                                deviceModelId === DeviceModelId.stax
+                                  ? { height: 210 }
+                                  : { height: 120 }
+                              }
+                            />
+                          </Box>
+                        )}
                       <Box>{LedgerMessage()}</Box>
                     </>
                   )}

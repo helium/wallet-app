@@ -7,10 +7,12 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors } from '@theme/themeHooks'
+import type { ScanErrorKind } from '@hooks/useLedgerDeviceScan'
 
 interface LedgerConnectStepsProps {
   onLayout?: (event: LayoutChangeEvent) => void
   onRetry: () => void
+  errorKind?: ScanErrorKind
 }
 
 interface StepItemProps {
@@ -39,7 +41,11 @@ const StepItem = memo(({ step, index, iconColor }: StepItemProps) => (
   </Box>
 ))
 
-const LedgerConnectSteps = ({ onLayout, onRetry }: LedgerConnectStepsProps) => {
+const LedgerConnectSteps = ({
+  onLayout,
+  onRetry,
+  errorKind,
+}: LedgerConnectStepsProps) => {
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const steps = useMemo<string[]>(
@@ -47,13 +53,20 @@ const LedgerConnectSteps = ({ onLayout, onRetry }: LedgerConnectStepsProps) => {
     [t],
   )
 
+  // Bluetooth-off and permission errors have their own copy and no steps
+  const hasSpecificCopy =
+    errorKind === 'bluetoothOff' || errorKind === 'permission'
   const translations = useMemo(
     () => ({
-      title: t('ledger.connectError.title'),
-      subtitle: t('ledger.connectError.subtitle'),
+      title: hasSpecificCopy
+        ? t(`ledger.connectError.${errorKind}.title`)
+        : t('ledger.connectError.title'),
+      subtitle: hasSpecificCopy
+        ? t(`ledger.connectError.${errorKind}.subtitle`)
+        : t('ledger.connectError.subtitle'),
       tryAgain: t('generic.tryAgain'),
     }),
-    [t],
+    [errorKind, hasSpecificCopy, t],
   )
 
   const handleRetry = useCallback(() => {
@@ -90,14 +103,15 @@ const LedgerConnectSteps = ({ onLayout, onRetry }: LedgerConnectStepsProps) => {
       </Text>
 
       <Box marginVertical="s">
-        {steps.map((step, index) => (
-          <StepItem
-            key={step}
-            step={step}
-            index={index}
-            iconColor={primaryText}
-          />
-        ))}
+        {!hasSpecificCopy &&
+          steps.map((step, index) => (
+            <StepItem
+              key={step}
+              step={step}
+              index={index}
+              iconColor={primaryText}
+            />
+          ))}
       </Box>
 
       <TouchableOpacityBox

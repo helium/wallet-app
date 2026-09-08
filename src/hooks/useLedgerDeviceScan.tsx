@@ -1,6 +1,7 @@
+import type { DescriptorEvent } from '@ledgerhq/hw-transport'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import { useCallback, useState, useRef } from 'react'
-import { Observable, Subscription } from 'rxjs'
+import { BlePlxManager } from '@ledgerhq/react-native-hw-transport-ble/lib/BlePlxManager'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 import {
   check,
@@ -9,95 +10,114 @@ import {
   request,
   RESULTS,
 } from 'react-native-permissions'
-import { Device } from 'react-native-ble-plx'
-import { useAsync } from 'react-async-hook'
+import type {
+  Device,
+  Subscription as BleSubscription,
+} from 'react-native-ble-plx'
 import * as Logger from '../utils/logger'
 
-enum DeviceModelId {
-  blue = 'blue',
-  nanoS = 'nanoS',
-  nanoSP = 'nanoSP',
-  nanoX = 'nanoX',
-}
+export type ScanErrorKind = 'permission' | 'bluetoothOff' | 'unknown'
 
-type LedgerDetails = {
-  type: string
-  descriptor: Device
-  deviceModel: {
-    id: DeviceModelId
-    productName: string
-    productIdMM: number
-    legacyUsbProductId: number
-    usbOnly: boolean
-    memorySize: number
-    masks: number[]
-    // blockSize: number, // THIS FIELD IS DEPRECATED, use getBlockSize
-    getBlockSize: (firmwareVersion: string) => number
-    bluetoothSpec?: {
-      serviceUuid: string
-      writeUuid: string
-      writeCmdUuid: string
-      notifyUuid: string
-    }[]
-  }
-}
+type ScanError = { kind: ScanErrorKind; error: Error }
 
-type LedgerAvailable = {
-  available: boolean
-  type: string
-}
+type ScanSubscription = ReturnType<typeof TransportBLE.listen>
 
-const checkPermission = async () => {
-  let permissions: Permission[] = []
+// listen() never completes on its own, so stop scanning after this long.
+const SCAN_TIMEOUT_MS = 15_000
+
+const getBlePermissions = (): Permission[] => {
   if (Platform.OS === 'ios') {
-    permissions = [PERMISSIONS.IOS.BLUETOOTH]
-  } else if (Platform.OS === 'android') {
-    permissions = [
+    return [PERMISSIONS.IOS.BLUETOOTH]
+  }
+  if (Platform.OS !== 'android') {
+    return []
+  }
+  // BLUETOOTH_SCAN / BLUETOOTH_CONNECT exist from Android 12 (API 31).
+  // Older versions gate BLE scanning behind fine location instead.
+  if (Number(Platform.Version) >= 31) {
+    return [
       PERMISSIONS.ANDROID.BLUETOOTH_SCAN,
       PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
     ]
   }
+  return [PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]
+}
 
-  permissions.forEach(async (perm) => {
-    const result = await check(perm)
+const checkPermission = async (): Promise<boolean> => {
+  const permissions = getBlePermissions()
+
+  // Sequential on purpose: the OS shows one permission dialog at a time.
+  return permissions.reduce(async (previous, perm) => {
+    if (!(await previous)) return false
+
+    let result = await check(perm)
     if (result === RESULTS.DENIED) {
-      const requestResult = await request(perm)
-      if (requestResult !== RESULTS.GRANTED) {
-        return false
-      }
+      result = await request(perm)
     }
-  })
-
-  return true
+    return result !== RESULTS.DENIED && result !== RESULTS.BLOCKED
+  }, Promise.resolve(true))
 }
 
 const useDeviceScan = () => {
-  const sub = useRef<Subscription | null>(null)
+  const scanSub = useRef<ScanSubscription | undefined>(undefined)
+  const stateSub = useRef<BleSubscription | undefined>(undefined)
+  const scanTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // Bumped on every startScan so a stale permission await cannot subscribe
+  const scanGeneration = useRef(0)
+  // True between startScan and an explicit stopScan (blur, device selected).
+  // The scan timeout does not clear it, so Bluetooth coming back on restarts
+  // the scan only while the screen still wants one.
+  const scanWanted = useRef(false)
   const [refreshing, setRefreshing] = useState(false)
-  const [error, setError] = useState<Error>()
+  const [scanError, setScanError] = useState<ScanError>()
   const [devices, setDevices] = useState<Device[]>([])
 
-  const maybeAddDevice = useCallback(
-    (device: Device) => {
-      if (devices.some((i: Device) => i.id === device.id)) {
-        return
-      }
-
-      setDevices([...devices, device])
+  const setError = useCallback(
+    (error?: Error, kind: ScanErrorKind = 'unknown') => {
+      setScanError(error ? { error, kind } : undefined)
     },
-    [devices],
+    [],
   )
 
+  const maybeAddDevice = useCallback((device: Device) => {
+    setDevices((prev) =>
+      prev.some((i) => i.id === device.id) ? prev : [...prev, device],
+    )
+  }, [])
+
+  const endScan = useCallback(() => {
+    clearTimeout(scanTimer.current)
+    scanTimer.current = undefined
+    scanSub.current?.unsubscribe()
+    scanSub.current = undefined
+    setRefreshing(false)
+  }, [])
+
+  const stopScan = useCallback(() => {
+    scanWanted.current = false
+    endScan()
+  }, [endScan])
+
   const startScan = useCallback(async () => {
+    endScan()
+    scanWanted.current = true
+    scanGeneration.current += 1
+    const generation = scanGeneration.current
     setRefreshing(true)
 
-    await checkPermission()
+    const granted = await checkPermission()
+    if (generation !== scanGeneration.current) return
+    if (!granted) {
+      setRefreshing(false)
+      setError(new Error('Bluetooth permission not granted'), 'permission')
+      return
+    }
 
-    sub.current = new Observable<LedgerDetails>(TransportBLE.listen).subscribe({
+    scanSub.current = TransportBLE.listen({
       complete: () => {
         setRefreshing(false)
       },
-      next: (e) => {
+      next: (e: DescriptorEvent<Device>) => {
         if (e.type === 'add') {
           maybeAddDevice(e.descriptor)
         }
@@ -106,55 +126,59 @@ const useDeviceScan = () => {
       error: (err) => {
         Logger.error(err)
         setError(err)
-        setRefreshing(false)
+        stopScan()
       },
     })
-  }, [maybeAddDevice])
+    scanTimer.current = setTimeout(endScan, SCAN_TIMEOUT_MS)
+  }, [endScan, maybeAddDevice, setError, stopScan])
 
-  const reload = useCallback(() => {
-    if (sub.current) {
-      sub.current.unsubscribe()
-    }
-
-    setRefreshing(false)
-    startScan()
-  }, [startScan])
-
-  useAsync(async () => {
+  useEffect(() => {
     let previousAvailable: boolean | undefined
-    let isInitialState = true // Add this flag
 
-    new Observable<LedgerAvailable>(TransportBLE.observeState).subscribe(
-      (e) => {
-        if (e.available !== previousAvailable) {
-          // If this is the first state event, just record it without triggering errors
-          if (isInitialState) {
-            isInitialState = false
-            previousAvailable = e.available
-            if (e.available) {
-              reload()
-            }
-            return
-          }
+    // TransportBLE.observeState's unsubscribe is a no-op, so subscribe to the
+    // underlying manager directly to get a subscription we can remove.
+    stateSub.current = BlePlxManager.onStateChange((state: string) => {
+      if (state === 'Unknown' || state === 'Resetting') return
 
-          // Only trigger errors/actions for actual state changes after initialization
-          previousAvailable = e.available
-          if (e.available) {
-            reload()
-          } else if (!e.available && e.type) {
-            setError(new Error(e.type))
-          }
-        }
-      },
-    )
-    return () => {
-      if (sub.current) {
-        sub.current.unsubscribe()
+      const available = state === 'PoweredOn'
+      const isInitialState = previousAvailable === undefined
+      if (available === previousAvailable) return
+      previousAvailable = available
+
+      if (available) {
+        setScanError((prev) =>
+          prev?.kind === 'bluetoothOff' ? undefined : prev,
+        )
+        // The initial scan is started by the screen on focus
+        if (!isInitialState && scanWanted.current) startScan()
+        return
       }
-    }
-  }, [])
 
-  return { startScan, refreshing, error, devices, setError, reload }
+      if (state === 'PoweredOff') {
+        setError(new Error(state), 'bluetoothOff')
+      } else if (state === 'Unauthorized') {
+        setError(new Error(state), 'permission')
+      } else {
+        setError(new Error(state))
+      }
+    }, true)
+
+    return () => {
+      stateSub.current?.remove()
+      stateSub.current = undefined
+      stopScan()
+    }
+  }, [setError, startScan, stopScan])
+
+  return {
+    startScan,
+    stopScan,
+    refreshing,
+    error: scanError?.error,
+    errorKind: scanError?.kind,
+    devices,
+    setError,
+  }
 }
 
 export default useDeviceScan
