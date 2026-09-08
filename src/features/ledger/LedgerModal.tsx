@@ -10,7 +10,7 @@ import {
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import useBackHandler from '@hooks/useBackHandler'
-import useLedger from '@hooks/useLedger'
+import useLedger, { LedgerTransport } from '@hooks/useLedger'
 import { DeviceModelId } from '@ledgerhq/types-devices'
 import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -52,6 +52,7 @@ type SigningSession = {
 
 type LedgerModalState =
   | 'loading'
+  | 'scanning'
   | 'openApp'
   | 'sign'
   | 'enterPinCode'
@@ -75,7 +76,7 @@ const LedgerModal = forwardRef(
   ({ children }: Props, ref: Ref<LedgerModalRef | undefined>) => {
     useImperativeHandle(ref, () => ({ showLedgerModal }))
 
-    const { currentAccount } = useAccountStorage()
+    const { currentAccount, upsertAccount } = useAccountStorage()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
@@ -83,6 +84,8 @@ const LedgerModal = forwardRef(
     const { t } = useTranslation()
     const {
       getTransport,
+      findBleDevice,
+      openBleDevice,
       openSolanaApp,
       reconnectAfterAppOpen,
       waitForSolanaApp,
@@ -114,7 +117,27 @@ const LedgerModal = forwardRef(
           bottomSheetModalRef.current?.present()
           setIsShowing(true)
 
-          let transport = await getTransport(deviceId, deviceType)
+          let transport: LedgerTransport | undefined
+          try {
+            transport = await getTransport(deviceId, deviceType)
+          } catch (error) {
+            if (
+              deviceType !== 'bluetooth' ||
+              classifyLedgerError(error) !== 'transport'
+            ) {
+              throw error
+            }
+            // The stored BLE id may be from another phone or a forgotten
+            // pairing. Find the device by name and pair it by descriptor.
+            setLedgerModalState('scanning')
+            const found = await findBleDevice(currentAccount.ledgerDevice.name)
+            if (!found) throw error
+            transport = await openBleDevice(found)
+            await upsertAccount({
+              ...currentAccount,
+              ledgerDevice: { ...currentAccount.ledgerDevice, id: found.id },
+            })
+          }
           if (!transport) {
             setLedgerModalState('error')
             return
@@ -191,8 +214,11 @@ const LedgerModal = forwardRef(
       },
       [
         currentAccount,
+        upsertAccount,
         setIsShowing,
         getTransport,
+        findBleDevice,
+        openBleDevice,
         openSolanaApp,
         reconnectAfterAppOpen,
         waitForSolanaApp,
@@ -313,6 +339,14 @@ const LedgerModal = forwardRef(
       switch (ledgerModalState) {
         case 'loading':
           return null
+        case 'scanning':
+          return (
+            <Text variant="h4Medium" color="primaryText">
+              {t('ledger.lookingForDevice', {
+                device: currentAccount?.ledgerDevice?.name,
+              })}
+            </Text>
+          )
         case 'openApp':
           return (
             <Text variant="h4Medium" color="primaryText">
@@ -427,35 +461,37 @@ const LedgerModal = forwardRef(
                 {ledgerModalState !== 'loading' &&
                   ledgerModalState !== 'error' && (
                     <>
-                      {ledgerModalState !== 'failed' && (
-                        <Box
-                          alignSelf="stretch"
-                          alignItems="center"
-                          justifyContent="center"
-                          minHeight={120}
-                        >
-                          <Animation
-                            source={getDeviceAnimation({
-                              device: {
-                                deviceId:
-                                  currentAccount?.ledgerDevice?.id ?? '',
-                                deviceName:
-                                  currentAccount?.ledgerDevice?.name ?? '',
-                                modelId: deviceModelId,
-                                wired:
-                                  currentAccount?.ledgerDevice?.type === 'usb',
-                              },
-                              key: ledgerModalState,
-                              theme: 'dark',
-                            })}
-                            style={
-                              deviceModelId === DeviceModelId.stax
-                                ? { height: 210 }
-                                : { height: 120 }
-                            }
-                          />
-                        </Box>
-                      )}
+                      {ledgerModalState !== 'failed' &&
+                        ledgerModalState !== 'scanning' && (
+                          <Box
+                            alignSelf="stretch"
+                            alignItems="center"
+                            justifyContent="center"
+                            minHeight={120}
+                          >
+                            <Animation
+                              source={getDeviceAnimation({
+                                device: {
+                                  deviceId:
+                                    currentAccount?.ledgerDevice?.id ?? '',
+                                  deviceName:
+                                    currentAccount?.ledgerDevice?.name ?? '',
+                                  modelId: deviceModelId,
+                                  wired:
+                                    currentAccount?.ledgerDevice?.type ===
+                                    'usb',
+                                },
+                                key: ledgerModalState,
+                                theme: 'dark',
+                              })}
+                              style={
+                                deviceModelId === DeviceModelId.stax
+                                  ? { height: 210 }
+                                  : { height: 120 }
+                              }
+                            />
+                          </Box>
+                        )}
                       <Box>{LedgerMessage()}</Box>
                     </>
                   )}

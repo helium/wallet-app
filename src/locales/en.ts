@@ -837,6 +837,8 @@ export default {
     },
   },
   ledger: {
+    lookingForDevice:
+      'Looking for {{ device }}. Make sure it is unlocked and nearby.',
     openTheSolanaApp: 'Open the Solana app on your {{ device }}',
     pleaseConfirmTransaction: 'Please confirm transaction on your {{ device }}',
     pleaseEnterPinCode: 'Please enter pin code on your {{ device }}',

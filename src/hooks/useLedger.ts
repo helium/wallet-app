@@ -1,6 +1,8 @@
 import AppSolana from '@ledgerhq/hw-app-solana'
+import type { DescriptorEvent } from '@ledgerhq/hw-transport'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import TransportHID from '@ledgerhq/react-native-hid'
+import type { Device } from 'react-native-ble-plx'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
@@ -33,9 +35,10 @@ export type LedgerAccount = {
 
 export const ManagerAppName = 'Solana'
 
-type LedgerTransport = TransportBLE | TransportHID
+export type LedgerTransport = TransportBLE | TransportHID
 
 export const BLE_CONNECT_TIMEOUT_MS = 10_000
+const BLE_FIND_TIMEOUT_MS = 15_000
 const RECONNECT_ATTEMPTS = 5
 const RECONNECT_DELAY_MS = 1_000
 const DISCONNECT_WAIT_MS = 1_500
@@ -145,6 +148,36 @@ const useLedger = () => {
       return newTransport
     },
     [closeUsbTransport],
+  )
+
+  // BLE ids are per phone. When the stored id no longer resolves, scan for a
+  // device advertising the stored name so it can be paired and opened by
+  // descriptor. Resolves undefined if nothing matches within the timeout.
+  const findBleDevice = useCallback(
+    (name: string): Promise<Device | undefined> =>
+      new Promise((resolve) => {
+        const done = (device?: Device) => {
+          clearTimeout(timer)
+          sub.unsubscribe()
+          resolve(device)
+        }
+        const timer = setTimeout(done, BLE_FIND_TIMEOUT_MS)
+        const sub = TransportBLE.listen({
+          next: (e: DescriptorEvent<Device>) => {
+            if (e.type !== 'add') return
+            const found = e.descriptor
+            if ((found.localName || found.name) === name) done(found)
+          },
+          error: () => done(),
+          complete: () => done(),
+        })
+      }),
+    [],
+  )
+
+  const openBleDevice = useCallback(
+    (device: Device) => TransportBLE.open(device, BLE_CONNECT_TIMEOUT_MS),
+    [],
   )
 
   // After the open-app APDU the device re-enumerates. Wait for the drop, then
@@ -519,6 +552,8 @@ const useLedger = () => {
 
   return {
     getTransport,
+    findBleDevice,
+    openBleDevice,
     reconnectAfterAppOpen,
     ledgerAccounts,
     updateLedgerAccounts,
