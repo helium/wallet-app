@@ -148,7 +148,9 @@ const useLedger = () => {
   )
 
   // After the open-app APDU the device re-enumerates. Wait for the drop, then
-  // reopen the transport with retries and poll until the Solana app answers.
+  // reopen the transport with retries until the Solana app answers. The BLE
+  // cache may hand back the dying transport if the drop arrives late, so a
+  // disconnect from getAppConfiguration is retried here too.
   const reconnectAfterAppOpen = useCallback(
     async (
       previous: LedgerTransport,
@@ -157,27 +159,26 @@ const useLedger = () => {
     ): Promise<LedgerTransport> => {
       await waitForDisconnect(previous, DISCONNECT_WAIT_MS)
 
+      let lastError: unknown = new Error('Transport could not be created')
       for (let attempt = 1; attempt <= RECONNECT_ATTEMPTS; attempt += 1) {
         try {
           // eslint-disable-next-line no-await-in-loop
           const next = await getTransport(nextDeviceId, type)
-          if (next) return next
-          throw new Error('Transport could not be created')
+          if (!next) throw new Error('Transport could not be created')
+          // eslint-disable-next-line no-await-in-loop
+          await waitForSolanaApp(next)
+          return next
         } catch (error) {
-          if (
-            attempt === RECONNECT_ATTEMPTS ||
-            !isRetryableReconnectError(error)
-          ) {
-            throw error
-          }
+          if (!isRetryableReconnectError(error)) throw error
+          lastError = error
           // eslint-disable-next-line no-await-in-loop
           await delay(RECONNECT_DELAY_MS)
         }
       }
 
-      throw new Error('Transport could not be created')
+      throw lastError
     },
-    [getTransport],
+    [getTransport, waitForSolanaApp],
   )
 
   const createLedgerAccount = useCallback(

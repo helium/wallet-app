@@ -62,6 +62,12 @@ const useDeviceScan = () => {
   const scanSub = useRef<ScanSubscription | undefined>(undefined)
   const stateSub = useRef<BleSubscription | undefined>(undefined)
   const scanTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  // Bumped on every startScan so a stale permission await cannot subscribe
+  const scanGeneration = useRef(0)
+  // True between startScan and an explicit stopScan (blur, device selected).
+  // The scan timeout does not clear it, so Bluetooth coming back on restarts
+  // the scan only while the screen still wants one.
+  const scanWanted = useRef(false)
   const [refreshing, setRefreshing] = useState(false)
   const [scanError, setScanError] = useState<ScanError>()
   const [devices, setDevices] = useState<Device[]>([])
@@ -79,7 +85,7 @@ const useDeviceScan = () => {
     )
   }, [])
 
-  const stopScan = useCallback(() => {
+  const endScan = useCallback(() => {
     clearTimeout(scanTimer.current)
     scanTimer.current = undefined
     scanSub.current?.unsubscribe()
@@ -87,18 +93,26 @@ const useDeviceScan = () => {
     setRefreshing(false)
   }, [])
 
+  const stopScan = useCallback(() => {
+    scanWanted.current = false
+    endScan()
+  }, [endScan])
+
   const startScan = useCallback(async () => {
-    stopScan()
+    endScan()
+    scanWanted.current = true
+    scanGeneration.current += 1
+    const generation = scanGeneration.current
     setRefreshing(true)
 
-    if (!(await checkPermission())) {
+    const granted = await checkPermission()
+    if (generation !== scanGeneration.current) return
+    if (!granted) {
       setRefreshing(false)
       setError(new Error('Bluetooth permission not granted'), 'permission')
       return
     }
 
-    // A concurrent startScan may have subscribed while we awaited permission
-    scanSub.current?.unsubscribe()
     scanSub.current = TransportBLE.listen({
       complete: () => {
         setRefreshing(false)
@@ -115,8 +129,8 @@ const useDeviceScan = () => {
         stopScan()
       },
     })
-    scanTimer.current = setTimeout(stopScan, SCAN_TIMEOUT_MS)
-  }, [maybeAddDevice, setError, stopScan])
+    scanTimer.current = setTimeout(endScan, SCAN_TIMEOUT_MS)
+  }, [endScan, maybeAddDevice, setError, stopScan])
 
   useEffect(() => {
     let previousAvailable: boolean | undefined
@@ -136,7 +150,7 @@ const useDeviceScan = () => {
           prev?.kind === 'bluetoothOff' ? undefined : prev,
         )
         // The initial scan is started by the screen on focus
-        if (!isInitialState) startScan()
+        if (!isInitialState && scanWanted.current) startScan()
         return
       }
 
@@ -164,7 +178,6 @@ const useDeviceScan = () => {
     errorKind: scanError?.kind,
     devices,
     setError,
-    reload: startScan,
   }
 }
 

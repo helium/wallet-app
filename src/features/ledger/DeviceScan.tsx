@@ -47,7 +47,6 @@ const DeviceScan = () => {
     errorKind,
     devices,
     setError,
-    reload,
     startScan,
     stopScan,
   } = useLedgerDeviceScan()
@@ -96,8 +95,8 @@ const DeviceScan = () => {
   const clearError = useCallback(() => {
     handleDismiss()
     setError(undefined)
-    reload()
-  }, [handleDismiss, reload, setError])
+    startScan()
+  }, [handleDismiss, startScan, setError])
 
   useEffect(() => {
     if (!error) return
@@ -198,7 +197,7 @@ const DeviceScan = () => {
             data={devices}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
-            onRefresh={reload}
+            onRefresh={startScan}
             refreshing={refreshing}
           />
         </Box>

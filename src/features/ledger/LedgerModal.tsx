@@ -88,6 +88,10 @@ const LedgerModal = forwardRef(
       waitForSolanaApp,
     } = useLedger()
     const sessionRef = useRef<SigningSession | undefined>(undefined)
+    // Session whose settle triggered our own dismiss(). onDismiss fires after
+    // the close animation, by which time the caller may have started the next
+    // session, which must not be rejected.
+    const settledSessionRef = useRef<SigningSession | undefined>(undefined)
     const [failureMessage, setFailureMessage] = useState<string>()
 
     const [ledgerModalState, setLedgerModalState] =
@@ -128,14 +132,15 @@ const LedgerModal = forwardRef(
             appAlreadyOpen = true
           }
 
-          if (!appAlreadyOpen) {
+          if (appAlreadyOpen) {
+            await waitForSolanaApp(transport)
+          } else {
             transport = await reconnectAfterAppOpen(
               transport,
               deviceId,
               deviceType,
             )
           }
-          await waitForSolanaApp(transport)
 
           setLedgerModalState('sign')
 
@@ -157,12 +162,14 @@ const LedgerModal = forwardRef(
               )
 
           session.resolve(signature)
+          settledSessionRef.current = session
           bottomSheetModalRef.current?.dismiss()
         } catch (error) {
           console.error(error)
           switch (classifyLedgerError(error)) {
             case 'userRejected':
               session.reject(error as Error)
+              settledSessionRef.current = session
               bottomSheetModalRef.current?.dismiss()
               break
             case 'locked':
@@ -295,7 +302,11 @@ const LedgerModal = forwardRef(
     // back, and our own dismiss() after settling.
     const onDismiss = useCallback(() => {
       handleDismiss()
-      sessionRef.current?.reject(new Error('User closed modal'))
+      const settled = settledSessionRef.current
+      settledSessionRef.current = undefined
+      if (sessionRef.current !== settled) {
+        sessionRef.current?.reject(new Error('User closed modal'))
+      }
     }, [handleDismiss])
 
     const LedgerMessage = useCallback(() => {
