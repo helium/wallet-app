@@ -4075,7 +4075,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.31.8, @ledgerhq/hw-transport@npm:^6.31.9":
+"@ledgerhq/hw-transport@npm:6.31.9, @ledgerhq/hw-transport@npm:^6.31.8, @ledgerhq/hw-transport@npm:^6.31.9":
   version: 6.31.9
   resolution: "@ledgerhq/hw-transport@npm:6.31.9"
   dependencies:
@@ -13128,6 +13128,7 @@ __metadata:
     "@keystonehq/keystone-sdk": "npm:0.12.3"
     "@ledgerhq/errors": "npm:6.24.0"
     "@ledgerhq/hw-app-solana": "npm:7.5.2"
+    "@ledgerhq/hw-transport": "npm:6.31.9"
     "@ledgerhq/hw-transport-mocker": "npm:6.29.8"
     "@ledgerhq/react-native-hid": "npm:6.32.9"
     "@ledgerhq/react-native-hw-transport-ble": "npm:6.35.2"

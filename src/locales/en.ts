@@ -858,6 +858,16 @@ export default {
       },
     },
     connectError: {
+      bluetoothOff: {
+        subtitle:
+          'Turn on Bluetooth in your phone settings to scan for your Ledger device.',
+        title: 'Bluetooth Is Off',
+      },
+      permission: {
+        subtitle:
+          'Allow Bluetooth access for this app in your phone settings so it can find your Ledger device.',
+        title: 'Bluetooth Permission Needed',
+      },
       steps: [
         'Check network connection',
         'Check Bluetooth is enabled',

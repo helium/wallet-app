@@ -2,7 +2,12 @@ import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, LayoutChangeEvent } from 'react-native'
 import { Device } from 'react-native-ble-plx'
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native'
 import CarotRight from '@assets/images/carot-right.svg'
 import LedgerCircle from '@assets/images/ledger-circle.svg'
 import Ledger from '@assets/images/ledger.svg'
@@ -36,15 +41,36 @@ const DeviceScan = () => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
-  const { refreshing, error, devices, setError, reload } = useLedgerDeviceScan()
+  const {
+    refreshing,
+    error,
+    errorKind,
+    devices,
+    setError,
+    reload,
+    startScan,
+    stopScan,
+  } = useLedgerDeviceScan()
 
   useEffect(() => {
-    if (!route.params?.error) {
+    const routeError = route.params?.error
+    if (!routeError) {
       return
     }
 
-    setError(route.params.error)
-  }, [route, setError])
+    setError(routeError)
+    // Consume the param so the sheet does not re-present on later re-renders
+    navigation.setParams({ error: undefined })
+  }, [navigation, route.params?.error, setError])
+
+  // Scan only while this screen is focused, so no scan runs during the
+  // connect on DeviceShow
+  useFocusEffect(
+    useCallback(() => {
+      startScan()
+      return stopScan
+    }, [startScan, stopScan]),
+  )
 
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '90%'
@@ -84,6 +110,7 @@ const DeviceScan = () => {
 
   const onSelectDevice = useCallback(
     (device: Device) => () => {
+      stopScan()
       navigation.navigate('DeviceShow', {
         ledgerDevice: {
           id: device.id,
@@ -92,7 +119,7 @@ const DeviceScan = () => {
         },
       })
     },
-    [navigation],
+    [navigation, stopScan],
   )
 
   const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
@@ -188,6 +215,7 @@ const DeviceScan = () => {
           <LedgerConnectSteps
             onLayout={handleContentLayout}
             onRetry={handleRetry}
+            errorKind={errorKind}
           />
         </BottomSheetScrollView>
       </BottomSheetModal>
