@@ -29,6 +29,7 @@ import {
 import useAlert from '@hooks/useAlert'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePositionDelegations } from '@hooks/usePositionDelegations'
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
 import { NATIVE_MINT } from '@solana/spl-token'
@@ -88,6 +89,8 @@ export const PositionCard = ({
   const delegateMutation = useDelegatePositionMutation()
   const undelegateMutation = useUndelegatePositionMutation()
   const relinquishMutation = useRelinquishPositionVotesMutation()
+  const { delegations, refetch: refetchDelegations } = usePositionDelegations()
+  const delegation = delegations[position.mint.toBase58()]
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionRef = useRef<
     null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
@@ -454,6 +457,7 @@ export const PositionCard = ({
       },
     )
     refetchState()
+    refetchDelegations()
   }
 
   const handleUndelegateTokens = async () => {
@@ -468,6 +472,7 @@ export const PositionCard = ({
       },
     )
     refetchState()
+    refetchDelegations()
   }
 
   const handleRelinquishVotes = async () => {
@@ -553,7 +558,18 @@ export const PositionCard = ({
               title={t('gov.positions.undelegate')}
               onPress={async () => {
                 setActionsOpen(false)
-                actionRef.current = 'undelegate'
+                // undelegate has to claim every unclaimed epoch first, which
+                // fails on-chain while any of them is still awaiting issuance
+                if (delegation?.unissuedRequiredEpochCount) {
+                  showOKAlert({
+                    title: t('gov.positions.unableToUndelegate'),
+                    message: t('gov.positions.rewardsPendingIssuance', {
+                      count: delegation.unissuedRequiredEpochCount,
+                    }),
+                  })
+                } else {
+                  actionRef.current = 'undelegate'
+                }
               }}
               selected={false}
               hasPressedState={false}
