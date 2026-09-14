@@ -20,6 +20,7 @@ import {
   useDelegatePositionMutation,
 } from '@hooks/useGovernanceMutations'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { usePositionDelegations } from '@hooks/usePositionDelegations'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
@@ -53,10 +54,14 @@ export const PositionsScreen = () => {
   const createPositionMutation = useCreatePositionMutation()
   const claimRewardsMutation = useClaimRewardsMutation()
   const delegateAllMutation = useDelegatePositionMutation()
+  const { delegations, refetch: refetchDelegations } = usePositionDelegations()
 
   const positionsWithRewards = useMemo(
-    () => positions?.filter((p) => p.hasRewards),
-    [positions],
+    () =>
+      positions?.filter(
+        (p) => (delegations[p.mint.toBase58()]?.claimableEpochCount ?? 0) > 0,
+      ),
+    [positions, delegations],
   )
 
   const transactionError = useMemo(() => {
@@ -180,8 +185,15 @@ export const PositionsScreen = () => {
         },
       )
       refetchState()
+      refetchDelegations()
     }
-  }, [claimRewardsMutation, positionsWithRewards, refetchState, t])
+  }, [
+    claimRewardsMutation,
+    positionsWithRewards,
+    refetchState,
+    refetchDelegations,
+    t,
+  ])
 
   const [isDelegateAllModalOpen, setIsDelegateAllModalOpen] = useState(false)
   const [delegateAllSubDao, setDelegateAllSubDao] =

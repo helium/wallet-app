@@ -1434,6 +1434,9 @@ export default {
       unpause: 'Unlock to start decaying',
       pause: 'Pause to stop decaying',
       unableToClose: 'Unable to close',
+      unableToUndelegate: 'Unable to undelegate',
+      rewardsPendingIssuance:
+        'Rewards for {{count}} epoch(s) on this position are still being issued. Undelegating claims them first, so try again later.',
       unableToSplit: 'Unable to split',
       unableToTransfer: 'Unable to transfer',
       unableToPauseLockup: 'Unable to pause unlock',
