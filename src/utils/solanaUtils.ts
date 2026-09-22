@@ -458,7 +458,7 @@ export const getTxn = async (
   const waitMS = config?.waitMS || 500
 
   const txn = await anchorProvider.connection.getTransaction(signature, {
-    maxSupportedTransactionVersion: 0,
+    maxSupportedTransactionVersion: 1,
   })
 
   const remainingTries = maxTries - 1
@@ -490,7 +490,7 @@ export const getTransactions = async (
     const sigs = transactionList.map(({ signature }) => signature)
     const transactionDetails =
       await anchorProvider.connection.getParsedTransactions(sigs, {
-        maxSupportedTransactionVersion: 0,
+        maxSupportedTransactionVersion: 1,
       })
 
     return transactionDetails
@@ -1537,7 +1537,7 @@ export const getAllTransactions = async (
     const txs = (
       await conn.getTransactions(sigList, {
         commitment: 'confirmed',
-        maxSupportedTransactionVersion: 0,
+        maxSupportedTransactionVersion: 1,
       })
     ).reduce((acc, tx) => {
       const sig = tx?.transaction.signatures[0]

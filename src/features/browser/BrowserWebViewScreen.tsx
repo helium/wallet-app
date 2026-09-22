@@ -80,6 +80,18 @@ const deserializeTransactionInputs = async (
   return { transactions, isVersioned }
 }
 
+// web3.js 1.x can decode v1 transactions but cannot serialize them for signing
+const V1_UNSUPPORTED_ERROR = 'Transaction version 1 is not supported yet'
+
+// Cast: @helium/onboarding's .d.ts references jito-ts's web3.js 1.77 ambient
+// types, which mask the installed 1.99 types and omit version 1
+const hasV1Transaction = (transactions: DeserializedTransaction[]) =>
+  transactions.some(
+    ({ transaction }) =>
+      transaction instanceof VersionedTransaction &&
+      (transaction.message.version as number | 'legacy') === 1,
+  )
+
 type BrowserHeaderProps = {
   currentUrl: string
   onClose: () => void
@@ -218,6 +230,15 @@ const BrowserWebViewScreen = () => {
     async (inputs: SolanaSignAndSendTransactionInput[]) => {
       Logger.breadcrumb('signAndSendTransaction')
 
+      const { transactions, isVersioned } = await deserializeTransactionInputs(
+        inputs,
+      )
+
+      if (hasV1Transaction(transactions)) {
+        postMessage({ type: 'signatureDeclined', error: V1_UNSUPPORTED_ERROR })
+        return
+      }
+
       const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
         Buffer.from(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -235,10 +256,6 @@ const BrowserWebViewScreen = () => {
         postMessage({ type: 'signatureDeclined' })
         return
       }
-
-      const { transactions, isVersioned } = await deserializeTransactionInputs(
-        inputs,
-      )
 
       const signatures = await Promise.all(
         transactions.map(async ({ transaction, options }) => {
@@ -274,6 +291,11 @@ const BrowserWebViewScreen = () => {
       const { transactions, isVersioned } = await deserializeTransactionInputs(
         inputs,
       )
+
+      if (hasV1Transaction(transactions)) {
+        postMessage({ type: 'signatureDeclined', error: V1_UNSUPPORTED_ERROR })
+        return
+      }
 
       const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
         Buffer.from(

@@ -1,6 +1,6 @@
 {
   "name": "helium-wallet",
-  "version": "2.15.12",
+  "version": "2.15.13",
   "private": true,
   "scripts": {
     "eas-build-post-install": "./scripts/eas-build-setup.sh",
@@ -104,7 +104,7 @@
     "@solana/spl-token-metadata": "0.1.4",
     "@solana/wallet-adapter-react": "0.15.33",
     "@solana/wallet-standard-features": "1.0.0",
-    "@solana/web3.js": "1.91.4",
+    "@solana/web3.js": "1.99.0",
     "@tanstack/react-query": "5.101.4",
     "@turf/helpers": "6.5.0",
     "@ungap/structured-clone": "1.3.0",

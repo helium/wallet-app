@@ -304,7 +304,7 @@ class HeliumWallet {
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    reject(new Error('Signature declined'))
+                    reject(new Error(parsedData.error || 'Signature declined'))
                     return
                 }
                 if (parsedData.type !== 'transactionSigned') return
@@ -337,7 +337,7 @@ class HeliumWallet {
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    reject(new Error('Signature declined'))
+                    reject(new Error(parsedData.error || 'Signature declined'))
                     return
                 }
                 if (parsedData.type !== 'transactionSigned') return
@@ -369,7 +369,7 @@ class HeliumWallet {
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    reject(new Error('Signature declined'))
+                    reject(new Error(parsedData.error || 'Signature declined'))
                     return
                 }
                 if (parsedData.type !== 'messageSigned') return
