@@ -1,4 +1,4 @@
-import { AnchorProvider, Wallet } from '@coral-xyz/anchor'
+import { AnchorProvider, Wallet } from '@anchor-lang/core'
 import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { AccountContext } from '@helium/account-fetch-cache-hooks'
 import { SolanaProvider as SolanaProviderRnHelium } from '@helium/react-native-sdk'

@@ -1,7 +1,7 @@
 /**
  * This is a port of the anchor command `anchor idl convert` to TypeScript.
  */
-import { Idl } from '@coral-xyz/anchor'
+import { Idl } from '@anchor-lang/core'
 import {
   IdlAccount,
   IdlConst,
@@ -17,7 +17,7 @@ import {
   IdlType,
   IdlTypeDef,
   IdlTypeDefined,
-} from '@coral-xyz/anchor/dist/cjs/idl'
+} from '@anchor-lang/core/dist/cjs/idl'
 import { sha256 } from '@noble/hashes/sha256'
 
 // Legacy types based on the Rust structs

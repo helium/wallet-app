@@ -1,5 +1,5 @@
 import { latLngToCell, cellToLatLng, cellToBoundary } from 'h3-js'
-import { BN } from '@coral-xyz/anchor'
+import { BN } from '@anchor-lang/core'
 
 export const DEFAULT_H3_RES = 12
 

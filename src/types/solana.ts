@@ -5,7 +5,7 @@ import { HeliumSubDaos } from '@helium/idls/lib/types/helium_sub_daos'
 import { TokenAmount } from '@solana/web3.js'
 import { Creator } from '@metaplex-foundation/mpl-bubblegum'
 import { RecipientV0 } from '@hooks/useRecipient'
-import { Program } from '@coral-xyz/anchor'
+import { Program } from '@anchor-lang/core'
 
 export type HotspotWithPendingRewards = CompressedNFT & {
   // mint id to pending rewards

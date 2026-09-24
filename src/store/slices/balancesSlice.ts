@@ -1,4 +1,4 @@
-import { AnchorProvider } from '@coral-xyz/anchor'
+import { AnchorProvider } from '@anchor-lang/core'
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Cluster, PublicKey } from '@solana/web3.js'

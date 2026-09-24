@@ -23,12 +23,12 @@
     "prepare": "husky install"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20.18.0"
   },
   "dependencies": {
+    "@anchor-lang/core": "0.31.2",
     "@babel/preset-typescript": "7.21.0",
     "@bonfida/spl-name-service": "1.1.1",
-    "@coral-xyz/anchor": "0.31.0",
     "@gorhom/bottom-sheet": "5.1.2",
     "@gorhom/portal": "1.0.14",
     "@helium/account-fetch-cache": "0.11.16",
@@ -272,6 +272,7 @@
     "typescript": "5.0.4"
   },
   "resolutions": {
+    "@coral-xyz/anchor@npm:^0.31.0": "npm:@anchor-lang/core@0.31.2",
     "@types/react": "^19.0.0",
     "react": "19.0.0",
     "@solana/wallet-adapter-react": "0.15.33",

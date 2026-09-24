@@ -1,4 +1,4 @@
-import { IdlAccounts } from '@coral-xyz/anchor'
+import { IdlAccounts } from '@anchor-lang/core'
 import { UseAccountState } from '@helium/account-fetch-cache-hooks'
 import { useAnchorAccount } from '@helium/helium-react-hooks'
 import { TreasuryManagement as TreasuryManagementType } from '@helium/idls/lib/types/treasury_management'

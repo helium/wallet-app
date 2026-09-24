@@ -1,4 +1,4 @@
-import { IdlAccounts } from '@coral-xyz/anchor'
+import { IdlAccounts } from '@anchor-lang/core'
 import { useAnchorAccount } from '@helium/helium-react-hooks'
 import { HeliumSubDaos } from '@helium/idls/lib/types/helium_sub_daos'
 import { PublicKey } from '@solana/web3.js'

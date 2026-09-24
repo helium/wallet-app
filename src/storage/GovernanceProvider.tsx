@@ -1,4 +1,4 @@
-import { Wallet } from '@coral-xyz/anchor'
+import { Wallet } from '@anchor-lang/core'
 import { useMint } from '@helium/helium-react-hooks'
 import { useOrganization } from '@helium/modular-governance-hooks'
 import { organizationKey } from '@helium/organization-sdk'

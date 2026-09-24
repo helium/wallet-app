@@ -1,4 +1,4 @@
-import { IdlAccounts } from '@coral-xyz/anchor'
+import { IdlAccounts } from '@anchor-lang/core'
 import { useAnchorAccount } from '@helium/helium-react-hooks'
 import { LazyDistributor } from '@helium/idls/lib/types/lazy_distributor'
 import { usePublicKey } from './usePublicKey'

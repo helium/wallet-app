@@ -3,11 +3,11 @@ import {
   BorshInstructionCoder,
   Instruction,
   Program,
-} from '@coral-xyz/anchor'
+} from '@anchor-lang/core'
 import {
   convertIdlToCamelCase,
   IdlInstruction,
-} from '@coral-xyz/anchor/dist/cjs/idl'
+} from '@anchor-lang/core/dist/cjs/idl'
 import {
   decodeEntityKey,
   init,
