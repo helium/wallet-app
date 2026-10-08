@@ -36,6 +36,7 @@ import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
 import {
   deserializeTransactionInputs,
   hasUnsupportedTransaction,
+  sendInSequence,
   UNSUPPORTED_VERSION_ERROR,
 } from './dappTransactions'
 import injectWalletStandard from './walletStandard'
@@ -210,8 +211,9 @@ const BrowserWebViewScreen = () => {
           return
         }
 
-        const signatures = await Promise.all(
-          transactions.map(async ({ transaction, options }) => {
+        const signatures = await sendInSequence(
+          transactions,
+          async ({ transaction, options }) => {
             const signedTransaction =
               await anchorProvider?.wallet.signTransaction(
                 isVersioned
@@ -223,17 +225,19 @@ const BrowserWebViewScreen = () => {
               throw new Error('Failed to sign transaction')
             }
 
-            const signature =
-              await anchorProvider.connection.sendRawTransaction(
-                signedTransaction.serialize(),
-                { skipPreflight: true, maxRetries: 5, ...(options as object) },
-              )
-
-            return { signature: bs58.decode(signature) }
-          }),
+            return anchorProvider.connection.sendRawTransaction(
+              signedTransaction.serialize(),
+              { skipPreflight: true, maxRetries: 5, ...(options as object) },
+            )
+          },
         )
 
-        postMessage({ type: 'transactionSigned', data: signatures })
+        postMessage({
+          type: 'transactionSigned',
+          data: signatures.map((signature) => ({
+            signature: bs58.decode(signature),
+          })),
+        })
       } catch (e) {
         postMessage({ type: 'signatureDeclined', error: (e as Error).message })
       }

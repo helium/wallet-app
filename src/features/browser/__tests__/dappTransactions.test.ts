@@ -14,6 +14,7 @@ import {
 import {
   deserializeTransactionInputs,
   hasUnsupportedTransaction,
+  sendInSequence,
 } from '../dappTransactions'
 
 const payer = Keypair.generate().publicKey
@@ -89,5 +90,53 @@ describe('dApp transaction guards', () => {
     await expect(
       deserializeTransactionInputs([asInput(new Uint8Array([1, 2, 3]))]),
     ).rejects.toThrow()
+  })
+})
+
+describe('sendInSequence', () => {
+  it('sends in order and returns every signature', async () => {
+    const calls: string[] = []
+    const result = await sendInSequence(['a', 'b', 'c'], async (item) => {
+      calls.push(item)
+      return `sig-${item}`
+    })
+
+    expect(calls).toEqual(['a', 'b', 'c'])
+    expect(result).toEqual(['sig-a', 'sig-b', 'sig-c'])
+  })
+
+  it('does not start a send before the previous one settles', async () => {
+    let active = 0
+    let maxActive = 0
+    await sendInSequence(['a', 'b'], async (item) => {
+      active += 1
+      maxActive = Math.max(maxActive, active)
+      await new Promise((resolve) => setTimeout(resolve, 1))
+      active -= 1
+      return item
+    })
+
+    expect(maxActive).toBe(1)
+  })
+
+  it('rethrows the error when the first send fails', async () => {
+    await expect(
+      sendInSequence(['a', 'b'], async () => {
+        throw new Error('boom')
+      }),
+    ).rejects.toThrow(/^boom$/)
+  })
+
+  it('names the signatures already sent and stops when a later send fails', async () => {
+    const calls: string[] = []
+    await expect(
+      sendInSequence(['a', 'b', 'c'], async (item) => {
+        calls.push(item)
+        if (item === 'b') throw new Error('boom')
+        return `sig-${item}`
+      }),
+    ).rejects.toThrow('Sent 1 of 3 transactions (sig-a), then failed: boom')
+
+    expect(calls).toEqual(['a', 'b'])
   })
 })

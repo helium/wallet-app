@@ -59,3 +59,28 @@ export const hasUnsupportedTransaction = (
     const { version } = transaction.message as { version: number | 'legacy' }
     return version !== 'legacy' && version !== 0
   })
+
+// Runs the sends in order and stops at the first failure. A failure after a
+// send landed names the signatures already sent, so the dApp does not retry
+// the whole batch as if nothing happened.
+export const sendInSequence = async <T>(
+  items: T[],
+  send: (item: T) => Promise<string>,
+): Promise<string[]> => {
+  const sent: string[] = []
+  // eslint-disable-next-line no-restricted-syntax
+  for (const item of items) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      sent.push(await send(item))
+    } catch (e) {
+      if (sent.length === 0) throw e
+      throw new Error(
+        `Sent ${sent.length} of ${items.length} transactions (${sent.join(
+          ', ',
+        )}), then failed: ${(e as Error).message}`,
+      )
+    }
+  }
+  return sent
+}
