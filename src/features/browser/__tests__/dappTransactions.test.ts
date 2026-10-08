@@ -56,6 +56,16 @@ const v1Bytes = new Uint8Array([
   ...new Array(64).fill(0), // one empty signature
 ])
 
+// Bytes that Transaction.from reads and VersionedTransaction.deserialize does not
+const legacyOnlyBytes = new Uint8Array([
+  0x81,
+  0x00,
+  ...new Array(64).fill(0).map((v, i) => (i === 2 ? 0x20 : v)),
+  ...new Transaction({ feePayer: payer, recentBlockhash })
+    .add(ix)
+    .serializeMessage(),
+])
+
 // A Uint8Array crosses the WebView bridge as {0: .., 1: ..}
 const asInput = (bytes: Uint8Array) =>
   ({
@@ -84,6 +94,22 @@ describe('dApp transaction guards', () => {
 
   test('rejects a batch that holds a v1 transaction', async () => {
     expect(await isUnsupported(v0Bytes, v1Bytes)).toBe(true)
+  })
+
+  test('decodes a legacy transaction the way the sign sheet does', async () => {
+    const { transactions, isVersioned } = await deserializeTransactionInputs([
+      asInput(legacyBytes),
+    ])
+
+    expect(isVersioned).toBe(true)
+    expect(transactions[0].transaction).toBeInstanceOf(VersionedTransaction)
+  })
+
+  test('fails to decode bytes that the sign sheet cannot decode', async () => {
+    expect(() => Transaction.from(legacyOnlyBytes)).not.toThrow()
+    await expect(
+      deserializeTransactionInputs([asInput(legacyOnlyBytes)]),
+    ).rejects.toThrow()
   })
 
   test('fails to decode bytes that are not a transaction', async () => {

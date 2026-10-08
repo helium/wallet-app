@@ -23,17 +23,13 @@ export const deserializeTransactionInputs = async (
         Object.keys(transaction).map((k) => (transaction as any)[k]),
       )
 
-      try {
-        VersionedTransaction.deserialize(tx)
-        isVersioned = true
-      } catch {
-        isVersioned = false
-      }
+      // The sign sheet decodes with VersionedTransaction only, so decode the
+      // same way here. It reads legacy bytes too.
+      const decoded = VersionedTransaction.deserialize(tx)
+      isVersioned = true
 
       return {
-        transaction: isVersioned
-          ? VersionedTransaction.deserialize(tx)
-          : Transaction.from(tx),
+        transaction: decoded,
         chain,
         options,
         isVersioned,
