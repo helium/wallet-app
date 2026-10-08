@@ -142,7 +142,9 @@ const useSolTxns = ({
       if (!signature) return {}
 
       const getTransactionWithInstruction =
-        await connection.getParsedTransaction(signature)
+        await connection.getParsedTransaction(signature, {
+          maxSupportedTransactionVersion: 1,
+        })
 
       const instructions =
         getTransactionWithInstruction?.transaction.message.instructions
