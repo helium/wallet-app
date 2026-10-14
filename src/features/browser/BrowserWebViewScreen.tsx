@@ -354,21 +354,32 @@ const BrowserWebViewScreen = () => {
 
       const { type, inputs } = JSON.parse(msg.nativeEvent.data)
 
-      switch (type) {
-        case WalletStandardMessageTypes.connect:
-          await handleConnect()
-          break
-        case WalletStandardMessageTypes.signAndSendTransaction:
-          await handleSignAndSendTransaction(inputs)
-          break
-        case WalletStandardMessageTypes.signTransaction:
-          await handleSignTransaction(inputs)
-          break
-        case WalletStandardMessageTypes.signMessage:
-          await handleSignMessage(inputs)
-          break
-        default:
-          Logger.breadcrumb('Unknown type', type)
+      try {
+        switch (type) {
+          case WalletStandardMessageTypes.connect:
+            await handleConnect()
+            break
+          case WalletStandardMessageTypes.signAndSendTransaction:
+            await handleSignAndSendTransaction(inputs)
+            break
+          case WalletStandardMessageTypes.signTransaction:
+            await handleSignTransaction(inputs)
+            break
+          case WalletStandardMessageTypes.signMessage:
+            await handleSignMessage(inputs)
+            break
+          default:
+            Logger.breadcrumb('Unknown type', type)
+        }
+      } catch (e) {
+        Logger.error(e)
+        if (
+          type === WalletStandardMessageTypes.signAndSendTransaction ||
+          type === WalletStandardMessageTypes.signTransaction ||
+          type === WalletStandardMessageTypes.signMessage
+        ) {
+          postMessage({ type: 'signatureDeclined' })
+        }
       }
     },
     [
@@ -379,6 +390,7 @@ const BrowserWebViewScreen = () => {
       handleSignAndSendTransaction,
       handleSignTransaction,
       handleSignMessage,
+      postMessage,
     ],
   )
 

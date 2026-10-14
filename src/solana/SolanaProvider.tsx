@@ -15,6 +15,8 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js'
 import { signMessageEd25519 } from '@utils/crypto'
+import { ellipsizeAddress } from '@utils/accountUtils'
+import i18n from '@utils/i18n'
 import { WrappedConnection } from '@utils/WrappedConnection'
 import React, {
   ReactNode,
@@ -33,6 +35,7 @@ import KeystoneModal, {
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import {
+  checkSecureAccount,
   getSolanaKeypair,
   getSecureItem,
   storeSecureItem,
@@ -41,11 +44,8 @@ import {
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import {
-  getConnection,
-  isRequiredSigner,
-  isVersionedTransaction,
-} from '../utils/solanaUtils'
+import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
+import { signAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
@@ -75,70 +75,34 @@ const useSolanaHook = () => {
 
   const signTxn = useCallback(
     async (transaction: Transaction | VersionedTransaction) => {
+      if (!currentAccount?.solanaAddress) {
+        throw new Error(i18n.t('errors.account'))
+      }
+      const userPubkey = new PublicKey(currentAccount.solanaAddress)
+
       // Some flows (e.g. createHotspot, maker-paid asserts) return transactions
       // already fully signed by the maker where the user is not a required
       // signer. Re-signing these throws "Cannot sign with non signer key".
-      if (currentAccount?.solanaAddress) {
-        const userPubkey = new PublicKey(currentAccount.solanaAddress)
-        if (!isRequiredSigner(transaction, userPubkey)) {
-          return transaction
-        }
-      }
-
-      // ledger device and keystone device will use cold wallet sign tx
-      if (
-        (!currentAccount?.ledgerDevice?.id ||
-          !currentAccount?.ledgerDevice?.type ||
-          currentAccount?.accountIndex === undefined) &&
-        !currentAccount?.keystoneDevice
-      ) {
-        if (!isVersionedTransaction(transaction)) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          transaction.partialSign(secureAcct!)
-          return transaction
-        }
-
-        if (!currentAccount?.solanaAddress || !secureAcct?.secretKey)
-          return transaction
-
-        transaction.sign([
-          {
-            publicKey: new PublicKey(currentAccount.solanaAddress),
-            secretKey: secureAcct.secretKey,
-          },
-        ])
-
-        return transaction
-      }
-      if (currentAccount?.keystoneDevice) {
-        const signature = await keystoneModalRef.current?.showKeystoneModal({
-          transaction: isVersionedTransaction(transaction)
-            ? Buffer.from(transaction.message.serialize())
-            : transaction.serializeMessage(),
-        })
-        if (!signature || signature.length === 0) {
-          throw new Error('Transaction is not signed')
-        }
-        transaction.addSignature(
-          new PublicKey(currentAccount.solanaAddress as string),
-          signature,
-        )
+      if (!isRequiredSigner(transaction, userPubkey)) {
         return transaction
       }
 
-      const signature = await ledgerModalRef?.current?.showLedgerModal({
-        transaction: isVersionedTransaction(transaction)
-          ? Buffer.from(transaction.message.serialize())
-          : transaction.serializeMessage(),
+      return signAsAccount(transaction, currentAccount, userPubkey, {
+        cachedKeypair: secureAcct,
+        loadKeypair: () => getSolanaKeypair(currentAccount.address),
+        onMissingKeypair: async () => {
+          await checkSecureAccount(currentAccount.address, true)
+          throw new Error(
+            i18n.t('restoreAccount.missingAlert.message', {
+              address: ellipsizeAddress(currentAccount.address),
+            }),
+          )
+        },
+        signWithKeystone: async (message) =>
+          keystoneModalRef.current?.showKeystoneModal({ transaction: message }),
+        signWithLedger: async (message) =>
+          ledgerModalRef?.current?.showLedgerModal({ transaction: message }),
       })
-
-      if (!signature) throw new Error('Transaction not signed')
-      transaction.addSignature(
-        new PublicKey(currentAccount.solanaAddress || ''),
-        signature,
-      )
-
-      return transaction
     },
     [currentAccount, secureAcct],
   )

@@ -111,6 +111,22 @@ export async function signMessageEd25519(
 }
 
 /**
+ * Verifies an Ed25519 signature (tweetnacl.sign.detached.verify compatible)
+ * @returns false for an invalid or malformed signature
+ */
+export function verifyEd25519(
+  signature: Uint8Array,
+  message: Uint8Array,
+  publicKey: Uint8Array,
+): boolean {
+  try {
+    return ed25519.verify(signature, message, publicKey)
+  } catch {
+    return false
+  }
+}
+
+/**
  * Decrypts a password-protected seed phrase or private key
  * This combines Argon2ID key derivation with XSalsa20-Poly1305 decryption
  * @param encryptedData Object containing ciphertext, nonce, and salt (all base64)
