@@ -178,8 +178,13 @@ const SwapScreen = () => {
     }
   }, [inputAmount, inputMintBalance, inputMintAcc])
 
-  const isHntToDc = swapRoute({ inputMint, outputMint, isDevnet }) === 'mintDc'
+  const swapRouteType = useMemo(
+    () => swapRoute({ inputMint, outputMint, isDevnet }),
+    [inputMint, outputMint, isDevnet],
+  )
+  const isHntToDc = swapRouteType === 'mintDc'
   const hntToDcPriceMissing = isHntToDc && (!oraclePrice || !outputAmount)
+  const hntPriceLoading = isHntToDc && !oraclePrice && !oraclePriceError
   const hntPriceUnavailable = useMemo(
     () =>
       oraclePriceError
@@ -647,11 +652,10 @@ const SwapScreen = () => {
           : new PublicKey(currentAccount.solanaAddress)
 
         let batchId: string | undefined
-        const route = swapRoute({ inputMint, outputMint, isDevnet })
-        if (route === 'mintDc') {
-          const hntAmount = outputAmount
-            ? dcToNetworkTokens(new BN(outputAmount))
-            : undefined
+        if (swapRouteType === 'mintDc') {
+          const hntAmount = hntToDcPriceMissing
+            ? undefined
+            : dcToNetworkTokens(new BN(outputAmount))
           if (!hntAmount) throw new Error(hntPriceUnavailable)
 
           batchId = await submitMintDataCredits({
@@ -659,7 +663,7 @@ const SwapScreen = () => {
             dcAmount: new BN(outputAmount),
             recipient: recipientAddr,
           })
-        } else if (route === 'treasury') {
+        } else if (swapRouteType === 'treasury') {
           batchId = await submitTreasurySwap(
             inputMint,
             inputAmount,
@@ -708,7 +712,8 @@ const SwapScreen = () => {
     submitMintDataCredits,
     submitJupiterSwap,
     setHasRecipientError,
-    isDevnet,
+    swapRouteType,
+    hntToDcPriceMissing,
     t,
     getSwapTx,
     dcToNetworkTokens,
@@ -829,6 +834,19 @@ const SwapScreen = () => {
                             textAlign="center"
                           >
                             {showError}
+                          </Text>
+                        </Box>
+                      )}
+                      {!showError && hntPriceLoading && (
+                        <Box marginTop="s">
+                          <Text
+                            marginTop="s"
+                            marginHorizontal="m"
+                            variant="body3Medium"
+                            color="secondaryText"
+                            textAlign="center"
+                          >
+                            {t('swapsScreen.hntPriceLoading')}
                           </Text>
                         </Box>
                       )}

@@ -7,7 +7,7 @@ import {
   toBN,
   toNumber,
 } from '@helium/spl-utils'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import BN from 'bn.js'
 import React, {
@@ -32,10 +32,13 @@ import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
 import { useLanguage } from './i18n'
 import {
+  ORACLE_FETCH_TIMEOUT,
+  ORACLE_MAX_AGE,
   ORACLE_POLL_INTERVAL,
   ORACLE_RETRY_INTERVAL,
   OraclePrice,
   isOraclePriceFresh,
+  withTimeout,
 } from './oraclePrice'
 import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
@@ -87,7 +90,16 @@ const useBalanceHook = () => {
 
   const [oraclePrice, setOraclePrice] = useState<OraclePrice>()
   const [oraclePriceError, setOraclePriceError] = useState<Error>()
-  const oracleConnection = anchorProvider?.connection
+  const oracleRpcEndpoint = anchorProvider?.connection.rpcEndpoint
+  // The app connection is wrapped by a persisted account cache, which can
+  // serve a stale feed that getOraclePrice rejects (older than 10 minutes).
+  const oracleConnection = useMemo(
+    () =>
+      oracleRpcEndpoint
+        ? new Connection(oracleRpcEndpoint, 'confirmed')
+        : undefined,
+    [oracleRpcEndpoint],
+  )
 
   // Poll the HNT oracle price. Retry sooner after an error, and keep the
   // last good price only while it is fresh enough to mint DC with.
@@ -98,25 +110,43 @@ const useBalanceHook = () => {
 
     let cancelled = false
     let timeout: ReturnType<typeof setTimeout> | undefined
+    let expiry: ReturnType<typeof setTimeout> | undefined
 
     const fetchOraclePrice = async () => {
       let delay = ORACLE_POLL_INTERVAL
       try {
-        const { priceMessage } = await getOraclePrice({
-          tokenType: 'HNT',
-          connection: oracleConnection,
-        })
+        const { priceMessage } = await withTimeout(
+          getOraclePrice({
+            tokenType: 'HNT',
+            connection: oracleConnection,
+          }),
+          ORACLE_FETCH_TIMEOUT,
+          'HNT price request timed out',
+        )
         if (cancelled) return
-        setOraclePrice({
-          price: new BN(
-            (priceMessage.emaPrice.toNumber() -
-              priceMessage.emaConf.toNumber() * 2) *
-              10 ** priceMessage.exponent *
-              100000,
-          ),
-          publishTime: priceMessage.publishTime,
-        })
+        const price = new BN(
+          (priceMessage.emaPrice.toNumber() -
+            priceMessage.emaConf.toNumber() * 2) *
+            10 ** priceMessage.exponent *
+            100000,
+        )
+        const { publishTime } = priceMessage
+        // Keep the same BN when the price is unchanged so consumers keyed on
+        // it do not recompute on every poll.
+        setOraclePrice((prev) => ({
+          price: prev?.price.eq(price) ? prev.price : price,
+          publishTime,
+        }))
         setOraclePriceError(undefined)
+        // Drop the price once it is too old, unless a newer one arrived.
+        clearTimeout(expiry)
+        expiry = setTimeout(
+          () =>
+            setOraclePrice((prev) =>
+              prev && prev.publishTime > publishTime ? prev : undefined,
+            ),
+          Math.max(0, publishTime * 1000 + ORACLE_MAX_AGE - Date.now()),
+        )
       } catch (e) {
         if (cancelled) return
         delay = ORACLE_RETRY_INTERVAL
@@ -133,6 +163,7 @@ const useBalanceHook = () => {
     return () => {
       cancelled = true
       clearTimeout(timeout)
+      clearTimeout(expiry)
     }
   }, [oracleConnection])
 

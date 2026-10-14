@@ -509,6 +509,7 @@ export default {
       'Price impact more than {{percent}}%. Try swapping a smaller amount.',
     title: 'Swap my Tokens',
     swapTokens: 'Swap Tokens',
+    hntPriceLoading: 'Fetching HNT price…',
     youPay: 'You Pay',
     youReceive: 'You Receive',
     chooseTokenToSwap: 'Choose a token to swap',
