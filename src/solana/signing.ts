@@ -11,14 +11,13 @@ const isVersioned = (
   tx: Transaction | VersionedTransaction,
 ): tx is VersionedTransaction => 'version' in tx
 
-// Signs with a software keypair. Refuses a missing key or a key for another
-// account, both of which would otherwise produce a tx the network rejects.
+// Signs with a software keypair. Refuses a key for another account, which
+// would otherwise produce a tx the network rejects.
 export const signWithKeypair = <T extends Transaction | VersionedTransaction>(
   tx: T,
   signer: PublicKey,
-  keypair: Keypair | undefined,
+  keypair: Keypair,
 ): T => {
-  if (!keypair) throw new Error('Private key not found')
   if (!keypair.publicKey.equals(signer)) {
     throw new Error('Private key does not match the selected wallet')
   }

@@ -7,6 +7,7 @@ import {
   VersionedTransaction,
 } from '@solana/web3.js'
 import { assertSignedBy, signWithKeypair } from '../signing'
+import { verifyEd25519 } from '../../utils/crypto'
 
 const BLOCKHASH = '11111111111111111111111111111111'
 
@@ -54,13 +55,6 @@ describe('signWithKeypair', () => {
     expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
   })
 
-  it('throws when there is no key', () => {
-    const user = Keypair.generate()
-    expect(() =>
-      signWithKeypair(versionedTx(user.publicKey), user.publicKey, undefined),
-    ).toThrow()
-  })
-
   it('throws when the key belongs to another account', () => {
     const user = Keypair.generate()
     const other = Keypair.generate()
@@ -105,5 +99,18 @@ describe('assertSignedBy', () => {
     )
     tx.message.recentBlockhash = Keypair.generate().publicKey.toBase58()
     expect(() => assertSignedBy(tx, user.publicKey)).toThrow(/not signed/)
+  })
+})
+
+describe('verifyEd25519', () => {
+  it('returns false for a malformed signature', () => {
+    const user = Keypair.generate()
+    expect(
+      verifyEd25519(
+        new Uint8Array(10),
+        new Uint8Array([1, 2, 3]),
+        user.publicKey.toBytes(),
+      ),
+    ).toBe(false)
   })
 })
