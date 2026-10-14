@@ -21,6 +21,8 @@ export default {
     swap: {
       routes: 'Swap routes missing',
       tx: 'Swap tx not generated',
+      hntPrice: 'HNT price unavailable, try again',
+      hntPriceError: 'HNT price unavailable: {{message}}. Try again.',
     },
   },
   hotspotOnboarding: {

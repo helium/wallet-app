@@ -31,11 +31,16 @@ import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
 import { useLanguage } from './i18n'
+import {
+  ORACLE_POLL_INTERVAL,
+  ORACLE_RETRY_INTERVAL,
+  OraclePrice,
+  isOraclePriceFresh,
+} from './oraclePrice'
 import { humanReadable } from './solanaUtils'
 import { useBalanceHistory } from './useBalanceHistory'
 import { usePollTokenPrices } from './usePollTokenPrices'
 
-export const ORACLE_POLL_INTERVAL = 1000 * 15 * 60 // 15 minutes
 const useBalanceHook = () => {
   const { currentAccount } = useAccountStorage()
   const { cluster, anchorProvider } = useSolana()
@@ -80,25 +85,58 @@ const useBalanceHook = () => {
     )
   }, [cluster, anchorProvider, allBalances])
 
-  const { result: hntToDcPrice } = useAsync(async () => {
-    if (!anchorProvider) {
-      return
+  const [oraclePrice, setOraclePrice] = useState<OraclePrice>()
+  const [oraclePriceError, setOraclePriceError] = useState<Error>()
+  const oracleConnection = anchorProvider?.connection
+
+  // Poll the HNT oracle price. Retry sooner after an error, and keep the
+  // last good price only while it is fresh enough to mint DC with.
+  useEffect(() => {
+    setOraclePrice(undefined)
+    setOraclePriceError(undefined)
+    if (!oracleConnection) return
+
+    let cancelled = false
+    let timeout: ReturnType<typeof setTimeout> | undefined
+
+    const fetchOraclePrice = async () => {
+      let delay = ORACLE_POLL_INTERVAL
+      try {
+        const { priceMessage } = await getOraclePrice({
+          tokenType: 'HNT',
+          connection: oracleConnection,
+        })
+        if (cancelled) return
+        setOraclePrice({
+          price: new BN(
+            (priceMessage.emaPrice.toNumber() -
+              priceMessage.emaConf.toNumber() * 2) *
+              10 ** priceMessage.exponent *
+              100000,
+          ),
+          publishTime: priceMessage.publishTime,
+        })
+        setOraclePriceError(undefined)
+      } catch (e) {
+        if (cancelled) return
+        delay = ORACLE_RETRY_INTERVAL
+        setOraclePriceError(e as Error)
+        setOraclePrice((prev) =>
+          isOraclePriceFresh(prev, Date.now()) ? prev : undefined,
+        )
+      }
+      timeout = setTimeout(fetchOraclePrice, delay)
     }
 
-    const oraclePriceRaw = await getOraclePrice({
-      tokenType: 'HNT',
-      connection: anchorProvider.connection,
-    })
+    fetchOraclePrice()
 
-    return oraclePriceRaw
-      ? new BN(
-          (oraclePriceRaw.priceMessage.emaPrice.toNumber() -
-            oraclePriceRaw.priceMessage.emaConf.toNumber() * 2) *
-            10 ** oraclePriceRaw.priceMessage.exponent *
-            100000,
-        )
-      : new BN(0)
-  }, [anchorProvider?.connection])
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+    }
+  }, [oracleConnection])
+
+  const hntToDcPrice = oraclePrice?.price
 
   const solanaPrice = useMemo(() => {
     if (!tokenPrices?.solana) return
@@ -226,6 +264,7 @@ const useBalanceHook = () => {
     networkTokensToDc,
     oracleDateTime,
     oraclePrice: hntToDcPrice,
+    oraclePriceError,
     solanaPrice,
     tokenAccounts,
   }
@@ -243,6 +282,7 @@ const initialState = {
   networkTokensToDc: () => undefined,
   oracleDateTime: undefined,
   oraclePrice: undefined,
+  oraclePriceError: undefined,
   solanaPrice: undefined,
   solBalancesLoading: false,
   atas: [],
