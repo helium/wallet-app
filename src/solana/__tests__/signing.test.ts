@@ -10,6 +10,7 @@ import {
   assertSignedBy,
   isRequiredSigner,
   signAsAccount,
+  signMessageAsAccount,
   signWithKeypair,
 } from '../signing'
 import { signMessageEd25519, verifyEd25519 } from '../../utils/crypto'
@@ -221,6 +222,8 @@ const signers = (overrides: Partial<Parameters<typeof signAsAccount>[3]>) => ({
   }),
   signWithKeystone: jest.fn(async () => undefined),
   signWithLedger: jest.fn(async () => undefined),
+  signMessageWithKeystone: jest.fn(async () => undefined),
+  signMessageWithLedger: jest.fn(async () => undefined),
   ...overrides,
 })
 
@@ -328,4 +331,117 @@ describe('signAsAccount', () => {
       ).rejects.toThrow(/not signed/)
     },
   )
+})
+
+describe('signMessageAsAccount', () => {
+  const message = Buffer.from('hello')
+
+  it('signs with the software key so the signature verifies', async () => {
+    const user = Keypair.generate()
+    const s = signers({ cachedKeypair: user })
+    const signature = await signMessageAsAccount(message, {}, user.publicKey, s)
+    expect(verifyEd25519(signature, message, user.publicKey.toBytes())).toBe(
+      true,
+    )
+  })
+
+  it('throws when the stored key belongs to another account', async () => {
+    const user = Keypair.generate()
+    const s = signers({ loadKeypair: jest.fn(async () => Keypair.generate()) })
+    await expect(
+      signMessageAsAccount(message, {}, user.publicKey, s),
+    ).rejects.toThrow(/does not match/)
+  })
+
+  it('reports a missing software key', async () => {
+    const user = Keypair.generate()
+    const s = signers({})
+    await expect(
+      signMessageAsAccount(message, {}, user.publicKey, s),
+    ).rejects.toThrow('missing key')
+    expect(s.onMissingKeypair).toHaveBeenCalled()
+    expect(s.signMessageWithLedger).not.toHaveBeenCalled()
+  })
+
+  it('signs on the ledger for an account at index 0', async () => {
+    const user = Keypair.generate()
+    const s = signers({
+      cachedKeypair: user,
+      signMessageWithLedger: jest.fn(deviceSign(user)),
+    })
+    await signMessageAsAccount(message, ledgerAccount, user.publicKey, s)
+    expect(s.signMessageWithLedger).toHaveBeenCalledWith(message)
+    expect(s.loadKeypair).not.toHaveBeenCalled()
+  })
+
+  it('signs on the keystone for a keystone account', async () => {
+    const user = Keypair.generate()
+    const s = signers({ signMessageWithKeystone: jest.fn(deviceSign(user)) })
+    await signMessageAsAccount(message, keystoneAccount, user.publicKey, s)
+    expect(s.signMessageWithKeystone).toHaveBeenCalledWith(message)
+    expect(s.signMessageWithLedger).not.toHaveBeenCalled()
+  })
+
+  it('throws when the device returns no signature', async () => {
+    const user = Keypair.generate()
+    const s = signers({})
+    await expect(
+      signMessageAsAccount(message, keystoneAccount, user.publicKey, s),
+    ).rejects.toThrow(/not signed/)
+  })
+
+  it.each([
+    ['legacy', (k: PublicKey) => legacyTx(k).serializeMessage()],
+    ['v0', (k: PublicKey) => Buffer.from(versionedTx(k).message.serialize())],
+  ] as const)(
+    'refuses a %s transaction message without calling a signer',
+    async (_, txMessage) => {
+      const user = Keypair.generate()
+      const s = signers({ cachedKeypair: user })
+      await expect(
+        signMessageAsAccount(txMessage(user.publicKey), {}, user.publicKey, s),
+      ).rejects.toThrow(/transaction as a message/)
+      expect(s.loadKeypair).not.toHaveBeenCalled()
+      expect(s.onMissingKeypair).not.toHaveBeenCalled()
+      expect(s.signMessageWithKeystone).not.toHaveBeenCalled()
+      expect(s.signMessageWithLedger).not.toHaveBeenCalled()
+    },
+  )
+
+  it('refuses a transaction message on a ledger before the device signs', async () => {
+    const user = Keypair.generate()
+    const s = signers({ signMessageWithLedger: jest.fn(deviceSign(user)) })
+    await expect(
+      signMessageAsAccount(
+        legacyTx(user.publicKey).serializeMessage(),
+        ledgerAccount,
+        user.publicKey,
+        s,
+      ),
+    ).rejects.toThrow(/transaction as a message/)
+    expect(s.signMessageWithLedger).not.toHaveBeenCalled()
+  })
+
+  it('signs a transaction message with a trailing byte', async () => {
+    const user = Keypair.generate()
+    const s = signers({ cachedKeypair: user })
+    const padded = Buffer.concat([
+      legacyTx(user.publicKey).serializeMessage(),
+      Buffer.from([0]),
+    ])
+    const signature = await signMessageAsAccount(padded, {}, user.publicKey, s)
+    expect(verifyEd25519(signature, padded, user.publicKey.toBytes())).toBe(
+      true,
+    )
+  })
+
+  it('signs a sign-in-with-solana text message', async () => {
+    const user = Keypair.generate()
+    const s = signers({ cachedKeypair: user })
+    const siws = Buffer.from(
+      `example.com wants you to sign in with your Solana account:\n${user.publicKey.toBase58()}\n\nSign in to Example\n\nURI: https://example.com\nVersion: 1\nChain: mainnet\nNonce: 32891756\nIssued At: 2026-10-14T00:00:00.000Z`,
+    )
+    const signature = await signMessageAsAccount(siws, {}, user.publicKey, s)
+    expect(verifyEd25519(signature, siws, user.publicKey.toBytes())).toBe(true)
+  })
 })

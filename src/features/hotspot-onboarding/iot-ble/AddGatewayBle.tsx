@@ -28,6 +28,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
+import { waitingOnHntPrice } from '@utils/dcWithHnt'
 import sleep from '@utils/sleep'
 import { calculateRequiredSol, getHotspotWithRewards } from '@utils/solanaUtils'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
@@ -61,7 +62,9 @@ const AddGatewayBle = () => {
     makerDc,
     loadingMakerSol,
     loadingMySol,
+    myDc,
     myDcWithHnt,
+    loadingMyDcWithHnt,
     loadingMyDc,
     makerSol,
     loadingMakerDc,
@@ -106,10 +109,16 @@ const AddGatewayBle = () => {
     !loadingMySol &&
     !loadingRequiredSol &&
     (mySol || new BN(0)).lt(REQUIRED_SOL)
+  const waitingOnPrice = waitingOnHntPrice({
+    loadingMyDcWithHnt,
+    myDc,
+    requiredDc,
+  })
+  // DC alone can cover the cost while the HNT price is missing
   const insufficientMyDcBal =
     !loadingOnboardingDcRequirements &&
-    !loadingMyDc &&
-    (myDcWithHnt || new BN(0)).lt(requiredDc)
+    !waitingOnPrice &&
+    (myDcWithHnt || myDc || new BN(0)).lt(requiredDc)
 
   const { implicitBurn } = useImplicitBurn()
   const { submitAndAwait } = useSubmitAndAwait()
@@ -276,6 +285,7 @@ const AddGatewayBle = () => {
     loadingMakerDc ||
     loadingMakerSol ||
     loadingMyDc ||
+    waitingOnPrice ||
     loadingMySol ||
     loadingOnboardingDcRequirements ||
     loadingRequiredSol

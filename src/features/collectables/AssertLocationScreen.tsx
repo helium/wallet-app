@@ -39,6 +39,7 @@ import MapLibreGL, {
 } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useColors, useCreateOpacity } from '@theme/themeHooks'
+import { waitingOnHntPrice } from '@utils/dcWithHnt'
 import { parseH3BNLocation } from '@utils/h3'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import * as Logger from '@utils/logger'
@@ -97,8 +98,10 @@ const AssertLocationScreen = () => {
   const {
     maker,
     makerDc,
+    myDc,
     myDcWithHnt,
     loadingMyDc,
+    loadingMyDcWithHnt,
     loadingMakerDc,
     locationAssertDcRequirements,
     loadingLocationAssertDcRequirements,
@@ -287,8 +290,10 @@ const AssertLocationScreen = () => {
             type === 'IOT' ? IOT_MINT.toBase58() : MOBILE_MINT.toBase58()
           ]
         const insufficientMakerDcBal = (makerDc || new BN(0)).lt(requiredDc)
+        // DC alone can cover the cost while the HNT price is missing
         const insufficientMyDcBal =
-          !loadingMyDc && (myDcWithHnt || new BN(0)).lt(requiredDc)
+          !waitingOnHntPrice({ loadingMyDcWithHnt, myDc, requiredDc }) &&
+          (myDcWithHnt || myDc || new BN(0)).lt(requiredDc)
 
         let numLocationChanges = 0
         if (type === 'IOT') {
@@ -346,7 +351,8 @@ const AssertLocationScreen = () => {
       hideElevGain,
       locationAssertDcRequirements,
       makerDc,
-      loadingMyDc,
+      loadingMyDcWithHnt,
+      myDc,
       myDcWithHnt,
       submitUpdateEntityInfo,
       elevation,
@@ -391,6 +397,20 @@ const AssertLocationScreen = () => {
     if (transactionError) return transactionError
   }, [transactionError])
 
+  // The network is picked after the press, so wait for the larger cost
+  const waitingOnPrice = useMemo(
+    () =>
+      waitingOnHntPrice({
+        loadingMyDcWithHnt,
+        myDc,
+        requiredDc: BN.max(
+          locationAssertDcRequirements[IOT_MINT.toBase58()] || new BN(0),
+          locationAssertDcRequirements[MOBILE_MINT.toBase58()] || new BN(0),
+        ),
+      }),
+    [loadingMyDcWithHnt, myDc, locationAssertDcRequirements],
+  )
+
   const disabled = useMemo(
     () =>
       !mapCenter ||
@@ -398,7 +418,8 @@ const AssertLocationScreen = () => {
       asserting ||
       loadingLocationAssertDcRequirements ||
       loadingMakerDc ||
-      loadingMyDc,
+      loadingMyDc ||
+      waitingOnPrice,
     [
       asserting,
       mapCenter,
@@ -406,12 +427,22 @@ const AssertLocationScreen = () => {
       loadingLocationAssertDcRequirements,
       loadingMakerDc,
       loadingMyDc,
+      waitingOnPrice,
     ],
   )
 
   const isLoading = useMemo(
-    () => loadingMyDc || loadingMakerDc || loadingLocationAssertDcRequirements,
-    [loadingMyDc, loadingMakerDc, loadingLocationAssertDcRequirements],
+    () =>
+      loadingMyDc ||
+      waitingOnPrice ||
+      loadingMakerDc ||
+      loadingLocationAssertDcRequirements,
+    [
+      loadingMyDc,
+      waitingOnPrice,
+      loadingMakerDc,
+      loadingLocationAssertDcRequirements,
+    ],
   )
 
   return (

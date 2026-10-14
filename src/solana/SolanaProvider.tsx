@@ -14,7 +14,6 @@ import {
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
-import { signMessageEd25519 } from '@utils/crypto'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import i18n from '@utils/i18n'
 import { WrappedConnection } from '@utils/WrappedConnection'
@@ -34,6 +33,7 @@ import KeystoneModal, {
 } from '../features/keystone/KeystoneModal'
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
+import { CSAccount } from '../storage/cloudStorage'
 import {
   checkSecureAccount,
   getSolanaKeypair,
@@ -45,7 +45,7 @@ import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
-import { signAsAccount } from './signing'
+import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
@@ -73,6 +73,30 @@ const useSolanaHook = () => {
     [address],
   )
 
+  const accountSigners = useCallback(
+    (account: CSAccount): AccountSigners => ({
+      cachedKeypair: secureAcct,
+      loadKeypair: () => getSolanaKeypair(account.address),
+      onMissingKeypair: async () => {
+        await checkSecureAccount(account.address, true)
+        throw new Error(
+          i18n.t('restoreAccount.missingAlert.message', {
+            address: ellipsizeAddress(account.address),
+          }),
+        )
+      },
+      signWithKeystone: async (message) =>
+        keystoneModalRef.current?.showKeystoneModal({ transaction: message }),
+      signWithLedger: async (message) =>
+        ledgerModalRef?.current?.showLedgerModal({ transaction: message }),
+      signMessageWithKeystone: async (message) =>
+        keystoneModalRef.current?.showKeystoneModal({ message }),
+      signMessageWithLedger: async (message) =>
+        ledgerModalRef?.current?.showLedgerModal({ message }),
+    }),
+    [secureAcct],
+  )
+
   const signTxn = useCallback(
     async (transaction: Transaction | VersionedTransaction) => {
       if (!currentAccount?.solanaAddress) {
@@ -87,65 +111,28 @@ const useSolanaHook = () => {
         return transaction
       }
 
-      return signAsAccount(transaction, currentAccount, userPubkey, {
-        cachedKeypair: secureAcct,
-        loadKeypair: () => getSolanaKeypair(currentAccount.address),
-        onMissingKeypair: async () => {
-          await checkSecureAccount(currentAccount.address, true)
-          throw new Error(
-            i18n.t('restoreAccount.missingAlert.message', {
-              address: ellipsizeAddress(currentAccount.address),
-            }),
-          )
-        },
-        signWithKeystone: async (message) =>
-          keystoneModalRef.current?.showKeystoneModal({ transaction: message }),
-        signWithLedger: async (message) =>
-          ledgerModalRef?.current?.showLedgerModal({ transaction: message }),
-      })
+      return signAsAccount(
+        transaction,
+        currentAccount,
+        userPubkey,
+        accountSigners(currentAccount),
+      )
     },
-    [currentAccount, secureAcct],
+    [currentAccount, accountSigners],
   )
 
   const signMsg = useCallback(
     async (msg: Buffer) => {
       if (!currentAccount?.solanaAddress) return msg
 
-      if (
-        (!currentAccount?.ledgerDevice?.id ||
-          !currentAccount?.ledgerDevice?.type ||
-          !currentAccount?.accountIndex) &&
-        secureAcct?.secretKey &&
-        !currentAccount?.keystoneDevice
-      ) {
-        const signer = {
-          publicKey: currentAccount?.solanaAddress,
-          secretKey: secureAcct.secretKey,
-        }
-
-        const signedMessage = await signMessageEd25519(msg, signer.secretKey)
-        return Buffer.from(signedMessage)
-      }
-
-      if (currentAccount?.keystoneDevice) {
-        const signature = await keystoneModalRef.current?.showKeystoneModal({
-          message: msg,
-        })
-        if (!signature || signature.length === 0) {
-          throw new Error('Message not signed')
-        }
-        return signature
-      }
-
-      const signedMessage = await ledgerModalRef?.current?.showLedgerModal({
-        message: msg,
-      })
-
-      if (!signedMessage) throw new Error('Message not signed')
-
-      return signedMessage
+      return signMessageAsAccount(
+        msg,
+        currentAccount,
+        new PublicKey(currentAccount.solanaAddress),
+        accountSigners(currentAccount),
+      )
     },
-    [currentAccount, secureAcct],
+    [currentAccount, accountSigners],
   )
 
   const anchorProvider = useMemo(() => {

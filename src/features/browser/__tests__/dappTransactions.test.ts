@@ -14,6 +14,7 @@ import {
 import {
   deserializeTransactionInputs,
   hasUnsupportedTransaction,
+  messageBytes,
   sendInSequence,
 } from '../dappTransactions'
 
@@ -163,5 +164,21 @@ describe('sendInSequence', () => {
     ).rejects.toThrow('Sent 1 of 3 transactions (sig-a), then failed: boom')
 
     expect(calls).toEqual(['a', 'b'])
+  })
+})
+
+describe('messageBytes', () => {
+  const bytes = Buffer.from('hello')
+
+  it.each([
+    [
+      'a Uint8Array after JSON',
+      JSON.parse(JSON.stringify(new Uint8Array(bytes))),
+    ],
+    ['an array', [...bytes]],
+    ['a Buffer after JSON', JSON.parse(JSON.stringify(bytes))],
+    ['a string as UTF-8', 'hello'],
+  ])('reads %s', (_, message) => {
+    expect(messageBytes(message).equals(bytes)).toBe(true)
   })
 })

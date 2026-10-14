@@ -15,6 +15,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { createSignRequestResolver } from './signRequestResolver'
 import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
 import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'
 import {
@@ -29,9 +30,9 @@ const WalletSignBottomSheet = forwardRef(
     { onClose, children }: WalletSignBottomSheetProps,
     ref: Ref<WalletSignBottomSheetRef>,
   ) => {
-    const [promiseResolve, setPromiseResolve] = useState<
-      ((value: boolean | PromiseLike<boolean>) => void) | null
-    >(null)
+    // A ref, not state: context callers hold a stale show(), so settling
+    // the pending request must not depend on a re-render
+    const signRequestRef = useRef(createSignRequestResolver())
     useImperativeHandle(ref, () => ({ show, hide }))
     const { secondaryText } = useColors()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
@@ -54,14 +55,12 @@ const WalletSignBottomSheet = forwardRef(
     }, [])
 
     const show = useCallback((opts: WalletSignOpts) => {
+      const decision = signRequestRef.current.next()
       bottomSheetModalRef.current?.present()
       bottomSheetModalRef.current?.expand()
       setWalletSignOpts(opts)
-
-      return new Promise<boolean>((resolve) => {
-        setPromiseResolve(() => resolve)
-        bottomSheetModalRef.current?.snapToIndex(0)
-      })
+      bottomSheetModalRef.current?.snapToIndex(0)
+      return decision
     }, [])
 
     const renderBackdrop = useCallback(
@@ -77,27 +76,19 @@ const WalletSignBottomSheet = forwardRef(
     )
 
     const handleModalDismiss = useCallback(() => {
-      if (promiseResolve) {
-        promiseResolve(false)
-      }
+      signRequestRef.current.settle(false)
       if (onClose) {
         onClose()
       }
-    }, [onClose, promiseResolve])
+    }, [onClose])
 
     const onAcceptHandler = useCallback(() => {
-      if (promiseResolve) {
-        hide()
-        promiseResolve(true)
-      }
-    }, [hide, promiseResolve])
+      if (signRequestRef.current.settle(true)) hide()
+    }, [hide])
 
     const onCancelHandler = useCallback(() => {
-      if (promiseResolve) {
-        hide()
-        promiseResolve(false)
-      }
-    }, [hide, promiseResolve])
+      if (signRequestRef.current.settle(false)) hide()
+    }, [hide])
 
     return (
       <Box flex={1}>

@@ -34,6 +34,22 @@ export const deserializeTransactionInputs = async (
   return { transactions }
 }
 
+// A dApp message as it arrives over the WebView bridge. JSON turns a
+// Uint8Array into an index-keyed object and a Buffer into {type, data}.
+export const messageBytes = (
+  message:
+    | Uint8Array
+    | number[]
+    | Record<string, number>
+    | { type: 'Buffer'; data: number[] }
+    | string,
+): Buffer => {
+  if (typeof message === 'string') return Buffer.from(message)
+  const { type, data } = message as { type?: unknown; data?: unknown }
+  if (type === 'Buffer' && Array.isArray(data)) return Buffer.from(data)
+  return Buffer.from(Object.values(message))
+}
+
 // web3.js 1.x can only serialize legacy and v0 transactions for signing
 export const UNSUPPORTED_VERSION_ERROR =
   'Transaction version is not supported yet'
