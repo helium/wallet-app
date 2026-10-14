@@ -1,21 +1,17 @@
 import { SolanaSignAndSendTransactionInput } from '@solana/wallet-standard-features'
-import { Transaction, VersionedTransaction } from '@solana/web3.js'
+import { VersionedTransaction } from '@solana/web3.js'
 
 export type DeserializedTransaction = {
-  transaction: Transaction | VersionedTransaction
+  transaction: VersionedTransaction
   chain: string
   options: unknown
-  isVersioned: boolean
 }
 
 export const deserializeTransactionInputs = async (
   inputs: SolanaSignAndSendTransactionInput[],
 ): Promise<{
   transactions: DeserializedTransaction[]
-  isVersioned: boolean
 }> => {
-  let isVersioned = false
-
   const transactions = await Promise.all(
     inputs.map(async ({ transaction, chain, options }) => {
       const tx = new Uint8Array(
@@ -26,18 +22,16 @@ export const deserializeTransactionInputs = async (
       // The sign sheet decodes with VersionedTransaction only, so decode the
       // same way here. It reads legacy bytes too.
       const decoded = VersionedTransaction.deserialize(tx)
-      isVersioned = true
 
       return {
         transaction: decoded,
         chain,
         options,
-        isVersioned,
       }
     }),
   )
 
-  return { transactions, isVersioned }
+  return { transactions }
 }
 
 // web3.js 1.x can only serialize legacy and v0 transactions for signing
@@ -51,14 +45,14 @@ export const hasUnsupportedTransaction = (
   transactions: DeserializedTransaction[],
 ) =>
   transactions.some(({ transaction }) => {
-    if (!(transaction instanceof VersionedTransaction)) return false
     const { version } = transaction.message as { version: number | 'legacy' }
     return version !== 'legacy' && version !== 0
   })
 
-// Runs the sends in order and stops at the first failure. A failure after a
-// send landed names the signatures already sent, so the dApp does not retry
-// the whole batch as if nothing happened.
+// Runs the sends in order and stops at the first failure. A failure after an
+// earlier send was accepted by the RPC names the signatures already
+// submitted, so the dApp does not retry the whole batch as if nothing
+// happened.
 export const sendInSequence = async <T>(
   items: T[],
   send: (item: T) => Promise<string>,

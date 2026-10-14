@@ -12,6 +12,23 @@ const isVersioned = (
   tx: Transaction | VersionedTransaction,
 ): tx is VersionedTransaction => 'version' in tx
 
+// True when the pubkey must sign the tx: it is the fee payer or a signer
+export const isRequiredSigner = (
+  tx: Transaction | VersionedTransaction,
+  pubkey: PublicKey,
+): boolean => {
+  if (isVersioned(tx)) {
+    const { staticAccountKeys, header } = tx.message
+    return staticAccountKeys
+      .slice(0, header.numRequiredSignatures)
+      .some((k) => k.equals(pubkey))
+  }
+  if (tx.feePayer?.equals(pubkey)) return true
+  return tx.instructions.some((ix) =>
+    ix.keys.some((k) => k.isSigner && k.pubkey.equals(pubkey)),
+  )
+}
+
 // Signs with a software keypair. Refuses a key for another account, which
 // would otherwise produce a tx the network rejects.
 export const signWithKeypair = <T extends Transaction | VersionedTransaction>(

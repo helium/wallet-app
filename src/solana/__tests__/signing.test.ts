@@ -6,19 +6,24 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js'
-import { assertSignedBy, signAsAccount, signWithKeypair } from '../signing'
+import {
+  assertSignedBy,
+  isRequiredSigner,
+  signAsAccount,
+  signWithKeypair,
+} from '../signing'
 import { signMessageEd25519, verifyEd25519 } from '../../utils/crypto'
 
 const BLOCKHASH = '11111111111111111111111111111111'
 
-const versionedTx = (payer: PublicKey) =>
+const versionedTx = (payer: PublicKey, from = payer) =>
   new VersionedTransaction(
     new TransactionMessage({
       payerKey: payer,
       recentBlockhash: BLOCKHASH,
       instructions: [
         SystemProgram.transfer({
-          fromPubkey: payer,
+          fromPubkey: from,
           toPubkey: Keypair.generate().publicKey,
           lamports: 1,
         }),
@@ -26,11 +31,11 @@ const versionedTx = (payer: PublicKey) =>
     }).compileToV0Message(),
   )
 
-const legacyTx = (payer: PublicKey) => {
+const legacyTx = (payer: PublicKey, from = payer) => {
   const tx = new Transaction({ feePayer: payer, recentBlockhash: BLOCKHASH })
   tx.add(
     SystemProgram.transfer({
-      fromPubkey: payer,
+      fromPubkey: from,
       toPubkey: Keypair.generate().publicKey,
       lamports: 1,
     }),
@@ -53,6 +58,30 @@ describe('signWithKeypair', () => {
     const user = Keypair.generate()
     const tx = signWithKeypair(legacyTx(user.publicKey), user.publicKey, user)
     expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
+  })
+
+  it('signs the wallet slot of a versioned tx paid by another account', () => {
+    const user = Keypair.generate()
+    const payer = Keypair.generate()
+    const tx = signWithKeypair(
+      versionedTx(payer.publicKey, user.publicKey),
+      user.publicKey,
+      user,
+    )
+    expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
+    expect(() => assertSignedBy(tx, payer.publicKey)).toThrow(/not signed/)
+  })
+
+  it('signs the wallet slot of a legacy tx paid by another account', () => {
+    const user = Keypair.generate()
+    const payer = Keypair.generate()
+    const tx = signWithKeypair(
+      legacyTx(payer.publicKey, user.publicKey),
+      user.publicKey,
+      user,
+    )
+    expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
+    expect(() => assertSignedBy(tx, payer.publicKey)).toThrow(/not signed/)
   })
 
   it('throws when the key belongs to another account', () => {
@@ -99,6 +128,64 @@ describe('assertSignedBy', () => {
     )
     tx.message.recentBlockhash = Keypair.generate().publicKey.toBase58()
     expect(() => assertSignedBy(tx, user.publicKey)).toThrow(/not signed/)
+  })
+})
+
+// A transfer to the wallet: the wallet is a writable non-signer
+const transferTo = (payer: PublicKey, to: PublicKey) =>
+  SystemProgram.transfer({ fromPubkey: payer, toPubkey: to, lamports: 1 })
+
+// Serializes an unsigned legacy tx and reads it back the way the browser does
+const asBrowserBytes = (tx: Transaction) =>
+  VersionedTransaction.deserialize(
+    tx.serialize({ requireAllSignatures: false, verifySignatures: false }),
+  )
+
+describe('isRequiredSigner', () => {
+  const payer = Keypair.generate().publicKey
+  const user = Keypair.generate().publicKey
+
+  it('is true for a versioned tx the wallet signs but does not pay', () => {
+    expect(isRequiredSigner(versionedTx(payer, user), user)).toBe(true)
+  })
+
+  it('is true for a versioned tx the wallet pays', () => {
+    expect(isRequiredSigner(versionedTx(user), user)).toBe(true)
+  })
+
+  it('is false for a versioned tx without the wallet', () => {
+    expect(isRequiredSigner(versionedTx(payer), user)).toBe(false)
+  })
+
+  it('is false for a versioned tx that only credits the wallet', () => {
+    const tx = new VersionedTransaction(
+      new TransactionMessage({
+        payerKey: payer,
+        recentBlockhash: BLOCKHASH,
+        instructions: [transferTo(payer, user)],
+      }).compileToV0Message(),
+    )
+    expect(isRequiredSigner(tx, user)).toBe(false)
+  })
+
+  it('is true for a legacy tx the wallet signs but does not pay', () => {
+    expect(isRequiredSigner(legacyTx(payer, user), user)).toBe(true)
+  })
+
+  it('is false for a legacy tx without the wallet', () => {
+    expect(isRequiredSigner(legacyTx(payer), user)).toBe(false)
+  })
+
+  it('is true for legacy bytes the wallet signs but does not pay', () => {
+    expect(isRequiredSigner(asBrowserBytes(legacyTx(payer, user)), user)).toBe(
+      true,
+    )
+  })
+
+  it('is false for legacy bytes that only credit the wallet', () => {
+    const tx = new Transaction({ feePayer: payer, recentBlockhash: BLOCKHASH })
+    tx.add(transferTo(payer, user))
+    expect(isRequiredSigner(asBrowserBytes(tx), user)).toBe(false)
   })
 })
 

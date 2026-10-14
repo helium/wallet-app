@@ -145,21 +145,7 @@ export const isVersionedTransaction = (
   return 'version' in tx
 }
 
-export const isRequiredSigner = (
-  tx: Transaction | VersionedTransaction,
-  pubkey: PublicKey,
-): boolean => {
-  if (isVersionedTransaction(tx)) {
-    const { staticAccountKeys, header } = tx.message
-    return staticAccountKeys
-      .slice(0, header.numRequiredSignatures)
-      .some((k) => k.equals(pubkey))
-  }
-  if (tx.feePayer?.equals(pubkey)) return true
-  return tx.instructions.some((ix) =>
-    ix.keys.some((k) => k.isSigner && k.pubkey.equals(pubkey)),
-  )
-}
+export { isRequiredSigner } from '../solana/signing'
 
 export function humanReadable(
   amount?: BN,

@@ -97,11 +97,10 @@ describe('dApp transaction guards', () => {
   })
 
   test('decodes a legacy transaction the way the sign sheet does', async () => {
-    const { transactions, isVersioned } = await deserializeTransactionInputs([
+    const { transactions } = await deserializeTransactionInputs([
       asInput(legacyBytes),
     ])
 
-    expect(isVersioned).toBe(true)
     expect(transactions[0].transaction).toBeInstanceOf(VersionedTransaction)
   })
 

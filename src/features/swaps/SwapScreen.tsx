@@ -590,8 +590,8 @@ const SwapScreen = () => {
         return setInputAmount(0)
       }
 
-      if (isDevnet) return handleDevnetPrice()
       if (output.equals(DC_MINT)) return handleDCConversion()
+      if (isDevnet) return handleDevnetPrice()
       return handleJupiterRoute()
     },
     [
@@ -887,6 +887,7 @@ const SwapScreen = () => {
                       hasInsufficientBalance ||
                       insufficientTokensToSwap ||
                       inputAmount === 0 ||
+                      routeNotFound ||
                       hntToDcPriceMissing ||
                       loading ||
                       swapping

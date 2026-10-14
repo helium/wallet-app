@@ -8,7 +8,7 @@ import {
   SolanaSignAndSendTransactionInput,
   SolanaSignMessageInput,
 } from '@solana/wallet-standard-features'
-import { Transaction, VersionedTransaction } from '@solana/web3.js'
+import { VersionedTransaction } from '@solana/web3.js'
 import { useSpacing } from '@theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -32,6 +32,7 @@ import {
 } from '../../solana/walletSignBottomSheetTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import * as Logger from '../../utils/logger'
+import { isRequiredSigner } from '../../utils/solanaUtils'
 import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
 import {
   deserializeTransactionInputs,
@@ -182,13 +183,26 @@ const BrowserWebViewScreen = () => {
       Logger.breadcrumb('signAndSendTransaction')
 
       try {
-        const { transactions, isVersioned } =
-          await deserializeTransactionInputs(inputs)
+        const { transactions } = await deserializeTransactionInputs(inputs)
 
         if (hasUnsupportedTransaction(transactions)) {
           postMessage({
             type: 'signatureDeclined',
             error: UNSUPPORTED_VERSION_ERROR,
+          })
+          return
+        }
+
+        const wallet = anchorProvider?.wallet.publicKey
+        if (
+          !wallet ||
+          transactions.some(
+            ({ transaction }) => !isRequiredSigner(transaction, wallet),
+          )
+        ) {
+          postMessage({
+            type: 'signatureDeclined',
+            error: 'Wallet is not a signer of this transaction',
           })
           return
         }
@@ -215,11 +229,7 @@ const BrowserWebViewScreen = () => {
           transactions,
           async ({ transaction, options }) => {
             const signedTransaction =
-              await anchorProvider?.wallet.signTransaction(
-                isVersioned
-                  ? (transaction as VersionedTransaction)
-                  : (transaction as Transaction),
-              )
+              await anchorProvider?.wallet.signTransaction(transaction)
 
             if (!signedTransaction || !anchorProvider) {
               throw new Error('Failed to sign transaction')
@@ -250,13 +260,26 @@ const BrowserWebViewScreen = () => {
       Logger.breadcrumb('signTransaction')
 
       try {
-        const { transactions, isVersioned } =
-          await deserializeTransactionInputs(inputs)
+        const { transactions } = await deserializeTransactionInputs(inputs)
 
         if (hasUnsupportedTransaction(transactions)) {
           postMessage({
             type: 'signatureDeclined',
             error: UNSUPPORTED_VERSION_ERROR,
+          })
+          return
+        }
+
+        const wallet = anchorProvider?.wallet.publicKey
+        if (
+          !wallet ||
+          transactions.some(
+            ({ transaction }) => !isRequiredSigner(transaction, wallet),
+          )
+        ) {
+          postMessage({
+            type: 'signatureDeclined',
+            error: 'Wallet is not a signer of this transaction',
           })
           return
         }
@@ -279,15 +302,11 @@ const BrowserWebViewScreen = () => {
           return
         }
 
-        const signedTransactions: (Transaction | VersionedTransaction)[] = []
+        const signedTransactions: VersionedTransaction[] = []
         // eslint-disable-next-line no-restricted-syntax
         for (const { transaction } of transactions) {
           const signedTransaction =
-            await anchorProvider?.wallet.signTransaction(
-              isVersioned
-                ? (transaction as VersionedTransaction)
-                : (transaction as Transaction),
-            )
+            await anchorProvider?.wallet.signTransaction(transaction)
           if (!signedTransaction) {
             throw new Error('Failed to sign transaction')
           }
