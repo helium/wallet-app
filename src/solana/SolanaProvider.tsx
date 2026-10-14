@@ -44,12 +44,8 @@ import {
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
-import {
-  getConnection,
-  isRequiredSigner,
-  isVersionedTransaction,
-} from '../utils/solanaUtils'
-import { assertSignedBy, signWithKeypair } from './signing'
+import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
+import { signAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
@@ -91,50 +87,22 @@ const useSolanaHook = () => {
         return transaction
       }
 
-      // ledger device and keystone device will use cold wallet sign tx
-      if (
-        (!currentAccount?.ledgerDevice?.id ||
-          !currentAccount?.ledgerDevice?.type ||
-          currentAccount?.accountIndex === undefined) &&
-        !currentAccount?.keystoneDevice
-      ) {
-        // secureAcct loads async, so it can be unset or stale for a moment
-        // after an account switch
-        const keypair = secureAcct?.publicKey.equals(userPubkey)
-          ? secureAcct
-          : await getSolanaKeypair(currentAccount.address)
-        if (!keypair) {
+      return signAsAccount(transaction, currentAccount, userPubkey, {
+        cachedKeypair: secureAcct,
+        loadKeypair: () => getSolanaKeypair(currentAccount.address),
+        onMissingKeypair: async () => {
           await checkSecureAccount(currentAccount.address, true)
           throw new Error(
             i18n.t('restoreAccount.missingAlert.message', {
               address: ellipsizeAddress(currentAccount.address),
             }),
           )
-        }
-        signWithKeypair(transaction, userPubkey, keypair)
-      } else if (currentAccount?.keystoneDevice) {
-        const signature = await keystoneModalRef.current?.showKeystoneModal({
-          transaction: isVersionedTransaction(transaction)
-            ? Buffer.from(transaction.message.serialize())
-            : transaction.serializeMessage(),
-        })
-        if (!signature || signature.length === 0) {
-          throw new Error('Transaction is not signed')
-        }
-        transaction.addSignature(userPubkey, signature)
-      } else {
-        const signature = await ledgerModalRef?.current?.showLedgerModal({
-          transaction: isVersionedTransaction(transaction)
-            ? Buffer.from(transaction.message.serialize())
-            : transaction.serializeMessage(),
-        })
-
-        if (!signature) throw new Error('Transaction not signed')
-        transaction.addSignature(userPubkey, signature)
-      }
-
-      assertSignedBy(transaction, userPubkey)
-      return transaction
+        },
+        signWithKeystone: async (message) =>
+          keystoneModalRef.current?.showKeystoneModal({ transaction: message }),
+        signWithLedger: async (message) =>
+          ledgerModalRef?.current?.showLedgerModal({ transaction: message }),
+      })
     },
     [currentAccount, secureAcct],
   )

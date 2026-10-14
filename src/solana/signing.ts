@@ -4,6 +4,7 @@ import {
   Transaction,
   VersionedTransaction,
 } from '@solana/web3.js'
+import type { CSAccount } from '../storage/cloudStorage'
 import { verifyEd25519 } from '../utils/crypto'
 
 // Local copy of solanaUtils.isVersionedTransaction: solanaUtils pulls in RN-only modules that jest cannot load
@@ -49,4 +50,55 @@ export const assertSignedBy = (
   if (!signature || !verifyEd25519(signature, message, signer.toBytes())) {
     throw new Error(`Transaction is not signed by ${signer.toBase58()}`)
   }
+}
+
+export type AccountSigners = {
+  // Keypair loaded ahead of time; it can be unset or stale after an account switch
+  cachedKeypair?: Keypair
+  loadKeypair: () => Promise<Keypair | undefined>
+  onMissingKeypair: () => Promise<never>
+  signWithKeystone: (message: Buffer) => Promise<Buffer | undefined>
+  signWithLedger: (message: Buffer) => Promise<Buffer | undefined>
+}
+
+// Signs with the account's wallet type (software, Keystone or Ledger), then
+// checks that the signer's slot verifies.
+export const signAsAccount = async <
+  T extends Transaction | VersionedTransaction,
+>(
+  tx: T,
+  account: Pick<CSAccount, 'ledgerDevice' | 'keystoneDevice' | 'accountIndex'>,
+  signer: PublicKey,
+  signers: AccountSigners,
+): Promise<T> => {
+  const message = () =>
+    isVersioned(tx)
+      ? Buffer.from(tx.message.serialize())
+      : tx.serializeMessage()
+
+  if (
+    (!account.ledgerDevice?.id ||
+      !account.ledgerDevice?.type ||
+      account.accountIndex === undefined) &&
+    !account.keystoneDevice
+  ) {
+    const keypair = signers.cachedKeypair?.publicKey.equals(signer)
+      ? signers.cachedKeypair
+      : await signers.loadKeypair()
+    if (!keypair) return signers.onMissingKeypair()
+    signWithKeypair(tx, signer, keypair)
+  } else if (account.keystoneDevice) {
+    const signature = await signers.signWithKeystone(message())
+    if (!signature || signature.length === 0) {
+      throw new Error('Transaction is not signed')
+    }
+    tx.addSignature(signer, signature)
+  } else {
+    const signature = await signers.signWithLedger(message())
+    if (!signature) throw new Error('Transaction not signed')
+    tx.addSignature(signer, signature)
+  }
+
+  assertSignedBy(tx, signer)
+  return tx
 }

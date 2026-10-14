@@ -6,8 +6,8 @@ import {
   TransactionMessage,
   VersionedTransaction,
 } from '@solana/web3.js'
-import { assertSignedBy, signWithKeypair } from '../signing'
-import { verifyEd25519 } from '../../utils/crypto'
+import { assertSignedBy, signAsAccount, signWithKeypair } from '../signing'
+import { signMessageEd25519, verifyEd25519 } from '../../utils/crypto'
 
 const BLOCKHASH = '11111111111111111111111111111111'
 
@@ -113,4 +113,132 @@ describe('verifyEd25519', () => {
       ),
     ).toBe(false)
   })
+})
+
+const ledgerAccount = {
+  ledgerDevice: { id: 'ledger', name: 'Nano X', type: 'bluetooth' as const },
+  accountIndex: 0,
+}
+const keystoneAccount = {
+  keystoneDevice: { masterFingerprint: 'fp', device: 'keystone' },
+}
+
+// Signs the message bytes the way a hardware device does
+const deviceSign = (key: Keypair) => async (message: Buffer) =>
+  Buffer.from(await signMessageEd25519(message, key.secretKey))
+
+const signers = (overrides: Partial<Parameters<typeof signAsAccount>[3]>) => ({
+  loadKeypair: jest.fn(async () => undefined),
+  onMissingKeypair: jest.fn(async () => {
+    throw new Error('missing key')
+  }),
+  signWithKeystone: jest.fn(async () => undefined),
+  signWithLedger: jest.fn(async () => undefined),
+  ...overrides,
+})
+
+describe('signAsAccount', () => {
+  it('signs with the loaded key when the cached key matches', async () => {
+    const user = Keypair.generate()
+    const s = signers({ cachedKeypair: user })
+    const tx = await signAsAccount(
+      versionedTx(user.publicKey),
+      {},
+      user.publicKey,
+      s,
+    )
+    expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
+    expect(s.loadKeypair).not.toHaveBeenCalled()
+  })
+
+  it('reloads the key when the cached key is for another account', async () => {
+    const user = Keypair.generate()
+    const s = signers({
+      cachedKeypair: Keypair.generate(),
+      loadKeypair: jest.fn(async () => user),
+    })
+    const tx = await signAsAccount(
+      legacyTx(user.publicKey),
+      {},
+      user.publicKey,
+      s,
+    )
+    expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
+  })
+
+  it('reports a missing key instead of returning an unsigned tx', async () => {
+    const user = Keypair.generate()
+    const s = signers({})
+    await expect(
+      signAsAccount(versionedTx(user.publicKey), {}, user.publicKey, s),
+    ).rejects.toThrow('missing key')
+    expect(s.onMissingKeypair).toHaveBeenCalled()
+  })
+
+  it('throws when the stored key belongs to another account', async () => {
+    const user = Keypair.generate()
+    const s = signers({ loadKeypair: jest.fn(async () => Keypair.generate()) })
+    await expect(
+      signAsAccount(versionedTx(user.publicKey), {}, user.publicKey, s),
+    ).rejects.toThrow(/does not match/)
+  })
+
+  it('takes the software path for a ledger without an account index', async () => {
+    const user = Keypair.generate()
+    const s = signers({ loadKeypair: jest.fn(async () => user) })
+    await signAsAccount(
+      versionedTx(user.publicKey),
+      { ...ledgerAccount, accountIndex: undefined },
+      user.publicKey,
+      s,
+    )
+    expect(s.signWithLedger).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['ledger', ledgerAccount, 'signWithLedger'],
+    ['keystone', keystoneAccount, 'signWithKeystone'],
+  ] as const)(
+    'accepts a %s signature by the user',
+    async (_, account, device) => {
+      const user = Keypair.generate()
+      const s = signers({ [device]: jest.fn(deviceSign(user)) })
+      const tx = await signAsAccount(
+        versionedTx(user.publicKey),
+        account,
+        user.publicKey,
+        s,
+      )
+      expect(() => assertSignedBy(tx, user.publicKey)).not.toThrow()
+      expect(s.loadKeypair).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    ['ledger', ledgerAccount, 'signWithLedger'],
+    ['keystone', keystoneAccount, 'signWithKeystone'],
+  ] as const)(
+    'rejects a %s signature by another key',
+    async (_, account, device) => {
+      const user = Keypair.generate()
+      const s = signers({ [device]: jest.fn(deviceSign(Keypair.generate())) })
+      await expect(
+        signAsAccount(versionedTx(user.publicKey), account, user.publicKey, s),
+      ).rejects.toThrow(/not signed/)
+    },
+  )
+
+  it.each([
+    ['ledger', ledgerAccount, 'signWithLedger', undefined],
+    ['keystone', keystoneAccount, 'signWithKeystone', Buffer.alloc(0)],
+  ] as const)(
+    'throws when the %s returns no signature',
+    async (_, account, device, sig) => {
+      const user = Keypair.generate()
+      const s = signers({ [device]: jest.fn(async () => sig) })
+      await expect(
+        signAsAccount(versionedTx(user.publicKey), account, user.publicKey, s),
+      ).rejects.toThrow(/not signed/)
+    },
+  )
 })
