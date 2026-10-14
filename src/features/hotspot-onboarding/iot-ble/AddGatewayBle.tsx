@@ -223,26 +223,16 @@ const AddGatewayBle = () => {
         networkDetails: [{ hotspotType: network }],
       })
 
-      let solanaSignedTransactions: VersionedTransaction[] | undefined
-
-      if (solanaTransactions) {
-        solanaSignedTransactions =
-          await anchorProvider?.wallet.signAllTransactions(
-            solanaTransactions.map((txn) => {
-              return VersionedTransaction.deserialize(
-                Buffer.from(txn, 'base64'),
-              )
-            }),
-          )
-      }
-
-      if (solanaSignedTransactions) {
+      if (solanaTransactions?.length) {
         const paramsHash = hashTagParams({ hotspot: onboardingAddress })
         const tag = `onboard-hotspot-${paramsHash}`
-        const transactionData = toTransactionData(solanaSignedTransactions, {
-          tag,
-          metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
-        })
+        const transactionData = toTransactionData(
+          solanaTransactions.map((txn) => Buffer.from(txn, 'base64')),
+          {
+            tag,
+            metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
+          },
+        )
         await submitAndAwait({ transactionData })
       }
     }

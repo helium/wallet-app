@@ -55,7 +55,8 @@ const isAnchorAliasRequest = (context, moduleName) =>
   (moduleName === ANCHOR_ALIAS || moduleName.startsWith(`${ANCHOR_ALIAS}/`)) &&
   !context.originModulePath.includes('/node_modules/@pythnetwork/')
 
-// Dedups @tanstack/react-query, @privy-io/expo, and jose to a single copy so Privy/Solana
+// Dedups @tanstack/react-query, @privy-io/expo, @anchor-lang/core (and its
+// @coral-xyz/anchor alias), and jose to a single copy so Privy/Solana
 // providers share one module instance (avoids duplicate React contexts); revisit if those
 // upstream deps stop requiring a forced single resolution.
 defaultConfig.resolver = {
