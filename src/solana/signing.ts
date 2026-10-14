@@ -6,6 +6,7 @@ import {
 } from '@solana/web3.js'
 import { verifyEd25519 } from '../utils/crypto'
 
+// Local copy of solanaUtils.isVersionedTransaction: solanaUtils pulls in RN-only modules that jest cannot load
 const isVersioned = (
   tx: Transaction | VersionedTransaction,
 ): tx is VersionedTransaction => 'version' in tx
