@@ -41,13 +41,13 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   brew install nvm
   ```
-- Install Node Version 18
+- Install Node Version 20.18
   ```bash
-  nvm install 18
+  nvm install 20.18
   ```
-- Set Node version to 18
+- Set Node version to 20.18
   ```bash
-  nvm use 18
+  nvm use 20.18
   ```
 - Install Yarn
   ```bash
