@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
-import { AnchorProvider } from '@coral-xyz/anchor'
+import { AnchorProvider } from '@anchor-lang/core'
 import {
   PayloadAction,
   SerializedError,

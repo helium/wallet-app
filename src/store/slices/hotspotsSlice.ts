@@ -1,4 +1,4 @@
-import { AnchorProvider } from '@coral-xyz/anchor'
+import { AnchorProvider } from '@anchor-lang/core'
 import { RecipientV0 } from '@hooks/useRecipient'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Cluster, PublicKey } from '@solana/web3.js'
