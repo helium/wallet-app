@@ -72,6 +72,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
+import { swapRoute } from './logic/swapRoute'
 import { SwapNavigationProp } from './swapTypes'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
@@ -108,7 +109,12 @@ const SwapScreen = () => {
   const [networkError, setNetworkError] = useState<undefined | string>()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const inputMintBalance = useBN(useOwnedAmount(wallet, inputMint).amount)
-  const { networkTokensToDc, dcToNetworkTokens } = useBalance()
+  const {
+    networkTokensToDc,
+    dcToNetworkTokens,
+    oraclePrice,
+    oraclePriceError,
+  } = useBalance()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
   const addressBookRef = useRef<AddressBookRef>(null)
@@ -172,6 +178,21 @@ const SwapScreen = () => {
     }
   }, [inputAmount, inputMintBalance, inputMintAcc])
 
+  const swapRouteType = useMemo(
+    () => swapRoute({ inputMint, outputMint, isDevnet }),
+    [inputMint, outputMint, isDevnet],
+  )
+  const isHntToDc = swapRouteType === 'mintDc'
+  const hntToDcPriceMissing = isHntToDc && (!oraclePrice || !outputAmount)
+  const hntPriceLoading = isHntToDc && !oraclePrice && !oraclePriceError
+  const hntPriceUnavailable = useMemo(
+    () =>
+      oraclePriceError
+        ? t('errors.swap.hntPriceError', { message: oraclePriceError.message })
+        : t('errors.swap.hntPrice'),
+    [oraclePriceError, t],
+  )
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const showError: any = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
@@ -182,7 +203,13 @@ const SwapScreen = () => {
     if (jupiterError) return jupiterError
     if (transactionError) return transactionError
     if (routeNotFound) return t('swapsScreen.routeNotFound')
+    if (isHntToDc && !oraclePrice && oraclePriceError)
+      return hntPriceUnavailable
   }, [
+    isHntToDc,
+    oraclePrice,
+    oraclePriceError,
+    hntPriceUnavailable,
     hasRecipientError,
     t,
     insufficientTokensToSwap,
@@ -563,8 +590,8 @@ const SwapScreen = () => {
         return setInputAmount(0)
       }
 
-      if (isDevnet) return handleDevnetPrice()
       if (output.equals(DC_MINT)) return handleDCConversion()
+      if (isDevnet) return handleDevnetPrice()
       return handleJupiterRoute()
     },
     [
@@ -625,18 +652,18 @@ const SwapScreen = () => {
           : new PublicKey(currentAccount.solanaAddress)
 
         let batchId: string | undefined
-        if (
-          inputMint.equals(HNT_MINT) &&
-          outputMint.equals(DC_MINT) &&
-          outputAmount
-        ) {
+        if (swapRouteType === 'mintDc') {
+          const hntAmount = hntToDcPriceMissing
+            ? undefined
+            : dcToNetworkTokens(new BN(outputAmount))
+          if (!hntAmount) throw new Error(hntPriceUnavailable)
+
           batchId = await submitMintDataCredits({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            hntAmount: dcToNetworkTokens(new BN(outputAmount))!,
+            hntAmount,
             dcAmount: new BN(outputAmount),
             recipient: recipientAddr,
           })
-        } else if (isDevnet) {
+        } else if (swapRouteType === 'treasury') {
           batchId = await submitTreasurySwap(
             inputMint,
             inputAmount,
@@ -685,10 +712,12 @@ const SwapScreen = () => {
     submitMintDataCredits,
     submitJupiterSwap,
     setHasRecipientError,
-    isDevnet,
+    swapRouteType,
+    hntToDcPriceMissing,
     t,
     getSwapTx,
     dcToNetworkTokens,
+    hntPriceUnavailable,
   ])
 
   const isLoading = useMemo(() => {
@@ -808,6 +837,19 @@ const SwapScreen = () => {
                           </Text>
                         </Box>
                       )}
+                      {!showError && hntPriceLoading && (
+                        <Box marginTop="s">
+                          <Text
+                            marginTop="s"
+                            marginHorizontal="m"
+                            variant="body3Medium"
+                            color="secondaryText"
+                            textAlign="center"
+                          >
+                            {t('swapsScreen.hntPriceLoading')}
+                          </Text>
+                        </Box>
+                      )}
                       {priceImpact > 2.5 && (
                         <Box marginTop="s">
                           <Text
@@ -845,6 +887,8 @@ const SwapScreen = () => {
                       hasInsufficientBalance ||
                       insufficientTokensToSwap ||
                       inputAmount === 0 ||
+                      routeNotFound ||
+                      hntToDcPriceMissing ||
                       loading ||
                       swapping
                     }

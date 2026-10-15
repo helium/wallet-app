@@ -8,7 +8,7 @@ import {
   SolanaSignAndSendTransactionInput,
   SolanaSignMessageInput,
 } from '@solana/wallet-standard-features'
-import { Transaction, VersionedTransaction } from '@solana/web3.js'
+import { VersionedTransaction } from '@solana/web3.js'
 import { useSpacing } from '@theme/themeHooks'
 import bs58 from 'bs58'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -26,59 +26,26 @@ import TouchableOpacityBox from '../../components/TouchableOpacityBox'
 import useBrowser from '../../hooks/useBrowser'
 import SolanaProvider, { useSolana } from '../../solana/SolanaProvider'
 import WalletSignBottomSheet from '../../solana/WalletSignBottomSheet'
+import { isTransactionMessage } from '../../solana/signing'
 import {
   WalletSignBottomSheetRef,
   WalletStandardMessageTypes,
 } from '../../solana/walletSignBottomSheetTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import * as Logger from '../../utils/logger'
+import { isRequiredSigner } from '../../utils/solanaUtils'
 import { BrowserNavigationProp, BrowserStackParamList } from './browserTypes'
+import {
+  deserializeTransactionInputs,
+  hasUnsupportedTransaction,
+  messageBytes,
+  sendInSequence,
+  UNSUPPORTED_VERSION_ERROR,
+} from './dappTransactions'
+import { runOneRequest } from './dappRequestGate'
 import injectWalletStandard from './walletStandard'
 
 type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
-
-type DeserializedTransaction = {
-  transaction: Transaction | VersionedTransaction
-  chain: string
-  options: unknown
-  isVersioned: boolean
-}
-
-const deserializeTransactionInputs = async (
-  inputs: SolanaSignAndSendTransactionInput[],
-): Promise<{
-  transactions: DeserializedTransaction[]
-  isVersioned: boolean
-}> => {
-  let isVersioned = false
-
-  const transactions = await Promise.all(
-    inputs.map(async ({ transaction, chain, options }) => {
-      const tx = new Uint8Array(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Object.keys(transaction).map((k) => (transaction as any)[k]),
-      )
-
-      try {
-        VersionedTransaction.deserialize(tx)
-        isVersioned = true
-      } catch {
-        isVersioned = false
-      }
-
-      return {
-        transaction: isVersioned
-          ? VersionedTransaction.deserialize(tx)
-          : Transaction.from(tx),
-        chain,
-        options,
-        isVersioned,
-      }
-    }),
-  )
-
-  return { transactions, isVersioned }
-}
 
 type BrowserHeaderProps = {
   currentUrl: string
@@ -178,6 +145,8 @@ const BrowserWebViewScreen = () => {
   const { anchorProvider, signMsg } = useSolana()
   const webview = useRef<WebView | null>(null)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
+  // True while a dApp request is open; another one is declined meanwhile
+  const pendingRequestRef = useRef<boolean>(false)
 
   const [currentUrl, setCurrentUrl] = useState(uri)
   const accountAddress = useMemo(
@@ -198,143 +167,211 @@ const BrowserWebViewScreen = () => {
     webview.current?.postMessage(JSON.stringify(message))
   }, [])
 
-  const handleConnect = useCallback(async () => {
-    Logger.breadcrumb('connect')
-    const decision = await walletSignBottomSheetRef.current?.show({
-      type: WalletStandardMessageTypes.connect,
-      url: currentUrl,
-      serializedTxs: undefined,
-    })
-
-    if (!decision) {
-      postMessage({ type: 'connectDeclined' })
-      return
-    }
-
-    postMessage({ type: 'connectApproved' })
-  }, [currentUrl, postMessage])
-
-  const handleSignAndSendTransaction = useCallback(
-    async (inputs: SolanaSignAndSendTransactionInput[]) => {
-      Logger.breadcrumb('signAndSendTransaction')
-
-      const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
-        Buffer.from(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          Object.keys(transaction).map((k) => (transaction as any)[k]),
-        ),
-      )
-
+  const handleConnect = useCallback(
+    async (id: number) => {
+      Logger.breadcrumb('connect')
       const decision = await walletSignBottomSheetRef.current?.show({
-        type: WalletStandardMessageTypes.signAndSendTransaction,
+        type: WalletStandardMessageTypes.connect,
         url: currentUrl,
-        serializedTxs: txBuffers,
+        serializedTxs: undefined,
       })
 
       if (!decision) {
-        postMessage({ type: 'signatureDeclined' })
+        postMessage({ id, type: 'connectDeclined' })
         return
       }
 
-      const { transactions, isVersioned } = await deserializeTransactionInputs(
-        inputs,
-      )
+      postMessage({ id, type: 'connectApproved' })
+    },
+    [currentUrl, postMessage],
+  )
 
-      const signatures = await Promise.all(
-        transactions.map(async ({ transaction, options }) => {
-          const signedTransaction =
-            await anchorProvider?.wallet.signTransaction(
-              isVersioned
-                ? (transaction as VersionedTransaction)
-                : (transaction as Transaction),
-            )
+  const handleSignAndSendTransaction = useCallback(
+    async (id: number, inputs: SolanaSignAndSendTransactionInput[]) => {
+      Logger.breadcrumb('signAndSendTransaction')
 
-          if (!signedTransaction || !anchorProvider) {
-            throw new Error('Failed to sign transaction')
-          }
+      try {
+        const { transactions } = await deserializeTransactionInputs(inputs)
 
-          const signature = await anchorProvider.connection.sendRawTransaction(
-            signedTransaction.serialize(),
-            { skipPreflight: true, maxRetries: 5, ...(options as object) },
+        if (hasUnsupportedTransaction(transactions)) {
+          postMessage({
+            id,
+            type: 'signatureDeclined',
+            error: UNSUPPORTED_VERSION_ERROR,
+          })
+          return
+        }
+
+        const wallet = anchorProvider?.wallet.publicKey
+        if (
+          !wallet ||
+          transactions.some(
+            ({ transaction }) => !isRequiredSigner(transaction, wallet),
           )
+        ) {
+          postMessage({
+            id,
+            type: 'signatureDeclined',
+            error: 'Wallet is not a signer of this transaction',
+          })
+          return
+        }
 
-          return { signature: bs58.decode(signature) }
-        }),
-      )
+        const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
+          Buffer.from(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Object.keys(transaction).map((k) => (transaction as any)[k]),
+          ),
+        )
 
-      postMessage({ type: 'transactionSigned', data: signatures })
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type: WalletStandardMessageTypes.signAndSendTransaction,
+          url: currentUrl,
+          serializedTxs: txBuffers,
+        })
+
+        if (!decision) {
+          postMessage({ id, type: 'signatureDeclined' })
+          return
+        }
+
+        const signatures = await sendInSequence(
+          transactions,
+          async ({ transaction, options }) => {
+            const signedTransaction =
+              await anchorProvider?.wallet.signTransaction(transaction)
+
+            if (!signedTransaction || !anchorProvider) {
+              throw new Error('Failed to sign transaction')
+            }
+
+            return anchorProvider.connection.sendRawTransaction(
+              signedTransaction.serialize(),
+              { skipPreflight: true, maxRetries: 5, ...(options as object) },
+            )
+          },
+        )
+
+        postMessage({
+          id,
+          type: 'transactionSigned',
+          data: signatures.map((signature) => ({
+            signature: bs58.decode(signature),
+          })),
+        })
+      } catch (e) {
+        postMessage({
+          id,
+          type: 'signatureDeclined',
+          error: (e as Error).message,
+        })
+      }
     },
     [anchorProvider, currentUrl, postMessage],
   )
 
   const handleSignTransaction = useCallback(
-    async (inputs: SolanaSignAndSendTransactionInput[]) => {
+    async (id: number, inputs: SolanaSignAndSendTransactionInput[]) => {
       Logger.breadcrumb('signTransaction')
 
-      const { transactions, isVersioned } = await deserializeTransactionInputs(
-        inputs,
-      )
+      try {
+        const { transactions } = await deserializeTransactionInputs(inputs)
 
-      const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
-        Buffer.from(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          Object.keys(transaction).map((k) => (transaction as any)[k]),
-        ),
-      )
-
-      const decision = await walletSignBottomSheetRef.current?.show({
-        type: WalletStandardMessageTypes.signTransaction,
-        url: currentUrl,
-        serializedTxs: txBuffers,
-      })
-
-      if (!decision) {
-        postMessage({ type: 'signatureDeclined' })
-        return
-      }
-
-      const signedTransactions: (Transaction | VersionedTransaction)[] = []
-      // eslint-disable-next-line no-restricted-syntax
-      for (const { transaction } of transactions) {
-        const signedTransaction = await anchorProvider?.wallet.signTransaction(
-          isVersioned
-            ? (transaction as VersionedTransaction)
-            : (transaction as Transaction),
-        )
-        if (!signedTransaction) {
-          throw new Error('Failed to sign transaction')
+        if (hasUnsupportedTransaction(transactions)) {
+          postMessage({
+            id,
+            type: 'signatureDeclined',
+            error: UNSUPPORTED_VERSION_ERROR,
+          })
+          return
         }
-        signedTransactions.push(signedTransaction)
+
+        const wallet = anchorProvider?.wallet.publicKey
+        if (
+          !wallet ||
+          transactions.some(
+            ({ transaction }) => !isRequiredSigner(transaction, wallet),
+          )
+        ) {
+          postMessage({
+            id,
+            type: 'signatureDeclined',
+            error: 'Wallet is not a signer of this transaction',
+          })
+          return
+        }
+
+        const txBuffers: Buffer[] = inputs.map(({ transaction }) =>
+          Buffer.from(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Object.keys(transaction).map((k) => (transaction as any)[k]),
+          ),
+        )
+
+        const decision = await walletSignBottomSheetRef.current?.show({
+          type: WalletStandardMessageTypes.signTransaction,
+          url: currentUrl,
+          serializedTxs: txBuffers,
+        })
+
+        if (!decision) {
+          postMessage({ id, type: 'signatureDeclined' })
+          return
+        }
+
+        const signedTransactions: VersionedTransaction[] = []
+        // eslint-disable-next-line no-restricted-syntax
+        for (const { transaction } of transactions) {
+          const signedTransaction =
+            await anchorProvider?.wallet.signTransaction(transaction)
+          if (!signedTransaction) {
+            throw new Error('Failed to sign transaction')
+          }
+          signedTransactions.push(signedTransaction)
+        }
+
+        const outputs = signedTransactions.map((tx) => ({
+          signedTransaction: new Uint8Array(tx.serialize()),
+        }))
+
+        postMessage({ id, type: 'transactionSigned', data: outputs })
+      } catch (e) {
+        postMessage({
+          id,
+          type: 'signatureDeclined',
+          error: (e as Error).message,
+        })
       }
-
-      const outputs = signedTransactions.map((tx) => ({
-        signedTransaction: new Uint8Array(tx.serialize()),
-      }))
-
-      postMessage({ type: 'transactionSigned', data: outputs })
     },
     [anchorProvider, currentUrl, postMessage],
   )
 
   const handleSignMessage = useCallback(
-    async (inputs: SolanaSignMessageInput[]) => {
+    async (id: number, inputs: SolanaSignMessageInput[]) => {
       Logger.breadcrumb('signMessage')
+
+      const messages = inputs.map(({ message }) => messageBytes(message))
+
+      if (messages.some(isTransactionMessage)) {
+        postMessage({
+          id,
+          type: 'signatureDeclined',
+          error: 'Refusing to sign a transaction as a message',
+        })
+        return
+      }
 
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signMessage,
         url: currentUrl,
-        message: inputs
-          .map(({ message }) => Buffer.from(message).toString('utf-8'))
-          .join(','),
+        message: messages.map((message) => message.toString('utf-8')).join(','),
         serializedTxs: undefined,
       })
 
       if (!decision) {
-        postMessage({ type: 'signatureDeclined' })
+        postMessage({ id, type: 'signatureDeclined' })
         return
       }
-
-      const messages = inputs.map(({ message }) => Buffer.from(message))
 
       const signedMessages = await Promise.all(
         messages.map(async (message) => {
@@ -346,39 +383,72 @@ const BrowserWebViewScreen = () => {
         }),
       )
 
-      postMessage({ type: 'messageSigned', data: signedMessages })
+      postMessage({ id, type: 'messageSigned', data: signedMessages })
     },
     [currentUrl, postMessage, signMsg],
   )
 
   const onMessage = useCallback(
     async (msg: WebViewMessageEvent) => {
+      const { id, type, inputs } = JSON.parse(msg.nativeEvent.data)
+
       if (
         !currentAccount?.address ||
         !currentAccount?.solanaAddress ||
         !anchorProvider ||
         !walletSignBottomSheetRef
       ) {
+        // Reply so the dApp promise does not hang
+        if (id && type) {
+          postMessage({
+            id,
+            type: 'signatureDeclined',
+            error: 'Wallet not ready',
+          })
+        }
         return
       }
 
-      const { type, inputs } = JSON.parse(msg.nativeEvent.data)
-
-      switch (type) {
-        case WalletStandardMessageTypes.connect:
-          await handleConnect()
-          break
-        case WalletStandardMessageTypes.signAndSendTransaction:
-          await handleSignAndSendTransaction(inputs)
-          break
-        case WalletStandardMessageTypes.signTransaction:
-          await handleSignTransaction(inputs)
-          break
-        case WalletStandardMessageTypes.signMessage:
-          await handleSignMessage(inputs)
-          break
-        default:
-          Logger.breadcrumb('Unknown type', type)
+      try {
+        const decline = () =>
+          postMessage({
+            id,
+            type: 'signatureDeclined',
+            error: 'Request pending',
+          })
+        switch (type) {
+          case WalletStandardMessageTypes.connect:
+            await runOneRequest(pendingRequestRef, decline, () =>
+              handleConnect(id),
+            )
+            break
+          case WalletStandardMessageTypes.signAndSendTransaction:
+            await runOneRequest(pendingRequestRef, decline, () =>
+              handleSignAndSendTransaction(id, inputs),
+            )
+            break
+          case WalletStandardMessageTypes.signTransaction:
+            await runOneRequest(pendingRequestRef, decline, () =>
+              handleSignTransaction(id, inputs),
+            )
+            break
+          case WalletStandardMessageTypes.signMessage:
+            await runOneRequest(pendingRequestRef, decline, () =>
+              handleSignMessage(id, inputs),
+            )
+            break
+          default:
+            Logger.breadcrumb('Unknown type', type)
+        }
+      } catch (e) {
+        Logger.error(e)
+        if (
+          type === WalletStandardMessageTypes.signAndSendTransaction ||
+          type === WalletStandardMessageTypes.signTransaction ||
+          type === WalletStandardMessageTypes.signMessage
+        ) {
+          postMessage({ id, type: 'signatureDeclined' })
+        }
       }
     },
     [
@@ -389,6 +459,7 @@ const BrowserWebViewScreen = () => {
       handleSignAndSendTransaction,
       handleSignTransaction,
       handleSignMessage,
+      postMessage,
     ],
   )
 

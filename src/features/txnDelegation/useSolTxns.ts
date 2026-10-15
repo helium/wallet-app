@@ -3,11 +3,11 @@ import {
   BorshInstructionCoder,
   Instruction,
   Program,
-} from '@coral-xyz/anchor'
+} from '@anchor-lang/core'
 import {
   convertIdlToCamelCase,
   IdlInstruction,
-} from '@coral-xyz/anchor/dist/cjs/idl'
+} from '@anchor-lang/core/dist/cjs/idl'
 import {
   decodeEntityKey,
   init,
@@ -142,7 +142,9 @@ const useSolTxns = ({
       if (!signature) return {}
 
       const getTransactionWithInstruction =
-        await connection.getParsedTransaction(signature)
+        await connection.getParsedTransaction(signature, {
+          maxSupportedTransactionVersion: 1,
+        })
 
       const instructions =
         getTransactionWithInstruction?.transaction.message.instructions

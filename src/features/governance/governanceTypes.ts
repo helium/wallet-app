@@ -1,4 +1,4 @@
-import { IdlAccounts } from '@coral-xyz/anchor'
+import { IdlAccounts } from '@anchor-lang/core'
 import { Proposal } from '@helium/modular-governance-idls/lib/types/proposal'
 import { StackNavigationProp } from '@react-navigation/stack'
 import { Color } from '@theme/theme'

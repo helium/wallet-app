@@ -52,7 +52,7 @@ export function useAutomation() {
     }: {
       schedule: Schedule
       duration: number
-      estimate?: {
+      estimate: {
         rentFee: number
         recipientFee: number
         operationalSol: number
@@ -87,9 +87,9 @@ export function useAutomation() {
             message: t('automationScreen.setupAutomationMessage', {
               schedule,
               duration,
-              rentFee: estimate?.rentFee ?? 0,
-              recipientFee: estimate?.recipientFee ?? 0,
-              solFee: Math.max(estimate?.operationalSol ?? 0, 0),
+              rentFee: estimate.rentFee,
+              recipientFee: estimate.recipientFee,
+              solFee: Math.max(estimate.operationalSol, 0),
               interval:
                 schedule === 'daily'
                   ? 'days'
@@ -124,7 +124,7 @@ export function useAutomation() {
     }: {
       additionalDuration: number
       currentSchedule?: { schedule: Schedule }
-      estimate?: { totalSolNeeded: number }
+      estimate: { totalSolNeeded: number }
     }) => {
       if (!walletAddress) throw new Error('Wallet address required')
       if (!anchorProvider) throw new Error('Wallet not connected')
@@ -159,7 +159,7 @@ export function useAutomation() {
                   : currentSchedule?.schedule === 'weekly'
                   ? 'weeks'
                   : 'months',
-              totalFunding: estimate?.totalSolNeeded ?? 0,
+              totalFunding: estimate.totalSolNeeded,
             }),
           }),
         suppressWarnings: false,
@@ -291,9 +291,12 @@ export function useFundingEstimate(duration: number | string | undefined) {
     enabled: !!walletAddress && debouncedDuration > 0,
   })
 
+  // Until the debounce settles, the estimate is for the previous duration
+  const isDebouncing = durationNum !== debouncedDuration
+
   return {
-    estimate,
-    estimateLoading,
+    estimate: isDebouncing ? undefined : estimate,
+    estimateLoading: estimateLoading || isDebouncing,
     estimateError,
   }
 }

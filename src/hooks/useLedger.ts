@@ -5,7 +5,6 @@ import TransportHID from '@ledgerhq/react-native-hid'
 import type { Device } from 'react-native-ble-plx'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { solAddressToHelium } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { PublicKey } from '@solana/web3.js'
@@ -238,7 +237,7 @@ const useLedger = () => {
         const aliasKey = accountIndex === -1 ? 'Root' : accountIndex + 1
 
         const account = {
-          address: solAddressToHelium(bs58.encode(new Uint8Array(address))),
+          address: solAddressToHelium(base58.encode(new Uint8Array(address))),
           balance: balance || 0,
           pathLabel,
           derivationPath: `m/${derivationPath}`, // Store the full parseable path
@@ -246,7 +245,7 @@ const useLedger = () => {
             accountIndex: aliasKey,
           })}`,
           accountIndex,
-          solanaAddress: bs58.encode(new Uint8Array(address)),
+          solanaAddress: base58.encode(new Uint8Array(address)),
           hasBalance: hasBalance || false,
           derivationType,
         }

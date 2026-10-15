@@ -15,24 +15,20 @@ import * as ed25519 from 'ed25519-hd-key'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
+import {
+  HELIUM_DERIVATION,
+  heliumDerivation,
+  MAIN_DERIVATION_PATHS,
+  solanaWithChange,
+  solanaWithoutChange,
+} from '@utils/derivationPaths'
 import { useSolana } from '../solana/SolanaProvider'
 
-export const solanaDerivation = (account = -1, change: number | undefined) => {
-  if (account === -1) {
-    return "m/44'/501'" // main derivation path
-  }
-  if (typeof change !== 'undefined') {
-    return `m/44'/501'/${account}'/${change}'` // sub derivation path
-  }
-  return `m/44'/501'/${account}'` // sub derivation path
-}
-
-const heliumDerivation = (account = -1) => {
-  if (account === -1) {
-    return "m/44'/904'" // main derivation path
-  }
-  return `m/44'/904'/${account}'/0'` // sub derivation path
-}
+export {
+  HELIUM_DERIVATION,
+  MAIN_DERIVATION_PATHS,
+  solanaDerivation,
+} from '@utils/derivationPaths'
 
 export async function keypairFromSeed(
   seed: Buffer,
@@ -60,13 +56,6 @@ export type ResolvedPath = {
   needsMigrated?: boolean
 }
 
-export const HELIUM_DERIVATION = 'Helium L1'
-export const MAIN_DERIVATION_PATHS = [
-  HELIUM_DERIVATION,
-  heliumDerivation(-1),
-  heliumDerivation(0),
-  solanaDerivation(-1, undefined),
-]
 export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
   const { connection } = useSolana()
   const [resolvedGroups, setResolvedGroups] = useState<ResolvedPath[][]>([])
@@ -77,14 +66,6 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
     () => resolvedGroups.flat(),
     [resolvedGroups],
   )
-
-  const solanaWithChange = (start: number, end: number) =>
-    new Array(end - start).fill(0).map((_, i) => solanaDerivation(i + start, 0))
-
-  const solanaWithoutChange = (start: number, end: number) =>
-    new Array(end - start)
-      .fill(0)
-      .map((_, i) => solanaDerivation(i + start, undefined))
 
   const [groups, setGroups] = useState([
     [

@@ -12,6 +12,7 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useSubDao } from '@hooks/useSubDao'
 import { useBalance } from '@utils/Balance'
+import { dcWithHnt } from '@utils/dcWithHnt'
 import {
   IOT_CONFIG_KEY,
   IOT_SUB_DAO_KEY,
@@ -44,6 +45,7 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
   myHnt?: BN
   loadingMyHnt: boolean
   myDcWithHnt?: BN
+  loadingMyDcWithHnt: boolean
   // Onboarding by subdao mint
   onboardingDcRequirements: Record<string, BN>
   loadingOnboardingDcRequirements: boolean
@@ -79,16 +81,15 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
     HNT_MINT,
   )
   const { networkTokensToDc } = useBalance()
-  const myDcWithHnt =
-    !loadingMyDc && !loadingMyHnt
-      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        new BN(myDc?.toString() || '0').add(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          networkTokensToDc(new BN(myHnt?.toString() || '0'))!.div(
-            new BN(100000000),
-          ),
-        )
-      : undefined
+  const hntAsDc = networkTokensToDc(new BN(myHnt?.toString() || '0'))
+  // Loading while the wallet holds HNT and the HNT oracle price is missing
+  const { myDcWithHnt, loadingMyDcWithHnt } = dcWithHnt({
+    myDc,
+    myHnt,
+    hntAsDc,
+    loadingMyDc,
+    loadingMyHnt,
+  })
   const { info: iotSubDao, loading: loadingSubDao } = useSubDao(
     IOT_SUB_DAO_KEY.toBase58(),
     true,
@@ -161,6 +162,7 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
     myHnt: useBN(myHnt),
     loadingMyHnt,
     myDcWithHnt,
+    loadingMyDcWithHnt,
     onboardingDcRequirements,
     loadingOnboardingDcRequirements,
     locationAssertDcRequirements,

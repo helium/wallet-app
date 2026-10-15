@@ -1,4 +1,4 @@
-import { IdlAccounts } from '@coral-xyz/anchor'
+import { IdlAccounts } from '@anchor-lang/core'
 import { mobileInfoKey } from '@helium/helium-entity-manager-sdk'
 import { useAnchorAccount } from '@helium/helium-react-hooks'
 import { HeliumEntityManager } from '@helium/idls/lib/types/helium_entity_manager'

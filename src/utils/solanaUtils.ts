@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-underscore-dangle */
-import { AnchorProvider, BN, IdlAccounts, Program } from '@coral-xyz/anchor'
+import { AnchorProvider, BN, IdlAccounts, Program } from '@anchor-lang/core'
 import { getSingleton } from '@helium/account-fetch-cache'
 import {
   delegatedDataCreditsKey,
@@ -145,21 +145,7 @@ export const isVersionedTransaction = (
   return 'version' in tx
 }
 
-export const isRequiredSigner = (
-  tx: Transaction | VersionedTransaction,
-  pubkey: PublicKey,
-): boolean => {
-  if (isVersionedTransaction(tx)) {
-    const { staticAccountKeys, header } = tx.message
-    return staticAccountKeys
-      .slice(0, header.numRequiredSignatures)
-      .some((k) => k.equals(pubkey))
-  }
-  if (tx.feePayer?.equals(pubkey)) return true
-  return tx.instructions.some((ix) =>
-    ix.keys.some((k) => k.isSigner && k.pubkey.equals(pubkey)),
-  )
-}
+export { isRequiredSigner } from '../solana/signing'
 
 export function humanReadable(
   amount?: BN,
@@ -458,7 +444,7 @@ export const getTxn = async (
   const waitMS = config?.waitMS || 500
 
   const txn = await anchorProvider.connection.getTransaction(signature, {
-    maxSupportedTransactionVersion: 0,
+    maxSupportedTransactionVersion: 1,
   })
 
   const remainingTries = maxTries - 1
@@ -490,7 +476,7 @@ export const getTransactions = async (
     const sigs = transactionList.map(({ signature }) => signature)
     const transactionDetails =
       await anchorProvider.connection.getParsedTransactions(sigs, {
-        maxSupportedTransactionVersion: 0,
+        maxSupportedTransactionVersion: 1,
       })
 
     return transactionDetails
@@ -1537,7 +1523,7 @@ export const getAllTransactions = async (
     const txs = (
       await conn.getTransactions(sigList, {
         commitment: 'confirmed',
-        maxSupportedTransactionVersion: 0,
+        maxSupportedTransactionVersion: 1,
       })
     ).reduce((acc, tx) => {
       const sig = tx?.transaction.signatures[0]

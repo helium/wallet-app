@@ -3,6 +3,8 @@ const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAn
 if (window.heliumWalletInjected) return;
 
 var isConnecting = false
+// Each request carries an id; a listener settles only on the reply with its id
+let nextRequestId = 0
 var parent = isAndroid ? document : window
 
 class PublicKey {
@@ -265,17 +267,19 @@ class HeliumWallet {
 
     #connect = async ({ silent } = {}) => {
         isConnecting = true
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'connect' }))
+        const id = ++nextRequestId
+        window.ReactNativeWebView.postMessage(JSON.stringify({ id, type: 'connect' }))
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
               // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
-                if (parsedData.type === 'connectDeclined') {
+                if (parsedData.id !== id) return
+                if (parsedData.type === 'connectDeclined' || parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    isConnecting = false
-                    reject(new Error('Connection declined'))
+                    if (parsedData.type === 'connectDeclined') isConnecting = false
+                    reject(new Error(parsedData.error || 'Connection declined'))
                 } else if (parsedData.type === 'connectApproved') {
                     parent.removeEventListener('message', listener)
                     this.#connected()
@@ -293,18 +297,20 @@ class HeliumWallet {
 
     #signAndSendTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
+        const id = ++nextRequestId
 
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ type: 'signAndSendTransaction', inputs }),
+            JSON.stringify({ id, type: 'signAndSendTransaction', inputs }),
         )
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
+                if (parsedData.id !== id) return
                 if (parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    reject(new Error('Signature declined'))
+                    reject(new Error(parsedData.error || 'Signature declined'))
                     return
                 }
                 if (parsedData.type !== 'transactionSigned') return
@@ -326,18 +332,20 @@ class HeliumWallet {
 
     #signTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
+        const id = ++nextRequestId
 
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ type: 'signTransaction', inputs }),
+            JSON.stringify({ id, type: 'signTransaction', inputs }),
         )
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
+                if (parsedData.id !== id) return
                 if (parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    reject(new Error('Signature declined'))
+                    reject(new Error(parsedData.error || 'Signature declined'))
                     return
                 }
                 if (parsedData.type !== 'transactionSigned') return
@@ -359,17 +367,19 @@ class HeliumWallet {
 
     #signMessage = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
+        const id = ++nextRequestId
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ type: 'signMessage', inputs }),
+            JSON.stringify({ id, type: 'signMessage', inputs }),
         )
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
+                if (parsedData.id !== id) return
                 if (parsedData.type === 'signatureDeclined') {
                     parent.removeEventListener('message', listener)
-                    reject(new Error('Signature declined'))
+                    reject(new Error(parsedData.error || 'Signature declined'))
                     return
                 }
                 if (parsedData.type !== 'messageSigned') return

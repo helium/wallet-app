@@ -1,4 +1,4 @@
-import type { AnchorProvider, Program } from '@coral-xyz/anchor'
+import type { AnchorProvider, Program } from '@anchor-lang/core'
 import {
   decodeEntityKey,
   init as initHem,

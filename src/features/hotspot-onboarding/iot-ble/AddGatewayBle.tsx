@@ -16,7 +16,6 @@ import {
   HNT_MINT,
   IOT_MINT,
   MOBILE_MINT,
-  bufferToTransaction,
   getAsset,
   truthy,
 } from '@helium/spl-utils'
@@ -26,13 +25,10 @@ import { useKeyToAsset } from '@hooks/useKeyToAsset'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import {
-  LAMPORTS_PER_SOL,
-  Transaction,
-  VersionedTransaction,
-} from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, VersionedTransaction } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
+import { waitingOnHntPrice } from '@utils/dcWithHnt'
 import sleep from '@utils/sleep'
 import { calculateRequiredSol, getHotspotWithRewards } from '@utils/solanaUtils'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
@@ -66,7 +62,9 @@ const AddGatewayBle = () => {
     makerDc,
     loadingMakerSol,
     loadingMySol,
+    myDc,
     myDcWithHnt,
+    loadingMyDcWithHnt,
     loadingMyDc,
     makerSol,
     loadingMakerDc,
@@ -111,10 +109,16 @@ const AddGatewayBle = () => {
     !loadingMySol &&
     !loadingRequiredSol &&
     (mySol || new BN(0)).lt(REQUIRED_SOL)
+  const waitingOnPrice = waitingOnHntPrice({
+    loadingMyDcWithHnt,
+    myDc,
+    requiredDc,
+  })
+  // DC alone can cover the cost while the HNT price is missing
   const insufficientMyDcBal =
     !loadingOnboardingDcRequirements &&
-    !loadingMyDc &&
-    (myDcWithHnt || new BN(0)).lt(requiredDc)
+    !waitingOnPrice &&
+    (myDcWithHnt || myDc || new BN(0)).lt(requiredDc)
 
   const { implicitBurn } = useImplicitBurn()
   const { submitAndAwait } = useSubmitAndAwait()
@@ -228,24 +232,16 @@ const AddGatewayBle = () => {
         networkDetails: [{ hotspotType: network }],
       })
 
-      let solanaSignedTransactions: Transaction[] | undefined
-
-      if (solanaTransactions) {
-        solanaSignedTransactions =
-          await anchorProvider?.wallet.signAllTransactions(
-            solanaTransactions.map((txn) => {
-              return bufferToTransaction(Buffer.from(txn, 'base64'))
-            }),
-          )
-      }
-
-      if (solanaSignedTransactions) {
+      if (solanaTransactions?.length) {
         const paramsHash = hashTagParams({ hotspot: onboardingAddress })
         const tag = `onboard-hotspot-${paramsHash}`
-        const transactionData = toTransactionData(solanaSignedTransactions, {
-          tag,
-          metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
-        })
+        const transactionData = toTransactionData(
+          solanaTransactions.map((txn) => Buffer.from(txn, 'base64')),
+          {
+            tag,
+            metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
+          },
+        )
         await submitAndAwait({ transactionData })
       }
     }
@@ -289,6 +285,7 @@ const AddGatewayBle = () => {
     loadingMakerDc ||
     loadingMakerSol ||
     loadingMyDc ||
+    waitingOnPrice ||
     loadingMySol ||
     loadingOnboardingDcRequirements ||
     loadingRequiredSol

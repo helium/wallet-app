@@ -121,7 +121,10 @@ const AutomationSetupScreen = () => {
   }, [hotspotsWithMeta])
 
   const error =
-    createAutomationError || fundAutomationError || closeAutomationError
+    createAutomationError ||
+    fundAutomationError ||
+    closeAutomationError ||
+    estimate.estimateError
 
   // Calculate insufficient SOL for create flow
   const insufficientSol = useMemo(() => {
@@ -160,19 +163,17 @@ const AutomationSetupScreen = () => {
   }, [])
 
   const handleSave = useCallback(async () => {
-    if (!totalHotspots) return
+    if (!totalHotspots || !estimate.estimate) return
 
     try {
       await createAutomation({
         schedule: selectedSchedule,
         duration: parseInt(duration, 10),
-        estimate: estimate.estimate
-          ? {
-              rentFee: estimate.estimate.rentFee,
-              recipientFee: estimate.estimate.recipientFee,
-              operationalSol: estimate.estimate.operationalSol,
-            }
-          : undefined,
+        estimate: {
+          rentFee: estimate.estimate.rentFee,
+          recipientFee: estimate.estimate.recipientFee,
+          operationalSol: estimate.estimate.operationalSol,
+        },
       })
       navigation.goBack()
     } catch (e) {
@@ -197,15 +198,13 @@ const AutomationSetupScreen = () => {
   }, [closeAutomation, navigation])
 
   const handleFundAutomation = useCallback(async () => {
-    if (!duration) return
+    if (!duration || !estimate.estimate) return
 
     try {
       await fundAutomation({
         additionalDuration: parseInt(duration, 10),
         currentSchedule,
-        estimate: estimate.estimate
-          ? { totalSolNeeded: estimate.estimate.totalSolNeeded }
-          : undefined,
+        estimate: { totalSolNeeded: estimate.estimate.totalSolNeeded },
       })
       setDuration('')
       navigation.goBack()
@@ -370,6 +369,7 @@ const AutomationSetupScreen = () => {
                   showRecipientFee
                 />
               )}
+              {estimate.estimateLoading && <CircleLoader marginBottom="m" />}
             </>
           ) : (
             <>
@@ -453,6 +453,9 @@ const AutomationSetupScreen = () => {
               showRecipientFee={!!totalHotspots && hotspotsNeedingRecipient > 0}
             />
           )}
+          {!hasExistingAutomation && estimate.estimateLoading && (
+            <CircleLoader marginBottom="m" />
+          )}
 
           {hasExistingAutomation ? (
             <>
@@ -469,7 +472,9 @@ const AutomationSetupScreen = () => {
                   backgroundColorOpacityPressed={0.7}
                   titleColorDisabled="secondaryText"
                   titleColor="black"
-                  disabled={!duration || fundAutomationLoading}
+                  disabled={
+                    !duration || fundAutomationLoading || !estimate.estimate
+                  }
                   TrailingComponent={
                     fundAutomationLoading ? (
                       <CircleLoader loaderSize={20} color="black" />
@@ -523,7 +528,8 @@ const AutomationSetupScreen = () => {
                 insufficientSol ||
                 !selectedSchedule ||
                 !duration ||
-                createAutomationLoading
+                createAutomationLoading ||
+                !estimate.estimate
               }
               TrailingComponent={
                 createAutomationLoading ? (

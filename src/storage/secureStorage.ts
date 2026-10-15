@@ -63,6 +63,26 @@ export function toSecureAccount({
   }
 }
 
+// Derives keypairs at any path from one mnemonic; computes the seed once
+export const mnemonicDeriver = (mnemonic: string[]) => {
+  const seed = bip39.mnemonicToSeedSync(mnemonic.join(' '), '')
+  return async (derivationPath: string) => {
+    if (derivationPath === HELIUM_DERIVATION) {
+      try {
+        return SolanaKeypair.fromSecretKey(
+          new Uint8Array(
+            (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
+          ),
+        )
+      } catch (e) {
+        console.error(`Error deriving keypair at ${derivationPath}`, e)
+        return null
+      }
+    }
+    return keypairFromSeed(seed, derivationPath)
+  }
+}
+
 export const DEFAULT_DERIVATION_PATH = "m/44'/501'/0'/0'"
 export const createKeypair = async ({
   givenMnemonic = null,
@@ -79,16 +99,9 @@ export const createKeypair = async ({
   } else {
     mnemonic = givenMnemonic
   }
-  const seed = bip39.mnemonicToSeedSync(mnemonic.join(' '), '')
-  let keypair
-  if (derivationPath === HELIUM_DERIVATION) {
-    keypair = SolanaKeypair.fromSecretKey(
-      new Uint8Array(
-        (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
-      ),
-    )
-  } else {
-    keypair = await keypairFromSeed(seed, derivationPath)
+  const keypair = await mnemonicDeriver(mnemonic)(derivationPath)
+  if (!keypair) {
+    throw new Error(`Cannot derive a keypair at ${derivationPath}`)
   }
 
   return { keypair, words: mnemonic }
