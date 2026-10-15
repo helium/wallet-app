@@ -49,7 +49,7 @@ import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
-  const { currentAccount } = useAccountStorage()
+  const { currentAccount, secureAccountsVersion } = useAccountStorage()
   const dispatch = useAppDispatch()
   const cluster = useSelector(
     (state: RootState) => state.app.cluster || 'mainnet-beta',
@@ -65,12 +65,12 @@ const useSolanaHook = () => {
     [currentAccount?.address],
   )
   const { result: secureAcct } = useAsync(
-    async (addr: string | undefined) => {
+    async (addr: string | undefined, _secureAccountsVersion: number) => {
       if (addr) {
         return getSolanaKeypair(addr)
       }
     },
-    [address],
+    [address, secureAccountsVersion],
   )
 
   const accountSigners = useCallback(

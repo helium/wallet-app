@@ -46,6 +46,9 @@ const { VIEW_AS } = Config
 
 export const MAX_ACCOUNTS = 50
 
+const hashMnemonic = (mnemonic: string[]) =>
+  createHash('sha256').update(mnemonic.join(' ')).digest('hex')
+
 const useAccountStorageHook = () => {
   const [currentAccount, setCurrentAccount] = useState<
     CSAccount | null | undefined
@@ -53,6 +56,8 @@ const useAccountStorageHook = () => {
   const [accounts, setAccounts] = useState<CSAccounts>()
   const [contacts, setContacts] = useState<CSAccount[]>([])
   const [defaultAccountAddress, setDefaultAccountAddress] = useState<string>()
+  // Bumped on every private key write, so readers that cache a key reload it
+  const [secureAccountsVersion, setSecureAccountsVersion] = useState(0)
 
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
@@ -206,12 +211,11 @@ const useAccountStorageHook = () => {
     }: Omit<CSAccount, 'netType'> & { secureAccount?: SecureAccount }) => {
       if (secureAccount) {
         await storeSecureAccount(secureAccount)
+        setSecureAccountsVersion((v) => v + 1)
       }
 
       const mnemonicHash = secureAccount?.mnemonic
-        ? createHash('sha256')
-            .update(secureAccount.mnemonic.join(' '))
-            .digest('hex')
+        ? hashMnemonic(secureAccount.mnemonic)
         : csAccount.mnemonicHash
 
       const solanaAddress =
@@ -274,6 +278,39 @@ const useAccountStorageHook = () => {
       await updateCloudAccounts(nextAccounts)
 
       await Promise.all(Object.keys(bulkAccounts).map(tagAccount))
+    },
+    [accounts],
+  )
+
+  // Stores the restored private keys and keeps each account record, adding the
+  // derivation path the key was found at. The first account becomes current.
+  const restoreSecureAccounts = useCallback(
+    async (
+      accountKeys: Array<{ account: CSAccount; secureAccount: SecureAccount }>,
+    ) => {
+      if (!accountKeys.length) return
+
+      await Promise.all(
+        accountKeys.map(({ secureAccount }) =>
+          storeSecureAccount(secureAccount),
+        ),
+      )
+      setSecureAccountsVersion((v) => v + 1)
+
+      const nextAccounts: CSAccounts = { ...accounts }
+      accountKeys.forEach(({ account, secureAccount }) => {
+        nextAccounts[account.address] = {
+          ...account,
+          derivationPath: secureAccount.derivationPath,
+          mnemonicHash: secureAccount.mnemonic
+            ? hashMnemonic(secureAccount.mnemonic)
+            : account.mnemonicHash,
+        }
+      })
+
+      setAccounts(nextAccounts)
+      setCurrentAccount(nextAccounts[accountKeys[0].account.address])
+      await updateCloudAccounts(nextAccounts)
     },
     [accounts],
   )
@@ -399,6 +436,8 @@ const useAccountStorageHook = () => {
     hasAccounts,
     reachedAccountLimit,
     restored,
+    restoreSecureAccounts,
+    secureAccountsVersion,
     setCurrentAccount,
     signOut,
     sortedAccounts,
@@ -426,6 +465,8 @@ const initialState = {
   hasAccounts: false,
   reachedAccountLimit: false,
   restored: false,
+  restoreSecureAccounts: async () => undefined,
+  secureAccountsVersion: 0,
   setCurrentAccount: () => undefined,
   signOut: async () => undefined,
   sortedAccounts: [],

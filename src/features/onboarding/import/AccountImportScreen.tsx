@@ -11,14 +11,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { MAIN_DERIVATION_PATHS } from '@hooks/useDerivationAccounts'
-import { Keypair } from '@solana/web3.js'
-import { CSAccount } from '@storage/cloudStorage'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
-import { createKeypair, toSecureAccount } from '../../../storage/secureStorage'
+import {
+  mnemonicDeriver,
+  toSecureAccount,
+} from '../../../storage/secureStorage'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
 import PassphraseAutocomplete from './PassphraseAutocomplete'
+import { matchRestoredAccounts } from './accountRestore'
 import {
   ImportAccountNavigationProp,
   ImportAccountStackParamList,
@@ -42,7 +43,7 @@ const accentColors = [
 type Route = RouteProp<ImportAccountStackParamList, 'AccountImportScreen'>
 const AccountImportScreen = () => {
   const { setOnboardingData, reset } = useOnboarding()
-  const { upsertAccount, hasAccounts, accounts } = useAccountStorage()
+  const { restoreSecureAccounts, hasAccounts, accounts } = useAccountStorage()
   const navigation = useNavigation<ImportAccountNavigationProp>()
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
@@ -148,79 +149,35 @@ const AccountImportScreen = () => {
 
   const handleNext = useCallback(async () => {
     try {
-      let keypair: Keypair | undefined
       const filteredWords: string[] = words.flatMap((w) => (w ? [w] : []))
-      const foundDerivation = Object.values(accounts || {}).find(
-        (a) => a.address === accountAddress,
-      )?.derivationPath
-
-      if (foundDerivation) {
-        keypair = (
-          await createKeypair({
-            givenMnemonic: filteredWords,
-            use24Words: words?.length === 24,
-            derivationPath: foundDerivation,
-          })
-        ).keypair
-      }
 
       if (restoringAccount) {
-        let restoredAccount: CSAccount | undefined
-        if (!accounts || !accountAddress) {
+        const restored =
+          accounts && accountAddress
+            ? await matchRestoredAccounts({
+                accounts,
+                accountAddress,
+                derive: mnemonicDeriver(filteredWords),
+              })
+            : []
+
+        if (!restored.length) {
           await showOKAlert({
             title: t('restoreAccount.errorAlert.title'),
             message: t('restoreAccount.errorAlert.message'),
           })
           return
         }
-
-        if (keypair) {
-          restoredAccount = Object.values(accounts).find(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            (a) => a.solanaAddress === keypair!.publicKey.toBase58(),
-          )
-        } else {
-          const keypairs = await Promise.all(
-            MAIN_DERIVATION_PATHS.map((dpath) =>
-              createKeypair({
-                givenMnemonic: filteredWords,
-                use24Words: words?.length === 24,
-                derivationPath: dpath,
-              }),
-            ),
-          )
-
-          restoredAccount = Object.values(accounts).find((a) =>
-            keypairs.some(
-              (k) => a.solanaAddress === k.keypair.publicKey.toBase58(),
-            ),
-          )
-
-          if (restoredAccount) {
-            keypair = keypairs.find(
-              (k) =>
-                restoredAccount?.solanaAddress ===
-                k.keypair.publicKey.toBase58(),
-            )?.keypair
-          }
-        }
-
-        if (
-          !keypair ||
-          !restoredAccount ||
-          accountAddress !== restoredAccount.address
-        ) {
-          await showOKAlert({
-            title: t('restoreAccount.errorAlert.title'),
-            message: t('restoreAccount.errorAlert.message'),
-          })
-          return
-        }
-        await upsertAccount({
-          alias: restoredAccount.alias,
-          address: restoredAccount.address,
-          secureAccount: toSecureAccount({ keypair, words: filteredWords }),
-        })
+        await restoreSecureAccounts(
+          restored.map(({ account, keypair, derivationPath }) => ({
+            account,
+            secureAccount: toSecureAccount({
+              keypair,
+              words: filteredWords,
+              derivationPath,
+            }),
+          })),
+        )
         reset()
         navigation.popToTop()
       } else {
@@ -238,7 +195,7 @@ const AccountImportScreen = () => {
     restoringAccount,
     accounts,
     accountAddress,
-    upsertAccount,
+    restoreSecureAccounts,
     reset,
     navigation,
     showOKAlert,
