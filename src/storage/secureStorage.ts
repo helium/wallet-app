@@ -68,11 +68,16 @@ export const mnemonicDeriver = (mnemonic: string[]) => {
   const seed = bip39.mnemonicToSeedSync(mnemonic.join(' '), '')
   return async (derivationPath: string) => {
     if (derivationPath === HELIUM_DERIVATION) {
-      return SolanaKeypair.fromSecretKey(
-        new Uint8Array(
-          (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
-        ),
-      )
+      try {
+        return SolanaKeypair.fromSecretKey(
+          new Uint8Array(
+            (await Keypair.fromMnemonic(new Mnemonic(mnemonic))).privateKey,
+          ),
+        )
+      } catch (e) {
+        console.error(`Error deriving keypair at ${derivationPath}`, e)
+        return null
+      }
     }
     return keypairFromSeed(seed, derivationPath)
   }
