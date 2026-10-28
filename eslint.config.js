@@ -1,0 +1,114 @@
+const reactNativeConfig = require('@react-native/eslint-config/flat')
+const importX = require('eslint-plugin-import-x')
+const prettierRecommended = require('eslint-plugin-prettier/recommended')
+const reactHooks = require('eslint-plugin-react-hooks')
+const tseslint = require('typescript-eslint')
+
+const tsFiles = ['**/*.ts', '**/*.tsx']
+
+// React Compiler rules stay at warn until the compiler is adopted.
+const reactCompilerRules = Object.fromEntries(
+  Object.keys(reactHooks.configs.flat.recommended.rules)
+    .filter(
+      (rule) =>
+        rule !== 'react-hooks/rules-of-hooks' &&
+        rule !== 'react-hooks/exhaustive-deps',
+    )
+    .map((rule) => [rule, 'warn']),
+)
+
+module.exports = [
+  {
+    ignores: [
+      'metro.config.js',
+      'metro.transformer.js',
+      'babel.config.js',
+      'jest.config.js',
+      'eslint.config.js',
+      'plugins/',
+      '.*/',
+      'ios/',
+      'android/',
+      'coverage/',
+    ],
+  },
+  ...reactNativeConfig,
+  // eslint-plugin-ft-flow 2 calls context APIs that ESLint 9 removed, and the
+  // app has no Flow code.
+  {
+    files: ['**/*.js'],
+    rules: {
+      'ft-flow/define-flow-type': 'off',
+      'ft-flow/use-flow-type': 'off',
+    },
+  },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: tsFiles,
+  })),
+  {
+    plugins: { 'import-x': importX },
+    rules: {
+      ...reactCompilerRules,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
+      'no-console': ['error', { allow: ['warn', 'error'] }],
+      // `void` marks a promise that is left unawaited on purpose.
+      'no-void': 'off',
+      'no-param-reassign': [
+        'error',
+        { props: true, ignorePropertyModificationsFor: ['acc', 'accumulator'] },
+      ],
+      'import-x/no-duplicates': 'error',
+      'import-x/no-extraneous-dependencies': 'error',
+      'no-restricted-properties': [
+        'error',
+        {
+          property: 'navigateDeprecated',
+          message:
+            'Use navigate, popTo, or navigate(name, params, { pop: true }).',
+        },
+      ],
+    },
+  },
+  {
+    files: tsFiles,
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: __dirname,
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-floating-promises': 'error',
+      // Async JSX handlers stay allowed; promises passed anywhere else must
+      // be handled.
+      '@typescript-eslint/no-misused-promises': [
+        'error',
+        { checksVoidReturn: { attributes: false } },
+      ],
+      '@typescript-eslint/await-thenable': 'error',
+      // Metro loads assets and locale JSON through require.
+      '@typescript-eslint/no-require-imports': [
+        'error',
+        { allow: ['\\.json$', '\\.png$'] },
+      ],
+    },
+  },
+  {
+    files: ['**/*Slice.ts'],
+    rules: {
+      'no-param-reassign': 'off',
+    },
+  },
+  prettierRecommended,
+  {
+    rules: {
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    },
+  },
+]
