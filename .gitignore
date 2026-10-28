@@ -84,3 +84,8 @@ yalc.lock
 !.yarn/versions
 
 .kotlin/
+
+# Maestro surfpool run state
+.maestro/surfpool/surfpool.log
+.maestro/surfpool/surfpool.pid
+.maestro/surfpool/.surfpool/

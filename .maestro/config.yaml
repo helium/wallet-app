@@ -11,5 +11,5 @@ executionOrder:
     - 04-swap-review
     - 05-governance-review
     - 06-migration-review
-    - 07-send-devnet
+    - 07-send
     - 08-settings

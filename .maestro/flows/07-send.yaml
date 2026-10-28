@@ -1,14 +1,10 @@
-# Devnet: send 0.001 HNT from the fixture account to
-# MAESTRO_DEVNET_RECIPIENT. This submits a real devnet transaction.
+# Send 0.001 HNT from the fixture account to MAESTRO_RECIPIENT. This
+# submits a transaction to the local surfpool fork.
 appId: com.helium.wallet.app
 tags:
   - payment
 ---
 - runFlow: ../subflows/home.yaml
-- runFlow:
-    file: ../subflows/set-cluster.yaml
-    env:
-      CLUSTER: devnet
 - tapOn:
     id: AccountActionBar.Send
 - runFlow:
@@ -18,7 +14,7 @@ tags:
     file: ../subflows/enter-pin.yaml
 - tapOn:
     id: PaymentItem.Address
-- inputText: ${MAESTRO_DEVNET_RECIPIENT}
+- inputText: ${MAESTRO_RECIPIENT}
 - hideKeyboard
 - tapOn:
     id: PaymentItem.Amount

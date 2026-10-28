@@ -1,4 +1,4 @@
-# Switches the cluster back to mainnet, then adds a new account
+# Selects the mainnet cluster, then adds a new account
 # from the wallet list.
 appId: com.helium.wallet.app
 tags:
