@@ -139,6 +139,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   return (
     <BottomSheetFlatList
+      contentInsetAdjustmentBehavior="automatic"
       onLayout={onLayout}
       data={mints}
       numColumns={2}

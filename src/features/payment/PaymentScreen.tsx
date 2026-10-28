@@ -765,6 +765,7 @@ const PaymentScreen = () => {
                 </Box>
 
                 <KeyboardAwareScrollView
+                  contentInsetAdjustmentBehavior="automatic"
                   enableOnAndroid
                   enableResetScrollToCoords={false}
                   keyboardShouldPersistTaps="always"

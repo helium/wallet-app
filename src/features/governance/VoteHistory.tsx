@@ -108,6 +108,7 @@ export const VoteHistory: React.FC<{
 
   return (
     <FlatList
+      contentInsetAdjustmentBehavior="automatic"
       ListHeaderComponent={header}
       keyExtractor={keyExtractor}
       data={dedupedVoteHistories}

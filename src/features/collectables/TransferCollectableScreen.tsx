@@ -36,7 +36,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
-import { ww } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 import * as Logger from '../../utils/logger'
 import { createTransferCollectableMessage } from '../../utils/solanaUtils'
 import {
@@ -53,7 +53,7 @@ type Route = RouteProp<CollectableStackParamList, 'TransferCollectableScreen'>
 const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const COLLECTABLE_HEIGHT = ww
+  const COLLECTABLE_HEIGHT = useContentWidth()
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -209,7 +209,7 @@ const TransferCollectableScreen = () => {
             enabled
             keyboardVerticalOffset={100}
           >
-            <ScrollView>
+            <ScrollView contentInsetAdjustmentBehavior="automatic">
               <SafeAreaBox
                 edges={safeEdges}
                 backgroundColor="transparent"

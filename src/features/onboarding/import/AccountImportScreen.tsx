@@ -252,6 +252,7 @@ const AccountImportScreen = () => {
         <Close color={colors.primaryText} height={16} width={16} />
       </TouchableOpacityBox>
       <KeyboardAwareScrollView
+        contentInsetAdjustmentBehavior="automatic"
         extraScrollHeight={80}
         enableOnAndroid
         keyboardShouldPersistTaps="always"
@@ -269,6 +270,7 @@ const AccountImportScreen = () => {
           {t('accountImport.wordEntry.title', { totalWords: wordCount })}
         </Text>
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           data={words}
           contentContainerStyle={flatListStyle}
           renderItem={renderItem}

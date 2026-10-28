@@ -366,6 +366,7 @@ const BurnScreen = () => {
               </Box>
 
               <KeyboardAwareScrollView
+                contentInsetAdjustmentBehavior="automatic"
                 enableOnAndroid
                 keyboardShouldPersistTaps="always"
               >

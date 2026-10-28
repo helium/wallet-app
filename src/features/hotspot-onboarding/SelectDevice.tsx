@@ -76,6 +76,7 @@ const SelectOnboardableDevice = () => {
         {t('hotspotOnboarding.selectOnboardingMethod.subtitle')}
       </Text>
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         data={data}
         renderItem={renderItem}
         keyExtractor={keyExtractor}

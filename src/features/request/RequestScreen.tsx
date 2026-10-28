@@ -255,7 +255,10 @@ const RequestScreen = () => {
               onItemSelected={handleRequestTypePress}
               marginVertical="l"
             />
-            <KeyboardAwareScrollView enableOnAndroid>
+            <KeyboardAwareScrollView
+              contentInsetAdjustmentBehavior="automatic"
+              enableOnAndroid
+            >
               <Box marginHorizontal="l">
                 <Box
                   height={QR_CONTAINER_SIZE}

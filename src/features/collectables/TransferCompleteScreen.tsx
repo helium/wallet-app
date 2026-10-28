@@ -22,7 +22,7 @@ import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { Collectable, CompressedNFT } from '../../types/solana'
-import { ww } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 import { CollectableStackParamList } from './collectablesTypes'
 
 LogBox.ignoreLogs([
@@ -34,7 +34,7 @@ type Route = RouteProp<CollectableStackParamList, 'TransferCompleteScreen'>
 const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<TabBarNavigationProp>()
-  const COLLECTABLE_HEIGHT = ww
+  const COLLECTABLE_HEIGHT = useContentWidth()
   const backEdges = useMemo(() => ['top'] as Edge[], [])
   const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
 

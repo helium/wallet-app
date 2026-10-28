@@ -268,7 +268,7 @@ export const WalletSignBottomSheetSimulated = ({
           )}
 
           <Box flexDirection="column" maxHeight={500}>
-            <ScrollView>
+            <ScrollView contentInsetAdjustmentBehavior="automatic">
               <Box flexDirection="row" alignItems="center">
                 <Text variant="subtitle2" mr="s">
                   {t('browserScreen.estimatedChanges')}

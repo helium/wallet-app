@@ -75,6 +75,7 @@ const ImportReplaceWordModal = ({
         <Box marginTop={{ smallPhone: 'l', phone: 'xxxl' }}>
           <Box minHeight={53}>
             <ScrollView
+              contentInsetAdjustmentBehavior="automatic"
               horizontal
               keyboardShouldPersistTaps="always"
               keyboardDismissMode="none"

@@ -36,7 +36,10 @@ export const GlobalError = ({
         <Text variant="body1" color="white" marginBottom="l" marginTop="s">
           {t('crash.subTitle')}
         </Text>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
           <Text variant="body3Bold" color="red500">
             {error.message}
           </Text>

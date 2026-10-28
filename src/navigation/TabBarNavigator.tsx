@@ -14,6 +14,7 @@ import NavBar, { NavBarHeight } from '@components/NavBar'
 import { Color } from '@theme/theme'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
+import { contentColumnLayout } from '@components/ContentColumn'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
@@ -189,6 +190,7 @@ const TabBarNavigator = () => {
         )}
       <Tab.Navigator
         tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
+        screenLayout={contentColumnLayout}
         screenOptions={{
           headerShown: false,
           lazy: true,

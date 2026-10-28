@@ -21,6 +21,7 @@ import React, {
   useMemo,
   useRef,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from './Box'
 import ListItem, { LIST_ITEM_HEIGHT } from './ListItem'
@@ -69,6 +70,7 @@ const TokenSelector = forwardRef(
 
     const { bottom } = useSafeAreaInsets()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { secondaryText } = useColors()
@@ -131,6 +133,7 @@ const TokenSelector = forwardRef(
         <Box flex={1} {...boxProps}>
           <BottomSheetModal
             ref={bottomSheetModalRef}
+            style={sheetMargins}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
@@ -139,6 +142,7 @@ const TokenSelector = forwardRef(
             handleIndicatorStyle={handleIndicatorStyle}
           >
             <BottomSheetFlatList
+              contentInsetAdjustmentBehavior="automatic"
               data={tokenData}
               renderItem={renderFlatlistItem}
               keyExtractor={keyExtractor}

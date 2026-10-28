@@ -164,6 +164,7 @@ const WifiSettings = () => {
         </Text>
       )}
       <SectionList
+        contentInsetAdjustmentBehavior="automatic"
         sections={sections}
         renderItem={renderItem}
         keyExtractor={keyExtractor}

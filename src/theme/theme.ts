@@ -1,5 +1,5 @@
 import { createTheme } from '@shopify/restyle'
-import { responsiveFontSize } from '@utils/layout'
+import { responsiveFontSize, WindowSize } from '@utils/layout'
 
 export const Font = {
   italic: 'DMSans-Italic',
@@ -10,77 +10,77 @@ export const Font = {
   boldItalic: 'DMSans-BoldItalic',
 }
 
-const textVariants = {
+const createTextVariants = (window: WindowSize) => ({
   defaults: {},
   h0: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(42),
-    lineHeight: responsiveFontSize(44),
+    fontSize: responsiveFontSize(42, window),
+    lineHeight: responsiveFontSize(44, window),
     color: 'primaryText',
   },
   h1: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(37),
+    fontSize: responsiveFontSize(37, window),
     color: 'primaryText',
   },
   h2: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(33),
+    fontSize: responsiveFontSize(33, window),
     color: 'primaryText',
   },
   h3: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(27),
+    fontSize: responsiveFontSize(27, window),
     color: 'primaryText',
   },
   h4: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(22),
+    fontSize: responsiveFontSize(22, window),
     color: 'primaryText',
   },
   subtitle1: {
     fontFamily: Font.medium,
-    fontSize: responsiveFontSize(20),
+    fontSize: responsiveFontSize(20, window),
     color: 'primaryText',
   },
   subtitle2: {
     fontFamily: Font.medium,
-    fontSize: responsiveFontSize(19),
+    fontSize: responsiveFontSize(19, window),
     color: 'primaryText',
   },
   subtitle3: {
     fontFamily: Font.medium,
-    fontSize: responsiveFontSize(17),
+    fontSize: responsiveFontSize(17, window),
     color: 'primaryText',
   },
   subtitle4: {
     fontFamily: Font.medium,
-    fontSize: responsiveFontSize(14),
+    fontSize: responsiveFontSize(14, window),
     color: 'primaryText',
   },
   body0: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(21),
+    fontSize: responsiveFontSize(21, window),
     color: 'primaryText',
   },
   body1: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(16),
+    fontSize: responsiveFontSize(16, window),
     color: 'primaryText',
   },
   body2: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(14),
+    fontSize: responsiveFontSize(14, window),
     color: 'primaryText',
   },
   body3: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(12),
+    fontSize: responsiveFontSize(12, window),
     color: 'primaryText',
   },
   body4: {
     fontFamily: Font.regular,
-    fontSize: responsiveFontSize(8),
+    fontSize: responsiveFontSize(8, window),
     color: 'primaryText',
   },
   regular: {
@@ -92,9 +92,11 @@ const textVariants = {
   bold: {
     fontFamily: Font.bold,
   },
-}
+})
 
-const generateFontVariants = (baseVariants: typeof textVariants) => {
+const generateFontVariants = (
+  baseVariants: ReturnType<typeof createTextVariants>,
+) => {
   const variants: Record<string, any> = { ...baseVariants }
 
   const baseTypes = ['body0', 'body1', 'body2', 'body3', 'h1', 'h2', 'h3', 'h4']
@@ -266,132 +268,137 @@ export const darkThemeColors = {
   transparent: palette.transparent,
 }
 
-export const theme = createTheme({
-  colors: lightThemeColors,
-  spacing: {
-    n_xxxxl: -240,
-    n_xxxl: -60,
-    n_xxl: -48,
-    n_xl: -32,
-    n_lx: -28,
-    n_l: -24,
-    n_lm: -20,
-    n_m: -16,
-    n_ms: -12,
-    n_s: -8,
-    n_xs: -4,
-    n_xxs: -2,
-    n_xxxs: -1,
-    none: 0,
-    xxxs: 1,
-    xxs: 2,
-    xs: 4,
-    sx: 6,
-    s: 8,
-    ms: 12,
-    m: 16,
-    lm: 20,
-    l: 24,
-    lx: 28,
-    xl: 32,
-    xxl: 48,
-    xxxl: 60,
-    xxxxl: 240,
-  },
-  borderRadii: {
-    none: 0,
-    s: 4,
-    ms: 6,
-    m: 8,
-    lm: 10,
-    l: 12,
-    lx: 16,
-    xl: 20,
-    xxl: 35,
-    round: 9999,
-  },
-  breakpoints: {
-    smallPhone: 0,
-    phone: 380,
-    largePhone: 430,
-    tablet: 768,
-  },
-  cardVariants: {
-    defaults: {},
-    regular: {
-      padding: 'ms',
-      borderRadius: 'ms',
-      backgroundColor: 'surface',
+// Font sizes follow the window, so the app builds its theme from the current
+// window size (see App.tsx) and rebuilds it when the window resizes
+export const createAppTheme = (window: WindowSize) => {
+  const textVariants = createTextVariants(window)
+  return createTheme({
+    colors: lightThemeColors,
+    spacing: {
+      n_xxxxl: -240,
+      n_xxxl: -60,
+      n_xxl: -48,
+      n_xl: -32,
+      n_lx: -28,
+      n_l: -24,
+      n_lm: -20,
+      n_m: -16,
+      n_ms: -12,
+      n_s: -8,
+      n_xs: -4,
+      n_xxs: -2,
+      n_xxxs: -1,
+      none: 0,
+      xxxs: 1,
+      xxs: 2,
+      xs: 4,
+      sx: 6,
+      s: 8,
+      ms: 12,
+      m: 16,
+      lm: 20,
+      l: 24,
+      lx: 28,
+      xl: 32,
+      xxl: 48,
+      xxxl: 60,
+      xxxxl: 240,
     },
-    elevated: {
-      shadowColor: 'surface',
-      borderRadius: 'm',
-      shadowOffset: {
-        width: 0,
-        height: 9,
+    borderRadii: {
+      none: 0,
+      s: 4,
+      ms: 6,
+      m: 8,
+      lm: 10,
+      l: 12,
+      lx: 16,
+      xl: 20,
+      xxl: 35,
+      round: 9999,
+    },
+    breakpoints: {
+      smallPhone: 0,
+      phone: 380,
+      largePhone: 430,
+      tablet: 768,
+    },
+    cardVariants: {
+      defaults: {},
+      regular: {
+        padding: 'ms',
+        borderRadius: 'ms',
+        backgroundColor: 'surface',
       },
-      shadowOpacity: 0.3,
-      shadowRadius: 6,
-      elevation: 9,
+      elevated: {
+        shadowColor: 'surface',
+        borderRadius: 'm',
+        shadowOffset: {
+          width: 0,
+          height: 9,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        elevation: 9,
+      },
+      modal: {
+        backgroundColor: 'surface',
+        borderRadius: 'xl',
+      },
     },
-    modal: {
-      backgroundColor: 'surface',
-      borderRadius: 'xl',
+    textVariants: generateFontVariants(textVariants),
+    inputVariants: {
+      defaults: {},
+      plain: {
+        color: 'primaryText',
+        fontSize: responsiveFontSize(19, window),
+        paddingBottom: 'm',
+        paddingTop: 'm',
+        paddingHorizontal: 'xl',
+        backgroundColor: 'plainInputBackground',
+      },
+      regular: {
+        color: 'primaryText',
+        fontSize: 19,
+        padding: 'm',
+        backgroundColor: 'regularInputBackground',
+        borderRadius: 'lm',
+      },
+      transparent: {
+        color: 'primaryText',
+        fontSize: 19,
+        padding: 'm',
+        backgroundColor: 'transparent',
+        borderRadius: 'lm',
+      },
+      underline: {
+        fontSize: textVariants.h1.fontSize,
+        color: 'purple500',
+        borderBottomColor: 'purple500',
+        borderBottomWidth: 2,
+        paddingBottom: 'xs',
+      },
+      thickBlur: {
+        padding: 'm',
+        borderRadius: 'xl',
+        backgroundColor: 'transparent10',
+      },
+      thickDark: {
+        padding: 'm',
+        borderRadius: 'xl',
+        backgroundColor: 'surfaceSecondary',
+      },
+      transparentSmall: {
+        color: 'primaryText',
+        fontSize: 16,
+        padding: 's',
+        paddingHorizontal: 'm',
+        backgroundColor: 'transparent',
+      },
     },
-  },
-  textVariants: generateFontVariants(textVariants),
-  inputVariants: {
-    defaults: {},
-    plain: {
-      color: 'primaryText',
-      fontSize: responsiveFontSize(19),
-      paddingBottom: 'm',
-      paddingTop: 'm',
-      paddingHorizontal: 'xl',
-      backgroundColor: 'plainInputBackground',
-    },
-    regular: {
-      color: 'primaryText',
-      fontSize: 19,
-      padding: 'm',
-      backgroundColor: 'regularInputBackground',
-      borderRadius: 'lm',
-    },
-    transparent: {
-      color: 'primaryText',
-      fontSize: 19,
-      padding: 'm',
-      backgroundColor: 'transparent',
-      borderRadius: 'lm',
-    },
-    underline: {
-      fontSize: textVariants.h1.fontSize,
-      color: 'purple500',
-      borderBottomColor: 'purple500',
-      borderBottomWidth: 2,
-      paddingBottom: 'xs',
-    },
-    thickBlur: {
-      padding: 'm',
-      borderRadius: 'xl',
-      backgroundColor: 'transparent10',
-    },
-    thickDark: {
-      padding: 'm',
-      borderRadius: 'xl',
-      backgroundColor: 'surfaceSecondary',
-    },
-    transparentSmall: {
-      color: 'primaryText',
-      fontSize: 16,
-      padding: 's',
-      paddingHorizontal: 'm',
-      backgroundColor: 'transparent',
-    },
-  },
-})
+  })
+}
 
-export type Theme = typeof theme
+export type Theme = ReturnType<typeof createAppTheme>
 export type TextVariant = keyof Theme['textVariants']
 export type Spacing = keyof Theme['spacing']
 export type Color = keyof Theme['colors']

@@ -142,6 +142,7 @@ const PassphraseAutocomplete = ({
       </Box>
       <Box minHeight={53}>
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           ref={matchingListRef}
           horizontal
           keyboardShouldPersistTaps="always"

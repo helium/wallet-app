@@ -62,7 +62,10 @@ const AddNewAccountScreen = () => {
         />
       </Box>
 
-      <ScrollView contentContainerStyle={contentContainerStyle}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={contentContainerStyle}
+      >
         <Box flex={1}>
           {selectedOption === 'create' && (
             <FadeInOut style={globalStyles.container}>

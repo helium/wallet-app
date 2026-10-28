@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { FlatList, LayoutChangeEvent } from 'react-native'
 import { Device } from 'react-native-ble-plx'
@@ -39,6 +40,7 @@ const DeviceScan = () => {
 
   const { backgroundStyle } = useOpacity('secondary', 1)
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const sheetMargins = useSheetMargins()
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
   const {
@@ -194,6 +196,7 @@ const DeviceScan = () => {
         </Box>
         <Box flex={1} marginTop="l">
           <FlatList
+            contentInsetAdjustmentBehavior="automatic"
             data={devices}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
@@ -204,13 +207,14 @@ const DeviceScan = () => {
       </Box>
       <BottomSheetModal
         ref={bottomSheetModalRef}
+        style={sheetMargins}
         index={0}
         snapPoints={snapPoints}
         backdropComponent={renderBackdrop}
         backgroundStyle={backgroundStyle}
         onDismiss={clearError}
       >
-        <BottomSheetScrollView>
+        <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
           <LedgerConnectSteps
             onLayout={handleContentLayout}
             onRetry={handleRetry}

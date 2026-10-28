@@ -650,6 +650,7 @@ const Settings = () => {
         />
       </Box>
       <SectionList
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={contentContainer}
         sections={SectionData}
         keyExtractor={keyExtractor}

@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import React, { FC, memo, useCallback, useEffect, useRef } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { BackHandler, Platform } from 'react-native'
 import WorldButton from '../migration/components/WorldButton'
@@ -30,6 +31,7 @@ const MigrateToWorldCard: FC = () => {
   const { dismissMigrateToWorld } = useAppStorage()
   const rootNav = useNavigation<RootNavigationProp>()
   const sheetRef = useRef<BottomSheet>(null)
+  const sheetMargins = useSheetMargins()
 
   // Once a close has been requested the card is on its way out; the back
   // handler must stop consuming presses or it swallows them on whatever screen
@@ -95,6 +97,7 @@ const MigrateToWorldCard: FC = () => {
   return (
     <BottomSheet
       ref={sheetRef}
+      style={sheetMargins}
       enableDynamicSizing
       enablePanDownToClose
       backgroundStyle={WORLD_SHEET.cardBackground}

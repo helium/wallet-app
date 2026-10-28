@@ -10,6 +10,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -46,6 +47,7 @@ const AddressBookSelector = forwardRef(
     useImperativeHandle(ref, () => ({ showAddressBook }))
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { m } = useSpacing()
     const snapPoints = useMemo(() => ['70%', '90%'], [])
@@ -102,6 +104,7 @@ const AddressBookSelector = forwardRef(
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}
+            style={sheetMargins}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}

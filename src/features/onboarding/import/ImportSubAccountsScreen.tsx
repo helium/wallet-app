@@ -251,6 +251,7 @@ export default () => {
           </Text>
         )}
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           refreshControl={
             <RefreshControl
               enabled

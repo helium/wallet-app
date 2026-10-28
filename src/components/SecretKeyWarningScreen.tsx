@@ -70,6 +70,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
       {!animationComplete && (
         <Animated.View style={style}>
           <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
             style={{
               backgroundColor: primaryBackground,
               flexGrow: 1,

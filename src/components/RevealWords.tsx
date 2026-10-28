@@ -122,6 +122,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
       {/* @ts-ignore */}
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         numColumns={2}
         initialNumToRender={mnemonic.length}
         columnWrapperStyle={{

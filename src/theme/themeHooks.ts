@@ -1,10 +1,9 @@
 import { useTheme } from '@shopify/restyle'
 import tinycolor from 'tinycolor2'
-import { Platform, ViewStyle } from 'react-native'
+import { Platform, useWindowDimensions, ViewStyle } from 'react-native'
 import { useCallback, useMemo } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Color, Spacing, Theme } from '@theme/theme'
-import { ww } from '@utils/layout'
 
 const colorScheme = 'dark' as 'dark' | 'light'
 export const useColorScheme = () => {
@@ -136,7 +135,7 @@ export const useInputVariants = () => {
 
 export const useBreakpoints = () => {
   const { breakpoints } = useTheme<Theme>()
-  const width = ww
+  const { width } = useWindowDimensions()
   return {
     smallPhone: breakpoints.phone > width,
     largePhone: breakpoints.largePhone <= width,

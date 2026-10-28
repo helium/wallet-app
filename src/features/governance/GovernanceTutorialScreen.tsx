@@ -12,7 +12,7 @@ import TextTransform from '@components/TextTransform'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Spacing } from '@theme/theme'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import { wp } from '@utils/layout'
+import { useContentWidth } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
 import { GovernanceNavigationProp } from './governanceTypes'
 
@@ -62,6 +62,7 @@ export const GovernanceTutorialScreen = () => {
   const [viewedSlides, setViewedSlides] = useState(false)
   const spacing = useSpacing()
   const colors = useColors()
+  const contentWidth = useContentWidth()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { setVoteTutorialCompleted } = useAppStorage()
   const edges = useMemo(() => ['top'] as Edge[], [])
@@ -135,8 +136,8 @@ export const GovernanceTutorialScreen = () => {
           vertical={false}
           data={slides}
           renderItem={renderCarouselItem}
-          sliderWidth={wp(100)}
-          itemWidth={wp(90)}
+          sliderWidth={contentWidth}
+          itemWidth={Math.round(contentWidth * 0.9)}
           onSnapToItem={onSnapToItem}
         />
         <Box>

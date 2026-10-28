@@ -135,6 +135,7 @@ const NotificationsList = ({
     <Box flex={1}>
       {HeaderComponent}
       <SectionList
+        contentInsetAdjustmentBehavior="automatic"
         keyExtractor={keyExtractor}
         ListFooterComponent={FooterComponent}
         renderSectionHeader={renderSectionHeader}

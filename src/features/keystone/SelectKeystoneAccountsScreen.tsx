@@ -216,6 +216,7 @@ const SelectKeystoneAccountsScreen = () => {
           {t('keystone.selectKeystoneAccounts.subtitle')}
         </Text>
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           refreshControl={
             <RefreshControl
               enabled

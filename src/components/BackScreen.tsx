@@ -2,7 +2,7 @@
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'
-import { LayoutChangeEvent, Platform } from 'react-native'
+import { LayoutChangeEvent, Platform, useWindowDimensions } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { Color, Spacing, Theme } from '@theme/theme'
@@ -13,7 +13,7 @@ import CloseButton from './CloseButton'
 import ImageBox from './ImageBox'
 import SafeAreaBox from './SafeAreaBox'
 import Text from './Text'
-import { width, height } from '../utils/layout'
+import { useContentWidth } from '../utils/layout'
 import TouchableOpacityBox from './TouchableOpacityBox'
 import BlurBox from './BlurBox'
 
@@ -56,6 +56,8 @@ const BackScreen = ({
   const navigation = useNavigation()
   const hitSlop = useHitSlop('l')
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
+  const { height } = useWindowDimensions()
+  const width = useContentWidth()
 
   return (
     <Box flex={1} backgroundColor={rootBackgroundColor}>

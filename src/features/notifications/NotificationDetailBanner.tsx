@@ -2,10 +2,11 @@ import React, { memo, useMemo } from 'react'
 import { Image } from 'react-native'
 import Box from '@components/Box'
 import { useSpacing } from '@theme/themeHooks'
-import { ww } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 
 const NotificationDetailBanner = ({ icon }: { icon: string }) => {
   const spacing = useSpacing()
+  const contentWidth = useContentWidth()
   const imageSrc = useMemo(() => {
     switch (icon) {
       default:
@@ -34,7 +35,7 @@ const NotificationDetailBanner = ({ icon }: { icon: string }) => {
       <Image
         source={imageSrc}
         resizeMode="contain"
-        style={{ width: ww - spacing.m * 2 }}
+        style={{ width: contentWidth - spacing.m * 2 }}
       />
     </Box>
   )

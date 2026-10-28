@@ -35,6 +35,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import Animation from './Animation'
 import LedgerConnectSteps from './LedgerConnectSteps'
@@ -78,6 +79,7 @@ const LedgerModal = forwardRef(
 
     const { currentAccount, upsertAccount } = useAccountStorage()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const { secondaryText } = useColors()
@@ -441,6 +443,7 @@ const LedgerModal = forwardRef(
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}
+            style={sheetMargins}
             index={0}
             backgroundStyle={backgroundStyle}
             backdropComponent={renderBackdrop}
@@ -448,7 +451,7 @@ const LedgerModal = forwardRef(
             enableDynamicSizing
             onDismiss={onDismiss}
           >
-            <BottomSheetScrollView>
+            <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
               <SafeAreaBox edges={safeEdges} paddingHorizontal="l">
                 <Box alignItems="flex-end" height={24} justifyContent="center">
                   <CloseButton onPress={closeModal} />

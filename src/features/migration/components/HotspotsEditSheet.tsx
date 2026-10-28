@@ -105,6 +105,7 @@ const HotspotsEditSheet = forwardRef<BottomSheet, Props>(
           </Text>
         </Box>
         <BottomSheetFlatList<MigratableHotspot>
+          contentInsetAdjustmentBehavior="automatic"
           data={hotspots}
           keyExtractor={(h) => h.entityKey}
           renderItem={renderItem}

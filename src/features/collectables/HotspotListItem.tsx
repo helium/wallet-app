@@ -16,7 +16,7 @@ import { useMint } from '@helium/helium-react-hooks'
 import BigNumber from 'bignumber.js'
 import { useColors } from '@theme/themeHooks'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
-import { ww } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import { Mints } from '../../utils/constants'
 import { HotspotWithPendingRewards } from '../../types/solana'
@@ -32,7 +32,7 @@ const HotspotListItem = ({
   ...rest
 }: HotspotListItemProps) => {
   const colors = useColors()
-  const COLLECTABLE_HEIGHT = ww / 2
+  const COLLECTABLE_HEIGHT = useContentWidth() / 2
   const {
     content: { metadata },
   } = hotspot

@@ -51,6 +51,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert } from 'react-native'
@@ -81,6 +82,7 @@ const HotspotMapScreen = () => {
   const mapRef = useRef<MapLibreRN.MapViewRef>(null)
   const cameraRef = useRef<MapLibreRN.CameraRef>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
+  const sheetMargins = useSheetMargins()
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
   const [backEdges] = [['top']] as Edge[][]
@@ -562,6 +564,7 @@ const HotspotMapScreen = () => {
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetRef}
+            style={sheetMargins}
             snapPoints={[160]}
             enablePanDownToClose
             enableDynamicSizing
@@ -572,7 +575,7 @@ const HotspotMapScreen = () => {
             onDismiss={() => setActiveHex(undefined)}
             onChange={(idx) => setBottomSheetSnapIndex(idx)}
           >
-            <BottomSheetScrollView>
+            <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
               <Box
                 onLayout={(e) =>
                   setBottomSheetHeight(e.nativeEvent.layout.height)

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Dimensions, Image, LogBox, FlatList } from 'react-native'
+import { Image, LogBox, FlatList } from 'react-native'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import 'text-encoding-polyfill'
 import BackScreen from '@components/BackScreen'
@@ -10,6 +10,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
 import { useBorderRadii } from '@theme/themeHooks'
+import { useContentWidth } from '@utils/layout'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -25,7 +26,7 @@ type Route = RouteProp<CollectableStackParamList, 'CollectionScreen'>
 const CollectionScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
+  const COLLECTABLE_HEIGHT = useContentWidth() / 2
   const collectables = route.params.collection
   const { lm: borderRadius } = useBorderRadii()
   const { triggerImpact } = useHaptic()
@@ -88,6 +89,7 @@ const CollectionScreen = () => {
         style={globalStyles.container}
       >
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           scrollEnabled
           data={collectables}
           numColumns={2}

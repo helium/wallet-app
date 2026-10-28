@@ -10,11 +10,11 @@ import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import globalStyles from '@theme/globalStyles'
-import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
+import { createAppTheme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
-import { LogBox } from 'react-native'
+import { LogBox, useWindowDimensions } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from '@utils/config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -77,12 +77,13 @@ const App = () => {
   const linking = useDeepLinking()
 
   const colorScheme = useColorScheme()
+  const { width, height } = useWindowDimensions()
   const colorAdaptedTheme = useMemo(
     () => ({
-      ...theme,
+      ...createAppTheme({ width, height }),
       colors: colorScheme === 'light' ? lightThemeColors : darkThemeColors,
     }),
-    [colorScheme],
+    [colorScheme, width, height],
   )
 
   const navTheme = useMemo(

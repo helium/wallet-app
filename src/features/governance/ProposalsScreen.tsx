@@ -19,7 +19,7 @@ export const ProposalsScreen = () => {
           })
         }
       />
-      <ScrollView>
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
         <ProposalsList />
       </ScrollView>
     </GovernanceWrapper>

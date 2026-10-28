@@ -16,7 +16,7 @@ import Text from '@components/Text'
 import BackScreen from '@components/BackScreen'
 import { useSpacing } from '@theme/themeHooks'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { ww } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -27,7 +27,7 @@ type Route = RouteProp<CollectableStackParamList, 'NftDetailsScreen'>
 const NftDetailsScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const COLLECTABLE_HEIGHT = ww
+  const COLLECTABLE_HEIGHT = useContentWidth()
   const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
   const backEdges = useMemo(() => ['top'] as Edge[], [])
 
@@ -67,7 +67,7 @@ const NftDetailsScreen = () => {
         onTrailingIconPress={handleInfoPress}
         headerTopMargin="l"
       >
-        <ScrollView>
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
           <SafeAreaBox
             edges={safeEdges}
             backgroundColor="transparent"

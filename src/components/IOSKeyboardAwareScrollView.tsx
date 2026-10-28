@@ -20,6 +20,7 @@ const IOSKeyboardAwareScrollView = ({
 
   return (
     <KeyboardAwareScrollView
+      contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={contentContainer}
       scrollEnabled={scrollEnabled}
     >

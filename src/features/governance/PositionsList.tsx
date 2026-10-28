@@ -150,6 +150,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
 
   return (
     <SectionList
+      contentInsetAdjustmentBehavior="automatic"
       renderSectionHeader={renderSectionHeader}
       ListHeaderComponent={
         <>

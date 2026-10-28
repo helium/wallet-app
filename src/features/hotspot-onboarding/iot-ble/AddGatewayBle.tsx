@@ -310,7 +310,10 @@ const AddGatewayBle = () => {
 
   return (
     <BackScreen title={t('hotspotOnboarding.onboarding.title')}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <Text
           marginTop="m"
           marginBottom="m"

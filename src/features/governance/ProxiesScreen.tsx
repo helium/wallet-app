@@ -167,6 +167,7 @@ export default function ProxiesScreen() {
         value={proxySearch}
       />
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         keyExtractor={keyExtractor}
         data={proxies}
         renderItem={renderItem}

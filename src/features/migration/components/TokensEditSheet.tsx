@@ -165,7 +165,7 @@ const TokensEditSheet = forwardRef<BottomSheet, Props>(
         onChange={handleChange}
         onClose={handleClose}
       >
-        <BottomSheetScrollView>
+        <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
           <Box paddingHorizontal="l" paddingBottom="s">
             <Text
               variant="h4"

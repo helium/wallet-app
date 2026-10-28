@@ -31,6 +31,8 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
+import { useContentColumnMargins } from '@utils/layout'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -101,6 +103,9 @@ const HNTKeyboardSelector = forwardRef(
     const decimals = useMint(mint)?.info?.decimals
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
+    // With usePortal the sheet mounts at the root portal host, outside the column
+    const portalMargins = useContentColumnMargins()
     const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const [value, setValue] = useState('0')
@@ -490,6 +495,7 @@ const HNTKeyboardSelector = forwardRef(
             <BottomSheetModal
               onChange={handleChange}
               ref={bottomSheetModalRef}
+              style={usePortal ? portalMargins : sheetMargins}
               index={0}
               backgroundStyle={backgroundStyle}
               backdropComponent={renderBackdrop}

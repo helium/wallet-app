@@ -7,7 +7,7 @@ import { useAsync } from 'react-async-hook'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { wp } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 import AccountSliderIcon from './AccountSliderIcon'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { HELIUM_UPDATES_ITEM, WALLET_UPDATES_ITEM } from './notificationTypes'
@@ -83,7 +83,7 @@ const AccountSlider = () => {
     [data, updateSelectedList],
   )
 
-  const sliderWidth = useMemo(() => wp(100), [])
+  const sliderWidth = useContentWidth()
 
   const renderItem = useCallback(
     ({ index, item }) => {

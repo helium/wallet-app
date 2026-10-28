@@ -116,6 +116,7 @@ const DeviceScanUsb = () => {
       </Box>
       <Box flex={1} marginTop="l">
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           data={devices}
           renderItem={renderItem}
           keyExtractor={keyExtractor}

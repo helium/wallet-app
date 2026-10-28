@@ -8,6 +8,7 @@ import {
   StackNavigationOptions,
   createStackNavigator,
 } from '@react-navigation/stack'
+import { contentColumnLayout } from '@components/ContentColumn'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
@@ -40,6 +41,10 @@ import {
 } from './rootTypes'
 
 const screenOptions = { headerShown: false } as StackNavigationOptions
+
+// The tab navigator caps its own scenes, so its tab bar spans the window
+const tabBarLayout = ({ children }: { children: React.ReactElement }) =>
+  children
 
 const RootNavigator = () => {
   const navigation = useNavigation<
@@ -151,11 +156,15 @@ const RootNavigator = () => {
       onClose={onClose}
       onAddSub={handleAddSub}
     >
-      <RootStack.Navigator screenOptions={screenOptions}>
+      <RootStack.Navigator
+        screenOptions={screenOptions}
+        screenLayout={contentColumnLayout}
+      >
         <RootStack.Screen
           name="TabBarNavigator"
           component={TabBarNavigator}
           options={screenOptions}
+          layout={tabBarLayout}
         />
         <RootStack.Screen
           key="OnboardingNavigator"

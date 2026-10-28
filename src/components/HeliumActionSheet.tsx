@@ -239,6 +239,7 @@ const HeliumActionSheet = forwardRef(
           title={title}
         >
           <FlatList
+            contentInsetAdjustmentBehavior="automatic"
             data={data}
             keyExtractor={keyExtractor}
             renderItem={renderItem}

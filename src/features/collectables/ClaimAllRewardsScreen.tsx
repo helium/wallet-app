@@ -133,7 +133,7 @@ const ClaimAllRewardsScreen = () => {
               {t('collectablesScreen.hotspots.hotspotsClaimMessage')}
             </Text>
           </Box>
-          <ScrollView horizontal>
+          <ScrollView contentInsetAdjustmentBehavior="automatic" horizontal>
             <Box
               flexGrow={1}
               alignItems="center"

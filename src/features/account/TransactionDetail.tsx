@@ -20,6 +20,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -43,6 +44,7 @@ const { Provider } = TransactionDetailSelectorContext
 const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const sheetMargins = useSheetMargins()
   const [detailData, setDetailData] = useState<DetailData>()
   const [contentHeight, setContentHeight] = useState(0)
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
@@ -120,6 +122,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
       <Provider value={{ show }}>
         <BottomSheetModal
           ref={bottomSheetModalRef}
+          style={sheetMargins}
           index={0}
           snapPoints={snapPoints}
           backdropComponent={renderBackdrop}
@@ -127,7 +130,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
           handleComponent={handleComponent}
           onDismiss={handleDismiss}
         >
-          <BottomSheetScrollView>
+          <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
             <SafeAreaBox
               edges={safeEdges}
               paddingVertical="l"

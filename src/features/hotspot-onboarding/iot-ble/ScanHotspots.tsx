@@ -216,6 +216,7 @@ const ScanHotspots = () => {
       )}
 
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         data={scannedDevices}
         renderItem={renderItem}
         keyExtractor={keyExtractor}

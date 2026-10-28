@@ -436,6 +436,7 @@ const AccountTokenScreen = () => {
         onHeaderLayout={setBackHeaderHeight}
       >
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           style={{
             flexGrow: 1,
           }}
@@ -565,6 +566,7 @@ const AccountTokenScreen = () => {
             entering={delayedAnimation}
           >
             <BottomSheetFlatList
+              contentInsetAdjustmentBehavior="automatic"
               onLayout={setListHeight}
               style={listStyle}
               keyExtractor={keyExtractor}

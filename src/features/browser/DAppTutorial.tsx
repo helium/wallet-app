@@ -11,7 +11,7 @@ import TextTransform from '@components/TextTransform'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Spacing } from '@theme/theme'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import { wp } from '@utils/layout'
+import { useContentWidth } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { DelayedFadeIn } from '@components/FadeInOut'
@@ -57,6 +57,7 @@ const DAppTutorial = () => {
   const [viewedSlides, setViewedSlides] = useState(false)
   const spacing = useSpacing()
   const colors = useColors()
+  const contentWidth = useContentWidth()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { setDAppTutorialCompleted } = useAppStorage()
   const { cluster } = useSolana()
@@ -84,7 +85,7 @@ const DAppTutorial = () => {
             source={item.image}
             resizeMode="contain"
             alignSelf="center"
-            width={wp(50)}
+            width={Math.round(contentWidth * 0.5)}
           />
           <Text
             variant="h1"
@@ -104,7 +105,7 @@ const DAppTutorial = () => {
         </Box>
       )
     },
-    [t],
+    [contentWidth, t],
   )
 
   const dotStyle = useMemo(
@@ -137,8 +138,8 @@ const DAppTutorial = () => {
           vertical={false}
           data={slides}
           renderItem={renderCarouselItem}
-          sliderWidth={wp(100)}
-          itemWidth={wp(90)}
+          sliderWidth={contentWidth}
+          itemWidth={Math.round(contentWidth * 0.9)}
           onSnapToItem={onSnapToItem}
         />
         <Box>

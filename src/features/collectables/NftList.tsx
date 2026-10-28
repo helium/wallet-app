@@ -77,6 +77,7 @@ const NftList = () => {
 
   return (
     <FlatList
+      contentInsetAdjustmentBehavior="automatic"
       enabled
       data={flatListItems}
       numColumns={2}
