@@ -398,9 +398,11 @@ export const HotspotMapHotspotDetails = ({
 
   const handleAssertLocation = useCallback(() => {
     if (hotspotWithMeta) {
-      navigation.navigate('AssertLocationScreen', {
-        collectable: hotspotWithMeta,
-      })
+      navigation.navigate(
+        'AssertLocationScreen',
+        { collectable: hotspotWithMeta },
+        { pop: true },
+      )
     }
   }, [hotspotWithMeta, navigation])
 

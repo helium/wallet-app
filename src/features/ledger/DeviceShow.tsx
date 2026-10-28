@@ -264,7 +264,11 @@ const DeviceShow = () => {
       // in this case, user is likely not on Helium app
 
       console.error(error)
-      navigation.navigate('DeviceScan', { error: error as Error })
+      navigation.navigate(
+        'DeviceScan',
+        { error: error as Error },
+        { pop: true },
+      )
     }
   }, [])
 
@@ -300,7 +304,7 @@ const DeviceShow = () => {
   }, [accountsToAdd, ledgerDevice, navigation, upsertAccounts])
 
   const handleClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
+    homeNav.navigate('AccountsScreen', undefined, { pop: true })
   }, [homeNav])
 
   const onCheckboxToggled = useCallback(

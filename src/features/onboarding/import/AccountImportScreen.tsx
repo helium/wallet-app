@@ -143,7 +143,7 @@ const AccountImportScreen = () => {
     if (hasAccounts) {
       parentNav.popToTop()
     } else {
-      parentNav.navigate('CreateImport')
+      parentNav.navigate('CreateImport', undefined, { pop: true })
     }
   }, [hasAccounts, parentNav])
 

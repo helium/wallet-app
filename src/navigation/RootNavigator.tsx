@@ -57,7 +57,14 @@ const RootNavigator = () => {
   }, [colors.primaryBackground])
 
   const handleAddNew = useCallback(() => {
-    navigation.navigate('AddNewAccountNavigator')
+    navigation.navigate(
+      'TabBarNavigator',
+      {
+        screen: 'Home',
+        params: { screen: 'AddNewAccountNavigator' },
+      },
+      { pop: true },
+    )
   }, [navigation])
 
   const { execute: handleAddSub } = useAsyncCallback(async (acc: CSAccount) => {
@@ -103,17 +110,19 @@ const RootNavigator = () => {
             },
           ],
         })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        navigation.navigate('TabBarNavigator', {
-          screen: 'Home',
-          params: {
-            screen: 'AccountAssignScreen',
+        navigation.navigate(
+          'TabBarNavigator',
+          {
+            screen: 'Home',
             params: {
-              words,
+              screen: 'AccountAssignScreen',
+              params: {
+                words,
+              },
             },
           },
-        })
+          { pop: true },
+        )
         connectedWalletsRef.current?.hide()
       }
     } catch (e: any) {

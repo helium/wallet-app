@@ -144,10 +144,11 @@ const ProposalItem: React.FC<{
   const choices = proposal.state?.resolved?.choices
   const navigation = useNavigation<GovernanceNavigationProp>()
   const handlePress = useCallback(() => {
-    navigation.navigate('ProposalScreen', {
-      mint: mint.toBase58(),
-      proposal: proposal.address,
-    })
+    navigation.navigate(
+      'ProposalScreen',
+      { mint: mint.toBase58(), proposal: proposal.address },
+      { pop: true },
+    )
   }, [mint, navigation, proposal.address])
 
   return (

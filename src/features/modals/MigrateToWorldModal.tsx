@@ -13,8 +13,8 @@ import { useModal } from '@storage/ModalsProvider'
 import React, { FC, memo, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BackHandler, Platform } from 'react-native'
-import { HomeNavigationProp } from '../home/homeTypes'
 import WorldButton from '../migration/components/WorldButton'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 import { WORLD_SHEET, WORLD_TRACKING } from '../migration/migrationTheme'
 
 // The Helium World announcement, reframed as a dismissable bottom-sheet card
@@ -28,7 +28,7 @@ const MigrateToWorldCard: FC = () => {
   const { hideModal } = useModal()
   const wallet = useCurrentWallet()
   const { dismissMigrateToWorld } = useAppStorage()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const sheetRef = useRef<BottomSheet>(null)
 
   // Once a close has been requested the card is on its way out; the back
@@ -53,11 +53,19 @@ const MigrateToWorldCard: FC = () => {
   const handleGetStarted = useCallback(() => {
     closing.current = true
     // Navigate first so the flow screen slides in beneath the closing sheet.
-    homeNav.navigate('SettingsNavigator', {
-      screen: 'MigrateToWorld',
-    })
+    rootNav.navigate(
+      'TabBarNavigator',
+      {
+        screen: 'Home',
+        params: {
+          screen: 'SettingsNavigator',
+          params: { screen: 'MigrateToWorld' },
+        },
+      },
+      { pop: true },
+    )
     sheetRef.current?.close()
-  }, [homeNav])
+  }, [rootNav])
 
   // Sheets don't handle the Android hardware back button on their own; close
   // the card (recording the dismissal) instead of letting the tap fall through

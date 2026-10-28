@@ -200,10 +200,11 @@ const ProxyCard: React.FC<{
       borderRadius="l"
       mb="m"
       onPress={() => {
-        navigation.navigate('ProxyScreen', {
-          mint: mint.toBase58(),
-          wallet: proxy.wallet,
-        })
+        navigation.navigate(
+          'ProxyScreen',
+          { mint: mint.toBase58(), wallet: proxy.wallet },
+          { pop: true },
+        )
       }}
     >
       <Box

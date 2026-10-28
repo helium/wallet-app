@@ -78,9 +78,11 @@ export const ProposalScreen = () => {
     error: relinquishError,
   } = useRelinquishVoteMutation()
   const handleBrowseProxies = useCallback(() => {
-    navigation.navigate('ProxiesScreen', {
-      mint: mint.toBase58(),
-    })
+    navigation.navigate(
+      'ProxiesScreen',
+      { mint: mint.toBase58() },
+      { pop: true },
+    )
   }, [navigation, mint])
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)

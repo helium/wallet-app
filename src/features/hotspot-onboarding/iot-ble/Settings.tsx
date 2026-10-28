@@ -23,7 +23,7 @@ import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
 
 type Option = {
   name: string
-  route: keyof HotspotBLEStackParamList
+  route: Extract<keyof HotspotBLEStackParamList, 'WifiSettings' | 'Diagnostics'>
 }
 
 const data: Option[] = [
@@ -148,7 +148,11 @@ const Settings = () => {
       return (
         <TouchableOpacityBox
           onPress={() => {
-            navigation.push(item.route, {})
+            if (item.route === 'WifiSettings') {
+              navigation.push('WifiSettings', {})
+            } else {
+              navigation.push('Diagnostics')
+            }
           }}
           alignItems="center"
           padding="l"

@@ -20,7 +20,7 @@ const PaymentQrScanner = () => {
       const delegate = parseDelegate(data)
       if (payment) {
         triggerNotification('success')
-        navigation.navigate('PaymentScreen', payment)
+        navigation.navigate('PaymentScreen', payment, { pop: true })
       } else if (burn) {
         navigation.goBack()
         navigation.replace('BurnScreen', burn)

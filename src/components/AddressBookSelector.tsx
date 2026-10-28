@@ -22,6 +22,7 @@ import { Theme } from '@theme/theme'
 import useBackHandler from '@hooks/useBackHandler'
 import ContactsList from '../features/addressBook/ContactsList'
 import { HomeNavigationProp } from '../features/home/homeTypes'
+import { navigateToHomeScreen } from '../navigation/NavigationHelper'
 import Box from './Box'
 import { CSAccount } from '../storage/cloudStorage'
 
@@ -86,7 +87,7 @@ const AddressBookSelector = forwardRef(
     )
 
     const handleAddNewContact = useCallback(() => {
-      homeNav.navigate('AddNewContact')
+      navigateToHomeScreen(homeNav, 'AddNewContact')
     }, [homeNav])
 
     const handleIndicatorStyle = useMemo(() => {

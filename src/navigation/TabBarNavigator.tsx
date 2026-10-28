@@ -192,9 +192,9 @@ const TabBarNavigator = () => {
         screenOptions={{
           headerShown: false,
           lazy: true,
-        }}
-        sceneContainerStyle={{
-          paddingBottom: NavBarHeight + bottom,
+          sceneStyle: {
+            paddingBottom: NavBarHeight + bottom,
+          },
         }}
       >
         <Tab.Screen name="Home" component={HomeNavigator} />
