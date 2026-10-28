@@ -15,12 +15,6 @@ import hotspotReducer, {
   name as hotspotSliceName,
 } from './slices/hotspotsSlice'
 
-const solanaConfig = {
-  key: solanaSliceName,
-  storage: AsyncStorage,
-  blacklist: ['payment'],
-}
-
 const notificationsConfig = {
   key: notificationsSliceName,
   storage: AsyncStorage,
@@ -35,7 +29,7 @@ const balancesConfig = {
 
 const reducer = combineReducers({
   [collectablesSliceName]: collectablesReducer,
-  [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
+  [solanaSliceName]: solanaReducer,
   [balancesSliceName]: persistReducer(balancesConfig, balancesReducer),
   [notificationsSliceName]: persistReducer(
     notificationsConfig,
