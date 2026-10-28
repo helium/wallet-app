@@ -29,6 +29,7 @@ const SwapItem = ({
   loading = false,
   onPress,
   disabled,
+  testID,
   ...rest
 }: SwapItemProps) => {
   const { t } = useTranslation()
@@ -47,7 +48,7 @@ const SwapItem = ({
   )
 
   return (
-    <Pressable onPress={onPress} disabled={disabled}>
+    <Pressable testID={testID} onPress={onPress} disabled={disabled}>
       {({ pressed }) => (
         <Box
           height={120}

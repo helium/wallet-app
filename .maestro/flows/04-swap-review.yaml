@@ -26,3 +26,7 @@ tags:
     timeout: 60000
 - tapOn:
     id: WalletSign.Cancel
+- extendedWaitUntil:
+    notVisible:
+      id: WalletSign.Approve
+    timeout: 10000
