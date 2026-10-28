@@ -8,7 +8,7 @@ import { BlockchainApiProvider } from '@storage/BlockchainApiProvider'
 import { JupiterProvider } from '@storage/JupiterProvider'
 import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import globalStyles from '@theme/globalStyles'
 import { darkThemeColors, lightThemeColors, theme } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
@@ -45,6 +45,7 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
+import { createQueryClient } from './utils/queryClient'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -116,7 +117,7 @@ const App = () => {
     }
   })
 
-  const queryClient = React.useMemo(() => new QueryClient(), [])
+  const queryClient = React.useMemo(() => createQueryClient(), [])
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -1,10 +1,8 @@
 import { StoreEnhancer, configureStore } from '@reduxjs/toolkit'
 import { useDispatch, useStore } from 'react-redux'
 import { persistReducer } from 'redux-persist'
-import { setupListeners } from '@reduxjs/toolkit/query'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import reducer from './rootReducer'
-import { solanaStatusApi } from './slices/solanaStatusApi'
 import { name as solanaSliceName } from './slices/solanaSlice'
 import { name as balancesSliceName } from './slices/balancesSlice'
 import { name as notificationsSliceName } from './slices/notificationsSlice'
@@ -19,12 +17,7 @@ const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
   version: 1,
-  blacklist: [
-    solanaStatusApi.reducerPath,
-    solanaSliceName,
-    balancesSliceName,
-    notificationsSliceName,
-  ],
+  blacklist: [solanaSliceName, balancesSliceName, notificationsSliceName],
 }
 
 const persistedReducer = persistReducer(persistConfig, reducer)
@@ -35,11 +28,9 @@ const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
       immutableCheck: false,
-    }).concat([solanaStatusApi.middleware]),
+    }),
   enhancers,
 })
-
-setupListeners(store.dispatch)
 
 export type AppDispatch = typeof store.dispatch
 export const useAppDispatch = () => useDispatch<AppDispatch>()

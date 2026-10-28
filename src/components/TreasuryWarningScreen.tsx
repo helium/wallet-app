@@ -20,16 +20,13 @@ import { useColors } from '@theme/themeHooks'
 import Text from './Text'
 import Box from './Box'
 import ButtonPressable from './ButtonPressable'
-import {
-  parseSolanaStatus,
-  useGetSolanaStatusQuery,
-} from '../store/slices/solanaStatusApi'
+import { parseSolanaStatus, useSolanaStatus } from '../hooks/useSolanaStatus'
 
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const animValue = useSharedValue(1)
   const [animationComplete, setAnimationComplete] = useState(false)
-  const { data: status } = useGetSolanaStatusQuery(undefined)
+  const { data: status } = useSolanaStatus()
   const { primaryBackground } = useColors()
 
   const realStatus = useMemo(() => parseSolanaStatus(status), [status])

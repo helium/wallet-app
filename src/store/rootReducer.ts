@@ -1,10 +1,6 @@
 import { AnyAction, combineReducers } from '@reduxjs/toolkit'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { persistReducer } from 'redux-persist'
-import {
-  reducer as solanaStatusReducer,
-  solanaStatusApi,
-} from './slices/solanaStatusApi'
 import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
 import notificationsReducer, {
   name as notificationsSliceName,
@@ -41,7 +37,6 @@ const balancesConfig = {
 }
 
 const reducer = combineReducers({
-  [solanaStatusApi.reducerPath]: solanaStatusReducer,
   [collectablesSliceName]: collectablesReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
   [balancesSliceName]: persistReducer(balancesConfig, balancesReducer),
