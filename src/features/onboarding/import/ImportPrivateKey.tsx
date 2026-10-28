@@ -82,7 +82,7 @@ const ImportPrivateKey = () => {
             derivationPath: HELIUM_DERIVATION,
           })
           await createAccount({ keypair, words })
-        } catch (e) {
+        } catch {
           // Must not be b58, try solana keypair
           const keypair = Keypair.fromSecretKey(
             Uint8Array.from(JSON.parse(key)),
@@ -174,8 +174,8 @@ const ImportPrivateKey = () => {
   }, [])
 
   const onChangeText = useCallback(
-    async (text: string) => {
-      await decodePrivateKey(text)
+    (text: string) => {
+      void decodePrivateKey(text)
     },
     [decodePrivateKey],
   )

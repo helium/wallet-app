@@ -81,7 +81,7 @@ const useNotificationStorageHook = () => {
     // Batch all notification requests with a small delay between each
     currentResources.forEach((r, index) => {
       setTimeout(() => {
-        dispatch(
+        void dispatch(
           getNotifications({
             resource: r,
             wallet: currentAccount?.solanaAddress,
@@ -124,7 +124,7 @@ const useNotificationStorageHook = () => {
     // Batch all notification requests with delays
     all.forEach((r, index) => {
       setTimeout(() => {
-        dispatch(
+        void dispatch(
           getNotifications({
             resource: r,
             wallet: currentAccount?.solanaAddress,

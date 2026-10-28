@@ -41,7 +41,7 @@ export const SUPPORTED_LANGUAGUES = [
   // { label: '한국어', value: 'ko' }, // korean
 ] as { label: string; value: LangType }[]
 
-i18n.use(initReactI18next).init({
+void i18n.use(initReactI18next).init({
   compatibilityJSON: 'v3',
   resources: {
     en: { translation: en },

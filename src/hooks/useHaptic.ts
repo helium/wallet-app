@@ -23,7 +23,7 @@ const useHaptic = () => {
   const triggerImpact = (feedbackStyle: FeedbackStyle = 'medium') => {
     if (isHapticDisabled) return
 
-    Haptics.impactAsync(impactStyles[feedbackStyle])
+    void Haptics.impactAsync(impactStyles[feedbackStyle])
   }
 
   const triggerNotification = (
@@ -31,7 +31,7 @@ const useHaptic = () => {
   ) => {
     if (isHapticDisabled) return
 
-    Haptics.notificationAsync(notificationStyles[notificationStyle])
+    void Haptics.notificationAsync(notificationStyles[notificationStyle])
   }
 
   const triggerNavHaptic = () => {

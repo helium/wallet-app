@@ -20,6 +20,7 @@ export type WalletHotspots = {
   totalHotspots?: number
 
   hotspotsById: { [key: string]: CompressedNFT }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hotspotsMetadataById: { [key: string]: { [key: string]: any } }
   hotspotsRewardsById: { [key: string]: { [key: string]: string } }
   hotspotsRecipientsById: {

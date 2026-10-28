@@ -139,7 +139,7 @@ const HotspotList = () => {
       // TODO: Implement loading from storage
       // For now, we'll just leave it undefined
     }
-    loadAutomationSchedule()
+    void loadAutomationSchedule()
   }, [])
 
   const renderHeader = useCallback(() => {

@@ -184,7 +184,7 @@ const AccountImportScreen = () => {
         setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
         navigation.navigate('ImportSubAccounts')
       }
-    } catch (error) {
+    } catch {
       await showOKAlert({
         title: t('accountImport.alert.title'),
         message: t('accountImport.alert.body'),

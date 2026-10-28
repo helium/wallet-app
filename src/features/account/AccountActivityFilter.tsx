@@ -1,7 +1,6 @@
 import { useCallback, useReducer } from 'react'
 
-const FilterTypeKeys = ['all', 'in', 'out', 'delegate', 'mint'] as const
-export type FilterType = (typeof FilterTypeKeys)[number]
+export type FilterType = 'all' | 'in' | 'out' | 'delegate' | 'mint'
 
 type ActivityFilter = {
   filter: FilterType

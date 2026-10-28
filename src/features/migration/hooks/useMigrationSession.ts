@@ -41,7 +41,7 @@ export const usePersistedMigrationResume = (
     if (!sourceWallet) return undefined
     let cancelled = false
     setLoaded(false)
-    AsyncStorage.getItem(keyFor(sourceWallet)).then((raw) => {
+    void AsyncStorage.getItem(keyFor(sourceWallet)).then((raw) => {
       if (!cancelled) {
         setResume(deriveResume(deserializeSession(raw)))
         setLoaded(true)

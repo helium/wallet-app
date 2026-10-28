@@ -87,7 +87,9 @@ export function useSubmitAndAwait() {
         const { batchId } = await client.transactions.submit(signed)
 
         // Invalidate pending transactions query so global widget updates
-        queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+        void queryClient.invalidateQueries({
+          queryKey: ['pendingTransactions'],
+        })
 
         // Poll for completion
         const { status, signatures } = await pollForCompletion(client, batchId)

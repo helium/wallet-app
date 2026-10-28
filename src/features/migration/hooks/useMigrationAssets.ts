@@ -40,7 +40,7 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   })
 
   useEffect(() => {
-    if (sourceWallet) execute()
+    if (sourceWallet) void execute()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceWallet])
 

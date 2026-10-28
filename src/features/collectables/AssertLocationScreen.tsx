@@ -379,7 +379,7 @@ const AssertLocationScreen = () => {
           },
           {
             text: 'Mobile',
-            onPress: async () => assertLocation('MOBILE'),
+            onPress: () => void assertLocation('MOBILE'),
           },
           {
             text: t('generic.cancel'),
@@ -478,7 +478,7 @@ const AssertLocationScreen = () => {
             centerCoordinate={initialCenter}
             mapProps={{
               onPress: hideSearch,
-              onRegionDidChange: handleRegionChanged,
+              onRegionDidChange: () => void handleRegionChanged(),
             }}
           >
             {(sameLocation ? [iotLocation] : [iotLocation, mobileLocation])

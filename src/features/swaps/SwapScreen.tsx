@@ -269,7 +269,7 @@ const SwapScreen = () => {
   }, [navigation])
 
   useAsync(async () => {
-    refresh()
+    void refresh()
   }, [])
 
   useEffect(() => {
@@ -387,7 +387,7 @@ const SwapScreen = () => {
   const setTokenTypeHandler = useCallback(
     (mint: PublicKey) => {
       if (selectorMode === SelectorMode.youPay) {
-        refresh()
+        void refresh()
 
         if (mint.equals(outputMint)) {
           setOutputMint(inputMint)
@@ -531,7 +531,7 @@ const SwapScreen = () => {
       return
     }
 
-    getOutputAmount({
+    void getOutputAmount({
       balance: toBN(inputAmount, inputMintAcc.decimals),
     })
   }, [

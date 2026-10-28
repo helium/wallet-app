@@ -63,7 +63,7 @@ const DAppTutorial = () => {
   const edges = useMemo((): Edge[] => ['top'], [])
 
   const handleEnterDAppPressed = useCallback(() => {
-    setDAppTutorialCompleted(cluster)
+    void setDAppTutorialCompleted(cluster)
     navigation.replace('BrowserScreen')
   }, [navigation, setDAppTutorialCompleted, cluster])
 

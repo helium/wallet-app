@@ -65,7 +65,7 @@ const Settings = () => {
   const { currentAccount } = useAccountStorage()
 
   useEffect(() => {
-    isConnected().then(setConnected)
+    void isConnected().then(setConnected)
   }, [isConnected])
   const {
     result: { address, keyToAssetK, createGatewayTx } = {} as {

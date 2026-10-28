@@ -46,6 +46,7 @@ export type CompressedNFT = {
       uri: string
       mime: string
     }[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata: any
   }
   authorities: {
@@ -62,9 +63,11 @@ export type CompressedNFT = {
     seq: number
     leaf_id: number
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   grouping: any[]
   royalty: {
     royalty_model: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     target: any
     percent: number
     basis_points: number
@@ -75,6 +78,7 @@ export type CompressedNFT = {
   ownership: {
     frozen: boolean
     delegated: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delegate: any
     ownership_model: string
     owner: string
@@ -87,6 +91,7 @@ export type CompressedNFT = {
   mutable: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Collectable = any
 
 export const isCompressedNFT = (
@@ -106,6 +111,7 @@ type TokenMetadata = {
   name: string
   symbol: string
   uri: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   json: any | undefined
 }
 
@@ -153,6 +159,7 @@ export type EnrichedTransaction = {
   signature: string
   slot: number
   timestamp: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transactionError: any
   nativeTransfers: NativeTransfer[]
   tokenTransfers: TokenTransfer[]
@@ -170,6 +177,7 @@ export type EnrichedTransaction = {
         leafIndex: number
         treeId: string
         type: string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         metadata: any
       },
       {

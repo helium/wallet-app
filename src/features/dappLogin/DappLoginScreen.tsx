@@ -179,7 +179,7 @@ const DappLoginScreen = () => {
 
   // if connectionState doesn't update after 6 seconds show timeout error
   useEffect(() => {
-    const timer = setTimeout(checkTimeoutError, 6000)
+    const timer = setTimeout(() => void checkTimeoutError(), 6000)
     return () => {
       clearTimeout(timer)
     }

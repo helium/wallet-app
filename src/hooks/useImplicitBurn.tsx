@@ -16,7 +16,7 @@ import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 
 export function useImplicitBurn(): {
-  implicitBurn: (requiredDc: number) => void
+  implicitBurn: (requiredDc: number) => Promise<void>
   loading: boolean
   error?: Error
 } {

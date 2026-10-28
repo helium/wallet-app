@@ -97,7 +97,7 @@ export const parseBurn = (qrContent: string) => {
     if (!isBurn) return false
 
     return parsedJson as BurnRouteParam
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -110,7 +110,7 @@ export const parseDelegate = (qrContent: string) => {
     if (!isDelegate) return false
 
     return parsedJson as BurnRouteParam
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -169,7 +169,7 @@ export const parsePaymentLink = (
       })
       return { payments: JSON.stringify(payments) }
     }
-  } catch (e) {}
+  } catch {}
 }
 
 export default authenticatedLinking

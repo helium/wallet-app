@@ -14,7 +14,9 @@ function doTimeout() {
     lastUpdated = new Date().valueOf()
   }
 }
-let cachedHealthByEndpoint: Record<string, Promise<any>> = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let cachedHealthByEndpoint: Partial<Record<string, Promise<any>>> = {}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getCachedHealth(connection: WrappedConnection): Promise<any> {
   doTimeout()
   if (!cachedHealthByEndpoint[connection.rpcEndpoint]) {
@@ -24,10 +26,10 @@ async function getCachedHealth(connection: WrappedConnection): Promise<any> {
   return (await cachedHealthByEndpoint[connection.rpcEndpoint]).result
 }
 
-let cachedTps: Record<string, Promise<any>> = {}
-async function getCachedTPS(connection: WrappedConnection): Promise<any> {
+let cachedTps: Record<string, Promise<number>> = {}
+async function getCachedTPS(connection: WrappedConnection): Promise<number> {
   doTimeout()
-  if (!cachedTps[connection.rpcEndpoint]) {
+  if (!(connection.rpcEndpoint in cachedTps)) {
     cachedTps[connection.rpcEndpoint] = getCurrentTPS(connection)
   }
 

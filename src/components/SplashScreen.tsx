@@ -44,7 +44,7 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
 
   const onImageLoaded = useCallback(async () => {
     setImageReady(true)
-    SplashLib.hideAsync()
+    void SplashLib.hideAsync()
   }, [])
 
   useEffect(() => {

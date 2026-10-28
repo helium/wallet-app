@@ -38,7 +38,7 @@ export default ({
   useEffect(() => {
     if (!account?.address || !anchorProvider) return
 
-    dispatch(
+    void dispatch(
       getTxns({
         account,
         mint: mintStr,
@@ -51,7 +51,7 @@ export default ({
       anchorProvider,
       anchorProvider.publicKey.toBase58(),
       () => {
-        dispatch(
+        void dispatch(
           getTxns({
             account,
             mint: mintStr,
@@ -63,7 +63,10 @@ export default ({
     )
 
     if (accountSubscriptionId.current !== null) {
-      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+      void removeAccountChangeListener(
+        anchorProvider,
+        accountSubscriptionId.current,
+      )
     }
     accountSubscriptionId.current = subId
   }, [account, dispatch, filter, mintStr, anchorProvider])
@@ -71,7 +74,7 @@ export default ({
   const requestMore = useCallback(() => {
     if (!account?.address || !anchorProvider) return
 
-    dispatch(
+    void dispatch(
       getTxns({
         account,
         mint: mintStr,

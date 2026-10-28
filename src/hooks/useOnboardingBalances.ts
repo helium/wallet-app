@@ -110,7 +110,7 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
         mobileREC?.settings?.mobileConfigV1 ||
         mobileREC?.settings?.mobileConfigV2
       )?.feesByDevice.find(
-        (fee: any) => Object.keys(fee.deviceType)[0] === deviceType,
+        (fee) => Object.keys(fee.deviceType)[0] === deviceType,
       ),
     [mobileREC, deviceType],
   )

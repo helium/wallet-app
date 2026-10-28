@@ -380,7 +380,7 @@ const AddGatewayBle = () => {
                   const url = `https://docs.helium.com/hotspot-makers/#${maker?.name.toLowerCase()}`
                   const supported = await Linking.canOpenURL(url)
                   if (supported) {
-                    Linking.openURL(url)
+                    void Linking.openURL(url)
                   } else {
                     Alert.alert(`Don't know how to open URL: ${url}`)
                   }

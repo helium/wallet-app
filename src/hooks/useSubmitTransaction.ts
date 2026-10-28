@@ -33,7 +33,7 @@ export function useSubmitTransaction() {
       const { batchId } = await client.transactions.submit(signed)
 
       // Invalidate getByPayer so global widget updates
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
 
       return batchId
     },

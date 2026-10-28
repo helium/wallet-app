@@ -45,7 +45,7 @@ const TWO_MB = 2 * 1024 * 1024
 export class AsyncAccountCache implements AccountCache {
   cacheKey: string
 
-  timeout: any | null = null
+  timeout: ReturnType<typeof setTimeout> | null = null
 
   cache = new Map<string, ParsedAccountBase<unknown> | null>()
 
@@ -139,9 +139,9 @@ export class AsyncAccountCache implements AccountCache {
   }
 }
 
-function debounce(func: any, wait: number) {
+function debounce(func: (...args: unknown[]) => unknown, wait: number) {
   let timeout: ReturnType<typeof setTimeout>
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, ...args: unknown[]) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const context = this
     clearTimeout(timeout)

@@ -29,7 +29,7 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const { showOKCancelAlert } = useAlert()
   const { t } = useTranslation()
   useEffect(() => {
-    Camera.requestCameraPermissionsAsync().then(({ status }) => {
+    void Camera.requestCameraPermissionsAsync().then(({ status }) => {
       setHasPermission(status === 'granted')
     })
   }, [])
@@ -45,9 +45,9 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
 
     if (decision) {
       if (Platform.OS === 'ios') {
-        Linking.openURL('app-settings:')
+        void Linking.openURL('app-settings:')
       } else {
-        Linking.openSettings()
+        void Linking.openSettings()
       }
     }
   }, [hasPermission, showOKCancelAlert])

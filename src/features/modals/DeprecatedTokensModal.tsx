@@ -190,13 +190,13 @@ const DeprecatedTokensModal: FC = () => {
   // Load estimate when modal opens and data is ready
   React.useEffect(() => {
     if (!isLoadingPositions && hasAnyTokens) {
-      calculateEstimatedHnt()
+      void calculateEstimatedHnt()
     }
   }, [isLoadingPositions, hasAnyTokens, calculateEstimatedHnt])
 
   const handleRemindLater = useCallback(() => {
     hideModal()
-    dismissDeprecatedTokens(wallet?.toBase58() || '')
+    void dismissDeprecatedTokens(wallet?.toBase58() || '')
   }, [dismissDeprecatedTokens, wallet, hideModal])
 
   const handleSwapAll = useCallback(async () => {

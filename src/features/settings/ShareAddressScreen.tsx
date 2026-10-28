@@ -69,7 +69,7 @@ const ShareAddressScreen = () => {
       }
 
       triggerNavHaptic()
-      Share.open(options)
+      void Share.open(options)
     })
   }, [address, triggerNavHaptic])
 

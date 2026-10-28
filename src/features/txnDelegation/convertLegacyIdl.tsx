@@ -32,6 +32,7 @@ export interface LegacyIdl {
   types: LegacyIdlTypeDefinition[]
   events?: LegacyIdlEvent[]
   errors?: LegacyIdlErrorCode[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: any
 }
 
@@ -113,6 +114,7 @@ interface LegacyIdlPda {
 }
 
 type LegacyIdlSeed =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | { kind: 'const'; type: LegacyIdlType; value: any }
   | { kind: 'arg'; type: LegacyIdlType; path: string }
   | { kind: 'account'; type: LegacyIdlType; account?: string; path: string }
@@ -307,6 +309,7 @@ function convertInstructionAccounts(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertPda(pda: LegacyIdlPda): { seeds: any[]; programId?: any } {
   return {
     ...(pda.programId ? { programId: convertSeed(pda.programId) } : {}),
@@ -314,6 +317,7 @@ function convertPda(pda: LegacyIdlPda): { seeds: any[]; programId?: any } {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertSeed(seed: LegacyIdlSeed): any {
   switch (seed.kind) {
     case 'const':
@@ -373,6 +377,7 @@ function convertType(type: LegacyIdlType): IdlType {
   throw new Error(`Unsupported type: ${JSON.stringify(type)}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function convertDefinedTypeArg(arg: LegacyIdlDefinedTypeArg): any {
   if ('generic' in arg) {
     return { generic: arg.generic }
@@ -386,12 +391,14 @@ function convertDefinedTypeArg(arg: LegacyIdlDefinedTypeArg): any {
   throw new Error(`Unsupported defined type arg: ${JSON.stringify(arg)}`)
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getIdlSpecType(idl: any): IdlSpec {
   return idl.metadata?.spec ?? 'legacy'
 }
 
 export type IdlSpec = '0.1.0' | 'legacy'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatIdl(idl: any, programAddress?: string): Idl {
   const spec = getIdlSpecType(idl)
 

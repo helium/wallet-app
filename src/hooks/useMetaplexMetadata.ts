@@ -11,10 +11,10 @@ import { useAsync } from 'react-async-hook'
 import { useAccount } from '@helium/account-fetch-cache-hooks'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const cache: Record<string, Promise<any>> = {}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cache: Partial<Record<string, Promise<any>>> = {}
 export function getMetadata(
   uriIn: string | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any | undefined> {
   const uri = uriIn?.replace(/\0/g, '')
   if (uri) {
@@ -26,7 +26,7 @@ export function getMetadata(
           timeout: 3000,
         })
         .then((res) => res.data)
-        .catch((err: any) => {
+        .catch((err: unknown) => {
           console.error(`Error at uri ${uri}`, err)
         })
     }

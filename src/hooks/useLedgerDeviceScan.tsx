@@ -150,7 +150,7 @@ const useDeviceScan = () => {
           prev?.kind === 'bluetoothOff' ? undefined : prev,
         )
         // The initial scan is started by the screen on focus
-        if (!isInitialState && scanWanted.current) startScan()
+        if (!isInitialState && scanWanted.current) void startScan()
         return
       }
 

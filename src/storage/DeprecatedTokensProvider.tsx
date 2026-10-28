@@ -16,12 +16,14 @@ interface DeprecatedTokensContextState {
   iotBalance: BN | undefined
   iotDecimals: number | undefined
   iotStaked: BN | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   iotPositions: any[] | undefined
 
   // MOBILE data
   mobileBalance: BN | undefined
   mobileDecimals: number | undefined
   mobileStaked: BN | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mobilePositions: any[] | undefined
 
   // Computed values

@@ -69,7 +69,7 @@ const CLIPasswordScreen = () => {
         ],
       }))
       navigation.navigate('AccountAssignScreen')
-    } catch (error) {
+    } catch {
       await showOKAlert({
         title: t('accountImport.cli.alert.title'),
         message: t('accountImport.cli.alert.body'),

@@ -203,7 +203,7 @@ const useSolanaHook = () => {
       cache: asyncCache,
     })
     // Async fetch the cache accounts to check for changes and update account fetch cache
-    ;(async () => {
+    void (async () => {
       try {
         const keys = asyncCache.keys().map((k) => new PublicKey(k))
         if (keys.length === 0) return
@@ -285,14 +285,14 @@ const useSolanaHook = () => {
                 currentCached?.account.lamports !== accountInfo.lamports ||
                 !currentCached?.account.owner.equals(accountInfo.owner)
               ) {
-                c.updateCacheAndRaiseUpdated(key.toBase58(), {
+                void c.updateCacheAndRaiseUpdated(key.toBase58(), {
                   pubkey: key,
                   account: accountInfo,
                 })
               }
             } else if (c.get(key)) {
               // Account existed and now doesn't
-              c.updateCacheAndRaiseUpdated(key.toBase58(), null)
+              void c.updateCacheAndRaiseUpdated(key.toBase58(), null)
             }
           })
         })

@@ -11,13 +11,13 @@ import KeystoneSDK, {
 import { uuid } from '@keystonehq/keystone-sdk/dist/utils'
 // Transitive deps of @keystonehq/keystone-sdk; used here to decode what the
 // device would receive.
-/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import-x/no-extraneous-dependencies */
 import {
   SolSignRequest,
   SolSignature,
   SignType,
 } from '@keystonehq/bc-ur-registry-sol'
-/* eslint-enable import/no-extraneous-dependencies */
+/* eslint-enable import-x/no-extraneous-dependencies */
 import {
   Keypair,
   PublicKey,
@@ -167,7 +167,7 @@ describe('Buffer global at bc-ur-registry load time', () => {
   // Requires the registry (and cbor-sync) fresh, then the sol registry on top
   // of it, and returns a thunk that encodes a minimal sign request.
   const loadAndBuild = () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, import/no-extraneous-dependencies
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, import-x/no-extraneous-dependencies
     const sol = require('@keystonehq/bc-ur-registry-sol')
     return () =>
       sol.SolSignRequest.constructSOLRequest(
@@ -193,7 +193,7 @@ describe('Buffer global at bc-ur-registry load time', () => {
         delete global.Buffer
         // cbor-sync registers its Buffer writer only if Buffer is a function
         // when the module body runs.
-        // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require, import/no-extraneous-dependencies
+        // eslint-disable-next-line @typescript-eslint/no-require-imports, import-x/no-extraneous-dependencies
         require('@keystonehq/bc-ur-registry')
         global.Buffer = saved
         expect(loadAndBuild()).toThrow('Unsupported output format: undefined')
@@ -209,7 +209,7 @@ describe('Buffer global at bc-ur-registry load time', () => {
       jest.isolateModules(() => {
         // @ts-expect-error simulate a runtime without the Buffer global
         delete global.Buffer
-        // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         expect(() => require('@keystonehq/keystone-sdk')).toThrow(
           'Buffer is not defined',
         )

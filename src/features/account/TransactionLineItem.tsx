@@ -108,7 +108,7 @@ const TransactionLineItem = ({
   const handleExplorerLink = useCallback(() => {
     if (!navTo) return
 
-    Linking.openURL(navTo)
+    void Linking.openURL(navTo)
   }, [navTo])
 
   return (

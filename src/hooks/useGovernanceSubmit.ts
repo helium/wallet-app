@@ -115,7 +115,7 @@ export function useGovernanceSubmit(): {
         const taggedData = { ...signed, tag }
 
         const { batchId } = await client.transactions.submit(taggedData)
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: ['pendingTransactions'],
         })
 

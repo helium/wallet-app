@@ -552,15 +552,18 @@ const PaymentScreen = () => {
       // only handle address which include dots.
       if (address && address.split('.').length === 2 && handleDomainAddress) {
         // we have to revalidate.
-        handleDomainAddress({ domain: address })?.then((resolvedAddress) => {
-          if (resolvedAddress) {
-            invalidAddress =
-              !!resolvedAddress && !solAddressIsValid(resolvedAddress)
+        void handleDomainAddress({ domain: address })?.then(
+          (resolvedAddress) => {
+            if (resolvedAddress) {
+              invalidAddress =
+                !!resolvedAddress && !solAddressIsValid(resolvedAddress)
 
-            const wrongNetType = accountNetType(resolvedAddress) !== networkType
-            handleSetPaymentError(index, invalidAddress || wrongNetType)
-          }
-        })
+              const wrongNetType =
+                accountNetType(resolvedAddress) !== networkType
+              handleSetPaymentError(index, invalidAddress || wrongNetType)
+            }
+          },
+        )
       }
       invalidAddress = !!address && !solAddressIsValid(address)
 

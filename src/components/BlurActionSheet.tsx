@@ -33,9 +33,9 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
 
   useAsync(async () => {
     if (open) {
-      await bottomSheetModalRef.current?.present()
+      bottomSheetModalRef.current?.present()
     } else {
-      await bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.dismiss()
     }
   }, [open])
 

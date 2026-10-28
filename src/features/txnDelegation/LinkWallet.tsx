@@ -54,7 +54,7 @@ const LinkWallet = () => {
         responseParams,
       )
 
-      Linking.openURL(url)
+      void Linking.openURL(url)
 
       // Wait a moment before going back so the ui doesn't jump
       await sleep(300)
@@ -107,7 +107,7 @@ const LinkWallet = () => {
       : null
 
     if (!mainnetAcct) {
-      showOKAlert({
+      void showOKAlert({
         title: t('linkWallet.noWallet.title'),
         message: t('linkWallet.noWallet.message'),
       }).then(navigation.goBack)

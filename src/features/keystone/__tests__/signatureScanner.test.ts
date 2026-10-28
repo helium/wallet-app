@@ -5,7 +5,7 @@
 import KeystoneSDK, { UR } from '@keystonehq/keystone-sdk'
 import { uuid } from '@keystonehq/keystone-sdk/dist/utils'
 import { UREncoder } from '@ngraveio/bc-ur'
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-x/no-extraneous-dependencies
 import { SolSignature } from '@keystonehq/bc-ur-registry-sol'
 import { createSignatureScanner } from '../SignTx/signatureScanner'
 import { MAX_FRAGMENT_CAPACITY, urToFrames } from './urFrames'

@@ -58,7 +58,7 @@ const MigrateToWorldCheck: FC = () => {
     if (resume.canResume) {
       if (!onWalletHome()) return undefined
       hasShown.current = true
-      showOKCancelAlert({
+      void showOKCancelAlert({
         title: t('migrateToWorld.resumeOffer.title'),
         message: t('migrateToWorld.resumeOffer.body'),
         ok: t('migrateToWorld.resumeOffer.resume'),

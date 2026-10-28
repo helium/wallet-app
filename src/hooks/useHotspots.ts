@@ -117,7 +117,7 @@ const useHotspots = (): {
         return
       }
 
-      dispatch(
+      void dispatch(
         fetchHotspots({
           anchorProvider,
           account: currentAccount,
@@ -149,7 +149,7 @@ const useHotspots = (): {
         return
       }
 
-      dispatch(
+      void dispatch(
         fetchHotspots({
           anchorProvider,
           cluster,
@@ -171,7 +171,7 @@ const useHotspots = (): {
       return
     }
 
-    dispatch(
+    void dispatch(
       fetchAllHotspots({
         anchorProvider,
         cluster,

@@ -55,7 +55,7 @@ export default function ProxiesScreen() {
   const proxies = useMemo(() => voters?.pages.flat() || [], [voters])
   const handleOnEndReached = useCallback(() => {
     if (!isLoading && hasNextPage) {
-      fetchNextPage()
+      void fetchNextPage()
     }
   }, [fetchNextPage, hasNextPage, isLoading])
 

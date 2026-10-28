@@ -188,7 +188,7 @@ const RequestScreen = () => {
           ],
         }
       }
-      Share.open(options)
+      void Share.open(options)
     })
   }, [link])
 

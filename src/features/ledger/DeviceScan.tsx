@@ -66,7 +66,7 @@ const DeviceScan = () => {
   // connect on DeviceShow
   useFocusEffect(
     useCallback(() => {
-      startScan()
+      void startScan()
       return stopScan
     }, [startScan, stopScan]),
   )
@@ -95,7 +95,7 @@ const DeviceScan = () => {
   const clearError = useCallback(() => {
     handleDismiss()
     setError(undefined)
-    startScan()
+    void startScan()
   }, [handleDismiss, startScan, setError])
 
   useEffect(() => {

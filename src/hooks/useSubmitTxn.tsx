@@ -184,7 +184,7 @@ export default () => {
       )
 
       const { batchId } = await client.transactions.submit(signedTxnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
       // any max-send shave.
       return { batchId, payments: effectivePayments }
@@ -291,7 +291,7 @@ export default () => {
       )
 
       const { batchId } = await client.transactions.submit(signedTxnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })
@@ -363,7 +363,7 @@ export default () => {
       })
 
       const { batchId } = await client.transactions.submit(txnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })
@@ -445,7 +445,7 @@ export default () => {
       })
 
       const { batchId } = await client.transactions.submit(txnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })
@@ -535,7 +535,7 @@ export default () => {
               ...signed,
               tag: signed.tag || `claim-rewards-${network}`,
             })
-            queryClient.invalidateQueries({
+            void queryClient.invalidateQueries({
               queryKey: ['pendingTransactions'],
             })
             batchIds.push(batchId)
@@ -633,7 +633,7 @@ export default () => {
             ...signed,
             tag,
           })
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: ['pendingTransactions'],
           })
           lastBatchId = batchId
@@ -748,7 +748,7 @@ export default () => {
       )
 
       const { batchId } = await client.transactions.submit(signedTxnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })
@@ -823,7 +823,7 @@ export default () => {
         transactionData,
       )
       const { batchId } = await client.transactions.submit(signedTxnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })
@@ -938,7 +938,7 @@ export default () => {
       })
 
       const { batchId } = await client.transactions.submit(txnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })
@@ -1034,7 +1034,7 @@ export default () => {
       )
 
       const { batchId } = await client.transactions.submit(signedTxnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
   })

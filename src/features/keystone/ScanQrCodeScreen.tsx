@@ -32,7 +32,7 @@ const ScanQrCodeScreen = () => {
         setIsScanQrCodeComplete(true)
         setMultiAccounts(qrCodeDataRes)
       }
-    } catch (error) {
+    } catch {
       setIsUnexpectedQrCode(true)
     }
   }

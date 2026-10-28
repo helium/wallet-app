@@ -37,7 +37,7 @@ const useOnboardingHook = ({ baseUrl }: { baseUrl: string }) => {
   }, [initialState])
 
   useEffect(() => {
-    new OnboardingClient(`${baseUrl}/v3`)
+    void new OnboardingClient(`${baseUrl}/v3`)
       .getMakers()
       .then(({ data }) => setMakers(data || []))
   }, [baseUrl])

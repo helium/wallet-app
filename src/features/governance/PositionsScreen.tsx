@@ -185,7 +185,7 @@ export const PositionsScreen = () => {
         },
       )
       refetchState()
-      refetchDelegations()
+      void refetchDelegations()
     }
   }, [
     claimRewardsMutation,

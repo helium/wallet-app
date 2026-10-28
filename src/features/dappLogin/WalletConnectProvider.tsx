@@ -195,7 +195,7 @@ const useWalletConnectHook = () => {
           connectionState !== 'undetermined' &&
           connectionState !== 'denied'
         ) {
-          signClient.reject({
+          void signClient.reject({
             id: sessionProposal.id,
             reason: { code: 2000, message: 'Login Process Closed' },
           })

@@ -37,7 +37,7 @@ const useStatusPage = () => {
   const [lastFetchTime, setLastFetchTime] = useState(0)
 
   useMount(() => {
-    AsyncStorage.getItem(STATUS_KEY).then((storedIncidentsStr) => {
+    void AsyncStorage.getItem(STATUS_KEY).then((storedIncidentsStr) => {
       if (!storedIncidentsStr) return
 
       setStoredIncidents(JSON.parse(storedIncidentsStr) as Incident[])
@@ -46,7 +46,7 @@ const useStatusPage = () => {
 
   useAppear(() => {
     if (!summary) {
-      fetchSummary().then(setSummary)
+      void fetchSummary().then(setSummary)
     }
     const now = Date.now()
     if (now - FETCH_INTERVAL < lastFetchTime) {
@@ -54,7 +54,7 @@ const useStatusPage = () => {
     }
 
     setLastFetchTime(now)
-    fetchUnresolved().then(setUnresolved)
+    void fetchUnresolved().then(setUnresolved)
   })
 
   const incidents = useMemo((): Incident[] => {
@@ -86,7 +86,7 @@ const useStatusPage = () => {
       ...storedIncidents,
     ].slice(0, 20) // limit number of stored incidents. This is just an arbitrary number. May need adjustment.
 
-    AsyncStorage.setItem(STATUS_KEY, JSON.stringify(nextStoredIncidents))
+    void AsyncStorage.setItem(STATUS_KEY, JSON.stringify(nextStoredIncidents))
 
     setStoredIncidents(nextStoredIncidents)
 

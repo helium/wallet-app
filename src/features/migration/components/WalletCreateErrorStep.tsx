@@ -24,7 +24,7 @@ const WalletCreateErrorStep: FC<{
         showSupport
           ? {
               title: t('migrateToWorld.createWallet.support'),
-              onPress: () => Linking.openURL(SUPPORT_URL),
+              onPress: () => void Linking.openURL(SUPPORT_URL),
             }
           : undefined
       }

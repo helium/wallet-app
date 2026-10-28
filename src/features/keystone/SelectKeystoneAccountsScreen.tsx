@@ -111,7 +111,7 @@ const SelectKeystoneAccountsScreen = () => {
         account.balanceSol = balance
       }
     }
-    fetchBalanceForAccounts().then(() => {
+    void fetchBalanceForAccounts().then(() => {
       setLoading(false)
     })
   }, [derivationAccounts])

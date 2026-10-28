@@ -215,7 +215,7 @@ function isValidPublicKey(input: string | undefined) {
     // eslint-disable-next-line no-new
     new PublicKey(input || '')
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }

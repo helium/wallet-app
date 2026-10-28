@@ -457,7 +457,7 @@ export const PositionCard = ({
       },
     )
     refetchState()
-    refetchDelegations()
+    void refetchDelegations()
   }
 
   const handleUndelegateTokens = async () => {
@@ -472,7 +472,7 @@ export const PositionCard = ({
       },
     )
     refetchState()
-    refetchDelegations()
+    void refetchDelegations()
   }
 
   const handleRelinquishVotes = async () => {
@@ -561,7 +561,7 @@ export const PositionCard = ({
                 // undelegate has to claim every unclaimed epoch first, which
                 // fails on-chain while any of them is still awaiting issuance
                 if (delegation?.unissuedRequiredEpochCount) {
-                  showOKAlert({
+                  void showOKAlert({
                     title: t('gov.positions.unableToUndelegate'),
                     message: t('gov.positions.rewardsPendingIssuance', {
                       count: delegation.unissuedRequiredEpochCount,
@@ -612,7 +612,7 @@ export const PositionCard = ({
                 onPress={async () => {
                   setActionsOpen(false)
                   if (hasActiveVotes) {
-                    showOKAlert({
+                    void showOKAlert({
                       title: t('gov.positions.unableToClose'),
                       message: t('gov.positions.partakingInVote'),
                     })
@@ -633,7 +633,7 @@ export const PositionCard = ({
                       onPress={() => {
                         setActionsOpen(false)
                         if (hasActiveVotes) {
-                          showOKAlert({
+                          void showOKAlert({
                             title: t('gov.positions.unableToSplit'),
                             message: t('gov.positions.partakingInVote'),
                           })
@@ -650,7 +650,7 @@ export const PositionCard = ({
                       onPress={() => {
                         setActionsOpen(false)
                         if (hasActiveVotes) {
-                          showOKAlert({
+                          void showOKAlert({
                             title: t('gov.positions.unableToTransfer'),
                             message: t('gov.positions.partakingInVote'),
                           })
@@ -681,7 +681,7 @@ export const PositionCard = ({
                       onPress={async () => {
                         setActionsOpen(false)
                         if (hasActiveVotes) {
-                          showOKAlert({
+                          void showOKAlert({
                             title: isConstant
                               ? t('gov.positions.unableToUnpauseLockup')
                               : t('gov.positions.unableToPauseLockup'),

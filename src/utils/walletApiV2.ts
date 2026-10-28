@@ -136,7 +136,7 @@ export const getBasePriorityFee = async () => {
       '/basePriorityFee',
     )
     return data.basePriorityFee
-  } catch (e: any) {
+  } catch (e) {
     // Do not block on this failing
     console.error(e)
     return 1

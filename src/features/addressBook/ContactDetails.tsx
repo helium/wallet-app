@@ -88,7 +88,7 @@ const ContactDetails = ({ action, contact }: Props) => {
   useEffect(() => {
     // only parse addresses which include dots.
     if (debouncedAddress.split('.').length === 2) {
-      handleDomainAddress({ domain: debouncedAddress }).then(
+      void handleDomainAddress({ domain: debouncedAddress }).then(
         (resolvedAddress) => {
           // owner was not found so we do not set the owner address
           if (!resolvedAddress) return
@@ -113,7 +113,7 @@ const ContactDetails = ({ action, contact }: Props) => {
 
     solanaAddress = address
 
-    addContact({
+    void addContact({
       address: heliumAddressFromSolAddress(solanaAddress),
       solanaAddress,
       alias: nickname,
@@ -128,14 +128,14 @@ const ContactDetails = ({ action, contact }: Props) => {
       message: t('editContact.deleteConfirmMessage', { alias: nickname }),
     })
     if (decision) {
-      deleteContact(address)
+      void deleteContact(address)
       addressBookNav.goBack()
     }
   }, [address, addressBookNav, deleteContact, nickname, showOKCancelAlert, t])
 
   const handleSaveNewContact = useCallback(() => {
     if (!contact) return
-    editContact(contact.address, {
+    void editContact(contact.address, {
       address,
       alias: nickname,
       netType: accountNetType(address),

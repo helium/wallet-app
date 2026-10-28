@@ -58,7 +58,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
           }),
         )
         // Successfully synced token accounts
-      } catch (_err) {
+      } catch {
         // Swallow sync errors (likely cooldown blocks)
       }
     })

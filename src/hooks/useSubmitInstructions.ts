@@ -199,7 +199,9 @@ export function useSubmitInstructions() {
         }
 
         // Only invalidate queries after ALL batches are complete
-        queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+        void queryClient.invalidateQueries({
+          queryKey: ['pendingTransactions'],
+        })
       }
 
       // Sign all transactions (no batching)
@@ -228,7 +230,7 @@ export function useSubmitInstructions() {
 
       // Submit via API
       const { batchId } = await client.transactions.submit(txnData)
-      queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
 
       // Poll for completion
       const { status, signatures } = await pollForCompletion(client, batchId)

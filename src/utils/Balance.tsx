@@ -67,7 +67,7 @@ const useBalanceHook = () => {
 
   useEffect(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
-    dispatch(
+    void dispatch(
       syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
     )
 
@@ -151,7 +151,7 @@ const useBalanceHook = () => {
             // An in-flight fetch already schedules the next poll.
             if (!fetching) {
               clearTimeout(timeout)
-              timeout = setTimeout(fetchOraclePrice, 0)
+              timeout = setTimeout(() => void fetchOraclePrice(), 0)
             }
           },
           Math.max(0, publishTime * 1000 + ORACLE_MAX_AGE - Date.now()),
@@ -166,10 +166,10 @@ const useBalanceHook = () => {
       } finally {
         fetching = false
       }
-      timeout = setTimeout(fetchOraclePrice, delay)
+      timeout = setTimeout(() => void fetchOraclePrice(), delay)
     }
 
-    fetchOraclePrice()
+    void fetchOraclePrice()
 
     return () => {
       cancelled = true

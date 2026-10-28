@@ -95,7 +95,8 @@ const HotspotListItem = ({
     }
 
     return metadata.attributes.find(
-      (attr: any) => attr?.trait_type === 'ecc_compact',
+      (attr: { trait_type?: string; value?: string }) =>
+        attr?.trait_type === 'ecc_compact',
     )?.value
   }, [metadata])
 

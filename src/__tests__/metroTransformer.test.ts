@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const svgUpstream = require('metro-react-native-babel-transformer')
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const metroTransformer = require('../../metro.transformer')
 
 const ROOT = path.join(__dirname, '..', '..')

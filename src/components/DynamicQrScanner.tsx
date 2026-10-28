@@ -23,7 +23,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   const { t } = useTranslation()
 
   useEffect(() => {
-    Camera.requestCameraPermissionsAsync().then(
+    void Camera.requestCameraPermissionsAsync().then(
       ({ status }: { status: string }) => {
         setHasPermission(status === 'granted')
       },
@@ -43,9 +43,9 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     // if user clicks ok, open settings
     if (decision) {
       if (Platform.OS === 'ios') {
-        Linking.openURL('app-settings:')
+        void Linking.openURL('app-settings:')
       } else {
-        Linking.openSettings()
+        void Linking.openSettings()
       }
     }
 

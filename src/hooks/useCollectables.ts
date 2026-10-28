@@ -50,7 +50,7 @@ const useCollectables = (): WalletCollectables & {
 
     const { connection } = anchorProvider
 
-    dispatch(
+    void dispatch(
       fetchCollectables({
         account: currentAccount,
         cluster,
@@ -76,13 +76,16 @@ const useCollectables = (): WalletCollectables & {
     )
 
     if (accountSubscriptionId.current !== null) {
-      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+      void removeAccountChangeListener(
+        anchorProvider,
+        accountSubscriptionId.current,
+      )
     }
     accountSubscriptionId.current = subId
 
     return () => {
       if (accountSubscriptionId.current !== null) {
-        removeAccountChangeListener(
+        void removeAccountChangeListener(
           anchorProvider,
           accountSubscriptionId.current,
         )

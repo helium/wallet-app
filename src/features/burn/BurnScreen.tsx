@@ -156,7 +156,7 @@ const BurnScreen = () => {
 
     if (!accts.length) {
       // Show error, they don't have any accounts for this net type
-      showOKAlert({
+      void showOKAlert({
         title: t('burn.noAcct.title'),
         message: t('burn.noAcct.message'),
       }).then(navigation.goBack)

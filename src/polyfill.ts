@@ -10,15 +10,17 @@ if (typeof global.TransformStream === 'undefined') {
     TransformStream,
     ReadableStream,
     WritableStream,
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
   } = require('web-streams-polyfill')
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(global as any).TransformStream = TransformStream
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(global as any).ReadableStream =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).ReadableStream || ReadableStream
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(global as any).WritableStream =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (global as any).WritableStream || WritableStream
 }
 
@@ -62,6 +64,7 @@ BigInt.prototype.toJSON = function () {
 }
 
 // AbortSignal.timeout() polyfill for React Native
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (typeof AbortSignal !== 'undefined' && !(AbortSignal as any).timeout) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -85,6 +88,7 @@ if (typeof AbortSignal !== 'undefined' && !(AbortSignal as any).timeout) {
 }
 
 // AbortSignal.any() polyfill for React Native
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (typeof AbortSignal !== 'undefined' && !(AbortSignal as any).any) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore

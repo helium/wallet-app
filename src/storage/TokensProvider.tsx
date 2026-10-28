@@ -59,7 +59,7 @@ const useVisibleTokensHook = () => {
         [currentAccount.address]: tokens,
       }
 
-      updateVisibleTokens(
+      void updateVisibleTokens(
         Object.entries(newVisibleTokens).reduce((acc, [key, s]) => {
           acc[key] = Array.from(s)
           return acc

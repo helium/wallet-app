@@ -74,8 +74,8 @@ const PassphraseAutocomplete = ({
   )
 
   const onChangeText = useCallback(
-    async (text) => {
-      handlePaste(text)
+    (text) => {
+      void handlePaste(text)
       matchingListRef?.current?.scrollTo({
         y: 0,
         animated: true,

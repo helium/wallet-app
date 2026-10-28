@@ -29,13 +29,15 @@ const DeviceScanUsb = () => {
   const [transportReady, setTransportReady] = useState(false)
 
   useEffect(() => {
-    TransportHID.create().then((transport) => setTransportReady(!!transport))
+    void TransportHID.create().then((transport) =>
+      setTransportReady(!!transport),
+    )
   }, [])
 
   useEffect(() => {
     if (!transportReady) return
 
-    TransportHID.list().then(setDevices)
+    void TransportHID.list().then(setDevices)
   }, [transportReady])
   const keyExtractor = useCallback((item) => item.deviceId, [])
 

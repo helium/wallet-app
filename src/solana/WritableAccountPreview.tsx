@@ -20,7 +20,9 @@ type Change = {
 }
 
 function diff(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   aIn: any | undefined | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bIn: any | undefined | null,
   field = '',
 ): Change[] {

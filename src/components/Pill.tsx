@@ -28,7 +28,10 @@ export const Pill = memo(
     textProps?: TextProps<Theme>
     iconProps?: SvgProps
   }) => {
-    const colorDefs = {
+    const colorDefs: Record<
+      Color,
+      Record<'border' | 'background' | 'text', keyof Theme['colors']>
+    > = {
       blue: {
         border: 'blueBorder',
         background: 'blue950',
@@ -77,22 +80,17 @@ export const Pill = memo(
         borderRadius="xxl"
         padding="xs"
         borderWidth={2}
-        borderColor={colorDefs[color].border as any}
-        backgroundColor={colorDefs[color].background as any}
+        borderColor={colorDefs[color].border}
+        backgroundColor={colorDefs[color].background}
       >
         {Icon ? (
           <Box>
-            <Icon color={colorDefs[color].text as any} {...iconProps} />
+            <Icon color={colorDefs[color].text} {...iconProps} />
           </Box>
         ) : null}
 
         {text ? (
-          <Text
-            ml="s"
-            mr="s"
-            color={colorDefs[color].text as any}
-            {...textProps}
-          >
+          <Text ml="s" mr="s" color={colorDefs[color].text} {...textProps}>
             {text}
           </Text>
         ) : null}

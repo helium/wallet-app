@@ -109,7 +109,7 @@ const App = () => {
         OneSignal.Notifications.addEventListener('click', (event) => {
           setOpenedNotification(event.notification)
         })
-        OneSignal.Notifications.requestPermission(true)
+        void OneSignal.Notifications.requestPermission(true)
       } catch (error) {
         console.error('OneSignal initialization error:', error)
       }

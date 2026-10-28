@@ -155,6 +155,7 @@ const HotspotMapScreen = () => {
             )
 
             const ktaAccs = await getCachedKeyToAssets(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               hemProgram as any,
               keyToAssetKeys,
             )
@@ -175,10 +176,12 @@ const HotspotMapScreen = () => {
             })
 
             if (networkType === 'IOT') {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               return getCachedIotInfos(hemProgram as any, infoKeys)
             }
 
             if (networkType === 'MOBILE') {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               return getCachedMobileInfos(hemProgram as any, infoKeys)
             }
           }),
@@ -441,7 +444,7 @@ const HotspotMapScreen = () => {
             onUserLocationUpdate={onUserLocationUpdate}
             centerCoordinate={initialCenter}
             mapProps={{
-              onRegionDidChange: handleRegionChanged,
+              onRegionDidChange: () => void handleRegionChanged(),
               onPress: () => {
                 setActiveHex(undefined)
                 setLegendVisible(false)

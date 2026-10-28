@@ -2,7 +2,7 @@ export function debounce<T extends unknown[], U>(
   callback: (...args: T) => PromiseLike<U> | U,
   wait: number,
 ) {
-  let timer: any
+  let timer: ReturnType<typeof setTimeout> | undefined
 
   return (...args: T): Promise<U> => {
     clearTimeout(timer)

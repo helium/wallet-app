@@ -34,7 +34,7 @@ const WifiSettings = () => {
     useHotspotBle()
 
   useEffect(() => {
-    isConnected().then(setConnected)
+    void isConnected().then(setConnected)
   }, [isConnected])
 
   const {
@@ -52,7 +52,7 @@ const WifiSettings = () => {
 
   // Refresh on network change or on load
   useEffect(() => {
-    handleRefresh()
+    void handleRefresh()
   }, [handleRefresh, networkIn, connected])
 
   const handleNetworkSelected = useCallback(
@@ -78,14 +78,15 @@ const WifiSettings = () => {
               {
                 text: t('generic.remove'),
                 style: 'destructive',
-                onPress: async () => {
-                  setConfiguredNetworks(
-                    configuredNetworks?.filter((n) => n !== network),
-                  )
-                  await removeConfiguredWifi(network)
-                  readWifiNetworks(true).then(setConfiguredNetworks)
-                  readWifiNetworks(false).then(setNetworks)
-                },
+                onPress: () =>
+                  void (async () => {
+                    setConfiguredNetworks(
+                      configuredNetworks?.filter((n) => n !== network),
+                    )
+                    await removeConfiguredWifi(network)
+                    void readWifiNetworks(true).then(setConfiguredNetworks)
+                    void readWifiNetworks(false).then(setNetworks)
+                  })(),
               },
             ],
           )

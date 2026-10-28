@@ -28,7 +28,7 @@ const NotificationsScreen = () => {
 
   const onActionPress = useCallback(() => {
     if (!selectedNotification?.actionUrl) return
-    Linking.openURL(selectedNotification?.actionUrl)
+    void Linking.openURL(selectedNotification?.actionUrl)
   }, [selectedNotification])
 
   const HeaderComponent = useMemo(() => {

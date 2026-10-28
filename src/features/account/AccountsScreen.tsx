@@ -144,7 +144,7 @@ const AccountsScreen = () => {
     // if current account is keystone account , check pass
     if (currentAccount?.keystoneDevice) return
     const address = currentAccount?.address
-    if (address) checkSecureAccount(address)
+    if (address) void checkSecureAccount(address)
   }, [
     currentAccount?.address,
     currentAccount?.ledgerDevice,

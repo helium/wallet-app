@@ -55,7 +55,7 @@ const AirdropScreen = () => {
 
     setLoading(true)
     if (mint?.equals(NATIVE_MINT)) {
-      solUtils.airdrop(anchorProvider, currentAccount?.solanaAddress)
+      void solUtils.airdrop(anchorProvider, currentAccount?.solanaAddress)
       setLoading(false)
       navigation.goBack()
     } else {

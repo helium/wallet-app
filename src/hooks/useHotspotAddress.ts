@@ -8,7 +8,10 @@ export function useHotspotAddress(
   const { metadata } = hotspot?.content || {}
   const attributes = useMemo(() => {
     return metadata?.attributes?.reduce(
-      (acc: any, att: any) => {
+      (
+        acc: Record<string, string>,
+        att: { trait_type?: string; value?: string },
+      ) => {
         if (att && att.trait_type && typeof att.value !== 'undefined') {
           acc[att.trait_type] = att.value
         }

@@ -31,7 +31,7 @@ const NotificationDetails = () => {
   const prevSelectedList = usePrevious(selectedList)
 
   useMount(() => {
-    dispatch(
+    void dispatch(
       markNotificationRead({
         resource: apiResource,
         id: notification.id,

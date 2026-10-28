@@ -85,7 +85,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
 
   const handleResend = useCallback(() => {
     if (secondsLeft > 0) return
-    sendCodeFor(resendCount + 1)
+    void sendCodeFor(resendCount + 1)
   }, [secondsLeft, resendCount, sendCodeFor])
 
   const handleVerify = useCallback(async () => {

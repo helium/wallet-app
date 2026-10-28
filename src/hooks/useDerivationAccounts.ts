@@ -183,15 +183,15 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
       }
 
       setResolvedGroups(resolved)
-    } catch (e: any) {
-      setError(e)
+    } catch (e) {
+      setError(e as Error)
     } finally {
       setLoading(false)
     }
   }, [seed, groups, connection, resolvedGroups, mnemonic, hasMoreAccounts])
 
   useEffect(() => {
-    fetchAccounts()
+    void fetchAccounts()
   }, [fetchAccounts])
 
   return {

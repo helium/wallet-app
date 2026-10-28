@@ -29,9 +29,9 @@ const ScanHotspots = () => {
   const { t } = useTranslation()
   const [error, setError] = useState<string | undefined>(undefined)
 
-  const showError = (e: any) => {
+  const showError = (e: unknown) => {
     Logger.error(e)
-    setError(e.toString())
+    setError(String(e))
   }
 
   const updateCanScan = useCallback((result: PermissionStatus) => {
@@ -119,7 +119,7 @@ const ScanHotspots = () => {
     }
 
     if (shouldScan) {
-      startScan((e) => {
+      void startScan((e) => {
         if (e) {
           showError(e)
         }

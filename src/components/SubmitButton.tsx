@@ -54,6 +54,7 @@ const SubmitButton = ({
 
   return (
     <Box
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       backgroundColor={backgroundColor as any}
       borderRadius="round"
       {...boxProps}

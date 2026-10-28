@@ -57,7 +57,7 @@ const HeliumBottomSheet = ({
     [offset],
   )
 
-  const handleClose = useCallback(async () => {
+  const handleClose = useCallback(() => {
     onClose()
   }, [onClose])
 

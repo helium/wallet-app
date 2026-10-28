@@ -14,8 +14,8 @@ const useEnrichedTransactions = (): {
   transactions: (EnrichedTransaction | ConfirmedSignatureInfo)[]
   loading: boolean
   fetchingMore: boolean
-  refresh: () => void
-  fetchMore: () => void
+  refresh: () => Promise<void>
+  fetchMore: () => Promise<void>
   onEndReached: boolean
   resetNewTransactions: () => void
   hasNewTransactions: boolean
@@ -38,7 +38,7 @@ const useEnrichedTransactions = (): {
 
   useEffect(() => {
     if (transactions.length > 0) {
-      AsyncStorage.setItem(
+      void AsyncStorage.setItem(
         `txs-${cluster}-${currentAccount?.solanaAddress}`,
         // Limit of 50 stored tx to not blow storage limit
         JSON.stringify(transactions.slice(0, 50)),
@@ -164,15 +164,18 @@ const useEnrichedTransactions = (): {
       return
     }
 
-    loadTransactionsFromStorage()
+    void loadTransactionsFromStorage()
 
     const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
-      fetchNew()
+      void fetchNew()
       setHasNewTransactions(true)
     })
 
     if (accountSubscriptionId.current !== undefined) {
-      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+      void removeAccountChangeListener(
+        anchorProvider,
+        accountSubscriptionId.current,
+      )
     }
     accountSubscriptionId.current = subId
     // eslint-disable-next-line react-hooks/exhaustive-deps

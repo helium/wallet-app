@@ -73,7 +73,7 @@ const useAccountStorageHook = () => {
 
   useEffect(() => {
     if (currentAppState === 'active') {
-      updateApiToken()
+      void updateApiToken()
     }
   }, [currentAccount, currentAppState, updateApiToken])
 
@@ -140,7 +140,7 @@ const useAccountStorageHook = () => {
     setCurrentAccount(
       (current) => (current && updated[current.address]) || current,
     )
-    updateCloudAccounts(updated)
+    void updateCloudAccounts(updated)
   }, [accounts])
 
   useEffect(() => {
@@ -157,7 +157,7 @@ const useAccountStorageHook = () => {
     })
 
     setContacts(updated)
-    updateCloudContacts(updated)
+    void updateCloudContacts(updated)
   }, [contacts])
 
   useEffect(() => {

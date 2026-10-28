@@ -233,17 +233,18 @@ const Settings = () => {
           {
             text: t('settings.sections.account.signOut'),
             style: 'destructive',
-            onPress: async () => {
-              if (isLastAccount) {
-                // last account is signing out, clear all storage then nav to onboarding
-                await signOut()
-                rootNav.replace('OnboardingNavigator')
-              } else {
-                // sign out the specific account, then nav to home
-                await signOut(currentAccount)
-                homeNav.popToTop()
-              }
-            },
+            onPress: () =>
+              void (async () => {
+                if (isLastAccount) {
+                  // last account is signing out, clear all storage then nav to onboarding
+                  await signOut()
+                  rootNav.replace('OnboardingNavigator')
+                } else {
+                  // sign out the specific account, then nav to home
+                  await signOut(currentAccount)
+                  homeNav.popToTop()
+                }
+              })(),
           },
         ],
       )
@@ -402,14 +403,15 @@ const Settings = () => {
               {
                 text: t('generic.clear'),
                 style: 'destructive',
-                onPress: async () => {
-                  await persistor.purge()
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  Object.keys(cache?.genericCache.cache).forEach((key) => {
-                    cache?.delete(key)
-                  })
-                },
+                onPress: () =>
+                  void (async () => {
+                    await persistor.purge()
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    Object.keys(cache?.genericCache.cache).forEach((key) => {
+                      cache?.delete(key)
+                    })
+                  })(),
               },
             ],
           )
@@ -417,7 +419,7 @@ const Settings = () => {
       },
     ]
 
-    const accountSettings = [
+    const accountSettings: SettingsListItemType[] = [
       {
         label: t('settings.sections.account.alias'),
         title: currentAccount?.alias || '',
@@ -563,11 +565,11 @@ const Settings = () => {
         data: [
           {
             title: t('settings.sections.finePrint.privacyPolicy'),
-            onPress: () => Linking.openURL(PRIVACY_POLICY),
+            onPress: () => void Linking.openURL(PRIVACY_POLICY),
           },
           {
             title: t('settings.sections.finePrint.termsOfService'),
-            onPress: () => Linking.openURL(TERMS_OF_SERVICE),
+            onPress: () => void Linking.openURL(TERMS_OF_SERVICE),
           },
         ],
       },

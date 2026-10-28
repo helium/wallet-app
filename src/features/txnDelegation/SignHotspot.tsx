@@ -79,7 +79,7 @@ const SignHotspot = () => {
         ...params, // include the original params in the response
         ...responseParams, // override with the response params
       })
-      Linking.openURL(url)
+      void Linking.openURL(url)
 
       if (navigation.canGoBack()) {
         navigation.goBack()
@@ -95,7 +95,7 @@ const SignHotspot = () => {
 
   useEffect(() => {
     if (validated === false) {
-      callback({ status: 'token_not_found' })
+      void callback({ status: 'token_not_found' })
     }
   }, [callback, validated])
 
@@ -106,10 +106,12 @@ const SignHotspot = () => {
 
   useEffect(() => {
     if (!gatewayAddress) return
-    onboardingClient.getOnboardingRecord(gatewayAddress).then((response) => {
-      if (!response.data) return
-      setOnboardingRecord(response.data)
-    })
+    void onboardingClient
+      .getOnboardingRecord(gatewayAddress)
+      .then((response) => {
+        if (!response.data) return
+        setOnboardingRecord(response.data)
+      })
   }, [gatewayAddress])
 
   const submitNow = useCallback(async () => {

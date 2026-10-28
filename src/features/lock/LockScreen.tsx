@@ -29,13 +29,13 @@ const LockScreen = ({ children }: Props) => {
     if (locked === prevLocked || !prevLocked) return
 
     // clear idle when app is unlocked
-    storeSecureItem('lastIdle', Date.now().toString())
+    void storeSecureItem('lastIdle', Date.now().toString())
   }, [locked, prevLocked])
 
   useEffect(() => {
     // clear idle when pin is turned off
     if (pin?.status === 'off') {
-      deleteSecureItem('lastIdle')
+      void deleteSecureItem('lastIdle')
     }
   }, [authInterval, locked, pin, prevLocked])
 

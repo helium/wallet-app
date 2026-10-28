@@ -39,7 +39,7 @@ const MigrateToWorldCard: FC = () => {
 
   const handleClosed = useCallback(() => {
     closing.current = true
-    dismissMigrateToWorld(wallet?.toBase58() || '')
+    void dismissMigrateToWorld(wallet?.toBase58() || '')
     hideModal()
   }, [dismissMigrateToWorld, wallet, hideModal])
 

@@ -72,17 +72,18 @@ const ConfirmSignoutScreen = () => {
         {
           text: t('settings.sections.account.signOut'),
           style: 'destructive',
-          onPress: async () => {
-            if (isLastAccount) {
-              // last account is signing out, clear all storage then nav to onboarding
-              await signOut()
-              rootNav.replace('OnboardingNavigator')
-            } else {
-              // sign out the specific account, then nav to home
-              await signOut(currentAccount)
-              navigation.popToTop()
-            }
-          },
+          onPress: () =>
+            void (async () => {
+              if (isLastAccount) {
+                // last account is signing out, clear all storage then nav to onboarding
+                await signOut()
+                rootNav.replace('OnboardingNavigator')
+              } else {
+                // sign out the specific account, then nav to home
+                await signOut(currentAccount)
+                navigation.popToTop()
+              }
+            })(),
         },
       ],
     )

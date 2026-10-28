@@ -169,8 +169,8 @@ const AccountAssignScreen = () => {
         ...highestBalanceAcc,
         netType: accountNetType(highestBalanceAcc.address),
       })
-    } catch (e: any) {
-      setError(e.toString())
+    } catch (e) {
+      setError(String(e))
       console.error(e)
     }
   })

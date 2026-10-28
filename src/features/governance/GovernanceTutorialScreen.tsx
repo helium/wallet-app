@@ -67,7 +67,7 @@ export const GovernanceTutorialScreen = () => {
   const edges = useMemo(() => ['top'] as Edge[], [])
 
   const handleVotePressed = useCallback(() => {
-    setVoteTutorialCompleted()
+    void setVoteTutorialCompleted()
     navigation.replace('ProposalsScreen', {})
   }, [navigation, setVoteTutorialCompleted])
 

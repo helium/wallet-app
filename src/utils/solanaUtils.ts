@@ -251,7 +251,7 @@ export const calculateRequiredSol = async (
       try {
         const buffer = Buffer.from(tx, 'base64')
         transaction = VersionedTransaction.deserialize(buffer)
-      } catch (deserializeError) {
+      } catch {
         transaction = toVersionedTx({
           instructions: [],
           recentBlockhash: blockhash,
@@ -276,7 +276,7 @@ export const calculateRequiredSol = async (
       : new BN(TXN_FEE_IN_LAMPORTS)
 
     return feeWithBuffer
-  } catch (e) {
+  } catch {
     return new BN(0.002 * LAMPORTS_PER_SOL) // 0.002 SOL
   }
 }
@@ -996,7 +996,7 @@ export const getNFTsMetadata = async (collectables: CompressedNFT[]) =>
           })
 
           return { ...col, json: data }
-        } catch (e: any) {
+        } catch {
           return null
         }
       }),
@@ -1214,7 +1214,7 @@ export async function getCachedKeyToAsset(
   hemProgram: Program<HeliumEntityManager>,
   keyToAsset: PublicKey,
 ): Promise<KeyToAssetV0 | undefined> {
-  const cache = await getSingleton(hemProgram.provider.connection)
+  const cache = getSingleton(hemProgram.provider.connection)
   const kta = await cache.search(
     keyToAsset,
     (pubkey, account) => ({
@@ -1235,7 +1235,7 @@ export async function getCachedKeyToAssets(
   hemProgram: Program<HeliumEntityManager>,
   keyToAssets: PublicKey[],
 ): Promise<KeyToAssetV0[]> {
-  const cache = await getSingleton(hemProgram.provider.connection)
+  const cache = getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(
       keyToAssets,
@@ -1258,7 +1258,7 @@ export async function getCachedIotInfo(
   hemProgram: Program<HeliumEntityManager>,
   infoKey: PublicKey,
 ): Promise<IotHotspotInfoV0 | undefined> {
-  const cache = await getSingleton(hemProgram.provider.connection)
+  const cache = getSingleton(hemProgram.provider.connection)
   const iotInfo = await cache.search(
     infoKey,
     (pubkey, account) => ({
@@ -1279,7 +1279,7 @@ export async function getCachedIotInfos(
   hemProgram: Program<HeliumEntityManager>,
   infoKeys: PublicKey[],
 ): Promise<IotHotspotInfoV0[]> {
-  const cache = await getSingleton(hemProgram.provider.connection)
+  const cache = getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(
       infoKeys,
@@ -1302,7 +1302,7 @@ export async function getCachedMobileInfo(
   hemProgram: Program<HeliumEntityManager>,
   infoKey: PublicKey,
 ): Promise<MobileHotspotInfoV0 | undefined> {
-  const cache = await getSingleton(hemProgram.provider.connection)
+  const cache = getSingleton(hemProgram.provider.connection)
   const mobileInfo = await cache.search(
     infoKey,
     (pubkey, account) => ({
@@ -1323,7 +1323,7 @@ export async function getCachedMobileInfos(
   hemProgram: Program<HeliumEntityManager>,
   infoKeys: PublicKey[],
 ): Promise<MobileHotspotInfoV0[]> {
-  const cache = await getSingleton(hemProgram.provider.connection)
+  const cache = getSingleton(hemProgram.provider.connection)
   return (
     await cache.searchMultiple(
       infoKeys,
@@ -1490,7 +1490,7 @@ export const getCollectableByMint = async (
     }
 
     return null
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -1995,7 +1995,7 @@ export const calcCreateAssociatedTokenAccountAccountFee = async (
       return new BN(0)
     }
     return new BN(fee)
-  } catch (e) {
+  } catch {
     return new BN(0)
   }
 }

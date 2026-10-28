@@ -13,7 +13,7 @@ export const solAddressToHelium = (solanaAddress: string) => {
     const buffer = bs58.decode(solanaAddress)
     const heliumPK = new Address(0, 0, 1, buffer)
     return heliumPK.b58
-  } catch (e) {
+  } catch {
     return ''
   }
 }

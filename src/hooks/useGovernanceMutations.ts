@@ -78,7 +78,7 @@ function useGovernanceMutation<
 
   // TS can't narrow a generic-indexed union of callables — safe because each
   // call site pins M to a literal, keeping the public API fully typed.
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const apiFn = client.governance[config.method] as Function
 
   const callApi = useCallback(

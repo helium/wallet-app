@@ -31,7 +31,7 @@ export const usePollTokenPrices = () => {
 
     tokenPricesSyncGuard.startSync(syncKey)
 
-    dispatch(
+    void dispatch(
       readTokenPrices({
         currency: currency.toLowerCase(),
       }),

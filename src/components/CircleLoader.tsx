@@ -46,7 +46,7 @@ const CircleLoader = ({
     const scan = async () => {
       anim()
     }
-    scan()
+    void scan()
 
     return () => {
       if (animationRef.current) {

@@ -253,7 +253,7 @@ const useTxn = (
     )
     if (!payments) return []
     const all = payments.map(async (p) => {
-      const balance = await formatAmount('+', p.amount, p.mint)
+      const balance = formatAmount('+', p.amount, p.mint)
       return { amount: balance, owner: p.owner, memo: p.memo || '' }
     })
     return Promise.all(all)
@@ -266,7 +266,7 @@ const useTxn = (
     const all = item.payments
       .filter((p) => p.amount < 0 && p.owner === wallet?.toBase58())
       .map(async ({ amount: amt, owner, memo: paymentMemo, mint: m }) => {
-        const balance = await formatAmount('', amt, m)
+        const balance = formatAmount('', amt, m)
         return { amount: balance, owner, memo: paymentMemo || '' }
       })
 
@@ -335,7 +335,7 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
     const fee = await getFee()
     const paymentsReceived = await getPaymentsReceived()
     const paymentsSent = await getPaymentsSent()
-    const amount = await getAmount()
+    const amount = getAmount()
     const amountTitle = await getAmountTitle()
 
     setDetails({

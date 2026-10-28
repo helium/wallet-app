@@ -16,7 +16,7 @@ import sleep from '@utils/sleep'
 
 export type SelectProps = {
   onDonePress?: () => void
-  onValueSelect: (value: string | number, index: number) => void
+  onValueSelect: (value: string | number, index: number) => void | Promise<void>
   items: HeliumActionSheetItemType[]
 }
 
@@ -25,8 +25,8 @@ export type SettingsListItemType = {
   label?: string
   helperText?: string
   destructive?: boolean
-  onPress?: () => void
-  onToggle?: (value: boolean) => void
+  onPress?: () => void | Promise<void>
+  onToggle?: (value: boolean) => void | Promise<void>
   renderModal?: () => React.ReactNode
   value?: boolean | string | number
   select?: SelectProps
@@ -63,11 +63,11 @@ const SettingsListItem = ({
 
   const handlePress = () => {
     if (openUrl) {
-      Linking.openURL(openUrl)
+      void Linking.openURL(openUrl)
     }
 
     if (onPress) {
-      onPress()
+      void onPress()
     }
 
     if (select) {
@@ -118,7 +118,7 @@ const SettingsListItem = ({
       // Need to wait a little bit to avoid a glitch with the animation
       await sleep(100)
 
-      select?.onValueSelect(itemValue, itemIndex)
+      void select?.onValueSelect(itemValue, itemIndex)
     },
     [select],
   )

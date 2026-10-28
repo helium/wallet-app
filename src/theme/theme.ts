@@ -95,6 +95,7 @@ const textVariants = {
 }
 
 const generateFontVariants = (baseVariants: typeof textVariants) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const variants: Record<string, any> = { ...baseVariants }
 
   const baseTypes = ['body0', 'body1', 'body2', 'body3', 'h1', 'h2', 'h3', 'h4']

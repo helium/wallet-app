@@ -251,7 +251,7 @@ const useLedger = () => {
         }
 
         return account
-      } catch (error) {
+      } catch {
         return null
       }
     },
@@ -314,7 +314,7 @@ const useLedger = () => {
             }),
           )
         }
-      } catch (error) {
+      } catch {
         // Fill with defaults on error
         solBalances.push(...publicKeys.map(() => 0))
         hntBalances.push(...publicKeys.map(() => false))
@@ -354,7 +354,7 @@ const useLedger = () => {
             )
             batchPublicKeys.push(publicKey)
             batchAccountIndexes.push(accountIndex)
-          } catch (error) {
+          } catch {
             // Skip invalid derivations
           }
         }
@@ -523,7 +523,7 @@ const useLedger = () => {
           if (solanaRootAccount) {
             mainAccounts.push(solanaRootAccount)
           }
-        } catch (error) {
+        } catch {
           // ignore if derivation fails
         }
 

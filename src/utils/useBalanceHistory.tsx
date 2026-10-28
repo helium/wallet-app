@@ -46,7 +46,7 @@ export const useBalanceHistory = () => {
 
         balanceHistorySyncGuard.startSync(syncKey)
 
-        dispatch(
+        void dispatch(
           readBalanceHistory({
             cluster,
             solanaAddress: currentAccount?.solanaAddress || '',
@@ -84,7 +84,7 @@ export const useBalanceHistory = () => {
 
     balanceHistorySyncGuard.startSync(query)
 
-    dispatch(
+    void dispatch(
       readBalanceHistory({
         cluster,
         solanaAddress: currentAccount?.solanaAddress,

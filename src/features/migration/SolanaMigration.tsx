@@ -120,7 +120,7 @@ const SolanaMigration = ({
         })
       }
 
-      dispatch(
+      void dispatch(
         fetchHotspots({
           anchorProvider,
           account: currentAccount,

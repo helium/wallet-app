@@ -15,7 +15,7 @@ export async function fetchDomainOwner(connection: Connection, domain: string) {
     }
     if (!owner) return
     return owner.toBase58()
-  } catch (e: any) {
+  } catch (e) {
     // Handle the error here if needed
     console.error('Error fetching domain owner:', e)
   }

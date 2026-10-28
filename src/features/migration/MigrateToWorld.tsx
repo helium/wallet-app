@@ -130,7 +130,7 @@ const MigrateToWorld = () => {
   useEffect(() => {
     if (!user || creating.current || step === 'walletError') return
     if (solanaWallet.status === 'not-created') {
-      createWallet()
+      void createWallet()
     } else if (solanaWallet.status === 'error') {
       // Privy can land the wallet in 'error' (e.g. a failed reconnect)
       // without ever throwing from create() — without this, destinationWallet
@@ -189,7 +189,7 @@ const MigrateToWorld = () => {
       // step intact on success, so the user re-triggers once a wallet exists.
       if (!destinationWallet) {
         if (!user) setStep('login')
-        else createWallet()
+        else void createWallet()
         return
       }
       setError(undefined)
@@ -216,7 +216,7 @@ const MigrateToWorld = () => {
   )
 
   const onConfirm = useCallback(() => {
-    if (selection) execute(buildInput(selection), 'review')
+    if (selection) void execute(buildInput(selection), 'review')
   }, [selection, buildInput, execute])
 
   const onRetry = useCallback(() => {
@@ -228,7 +228,7 @@ const MigrateToWorld = () => {
     // Forward the in-flight batch id so the executor re-polls it to terminal
     // before re-requesting — prevents re-sending a still-pending transfer.
     if (retryInput)
-      execute(retryInput, returnStep, {
+      void execute(retryInput, returnStep, {
         pendingBatchId: resume.pendingBatchId,
       })
   }, [

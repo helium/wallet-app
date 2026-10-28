@@ -254,7 +254,7 @@ const LedgerModal = forwardRef(
             },
           }
           sessionRef.current = session
-          runSigningSession(session)
+          void runSigningSession(session)
         })
 
         return promise
@@ -317,7 +317,7 @@ const LedgerModal = forwardRef(
     const handleRetry = useCallback(() => {
       const session = sessionRef.current
       if (!session || session.settled) return
-      runSigningSession(session)
+      void runSigningSession(session)
     }, [runSigningSession])
 
     const closeModal = useCallback(() => {

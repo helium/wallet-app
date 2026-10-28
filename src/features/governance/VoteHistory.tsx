@@ -44,7 +44,7 @@ export const VoteHistory: React.FC<{
     }),
   )
   const handleRefresh = useCallback(() => {
-    refetch()
+    void refetch()
     onRefresh()
   }, [onRefresh, refetch])
 
@@ -100,7 +100,7 @@ export const VoteHistory: React.FC<{
 
   const handleOnEndReached = useCallback(() => {
     if (!loading && hasNextPage) {
-      fetchNextPage()
+      void fetchNextPage()
     }
   }, [hasNextPage, fetchNextPage, loading])
 
