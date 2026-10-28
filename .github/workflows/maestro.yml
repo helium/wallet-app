@@ -9,11 +9,14 @@ env:
   SURFPOOL_VERSION: 1.5.0
   SURFPOOL_SHA256: 5b20a3b46e60c4f819af7b4da5c3ea211f76041710617841cc23247d15887ddc
   MAESTRO_VERSION: 2.12.0
+  MAESTRO_SHA256: a6044a84542f522f434c5dc3d609e60c7446d423f3ed1b2ae513f5c48663ec5e
 
 jobs:
   # Runs the Maestro suite on an Android emulator against a local surfpool
   # mainnet fork and blockchain-api. See .maestro/README.md.
   android:
+    # Fork PRs get empty secrets, so run only on same-repo PRs and manual runs.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -38,19 +41,33 @@ jobs:
           echo "$RUNNER_TEMP/surfpool" >> "$GITHUB_PATH"
       - name: Install Maestro
         run: |
-          curl -fsSL https://get.maestro.mobile.dev | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          curl -sSfL -o "$RUNNER_TEMP/maestro.zip" \
+            "https://github.com/mobile-dev-inc/maestro/releases/download/cli-$MAESTRO_VERSION/maestro.zip"
+          echo "$MAESTRO_SHA256  $RUNNER_TEMP/maestro.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/maestro/bin" >> "$GITHUB_PATH"
 
       - name: Write .env
         env:
           DOT_ENV: ${{ secrets.DOT_ENV }}
         run: printf '%s\n' "$DOT_ENV" > .env
 
-      # The exports point MAINNET_RPC_URL and MAINNET_HELIUM_TRANSACTION_API
-      # at the fork. They win over .env when app.config.ts is read.
+      # Every later step, Metro included, then serves the fork.
+      - name: Point the app at the fork
+        run: scripts/maestro-surfpool.sh env | sed 's/^export //' >> "$GITHUB_ENV"
+
+      # Firebase config is not in the repo; the google-services plugin needs a
+      # file whose package_name matches the applicationId.
+      - name: Write stub google-services.json
+        run: >-
+          echo '{"project_info":{"project_number":"000000000000","project_id":"ci-stub","storage_bucket":"ci-stub.appspot.com"},
+          "client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000",
+          "android_client_info":{"package_name":"com.helium.wallet.app"}},
+          "api_key":[{"current_key":"ci-stub"}]}],"configuration_version":"1"}'
+          > android/app/google-services.json
+
       - name: Build debug APK
         run: |
-          eval "$(scripts/maestro-surfpool.sh env)"
           cd android
           ./gradlew assembleDebug -PreactNativeArchitectures=x86_64
 
@@ -85,7 +102,7 @@ jobs:
       # The emulator reaches surfpool (8899) and blockchain-api (3000) on the
       # runner only through adb reverse. It reaches Metro at 10.0.2.2:8081.
       - name: Run Maestro
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
           MAESTRO_PRIVY_TEST_EMAIL: ${{ secrets.MAESTRO_PRIVY_TEST_EMAIL }}
           MAESTRO_PRIVY_TEST_OTP: ${{ secrets.MAESTRO_PRIVY_TEST_OTP }}
@@ -102,7 +119,7 @@ jobs:
             maestro test .maestro
 
       - name: Upload logs
-        if: failure()
+        if: failure() || cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-logs

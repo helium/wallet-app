@@ -13,14 +13,20 @@ script directly).
 
 1. Make a debug build that points at this machine. Android debug builds
    allow the plain-HTTP local URLs. The `env` command prints exports for
-   `MAINNET_RPC_URL` and `MAINNET_HELIUM_TRANSACTION_API`. `app.config.ts`
-   copies them into `extra`, and a value set in the shell wins over `.env`.
-   Only a build made from this shell uses the fork. Release and EAS builds
-   do not change.
+   `EXPO_PUBLIC_MAINNET_RPC_URL` and `EXPO_PUBLIC_MAINNET_HELIUM_TRANSACTION_API`.
+   Metro inlines them when it bundles. A value set in the shell wins over
+   `.env`. Start Metro in that shell with a clean cache. Then build in a
+   second terminal and reuse that Metro. Release and EAS builds do not change.
 
    ```bash
    eval "$(scripts/maestro-surfpool.sh env)"
-   yarn ios                             # or: yarn android
+   yarn start --reset-cache
+   ```
+
+   In a second terminal:
+
+   ```bash
+   yarn ios --no-packager               # or: yarn android --no-packager
    ```
 
 2. Start surfpool and blockchain-api, seed the fixture wallet, and export
@@ -58,10 +64,12 @@ Maestro passes shell variables that start with `MAESTRO_` to the flows.
 ## CI
 
 `.github/workflows/maestro.yml` runs the suite on an Android emulator on
-each pull request. It installs a pinned surfpool release, runs
+each pull request from this repository and on manual runs. Fork pull
+requests get no secrets, so the job skips them. It installs a pinned surfpool release, runs
 `scripts/maestro-surfpool.sh` to start surfpool and blockchain-api in Docker
-and seed the wallet, and builds a debug APK with the `env` exports. It needs
-these repository secrets, none of which holds funds:
+and seed the wallet. It exports the fork URLs to every later step, Metro
+included. It writes a stub `google-services.json` and builds a debug APK. It
+needs these repository secrets, none of which holds funds:
 
 - `DOT_ENV`: the app `.env` file, as EAS builds use it
 - `JUPITER_API_KEY`: swap quotes in flow 04
@@ -71,16 +79,16 @@ these repository secrets, none of which holds funds:
 
 ## Flows
 
-| Flow | Network | Submits |
-|---|---|---|
-| 01-create-account | none | no |
-| 02-import-account | surfpool | no |
-| 03-balances | surfpool | no |
-| 04-swap-review | surfpool | no, cancels at the sign sheet |
-| 05-governance-review | surfpool | no, cancels at the sign sheet |
-| 06-migration-review | surfpool | no, stops on the review screen |
-| 07-send | surfpool | yes, to the fork |
-| 08-settings | surfpool | no |
+| Flow                 | Network  | Submits                        |
+| -------------------- | -------- | ------------------------------ |
+| 01-create-account    | none     | no                             |
+| 02-import-account    | surfpool | no                             |
+| 03-balances          | surfpool | no                             |
+| 04-swap-review       | surfpool | no, cancels at the sign sheet  |
+| 05-governance-review | surfpool | no, cancels at the sign sheet  |
+| 06-migration-review  | surfpool | no, stops on the review screen |
+| 07-send              | surfpool | yes, to the fork               |
+| 08-settings          | surfpool | no                             |
 
 The flows run in this order. Flows 03 to 08 use the account that flow 02 imports.
 
