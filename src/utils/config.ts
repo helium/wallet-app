@@ -1,44 +1,40 @@
-import Constants from 'expo-constants'
-
-// Every key must also be listed in app.config.ts `extra`, which embeds it
-// into the native build.
-export const CONFIG_KEYS = [
-  'MAINNET_RPC_URL',
-  'DEVNET_RPC_URL',
-  'MAINNET_HELIUM_TRANSACTION_API',
-  'DEVNET_HELIUM_TRANSACTION_API',
-  'ONBOARDING_API_URL',
-  'WALLET_REST_URI',
-  'MIGRATION_SERVER_URL',
-  'TOKENS_TO_RENT_SERVICE_URL',
-  'TOKENS_TO_RENT_SERVICE_DEVNET_URL',
-  'PMTILES_URL',
-  'ONE_SIGNAL_APP_ID',
-  'ONE_SIGNAL_ACCOUNT_TAG_SALT',
-  'WALLET_CONNECT_PROJECT_ID',
-  'WALLET_CONNECT_METADATA_URL',
-  'HELIUM_VOTE_API_URL',
-  'DEVNET_HELIUM_VOTE_API_URL',
-  'PRIVY_APP_ID',
-  'PRIVY_CLIENT_ID',
-  'LOG_ANIMATIONS',
-  'LOG_BREADCRUMBS',
-  'OVERRIDE_MODEL_ID',
-  'OVERRIDE_WIRED',
-  'VIEW_AS',
-] as const
-
-type ConfigKey = (typeof CONFIG_KEYS)[number]
-
-const extra: Record<string, unknown> = Constants.expoConfig?.extra ?? {}
+// babel-preset-expo inlines each `process.env.EXPO_PUBLIC_*` read at build
+// time, so every read must name its variable literally.
+const env = {
+  MAINNET_RPC_URL: process.env.EXPO_PUBLIC_MAINNET_RPC_URL,
+  DEVNET_RPC_URL: process.env.EXPO_PUBLIC_DEVNET_RPC_URL,
+  MAINNET_HELIUM_TRANSACTION_API:
+    process.env.EXPO_PUBLIC_MAINNET_HELIUM_TRANSACTION_API,
+  DEVNET_HELIUM_TRANSACTION_API:
+    process.env.EXPO_PUBLIC_DEVNET_HELIUM_TRANSACTION_API,
+  ONBOARDING_API_URL: process.env.EXPO_PUBLIC_ONBOARDING_API_URL,
+  WALLET_REST_URI: process.env.EXPO_PUBLIC_WALLET_REST_URI,
+  MIGRATION_SERVER_URL: process.env.EXPO_PUBLIC_MIGRATION_SERVER_URL,
+  TOKENS_TO_RENT_SERVICE_URL:
+    process.env.EXPO_PUBLIC_TOKENS_TO_RENT_SERVICE_URL,
+  TOKENS_TO_RENT_SERVICE_DEVNET_URL:
+    process.env.EXPO_PUBLIC_TOKENS_TO_RENT_SERVICE_DEVNET_URL,
+  PMTILES_URL: process.env.EXPO_PUBLIC_PMTILES_URL,
+  ONE_SIGNAL_APP_ID: process.env.EXPO_PUBLIC_ONE_SIGNAL_APP_ID,
+  ONE_SIGNAL_ACCOUNT_TAG_SALT:
+    process.env.EXPO_PUBLIC_ONE_SIGNAL_ACCOUNT_TAG_SALT,
+  WALLET_CONNECT_PROJECT_ID: process.env.EXPO_PUBLIC_WALLET_CONNECT_PROJECT_ID,
+  WALLET_CONNECT_METADATA_URL:
+    process.env.EXPO_PUBLIC_WALLET_CONNECT_METADATA_URL,
+  HELIUM_VOTE_API_URL: process.env.EXPO_PUBLIC_HELIUM_VOTE_API_URL,
+  DEVNET_HELIUM_VOTE_API_URL:
+    process.env.EXPO_PUBLIC_DEVNET_HELIUM_VOTE_API_URL,
+  PRIVY_APP_ID: process.env.EXPO_PUBLIC_PRIVY_APP_ID,
+  PRIVY_CLIENT_ID: process.env.EXPO_PUBLIC_PRIVY_CLIENT_ID,
+  LOG_ANIMATIONS: process.env.EXPO_PUBLIC_LOG_ANIMATIONS,
+  LOG_BREADCRUMBS: process.env.EXPO_PUBLIC_LOG_BREADCRUMBS,
+  OVERRIDE_MODEL_ID: process.env.EXPO_PUBLIC_OVERRIDE_MODEL_ID,
+  OVERRIDE_WIRED: process.env.EXPO_PUBLIC_OVERRIDE_WIRED,
+  VIEW_AS: process.env.EXPO_PUBLIC_VIEW_AS,
+}
 
 // A key missing from the build reads as undefined. The type keeps the
 // `string` contract of react-native-config, which this module replaces.
-const Config = Object.fromEntries(
-  CONFIG_KEYS.map((key) => {
-    const value = extra[key]
-    return [key, typeof value === 'string' ? value : undefined]
-  }),
-) as Record<ConfigKey, string>
+const Config = env as Record<keyof typeof env, string>
 
 export default Config

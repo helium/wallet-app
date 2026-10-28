@@ -1,7 +1,10 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, refresh]
+  pull_request:
 jobs:
-  build:
+  lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,3 +17,58 @@ jobs:
         run: yarn lint
       - name: Run tests
         run: yarn test --passWithNoTests
+  ios-build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - name: Install modules
+        run: yarn
+      - name: Write CI env
+        run: cp .env.sample .env
+      - name: Install pods
+        working-directory: ios
+        run: RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
+      - name: Build iOS
+        run: >-
+          xcodebuild build
+          -workspace ios/HeliumWallet.xcworkspace
+          -scheme HeliumWallet
+          -configuration Debug
+          -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+  android-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Install modules
+        run: yarn
+      - name: Write CI env
+        run: cp .env.sample .env
+      # Firebase config is not in the repo; the google-services plugin needs a
+      # file whose package_name matches the applicationId.
+      - name: Write stub google-services.json
+        run: >-
+          echo '{"project_info":{"project_number":"000000000000","project_id":"ci-stub","storage_bucket":"ci-stub.appspot.com"},
+          "client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000",
+          "android_client_info":{"package_name":"com.helium.wallet.app"}},
+          "api_key":[{"current_key":"ci-stub"}]}],"configuration_version":"1"}'
+          > android/app/google-services.json
+      - name: Build Android
+        working-directory: android
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=x86_64

@@ -2,7 +2,8 @@ module.exports = (api) => {
   api.cache(true)
 
   return {
-    presets: ['module:@react-native/babel-preset'],
+    // reanimated: false, as the plugin is listed below
+    presets: [['babel-preset-expo', { reanimated: false }]],
     plugins: [
       [
         'module-resolver',

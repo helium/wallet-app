@@ -20,7 +20,7 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@18.x.x**](https://nodejs.org/)
+- [**Node.js**](https://nodejs.org/) (version in `.nvmrc`)
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
 - [**Xcode@14.2**](https://xcodereleases.com/)
@@ -41,13 +41,13 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   brew install nvm
   ```
-- Install Node Version 20.18
+- Install the Node version in `.nvmrc`
   ```bash
-  nvm install 20.18
+  nvm install
   ```
-- Set Node version to 20.18
+- Set the Node version from `.nvmrc`
   ```bash
-  nvm use 20.18
+  nvm use
   ```
 - Install Yarn
   ```bash
@@ -73,7 +73,7 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   yarn
   ```
-- Fill out your env.sample with your values and rename it to `.env`.
+- Fill out your `.env.sample` with your values and rename it to `.env`. See [Environment variables](#environment-variables).
 - Install Pods
   ```bash
   yarn pod-install
@@ -109,6 +109,19 @@ For Android:
 ```bash
 yarn android
 ```
+
+### Environment variables
+
+The app reads its keys from `EXPO_PUBLIC_*` variables. `metro.config.js` loads `.env` into the bundler, and `babel-preset-expo` writes each value into the JS bundle at build time.
+
+- Give every key the `EXPO_PUBLIC_` prefix, as in `.env.sample`.
+- Write each literal `$` as `\$`. The loader expands `$NAME` and `${NAME}`, also inside quotes, so an unescaped `$2a$10$...` value becomes empty. Example: `EXPO_PUBLIC_ONE_SIGNAL_ACCOUNT_TAG_SALT=\$2a\$10\$...`.
+- Put a value that contains `#` in quotes. Without quotes, `#` starts a comment.
+- In a release bundle, a key that is set in the shell, or in `.env.local`, overrides `.env`. In a dev bundle, the `.env` files override the shell, and `.env.development` and `.env.local` override `.env`.
+- After you change `.env`, restart Metro (`yarn start`). Metro reads the values when it starts.
+- Xcode and Gradle release builds always reset the Metro cache, so they bundle the current values. A manual `react-native bundle` run needs `--reset-cache` after a `.env` change, because the cache key does not include the env values.
+
+EAS builds copy the `DOT_ENV` file secret to `.env` (see `scripts/eas-build-setup.sh`). When you update that secret, add the `EXPO_PUBLIC_` prefix to each key and write each literal `$` as `\$`. If you use EAS environment variables instead of `DOT_ENV`, give them the `EXPO_PUBLIC_` names.
 
 ## Usage
 

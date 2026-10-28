@@ -13,7 +13,6 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import Config from '@utils/config'
 import { authSlice } from '../store/slices/authSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -33,6 +32,10 @@ import {
   updateCloudAccounts,
   updateCloudContacts,
 } from './cloudStorage'
+import {
+  accountSolanaAddress,
+  contactSolanaAddress,
+} from './accountSolanaAddress'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import {
   deleteSecureAccount,
@@ -41,8 +44,6 @@ import {
   storeSecureAccount,
   storeSecureItem,
 } from './secureStorage'
-
-const { VIEW_AS } = Config
 
 export const MAX_ACCOUNTS = 50
 
@@ -129,17 +130,21 @@ const useAccountStorageHook = () => {
         ...result,
         [addy]: {
           ...acct,
-          solanaAddress: VIEW_AS || heliumAddressToSolAddress(addy),
+          solanaAddress: accountSolanaAddress(addy),
         },
       }
     }, {} as CSAccounts)
 
     setAccounts(updated)
+    // currentAccount was restored from storage, so it can hold an old address
+    setCurrentAccount(
+      (current) => (current && updated[current.address]) || current,
+    )
     updateCloudAccounts(updated)
   }, [accounts])
 
   useEffect(() => {
-    // Ensure all contacts have solana address
+    // Derive every contact's solana address
     if (!contacts.length || solanaContactsUpdateComplete.current) {
       return
     }
@@ -147,11 +152,8 @@ const useAccountStorageHook = () => {
     solanaContactsUpdateComplete.current = true
 
     const updated = contacts.map((c) => {
-      if (c.solanaAddress) return c
-      return {
-        ...c,
-        solanaAddress: VIEW_AS || heliumAddressToSolAddress(c.address),
-      }
+      const solanaAddress = contactSolanaAddress(c)
+      return solanaAddress === c.solanaAddress ? c : { ...c, solanaAddress }
     })
 
     setContacts(updated)

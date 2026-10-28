@@ -36,6 +36,7 @@ const IconPressedContainer = ({
   hitSlop,
   activeOpacity = 0.75,
   idleOpacity = 0.35,
+  testID,
   ...boxProps
 }: ButtonPressAnimationProps) => {
   const { triggerImpact } = useHaptic()
@@ -60,6 +61,7 @@ const IconPressedContainer = ({
 
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       onPressIn={handleIconPressed(true)}
       onPressOut={handleIconPressed(false)}

@@ -99,10 +99,8 @@ struct WidgetChartData: Decodable {
 
 class Network {
   static let shared = Network()
-  // Fallback in case url from ReactNativeConfig fails
+  // Widget API host. Not configurable per build.
   var prodUrl = "https://wallet-api-v2.helium.com/api"
-  // TODO: Fix
-//  var url = ReactNativeConfig.env(for: "WALLET_REST_URI")
   private(set) lazy var clientUrl = prodUrl
   /**
    * Fetch balance widget data using both account rewards & account balance endpoints.
