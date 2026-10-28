@@ -2,9 +2,6 @@ import { AnyAction, combineReducers } from '@reduxjs/toolkit'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { persistReducer } from 'redux-persist'
 import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
-import notificationsReducer, {
-  name as notificationsSliceName,
-} from './slices/notificationsSlice'
 import balancesReducer, {
   name as balancesSliceName,
 } from './slices/balancesSlice'
@@ -21,12 +18,6 @@ const solanaConfig = {
   blacklist: ['payment'],
 }
 
-const notificationsConfig = {
-  key: notificationsSliceName,
-  storage: AsyncStorage,
-  blacklist: ['notificationsLoading'],
-}
-
 const balancesConfig = {
   key: balancesSliceName,
   storage: AsyncStorage,
@@ -37,10 +28,6 @@ const reducer = combineReducers({
   [collectablesSliceName]: collectablesReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
   [balancesSliceName]: persistReducer(balancesConfig, balancesReducer),
-  [notificationsSliceName]: persistReducer(
-    notificationsConfig,
-    notificationsReducer,
-  ),
   [hotspotSliceName]: hotspotReducer,
 })
 

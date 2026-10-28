@@ -14,9 +14,6 @@ import { NotificationsListStackParamList } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationDetailBanner from './NotificationDetailBanner'
 import parseMarkup from '../../utils/parseMarkup'
-import { useAppDispatch } from '../../store/store'
-import { markNotificationRead } from '../../store/slices/notificationsSlice'
-import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 
@@ -24,20 +21,16 @@ const NotificationDetails = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation()
   const { notification } = route.params
-  const { setSelectedNotification, selectedList, apiResource } =
-    useNotificationStorage()
-  const { sortedAccounts } = useAccountStorage()
-  const dispatch = useAppDispatch()
+  const {
+    setSelectedNotification,
+    selectedList,
+    apiResource,
+    markNotificationRead,
+  } = useNotificationStorage()
   const prevSelectedList = usePrevious(selectedList)
 
   useMount(() => {
-    dispatch(
-      markNotificationRead({
-        resource: apiResource,
-        id: notification.id,
-        accounts: sortedAccounts,
-      }),
-    )
+    markNotificationRead({ resource: apiResource, id: notification.id })
   })
 
   useEffect(() => {
