@@ -1,3 +1,4 @@
+import { persistQueryClientSave } from '@tanstack/react-query-persist-client'
 import { resetAppState } from '../resetAppState'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from '../mmkv'
 import { useAppStore } from '../../store/appStore'
@@ -6,6 +7,10 @@ import { useBrowserStore } from '../../store/browserStore'
 import { useCloudStore } from '../../store/cloudStore'
 import { persistor } from '../../store/persistence'
 import { queryClient } from '../../utils/queryClient'
+import {
+  QUERY_CACHE_KEY,
+  queryPersistOptions,
+} from '../../utils/queryPersistence'
 
 jest.mock('react-native-mmkv', () => ({
   createMMKV: jest.requireActual(
@@ -32,8 +37,16 @@ describe('resetAppState', () => {
       lastViewedNotifications: 1700000000,
     })
     queryClient.setQueryData(['balance'], 1)
+    queryClient.setQueryData(['collectables', 'devnet', solanaAddress], {})
+    await persistQueryClientSave({ queryClient, ...queryPersistOptions })
     expect(mmkv.getAllKeys().sort()).toEqual(
-      ['app', 'browser', 'cloud', LEGACY_IMPORT_DONE_KEY].sort(),
+      [
+        'app',
+        'browser',
+        'cloud',
+        QUERY_CACHE_KEY,
+        LEGACY_IMPORT_DONE_KEY,
+      ].sort(),
     )
 
     await resetAppState()

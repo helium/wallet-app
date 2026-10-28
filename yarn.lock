@@ -7152,10 +7152,45 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-async-storage-persister@npm:5.105.0":
+  version: 5.105.0
+  resolution: "@tanstack/query-async-storage-persister@npm:5.105.0"
+  dependencies:
+    "@tanstack/query-core": "npm:5.105.0"
+    "@tanstack/query-persist-client-core": "npm:5.105.0"
+  checksum: 10/cc6a37784d6e2c2d39f2b8d9018aa86f6ee77969c822c59f7f67b6ac837fb3f3fce5385962162c941f7bc349076539452128ae492cd3ddf2c375b3c2f9f000ea
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.105.0":
   version: 5.105.0
   resolution: "@tanstack/query-core@npm:5.105.0"
   checksum: 10/1a52f339f4e05cae0667b41e091fa6ec4c12b159a95cf54fde9d39204aff461e214a9f59513fdbb4b715ba9cbed60b31012d058ac8d22cd88b59247be6e890fc
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-persist-client-core@npm:5.105.0":
+  version: 5.105.0
+  resolution: "@tanstack/query-persist-client-core@npm:5.105.0"
+  dependencies:
+    "@tanstack/query-core": "npm:5.105.0"
+  checksum: 10/a33b6fcda90ff27a46a408b7ad2861876b36060841e66d81b2570d0c29c4928492cbc60c0a04301ee23e6221c026379f0ba40267851e824995a4f4ada61fbf39
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query-persist-client@npm:5.105.0":
+  version: 5.105.0
+  resolution: "@tanstack/react-query-persist-client@npm:5.105.0"
+  dependencies:
+    "@tanstack/query-persist-client-core": "npm:5.105.0"
+  peerDependencies:
+    "@tanstack/react-query": ^5.105.0
+    "@types/react": ^18 || ^19
+    react: ^18 || ^19
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/669a78947232a84c499a55c2892cdcd49f1a3c4a4c86a5174fe7759c15e984a0220927ce9cf86fbc37751ab648c8efcc088711e5a0a10bf49c2c82c899f980fc
   languageName: node
   linkType: hard
 
@@ -13825,7 +13860,9 @@ __metadata:
     "@solana/wallet-adapter-react": "npm:0.15.33"
     "@solana/wallet-standard-features": "npm:1.0.0"
     "@solana/web3.js": "npm:1.99.0"
+    "@tanstack/query-async-storage-persister": "npm:5.105.0"
     "@tanstack/react-query": "npm:5.105.0"
+    "@tanstack/react-query-persist-client": "npm:5.105.0"
     "@turf/helpers": "npm:6.5.0"
     "@types/base-64": "npm:1.0.2"
     "@types/bn.js": "npm:5.1.1"

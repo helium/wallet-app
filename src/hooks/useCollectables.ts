@@ -1,79 +1,89 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
+import { useQuery } from '@tanstack/react-query'
+import { Cluster, PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { RootState } from '../store/rootReducer'
+import { Collectable } from '../types/solana'
 import {
-  fetchCollectables,
-  WalletCollectables,
-  collectables as collectablesSli,
-} from '../store/slices/collectablesSlice'
-import { useAppDispatch } from '../store/store'
-import { onLogs, removeAccountChangeListener } from '../utils/solanaUtils'
+  getNFTs,
+  getNFTsMetadata,
+  groupNFTs,
+  groupNFTsWithMetaData,
+  onLogs,
+  removeAccountChangeListener,
+} from '../utils/solanaUtils'
+import { WrappedConnection } from '../utils/WrappedConnection'
+import { PersistedQueryRoot } from '../utils/queryClient'
 import { useSolana } from '../solana/SolanaProvider'
-import { SyncGuard } from '../utils/syncGuard'
 
-// Global collectables sync guard to prevent overlapping requests
-const collectablesSyncGuard = new SyncGuard()
+export type WalletCollectables = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  collectables: Record<string, any[]>
+  collectablesWithMeta: Record<string, Collectable[]>
+  loading: boolean
+}
+
+const collectablesQueryKey = (
+  cluster: Cluster,
+  solanaAddress: string,
+): [PersistedQueryRoot, Cluster, string] => [
+  'collectables',
+  cluster,
+  solanaAddress,
+]
+
+const fetchCollectables = async (
+  solanaAddress: string,
+  connection: WrappedConnection,
+) => {
+  const fetchedCollectables = await getNFTs(
+    new PublicKey(solanaAddress),
+    connection,
+  )
+  const collectablesWithMetadata = await getNFTsMetadata(fetchedCollectables)
+  return {
+    collectables: groupNFTs(fetchedCollectables),
+    collectablesWithMeta: groupNFTsWithMetaData(collectablesWithMetadata),
+  }
+}
 
 const useCollectables = (): WalletCollectables & {
   refresh: () => void
 } => {
   const { cluster, anchorProvider } = useSolana()
-  const dispatch = useAppDispatch()
   const accountSubscriptionId = useRef<number | null>(null)
   const { currentAccount } = useAccountStorage()
   const { locked } = useAppStorage()
-  const collectables = useSelector((state: RootState) => state.collectables)
+  const solanaAddress = currentAccount?.solanaAddress
 
-  useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
-    // Reset loading on mount
-    dispatch(
-      collectablesSli.actions.resetLoading({ acct: currentAccount, cluster }),
-    )
-  }, [cluster, currentAccount, dispatch])
+  // Don't fetch collectables while locked - wait until unlock
+  const enabled = !!solanaAddress && !!anchorProvider && !locked
+  const { data, isFetching, refetch } = useQuery({
+    queryKey: collectablesQueryKey(cluster, solanaAddress || ''),
+    queryFn: () => {
+      if (!solanaAddress || !anchorProvider) {
+        throw new Error('Solana address or connection missing')
+      }
+      return fetchCollectables(
+        solanaAddress,
+        anchorProvider.connection as WrappedConnection,
+      )
+    },
+    enabled,
+  })
 
   const refresh = useCallback(() => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) {
-      return
-    }
-
-    const syncKey = `${cluster}-${currentAccount.solanaAddress}`
-
-    // Check if sync can proceed
-    if (!collectablesSyncGuard.canSync(syncKey)) {
-      return
-    }
-
-    collectablesSyncGuard.startSync(syncKey)
-
-    const { connection } = anchorProvider
-
-    dispatch(
-      fetchCollectables({
-        account: currentAccount,
-        cluster,
-        connection,
-      }),
-    ).finally(() => {
-      collectablesSyncGuard.endSync()
-    })
-  }, [cluster, currentAccount, dispatch, anchorProvider])
+    if (!enabled) return
+    // Join a fetch in flight instead of restarting it
+    refetch({ cancelRefetch: false })
+  }, [enabled, refetch])
 
   useEffect(() => {
-    // Don't fetch collectables while locked - wait until unlock
-    if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
+    if (!solanaAddress || !anchorProvider || locked) return
 
-    refresh()
-
-    const subId = onLogs(
-      anchorProvider,
-      currentAccount?.solanaAddress || '',
-      () => {
-        refresh()
-      },
-    )
+    const subId = onLogs(anchorProvider, solanaAddress, () => {
+      refresh()
+    })
 
     if (accountSubscriptionId.current !== null) {
       removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
@@ -89,22 +99,12 @@ const useCollectables = (): WalletCollectables & {
         accountSubscriptionId.current = null
       }
     }
-  }, [anchorProvider, currentAccount, dispatch, refresh, locked])
-
-  if (
-    !currentAccount?.solanaAddress ||
-    !collectables[cluster]?.[currentAccount?.solanaAddress]
-  ) {
-    return {
-      loading: false,
-      collectables: {},
-      collectablesWithMeta: {},
-      refresh,
-    }
-  }
+  }, [anchorProvider, solanaAddress, refresh, locked])
 
   return {
-    ...collectables[cluster][currentAccount?.solanaAddress],
+    collectables: data?.collectables || {},
+    collectablesWithMeta: data?.collectablesWithMeta || {},
+    loading: isFetching,
     refresh,
   }
 }

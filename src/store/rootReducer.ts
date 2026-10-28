@@ -8,9 +8,6 @@ import notificationsReducer, {
 import balancesReducer, {
   name as balancesSliceName,
 } from './slices/balancesSlice'
-import collectablesReducer, {
-  name as collectablesSliceName,
-} from './slices/collectablesSlice'
 import hotspotReducer, {
   name as hotspotSliceName,
 } from './slices/hotspotsSlice'
@@ -34,7 +31,6 @@ const balancesConfig = {
 }
 
 const reducer = combineReducers({
-  [collectablesSliceName]: collectablesReducer,
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
   [balancesSliceName]: persistReducer(balancesConfig, balancesReducer),
   [notificationsSliceName]: persistReducer(

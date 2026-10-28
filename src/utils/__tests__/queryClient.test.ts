@@ -22,4 +22,19 @@ describe('createQueryClient', () => {
 
     queryClient.clear()
   })
+
+  it('keeps an unobserved collectables query in memory for 7 days', () => {
+    jest.useFakeTimers()
+    const queryClient = createQueryClient()
+    const collectablesKey = ['collectables', 'mainnet-beta', 'wallet']
+    queryClient.setQueryData(collectablesKey, {})
+
+    jest.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1)
+    expect(queryClient.getQueryData(collectablesKey)).toEqual({})
+
+    jest.advanceTimersByTime(1)
+    expect(queryClient.getQueryData(collectablesKey)).toBeUndefined()
+
+    queryClient.clear()
+  })
 })
