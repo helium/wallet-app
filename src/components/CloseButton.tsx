@@ -11,13 +11,20 @@ import Box from './Box'
 export type CloseButtonProps = {
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
   hitSlop?: Insets | undefined
+  testID?: string
 } & BoxProps<Theme>
 
-const CloseButton = ({ onPress, hitSlop, ...props }: CloseButtonProps) => {
+const CloseButton = ({
+  onPress,
+  hitSlop,
+  testID,
+  ...props
+}: CloseButtonProps) => {
   const { primaryText } = useColors()
   return (
     <Box hitSlop={hitSlop} {...props}>
       <IconPressedContainer
+        testID={testID}
         onPress={onPress}
         idleOpacity={0.75}
         activeOpacity={0.9}

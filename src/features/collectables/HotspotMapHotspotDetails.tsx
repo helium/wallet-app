@@ -765,7 +765,6 @@ export const HotspotMapHotspotDetails = ({
               {needsRepair && (
                 <ListItem
                   key="onboard"
-                  disabled
                   title={t('collectablesScreen.hotspots.onboard.title')}
                   onPress={handleOnboard}
                   selected={false}
