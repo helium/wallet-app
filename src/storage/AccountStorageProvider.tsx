@@ -13,7 +13,6 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import Config from '@utils/config'
 import { authSlice } from '../store/slices/authSlice'
 import { useAppDispatch } from '../store/store'
 import {
@@ -33,6 +32,7 @@ import {
   updateCloudAccounts,
   updateCloudContacts,
 } from './cloudStorage'
+import { accountSolanaAddress } from './accountSolanaAddress'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import {
   deleteSecureAccount,
@@ -41,8 +41,6 @@ import {
   storeSecureAccount,
   storeSecureItem,
 } from './secureStorage'
-
-const { VIEW_AS } = Config
 
 export const MAX_ACCOUNTS = 50
 
@@ -129,7 +127,7 @@ const useAccountStorageHook = () => {
         ...result,
         [addy]: {
           ...acct,
-          solanaAddress: VIEW_AS || heliumAddressToSolAddress(addy),
+          solanaAddress: accountSolanaAddress(addy),
         },
       }
     }, {} as CSAccounts)
@@ -150,7 +148,7 @@ const useAccountStorageHook = () => {
       if (c.solanaAddress) return c
       return {
         ...c,
-        solanaAddress: VIEW_AS || heliumAddressToSolAddress(c.address),
+        solanaAddress: accountSolanaAddress(c.address),
       }
     })
 
