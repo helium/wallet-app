@@ -36,7 +36,7 @@ describe('navigateToHomeScreen', () => {
     expect(navigate).toHaveBeenCalledWith('PaymentQrScanner')
   })
 
-  it('routes into Home and pops the root host when the host lacks the screen', () => {
+  it('routes into Home above its initial routes and pops the root host when the host lacks the screen', () => {
     const { navigation, navigate } = fakeNavigation([
       'TabBarNavigator',
       'PaymentScreen',
@@ -47,7 +47,11 @@ describe('navigateToHomeScreen', () => {
     expect(navigate).toHaveBeenCalledTimes(1)
     expect(navigate).toHaveBeenCalledWith(
       'TabBarNavigator',
-      { screen: 'Home', params: { screen: 'AddNewContact' } },
+      {
+        screen: 'Home',
+        initial: false,
+        params: { screen: 'AddNewContact', initial: false },
+      },
       { pop: true },
     )
   })

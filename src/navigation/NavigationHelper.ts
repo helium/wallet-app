@@ -24,6 +24,7 @@ export const navToImportAccount = (
 
 // Screens that hosts on the Home and Collectables stacks register as siblings.
 // A host on the root stack has no such sibling, so it routes into Home.
+// `initial: false` keeps each navigator's initial route under the target when the tab bar mounts fresh.
 export const navigateToHomeScreen = (
   navigation: NavigationProp<ParamListBase>,
   screen: 'PaymentQrScanner' | 'AddNewContact',
@@ -34,7 +35,8 @@ export const navigateToHomeScreen = (
   }
   const tabBarParams: RootStackParamList['TabBarNavigator'] = {
     screen: 'Home',
-    params: { screen },
+    initial: false,
+    params: { screen, initial: false },
   }
   navigation.navigate('TabBarNavigator', tabBarParams, { pop: true })
 }
