@@ -6,12 +6,15 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "24.22.1"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "24.22.1"
     },
     "production": {
+      "node": "24.22.1",
       "android": {
         "resourceClass": "large"
       },
