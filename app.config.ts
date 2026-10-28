@@ -2,8 +2,10 @@ import fs from 'fs'
 import path from 'path'
 import { ConfigContext } from 'expo/config'
 
-// Values come from .env only, read literally as react-native-config did.
-// The shell env and .env.local are not read, and `$` is not expanded.
+// Values come from .env only, parsed with react-native-config's grammar:
+// spaces around `=` and trailing spaces are ignored, surrounding quotes are
+// stripped, and `$` and `#` are kept literally. The shell env and .env.local
+// are not read. A malformed line fails the build.
 const readDotEnv = (projectRoot: string): Record<string, string> => {
   const file = path.join(projectRoot, '.env')
   if (!fs.existsSync(file)) {
@@ -13,16 +15,22 @@ const readDotEnv = (projectRoot: string): Record<string, string> => {
   const env: Record<string, string> = {}
   fs.readFileSync(file, 'utf8')
     .split(/\r?\n/)
-    .forEach((line) => {
-      const match = line.match(/^(?:export\s+)?([A-Za-z0-9_]+)=(.*)$/)
-      if (!match) return
+    .forEach((line, index) => {
+      if (!line.trim() || /^\s*#/.test(line)) return
+      const match = line.match(
+        /^\s*(?:export\s+)?([A-Za-z0-9_]+)\s*=\s*(.*?)\s*$/,
+      )
+      if (!match) {
+        throw new Error(`Invalid entry in .env at line ${index + 1}`)
+      }
       const [, key, raw] = match
       const quote = raw[0]
-      const quoted =
-        raw.length >= 2 &&
-        (quote === "'" || quote === '"') &&
-        raw[raw.length - 1] === quote
-      env[key] = quoted ? raw.slice(1, -1) : raw
+      if (quote !== "'" && quote !== '"') {
+        env[key] = raw
+        return
+      }
+      const unquoted = raw.slice(1)
+      env[key] = unquoted.endsWith(quote) ? unquoted.slice(0, -1) : unquoted
     })
   return env
 }

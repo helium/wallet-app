@@ -90,9 +90,24 @@ describe('app config', () => {
       ]),
     )
     expected.PRIVY_APP_ID = 'quoted-id'
-    const dotEnv = CONFIG_KEYS.map((key: string) =>
-      key === 'PRIVY_APP_ID' ? `${key}='quoted-id'` : `${key}=${expected[key]}`,
-    ).join('\n')
+    expected.VIEW_AS = 'unbalanced'
+    const lines: Record<string, string> = {
+      PRIVY_APP_ID: "PRIVY_APP_ID='quoted-id'",
+      MAINNET_RPC_URL: `MAINNET_RPC_URL = ${expected.MAINNET_RPC_URL}`,
+      DEVNET_RPC_URL: `  DEVNET_RPC_URL=${expected.DEVNET_RPC_URL}`,
+      PMTILES_URL: `PMTILES_URL=${expected.PMTILES_URL}   `,
+      VIEW_AS: 'VIEW_AS="unbalanced',
+    }
+    const entries = CONFIG_KEYS.map(
+      (key: string) => lines[key] ?? `${key}=${expected[key]}`,
+    )
+    const middle = Math.floor(entries.length / 2)
+    const dotEnv = `${[
+      '# comment',
+      ...entries.slice(0, middle),
+      '',
+      ...entries.slice(middle),
+    ].join('\n')}\n`
 
     const { extra } = embedAppConfig({ '.env': dotEnv })
 
@@ -103,6 +118,18 @@ describe('app config', () => {
       fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'),
     )
     expect(extra.eas.projectId).toBe(appJson.extra.eas.projectId)
+  })
+
+  it('fails the build on a malformed .env line without printing it', () => {
+    let message = ''
+    try {
+      embedAppConfig({ '.env': 'not a valid line' })
+    } catch (error) {
+      message = (error as Error).message
+    }
+
+    expect(message).toMatch(/Invalid entry in .env at line 1/)
+    expect(message).not.toContain('not a valid line')
   })
 
   it('reads only .env, not .env.local or the shell env', () => {
