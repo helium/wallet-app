@@ -289,6 +289,8 @@ export function useFundingEstimate(duration: number | string | undefined) {
       })
     },
     enabled: !!walletAddress && debouncedDuration > 0,
+    // Create, fund and close change the estimate; refetch on every mount
+    staleTime: 0,
   })
 
   // Until the debounce settles, the estimate is for the previous duration
