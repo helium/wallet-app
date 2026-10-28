@@ -1,5 +1,5 @@
 # From home, opens Settings and selects the Solana cluster in ${CLUSTER}
-# (devnet or mainnet-beta), then goes back to home.
+# (devnet or mainnet-beta), then closes Settings.
 appId: com.helium.wallet.app
 ---
 - tapOn:
@@ -11,7 +11,8 @@ appId: com.helium.wallet.app
     id: Settings.Cluster
 - tapOn:
     id: ActionSheet.${CLUSTER}
-- back
+- tapOn:
+    id: Settings.Close
 - extendedWaitUntil:
     visible:
       id: AccountView.Balance

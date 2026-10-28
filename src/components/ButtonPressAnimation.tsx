@@ -33,6 +33,7 @@ const ButtonPressAnimation = ({
   pressableStyles,
   onPressIn: onPressInProp,
   onPressOut: onPressOutProp,
+  testID,
   ...boxProps
 }: ButtonPressAnimationProps) => {
   const { triggerImpact } = useHaptic()
@@ -55,6 +56,7 @@ const ButtonPressAnimation = ({
   return (
     <ReAnimatedBox overflow="hidden" style={animatedStyle} {...boxProps}>
       <Pressable
+        testID={testID}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         onPress={onPress}
