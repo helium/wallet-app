@@ -1,4 +1,5 @@
 import { AnchorProvider } from '@anchor-lang/core'
+import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import { configureStore } from '@reduxjs/toolkit'
 import {
   AccountLayout,
@@ -22,9 +23,6 @@ jest.mock('../../../utils/walletApiV2', () => ({
   getTokenPrices: jest.fn(),
   getBalanceHistory: jest.fn(),
 }))
-
-const HNT_MINT = new PublicKey('hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux')
-const DC_MINT = new PublicKey('dcuc8Amr83Wz27ZkQ2K9NS6r8zRpf1J6cvArEBDZDmm')
 
 const makeStore = () => configureStore({ reducer: { balances: reducer } })
 
@@ -135,8 +133,9 @@ const providerFor = (connection: unknown) =>
 const accountFor = (owner: PublicKey) =>
   ({ solanaAddress: owner.toBase58() } as CSAccount)
 
-// The sync guard is module state with a 5s cooldown per wallet. Each test
-// starts a minute after the last so no cooldown carries over.
+// The sync guard is module state: one in-flight flag shared by all wallets,
+// and a 5s cooldown on the last-synced cluster+wallet key. Each test starts a
+// minute after the last so no cooldown carries over.
 let now = 0
 beforeEach(() => {
   now += 60_000
@@ -173,6 +172,10 @@ describe('syncTokenAccounts', () => {
       }),
     )
 
+    expect(connection.getTokenAccountsByOwner).toHaveBeenCalledWith(owner, {
+      programId: TOKEN_PROGRAM_ID,
+    })
+    expect(connection.getAccountInfo).toHaveBeenCalledWith(owner)
     const { balances } = store.getState()
     expect(balances.balancesLoading).toBe(false)
     expect(balances.balances['mainnet-beta'][owner.toBase58()]).toEqual({
@@ -195,6 +198,30 @@ describe('syncTokenAccounts', () => {
       sol: { tokenAccount: owner.toBase58(), balance: 2_000_000_000 },
     })
   })
+
+  it('marks balances as loading while a sync is in flight', async () => {
+    const owner = Keypair.generate().publicKey
+    const { connection } = fakeConnection({
+      owner,
+      lamports: 0,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const store = makeStore()
+
+    const pending = store.dispatch(
+      syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(owner),
+        anchorProvider: providerFor(connection),
+      }),
+    )
+
+    expect(store.getState().balances.balancesLoading).toBe(true)
+    await pending
+    expect(store.getState().balances.balancesLoading).toBe(false)
+  })
+
   it('reads decimals as 0 when the mint fetch fails', async () => {
     const owner = Keypair.generate().publicKey
     const { connection } = fakeConnection({
@@ -310,6 +337,133 @@ describe('syncTokenAccounts', () => {
 
     expect(third.meta.requestStatus).toBe('fulfilled')
     expect(connection.getTokenAccountsByOwner).toHaveBeenCalledTimes(2)
+  })
+
+  it('rejects a sync of another wallet while one is in flight', async () => {
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const a = fakeConnection({
+      owner: ownerA,
+      lamports: 1000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    let releaseA: () => void = () => {}
+    const gateA = new Promise<void>((resolve) => {
+      releaseA = resolve
+    })
+    const getTokenAccountsA = a.connection.getTokenAccountsByOwner
+    const hangingA = {
+      ...a.connection,
+      getTokenAccountsByOwner: jest.fn(async () => {
+        await gateA
+        return getTokenAccountsA()
+      }),
+    }
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const store = makeStore()
+
+    const syncA = store.dispatch(
+      syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(ownerA),
+        anchorProvider: providerFor(hangingA),
+      }),
+    )
+    const syncB = await store.dispatch(
+      syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(ownerB),
+        anchorProvider: providerFor(b.connection),
+      }),
+    )
+
+    expect(syncB.meta.requestStatus).toBe('rejected')
+    expect(
+      store.getState().balances.balances['mainnet-beta'][ownerB.toBase58()],
+    ).toBeUndefined()
+
+    releaseA()
+    const resultA = await syncA
+
+    expect(resultA.meta.requestStatus).toBe('fulfilled')
+    expect(
+      store.getState().balances.balances['mainnet-beta'][ownerA.toBase58()].sol,
+    ).toEqual({ tokenAccount: ownerA.toBase58(), balance: 1000 })
+  })
+
+  it('syncs a wallet again within 5 seconds when another wallet synced in between', async () => {
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const a = fakeConnection({
+      owner: ownerA,
+      lamports: 1000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const store = makeStore()
+    const syncA = () =>
+      store.dispatch(
+        syncTokenAccounts({
+          cluster: 'mainnet-beta',
+          acct: accountFor(ownerA),
+          anchorProvider: providerFor(a.connection),
+        }),
+      )
+
+    await syncA()
+    now += 1_000
+    await store.dispatch(
+      syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(ownerB),
+        anchorProvider: providerFor(b.connection),
+      }),
+    )
+    now += 1_000
+    const third = await syncA()
+
+    expect(third.meta.requestStatus).toBe('fulfilled')
+    expect(a.connection.getTokenAccountsByOwner).toHaveBeenCalledTimes(2)
+  })
+
+  it('syncs the same wallet on another cluster within 5 seconds', async () => {
+    const owner = Keypair.generate().publicKey
+    const { connection } = fakeConnection({
+      owner,
+      lamports: 1000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const store = makeStore()
+    const syncOn = (cluster: 'mainnet-beta' | 'devnet') =>
+      store.dispatch(
+        syncTokenAccounts({
+          cluster,
+          acct: accountFor(owner),
+          anchorProvider: providerFor(connection),
+        }),
+      )
+
+    await syncOn('mainnet-beta')
+    now += 1_000
+    const devnet = await syncOn('devnet')
+
+    expect(devnet.meta.requestStatus).toBe('fulfilled')
+    expect(
+      store.getState().balances.balances.devnet[owner.toBase58()].sol,
+    ).toEqual({ tokenAccount: owner.toBase58(), balance: 1000 })
   })
 
   it('rejects a wallet with no Solana address and stores nothing', async () => {
@@ -523,13 +677,24 @@ describe('readBalanceHistory', () => {
         balance: 25,
       },
     ]
-    jest.mocked(getBalanceHistory).mockResolvedValueOnce(history)
+    const eurHistory: AccountBalance[] = [{ ...history[0], balance: 23 }]
+    jest
+      .mocked(getBalanceHistory)
+      .mockResolvedValueOnce(history)
+      .mockResolvedValueOnce(eurHistory)
     const store = makeStore()
     const owner = Keypair.generate().publicKey.toBase58()
 
     await store.dispatch(
       readBalanceHistory({
         currency: 'usd',
+        cluster: 'devnet',
+        solanaAddress: owner,
+      }),
+    )
+    await store.dispatch(
+      readBalanceHistory({
+        currency: 'eur',
         cluster: 'devnet',
         solanaAddress: owner,
       }),
@@ -542,6 +707,7 @@ describe('readBalanceHistory', () => {
     })
     expect(store.getState().balances.balanceHistory.devnet[owner]).toEqual({
       usd: history,
+      eur: eurHistory,
     })
   })
 })
