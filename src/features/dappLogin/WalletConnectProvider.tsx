@@ -206,7 +206,6 @@ const useWalletConnectHook = () => {
           })
         }
       }
-      setSignClient(undefined)
       setSessionProposal(undefined)
       setLoginRequest(undefined)
       setApprovalRequest(undefined)
