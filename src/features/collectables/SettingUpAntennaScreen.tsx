@@ -4,7 +4,6 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useNavigation, RouteProp, useRoute } from '@react-navigation/native'
 import { TabBarNavigationProp } from 'src/navigation/rootTypes'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import BackArrow from '@assets/images/backArrow.svg'
 import AccountIcon from '@components/AccountIcon'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -57,11 +56,7 @@ const SettingUpAntennaScreen = () => {
   }
 
   return (
-    <ReAnimatedBox
-      entering={DelayedFadeIn}
-      flex={1}
-      backgroundColor="secondaryBackground"
-    >
+    <ReAnimatedBox flex={1} backgroundColor="secondaryBackground">
       <Box
         backgroundColor="transparent"
         flex={1}

@@ -80,19 +80,17 @@ const NotificationsList = ({
       }
 
       return (
-        <FadeInOut>
-          <NotificationListItem
-            marginHorizontal="m"
-            borderTopStartRadius={isFirst ? 'xl' : undefined}
-            borderTopEndRadius={isFirst ? 'xl' : undefined}
-            borderBottomStartRadius={isLast ? 'xl' : undefined}
-            borderBottomEndRadius={isLast ? 'xl' : undefined}
-            notification={notification}
-            viewed={!!notification.viewedAt}
-            hasDivider={!isLast || (isFirst && section.data.length !== 1)}
-            onPress={onItemSelected}
-          />
-        </FadeInOut>
+        <NotificationListItem
+          marginHorizontal="m"
+          borderTopStartRadius={isFirst ? 'xl' : undefined}
+          borderTopEndRadius={isFirst ? 'xl' : undefined}
+          borderBottomStartRadius={isLast ? 'xl' : undefined}
+          borderBottomEndRadius={isLast ? 'xl' : undefined}
+          notification={notification}
+          viewed={!!notification.viewedAt}
+          hasDivider={!isLast || (isFirst && section.data.length !== 1)}
+          onPress={onItemSelected}
+        />
       )
     },
     [navigator, setSelectedNotification, triggerImpact],
@@ -113,21 +111,19 @@ const NotificationsList = ({
 
   const renderSectionHeader = useCallback(
     ({ section: { title: sectionTitle } }) => (
-      <FadeInOut>
-        <Box
-          flexDirection="row"
-          alignItems="center"
-          paddingTop="xl"
-          paddingBottom="m"
-          paddingHorizontal="l"
-          backgroundColor="primaryBackground"
-          justifyContent="center"
-        >
-          <Text variant="body2" textAlign="center" color="secondaryText">
-            {sectionTitle}
-          </Text>
-        </Box>
-      </FadeInOut>
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        paddingTop="xl"
+        paddingBottom="m"
+        paddingHorizontal="l"
+        backgroundColor="primaryBackground"
+        justifyContent="center"
+      >
+        <Text variant="body2" textAlign="center" color="secondaryText">
+          {sectionTitle}
+        </Text>
+      </Box>
     ),
     [],
   )

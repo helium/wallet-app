@@ -97,76 +97,74 @@ export const TokenListItem = ({ mint }: Props) => {
   }
 
   return (
-    <FadeInOut>
-      <TouchableContainer
-        testID={`TokenListItem.${symbol}`}
-        onPress={handleNavigation}
-        flexDirection="row"
-        minHeight={ITEM_HEIGHT}
-        alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
-      >
-        {loading ? (
-          <Box
-            width={40}
-            height={40}
-            borderRadius="round"
-            backgroundColor="surface"
-          />
-        ) : (
-          <TokenIcon img={json?.image} />
-        )}
+    <TouchableContainer
+      testID={`TokenListItem.${symbol}`}
+      onPress={handleNavigation}
+      flexDirection="row"
+      minHeight={ITEM_HEIGHT}
+      alignItems="center"
+      paddingHorizontal="m"
+      paddingVertical="m"
+      borderBottomColor="primaryBackground"
+      borderBottomWidth={1}
+    >
+      {loading ? (
+        <Box
+          width={40}
+          height={40}
+          borderRadius="round"
+          backgroundColor="surface"
+        />
+      ) : (
+        <TokenIcon img={json?.image} />
+      )}
 
-        <Box flex={1} paddingHorizontal="m">
-          {loadingOwned ? (
-            <Box flex={1} paddingHorizontal="m">
-              <Box width={120} height={16} backgroundColor="surface" />
-              <Box
-                width={70}
-                height={16}
-                marginTop="s"
-                backgroundColor="surface"
+      <Box flex={1} paddingHorizontal="m">
+        {loadingOwned ? (
+          <Box flex={1} paddingHorizontal="m">
+            <Box width={120} height={16} backgroundColor="surface" />
+            <Box
+              width={70}
+              height={16}
+              marginTop="s"
+              backgroundColor="surface"
+            />
+          </Box>
+        ) : (
+          <Box>
+            <Box flexDirection="row" alignItems="center">
+              <Text
+                variant="body1"
+                color="primaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {`${balanceToDisplay} `}
+              </Text>
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {symbol}
+              </Text>
+            </Box>
+            {symbol && (
+              <AccountTokenCurrencyBalance
+                variant="subtitle4"
+                color="secondaryText"
+                ticker={symbol.toUpperCase()}
               />
-            </Box>
-          ) : (
-            <Box>
-              <Box flexDirection="row" alignItems="center">
-                <Text
-                  variant="body1"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {`${balanceToDisplay} `}
-                </Text>
-                <Text
-                  variant="body2Medium"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {symbol}
-                </Text>
-              </Box>
-              {symbol && (
-                <AccountTokenCurrencyBalance
-                  variant="subtitle4"
-                  color="secondaryText"
-                  ticker={symbol.toUpperCase()}
-                />
-              )}
-            </Box>
-          )}
-        </Box>
-        {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
-          <Box mr="m">
-            <InfoWarning width={28} height={28} />
+            )}
           </Box>
         )}
-        <Arrow />
-      </TouchableContainer>
-    </FadeInOut>
+      </Box>
+      {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
+        <Box mr="m">
+          <InfoWarning width={28} height={28} />
+        </Box>
+      )}
+      <Arrow />
+    </TouchableContainer>
   )
 }
 
@@ -282,91 +280,85 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   }
 
   return (
-    <FadeInOut>
-      <TouchableContainer
-        onPress={handleNavigation}
-        flexDirection="row"
-        minHeight={ITEM_HEIGHT}
-        alignItems="center"
-        paddingHorizontal="m"
-        paddingVertical="m"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
-      >
-        {loading ? (
+    <TouchableContainer
+      onPress={handleNavigation}
+      flexDirection="row"
+      minHeight={ITEM_HEIGHT}
+      alignItems="center"
+      paddingHorizontal="m"
+      paddingVertical="m"
+      borderBottomColor="primaryBackground"
+      borderBottomWidth={1}
+    >
+      {loading ? (
+        <Box
+          width={40}
+          height={40}
+          borderRadius="round"
+          backgroundColor="surface"
+        />
+      ) : (
+        <Box position="relative">
+          <TokenIcon img={json?.image} />
           <Box
-            width={40}
-            height={40}
+            position="absolute"
+            top={-6}
+            right={-8}
+            backgroundColor="bottomSheetBg"
+            justifyContent="center"
             borderRadius="round"
-            backgroundColor="surface"
-          />
-        ) : (
-          <Box position="relative">
-            <TokenIcon img={json?.image} />
+            alignItems="center"
+            height={22}
+            width={22}
+          >
             <Box
-              position="absolute"
-              top={-6}
-              right={-8}
-              backgroundColor="bottomSheetBg"
-              justifyContent="center"
+              backgroundColor="orange500"
               borderRadius="round"
+              justifyContent="center"
               alignItems="center"
-              height={22}
-              width={22}
+              height={18}
+              width={18}
             >
-              <Box
-                backgroundColor="orange500"
-                borderRadius="round"
-                justifyContent="center"
-                alignItems="center"
-                height={18}
-                width={18}
-              >
-                <Lock
-                  width={12}
-                  height={12}
-                  color={colors.secondaryBackground}
-                />
-              </Box>
+              <Lock width={12} height={12} color={colors.secondaryBackground} />
             </Box>
           </Box>
-        )}
-
-        <Box flex={1} paddingHorizontal="m">
-          {loadingAmount ? (
-            <Box flex={1} paddingHorizontal="m">
-              <Box width={120} height={16} backgroundColor="surface" />
-              <Box
-                width={70}
-                height={16}
-                marginTop="s"
-                backgroundColor="surface"
-              />
-            </Box>
-          ) : (
-            <Box>
-              <Box flexDirection="row" alignItems="center">
-                <Text
-                  variant="body1"
-                  color="primaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {`${balanceToDisplay} `}
-                </Text>
-                <Text
-                  variant="body2Medium"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {symbol} (Locked)
-                </Text>
-              </Box>
-              <Text color="secondaryText">-</Text>
-            </Box>
-          )}
         </Box>
-        <Arrow />
-      </TouchableContainer>
-    </FadeInOut>
+      )}
+
+      <Box flex={1} paddingHorizontal="m">
+        {loadingAmount ? (
+          <Box flex={1} paddingHorizontal="m">
+            <Box width={120} height={16} backgroundColor="surface" />
+            <Box
+              width={70}
+              height={16}
+              marginTop="s"
+              backgroundColor="surface"
+            />
+          </Box>
+        ) : (
+          <Box>
+            <Box flexDirection="row" alignItems="center">
+              <Text
+                variant="body1"
+                color="primaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {`${balanceToDisplay} `}
+              </Text>
+              <Text
+                variant="body2Medium"
+                color="secondaryText"
+                maxFontSizeMultiplier={1.3}
+              >
+                {symbol} (Locked)
+              </Text>
+            </Box>
+            <Text color="secondaryText">-</Text>
+          </Box>
+        )}
+      </Box>
+      <Arrow />
+    </TouchableContainer>
   )
 }

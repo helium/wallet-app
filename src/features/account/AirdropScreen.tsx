@@ -79,21 +79,21 @@ const AirdropScreen = () => {
   const edges = useMemo(() => ['bottom'] as Edge[], [])
 
   const onAnimationDropComplete = useCallback(() => {
-    ring.value = 1
+    ring.set(1)
   }, [ring])
 
   const onAnimationComplete = useCallback(() => {
-    ringDrop.value = 1
-    ring.value = 0
+    ringDrop.set(1)
+    ring.set(0)
   }, [ringDrop, ring])
 
   const ringStyle = useAnimatedStyle(() => {
-    let ringVal = ring.value
+    let ringVal = ring.get()
 
-    if (ring.value === 1) {
+    if (ring.get() === 1) {
       ringVal = withRepeat(
         withTiming(
-          ring.value,
+          ring.get(),
           {
             duration: 2000,
           },
@@ -117,7 +117,7 @@ const AirdropScreen = () => {
 
   const dropStyle = useAnimatedStyle(() => {
     let ringDropVal = DROP_HEIGHT / 2
-    if (ringDrop.value === 1) {
+    if (ringDrop.get() === 1) {
       ringDropVal = withRepeat(
         withDelay(
           2000,
@@ -143,7 +143,7 @@ const AirdropScreen = () => {
   }, [ringDrop])
 
   useEffect(() => {
-    ring.value = 1
+    ring.set(1)
 
     return () => {
       cancelAnimation(ring)

@@ -3,7 +3,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
+import FadeInOut from '@components/FadeInOut'
 import ListItem from '@components/ListItem'
 import { NavBarHeight } from '@components/NavBar'
 import Text from '@components/Text'
@@ -156,7 +156,7 @@ const AccountTokenScreen = () => {
     }
 
     const o =
-      (listAnimatedPos.value - insets.top - topHeaderHeight) /
+      (listAnimatedPos.get() - insets.top - topHeaderHeight) /
       (snapPoints[1] - snapPoints[0])
 
     return {
@@ -173,7 +173,7 @@ const AccountTokenScreen = () => {
     }
 
     const expandedPosition = actualHeight - snapPoints[1]
-    const diff = listAnimatedPos.value - expandedPosition
+    const diff = listAnimatedPos.get() - expandedPosition
     const o = diff / (snapPoints[1] - snapPoints[0])
 
     return {
@@ -427,7 +427,7 @@ const AccountTokenScreen = () => {
   }, [mint])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container}>
       <BackScreen
         padding="none"
         title={t('accountsScreen.title', {

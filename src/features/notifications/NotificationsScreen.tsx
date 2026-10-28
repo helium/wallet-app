@@ -7,7 +7,6 @@ import Text from '@components/Text'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
@@ -68,7 +67,7 @@ const NotificationsScreen = () => {
   }, [onActionPress, selectedNotification])
 
   return (
-    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
+    <ReAnimatedBox flex={1}>
       <SafeAreaBox
         flex={1}
         backgroundColor="primaryBackground"

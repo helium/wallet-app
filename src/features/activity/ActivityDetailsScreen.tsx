@@ -7,7 +7,6 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
@@ -342,7 +341,7 @@ const ActivityDetailsScreen = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container}>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,

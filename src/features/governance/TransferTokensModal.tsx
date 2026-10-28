@@ -1,6 +1,5 @@
 import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
-import { FadeInFast } from '@components/FadeInOut'
 import { Portal } from '@gorhom/portal'
 import React, { useMemo, useRef, useState } from 'react'
 import Text from '@components/Text'
@@ -22,6 +21,8 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { getMinDurationFmt, getTimeLeftFromNowFmt } from '@utils/dateTools'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useTranslation } from 'react-i18next'
+import { FadeIn } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const TransferTokensModal = ({
@@ -117,7 +118,7 @@ export const TransferTokensModal = ({
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeInFast}
+        entering={FadeIn.duration(DUR.enter)}
         position="absolute"
         height="100%"
         width="100%"

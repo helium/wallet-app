@@ -8,7 +8,6 @@ import Box from '@components/Box'
 import BackButton from '@components/BackButton'
 import usePrevious from '@hooks/usePrevious'
 import useMount from '@hooks/useMount'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import globalStyles from '@theme/globalStyles'
 import { NotificationsListStackParamList } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
@@ -66,7 +65,7 @@ const NotificationDetails = () => {
   )
 
   return (
-    <Animated.View entering={DelayedFadeIn} style={globalStyles.container}>
+    <Animated.View style={globalStyles.container}>
       <SafeAreaBox
         backgroundColor="primaryBackground"
         flex={1}

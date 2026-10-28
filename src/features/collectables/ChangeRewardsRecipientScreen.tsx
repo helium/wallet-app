@@ -10,7 +10,6 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
@@ -224,7 +223,7 @@ const ChangeRewardsRecipientScreen = () => {
   }, [hasError, transactionError, t])
 
   return (
-    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
+    <ReAnimatedBox flex={1}>
       <BackScreen
         headerTopMargin="l"
         padding="none"

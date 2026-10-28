@@ -39,20 +39,22 @@ const HeliumBottomSheet = ({
 
   const animatedStyles = useAnimatedStyle(() => {
     return {
-      transform: [{ translateY: offset.value + sheetHeight }],
+      transform: [{ translateY: offset.get() + sheetHeight }],
     }
   })
 
   const animate = useCallback(
     (val: number) => {
-      offset.value = withSpring(val, {
-        ...Reanimated3DefaultSpringConfig,
-        damping: 80,
-        overshootClamping: true,
-        // Matches the old 0.1 rest thresholds at the default 260 travel
-        energyThreshold: 1.5e-7,
-        stiffness: 500,
-      })
+      offset.set(
+        withSpring(val, {
+          ...Reanimated3DefaultSpringConfig,
+          damping: 80,
+          overshootClamping: true,
+          // Matches the old 0.1 rest thresholds at the default 260 travel
+          energyThreshold: 1.5e-7,
+          stiffness: 500,
+        }),
+      )
     },
     [offset],
   )
@@ -65,7 +67,7 @@ const HeliumBottomSheet = ({
 
   useEffect(() => {
     if (isVisible) {
-      offset.value = 0
+      offset.set(0)
       animate(-sheetHeight)
     }
   }, [animate, isVisible, offset, sheetHeight])

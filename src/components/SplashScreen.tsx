@@ -1,5 +1,5 @@
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
-import { View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import * as SplashLib from 'expo-splash-screen'
 import Animated, {
   useAnimatedStyle,
@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated'
 import globalStyles from '@theme/globalStyles'
+import { EASE_OUT } from '@theme/motion'
 import { useColors } from '@theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -22,25 +23,14 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (isAppReady) {
-      animValue.value = 0
+      animValue.set(0)
     }
   }, [isAppReady, animValue])
 
-  const style = useAnimatedStyle(() => {
-    const animVal = withTiming(animValue.value, { duration: 700 })
-    return {
-      width: '100%',
-      height: '100%',
-      resizeMode: 'cover',
-      opacity: animVal,
-      backgroundColor: primaryBackground,
-      transform: [
-        {
-          scale: animVal,
-        },
-      ],
-    }
-  })
+  const style = useAnimatedStyle(() => ({
+    opacity: withTiming(animValue.get(), { duration: 300, easing: EASE_OUT }),
+    backgroundColor: primaryBackground,
+  }))
 
   const onImageLoaded = useCallback(async () => {
     setImageReady(true)
@@ -65,7 +55,7 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
         style={style}
       >
         <Animated.Image
-          style={style}
+          style={styles.image}
           source={require('../assets/images/SplashScreen.png')}
           onLoadEnd={onImageLoaded}
           fadeDuration={0}
@@ -74,5 +64,9 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
     </View>
   )
 }
+
+const styles = StyleSheet.create({
+  image: { width: '100%', height: '100%', resizeMode: 'cover' },
+})
 
 export default memo(SplashScreen)

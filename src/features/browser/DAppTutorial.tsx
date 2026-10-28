@@ -14,7 +14,6 @@ import { useColors, useSpacing } from '@theme/themeHooks'
 import { wp } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import { BrowserNavigationProp } from './browserTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 
@@ -119,7 +118,7 @@ const DAppTutorial = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+    <ReAnimatedBox flex={1}>
       <SafeAreaBox flex={1} edges={edges}>
         <Box
           paddingTop="xxl"

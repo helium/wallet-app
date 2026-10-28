@@ -6,7 +6,6 @@ import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
 import FabButton from '@components/FabButton'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -64,6 +63,8 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { FadeOut } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 type OnPress = NonNullable<
@@ -412,7 +413,7 @@ const HotspotMapScreen = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+    <ReAnimatedBox flex={1}>
       <SafeAreaBox edges={backEdges} flex={1}>
         <Box
           flexGrow={1}
@@ -424,7 +425,7 @@ const HotspotMapScreen = () => {
         >
           <ReAnimatedBlurBox
             visible={debouncedIsLoading}
-            exiting={DelayedFadeIn}
+            exiting={FadeOut.duration(DUR.state)}
             position="absolute"
             flex={1}
             width="100%"

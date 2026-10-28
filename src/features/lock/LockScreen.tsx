@@ -7,7 +7,8 @@ import React, { memo, useCallback, useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAppState from 'react-native-appstate-hook'
-import { FadeIn, FadeOutDown } from 'react-native-reanimated'
+import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
@@ -15,6 +16,9 @@ import {
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
+
+const lockEntering = FadeIn.duration(DUR.state)
+const lockExiting = FadeOut.duration(DUR.state)
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -102,8 +106,8 @@ const LockScreen = ({ children }: Props) => {
       {children}
       {!!locked && (
         <ReAnimatedBox
-          entering={FadeIn}
-          exiting={FadeOutDown}
+          entering={lockEntering}
+          exiting={lockExiting}
           zIndex={9999}
           top={0}
           bottom={0}

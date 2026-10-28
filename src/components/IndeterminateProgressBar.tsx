@@ -35,18 +35,20 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
 
   useEffect(() => {
     // withRepeat to repeat the animation
-    translateX.value = withRepeat(
-      // withDelay to add a delay to our animation
-      withDelay(
-        0,
-        withTiming(PROGRESS_WIDTH * 1.25, {
-          // Set the bezier curve function as the timing animation easing
-          easing: Easing.inOut(Easing.ease),
-          duration: DURATION,
-        }),
+    translateX.set(
+      withRepeat(
+        // withDelay to add a delay to our animation
+        withDelay(
+          0,
+          withTiming(PROGRESS_WIDTH * 1.25, {
+            // Set the bezier curve function as the timing animation easing
+            easing: Easing.inOut(Easing.ease),
+            duration: DURATION,
+          }),
+        ),
+        // Set number of repetitions to -1 to loop indefinitely
+        -1,
       ),
-      // Set number of repetitions to -1 to loop indefinitely
-      -1,
     )
 
     return () => {
@@ -56,7 +58,7 @@ const IndeterminateProgressBar = ({ ...rest }: BoxProps<Theme>) => {
 
   const progress = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: translateX.value - PROGRESS_WIDTH * 0.5 }],
+      transform: [{ translateX: translateX.get() - PROGRESS_WIDTH * 0.5 }],
     }
   })
 

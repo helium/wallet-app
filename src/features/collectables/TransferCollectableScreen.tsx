@@ -9,7 +9,6 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -184,7 +183,7 @@ const TransferCollectableScreen = () => {
   }, [hasError, hasInsufficientBalance, networkError, t])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+    <ReAnimatedBox flex={1}>
       <BackScreen
         padding="none"
         title={t('collectablesScreen.transferCollectable')}

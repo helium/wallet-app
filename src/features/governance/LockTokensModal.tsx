@@ -6,7 +6,6 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { FadeInFast } from '@components/FadeInOut'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import Text from '@components/Text'
 import TextInput from '@components/TextInput'
@@ -35,6 +34,8 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import { DataSplitBars } from './components/DataSplitBars'
 import { AutomationFeesWidget } from './components/AutomationFeesWidget'
+import { FadeIn } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [
@@ -304,7 +305,7 @@ export const LockTokensModal = ({
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeInFast}
+        entering={FadeIn.duration(DUR.enter)}
         position="absolute"
         height="100%"
         width="100%"

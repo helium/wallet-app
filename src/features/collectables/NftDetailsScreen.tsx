@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import InfoIcon from '@assets/images/info.svg'
 import ArrowRight from '@assets/images/arrowRight.svg'
 import SafeAreaBox from '@components/SafeAreaBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import globalStyles from '@theme/globalStyles'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
@@ -57,7 +56,7 @@ const NftDetailsScreen = () => {
   }, [json])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container}>
       <BackScreen
         padding="none"
         title={t('collectablesScreen.nfts.nftDetialTitle')}

@@ -7,7 +7,6 @@ import Hotspot from '@assets/images/hotspot.svg'
 import TabBar from '@components/TabBar'
 import Text from '@components/Text'
 import SafeAreaBox from '@components/SafeAreaBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import globalStyles from '@theme/globalStyles'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import AccountCollectablesList from './NftList'
@@ -45,7 +44,7 @@ const CollectablesScreen = () => {
   }, [t])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges} flex={1}>
         <Text marginTop="m" alignSelf="center" variant="h4">
           {t('collectablesScreen.title')}

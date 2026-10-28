@@ -3,7 +3,6 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import { Markdown } from '@components/Markdown'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -240,7 +239,7 @@ export const ProposalScreen = () => {
       completed)
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container}>
       <BackScreen
         headerTopMargin="l"
         padding="none"

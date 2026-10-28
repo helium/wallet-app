@@ -18,7 +18,6 @@ import {
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
 import { Edge } from 'react-native-safe-area-context'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -102,7 +101,7 @@ const AntennaSetupScreen = () => {
   }, [transactionError])
 
   return (
-    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
+    <ReAnimatedBox flex={1}>
       <BackScreen
         headerTopMargin="l"
         padding="none"

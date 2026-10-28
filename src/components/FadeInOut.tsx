@@ -5,27 +5,20 @@ import Animated, {
   FadeIn,
   FadeOut,
 } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
-export const FadeInSlow = FadeIn.duration(1200)
-export const FadeOutSlow = FadeOut.duration(1200)
-export const DelayedFadeIn = FadeIn.delay(100).duration(700)
-export const FadeInFast = FadeIn.duration(200)
+const entering = FadeIn.duration(DUR.enter)
+const exiting = FadeOut.duration(DUR.enter * DUR.exitFactor)
 
 const FadeInOut = ({
   children,
   style,
-  slow,
 }: {
   children: ReactNode
   style?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>
-  slow?: boolean
 }) => {
   return (
-    <Animated.View
-      entering={slow ? FadeInSlow : FadeIn}
-      exiting={slow ? FadeOutSlow : FadeOut}
-      style={style}
-    >
+    <Animated.View entering={entering} exiting={exiting} style={style}>
       {children}
     </Animated.View>
   )

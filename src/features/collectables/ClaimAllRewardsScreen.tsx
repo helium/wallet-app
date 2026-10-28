@@ -3,7 +3,6 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
@@ -116,11 +115,7 @@ const ClaimAllRewardsScreen = () => {
   const hasMore = hotspots.length < (totalHotspots || 0)
 
   return (
-    <ReAnimatedBox
-      flex={1}
-      entering={DelayedFadeIn}
-      backgroundColor="primaryBackground"
-    >
+    <ReAnimatedBox flex={1} backgroundColor="primaryBackground">
       <BackScreen title={title} paddingVertical="none" paddingHorizontal="m">
         <Box flexGrow={1}>
           <Box flexGrow={2} alignItems="center">

@@ -1,11 +1,9 @@
 import React, { useCallback } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Dimensions, Image, LogBox, FlatList } from 'react-native'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import 'text-encoding-polyfill'
 import BackScreen from '@components/BackScreen'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
@@ -46,11 +44,7 @@ const CollectionScreen = () => {
       const { json } = item
 
       return (
-        <ReAnimatedBox
-          style={{ width: '50%' }}
-          entering={FadeIn}
-          exiting={FadeOut}
-        >
+        <ReAnimatedBox style={{ width: '50%' }}>
           <TouchableOpacityBox
             marginHorizontal="s"
             marginVertical="s"
@@ -82,11 +76,7 @@ const CollectionScreen = () => {
       title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
       headerTopMargin="l"
     >
-      <ReAnimatedBox
-        marginTop="s"
-        entering={DelayedFadeIn}
-        style={globalStyles.container}
-      >
+      <ReAnimatedBox marginTop="s" style={globalStyles.container}>
         <FlatList
           scrollEnabled
           data={collectables}

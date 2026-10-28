@@ -41,16 +41,22 @@ const ButtonPressAnimation = ({
 
   const animation = useSharedValue(0)
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - animation.value * 0.2 }],
+    transform: [{ scale: 1 - animation.get() * 0.2 }],
   }))
 
+  const handlePress = onPress
+    ? (event: GestureResponderEvent) => {
+        triggerImpact('light')
+        onPress(event)
+      }
+    : onPress
+
   const onPressIn = () => {
-    triggerImpact('light')
-    animation.value = withSpring(0.3, Reanimated3DefaultSpringConfig)
+    animation.set(withSpring(0.3, Reanimated3DefaultSpringConfig))
     onPressInProp?.()
   }
   const onPressOut = () => {
-    animation.value = withSpring(0, Reanimated3DefaultSpringConfig)
+    animation.set(withSpring(0, Reanimated3DefaultSpringConfig))
     onPressOutProp?.()
   }
 
@@ -60,7 +66,7 @@ const ButtonPressAnimation = ({
         testID={testID}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
-        onPress={onPress}
+        onPress={handlePress}
         style={pressableStyles || styles.pressable}
         disabled={disabled}
       >

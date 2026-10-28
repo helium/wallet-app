@@ -5,9 +5,7 @@ import {
   Box,
   ButtonPressable,
   CircleLoader,
-  DelayedFadeIn,
   FabButton,
-  FadeInFast,
   FadeInOut,
   ImageBox,
   ReAnimatedBlurBox,
@@ -67,6 +65,8 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { FadeIn } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
@@ -447,7 +447,7 @@ const AssertLocationScreen = () => {
   )
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+    <ReAnimatedBox flex={1}>
       <SafeAreaBox edges={backEdges} flex={1}>
         <Box
           flexGrow={1}
@@ -777,7 +777,7 @@ const AssertLocationScreen = () => {
               />
             )}
             <ReAnimatedBlurBox
-              entering={FadeInFast}
+              entering={FadeIn.duration(DUR.enter)}
               flexDirection="row"
               position="absolute"
               bottom={0}

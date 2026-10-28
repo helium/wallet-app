@@ -10,7 +10,6 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import CircleLoader from '@components/CircleLoader'
-import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
@@ -130,18 +129,16 @@ const ActivityScreen = () => {
       const lastItem = index === section.data.length - 1
 
       return (
-        <FadeInOut>
-          <ActivityListItem
-            borderTopStartRadius={firstItem ? 'xl' : undefined}
-            borderTopEndRadius={firstItem ? 'xl' : undefined}
-            borderBottomStartRadius={lastItem ? 'xl' : undefined}
-            borderBottomEndRadius={lastItem ? 'xl' : undefined}
-            hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
-            marginHorizontal="m"
-            transaction={item}
-            onPress={handleActivityItemPress(item)}
-          />
-        </FadeInOut>
+        <ActivityListItem
+          borderTopStartRadius={firstItem ? 'xl' : undefined}
+          borderTopEndRadius={firstItem ? 'xl' : undefined}
+          borderBottomStartRadius={lastItem ? 'xl' : undefined}
+          borderBottomEndRadius={lastItem ? 'xl' : undefined}
+          hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
+          marginHorizontal="m"
+          transaction={item}
+          onPress={handleActivityItemPress(item)}
+        />
       )
     },
     [handleActivityItemPress],
@@ -158,7 +155,7 @@ const ActivityScreen = () => {
   const keyExtractor = useCallback((item, index) => item.signature + index, [])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges}>
         <SectionList
           contentContainerStyle={contentContainer}

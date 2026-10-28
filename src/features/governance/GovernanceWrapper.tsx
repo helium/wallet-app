@@ -11,9 +11,8 @@ import Text from '@components/Text'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import globalStyles from '@theme/globalStyles'
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Animated } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import {
   GovernanceNavigationProp,
@@ -38,8 +37,7 @@ export const GovernanceWrapper: React.FC<
   const route = useRoute<Route>()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
-  const { loading, hasUnseenProposals } = useGovernance()
-  const anim = useRef(new Animated.Value(1))
+  const { loading } = useGovernance()
   const setSelectedTab = useSetTab()
 
   useEffect(() => {
@@ -54,36 +52,6 @@ export const GovernanceWrapper: React.FC<
       )
     }
   }, [route, navigation])
-
-  useEffect(() => {
-    if (!loading && hasUnseenProposals) {
-      const res = Animated.loop(
-        // runs given animations in a sequence
-        Animated.sequence([
-          // increase size
-          Animated.timing(anim.current, {
-            toValue: 1.7,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          // decrease size
-          Animated.timing(anim.current, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ]),
-      )
-
-      // start the animation
-      res.start()
-
-      return () => {
-        // stop animation
-        res.reset()
-      }
-    }
-  }, [loading, hasUnseenProposals])
 
   return (
     <ReAnimatedBox style={globalStyles.container}>

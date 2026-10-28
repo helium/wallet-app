@@ -2,7 +2,6 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
@@ -81,11 +80,7 @@ const SwappingScreen = () => {
   }, [jsonA?.image, jsonB?.image])
 
   return (
-    <ReAnimatedBox
-      entering={DelayedFadeIn}
-      flex={1}
-      backgroundColor="secondaryBackground"
-    >
+    <ReAnimatedBox flex={1} backgroundColor="secondaryBackground">
       <BackScreen
         padding="none"
         edges={backEdges}

@@ -43,10 +43,10 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const style = useAnimatedStyle(() => {
-    let animVal = animValue.value
+    let animVal = animValue.get()
 
-    if (animValue.value === 0) {
-      animVal = withTiming(animValue.value, { duration: 300 }, () =>
+    if (animValue.get() === 0) {
+      animVal = withTiming(animValue.get(), { duration: 300 }, () =>
         scheduleOnRN(animationCompleted),
       )
     }
@@ -61,7 +61,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
   })
 
   const handleClose = useCallback(() => {
-    animValue.value = 0
+    animValue.set(0)
   }, [animValue])
 
   return (

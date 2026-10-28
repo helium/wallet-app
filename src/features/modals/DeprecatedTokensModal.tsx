@@ -2,7 +2,6 @@ import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { FadeInFast } from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
@@ -35,6 +34,8 @@ import { Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
+import { FadeIn } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 const DeprecatedTokensModal: FC = () => {
   const { t } = useTranslation()
@@ -420,7 +421,7 @@ const DeprecatedTokensModal: FC = () => {
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeInFast}
+        entering={FadeIn.duration(DUR.enter)}
         position="absolute"
         height="100%"
         width="100%"

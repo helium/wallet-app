@@ -148,24 +148,27 @@ const TabBar = ({
   useEffect(() => {
     const nextOffset = itemRects?.[selectedValue]?.x || 0
 
-    if (offset.value === null) {
+    if (offset.get() === null) {
       // Don't animate on first position update
-      offset.value = nextOffset
+      offset.set(nextOffset)
       return
     }
 
-    offset.value = withSpring(nextOffset, {
-      ...Reanimated3DefaultSpringConfig,
-      mass: 0.5,
-    })
+    offset.set(
+      withSpring(nextOffset, {
+        ...Reanimated3DefaultSpringConfig,
+        mass: 0.5,
+      }),
+    )
   }, [itemRects, offset, selectedValue])
 
   const animatedStyles = useAnimatedStyle(() => {
-    if (offset.value === null) return {}
+    const translateX = offset.get()
+    if (translateX === null) return {}
     return {
       transform: [
         {
-          translateX: offset.value,
+          translateX,
         },
       ],
     }

@@ -16,15 +16,17 @@ const BORDER_SEGMENT_SIZE = 40
 export const CameraScannerLayout = () => {
   const linePosition = useSharedValue<number>(-SCANNER_LINE_HEIGHT)
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: linePosition.value }],
+    transform: [{ translateY: linePosition.get() }],
   }))
 
   useEffect(() => {
-    linePosition.value = withRepeat(
-      withTiming(SCANNER_SIZE, {
-        duration: SCAN_DURATION,
-      }),
-      -1,
+    linePosition.set(
+      withRepeat(
+        withTiming(SCANNER_SIZE, {
+          duration: SCAN_DURATION,
+        }),
+        -1,
+      ),
     )
 
     return () => {

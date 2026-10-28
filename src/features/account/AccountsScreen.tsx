@@ -212,9 +212,9 @@ const AccountsScreen = () => {
     }
 
     const realHeight = pageHeight + NavBarHeight
-    const diff = realHeight - listAnimatedPos.value
+    const diff = realHeight - listAnimatedPos.get()
     const opacity =
-      (listAnimatedPos.value -
+      (listAnimatedPos.get() -
         actualTop -
         topHeaderHeight -
         navLayoutHeight -
@@ -241,7 +241,7 @@ const AccountsScreen = () => {
     }
 
     const opacity =
-      (listAnimatedPos.value -
+      (listAnimatedPos.get() -
         actualTop -
         topHeaderHeight -
         navLayoutHeight -

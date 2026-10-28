@@ -3,7 +3,6 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
@@ -78,7 +77,7 @@ const TransferCollectableScreen = () => {
   }, [navigation])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1}>
+    <ReAnimatedBox flex={1}>
       <BackScreen
         padding="none"
         backgroundImageUri={backgroundImageUri}

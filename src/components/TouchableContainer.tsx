@@ -41,9 +41,12 @@ const TouchableContainer = ({
 }) => {
   const { triggerImpact } = useHaptic()
 
-  const onTouchEnd = useCallback(() => {
-    triggerImpact('light')
-  }, [triggerImpact])
+  const handlePress = onPress
+    ? (event: GestureResponderEvent) => {
+        triggerImpact('light')
+        onPress(event)
+      }
+    : onPress
 
   const { backgroundStyle: generateBackgroundStyle } = useCreateOpacity()
 
@@ -71,9 +74,8 @@ const TouchableContainer = ({
   return (
     <Pressable
       testID={testID}
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled}
-      onTouchEnd={onTouchEnd}
       style={pressableStyles || styles.pressable}
     >
       {({ pressed }) => (

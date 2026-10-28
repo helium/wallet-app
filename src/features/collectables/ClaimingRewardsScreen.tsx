@@ -3,7 +3,6 @@ import AccountIcon from '@components/AccountIcon'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
@@ -56,7 +55,7 @@ const ClaimingRewardsScreen = () => {
   }
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} flex={1} backgroundColor="black">
+    <ReAnimatedBox flex={1} backgroundColor="black">
       <Box
         backgroundColor="transparent"
         flex={1}

@@ -44,7 +44,7 @@ const NftListItem = ({
   )
 
   return (
-    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox style={{ width: '50%' }}>
       <TouchableOpacityBox
         marginHorizontal="s"
         marginVertical="s"

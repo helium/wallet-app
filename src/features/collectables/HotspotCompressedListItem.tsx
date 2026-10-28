@@ -15,7 +15,6 @@ import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React, { useMemo } from 'react'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import { PublicKey } from '@solana/web3.js'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -165,8 +164,6 @@ const HotspotListItem = ({
       backgroundColor="surfaceSecondary"
       borderRadius="l"
       position="relative"
-      entering={FadeIn}
-      exiting={FadeOut}
       {...rest}
     >
       <TouchableOpacityBox

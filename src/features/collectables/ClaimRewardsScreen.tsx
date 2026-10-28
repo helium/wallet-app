@@ -3,7 +3,6 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import RewardItem from '@components/RewardItem'
 import Text from '@components/Text'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
@@ -92,7 +91,7 @@ const ClaimRewardsScreen = () => {
   const safeEdges = useMemo(() => ['top'] as Edge[], [])
 
   return (
-    <ReAnimatedBox flex={1} entering={DelayedFadeIn}>
+    <ReAnimatedBox flex={1}>
       <BackScreen
         title={title}
         paddingVertical="none"

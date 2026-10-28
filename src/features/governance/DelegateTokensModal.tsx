@@ -3,7 +3,6 @@ import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
-import { FadeInFast } from '@components/FadeInOut'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -23,6 +22,8 @@ import { Platform, ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SplitBar } from './SplitBar'
 import { AutomationFeesWidget } from './components/AutomationFeesWidget'
+import { FadeIn } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 export const DelegateTokensModal = ({
   onClose,
@@ -144,7 +145,7 @@ export const DelegateTokensModal = ({
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeInFast}
+        entering={FadeIn.duration(DUR.enter)}
         position="absolute"
         height="100%"
         width="100%"

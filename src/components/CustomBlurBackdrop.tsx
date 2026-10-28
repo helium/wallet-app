@@ -24,7 +24,7 @@ const CustomBlurBackdrop = ({
   // animated variables
   const containerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      animatedIndex.value,
+      animatedIndex.get(),
       [-1, 0],
       [0, 1],
       Extrapolate.CLAMP,

@@ -6,6 +6,7 @@ import globalStyles from '@theme/globalStyles'
 import BN from 'bn.js'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
+import { submitStage } from './logic/submitStage'
 import PaymentError from './PaymentError'
 import { Payment } from './PaymentItem'
 import PaymentSubmitLoading from './PaymentSubmitLoading'
@@ -39,12 +40,10 @@ const PaymentSubmit = ({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | SerializedError>()
   const [succeeded, setSucceeded] = useState(false)
-  const [videoFinished, setVideoFinished] = useState(false)
 
   const handleRetry = useCallback(() => {
     setError(undefined)
     setSucceeded(false)
-    setVideoFinished(false)
 
     onRetry()
   }, [onRetry])
@@ -78,15 +77,12 @@ const PaymentSubmit = ({
     [],
   )
 
-  const handleVideoEnded = useCallback(() => {
-    setVideoFinished(true)
-  }, [])
-
   const body = useMemo(() => {
-    if (!videoFinished || (loading && !succeeded && !submitError)) {
-      return <PaymentSubmitLoading onVideoEnd={handleVideoEnded} />
+    const stage = submitStage({ succeeded, hasError: !!submitError })
+    if (stage === 'loading') {
+      return <PaymentSubmitLoading />
     }
-    if (videoFinished && succeeded) {
+    if (stage === 'success') {
       return (
         <FadeInOut style={globalStyles.container}>
           <PaymentSuccess
@@ -101,7 +97,7 @@ const PaymentSubmit = ({
       )
     }
 
-    if (videoFinished && submitError) {
+    if (submitError) {
       return (
         <FadeInOut style={globalStyles.container}>
           <PaymentError
@@ -119,15 +115,12 @@ const PaymentSubmit = ({
     actionTitle,
     feeTokenBalance,
     handleRetry,
-    handleVideoEnded,
-    loading,
     mint,
     onSuccess,
     payments,
     submitError,
     succeeded,
     totalBalance,
-    videoFinished,
   ])
 
   if (!loading) return null

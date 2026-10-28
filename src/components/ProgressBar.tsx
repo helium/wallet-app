@@ -34,15 +34,17 @@ const ProgressBar = ({
 
   useEffect(() => {
     // withRepeat to repeat the animation
-    width.value = withSpring(
-      (progressIn / 100) * PROGRESS_WIDTH,
-      Reanimated3DefaultSpringConfig,
+    width.set(
+      withSpring(
+        (progressIn / 100) * PROGRESS_WIDTH,
+        Reanimated3DefaultSpringConfig,
+      ),
     )
   }, [PROGRESS_WIDTH, width, progressIn])
 
   const progress = useAnimatedStyle(() => {
     return {
-      width: width.value,
+      width: width.get(),
     }
   })
 

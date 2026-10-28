@@ -161,16 +161,18 @@ const NavBar = ({
   useEffect(() => {
     const nextOffset = itemRects?.[selectedValue]?.x || 0
 
-    if (offset.value === null) {
+    if (offset.get() === null) {
       // Don't animate on first position update
-      offset.value = nextOffset
+      offset.set(nextOffset)
       return
     }
 
-    offset.value = withSpring(nextOffset, {
-      ...Reanimated3DefaultSpringConfig,
-      mass: 0.5,
-    })
+    offset.set(
+      withSpring(nextOffset, {
+        ...Reanimated3DefaultSpringConfig,
+        mass: 0.5,
+      }),
+    )
   }, [itemRects, offset, selectedValue])
 
   const items = useMemo(() => {

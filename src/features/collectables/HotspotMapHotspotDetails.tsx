@@ -6,7 +6,6 @@ import MobileSymbol from '@assets/images/mobileSymbol.svg'
 import { ReAnimatedBlurBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import CircleLoader from '@components/CircleLoader'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
 import Text from '@components/Text'
@@ -45,6 +44,8 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
+import { FadeOut } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 const IotMapDetails = ({
   maker,
@@ -548,7 +549,7 @@ export const HotspotMapHotspotDetails = ({
           <ReAnimatedBlurBox
             visible={onboardLoading}
             zIndex={onboardLoading ? 100 : 0}
-            exiting={DelayedFadeIn}
+            exiting={FadeOut.duration(DUR.state)}
             position="absolute"
             width="100%"
             height="100%"

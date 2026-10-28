@@ -9,7 +9,6 @@ import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import CircleLoader from '@components/CircleLoader'
 import CloseButton from '@components/CloseButton'
-import { FadeInFast } from '@components/FadeInOut'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -74,6 +73,8 @@ import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { swapRoute } from './logic/swapRoute'
 import { SwapNavigationProp } from './swapTypes'
+import { FadeIn } from 'react-native-reanimated'
+import { DUR } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
@@ -953,7 +954,7 @@ const SwapScreen = () => {
                 />
               )}
               <ReAnimatedBlurBox
-                entering={FadeInFast}
+                entering={FadeIn.duration(DUR.enter)}
                 position="absolute"
                 height="100%"
                 width="100%"

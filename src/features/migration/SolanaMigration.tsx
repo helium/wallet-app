@@ -3,7 +3,6 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import { DelayedFadeIn } from '@components/FadeInOut'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import SafeAreaBox from '@components/SafeAreaBox'
 import Text from '@components/Text'
@@ -184,12 +183,7 @@ const SolanaMigration = ({
   }
 
   return (
-    <ReAnimatedBox
-      entering={DelayedFadeIn}
-      flex={1}
-      backgroundColor="secondaryBackground"
-      {...props}
-    >
+    <ReAnimatedBox flex={1} backgroundColor="secondaryBackground" {...props}>
       <Wrapper>
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
