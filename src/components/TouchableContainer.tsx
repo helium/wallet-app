@@ -34,6 +34,7 @@ const TouchableContainer = ({
   hitSlop,
   backgroundColor = 'surfaceSecondary',
   backgroundColorPressed = 'black500',
+  testID,
   ...boxProps
 }: ButtonPressAnimationProps & {
   backgroundColorPressed?: BoxProps<Theme>['backgroundColor']
@@ -69,6 +70,7 @@ const TouchableContainer = ({
 
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       onTouchEnd={onTouchEnd}
