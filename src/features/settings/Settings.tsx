@@ -13,7 +13,7 @@ import { useHitSlop, useSpacing } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, Platform, SectionList } from 'react-native'
+import { Alert, Linking, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
@@ -208,11 +208,6 @@ const Settings = () => {
         currentAddress &&
         savedAccountAddresses.length === 1 &&
         savedAccountAddresses.includes(currentAddress)
-      const iCloudMessage =
-        Platform.OS === 'ios'
-          ? t('settings.sections.account.signOutAlert.iCloudMessage')
-          : ''
-
       Alert.alert(
         t('settings.sections.account.signOutAlert.title', {
           alias: currentAccount?.alias,
@@ -224,7 +219,7 @@ const Settings = () => {
           {
             alias: currentAccount?.alias,
           },
-        ) + iCloudMessage,
+        ),
         [
           {
             text: t('generic.cancel'),

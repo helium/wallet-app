@@ -11,12 +11,9 @@ import balancesReducer, {
 import collectablesReducer, {
   name as collectablesSliceName,
 } from './slices/collectablesSlice'
-import appReducer, { name as appSliceName } from './slices/appSlice'
-import authReducer, { name as authSliceName } from './slices/authSlice'
 import hotspotReducer, {
   name as hotspotSliceName,
 } from './slices/hotspotsSlice'
-import browserReducer, { name as browserSliceName } from './slices/browserSlice'
 
 const solanaConfig = {
   key: solanaSliceName,
@@ -44,10 +41,7 @@ const reducer = combineReducers({
     notificationsConfig,
     notificationsReducer,
   ),
-  [authSliceName]: authReducer,
-  [appSliceName]: appReducer,
   [hotspotSliceName]: hotspotReducer,
-  [browserSliceName]: browserReducer,
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {

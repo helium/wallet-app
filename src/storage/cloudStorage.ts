@@ -4,11 +4,10 @@
 import { NetTypes as NetType } from '@helium/address'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createHash } from 'crypto'
-import { sortBy, values } from 'lodash'
-import { Platform } from 'react-native'
-import iCloudStorage from 'react-native-icloudstore'
+import { cloneDeep, sortBy, values } from 'lodash'
+import { useCloudStore } from '../store/cloudStore'
+import { importLegacyState } from './importLegacyState'
 import { getSecureAccount } from './secureStorage'
 
 export type LedgerDevice = {
@@ -42,29 +41,27 @@ export type CSAccountVersion = 'v1'
 export type CSAccounts = Record<string, CSAccount>
 
 export type CSToken = Record<string, string[]>
-// android use sqlite as local storage and the total default sqlite size is 6 MB
-// for android we use AsyncStorage and auto backup to Google Drive using
-// https://developer.android.com/guide/topics/data/autobackup
-const CloudStorage = Platform.OS === 'ios' ? iCloudStorage : AsyncStorage
 
-enum CloudStorageKeys {
-  ACCOUNTS = 'accounts',
-  CONTACTS = 'contacts',
-  LAST_VIEWED_NOTIFICATIONS = 'lastViewedNotifications',
-  VISIBLE_TOKENS = 'visibleTokens',
-  DEFAULT_ACCOUNT_ADDRESS = 'defaultAccountAddress',
+// The first-launch import fills the cloud store, so every read and write
+// waits for it. Reads return copies, as the old JSON reads did, so callers
+// can change them without changing the store.
+const readCloudStore = async () => {
+  await importLegacyState()
+  return cloneDeep(useCloudStore.getState())
 }
 
-export const restoreVisibleTokens = async () => {
-  const tokens = await getFromCloudStorage<CSToken>(
-    CloudStorageKeys.VISIBLE_TOKENS,
-  )
-
-  return tokens
+const writeCloudStore = async (
+  state: Parameters<typeof useCloudStore.setState>[0],
+) => {
+  await importLegacyState()
+  useCloudStore.setState(state)
 }
 
-export const updateVisibleTokens = (tokens: CSToken) =>
-  CloudStorage.setItem(CloudStorageKeys.VISIBLE_TOKENS, JSON.stringify(tokens))
+export const restoreVisibleTokens = async () =>
+  (await readCloudStore()).visibleTokens
+
+export const updateVisibleTokens = (visibleTokens: CSToken) =>
+  writeCloudStore({ visibleTokens })
 
 export const sortAccounts = (
   accts: CSAccounts,
@@ -90,17 +87,11 @@ export const sortAccounts = (
   }
   return sortedByAliasWithSolanaAddress
 }
-const getAccounts = async (): Promise<CSAccounts> => {
-  const csAccounts = await CloudStorage.getItem(CloudStorageKeys.ACCOUNTS)
-  if (!csAccounts) return {}
-
-  return JSON.parse(csAccounts) as CSAccounts
-}
+const getAccounts = async (): Promise<CSAccounts> =>
+  (await readCloudStore()).accounts || {}
 
 export const restoreAccounts = async () => {
-  const contacts = await getFromCloudStorage<CSAccount[]>(
-    CloudStorageKeys.CONTACTS,
-  )
+  const { contacts } = await readCloudStore()
   const csAccounts = await getAccounts()
   const defaultAccountAddress = await getCloudDefaultAccountAddress()
 
@@ -154,46 +145,21 @@ export const restoreAccounts = async () => {
   return { csAccounts, current: currentAccount, contacts: contacts || [] }
 }
 
-const getFromCloudStorage = async <T>(
-  key: CloudStorageKeys,
-): Promise<T | undefined> => {
-  const item = await CloudStorage.getItem(key)
-  if (!item) return
-
-  return JSON.parse(item) as T
-}
-
 export const updateCloudAccounts = (accounts: CSAccounts) =>
-  CloudStorage.setItem(CloudStorageKeys.ACCOUNTS, JSON.stringify(accounts))
+  writeCloudStore({ accounts })
 
 export const updateCloudContacts = (contacts: CSAccount[]) =>
-  CloudStorage.setItem(CloudStorageKeys.CONTACTS, JSON.stringify(contacts))
+  writeCloudStore({ contacts })
 
 export const updateLastViewedNotifications = async (time: number) =>
-  CloudStorage.setItem(
-    CloudStorageKeys.LAST_VIEWED_NOTIFICATIONS,
-    time.toString(),
-  )
+  writeCloudStore({ lastViewedNotifications: time })
 
-export const getLastViewedNotifications = async () => {
-  const timeString = await CloudStorage.getItem(
-    CloudStorageKeys.LAST_VIEWED_NOTIFICATIONS,
-  )
-  return timeString ? Number.parseInt(timeString, 10) : undefined
-}
+export const getLastViewedNotifications = async () =>
+  (await readCloudStore()).lastViewedNotifications
 
 export const setCloudDefaultAccountAddress = async (
   address: string | undefined,
-) => {
-  if (!address) {
-    return CloudStorage.removeItem(CloudStorageKeys.DEFAULT_ACCOUNT_ADDRESS)
-  }
-  return CloudStorage.setItem(CloudStorageKeys.DEFAULT_ACCOUNT_ADDRESS, address)
-}
+) => writeCloudStore({ defaultAccountAddress: address })
 
-export const getCloudDefaultAccountAddress = async () => {
-  return CloudStorage.getItem(CloudStorageKeys.DEFAULT_ACCOUNT_ADDRESS)
-}
-
-export const signoutCloudStorage = () =>
-  CloudStorage.multiRemove(Object.values(CloudStorageKeys))
+export const getCloudDefaultAccountAddress = async () =>
+  (await readCloudStore()).defaultAccountAddress

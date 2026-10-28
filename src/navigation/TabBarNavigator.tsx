@@ -17,7 +17,6 @@ import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import Globe from '@assets/images/earth-globe.svg'
-import { useDispatch } from 'react-redux'
 import { useGovernance } from '@storage/GovernanceProvider'
 import GovernanceNavigator from '../features/governance/GovernanceNavigator'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -27,7 +26,7 @@ import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesNavigator from '../features/collectables/CollectablesNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
-import { appSlice } from '../store/slices/appSlice'
+import { useAppStore } from '../store/appStore'
 import { useSolana } from '../solana/SolanaProvider'
 
 const Tab = createBottomTabNavigator()
@@ -135,7 +134,7 @@ function MyTabBar({ state, navigation }: BottomTabBarProps) {
 }
 
 const TabBarNavigator = () => {
-  const dispatch = useDispatch()
+  const setShowBanner = useAppStore((state) => state.setShowBanner)
 
   const { doneSolanaMigration, manualMigration } = useAppStorage()
   const { cluster, updateCluster } = useSolana()
@@ -144,8 +143,8 @@ const TabBarNavigator = () => {
   const { anchorProvider } = useSolana()
 
   useEffect(() => {
-    dispatch(appSlice.actions.setShowBanner(cluster === 'devnet'))
-  }, [dispatch, cluster])
+    setShowBanner(cluster === 'devnet')
+  }, [setShowBanner, cluster])
 
   // Switch to mainnet-beta if migration is complete & user hasn't already migrated
   useEffect(() => {

@@ -26,11 +26,10 @@ import {
   initialWindowMetrics,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context'
-import { useDispatch } from 'react-redux'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
-import { appSlice } from '../store/slices/appSlice'
+import { useAppStore } from '../store/appStore'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 import CircleLoader from './CircleLoader'
@@ -44,7 +43,7 @@ type BannerProps = {
 } & BoxProps<Theme>
 
 const Banner = ({ onLayout, ...rest }: BannerProps) => {
-  const dispatch = useDispatch()
+  const setShowBanner = useAppStore((state) => state.setShowBanner)
   const { top } = useSafeAreaInsets()
   const { t } = useTranslation()
   const { autoGasManagementToken } = useAppStorage()
@@ -173,8 +172,8 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   }, [bannerTopMargin])
 
   const handleBannerClose = useCallback(() => {
-    dispatch(appSlice.actions.setShowBanner(false))
-  }, [dispatch])
+    setShowBanner(false)
+  }, [setShowBanner])
 
   return (
     <ReAnimatedBox

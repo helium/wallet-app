@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { useAppStore } from '../../store/appStore'
 import { RootState } from '../../store/rootReducer'
 import { HomeNavigationProp } from '../home/homeTypes'
 
@@ -30,7 +31,7 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const { cluster } = useSolana()
   const { triggerImpact } = useHaptic()
-  const { showBanner } = useSelector((state: RootState) => state.app)
+  const showBanner = useAppStore((state) => state.showBanner)
   const { isHealthy } = useSolanaHealth()
 
   const notificationsByResource = useSelector(

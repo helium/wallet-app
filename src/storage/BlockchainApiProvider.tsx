@@ -3,9 +3,8 @@ import { createORPCClient, onError } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { ContractRouterClient } from '@orpc/contract'
 import React, { createContext, useContext, useMemo } from 'react'
-import { useSelector } from 'react-redux'
 import Config from 'react-native-config'
-import { RootState } from '../store/rootReducer'
+import { useAppStore } from '../store/appStore'
 
 const BlockchainApiContext = createContext<ContractRouterClient<
   typeof fullApiContract
@@ -14,9 +13,7 @@ const BlockchainApiContext = createContext<ContractRouterClient<
 export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const cluster = useSelector(
-    (state: RootState) => state.app.cluster || 'mainnet-beta',
-  )
+  const cluster = useAppStore((state) => state.cluster || 'mainnet-beta')
 
   const client = useMemo(() => {
     const url =

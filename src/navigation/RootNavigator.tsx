@@ -17,7 +17,6 @@ import React, { memo, useCallback, useEffect, useRef } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
-import { useSelector } from 'react-redux'
 import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
@@ -29,9 +28,7 @@ import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
 import PaymentScreen from '../features/payment/PaymentScreen'
 import LinkWallet from '../features/txnDelegation/LinkWallet'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
-import { RootState } from '../store/rootReducer'
-import { appSlice } from '../store/slices/appSlice'
-import { useAppDispatch } from '../store/store'
+import { useAppStore } from '../store/appStore'
 import TabBarNavigator from './TabBarNavigator'
 import {
   RootNavigationProp,
@@ -48,7 +45,6 @@ const RootNavigator = () => {
   const colors = useColors()
   const RootStack = createStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
-  const dispatch = useAppDispatch()
   const { setOnboardingData, onboardingData } = useOnboarding()
   const { currentAccount, accounts } = useAccountStorage()
 
@@ -121,13 +117,10 @@ const RootNavigator = () => {
     }
   })
 
-  const showConnectedWallets = useSelector(
-    (state: RootState) => state.app.showConnectedWallets,
+  const showConnectedWallets = useAppStore(
+    (state) => state.showConnectedWallets,
   )
-
-  const onClose = useCallback(() => {
-    dispatch(appSlice.actions.toggleConnectedWallets())
-  }, [dispatch])
+  const onClose = useAppStore((state) => state.toggleConnectedWallets)
 
   useEffect(() => {
     if (showConnectedWallets) {

@@ -4,3 +4,5 @@ import { QueryClient } from '@tanstack/react-query'
 // staleTime the same RPC read can fire twice in a row.
 export const createQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { staleTime: 30_000 } } })
+
+export const queryClient = createQueryClient()

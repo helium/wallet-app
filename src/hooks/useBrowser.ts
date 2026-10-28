@@ -1,18 +1,17 @@
-import { useSelector } from 'react-redux'
 import { useCallback } from 'react'
-import { RootState } from '../store/rootReducer'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { BrowserDetails, browserSlice } from '../store/slices/browserSlice'
-import { useAppDispatch } from '../store/store'
+import { BrowserDetails, useBrowserStore } from '../store/browserStore'
 
 const useBrowser = (): BrowserDetails & {
   addFavorite: (favorite: string) => void
   removeFavorite: (favorite: string) => void
   addRecent: (recent: string) => void
 } => {
-  const appDispatch = useAppDispatch()
   const { currentAccount } = useAccountStorage()
-  const browser = useSelector((state: RootState) => state.browser)
+  const browser = useBrowserStore((state) => state.byAccount)
+  const storeAddFavorite = useBrowserStore((state) => state.addFavorite)
+  const storeRemoveFavorite = useBrowserStore((state) => state.removeFavorite)
+  const storeAddRecent = useBrowserStore((state) => state.addRecent)
 
   const addFavorite = useCallback(
     (favorite: string) => {
@@ -20,11 +19,9 @@ const useBrowser = (): BrowserDetails & {
         return
       }
 
-      appDispatch(
-        browserSlice.actions.addFavorite({ account: currentAccount, favorite }),
-      )
+      storeAddFavorite(currentAccount.solanaAddress, favorite)
     },
-    [appDispatch, currentAccount],
+    [storeAddFavorite, currentAccount],
   )
 
   const removeFavorite = useCallback(
@@ -33,14 +30,9 @@ const useBrowser = (): BrowserDetails & {
         return
       }
 
-      appDispatch(
-        browserSlice.actions.removeFavorite({
-          account: currentAccount,
-          favorite,
-        }),
-      )
+      storeRemoveFavorite(currentAccount.solanaAddress, favorite)
     },
-    [appDispatch, currentAccount],
+    [storeRemoveFavorite, currentAccount],
   )
 
   const addRecent = useCallback(
@@ -49,11 +41,9 @@ const useBrowser = (): BrowserDetails & {
         return
       }
 
-      appDispatch(
-        browserSlice.actions.addRecent({ account: currentAccount, recent }),
-      )
+      storeAddRecent(currentAccount.solanaAddress, recent)
     },
-    [appDispatch, currentAccount],
+    [storeAddRecent, currentAccount],
   )
 
   if (

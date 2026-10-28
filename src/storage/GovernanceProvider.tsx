@@ -16,9 +16,8 @@ import { PublicKey } from '@solana/web3.js'
 import React, { FC, ReactNode, createContext, useContext, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
-import { useSelector } from 'react-redux'
 import { useSolana } from '../solana/SolanaProvider'
-import { RootState } from '../store/rootReducer'
+import { useAppStore } from '../store/appStore'
 import { useAccountStorage } from './AccountStorageProvider'
 
 type GovNetwork = 'hnt' | 'mobile' | 'iot'
@@ -233,9 +232,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     ],
   )
 
-  const cluster = useSelector(
-    (state: RootState) => state.app.cluster || 'mainnet-beta',
-  )
+  const cluster = useAppStore((state) => state.cluster || 'mainnet-beta')
 
   const heliumVoteUri = useMemo(() => {
     if (cluster === 'mainnet-beta') {

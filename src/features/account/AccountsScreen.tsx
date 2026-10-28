@@ -25,16 +25,13 @@ import { Platform, View } from 'react-native'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
-import { useSelector } from 'react-redux'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { RootState } from '../../store/rootReducer'
-import { appSlice } from '../../store/slices/appSlice'
-import { useAppDispatch } from '../../store/store'
+import { useAppStore } from '../../store/appStore'
 import { AccountBalance } from '../../types/balance'
 import { useBalance } from '../../utils/Balance'
 import StatusBanner from '../StatusPage/StatusBanner'
@@ -72,10 +69,12 @@ const AccountsScreen = () => {
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const topHeaderRef = useRef<View>(null)
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
-  const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
   const colors = useColors()
-  const { showBanner } = useSelector((state: RootState) => state.app)
+  const showBanner = useAppStore((state) => state.showBanner)
+  const toggleConnectedWallets = useAppStore(
+    (state) => state.toggleConnectedWallets,
+  )
   const { isHealthy } = useSolanaHealth()
 
   const actualTop = useMemo(() => {
@@ -187,9 +186,9 @@ const AccountsScreen = () => {
 
   const toggleWalletsVisible = useCallback(() => {
     triggerImpact('light')
-    dispatch(appSlice.actions.toggleConnectedWallets())
+    toggleConnectedWallets()
     setSelectedBalance(undefined)
-  }, [dispatch, triggerImpact])
+  }, [toggleConnectedWallets, triggerImpact])
 
   const handleBalanceHistorySelected = useCallback(
     (accountBalance?: AccountBalance) => {

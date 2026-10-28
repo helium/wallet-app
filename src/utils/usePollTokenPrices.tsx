@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useAppStorage } from '../storage/AppStorageProvider'
+import { useAuthStore } from '../store/authStore'
 import { RootState } from '../store/rootReducer'
 import { useAppDispatch } from '../store/store'
 import { readTokenPrices } from '../store/slices/balancesSlice'
@@ -13,7 +14,7 @@ const tokenPricesSyncGuard = new SyncGuard()
 export const usePollTokenPrices = () => {
   const { currency } = useAppStorage()
   const prevCurrency = usePrevious(currency)
-  const apiToken = useSelector((state: RootState) => state.auth.apiToken)
+  const apiToken = useAuthStore((state) => state.apiToken)
   const dispatch = useAppDispatch()
   const tokenPrices = useSelector(
     (state: RootState) => state.balances.tokenPrices,

@@ -14,8 +14,7 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
-import { authSlice } from '../store/slices/authSlice'
-import { useAppDispatch } from '../store/store'
+import { useAuthStore } from '../store/authStore'
 import {
   accountNetType,
   AccountNetTypeOpt,
@@ -28,12 +27,12 @@ import {
   getCloudDefaultAccountAddress,
   restoreAccounts,
   setCloudDefaultAccountAddress,
-  signoutCloudStorage,
   sortAccounts,
   updateCloudAccounts,
   updateCloudContacts,
 } from './cloudStorage'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
+import { resetAppState } from './resetAppState'
 import {
   deleteSecureAccount,
   SecureAccount,
@@ -61,14 +60,13 @@ const useAccountStorageHook = () => {
 
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const dispatch = useAppDispatch()
   const currentAppState = useAppState()
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
     storeSecureItem('walletApiToken', apiToken)
-    dispatch(authSlice.actions.setApiToken(apiToken))
-  }, [currentAccount, dispatch])
+    useAuthStore.setState({ apiToken })
+  }, [currentAccount])
 
   useEffect(() => {
     if (currentAppState === 'active') {
@@ -406,9 +404,10 @@ const useAccountStorageHook = () => {
           ...signoutSecureStore(
             sortedAccounts.map(({ address: addr }) => addr),
           ),
-          signoutCloudStorage(),
           updateDefaultAccountAddress(undefined),
         ])
+        // After the writes above, so none of them lands in the cleared state
+        await resetAppState()
         setAccounts({})
         setContacts([])
         setCurrentAccount(undefined)

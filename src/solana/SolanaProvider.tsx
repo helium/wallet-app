@@ -27,7 +27,6 @@ import React, {
   useRef,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import { useSelector } from 'react-redux'
 import KeystoneModal, {
   KeystoneModalRef,
 } from '../features/keystone/KeystoneModal'
@@ -41,19 +40,14 @@ import {
   storeSecureItem,
   SecureStorageKeys,
 } from '../storage/secureStorage'
-import { RootState } from '../store/rootReducer'
-import { appSlice } from '../store/slices/appSlice'
-import { useAppDispatch } from '../store/store'
+import { useAppStore } from '../store/appStore'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
   const { currentAccount, secureAccountsVersion } = useAccountStorage()
-  const dispatch = useAppDispatch()
-  const cluster = useSelector(
-    (state: RootState) => state.app.cluster || 'mainnet-beta',
-  )
+  const cluster = useAppStore((state) => state.cluster || 'mainnet-beta')
   const ledgerModalRef = useRef<LedgerModalRef | null>(null)
   const keystoneModalRef = useRef<KeystoneModalRef | null>(null)
   const connection: WrappedConnection | undefined = useMemo(() => {
@@ -349,12 +343,7 @@ const useSolanaHook = () => {
     return () => cache?.close()
   }, [cache])
 
-  const updateCluster = useCallback(
-    (nextCluster: Cluster) => {
-      dispatch(appSlice.actions.setCluster(nextCluster))
-    },
-    [dispatch],
-  )
+  const updateCluster = useAppStore((state) => state.setCluster)
 
   return {
     anchorProvider,

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import { ActivityIndicator, Alert, Platform } from 'react-native'
+import { ActivityIndicator, Alert } from 'react-native'
 import { useAsync } from 'react-async-hook'
 import useAlert from '@hooks/useAlert'
 import { useColors } from '@theme/themeHooks'
@@ -47,11 +47,6 @@ const ConfirmSignoutScreen = () => {
       currentAddress &&
       savedAccountAddresses.length === 1 &&
       savedAccountAddresses.includes(currentAddress)
-    const iCloudMessage =
-      Platform.OS === 'ios'
-        ? t('settings.sections.account.signOutAlert.iCloudMessage')
-        : ''
-
     Alert.alert(
       t('settings.sections.account.signOutAlert.title', {
         alias: currentAccount?.alias,
@@ -63,7 +58,7 @@ const ConfirmSignoutScreen = () => {
         {
           alias: currentAccount?.alias,
         },
-      ) + iCloudMessage,
+      ),
       [
         {
           text: t('generic.cancel'),

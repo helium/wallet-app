@@ -45,7 +45,7 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
-import { createQueryClient } from './utils/queryClient'
+import { queryClient } from './utils/queryClient'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -116,8 +116,6 @@ const App = () => {
       }
     }
   })
-
-  const queryClient = React.useMemo(() => createQueryClient(), [])
 
   return (
     <QueryClientProvider client={queryClient}>
