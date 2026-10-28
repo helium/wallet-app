@@ -58,7 +58,6 @@ import {
   useRelinquishPositionVotesMutation,
 } from '@hooks/useGovernanceMutations'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -295,18 +294,22 @@ export const PositionCard = ({
   )
 
   // used for actions that run right after clicking the action button
-  useAsync(async () => {
-    const ref = actionRef.current
-    actionRef.current = null
+  useEffect(() => {
+    const run = async () => {
+      const ref = actionRef.current
+      actionRef.current = null
 
-    if (ref !== null) {
-      await {
-        relinquish: handleRelinquishVotes,
-        flipLockupKind: handleFlipPositionLockupKind,
-        undelegate: handleUndelegateTokens,
-        close: handleClosePosition,
-      }[ref]?.()
+      if (ref !== null) {
+        await {
+          relinquish: handleRelinquishVotes,
+          flipLockupKind: handleFlipPositionLockupKind,
+          undelegate: handleUndelegateTokens,
+          close: handleClosePosition,
+        }[ref]?.()
+      }
     }
+    run().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionRef.current])
 
   const transactionError = useMemo(() => {

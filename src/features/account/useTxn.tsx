@@ -22,8 +22,7 @@ import {
   fromUnixTime,
 } from 'date-fns'
 import { startCase } from 'lodash'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity } from '../../types/activity'
 import shortLocale from '../../utils/formatDistance'
@@ -325,26 +324,30 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
     amountTitle: '',
   })
 
-  useAsync(async () => {
-    const fee = await getFee()
-    const paymentsReceived = await getPaymentsReceived()
-    const paymentsSent = await getPaymentsSent()
-    const amount = await getAmount()
-    const amountTitle = await getAmountTitle()
+  useEffect(() => {
+    const loadDetails = async () => {
+      const fee = await getFee()
+      const paymentsReceived = await getPaymentsReceived()
+      const paymentsSent = await getPaymentsSent()
+      const amount = await getAmount()
+      const amountTitle = await getAmountTitle()
 
-    setDetails({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-      feePayer: item?.feePayer!,
-      icon: listIcon,
-      title,
-      time,
-      color,
-      fee,
-      paymentsReceived,
-      paymentsSent,
-      amount,
-      amountTitle,
-    })
+      setDetails({
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+        feePayer: item?.feePayer!,
+        icon: listIcon,
+        title,
+        time,
+        color,
+        fee,
+        paymentsReceived,
+        paymentsSent,
+        amount,
+        amountTitle,
+      })
+    }
+    loadDetails().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     color,
     getAmount,

@@ -34,8 +34,8 @@ import { calculateRequiredSol, getHotspotWithRewards } from '@utils/solanaUtils'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import React, { useMemo, useState } from 'react'
-import { useAsync, useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, ScrollView } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
@@ -76,20 +76,37 @@ const AddGatewayBle = () => {
     return keyToAssetKey(daoKey(HNT_MINT)[0], onboardingAddress)[0].toBase58()
   }, [onboardingAddress])
   const { info: keyToAsset } = useKeyToAsset(keyToAssetK)
-  const { result: asset } = useAsync(async () => {
-    if (anchorProvider && keyToAsset) {
-      return getAsset(anchorProvider.connection.rpcEndpoint, keyToAsset.asset)
-    }
-    return undefined
-  }, [anchorProvider, keyToAsset])
+  const { data: asset } = useQuery({
+    queryKey: [
+      'hotspotAsset',
+      anchorProvider?.connection.rpcEndpoint,
+      keyToAsset?.asset.toBase58(),
+    ],
+    queryFn: async () => {
+      if (anchorProvider && keyToAsset) {
+        return (
+          (await getAsset(
+            anchorProvider.connection.rpcEndpoint,
+            keyToAsset.asset,
+          )) ?? null
+        )
+      }
+      return null
+    },
+  })
 
-  const { result: requiredSol, loading: loadingRequiredSol } = useAsync(
-    () =>
+  const { data: requiredSol, isLoading: loadingRequiredSol } = useQuery({
+    queryKey: [
+      'onboardingRequiredSol',
+      anchorProvider?.connection.rpcEndpoint,
+      anchorProvider?.wallet.publicKey.toBase58(),
+      createGatewayTx,
+    ],
+    queryFn: () =>
       anchorProvider
         ? calculateRequiredSol(anchorProvider, createGatewayTx)
         : Promise.resolve(new BN(0)),
-    [anchorProvider, createGatewayTx],
-  )
+  })
 
   const REQUIRED_SOL = requiredSol || new BN(0.002 * LAMPORTS_PER_SOL)
   const wrongOwner = asset && wallet && !asset.ownership.owner.equals(wallet)
@@ -144,133 +161,138 @@ const AddGatewayBle = () => {
     : undefined
 
   const {
-    execute: handleAddGateway,
-    loading: callbackLoading,
+    mutate: handleAddGateway,
+    isPending: callbackLoading,
     error: callbackError,
-  } = useAsyncCallback(async () => {
-    if (!anchorProvider) {
-      Alert.alert('Error', 'No anchor provider')
-      return
-    }
-    const accountAddress = currentAccount?.address
-    if (!accountAddress || !wallet) {
-      Alert.alert(
-        'Error',
-        'You must first add a wallet address from the main menu',
-      )
-      return
-    }
-
-    if (!maker || !maker.address) {
-      throw new Error(t('hotspotOnboarding.onboarding.makerNotFound'))
-    }
-    const payer = balError ? wallet?.toBase58() : undefined
-
-    // For testing
-    // const tx = await new AddGatewayV1({
-    //   owner: Address.fromB58(accountAddress),
-    //   gateway: getTestHotspot().address,
-    //   payer: Address.fromB58(maker.address),
-    // }).sign({
-    //   gateway: getTestHotspot(),
-    // })
-    // const txnStr = tx.toString()
-    const txnStr = createGatewayTx
-    const hemProgram = await init(anchorProvider)
-    // const txnStr = await createGatewayTxn({
-    //   ownerAddress: accountAddress,
-    //   payerAddress: maker?.address,
-    // })
-    // const tx = AddGatewayV1.fromStr()
-
-    let createHotspotTxns: Buffer[] = []
-    if (txnStr) {
-      const createTxns = await onboardingClient.createHotspot({
-        transaction: txnStr,
-      })
-
-      createHotspotTxns =
-        createTxns.data?.solanaTransactions?.map((createHotspotTx) =>
-          Buffer.from(createHotspotTx),
-        ) || []
-    }
-
-    // eslint-disable-next-line no-restricted-syntax
-    for (const txn of createHotspotTxns || []) {
-      const tx = VersionedTransaction.deserialize(txn)
-      const hotspotAddress = onboardingAddress || 'unknown'
-      const paramsHash = hashTagParams({ hotspot: hotspotAddress })
-      const tag = `create-hotspot-${paramsHash}`
-      const transactionData = toTransactionData([tx], {
-        tag,
-        metadata: { type: 'hotspot', description: 'Create Hotspot' },
-      })
-      // eslint-disable-next-line no-await-in-loop
-      await submitAndAwait({ transactionData })
-    }
-
-    const configKey = network === 'IOT' ? IOT_CONFIG_KEY : MOBILE_CONFIG_KEY
-    const fetcher =
-      network === 'IOT'
-        ? hemProgram.account.iotHotspotInfoV0
-        : hemProgram.account.mobileHotspotInfoV0
-    const networkInfoK =
-      network === 'IOT'
-        ? iotInfoKey(configKey, onboardingAddress)[0]
-        : mobileInfoKey(configKey, onboardingAddress)[0]
-    const networkInfo = await fetcher.fetchNullable(networkInfoK)
-    if (!networkInfo && onboardingAddress) {
-      // Implicit burn to DC if needed
-      if (payer) {
-        await implicitBurn(requiredDc.toNumber())
+  } = useMutation({
+    mutationFn: async () => {
+      if (!anchorProvider) {
+        Alert.alert('Error', 'No anchor provider')
+        return
+      }
+      const accountAddress = currentAccount?.address
+      if (!accountAddress || !wallet) {
+        Alert.alert(
+          'Error',
+          'You must first add a wallet address from the main menu',
+        )
+        return
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const { solanaTransactions } = await getOnboardTransactions({
-        hotspotAddress: onboardingAddress,
-        payer,
-        networkDetails: [{ hotspotType: network }],
-      })
+      if (!maker || !maker.address) {
+        throw new Error(t('hotspotOnboarding.onboarding.makerNotFound'))
+      }
+      const payer = balError ? wallet?.toBase58() : undefined
 
-      if (solanaTransactions?.length) {
-        const paramsHash = hashTagParams({ hotspot: onboardingAddress })
-        const tag = `onboard-hotspot-${paramsHash}`
-        const transactionData = toTransactionData(
-          solanaTransactions.map((txn) => Buffer.from(txn, 'base64')),
-          {
-            tag,
-            metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
-          },
-        )
+      // For testing
+      // const tx = await new AddGatewayV1({
+      //   owner: Address.fromB58(accountAddress),
+      //   gateway: getTestHotspot().address,
+      //   payer: Address.fromB58(maker.address),
+      // }).sign({
+      //   gateway: getTestHotspot(),
+      // })
+      // const txnStr = tx.toString()
+      const txnStr = createGatewayTx
+      const hemProgram = await init(anchorProvider)
+      // const txnStr = await createGatewayTxn({
+      //   ownerAddress: accountAddress,
+      //   payerAddress: maker?.address,
+      // })
+      // const tx = AddGatewayV1.fromStr()
+
+      let createHotspotTxns: Buffer[] = []
+      if (txnStr) {
+        const createTxns = await onboardingClient.createHotspot({
+          transaction: txnStr,
+        })
+
+        createHotspotTxns =
+          createTxns.data?.solanaTransactions?.map((createHotspotTx) =>
+            Buffer.from(createHotspotTx),
+          ) || []
+      }
+
+      // eslint-disable-next-line no-restricted-syntax
+      for (const txn of createHotspotTxns || []) {
+        const tx = VersionedTransaction.deserialize(txn)
+        const hotspotAddress = onboardingAddress || 'unknown'
+        const paramsHash = hashTagParams({ hotspot: hotspotAddress })
+        const tag = `create-hotspot-${paramsHash}`
+        const transactionData = toTransactionData([tx], {
+          tag,
+          metadata: { type: 'hotspot', description: 'Create Hotspot' },
+        })
+        // eslint-disable-next-line no-await-in-loop
         await submitAndAwait({ transactionData })
       }
-    }
 
-    let totalTime = 0
-    let keyToAssetPostOnboard = keyToAsset
-    // Wait up to 30s for hotspot to exist
-    while (!keyToAssetPostOnboard && totalTime < 30 * 1000) {
-      // eslint-disable-next-line no-await-in-loop
-      await sleep(2000)
-      totalTime += 2000
-      // eslint-disable-next-line no-await-in-loop
-      keyToAssetPostOnboard =
-        await hemProgram.account.keyToAssetV0.fetchNullable(keyToAssetK)
-    }
-    if (!keyToAssetPostOnboard) {
-      throw new Error(t('hotspotOnboarding.onboarding.failedToFind'))
-    }
-    const { asset: assetPostOnboard } = keyToAssetPostOnboard
-    const collectable = await getHotspotWithRewards(
-      assetPostOnboard,
-      anchorProvider,
-    )
+      const configKey = network === 'IOT' ? IOT_CONFIG_KEY : MOBILE_CONFIG_KEY
+      const fetcher =
+        network === 'IOT'
+          ? hemProgram.account.iotHotspotInfoV0
+          : hemProgram.account.mobileHotspotInfoV0
+      const networkInfoK =
+        network === 'IOT'
+          ? iotInfoKey(configKey, onboardingAddress)[0]
+          : mobileInfoKey(configKey, onboardingAddress)[0]
+      const networkInfo = await fetcher.fetchNullable(networkInfoK)
+      if (!networkInfo && onboardingAddress) {
+        // Implicit burn to DC if needed
+        if (payer) {
+          await implicitBurn(requiredDc.toNumber())
+        }
 
-    if (networkInfo) {
-      collectNav.navigate('HotspotMapScreen', { hotspot: collectable, network })
-    } else {
-      collectNav.navigate('AssertLocationScreen', { collectable })
-    }
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const { solanaTransactions } = await getOnboardTransactions({
+          hotspotAddress: onboardingAddress,
+          payer,
+          networkDetails: [{ hotspotType: network }],
+        })
+
+        if (solanaTransactions?.length) {
+          const paramsHash = hashTagParams({ hotspot: onboardingAddress })
+          const tag = `onboard-hotspot-${paramsHash}`
+          const transactionData = toTransactionData(
+            solanaTransactions.map((txn) => Buffer.from(txn, 'base64')),
+            {
+              tag,
+              metadata: { type: 'hotspot', description: 'Onboard Hotspot' },
+            },
+          )
+          await submitAndAwait({ transactionData })
+        }
+      }
+
+      let totalTime = 0
+      let keyToAssetPostOnboard = keyToAsset
+      // Wait up to 30s for hotspot to exist
+      while (!keyToAssetPostOnboard && totalTime < 30 * 1000) {
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(2000)
+        totalTime += 2000
+        // eslint-disable-next-line no-await-in-loop
+        keyToAssetPostOnboard =
+          await hemProgram.account.keyToAssetV0.fetchNullable(keyToAssetK)
+      }
+      if (!keyToAssetPostOnboard) {
+        throw new Error(t('hotspotOnboarding.onboarding.failedToFind'))
+      }
+      const { asset: assetPostOnboard } = keyToAssetPostOnboard
+      const collectable = await getHotspotWithRewards(
+        assetPostOnboard,
+        anchorProvider,
+      )
+
+      if (networkInfo) {
+        collectNav.navigate('HotspotMapScreen', {
+          hotspot: collectable,
+          network,
+        })
+      } else {
+        collectNav.navigate('AssertLocationScreen', { collectable })
+      }
+    },
   })
   const error =
     onboardBalError ||
@@ -418,7 +440,7 @@ const AddGatewayBle = () => {
                           ? undefined
                           : t('hotspotOnboarding.onboarding.onboardAndPay')
                       }
-                      onPress={handleAddGateway}
+                      onPress={() => handleAddGateway()}
                       disabled={disabled}
                       LeadingComponent={loading ? <CircleLoader /> : undefined}
                     />
@@ -437,7 +459,7 @@ const AddGatewayBle = () => {
             opacity={disabled ? 0.5 : undefined}
             backgroundColor="white"
             title={t('hotspotOnboarding.onboarding.onboard')}
-            onPress={handleAddGateway}
+            onPress={() => handleAddGateway()}
             disabled={disabled}
             LeadingComponent={loading ? <CircleLoader /> : undefined}
           />

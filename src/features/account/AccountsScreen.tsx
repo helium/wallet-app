@@ -20,7 +20,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import { Platform, View } from 'react-native'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -165,23 +164,27 @@ const AccountsScreen = () => {
   }, [currentAccount?.address, onboardingType])
 
   // Hook that is used for helium balance widget.
-  useAsync(async () => {
-    if (Platform.OS === 'ios') {
-      const defaultAccount = sortedAccounts.find(
-        (account: CSAccount) => account.address === defaultAccountAddress,
-      )
+  useEffect(() => {
+    const updateWidget = async () => {
+      if (Platform.OS === 'ios') {
+        const defaultAccount = sortedAccounts.find(
+          (account: CSAccount) => account.address === defaultAccountAddress,
+        )
 
-      await SharedGroupPreferences.setItem(
-        'heliumWalletWidgetKey',
-        {
-          defaultAccountAddress: defaultAccount?.solanaAddress,
-          defaultAccountAlias: defaultAccount?.alias,
-          currencyType: currency,
-          cluster,
-        },
-        widgetGroup,
-      )
+        await SharedGroupPreferences.setItem(
+          'heliumWalletWidgetKey',
+          {
+            defaultAccountAddress: defaultAccount?.solanaAddress,
+            defaultAccountAlias: defaultAccount?.alias,
+            currencyType: currency,
+            cluster,
+          },
+          widgetGroup,
+        )
+      }
     }
+    updateWidget().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultAccountAddress, sortedAccounts])
 
   const toggleWalletsVisible = useCallback(() => {

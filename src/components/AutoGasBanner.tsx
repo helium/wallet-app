@@ -16,8 +16,7 @@ import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import Config from 'react-native-config'
@@ -77,69 +76,85 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
     anchorProvider?.wallet.publicKey,
     autoGasManagementToken,
   )
-  const { loading, error } = useAsync(async () => {
-    if (
-      needsSwap &&
-      autoGasManagementToken &&
-      anchorProvider &&
-      typeof decimals !== 'undefined' &&
-      walletSignBottomSheetRef
-    ) {
-      // Check balance again, sometimes token balance change comes thru before sol change and we
-      // get a duplicate request
-      const cachelessConn = new Connection(
-        anchorProvider.connection.rpcEndpoint,
-        'confirmed',
-      )
-      const balance = (
-        await cachelessConn.getAccountInfo(anchorProvider?.wallet.publicKey)
-      )?.lamports
-      if (balance && balance > MIN_BALANCE_THRESHOLD) {
-        return
-      }
-      const estimates: { [key: string]: string } = (
-        await axios.get(`${baseUrl}/estimates`)
-      ).data
-
-      const estimate = new BN(estimates[autoGasManagementToken.toBase58()])
-      if ((tokenBalance || 0) > estimate.toNumber()) {
-        setAmount(toNumber(estimate, decimals))
-
-        const txRaw = (
-          await axios.post(`${baseUrl}/fees`, {
-            wallet: anchorProvider.publicKey.toBase58(),
-            mint: autoGasManagementToken,
-          })
+  // Signs and submits a swap, so it runs as an effect, not as a cached query
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error>()
+  useEffect(() => {
+    let current = true
+    const swapForGas = async () => {
+      if (
+        needsSwap &&
+        autoGasManagementToken &&
+        anchorProvider &&
+        typeof decimals !== 'undefined' &&
+        walletSignBottomSheetRef
+      ) {
+        // Check balance again, sometimes token balance change comes thru before sol change and we
+        // get a duplicate request
+        const cachelessConn = new Connection(
+          anchorProvider.connection.rpcEndpoint,
+          'confirmed',
+        )
+        const balance = (
+          await cachelessConn.getAccountInfo(anchorProvider?.wallet.publicKey)
+        )?.lamports
+        if (balance && balance > MIN_BALANCE_THRESHOLD) {
+          return
+        }
+        const estimates: { [key: string]: string } = (
+          await axios.get(`${baseUrl}/estimates`)
         ).data
 
-        const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
-        const serializedTx = Buffer.from(tx.serialize())
-        const decision = await walletSignBottomSheetRef.show({
-          type: WalletStandardMessageTypes.signTransaction,
-          url: '',
-          message: t('transactions.autoGasConvert', { symbol }),
-          serializedTxs: [serializedTx],
-          header: t('transactions.autoGasConvertHeader'),
-        })
-        if (decision) {
-          const walletAddress = anchorProvider.wallet.publicKey.toBase58()
-          const mintAddress = autoGasManagementToken.toBase58()
-          const paramsHash = hashTagParams({
-            wallet: walletAddress,
-            mint: mintAddress,
-            amount: amount || 0,
-          })
-          const tag = `auto-gas-${paramsHash}`
-          const transactionData = toTransactionData([tx], {
-            tag,
-            metadata: { type: 'swap', description: 'Auto Gas Conversion' },
-          })
-          await submitAndAwait({ transactionData })
-        }
-      }
+        const estimate = new BN(estimates[autoGasManagementToken.toBase58()])
+        if ((tokenBalance || 0) > estimate.toNumber()) {
+          setAmount(toNumber(estimate, decimals))
 
-      setAmount(undefined)
+          const txRaw = (
+            await axios.post(`${baseUrl}/fees`, {
+              wallet: anchorProvider.publicKey.toBase58(),
+              mint: autoGasManagementToken,
+            })
+          ).data
+
+          const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
+          const serializedTx = Buffer.from(tx.serialize())
+          const decision = await walletSignBottomSheetRef.show({
+            type: WalletStandardMessageTypes.signTransaction,
+            url: '',
+            message: t('transactions.autoGasConvert', { symbol }),
+            serializedTxs: [serializedTx],
+            header: t('transactions.autoGasConvertHeader'),
+          })
+          if (decision) {
+            const walletAddress = anchorProvider.wallet.publicKey.toBase58()
+            const mintAddress = autoGasManagementToken.toBase58()
+            const paramsHash = hashTagParams({
+              wallet: walletAddress,
+              mint: mintAddress,
+              amount: amount || 0,
+            })
+            const tag = `auto-gas-${paramsHash}`
+            const transactionData = toTransactionData([tx], {
+              tag,
+              metadata: { type: 'swap', description: 'Auto Gas Conversion' },
+            })
+            await submitAndAwait({ transactionData })
+          }
+        }
+
+        setAmount(undefined)
+      }
     }
+
+    setLoading(true)
+    setError(undefined)
+    swapForGas()
+      .catch((e) => current && setError(e))
+      .finally(() => current && setLoading(false))
+    return () => {
+      current = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     needsSwap,
     autoGasManagementToken,

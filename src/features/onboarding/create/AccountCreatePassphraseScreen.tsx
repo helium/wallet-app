@@ -9,8 +9,8 @@ import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_DERIVATION_PATH, createKeypair } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
+import { useQuery } from '@tanstack/react-query'
 import React, { memo, useCallback, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
@@ -23,10 +23,14 @@ const AccountCreatePassphraseScreen = () => {
   const { setOnboardingData } = useOnboarding()
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const navigation = useNavigation<CreateAccountNavigationProp>()
-  const { result: defaultKeypair, loading } = useAsync(
-    async () => createKeypair({ use24Words: true }),
-    [],
-  )
+  // A secret: generated once for the screen's life and dropped on unmount
+  const { data: defaultKeypair, isLoading: loading } = useQuery({
+    queryKey: ['createAccountKeypair'],
+    queryFn: () => createKeypair({ use24Words: true }),
+    staleTime: Infinity,
+    gcTime: 0,
+    retry: false,
+  })
 
   const navToTop = useCallback(() => {
     if (hasAccounts) {

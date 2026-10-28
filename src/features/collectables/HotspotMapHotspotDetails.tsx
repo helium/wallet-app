@@ -30,6 +30,7 @@ import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
+import { useMutation } from '@tanstack/react-query'
 import { useColors, useOpacity } from '@theme/themeHooks'
 import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
@@ -37,7 +38,6 @@ import { Explorer } from '@utils/walletApiV2'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
 import { SvgUri } from 'react-native-svg'
@@ -413,31 +413,33 @@ export const HotspotMapHotspotDetails = ({
   }, [hotspotWithMeta, navigation])
 
   const {
-    execute: handleOnboard,
-    loading: onboardLoading,
+    mutate: handleOnboard,
+    isPending: onboardLoading,
     error: onboardError,
-  } = useAsyncCallback(async () => {
-    if (
-      !anchorProvider ||
-      !entityKey ||
-      !iotMakerApprovalAcc ||
-      iotInfoAcc?.info
-    ) {
-      return
-    }
+  } = useMutation({
+    mutationFn: async () => {
+      if (
+        !anchorProvider ||
+        !entityKey ||
+        !iotMakerApprovalAcc ||
+        iotInfoAcc?.info
+      ) {
+        return
+      }
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    navigation.push('OnboardingNavigator', {
-      screen: 'IotBle',
-      params: {
-        screen: 'AddGatewayBle',
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      navigation.push('OnboardingNavigator', {
+        screen: 'IotBle',
         params: {
-          network: 'IOT',
-          onboardingAddress: entityKey,
+          screen: 'AddGatewayBle',
+          params: {
+            network: 'IOT',
+            onboardingAddress: entityKey,
+          },
         },
-      },
-    })
+      })
+    },
   })
 
   return (
@@ -766,7 +768,7 @@ export const HotspotMapHotspotDetails = ({
                 <ListItem
                   key="onboard"
                   title={t('collectablesScreen.hotspots.onboard.title')}
-                  onPress={handleOnboard}
+                  onPress={() => handleOnboard()}
                   selected={false}
                   hasPressedState={false}
                 />

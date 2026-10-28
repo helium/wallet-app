@@ -20,7 +20,6 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, truthy } from '@helium/spl-utils'
-import useDisappear from '@hooks/useDisappear'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
@@ -55,8 +54,6 @@ import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import { solanaSlice } from '../../store/slices/solanaSlice'
-import { useAppDispatch } from '../../store/store'
 import {
   accountNetType,
   formatAccountAlias,
@@ -139,16 +136,11 @@ const PaymentScreen = () => {
   }, [balanceBigIntInclSol])
   const { anchorProvider, connection } = useSolana()
 
-  const appDispatch = useAppDispatch()
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
-
-  useDisappear(() => {
-    appDispatch(solanaSlice.actions.resetPayment())
-  })
 
   const navBack = useCallback(() => {
     if (navigation.canGoBack()) {

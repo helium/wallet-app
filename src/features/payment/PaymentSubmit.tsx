@@ -1,6 +1,5 @@
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
-import { SerializedError } from '@reduxjs/toolkit'
 import { PublicKey } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
 import BN from 'bn.js'
@@ -14,7 +13,7 @@ import PaymentSuccess from './PaymentSuccess'
 type Props = {
   mint: PublicKey
   submitLoading: boolean
-  submitError?: Error | SerializedError
+  submitError?: Error
   submitSucceeded?: boolean
   totalBalance: BN
   feeTokenBalance?: BN
@@ -37,7 +36,7 @@ const PaymentSubmit = ({
   actionTitle,
 }: Props) => {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<Error | SerializedError>()
+  const [error, setError] = useState<Error>()
   const [succeeded, setSucceeded] = useState(false)
   const [videoFinished, setVideoFinished] = useState(false)
 

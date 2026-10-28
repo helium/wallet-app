@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import { ActivityIndicator, Alert } from 'react-native'
-import { useAsync } from 'react-async-hook'
 import useAlert from '@hooks/useAlert'
 import { useColors } from '@theme/themeHooks'
 import Box from '@components/Box'
@@ -27,10 +26,13 @@ const ConfirmSignoutScreen = () => {
 
   const [mnemonic, setMnemonic] = useState<string[]>()
 
-  useAsync(async () => {
-    if (!currentAccount || !currentAccount.address) return
-    const secureAccount = await getSecureAccount(currentAccount.address)
-    setMnemonic(secureAccount?.mnemonic)
+  useEffect(() => {
+    const run = async () => {
+      if (!currentAccount || !currentAccount.address) return
+      const secureAccount = await getSecureAccount(currentAccount.address)
+      setMnemonic(secureAccount?.mnemonic)
+    }
+    run().catch((e) => console.error(e))
   }, [currentAccount])
 
   const isPinRequired = useMemo(

@@ -1,6 +1,5 @@
-import React, { memo, useCallback, useState } from 'react'
+import React, { memo, useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAsync } from 'react-async-hook'
 import { useNavigation } from '@react-navigation/native'
 import Text from '@components/Text'
 import Box from '@components/Box'
@@ -21,17 +20,20 @@ const RevealPrivateKeyScreen = () => {
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()
 
-  useAsync(async () => {
-    // don't remove key from secure store until they press reveal
-    if (!revealed) return
-    if (!currentAccount?.address) return
-    const secureAccount = await getSecureAccount(currentAccount.address)
-    if (!secureAccount?.keypair.sk) return
-    setPrivateKey(
-      JSON.stringify(
-        Buffer.from(secureAccount?.keypair?.sk, 'base64').toJSON().data,
-      ),
-    )
+  useEffect(() => {
+    const run = async () => {
+      // don't remove key from secure store until they press reveal
+      if (!revealed) return
+      if (!currentAccount?.address) return
+      const secureAccount = await getSecureAccount(currentAccount.address)
+      if (!secureAccount?.keypair.sk) return
+      setPrivateKey(
+        JSON.stringify(
+          Buffer.from(secureAccount?.keypair?.sk, 'base64').toJSON().data,
+        ),
+      )
+    }
+    run().catch((e) => console.error(e))
   }, [currentAccount?.address, revealed])
 
   const showConfirmDialog = useCallback(async () => {

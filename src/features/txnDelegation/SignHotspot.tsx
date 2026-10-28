@@ -18,7 +18,6 @@ import { useColors } from '@theme/themeHooks'
 import animalHash from 'angry-purple-tiger'
 import BN from 'bn.js'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import Config from 'react-native-config'
@@ -203,7 +202,7 @@ const SignHotspot = () => {
     }
   }, [locationData, solana.configMsg, solana.transactions, t, transferData])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (!parsedToken) return
 
     verifyWalletLinkToken(parsedToken)
@@ -213,6 +212,7 @@ const SignHotspot = () => {
       .catch(() => {
         setValidated(false)
       })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getKeypair, parsedToken, token])
 
   const submitLoading = useMemo(

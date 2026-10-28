@@ -1,10 +1,10 @@
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { VersionedTransaction } from '@solana/web3.js'
+import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import BN from 'bn.js'
 import { useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { Config } from 'react-native-config'
 import { useSolana } from '../solana/SolanaProvider'
 import * as logger from '../utils/logger'
@@ -28,31 +28,34 @@ export const useEcosystemTokenSolConvert = () => {
   }, [cluster])
 
   const {
-    result: estimatesByMint,
-    loading: estimatesByMintLoading,
+    data: estimatesByMint,
+    isLoading: estimatesByMintLoading,
     error: estimatesByMintError,
-  } = useAsync(async () => {
-    try {
-      const estimates: { [key: string]: string } = (
-        await axios.get(`${baseUrl}/estimates`)
-      ).data
+  } = useQuery({
+    queryKey: ['solConvertEstimates', baseUrl],
+    queryFn: async () => {
+      try {
+        const estimates: { [key: string]: string } = (
+          await axios.get(`${baseUrl}/estimates`)
+        ).data
 
-      return Object.entries(estimates).reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [key]: new BN(value),
-        }),
-        {},
-      ) as { [key: string]: BN }
-    } catch (e) {
-      logger.error(e)
-      return {
-        [HNT_MINT.toBase58()]: 0,
-        [MOBILE_MINT.toBase58()]: 0,
-        [IOT_MINT.toBase58()]: 0,
-      } as { [key: string]: 0 }
-    }
-  }, [baseUrl])
+        return Object.entries(estimates).reduce(
+          (acc, [key, value]) => ({
+            ...acc,
+            [key]: new BN(value),
+          }),
+          {},
+        ) as { [key: string]: BN }
+      } catch (e) {
+        logger.error(e)
+        return {
+          [HNT_MINT.toBase58()]: 0,
+          [MOBILE_MINT.toBase58()]: 0,
+          [IOT_MINT.toBase58()]: 0,
+        } as { [key: string]: 0 }
+      }
+    },
+  })
 
   const hasEnoughHntForSol = useMemo(() => {
     const estimate = estimatesByMint
@@ -91,77 +94,115 @@ export const useEcosystemTokenSolConvert = () => {
   )
 
   const {
-    result: hntSolConvertTx,
-    loading: hntSolConvertTxLoading,
+    data: hntSolConvertTx,
+    isLoading: hntSolConvertTxLoading,
     error: hntSolConvertTxError,
-  } = useAsync(async () => {
-    if (!anchorProvider || !hasEnoughHntForSol) return
+  } = useQuery({
+    queryKey: [
+      'solConvertTx',
+      baseUrl,
+      HNT_MINT.toBase58(),
+      hasEnoughHntForSol,
+      anchorProvider?.publicKey.toBase58(),
+    ],
+    queryFn: async () => {
+      if (!anchorProvider) return null
 
-    try {
-      const txRaw = (
-        await axios.post(`${baseUrl}/fees`, {
-          wallet: anchorProvider.publicKey.toBase58(),
-          mint: HNT_MINT.toBase58(),
-        })
-      ).data
+      try {
+        const txRaw = (
+          await axios.post(`${baseUrl}/fees`, {
+            wallet: anchorProvider.publicKey.toBase58(),
+            mint: HNT_MINT.toBase58(),
+          })
+        ).data
 
-      const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
-      return tx
-    } catch (e) {
-      logger.error(e)
-      throw e
-    }
-  }, [baseUrl, hasEnoughHntForSol, anchorProvider])
+        const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
+        return tx
+      } catch (e) {
+        logger.error(e)
+        throw e
+      }
+    },
+    enabled: !!anchorProvider && hasEnoughHntForSol,
+    // A fee transaction carries a blockhash, so it must not outlive the screen
+    gcTime: 0,
+  })
 
   const {
-    result: mobileSolConvertTx,
-    loading: mobileSolConvertTxLoading,
+    data: mobileSolConvertTx,
+    isLoading: mobileSolConvertTxLoading,
     error: mobileSolConvertTxError,
-  } = useAsync(async () => {
-    if (!anchorProvider || !hasEnoughMobileForSol) return
+  } = useQuery({
+    queryKey: [
+      'solConvertTx',
+      baseUrl,
+      MOBILE_MINT.toBase58(),
+      hasEnoughMobileForSol,
+      anchorProvider?.publicKey.toBase58(),
+    ],
+    queryFn: async () => {
+      if (!anchorProvider) return null
 
-    try {
-      const txRaw = (
-        await axios.post(`${baseUrl}/fees`, {
-          wallet: anchorProvider.publicKey.toBase58(),
-          mint: MOBILE_MINT.toBase58(),
-        })
-      ).data
+      try {
+        const txRaw = (
+          await axios.post(`${baseUrl}/fees`, {
+            wallet: anchorProvider.publicKey.toBase58(),
+            mint: MOBILE_MINT.toBase58(),
+          })
+        ).data
 
-      const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
-      return tx
-    } catch (e) {
-      logger.error(e)
-    }
-  }, [baseUrl, hasEnoughMobileForSol, anchorProvider])
+        const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
+        return tx
+      } catch (e) {
+        logger.error(e)
+        return null
+      }
+    },
+    enabled: !!anchorProvider && hasEnoughMobileForSol,
+    // A fee transaction carries a blockhash, so it must not outlive the screen
+    gcTime: 0,
+  })
 
   const {
-    result: iotSolConvertTx,
-    loading: iotSolConvertTxLoading,
+    data: iotSolConvertTx,
+    isLoading: iotSolConvertTxLoading,
     error: iotSolConvertTxError,
-  } = useAsync(async () => {
-    if (!anchorProvider || !hasEnoughIotForSol) return
+  } = useQuery({
+    queryKey: [
+      'solConvertTx',
+      baseUrl,
+      IOT_MINT.toBase58(),
+      hasEnoughIotForSol,
+      anchorProvider?.publicKey.toBase58(),
+    ],
+    queryFn: async () => {
+      if (!anchorProvider) return null
 
-    try {
-      const txRaw = (
-        await axios.post(`${baseUrl}/fees`, {
-          wallet: anchorProvider.publicKey.toBase58(),
-          mint: IOT_MINT.toBase58(),
-        })
-      ).data
+      try {
+        const txRaw = (
+          await axios.post(`${baseUrl}/fees`, {
+            wallet: anchorProvider.publicKey.toBase58(),
+            mint: IOT_MINT.toBase58(),
+          })
+        ).data
 
-      const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
-      return tx
-    } catch (e) {
-      logger.error(e)
-    }
-  }, [baseUrl, hasEnoughIotForSol, anchorProvider])
+        const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
+        return tx
+      } catch (e) {
+        logger.error(e)
+        return null
+      }
+    },
+    enabled: !!anchorProvider && hasEnoughIotForSol,
+    // A fee transaction carries a blockhash, so it must not outlive the screen
+    gcTime: 0,
+  })
 
   const solConvertTxByMint = useMemo(
     () => ({
-      [HNT_MINT.toBase58()]: hntSolConvertTx,
-      [MOBILE_MINT.toBase58()]: mobileSolConvertTx,
-      [IOT_MINT.toBase58()]: iotSolConvertTx,
+      [HNT_MINT.toBase58()]: hntSolConvertTx ?? undefined,
+      [MOBILE_MINT.toBase58()]: mobileSolConvertTx ?? undefined,
+      [IOT_MINT.toBase58()]: iotSolConvertTx ?? undefined,
     }),
     [hntSolConvertTx, mobileSolConvertTx, iotSolConvertTx],
   )

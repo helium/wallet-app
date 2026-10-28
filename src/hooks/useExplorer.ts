@@ -1,7 +1,7 @@
 import { useAppStorage } from '@storage/AppStorageProvider'
+import { useQuery } from '@tanstack/react-query'
 import { getExplorers, Explorer } from '@utils/walletApiV2'
 import { useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 
 export function useExplorer(): {
   current: Explorer | undefined
@@ -10,7 +10,10 @@ export function useExplorer(): {
   updateExplorer: (nextExplorer: string) => Promise<void>
 } {
   const { updateExplorer, explorer } = useAppStorage()
-  const { result: available, loading } = useAsync(getExplorers, [])
+  const { data: available, isLoading: loading } = useQuery({
+    queryKey: ['explorers'],
+    queryFn: getExplorers,
+  })
   const current = useMemo(
     () => available?.find((a) => a.value === explorer),
     [available, explorer],

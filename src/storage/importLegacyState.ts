@@ -9,7 +9,7 @@ import { CloudState, useCloudStore } from '../store/cloudStore'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from './mmkv'
 
 // The old redux-persist root key and its three nested persist configs
-const LEGACY_PERSIST_KEYS = [
+export const LEGACY_PERSIST_KEYS = [
   'persist:root',
   'persist:solana',
   'persist:balances',
@@ -95,7 +95,7 @@ let importing: Promise<void> | undefined
 /**
  * Copies the old Redux and cloud data into the Zustand stores once, on the
  * first launch of a build with this code. Every call shares one run, so cloud
- * storage reads can wait for it. Run it before redux-persist rehydrates.
+ * storage reads can wait for it. Run it before the app renders.
  */
 export const importLegacyState = () => {
   if (!importing) importing = runImport()

@@ -18,8 +18,14 @@ import TextTransform from '@components/TextTransform'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useColors, useSpacing } from '@theme/themeHooks'
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   KeyboardAvoidingView,
@@ -89,37 +95,41 @@ const TransferCollectableScreen = () => {
 
   const { submitCollectable } = useSubmitTxn()
 
-  useAsync(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider?.connection) return
+  useEffect(() => {
+    const estimateFee = async () => {
+      if (!currentAccount?.solanaAddress || !anchorProvider?.connection) return
 
-    const { connection } = anchorProvider
+      const { connection } = anchorProvider
 
-    try {
-      const { message } = await createTransferCollectableMessage(
-        anchorProvider,
-        currentAccount?.solanaAddress,
-        currentAccount?.address || '',
-        collectable,
-        currentAccount?.solanaAddress,
-      )
+      try {
+        const { message } = await createTransferCollectableMessage(
+          anchorProvider,
+          currentAccount?.solanaAddress,
+          currentAccount?.address || '',
+          collectable,
+          currentAccount?.solanaAddress,
+        )
 
-      const response = await connection.getFeeForMessage(
-        message,
-        'singleGossip',
-      )
+        const response = await connection.getFeeForMessage(
+          message,
+          'singleGossip',
+        )
 
-      if (!response?.value) return
+        if (!response?.value) return
 
-      setSolFee(response.value / LAMPORTS_PER_SOL)
+        setSolFee(response.value / LAMPORTS_PER_SOL)
 
-      const balance = await connection.getBalance(
-        new PublicKey(currentAccount?.solanaAddress),
-      )
-      setHasInsufficientBalance(response.value > balance)
-    } catch (error) {
-      Logger.error(error)
-      setNetworkError((error as Error).message)
+        const balance = await connection.getBalance(
+          new PublicKey(currentAccount?.solanaAddress),
+        )
+        setHasInsufficientBalance(response.value > balance)
+      } catch (error) {
+        Logger.error(error)
+        setNetworkError((error as Error).message)
+      }
     }
+    estimateFee()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleInfoPress = useCallback(() => {

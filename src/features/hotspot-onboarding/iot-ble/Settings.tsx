@@ -13,8 +13,8 @@ import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DAO_KEY } from '@utils/constants'
 import { getHotspotWithRewards } from '@utils/solanaUtils'
+import { useQuery } from '@tanstack/react-query'
 import React, { useCallback, useEffect, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
@@ -68,23 +68,22 @@ const Settings = () => {
     isConnected().then(setConnected)
   }, [isConnected])
   const {
-    result: { address, keyToAssetK, createGatewayTx } = {} as {
+    data: { address, keyToAssetK, createGatewayTx } = {} as {
       address?: string
       keyToAssetK?: PublicKey
       createGatewayTx?: string
     },
-    loading: loadingAddress,
+    isLoading: loadingAddress,
     error,
-  } = useAsync(
-    async (
-      c: boolean,
-      accountAddress?: string,
-    ): Promise<{
+  } = useQuery({
+    queryKey: ['hotspotOnboardingAddress', connected, currentAccount?.address],
+    queryFn: async (): Promise<{
       address?: string
       keyToAssetK?: PublicKey
       createGatewayTx?: string
     }> => {
-      if (c && accountAddress) {
+      const accountAddress = currentAccount?.address
+      if (connected && accountAddress) {
         const addr = await getOnboardingAddress()
         const tx = await getCreateGatewayTxn({
           ownerAddress: accountAddress,
@@ -100,8 +99,11 @@ const Settings = () => {
       }
       return {}
     },
-    [connected, currentAccount?.address],
-  )
+    // A device read: never retry, and drop it on unmount so the next hotspot
+    // does not see this one's address
+    retry: false,
+    gcTime: 0,
+  })
   const { info: iotInfo, loading: loadingInfo } = useIotInfo(address)
   const { info: keyToAsset, loading: loadingKta } = useKeyToAsset(
     keyToAssetK?.toBase58(),

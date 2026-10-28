@@ -51,7 +51,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -142,72 +141,75 @@ const HotspotMapScreen = () => {
 
   // - fetch infos by networkType for all hotspots
   // - setUp hexInfoBuckets
-  useAsync(async () => {
-    if (onEndReached && anchorProvider) {
-      setLoadingInfos(true)
-      const hemProgram = await init(anchorProvider)
+  useEffect(() => {
+    const loadInfos = async () => {
+      if (onEndReached && anchorProvider) {
+        setLoadingInfos(true)
+        const hemProgram = await init(anchorProvider)
 
-      const infos = (
-        await Promise.all(
-          chunks(hotspots, 100).map(async (chunk) => {
-            const keyToAssetKeys = chunk.map((h) =>
-              keyToAssetForAsset(toAsset(h)),
-            )
+        const infos = (
+          await Promise.all(
+            chunks(hotspots, 100).map(async (chunk) => {
+              const keyToAssetKeys = chunk.map((h) =>
+                keyToAssetForAsset(toAsset(h)),
+              )
 
-            const ktaAccs = await getCachedKeyToAssets(
-              hemProgram as any,
-              keyToAssetKeys,
-            )
+              const ktaAccs = await getCachedKeyToAssets(
+                hemProgram as any,
+                keyToAssetKeys,
+              )
 
-            const entityKeys = ktaAccs
-              .map((kta) => {
-                return decodeEntityKey(kta.entityKey, kta.keySerialization)
+              const entityKeys = ktaAccs
+                .map((kta) => {
+                  return decodeEntityKey(kta.entityKey, kta.keySerialization)
+                })
+                .filter(truthy)
+
+              const infoKeys = entityKeys.map((ek) => {
+                const keys = {
+                  IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
+                  MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
+                }
+
+                return keys[networkType]
               })
-              .filter(truthy)
 
-            const infoKeys = entityKeys.map((ek) => {
-              const keys = {
-                IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
-                MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
+              if (networkType === 'IOT') {
+                return getCachedIotInfos(hemProgram as any, infoKeys)
               }
 
-              return keys[networkType]
-            })
+              if (networkType === 'MOBILE') {
+                return getCachedMobileInfos(hemProgram as any, infoKeys)
+              }
+            }),
+          )
+        ).flat()
 
-            if (networkType === 'IOT') {
-              return getCachedIotInfos(hemProgram as any, infoKeys)
-            }
+        const infoBuckets = infos
+          .filter((info) => info && truthy(info.location))
+          .reduce(
+            (acc, info) => ({
+              ...acc,
+              ...(info?.location
+                ? {
+                    [info.location.toString()]: [
+                      ...(acc[info.location.toString()] || []),
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      info as any,
+                    ],
+                  }
+                : {}),
+            }),
+            {} as {
+              [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
+            },
+          )
 
-            if (networkType === 'MOBILE') {
-              return getCachedMobileInfos(hemProgram as any, infoKeys)
-            }
-          }),
-        )
-      ).flat()
-
-      const infoBuckets = infos
-        .filter((info) => info && truthy(info.location))
-        .reduce(
-          (acc, info) => ({
-            ...acc,
-            ...(info?.location
-              ? {
-                  [info.location.toString()]: [
-                    ...(acc[info.location.toString()] || []),
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    info as any,
-                  ],
-                }
-              : {}),
-          }),
-          {} as {
-            [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
-          },
-        )
-
-      setHexInfoBuckets(infoBuckets)
-      setLoadingInfos(false)
+        setHexInfoBuckets(infoBuckets)
+        setLoadingInfos(false)
+      }
     }
+    loadInfos().catch((e) => console.error(e))
   }, [
     onEndReached,
     anchorProvider,
@@ -217,7 +219,7 @@ const HotspotMapScreen = () => {
     setHexInfoBuckets,
   ])
 
-  useAsync(async () => {
+  useEffect(() => {
     // if hotspot is provided, check if it's IOT or MOBILE
     // scope networkType to the hotspot's network type
     if (hotspot) {
@@ -236,6 +238,7 @@ const HotspotMapScreen = () => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchorProvider, onEndReached, loadingInfos, hotspot])
 
   // - show bottom sheet when activeHex is set
@@ -248,45 +251,48 @@ const HotspotMapScreen = () => {
   }, [loadingInfos, activeHex, hotspot, legendVisible, bottomSheetRef])
 
   // - center the map on the active hex
-  useAsync(async () => {
-    if (
-      activeHex &&
-      activeHex !== DEFAULT_HEX &&
-      mapRef?.current &&
-      bottomSheetHeight
-    ) {
-      const cords = parseH3BNLocation(new BN(activeHex)).reverse()
+  useEffect(() => {
+    const centerOnHex = async () => {
+      if (
+        activeHex &&
+        activeHex !== DEFAULT_HEX &&
+        mapRef?.current &&
+        bottomSheetHeight
+      ) {
+        const cords = parseH3BNLocation(new BN(activeHex)).reverse()
 
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      const zoomLevel = await mapRef.current.getZoom()
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        const zoomLevel = await mapRef.current.getZoom()
 
-      // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
-      // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
-      const centeringShift = bottomSheetHeight / 4
+        // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
+        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
+        const centeringShift = bottomSheetHeight / 4
 
-      // Convert the latitude to radians for more accurate calculations
-      const latitudeRadians = (cords[1] * Math.PI) / 180
+        // Convert the latitude to radians for more accurate calculations
+        const latitudeRadians = (cords[1] * Math.PI) / 180
 
-      // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
-      // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
-      const metersPerPixel =
-        (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
-        (256 * 2 ** zoomLevel)
+        // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
+        // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
+        const metersPerPixel =
+          (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
+          (256 * 2 ** zoomLevel)
 
-      // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
-      const pixelShift = centeringShift
+        // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
+        const pixelShift = centeringShift
 
-      // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
-      const degreeShift = (pixelShift * metersPerPixel) / 111319.9
+        // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
+        const degreeShift = (pixelShift * metersPerPixel) / 111319.9
 
-      // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
-      // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
-      // viewable area above the bottom sheet.
-      cameraRef.current?.setCamera({
-        centerCoordinate: [cords[0], cords[1] - degreeShift],
-        animationDuration: 200,
-      })
+        // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
+        // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
+        // viewable area above the bottom sheet.
+        cameraRef.current?.setCamera({
+          centerCoordinate: [cords[0], cords[1] - degreeShift],
+          animationDuration: 200,
+        })
+      }
     }
+    centerOnHex().catch((e) => console.error(e))
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
   const iconSize = useMemo(() => 0.17 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])

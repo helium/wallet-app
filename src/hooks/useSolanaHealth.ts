@@ -1,6 +1,5 @@
 import { WrappedConnection } from '@utils/WrappedConnection'
-import { useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
 import { getCurrentTPS } from '../utils/solanaUtils'
@@ -46,20 +45,24 @@ const useSolanaHealth = () => {
     return anchorProvider.connection as WrappedConnection
   }, [anchorProvider])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (!connection) return
-    const { result: health } = await getCachedHealth(connection)
-    setIsHealthy(health === 'ok')
+    getCachedHealth(connection)
+      .then(({ result: health }) => setIsHealthy(health === 'ok'))
+      .catch((e) => console.error(e))
   }, [connection])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (!connection) return
-    const currentTps = await getCachedTPS(connection)
-    // If the current tps is less than or equal to 2000, we consider it unhealthy
-    if (currentTps <= 2000) {
-      setIsHealthy(false)
-      setSlowTps(currentTps)
-    }
+    getCachedTPS(connection)
+      .then((currentTps) => {
+        // If the current tps is less than or equal to 2000, we consider it unhealthy
+        if (currentTps <= 2000) {
+          setIsHealthy(false)
+          setSlowTps(currentTps)
+        }
+      })
+      .catch((e) => console.error(e))
   }, [connection])
 
   const healthMessage = useMemo(() => {

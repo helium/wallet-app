@@ -5,23 +5,20 @@
 // ("Unsupported output format: undefined").
 import './src/polyfill'
 import { ThemeProvider } from '@shopify/restyle'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { AppRegistry } from 'react-native'
 import 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'react-native-url-polyfill/auto'
-import { Provider as ReduxProvider } from 'react-redux'
-import { PersistGate } from 'redux-persist/integration/react'
 import { name as appName } from './app.json'
 import App from './src/App'
 import { GlobalError } from './src/components/GlobalError'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
+import { importLegacyState } from './src/storage/importLegacyState'
 import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
-import { persistor } from './src/store/persistence'
-import store from './src/store/store'
 import { darkThemeColors, theme } from './src/theme/theme'
 import './src/utils/i18n'
 
@@ -62,6 +59,18 @@ function fallbackRender(props) {
   )
 }
 
+// Renders nothing until the first-launch import has filled the stores
+// eslint-disable-next-line react/prop-types
+const LegacyImportGate = ({ children }) => {
+  const [imported, setImported] = useState(false)
+  useEffect(() => {
+    importLegacyState()
+      .catch((e) => console.error('Legacy state import failed', e))
+      .finally(() => setImported(true))
+  }, [])
+  return imported ? children : null
+}
+
 const render = () => {
   return (
     <ThemeProvider
@@ -70,25 +79,18 @@ const render = () => {
         colors: darkThemeColors,
       }}
     >
-      <ErrorBoundary
-        fallbackRender={fallbackRender}
-        onReset={async () => {
-          await persistor.purge()
-        }}
-      >
-        <ReduxProvider store={store}>
-          <PersistGate loading={null} persistor={persistor}>
-            <LanguageProvider>
-              <AppStorageProvider>
-                <AccountStorageProvider>
-                  <NotificationStorageProvider>
-                    <App />
-                  </NotificationStorageProvider>
-                </AccountStorageProvider>
-              </AppStorageProvider>
-            </LanguageProvider>
-          </PersistGate>
-        </ReduxProvider>
+      <ErrorBoundary fallbackRender={fallbackRender}>
+        <LegacyImportGate>
+          <LanguageProvider>
+            <AppStorageProvider>
+              <AccountStorageProvider>
+                <NotificationStorageProvider>
+                  <App />
+                </NotificationStorageProvider>
+              </AccountStorageProvider>
+            </AppStorageProvider>
+          </LanguageProvider>
+        </LegacyImportGate>
       </ErrorBoundary>
     </ThemeProvider>
   )

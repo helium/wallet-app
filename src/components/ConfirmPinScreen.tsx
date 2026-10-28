@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
-import { useAsync } from 'react-async-hook'
 import * as LocalAuthentication from 'expo-local-authentication'
 import ConfirmPinView from './ConfirmPinView'
 import {
@@ -43,7 +42,7 @@ const ConfirmPinScreen = () => {
     }
   }, [params.action, t])
 
-  useAsync(async () => {
+  useEffect(() => {
     const localAuth = async () => {
       const hasHardware = await LocalAuthentication.hasHardwareAsync()
       const isEnrolled = await LocalAuthentication.isEnrolledAsync()
@@ -53,7 +52,7 @@ const ConfirmPinScreen = () => {
       if (success) await pinSuccess()
     }
 
-    await localAuth()
+    localAuth().catch((e) => console.error(e))
   }, [pinSuccess])
 
   if (!pin || !pin.value) return null

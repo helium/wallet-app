@@ -2,11 +2,10 @@ import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { usePublicKey } from '@hooks/usePublicKey'
-import { useIsFetching } from '@tanstack/react-query'
+import { useIsFetching, useQuery } from '@tanstack/react-query'
 import { useBalance } from '@utils/Balance'
 import { TOKEN_ACCOUNTS_QUERY_KEY } from '@utils/balances'
-import { useEffect, useMemo } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
+import { useMemo } from 'react'
 import { classifyHoldings } from '../logic/assets'
 
 export type MigratableHotspot = {
@@ -30,18 +29,21 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
     usePublicKey(sourceWallet),
   )
 
-  const { execute, loading, result, error } = useAsyncCallback(async () => {
-    if (!sourceWallet) return [] as MigratableHotspot[]
-    const { hotspots } = await client.migration.getHotspots({
-      walletAddress: sourceWallet,
-    })
-    return hotspots as MigratableHotspot[]
+  const {
+    refetch,
+    isLoading: loading,
+    data: result,
+    error,
+  } = useQuery({
+    queryKey: ['migrationHotspots', sourceWallet],
+    queryFn: async () => {
+      const { hotspots } = await client.migration.getHotspots({
+        walletAddress: sourceWallet as string,
+      })
+      return hotspots as MigratableHotspot[]
+    },
+    enabled: !!sourceWallet,
   })
-
-  useEffect(() => {
-    if (sourceWallet) execute()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceWallet])
 
   // The migratable set is the wallet's own view of what it holds — no token
   // list from the server, so one fewer call that can fail.
@@ -68,7 +70,7 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
       solLoading ||
       tokenAccounts === undefined,
     error,
-    reload: execute,
+    reload: () => refetch(),
     hotspots: result ?? NO_HOTSPOTS,
     tokens: migratableTokens,
     leftBehindMints,

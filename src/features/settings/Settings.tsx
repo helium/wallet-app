@@ -8,10 +8,10 @@ import useAlert from '@hooks/useAlert'
 import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
 import { Cluster } from '@solana/web3.js'
 import { useHitSlop, useSpacing } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
@@ -27,8 +27,8 @@ import {
   checkSecureAccount,
   getSecureAccount,
 } from '../../storage/secureStorage'
-import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
+import { queryClient } from '../../utils/queryClient'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
@@ -96,12 +96,16 @@ const Settings = () => {
     [],
   )
 
-  const { result: hasWords } = useAsync(async () => {
-    if (!currentAccount?.address) return false
+  const { data: hasWords } = useQuery({
+    queryKey: ['hasWords', currentAccount?.address],
+    queryFn: async () => {
+      if (!currentAccount?.address) return false
 
-    const secureAccount = await getSecureAccount(currentAccount.address)
-    return !!secureAccount?.mnemonic
-  }, [currentAccount?.address])
+      const secureAccount = await getSecureAccount(currentAccount.address)
+      return !!secureAccount?.mnemonic
+    },
+    retry: false,
+  })
 
   const handleIntervalSelected = useCallback(
     async (value: string | number) => {
@@ -398,7 +402,7 @@ const Settings = () => {
                 text: t('generic.clear'),
                 style: 'destructive',
                 onPress: async () => {
-                  await persistor.purge()
+                  queryClient.clear()
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-ignore
                   Object.keys(cache?.genericCache.cache).forEach((key) => {

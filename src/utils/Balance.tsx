@@ -20,7 +20,6 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import usePrevious from '../hooks/usePrevious'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
@@ -218,7 +217,8 @@ const useBalanceHook = () => {
   )
 
   const { language } = useLanguage()
-  const { result: tokenInfo } = useAsync(async () => {
+  // Memoized: the effect below keys on its identity
+  const tokenInfo = useMemo(() => {
     const atas = tokens?.atas.filter(
       (ata) => !!ata.tokenAccount,
     ) as Required<TokenAccount>[]
@@ -263,6 +263,7 @@ const useBalanceHook = () => {
       formattedSolValue,
       formattedTotal,
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     tokens,
     cluster,
@@ -273,7 +274,7 @@ const useBalanceHook = () => {
     tokenPrices,
   ])
 
-  // The useAsync does not support stale-while-revalidate, so when
+  // The old useAsync did not support stale-while-revalidate, so when
   // it re-renders, the previous result value clears. We're storing
   // the value in `balanceInfo`. We keep the previous value when
   // cluster and solanaAddress stay the same until a new value

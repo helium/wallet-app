@@ -2,7 +2,6 @@ import React, { useCallback, memo, useState, useMemo, useEffect } from 'react'
 import { ActivityIndicator, Image, SectionList } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { useAsync } from 'react-async-hook'
 import Ledger from '@assets/images/ledger.svg'
 import ArrowRight from '@assets/images/arrowRight.svg'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -257,15 +256,19 @@ const DeviceShow = () => {
     [existingLedgerAccounts, isScanning, ledgerAccounts, newLedgerAccounts, t],
   )
 
-  useAsync(async () => {
-    try {
-      await updateLedgerAccounts(ledgerDevice)
-    } catch (error) {
-      // in this case, user is likely not on Helium app
+  useEffect(() => {
+    const run = async () => {
+      try {
+        await updateLedgerAccounts(ledgerDevice)
+      } catch (error) {
+        // in this case, user is likely not on Helium app
 
-      console.error(error)
-      navigation.navigate('DeviceScan', { error: error as Error })
+        console.error(error)
+        navigation.navigate('DeviceScan', { error: error as Error })
+      }
     }
+    run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

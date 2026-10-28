@@ -5,9 +5,9 @@ import {
 } from '@metaplex-foundation/mpl-token-metadata'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
+import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useAccount } from '@helium/account-fetch-cache-hooks'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,9 +93,13 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
     METADATA_PARSER,
   )
 
-  const { result: json, loading: jsonLoading } = useAsync(getMetadata, [
-    metadataAcc?.data.uri.trim(),
-  ])
+  const uri = metadataAcc?.data.uri.trim()
+  const { data, isLoading: jsonLoading } = useQuery({
+    queryKey: ['metaplexJson', uri],
+    queryFn: async () => (await getMetadata(uri)) ?? null,
+    enabled: !!uri,
+  })
+  const json = data ?? undefined
 
   if (mint?.equals(NATIVE_MINT)) {
     return {

@@ -8,8 +8,8 @@ import TextInput from '@components/TextInput'
 import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import { useColors, useSpacing } from '@theme/themeHooks'
+import { useMutation } from '@tanstack/react-query'
 import React, { memo, useCallback, useMemo, useState } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -44,56 +44,58 @@ const KeystoneAccountAssignScreen = () => {
     [accounts],
   )
   const accountStorage = useAccountStorage()
-  const { execute: handlePress, loading } = useAsyncCallback(async () => {
-    const getName = (index: number): string => {
-      const name = `${alias} ${index + 1}`
-      if (!existingNames?.has(name)) {
-        return name
+  const { mutate: handlePress, isPending: loading } = useMutation({
+    mutationFn: async () => {
+      const getName = (index: number): string => {
+        const name = `${alias} ${index + 1}`
+        if (!existingNames?.has(name)) {
+          return name
+        }
+        return getName(index + 1)
       }
-      return getName(index + 1)
-    }
 
-    // convert solana public key to helium address
-    const solanaPublicKeyToHeliumAddress = (publicKey: string): string => {
-      const pkey = new PublicKey(hex.decode(publicKey))
-      const heliumAddr = new Address(0, 0, ED25519_KEY_TYPE, pkey.toBytes())
-      const heliumAddress = heliumAddr.b58
-      return heliumAddress
-    }
-    const accountBulk = keystoneOnboardingData.accounts.map(
-      (account, index) => ({
-        alias: getName(index),
-        address: solanaPublicKeyToHeliumAddress(
-          keystoneOnboardingData.accounts[index].publicKey,
-        ),
-        solanaAddress: base58.encode(
-          hex.decode(keystoneOnboardingData.accounts[index].publicKey),
-        ),
-        derivationPath: account.path,
-        keystoneDevice: {
-          masterFingerprint: account.masterFingerprint,
-          device: account.device,
-        },
-        version: 'v1' as CSAccountVersion,
-      }),
-    )
-    accountStorage.upsertAccounts(accountBulk)
+      // convert solana public key to helium address
+      const solanaPublicKeyToHeliumAddress = (publicKey: string): string => {
+        const pkey = new PublicKey(hex.decode(publicKey))
+        const heliumAddr = new Address(0, 0, ED25519_KEY_TYPE, pkey.toBytes())
+        const heliumAddress = heliumAddr.b58
+        return heliumAddress
+      }
+      const accountBulk = keystoneOnboardingData.accounts.map(
+        (account, index) => ({
+          alias: getName(index),
+          address: solanaPublicKeyToHeliumAddress(
+            keystoneOnboardingData.accounts[index].publicKey,
+          ),
+          solanaAddress: base58.encode(
+            hex.decode(keystoneOnboardingData.accounts[index].publicKey),
+          ),
+          derivationPath: account.path,
+          keystoneDevice: {
+            masterFingerprint: account.masterFingerprint,
+            device: account.device,
+          },
+          version: 'v1' as CSAccountVersion,
+        }),
+      )
+      accountStorage.upsertAccounts(accountBulk)
 
-    if (hasAccounts) {
-      rootNav.reset({
-        index: 0,
-        routes: [{ name: 'TabBarNavigator' }],
-      })
-    } else {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      onboardingNav.replace('CreateAccount', {
-        screen: 'AccountCreatePinScreen',
-        params: {
-          pinReset: true,
-        },
-      })
-    }
+      if (hasAccounts) {
+        rootNav.reset({
+          index: 0,
+          routes: [{ name: 'TabBarNavigator' }],
+        })
+      } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        onboardingNav.replace('CreateAccount', {
+          screen: 'AccountCreatePinScreen',
+          params: {
+            pinReset: true,
+          },
+        })
+      }
+    },
   })
 
   const onCheckboxToggled = useCallback(
@@ -200,7 +202,7 @@ const KeystoneAccountAssignScreen = () => {
             <CircleLoader />
           ) : (
             <FabButton
-              onPress={handlePress}
+              onPress={() => handlePress()}
               icon="arrowRight"
               iconColor="primary"
               disabled={!alias || existingNames?.has(alias)}

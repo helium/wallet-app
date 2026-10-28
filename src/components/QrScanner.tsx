@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Linking, Platform, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
 import Box from './Box'
@@ -22,24 +21,29 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
     })
   }, [])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (hasPermission !== false) return
 
-    const decision = await showOKCancelAlert({
-      title: t('qrScanner.deniedAlert.title'),
-      message: t('qrScanner.deniedAlert.message'),
-      ok: t('qrScanner.deniedAlert.ok'),
-    })
+    const askToOpenSettings = async () => {
+      const decision = await showOKCancelAlert({
+        title: t('qrScanner.deniedAlert.title'),
+        message: t('qrScanner.deniedAlert.message'),
+        ok: t('qrScanner.deniedAlert.ok'),
+      })
 
-    if (decision) {
-      if (Platform.OS === 'ios') {
-        Linking.openURL('app-settings:')
-      } else {
-        Linking.openSettings()
+      if (decision) {
+        if (Platform.OS === 'ios') {
+          Linking.openURL('app-settings:')
+        } else {
+          Linking.openSettings()
+        }
       }
+
+      navigation.goBack()
     }
 
-    navigation.goBack()
+    askToOpenSettings().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasPermission, navigation, showOKCancelAlert])
 
   const handleBarCodeScanned = useCallback(

@@ -59,7 +59,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutAnimation,
@@ -233,29 +232,33 @@ const SwapScreen = () => {
     setNetworkError(undefined)
   }, [])
 
-  useAsync(async () => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !anchorProvider ||
-      !connection ||
-      !solBalance
-    )
-      return
+  useEffect(() => {
+    const run = async () => {
+      if (
+        !currentAccount?.solanaAddress ||
+        !anchorProvider ||
+        !connection ||
+        !solBalance
+      )
+        return
 
-    let fee = new BN(TXN_FEE_IN_LAMPORTS)
+      let fee = new BN(TXN_FEE_IN_LAMPORTS)
 
-    const ataFee = await getAtaAccountCreationFee({
-      solanaAddress: currentAccount.solanaAddress,
-      connection,
-      mint: outputMint,
-    })
-    fee = fee.add(ataFee)
+      const ataFee = await getAtaAccountCreationFee({
+        solanaAddress: currentAccount.solanaAddress,
+        connection,
+        mint: outputMint,
+      })
+      fee = fee.add(ataFee)
 
-    setSolFee(fee)
+      setSolFee(fee)
 
-    setHasInsufficientBalance(
-      fee.gt(solBalance || new BN(0)) || solBalance?.lt(new BN(5000)),
-    )
+      setHasInsufficientBalance(
+        fee.gt(solBalance || new BN(0)) || solBalance?.lt(new BN(5000)),
+      )
+    }
+    run().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     anchorProvider,
     currentAccount?.solanaAddress,
@@ -268,8 +271,9 @@ const SwapScreen = () => {
     navigation.goBack()
   }, [navigation])
 
-  useAsync(async () => {
+  useEffect(() => {
     refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

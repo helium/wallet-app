@@ -12,9 +12,9 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
+import { useMutation } from '@tanstack/react-query'
 import * as bip39 from 'bip39'
 import React, { memo, useCallback, useEffect, useRef } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
 import ConnectedWallets, {
@@ -56,65 +56,67 @@ const RootNavigator = () => {
     navigation.navigate('AddNewAccountNavigator')
   }, [navigation])
 
-  const { execute: handleAddSub } = useAsyncCallback(async (acc: CSAccount) => {
-    try {
-      if (!currentAccount || !acc?.derivationPath) {
-        throw new Error('Missing seed or derivation path')
-      }
-      const storage = await getSecureAccount(currentAccount.address)
-      const seed = bip39.mnemonicToSeedSync(
-        storage?.mnemonic?.join(' ') || '',
-        '',
-      )
-      const currentPath = acc.derivationPath
-      const takenAddresses = new Set(
-        Object.values(accounts || {}).map((a) => a.solanaAddress),
-      )
-      let currentAccountNum =
-        currentPath === HELIUM_DERIVATION
-          ? 0
-          : Number(currentPath.split('/')[3].replace("'", '')) + 1
-      let derivationPath = solanaDerivation(currentAccountNum, 0)
-      let keypair = await keypairFromSeed(seed, derivationPath)
-      while (
-        currentAccountNum < 100 &&
-        (!keypair || takenAddresses.has(keypair.publicKey.toBase58()))
-      ) {
-        currentAccountNum += 1
-        derivationPath = solanaDerivation(currentAccountNum, 0)
-        keypair = await keypairFromSeed(seed, derivationPath)
-      }
-      if (currentAccountNum >= 100) {
-        throw new Error('More than 100 accounts are not supported')
-      }
-      if (keypair) {
-        const words = (await getSecureAccount(acc.address))?.mnemonic
-        setOnboardingData({
-          ...onboardingData,
-          words,
-          paths: [
-            {
-              derivationPath,
-              keypair,
-            },
-          ],
-        })
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        navigation.navigate('TabBarNavigator', {
-          screen: 'Home',
-          params: {
-            screen: 'AccountAssignScreen',
+  const { mutate: handleAddSub } = useMutation({
+    mutationFn: async (acc: CSAccount) => {
+      try {
+        if (!currentAccount || !acc?.derivationPath) {
+          throw new Error('Missing seed or derivation path')
+        }
+        const storage = await getSecureAccount(currentAccount.address)
+        const seed = bip39.mnemonicToSeedSync(
+          storage?.mnemonic?.join(' ') || '',
+          '',
+        )
+        const currentPath = acc.derivationPath
+        const takenAddresses = new Set(
+          Object.values(accounts || {}).map((a) => a.solanaAddress),
+        )
+        let currentAccountNum =
+          currentPath === HELIUM_DERIVATION
+            ? 0
+            : Number(currentPath.split('/')[3].replace("'", '')) + 1
+        let derivationPath = solanaDerivation(currentAccountNum, 0)
+        let keypair = await keypairFromSeed(seed, derivationPath)
+        while (
+          currentAccountNum < 100 &&
+          (!keypair || takenAddresses.has(keypair.publicKey.toBase58()))
+        ) {
+          currentAccountNum += 1
+          derivationPath = solanaDerivation(currentAccountNum, 0)
+          keypair = await keypairFromSeed(seed, derivationPath)
+        }
+        if (currentAccountNum >= 100) {
+          throw new Error('More than 100 accounts are not supported')
+        }
+        if (keypair) {
+          const words = (await getSecureAccount(acc.address))?.mnemonic
+          setOnboardingData({
+            ...onboardingData,
+            words,
+            paths: [
+              {
+                derivationPath,
+                keypair,
+              },
+            ],
+          })
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          navigation.navigate('TabBarNavigator', {
+            screen: 'Home',
             params: {
-              words,
+              screen: 'AccountAssignScreen',
+              params: {
+                words,
+              },
             },
-          },
-        })
-        connectedWalletsRef.current?.hide()
+          })
+          connectedWalletsRef.current?.hide()
+        }
+      } catch (e: any) {
+        Toast.show(e.message || e.toString())
       }
-    } catch (e: any) {
-      Toast.show(e.message || e.toString())
-    }
+    },
   })
 
   const showConnectedWallets = useAppStore(

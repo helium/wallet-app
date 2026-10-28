@@ -14,8 +14,8 @@ import { CSAccountVersion } from '@storage/cloudStorage'
 import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { createHash } from 'crypto'
+import { useMutation } from '@tanstack/react-query'
 import React, { memo, useCallback, useMemo, useState } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -130,49 +130,55 @@ const AccountAssignScreen = () => {
     )
   }
 
-  const { execute: handlePress, loading } = useAsyncCallback(async () => {
-    try {
-      await storeAllSecureAccounts()
-      const mnemonicHash = generateMnemonicHash(words)
-      const newAccounts = await createNewAccounts(allPaths, alias, mnemonicHash)
+  const { mutate: handlePress, isPending: loading } = useMutation({
+    mutationFn: async () => {
+      try {
+        await storeAllSecureAccounts()
+        const mnemonicHash = generateMnemonicHash(words)
+        const newAccounts = await createNewAccounts(
+          allPaths,
+          alias,
+          mnemonicHash,
+        )
 
-      // This only happens when the user proceeds too quickly through this screen.
-      if (newAccounts.length === 0) {
-        return
-      }
+        // This only happens when the user proceeds too quickly through this screen.
+        if (newAccounts.length === 0) {
+          return
+        }
 
-      const highestBalanceAcc = newAccounts.reduce(
-        (prev, current) =>
-          (current.balance ?? 0) > (prev.balance ?? 0) ? current : prev,
-        newAccounts[0],
-      )
+        const highestBalanceAcc = newAccounts.reduce(
+          (prev, current) =>
+            (current.balance ?? 0) > (prev.balance ?? 0) ? current : prev,
+          newAccounts[0],
+        )
 
-      await upsertAccounts(newAccounts)
+        await upsertAccounts(newAccounts)
 
-      if (setAsDefault) {
-        await updateDefaultAccountAddress(highestBalanceAcc.address)
-      }
+        if (setAsDefault) {
+          await updateDefaultAccountAddress(highestBalanceAcc.address)
+        }
 
-      if (hasAccounts) {
-        rootNav.reset({
-          index: 0,
-          routes: [{ name: 'TabBarNavigator' }],
+        if (hasAccounts) {
+          rootNav.reset({
+            index: 0,
+            routes: [{ name: 'TabBarNavigator' }],
+          })
+          reset()
+        } else {
+          onboardingNav.navigate('AccountCreatePinScreen', {
+            pinReset: true,
+          })
+        }
+
+        setCurrentAccount({
+          ...highestBalanceAcc,
+          netType: accountNetType(highestBalanceAcc.address),
         })
-        reset()
-      } else {
-        onboardingNav.navigate('AccountCreatePinScreen', {
-          pinReset: true,
-        })
+      } catch (e: any) {
+        setError(e.toString())
+        console.error(e)
       }
-
-      setCurrentAccount({
-        ...highestBalanceAcc,
-        netType: accountNetType(highestBalanceAcc.address),
-      })
-    } catch (e: any) {
-      setError(e.toString())
-      console.error(e)
-    }
+    },
   })
 
   const onCheckboxToggled = useCallback(
@@ -281,7 +287,7 @@ const AccountAssignScreen = () => {
           ) : (
             <FabButton
               testID="AccountAssign.Continue"
-              onPress={handlePress}
+              onPress={() => handlePress()}
               icon="arrowRight"
               iconColor="primary"
               disabled={!alias || existingNames?.has(alias)}

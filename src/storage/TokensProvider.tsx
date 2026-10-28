@@ -4,9 +4,9 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import { DEFAULT_TOKENS } from '../features/account/logic/visibleTokens'
 import * as Logger from '../utils/logger'
 import { useAccountStorage } from './AccountStorageProvider'
@@ -24,21 +24,24 @@ const useVisibleTokensHook = () => {
     [currentAccount?.address || '']: DEFAULT_TOKENS,
   })
 
-  useAsync(async () => {
-    try {
-      const response = await restoreVisibleTokens()
+  useEffect(() => {
+    const restore = async () => {
+      try {
+        const response = await restoreVisibleTokens()
 
-      if (response) {
-        setVisibleTokens(
-          Object.entries(response).reduce((acc, [key, s]) => {
-            acc[key] = new Set([...s, ...DEFAULT_TOKENS])
-            return acc
-          }, {} as Record<string, Set<string>>),
-        )
+        if (response) {
+          setVisibleTokens(
+            Object.entries(response).reduce((acc, [key, s]) => {
+              acc[key] = new Set([...s, ...DEFAULT_TOKENS])
+              return acc
+            }, {} as Record<string, Set<string>>),
+          )
+        }
+      } catch {
+        Logger.error('Restore visible tokens failed')
       }
-    } catch {
-      Logger.error('Restore visible tokens failed')
     }
+    restore()
   }, [])
 
   const handleUpdateTokens = useCallback(

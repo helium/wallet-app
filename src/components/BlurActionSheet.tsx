@@ -5,8 +5,14 @@ import {
 } from '@gorhom/bottom-sheet'
 import { Portal } from '@gorhom/portal'
 import { useOpacity } from '@theme/themeHooks'
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { wh } from '../utils/layout'
@@ -31,11 +37,11 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
     }
   }, [onClose])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (open) {
-      await bottomSheetModalRef.current?.present()
+      bottomSheetModalRef.current?.present()
     } else {
-      await bottomSheetModalRef.current?.dismiss()
+      bottomSheetModalRef.current?.dismiss()
     }
   }, [open])
 

@@ -1,9 +1,8 @@
-import React, { memo, useCallback, useMemo, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import WalletUpdate from '@assets/images/walletUpdateIcon.svg'
 import HeliumUpdate from '@assets/images/heliumUpdateIcon.svg'
 import { Carousel } from 'react-native-snap-carousel'
 import { StyleSheet } from 'react-native'
-import { useAsync } from 'react-async-hook'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -35,35 +34,40 @@ const AccountSlider = () => {
     return [...networkData, ...allAccounts]
   }, [currentAccount?.address, sortedAccounts])
 
-  useAsync(async () => {
-    if (openedNotification) {
-      // we came from a push notification tap
-      const additionalData = openedNotification.additionalData as {
-        resource?: string
-        id?: number
-      }
-      const resource = additionalData?.resource
-      if (
-        resource === WALLET_UPDATES_ITEM ||
-        resource === HELIUM_UPDATES_ITEM
-      ) {
-        // helium or wallet update
-        updateSelectedList(resource)
-      } else if (resource !== undefined) {
-        // account update, check hash against accounts
-        const index = (
-          await Promise.all(
-            sortedAccounts.map((a) => isValidAccountHash(a.address, resource)),
-          )
-        ).findIndex((result) => !!result)
-        const notifiedAccount = index > -1 ? sortedAccounts[index] : undefined
-        if (notifiedAccount && notifiedAccount.address) {
-          updateSelectedList(notifiedAccount.address)
+  useEffect(() => {
+    const selectNotified = async () => {
+      if (openedNotification) {
+        // we came from a push notification tap
+        const additionalData = openedNotification.additionalData as {
+          resource?: string
+          id?: number
         }
+        const resource = additionalData?.resource
+        if (
+          resource === WALLET_UPDATES_ITEM ||
+          resource === HELIUM_UPDATES_ITEM
+        ) {
+          // helium or wallet update
+          updateSelectedList(resource)
+        } else if (resource !== undefined) {
+          // account update, check hash against accounts
+          const index = (
+            await Promise.all(
+              sortedAccounts.map((a) =>
+                isValidAccountHash(a.address, resource),
+              ),
+            )
+          ).findIndex((result) => !!result)
+          const notifiedAccount = index > -1 ? sortedAccounts[index] : undefined
+          if (notifiedAccount && notifiedAccount.address) {
+            updateSelectedList(notifiedAccount.address)
+          }
+        }
+        // clear the opened push notification
+        setOpenedNotification(undefined)
       }
-      // clear the opened push notification
-      setOpenedNotification(undefined)
     }
+    selectNotified().catch((e) => console.error(e))
   }, [
     data,
     openedNotification,

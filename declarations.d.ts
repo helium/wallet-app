@@ -89,10 +89,3 @@ declare module '@robinbobin/react-native-google-drive-api-wrapper' {
     setRequestBody(requestBody: any): this
   }
 }
-
-// Missing from redux-persist's own types; persistStore reads it
-declare module 'redux-persist/es/types' {
-  interface PersistorOptions {
-    manualPersist?: boolean
-  }
-}

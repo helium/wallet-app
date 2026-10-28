@@ -13,8 +13,15 @@ import {
 import { getRegistrarKey } from '@helium/voter-stake-registry-sdk'
 import { useCurrentRoute } from '@hooks/useCurrentRoute'
 import { PublicKey } from '@solana/web3.js'
-import React, { FC, ReactNode, createContext, useContext, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, {
+  FC,
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+} from 'react'
+import { useQuery } from '@tanstack/react-query'
 import Config from 'react-native-config'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAppStore } from '../store/appStore'
@@ -71,44 +78,53 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const mint = useMemo(() => networksToMint[network], [network])
   const registrarKey = useMemo(() => mint && getRegistrarKey(mint), [mint])
   // Batch all governance data fetching to reduce RPC calls
-  const { loading: loadingGovernanceData, result: governanceData } =
-    useAsync(async () => {
-      if (!anchorProvider || !mint || !registrarKey) return undefined
+  const { isLoading: loadingGovernanceData, data: governanceDataOrNull } =
+    useQuery({
+      queryKey: [
+        'governanceData',
+        anchorProvider?.connection.rpcEndpoint,
+        mint?.toBase58(),
+      ],
+      enabled: !!anchorProvider && !!mint && !!registrarKey,
+      queryFn: async () => {
+        if (!anchorProvider || !mint || !registrarKey) return null
 
-      const { connection } = anchorProvider
-      const organizationKeys = [
-        organizationKey(networkToName.hnt)[0],
-        organizationKey(networkToName.mobile)[0],
-        organizationKey(networkToName.iot)[0],
-      ]
+        const { connection } = anchorProvider
+        const organizationKeys = [
+          organizationKey(networkToName.hnt)[0],
+          organizationKey(networkToName.mobile)[0],
+          organizationKey(networkToName.iot)[0],
+        ]
 
-      try {
-        // Batch all account fetches in parallel
-        const [
-          mintAccount,
-          registrarAccount,
-          subDaosResult,
-          ...organizationAccounts
-        ] = await Promise.all([
-          connection.getAccountInfo(mint),
-          connection.getAccountInfo(registrarKey),
-          getSubDaos(anchorProvider),
-          ...organizationKeys.map((key) => connection.getAccountInfo(key)),
-        ])
+        try {
+          // Batch all account fetches in parallel
+          const [
+            mintAccount,
+            registrarAccount,
+            subDaosResult,
+            ...organizationAccounts
+          ] = await Promise.all([
+            connection.getAccountInfo(mint),
+            connection.getAccountInfo(registrarKey),
+            getSubDaos(anchorProvider),
+            ...organizationKeys.map((key) => connection.getAccountInfo(key)),
+          ])
 
-        return {
-          mintAccount,
-          registrarAccount,
-          subDaos: subDaosResult,
-          hntOrgAccount: organizationAccounts[0],
-          mobileOrgAccount: organizationAccounts[1],
-          iotOrgAccount: organizationAccounts[2],
+          return {
+            mintAccount,
+            registrarAccount,
+            subDaos: subDaosResult,
+            hntOrgAccount: organizationAccounts[0],
+            mobileOrgAccount: organizationAccounts[1],
+            iotOrgAccount: organizationAccounts[2],
+          }
+        } catch (error) {
+          console.error('[GovernanceProvider] Batch fetch error:', error)
+          return null
         }
-      } catch (error) {
-        console.error('[GovernanceProvider] Batch fetch error:', error)
-        return undefined
-      }
-    }, [anchorProvider, mint, registrarKey])
+      },
+    })
+  const governanceData = governanceDataOrNull ?? undefined
 
   // Fallback to individual hooks for parsing (these won't make additional RPC calls if data exists)
   const { loading: loadingMint, info: mintAcc } = useMint(
@@ -123,11 +139,14 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     [networkName],
   )
 
-  const { loading: loadingSubdaos, result: subDaos } = useAsync(async () => {
-    if (governanceData?.subDaos) return governanceData.subDaos
-    if (!anchorProvider || governanceData !== undefined) return undefined
-    return getSubDaos(anchorProvider)
-  }, [anchorProvider, governanceData])
+  // Fallback when the batch fetch has no result
+  const { isLoading: loadingSubdaos, data: fallbackSubDaos } = useQuery({
+    queryKey: ['governanceSubDaos', anchorProvider?.connection.rpcEndpoint],
+    enabled: !!anchorProvider && governanceData === undefined,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    queryFn: () => getSubDaos(anchorProvider!),
+  })
+  const subDaos = governanceData?.subDaos ?? fallbackSubDaos
 
   const { loading: loadingHntOrg, info: hntOrg } = useOrganization(
     !governanceData ? organizationKey(networkToName.hnt)[0] : undefined,
@@ -174,7 +193,7 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   // If we have no record of proposals count by mint, set it to value from provider
   // In order to prevent spamming the Ui with false positives of past proposals
   // being unseen, new proposals should act properly
-  useAsync(async () => {
+  useEffect(() => {
     if (
       !loading &&
       hntOrg &&
@@ -184,11 +203,12 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       currentAccount &&
       currentAccount.proposalCountByMint === undefined
     ) {
-      await upsertAccount({
+      upsertAccount({
         ...currentAccount,
         proposalCountByMint,
-      })
+      }).catch((e) => console.error(e))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading])
 
   const hasUnseenProposals = useMemo(() => {

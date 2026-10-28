@@ -15,8 +15,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Theme } from '@theme/theme'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
-import React, { memo, ReactNode, useCallback, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Config from 'react-native-config'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -97,38 +96,57 @@ const SolanaMigration = ({
     [setProgress, setTotal],
   )
 
-  const { loading, error } = useAsync(async () => {
-    // if current account is keystone account, then we don't need to migrate
-    if (
-      !currentAccount?.solanaAddress ||
-      currentAccount?.keystoneDevice ||
-      !anchorProvider ||
-      !cluster ||
-      !client ||
-      (doneSolanaMigration[cluster]?.includes(currentAccount?.solanaAddress) &&
-        !manual)
-    )
-      return
-    // eslint-disable-next-line no-console
-    try {
-      await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
+  // Runs the migration, so it is an effect with its own loading and error
+  // state rather than a cached query
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error>()
+  useEffect(() => {
+    const migrate = async () => {
+      // if current account is keystone account, then we don't need to migrate
+      if (
+        !currentAccount?.solanaAddress ||
+        currentAccount?.keystoneDevice ||
+        !anchorProvider ||
+        !cluster ||
+        !client ||
+        (doneSolanaMigration[cluster]?.includes(
+          currentAccount?.solanaAddress,
+        ) &&
+          !manual)
+      )
+        return
+      // eslint-disable-next-line no-console
+      try {
+        await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
 
-      if (!manual) {
-        await updateDoneSolanaMigration({
+        if (!manual) {
+          await updateDoneSolanaMigration({
+            cluster,
+            address: currentAccount?.solanaAddress,
+          })
+        }
+
+        refreshHotspots(queryClient, {
           cluster,
-          address: currentAccount?.solanaAddress,
+          solanaAddress: currentAccount.solanaAddress,
+          anchorProvider,
         })
+      } catch (e) {
+        Logger.error(e)
+        setMigrationError((e as Error).message)
       }
-
-      refreshHotspots(queryClient, {
-        cluster,
-        solanaAddress: currentAccount.solanaAddress,
-        anchorProvider,
-      })
-    } catch (e) {
-      Logger.error(e)
-      setMigrationError((e as Error).message)
     }
+    // Ignore a run that a newer one replaced, as useAsync did
+    let current = true
+    setLoading(true)
+    setError(undefined)
+    migrate()
+      .catch((e) => current && setError(e))
+      .finally(() => current && setLoading(false))
+    return () => {
+      current = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     anchorProvider,
     currentAccount?.solanaAddress,

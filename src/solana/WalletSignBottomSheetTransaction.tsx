@@ -11,14 +11,17 @@ import { SusResult, Warning } from '@helium/sus'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { getMetadata } from '@hooks/useMetaplexMetadata'
 import React, { memo, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Image, Linking } from 'react-native'
 import { CollapsibleWritableAccountPreview } from './CollapsibleWritableAccountPreview'
 import { WarningBox } from './WarningBox'
 
 const AssetImage = ({ uri }: { uri: string }) => {
-  const { result: metadata } = useAsync(() => getMetadata(uri), [uri])
+  const { data: metadata } = useQuery({
+    queryKey: ['metadataJson', uri],
+    queryFn: async () => (await getMetadata(uri)) ?? null,
+  })
   return (
     <Image
       style={{ height: 24, width: 24 }}

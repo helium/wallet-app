@@ -11,6 +11,7 @@ import {
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useSubDao } from '@hooks/useSubDao'
+import { useQuery } from '@tanstack/react-query'
 import { useBalance } from '@utils/Balance'
 import { dcWithHnt } from '@utils/dcWithHnt'
 import {
@@ -20,7 +21,6 @@ import {
 } from '@utils/constants'
 import BN from 'bn.js'
 import { useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useIotInfo } from './useIotInfo'
 import { useRewardableEntityConfig } from './useRewardableEntityConfig'
 
@@ -56,14 +56,17 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
 } {
   const { getOnboardingRecord } = useOnboarding()
   const {
-    result: onboardingRecord,
+    data: onboardingRecord,
     error: fetchRecordError,
-    loading: loadingMaker,
-  } = useAsync(async () => {
-    if (hotspotAddress) {
+    isLoading: loadingMaker,
+  } = useQuery({
+    queryKey: ['onboardingRecord', hotspotAddress],
+    queryFn: async () => {
+      if (!hotspotAddress) return null
       return getOnboardingRecord(hotspotAddress)
-    }
-  }, [getOnboardingRecord, hotspotAddress])
+    },
+    enabled: !!hotspotAddress,
+  })
   const maker = onboardingRecord?.maker
   const makerSolAddr = useMemo(
     () => maker && heliumAddressToSolAddress(maker.address),
@@ -167,7 +170,7 @@ export function useOnboardingBalnces(hotspotAddress: string | undefined): {
     loadingOnboardingDcRequirements,
     locationAssertDcRequirements,
     loadingLocationAssertDcRequirements,
-    error: fetchRecordError,
+    error: fetchRecordError ?? undefined,
   }
 }
 

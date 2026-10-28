@@ -23,7 +23,7 @@ import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import { BN } from 'bn.js'
 import React, { useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useQuery } from '@tanstack/react-query'
 import { WritableAccountPreview } from './WritableAccountPreview'
 
 const TokenChange = ({
@@ -110,10 +110,11 @@ export const CollapsibleWritableAccountPreview = ({
 }) => {
   const [expanded, setExpanded] = useState(false)
   const Chevron = expanded ? ChevronUp : ChevronDown
-  const { result: metadata } = useAsync(
-    async (uri: string | undefined) => getMetadata(uri),
-    [writableAccount?.metadata?.uri],
-  )
+  const { data: metadata } = useQuery({
+    queryKey: ['metadataJson', writableAccount?.metadata?.uri],
+    queryFn: async () =>
+      (await getMetadata(writableAccount?.metadata?.uri)) ?? null,
+  })
   const { json: solMetadata } = useMetaplexMetadata(NATIVE_MINT)
   const colors = useColors()
   const isNative = writableAccount.name === 'Native SOL Account'

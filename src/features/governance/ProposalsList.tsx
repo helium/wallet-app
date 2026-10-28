@@ -11,8 +11,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { Theme } from '@theme/theme'
 import { getDerivedProposalState } from '@utils/governanceUtils'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ProposalCard } from './ProposalCard'
 import {
@@ -64,41 +63,45 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   // If we have no record of proposals seen by mint, set it to all proposals
   // In order to prevent spamming the Ui with false positives of past proposals
   // being unseen, new proposals should act properly
-  useAsync(async () => {
-    if (currentAccount && proposalsWithDups) {
-      const shouldUpdateIds =
-        currentAccount.proposalIdsSeenByMint === undefined ||
-        currentAccount.proposalIdsSeenByMint[mint.toBase58()] === undefined
+  useEffect(() => {
+    const run = async () => {
+      if (currentAccount && proposalsWithDups) {
+        const shouldUpdateIds =
+          currentAccount.proposalIdsSeenByMint === undefined ||
+          currentAccount.proposalIdsSeenByMint[mint.toBase58()] === undefined
 
-      const shouldUpdateCount =
-        currentAccount.proposalCountByMint === undefined ||
-        currentAccount.proposalCountByMint[mint.toBase58()] === undefined ||
-        currentAccount.proposalCountByMint[mint.toBase58()] !==
-          proposalsWithDups.length
+        const shouldUpdateCount =
+          currentAccount.proposalCountByMint === undefined ||
+          currentAccount.proposalCountByMint[mint.toBase58()] === undefined ||
+          currentAccount.proposalCountByMint[mint.toBase58()] !==
+            proposalsWithDups.length
 
-      if (shouldUpdateIds || shouldUpdateCount) {
-        await upsertAccount({
-          ...currentAccount,
-          ...(shouldUpdateCount && {
-            proposalCountByMint: {
-              ...currentAccount?.proposalCountByMint,
-              [mint.toBase58()]: proposalsWithDups.length,
-            },
-          }),
-          ...(shouldUpdateIds && {
-            proposalIdsSeenByMint: {
-              ...currentAccount?.proposalIdsSeenByMint,
-              [mint.toBase58()]: [
-                ...proposalsWithDups.reduce((acc, p) => {
-                  acc.add(p.publicKey.toBase58())
-                  return acc
-                }, new Set<string>()),
-              ],
-            },
-          }),
-        })
+        if (shouldUpdateIds || shouldUpdateCount) {
+          await upsertAccount({
+            ...currentAccount,
+            ...(shouldUpdateCount && {
+              proposalCountByMint: {
+                ...currentAccount?.proposalCountByMint,
+                [mint.toBase58()]: proposalsWithDups.length,
+              },
+            }),
+            ...(shouldUpdateIds && {
+              proposalIdsSeenByMint: {
+                ...currentAccount?.proposalIdsSeenByMint,
+                [mint.toBase58()]: [
+                  ...proposalsWithDups.reduce((acc, p) => {
+                    acc.add(p.publicKey.toBase58())
+                    return acc
+                  }, new Set<string>()),
+                ],
+              },
+            }),
+          })
+        }
       }
     }
+    run().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [proposalsWithDups])
 
   const handleFilterPress = (f: ProposalFilter) => () => {

@@ -1,6 +1,4 @@
 import type AsyncStorageStatic from '@react-native-async-storage/async-storage'
-import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { persistReducer, persistStore } from 'redux-persist'
 import type { CSAccount, CSAccounts, CSToken } from '../cloudStorage'
 
 const mockPlatform = { OS: 'ios' }
@@ -64,33 +62,21 @@ const browser = {
   },
 }
 
-// What the old Redux store persisted, written by redux-persist itself with the
-// old root config, so the fixture has the real persist:root format.
+// What the old Redux store persisted. redux-persist 6 stored the root config as
+// one JSON object whose values are each slice's own JSON string.
 const writeLegacyReduxState = async (
   AsyncStorage: typeof AsyncStorageStatic,
   state: { app: object; auth: object; browser: object },
 ) => {
-  const reducer = persistReducer(
-    // timeout 0 turns off the rehydrate timer, which keeps Jest open
-    { key: 'root', storage: AsyncStorage, version: 1, timeout: 0 },
-    combineReducers({
-      app: () => state.app,
-      auth: () => state.auth,
-      browser: () => state.browser,
+  await AsyncStorage.setItem(
+    'persist:root',
+    JSON.stringify({
+      app: JSON.stringify(state.app),
+      auth: JSON.stringify(state.auth),
+      browser: JSON.stringify(state.browser),
+      _persist: JSON.stringify({ version: 1, rehydrated: true }),
     }),
   )
-  const store = configureStore({
-    reducer,
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({ serializableCheck: false }),
-  })
-  const persistor = persistStore(store)
-  await new Promise<void>((resolve) => {
-    const check = () => persistor.getState().bootstrapped && resolve()
-    persistor.subscribe(check)
-    check()
-  })
-  await persistor.flush()
   await AsyncStorage.multiSet([
     ['persist:solana', '{}'],
     ['persist:balances', '{}'],

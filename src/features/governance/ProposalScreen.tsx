@@ -33,8 +33,8 @@ import { humanReadable } from '@utils/formatting'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useQuery } from '@tanstack/react-query'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -98,33 +98,41 @@ export const ProposalScreen = () => {
     }
   }, [currentAccount, mint, proposalKey])
 
-  useAsync(async () => {
-    if (currentAccount?.address && !hasSeen && proposal && resolution) {
-      const { proposalIdsSeenByMint = {} } = currentAccount
-      await upsertAccount({
-        ...currentAccount,
-        proposalIdsSeenByMint: {
-          ...proposalIdsSeenByMint,
-          [mint.toBase58()]: [
-            ...(proposalIdsSeenByMint[mint.toBase58()] || []),
-            proposalKey.toBase58(),
-          ],
-        },
-      })
+  useEffect(() => {
+    const run = async () => {
+      if (currentAccount?.address && !hasSeen && proposal && resolution) {
+        const { proposalIdsSeenByMint = {} } = currentAccount
+        await upsertAccount({
+          ...currentAccount,
+          proposalIdsSeenByMint: {
+            ...proposalIdsSeenByMint,
+            [mint.toBase58()]: [
+              ...(proposalIdsSeenByMint[mint.toBase58()] || []),
+              proposalKey.toBase58(),
+            ],
+          },
+        })
+      }
     }
+    run().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasSeen])
 
   const { didVote, canVote, voters } = useVote(proposalKey)
   const { canRelinquishVote } = useRelinquishVote(proposalKey)
 
-  const { error: markdownErr, result: markdown } = useAsync(async () => {
-    if (proposal && proposal.uri) {
-      // Force HTTPS for security - convert any HTTP URLs to HTTPS
-      const secureUri = proposal.uri.replace(/^http:\/\//, 'https://')
-      const { data } = await axios.get(secureUri)
-      return data
-    }
-  }, [])
+  const { error: markdownErr, data: markdown } = useQuery({
+    queryKey: ['proposalMarkdown', proposal?.uri],
+    queryFn: async () => {
+      if (proposal && proposal.uri) {
+        // Force HTTPS for security - convert any HTTP URLs to HTTPS
+        const secureUri = proposal.uri.replace(/^http:\/\//, 'https://')
+        const { data } = await axios.get(secureUri)
+        return data
+      }
+      return null
+    },
+  })
 
   const transactionError = useMemo(() => {
     if (markdownErr) {

@@ -22,7 +22,7 @@ import { DAO_KEY } from '@utils/constants'
 import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useSolana } from './SolanaProvider'
@@ -62,37 +62,54 @@ export const WalletSignBottomSheetSimulated = ({
   const [feesExpanded, setFeesExpanded] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const { result: accountBlacklist } = useAsync(async () => {
-    if (!wellKnownCanopyCache)
-      wellKnownCanopyCache = await (await axios.get(WELL_KNOWN_CANOPY_URL)).data
+  const { data: accountBlacklist } = useQuery({
+    queryKey: ['wellKnownCanopyBlacklist'],
+    queryFn: async () => {
+      if (!wellKnownCanopyCache)
+        wellKnownCanopyCache = await (
+          await axios.get(WELL_KNOWN_CANOPY_URL)
+        ).data
 
-    if (wellKnownCanopyCache) {
-      return new Set(Object.keys(wellKnownCanopyCache))
-    }
+      if (wellKnownCanopyCache) {
+        return new Set(Object.keys(wellKnownCanopyCache))
+      }
 
-    return new Set([])
-  }, [])
+      return new Set([])
+    },
+  })
 
   const {
-    result: simulationResults,
+    data: simulationResults,
     error,
-    loading,
-  } = useAsync(async () => {
-    if (connection && wallet && serializedTxs && accountBlacklist) {
-      return sus({
-        connection,
-        wallet,
-        serializedTransactions: serializedTxs,
-        checkCNfts: true,
-        cluster,
-        extraSearchAssetParams: {
-          creatorVerified: true,
-          creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
-        },
-        accountBlacklist,
-      })
-    }
-  }, [cluster, connection, wallet, accountBlacklist, serializedTxs])
+    isLoading: loading,
+  } = useQuery({
+    queryKey: [
+      'walletSignSimulation',
+      cluster,
+      wallet?.toBase58(),
+      serializedTxs?.map((tx) => tx.toString('base64')),
+    ],
+    enabled: !!connection && !!wallet && !!serializedTxs && !!accountBlacklist,
+    // A failed simulation fails the same way again; show it at once
+    retry: false,
+    queryFn: async () => {
+      if (connection && wallet && serializedTxs && accountBlacklist) {
+        return sus({
+          connection,
+          wallet,
+          serializedTransactions: serializedTxs,
+          checkCNfts: true,
+          cluster,
+          extraSearchAssetParams: {
+            creatorVerified: true,
+            creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
+          },
+          accountBlacklist,
+        })
+      }
+      return null
+    },
+  })
 
   const [currentTxs, hasMore] = useMemo(() => {
     if (!simulationResults) return [[], false]

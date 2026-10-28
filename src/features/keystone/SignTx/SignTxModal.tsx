@@ -11,7 +11,6 @@ import useAlert from '@hooks/useAlert'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Alert, Linking, Platform, StyleSheet } from 'react-native'
 import ProgressBar from '@components/ProgressBar'
-import { useAsync } from 'react-async-hook'
 import EventEmitter from 'events'
 
 import CloseButton from '@components/CloseButton'
@@ -34,22 +33,26 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     })
   }, [])
 
-  useAsync(async () => {
-    if (hasPermission !== false) return
+  useEffect(() => {
+    const run = async () => {
+      if (hasPermission !== false) return
 
-    const decision = await showOKCancelAlert({
-      title: t('qrScanner.deniedAlert.title'),
-      message: t('qrScanner.deniedAlert.message'),
-      ok: t('qrScanner.deniedAlert.ok'),
-    })
+      const decision = await showOKCancelAlert({
+        title: t('qrScanner.deniedAlert.title'),
+        message: t('qrScanner.deniedAlert.message'),
+        ok: t('qrScanner.deniedAlert.ok'),
+      })
 
-    if (decision) {
-      if (Platform.OS === 'ios') {
-        Linking.openURL('app-settings:')
-      } else {
-        Linking.openSettings()
+      if (decision) {
+        if (Platform.OS === 'ios') {
+          Linking.openURL('app-settings:')
+        } else {
+          Linking.openSettings()
+        }
       }
     }
+    run().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasPermission, showOKCancelAlert])
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {

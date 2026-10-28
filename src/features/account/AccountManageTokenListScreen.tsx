@@ -15,14 +15,13 @@ import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { syncTokenAccounts } from '@utils/balances'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useRef } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
@@ -150,8 +149,8 @@ const AccountManageTokenListScreen: React.FC = () => {
   const { currentAccount } = useAccountStorage()
   const colors = useColors()
 
-  const { loading: refetchingTokens, execute: refetchTokens } =
-    useAsyncCallback(async () => {
+  const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
+    mutationFn: async () => {
       if (!anchorProvider || !currentAccount || !cluster) return
       try {
         await syncTokenAccounts(queryClient, {
@@ -162,7 +161,8 @@ const AccountManageTokenListScreen: React.FC = () => {
       } catch (_err) {
         // Swallow sync errors (likely cooldown blocks)
       }
-    })
+    },
+  })
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: token }: { index: number; item: string }) => {
@@ -209,7 +209,7 @@ const AccountManageTokenListScreen: React.FC = () => {
           <RefreshControl
             enabled
             refreshing={refetchingTokens}
-            onRefresh={refetchTokens}
+            onRefresh={() => refetchTokens()}
             title=""
             tintColor={colors.primaryText}
           />

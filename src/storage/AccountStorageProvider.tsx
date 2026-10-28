@@ -12,7 +12,6 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import Config from 'react-native-config'
 import { useAuthStore } from '../store/authStore'
 import {
@@ -78,7 +77,15 @@ const useAccountStorageHook = () => {
     return currentAccount?.solanaAddress
   }, [currentAccount])
 
-  const { result: restoredAccounts } = useAsync(restoreAccounts, [])
+  // Runs once: the restore also migrates and writes accounts, so it must not
+  // re-run when sign-out clears the query cache
+  const [restoredAccounts, setRestoredAccounts] =
+    useState<Awaited<ReturnType<typeof restoreAccounts>>>()
+  useEffect(() => {
+    restoreAccounts()
+      .then(setRestoredAccounts)
+      .catch((e) => console.error(e))
+  }, [])
 
   const restored = useMemo(() => accounts !== undefined, [accounts])
 
@@ -164,20 +171,23 @@ const useAccountStorageHook = () => {
     setContacts(restoredAccounts.contacts)
   }, [restoredAccounts])
 
-  useAsync(async () => {
+  useEffect(() => {
     if (!accounts || Object.values(accounts)?.length === 0) return
 
-    const restoredAddress = await getCloudDefaultAccountAddress()
-    if (!restoredAddress) {
-      // set default account to first in list
-      const firstAccount = Object.values(accounts)[0]
-      const firstAddress = firstAccount.address
-      await setCloudDefaultAccountAddress(firstAddress)
-      setDefaultAccountAddress(firstAddress)
-    } else {
-      // restore default account
-      setDefaultAccountAddress(restoredAddress)
+    const restoreDefaultAccount = async () => {
+      const restoredAddress = await getCloudDefaultAccountAddress()
+      if (!restoredAddress) {
+        // set default account to first in list
+        const firstAccount = Object.values(accounts)[0]
+        const firstAddress = firstAccount.address
+        await setCloudDefaultAccountAddress(firstAddress)
+        setDefaultAccountAddress(firstAddress)
+      } else {
+        // restore default account
+        setDefaultAccountAddress(restoredAddress)
+      }
     }
+    restoreDefaultAccount().catch((e) => console.error(e))
   }, [accounts])
 
   const sortedAccountsForNetType = useCallback(

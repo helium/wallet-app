@@ -22,12 +22,12 @@ import usePrevious from '@hooks/usePrevious'
 import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
+import { useQuery } from '@tanstack/react-query'
 import { useColors } from '@theme/themeHooks'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useCallback, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
@@ -212,15 +212,16 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     ],
   )
 
-  const { result, loading: loadingPositionKeys } = useAsync(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async (args: any | undefined, useContext: boolean) => {
-      if (args && !useContext) {
-        return getPositionKeysForOwner(args)
-      }
-    },
-    [args, useContextPositions],
-  )
+  const { data: result, isLoading: loadingPositionKeys } = useQuery({
+    queryKey: [
+      'positionKeysForOwner',
+      connection?.rpcEndpoint,
+      registrarKey?.toBase58(),
+      wallet?.toBase58(),
+    ],
+    queryFn: async () => (args ? getPositionKeysForOwner(args) : null),
+    enabled: !!args && !useContextPositions,
+  })
 
   const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
     usePositions(result?.positions)

@@ -1,10 +1,11 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { StoreApi } from 'zustand'
 import { useAppStore } from '../store/appStore'
 import { useAuthStore } from '../store/authStore'
 import { useBrowserStore } from '../store/browserStore'
 import { useCloudStore } from '../store/cloudStore'
-import { persistor } from '../store/persistence'
 import { queryClient } from '../utils/queryClient'
+import { LEGACY_PERSIST_KEYS } from './importLegacyState'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from './mmkv'
 
 const resetStore = <T>(store: StoreApi<T>) =>
@@ -25,5 +26,6 @@ export const resetAppState = async () => {
     .filter((key) => key !== LEGACY_IMPORT_DONE_KEY)
     .forEach((key) => mmkv.remove(key))
   queryClient.clear()
-  await persistor.purge()
+  // Old Redux state left behind by a failed import
+  await AsyncStorage.multiRemove(LEGACY_PERSIST_KEYS)
 }

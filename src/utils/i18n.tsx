@@ -1,9 +1,8 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import * as RNLocalize from 'react-native-localize'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useAsync } from 'react-async-hook'
 import en from '../locales/en'
 
 const locales = RNLocalize.getLocales()
@@ -53,8 +52,9 @@ i18n.use(initReactI18next).init({
 export const useLanguage = () => {
   const [language, setLanguage] = useState('en')
 
-  useAsync(async () => {
-    await initLanguage()
+  useEffect(() => {
+    initLanguage().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const changeLanguage = useCallback(async (l: string) => {

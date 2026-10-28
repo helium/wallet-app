@@ -6,14 +6,13 @@ import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/co
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { syncTokenAccounts } from '@utils/balances'
 import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -37,8 +36,8 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const colors = useColors()
   const queryClient = useQueryClient()
 
-  const { loading: refetchingTokens, execute: refetchTokens } =
-    useAsyncCallback(async () => {
+  const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
+    mutationFn: async () => {
       if (
         !anchorProvider ||
         !currentAccount ||
@@ -59,7 +58,8 @@ const AccountTokenList = ({ onLayout }: Props) => {
       } catch (_err) {
         // Swallow sync errors (likely cooldown blocks)
       }
-    })
+    },
+  })
 
   // Note: Removed automatic refresh on app state change since Balance.tsx
   // already handles token syncing via syncTokenAccounts(). The UI updates
@@ -144,13 +144,13 @@ const AccountTokenList = ({ onLayout }: Props) => {
         <RefreshControl
           enabled
           refreshing={refetchingTokens}
-          onRefresh={refetchTokens}
+          onRefresh={() => refetchTokens()}
           title=""
           tintColor={colors.primaryText}
         />
       }
       refreshing={refetchingTokens}
-      onRefresh={refetchTokens}
+      onRefresh={() => refetchTokens()}
       columnWrapperStyle={{
         flexDirection: 'column',
       }}
