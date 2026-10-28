@@ -1,8 +1,8 @@
 import * as React from 'react'
 import {
-  createStackNavigator,
-  StackNavigationOptions,
-} from '@react-navigation/stack'
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from '@react-navigation/native-stack'
 import { memo } from 'react'
 import AccountCreatePassphraseScreen from './AccountCreatePassphraseScreen'
 import AccountEnterPassphraseScreen from './AccountEnterPassphraseScreen'
@@ -13,7 +13,8 @@ import AccountConfirmPinScreen from '../AccountConfirmPinScreen'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import AccountCreateStartScreen from './AccountCreateStartScreen'
 
-const CreateAccountStack = createStackNavigator<CreateAccountStackParamList>()
+const CreateAccountStack =
+  createNativeStackNavigator<CreateAccountStackParamList>()
 const CreateAccountNavigator = () => {
   const { sortedAccounts } = useAccountStorage()
 
@@ -21,7 +22,7 @@ const CreateAccountNavigator = () => {
     () =>
       ({
         headerShown: false,
-      } as StackNavigationOptions),
+      } as NativeStackNavigationOptions),
     [],
   )
   return (

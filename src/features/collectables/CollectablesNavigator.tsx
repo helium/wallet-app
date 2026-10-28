@@ -1,7 +1,7 @@
 import {
-  StackNavigationOptions,
-  createStackNavigator,
-} from '@react-navigation/stack'
+  NativeStackNavigationOptions,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack'
 import React, { memo } from 'react'
 import AddNewContact from '../addressBook/AddNewContact'
 import AddressBookNavigator from '../addressBook/AddressBookNavigator'
@@ -25,9 +25,9 @@ import AssertLocationScreen from './AssertLocationScreen'
 import ChangeRewardsRecipientScreen from './ChangeRewardsRecipientScreen'
 import AutomationSetupScreen from './AutomationSetupScreen'
 
-const CollectablesStack = createStackNavigator()
+const CollectablesStack = createNativeStackNavigator()
 
-const screenOptions: StackNavigationOptions = {
+const screenOptions: NativeStackNavigationOptions = {
   headerShown: false,
 }
 

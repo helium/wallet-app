@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type BrowserStackParamList = {
   DAppTutorial: undefined
@@ -8,4 +8,5 @@ export type BrowserStackParamList = {
   }
 }
 
-export type BrowserNavigationProp = StackNavigationProp<BrowserStackParamList>
+export type BrowserNavigationProp =
+  NativeStackNavigationProp<BrowserStackParamList>

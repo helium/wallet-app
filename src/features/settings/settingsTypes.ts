@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type SettingsStackParamList = {
   Settings: undefined
@@ -23,4 +23,5 @@ export type SettingsStackParamList = {
   AutoGasManager: undefined
 }
 
-export type SettingsNavigationProp = StackNavigationProp<SettingsStackParamList>
+export type SettingsNavigationProp =
+  NativeStackNavigationProp<SettingsStackParamList>

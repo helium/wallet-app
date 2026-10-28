@@ -1,8 +1,8 @@
 import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import {
-  createStackNavigator,
-  StackNavigationOptions,
-} from '@react-navigation/stack'
+  createNativeStackNavigator,
+  NativeStackNavigationOptions,
+} from '@react-navigation/native-stack'
 import React, { memo } from 'react'
 import AccountsScreen from '../account/AccountsScreen'
 import AccountTokenScreen from '../account/AccountTokenScreen'
@@ -24,15 +24,15 @@ import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
 import ImportSubAccountsScreen from '../onboarding/import/ImportSubAccountsScreen'
 import KeystoneAccountAssignScreen from '../keystone/KeystoneAccountAssignScreen'
 
-const HomeStack = createStackNavigator()
+const HomeStack = createNativeStackNavigator()
 
 const screenModalOptions = {
   presentation: 'modal',
-} as StackNavigationOptions
+} as NativeStackNavigationOptions
 
 const navigatorScreenOptions = {
   headerShown: false,
-} as StackNavigationOptions
+} as NativeStackNavigationOptions
 
 const HomeStackScreen = () => {
   return (

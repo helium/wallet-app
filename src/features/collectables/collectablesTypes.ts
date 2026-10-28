@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import {
   Collectable,
   CompressedNFT,
@@ -59,4 +59,4 @@ export type CollectableStackParamList = {
 }
 
 export type CollectableNavigationProp =
-  StackNavigationProp<CollectableStackParamList>
+  NativeStackNavigationProp<CollectableStackParamList>

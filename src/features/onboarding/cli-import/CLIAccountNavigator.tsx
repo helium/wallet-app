@@ -1,11 +1,11 @@
 import * as React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import CLIAccountImportStartScreen from './CLIAccountImportStartScreen'
 import CLIPasswordScreen from './CLIPasswordScreen'
 import CLIQrScanner from './CLIQrScanner'
 import AccountAssignScreen from '../AccountAssignScreen'
 
-const CLIAccountStack = createStackNavigator()
+const CLIAccountStack = createNativeStackNavigator()
 
 const CLIAccountNavigator = () => {
   return (

@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { CSAccount } from '../../storage/cloudStorage'
 
 export type AddressBookStackParamList = {
@@ -9,4 +9,4 @@ export type AddressBookStackParamList = {
 }
 
 export type AddressBookNavigationProp =
-  StackNavigationProp<AddressBookStackParamList>
+  NativeStackNavigationProp<AddressBookStackParamList>

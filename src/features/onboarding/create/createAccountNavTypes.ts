@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type RouteAccount = {
   secretKey?: string
@@ -18,4 +18,4 @@ export type CreateAccountStackParamList = {
 }
 
 export type CreateAccountNavigationProp =
-  StackNavigationProp<CreateAccountStackParamList>
+  NativeStackNavigationProp<CreateAccountStackParamList>

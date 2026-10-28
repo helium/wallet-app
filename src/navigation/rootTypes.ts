@@ -1,6 +1,6 @@
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
 import { NavigatorScreenParams } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import {
   HomeStackParamList,
   PaymentRouteParam,
@@ -26,5 +26,6 @@ export type TabBarStackParamList = {
   NotificationsNavigator: undefined
 }
 
-export type RootNavigationProp = StackNavigationProp<RootStackParamList>
-export type TabBarNavigationProp = StackNavigationProp<TabBarStackParamList>
+export type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>
+export type TabBarNavigationProp =
+  NativeStackNavigationProp<TabBarStackParamList>

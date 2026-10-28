@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type AddNewAccountParamList = {
   AddNewAccount: undefined
@@ -19,4 +19,4 @@ export type AddNewAccountParamList = {
 }
 
 export type AddNewAccountNavigationProp =
-  StackNavigationProp<AddNewAccountParamList>
+  NativeStackNavigationProp<AddNewAccountParamList>
