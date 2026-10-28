@@ -17,3 +17,7 @@ tags:
     timeout: 30000
 - tapOn:
     id: NavBar.account
+- extendedWaitUntil:
+    visible:
+      id: AccountView.Balance
+    timeout: 30000

@@ -54,6 +54,7 @@ const ListItem = ({
       borderBottomWidth={hasDivider ? 1 : 0}
       onPress={handlePress}
       hasPressedState={hasPressedState}
+      disabled={disabled}
       {...rest}
     >
       {Icon && Icon}
