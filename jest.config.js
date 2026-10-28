@@ -1,3 +1,6 @@
+// Run tests off UTC so date code that ignores the time zone fails.
+process.env.TZ = 'America/Denver'
+
 module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/src/**/__tests__/**/*.test.ts'],

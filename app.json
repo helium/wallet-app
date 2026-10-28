@@ -2,6 +2,7 @@
   "name": "HeliumWallet",
   "displayName": "Helium Wallet",
   "scheme": "heliumwallet",
+  "jsEngine": "hermes",
   "ios": {
     "bundleIdentifier": "com.helium.wallet.app"
   },
@@ -13,11 +14,6 @@
     [
       "react-native-ble-plx",
       {
-        "isBackgroundEnabled": true,
-        "modes": [
-          "peripheral",
-          "central"
-        ],
         "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
       }
     ],

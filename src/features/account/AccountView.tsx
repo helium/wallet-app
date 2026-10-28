@@ -6,14 +6,13 @@ import useLayoutHeight from '@hooks/useLayoutHeight'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import { useLanguage } from '@utils/i18n'
-import { addMinutes } from 'date-fns'
 import React, { memo, useEffect, useState } from 'react'
 import { GestureResponderEvent } from 'react-native'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { AccountBalance } from '../../types/balance'
 import { numberFormat, useBalance } from '../../utils/Balance'
-import DateModule from '../../utils/DateModule'
 import AccountActionBar from './AccountActionBar'
+import { formatBalanceDate } from './logic/formatBalanceDate'
 
 type Props = {
   selectedBalance?: AccountBalance
@@ -21,23 +20,14 @@ type Props = {
 } & BoxProps<Theme>
 
 const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
-  const [selectedDate, setSelectedDate] = useState('')
   const [balanceString, setBalanceString] = useState('')
   const { formattedTotal } = useBalance()
   const { currency } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
 
-  useEffect(() => {
-    if (!selectedBalance) {
-      setSelectedDate('')
-      return
-    }
-    const date = new Date(selectedBalance.date)
-    const utc = addMinutes(date, date.getTimezoneOffset())
-    DateModule.formatDate(utc.toISOString(), 'dd MMMM yyyy').then(
-      setSelectedDate,
-    )
-  }, [selectedBalance])
+  const selectedDate = selectedBalance
+    ? formatBalanceDate(selectedBalance.date)
+    : ''
 
   const { language } = useLanguage()
 

@@ -20,7 +20,6 @@
 		50D1D6B12763AAA2009D52C0 /* DMSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 50D1D6AB2763AAA2009D52C0 /* DMSans-Regular.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB92411601600AC10FF /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB82411601600AC10FF /* SplashScreen.storyboard */; };
-		9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */; };
 		962862712BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		962862722BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		962862732BDCCAF70073839C /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
@@ -123,8 +122,6 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = HeliumWallet/AppDelegate.swift; sourceTree = "<group>"; };
 		7FAF4A542AC8DD407B6E02C9 /* Pods-HeliumWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HeliumWallet.debug.xcconfig"; path = "Target Support Files/Pods-HeliumWallet/Pods-HeliumWallet.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB82411601600AC10FF /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = HeliumWallet/SplashScreen.storyboard; sourceTree = "<group>"; };
-		9609CFFE27F4DE6200CE3F93 /* RCTDateModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTDateModule.h; sourceTree = "<group>"; };
-		9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTDateModule.mm; sourceTree = "<group>"; };
 		96B459B126FE4DF20068E844 /* HeliumWallet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = HeliumWallet.entitlements; path = HeliumWallet/HeliumWallet.entitlements; sourceTree = "<group>"; };
 		96E4147027BEE4C300CE6EC1 /* OneSignalNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = OneSignalNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		96E4147227BEE4C300CE6EC1 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
@@ -146,7 +143,6 @@
 		9D24073C284F9CCD0014D926 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		9D68A27B28A0403E008CE4C8 /* HeliumTickerAccessoryCirclularView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumTickerAccessoryCirclularView.swift; sourceTree = "<group>"; };
 		9D755CDB2863C90600BCE6FD /* HeliumWalletWidget-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "HeliumWalletWidget-Bridging-Header.h"; sourceTree = "<group>"; };
-		9D7DB3A82850E417004D9409 /* HeliumWalletDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = HeliumWalletDebug.entitlements; path = HeliumWallet/HeliumWalletDebug.entitlements; sourceTree = "<group>"; };
 		9D7DB3AE2850EC14004D9409 /* HeliumWalletWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HeliumWalletWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		9D7DB3B22850EC14004D9409 /* HeliumWalletWidgetEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeliumWalletWidgetEntryView.swift; sourceTree = "<group>"; };
 		9D7DB3B42850EC14004D9409 /* HeliumWalletWidget.intentdefinition */ = {isa = PBXFileReference; lastKnownFileType = file.intentdefinition; path = HeliumWalletWidget.intentdefinition; sourceTree = "<group>"; };
@@ -210,15 +206,12 @@
 		13B07FAE1A68108700A75B9A /* HeliumWallet */ = {
 			isa = PBXGroup;
 			children = (
-				9D7DB3A82850E417004D9409 /* HeliumWalletDebug.entitlements */,
 				96B459B126FE4DF20068E844 /* HeliumWallet.entitlements */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB82411601600AC10FF /* SplashScreen.storyboard */,
 				508E6F6B26FA22F400774B67 /* HeliumWallet-Bridging-Header.h */,
-				9609CFFE27F4DE6200CE3F93 /* RCTDateModule.h */,
-				9609CFFF27F4DE8D00CE3F93 /* RCTDateModule.mm */,
 				99ED3018E9DBF6106B1DE1A7 /* PrivacyInfo.xcprivacy */,
 			);
 			name = HeliumWallet;
@@ -740,7 +733,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				9D235EA429E5B0E100749F56 /* WidgetAPI.swift in Sources */,
-				9609D00027F4DE8D00CE3F93 /* RCTDateModule.mm in Sources */,
 				9D6837A029E8504400785952 /* Utils.swift in Sources */,
 				9D7DB3B92850EC15004D9409 /* HeliumWalletWidget.intentdefinition in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
