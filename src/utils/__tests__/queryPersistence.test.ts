@@ -74,6 +74,22 @@ describe('queryPersistOptions', () => {
     expect(restored.getQueryData(['notifications'])).toBeUndefined()
   })
 
+  it('saves hotspots pages and the full hotspot list to MMKV', async () => {
+    const pagesKey = ['hotspots', 'mainnet-beta', collectablesKey[2]]
+    const allKey = [...pagesKey, 'all']
+    const pages = { pages: [{ items: [{ id: 'hotspot-1' }] }], pageParams: [0] }
+    const all = { hotspots: [{ id: 'hotspot-1' }], recipients: [] }
+    const client = newClient()
+    client.setQueryData(pagesKey, pages)
+    client.setQueryData(allKey, all)
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(pagesKey)).toEqual(pages)
+    expect(restored.getQueryData(allKey)).toEqual(all)
+  })
+
   it('restores a cache saved 7 days ago', async () => {
     const client = newClient()
     client.setQueryData(collectablesKey, collectables)

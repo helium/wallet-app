@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 
 // Query key roots whose data is saved to disk and shown at startup
-export const PERSISTED_QUERY_ROOTS = ['collectables'] as const
+export const PERSISTED_QUERY_ROOTS = ['collectables', 'hotspots'] as const
 export type PersistedQueryRoot = (typeof PERSISTED_QUERY_ROOTS)[number]
 
 export const PERSISTED_QUERY_MAX_AGE = 7 * 24 * 60 * 60 * 1000

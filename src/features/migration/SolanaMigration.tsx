@@ -11,6 +11,7 @@ import { fullApiContract } from '@helium/blockchain-api'
 import { ContractRouterClient } from '@orpc/contract'
 import { BoxProps } from '@shopify/restyle'
 import { VersionedTransaction } from '@solana/web3.js'
+import { useQueryClient } from '@tanstack/react-query'
 import { Theme } from '@theme/theme'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
@@ -20,12 +21,11 @@ import { useTranslation } from 'react-i18next'
 import Config from 'react-native-config'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import 'text-encoding-polyfill'
+import { refreshHotspots } from '../../hooks/useHotspots'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useBlockchainApi } from '../../storage/BlockchainApiProvider'
-import { fetchHotspots } from '../../store/slices/hotspotsSlice'
-import { useAppDispatch } from '../../store/store'
 import * as Logger from '../../utils/logger'
 
 async function migrateWallet(
@@ -87,7 +87,7 @@ const SolanaMigration = ({
   const [total, setTotal] = useState<number>(0)
   const [progress, setProgress] = useState<number>(0)
   const [migrationError, setMigrationError] = useState<string | undefined>()
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   const onProgress = useCallback(
     (p: number, tot: number) => {
@@ -120,13 +120,11 @@ const SolanaMigration = ({
         })
       }
 
-      dispatch(
-        fetchHotspots({
-          anchorProvider,
-          account: currentAccount,
-          cluster,
-        }),
-      )
+      refreshHotspots(queryClient, {
+        cluster,
+        solanaAddress: currentAccount.solanaAddress,
+        anchorProvider,
+      })
     } catch (e) {
       Logger.error(e)
       setMigrationError((e as Error).message)
@@ -137,7 +135,7 @@ const SolanaMigration = ({
     onProgress,
     retry,
     cluster,
-    dispatch,
+    queryClient,
     doneSolanaMigration,
     updateDoneSolanaMigration,
     client,

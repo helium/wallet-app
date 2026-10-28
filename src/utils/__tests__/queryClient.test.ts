@@ -37,4 +37,18 @@ describe('createQueryClient', () => {
 
     queryClient.clear()
   })
+  it('keeps an unobserved hotspots query in memory for 7 days', () => {
+    jest.useFakeTimers()
+    const queryClient = createQueryClient()
+    const hotspotsKey = ['hotspots', 'mainnet-beta', 'wallet']
+    queryClient.setQueryData(hotspotsKey, {})
+
+    jest.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1)
+    expect(queryClient.getQueryData(hotspotsKey)).toEqual({})
+
+    jest.advanceTimersByTime(1)
+    expect(queryClient.getQueryData(hotspotsKey)).toBeUndefined()
+
+    queryClient.clear()
+  })
 })

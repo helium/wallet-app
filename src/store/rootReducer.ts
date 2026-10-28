@@ -8,9 +8,6 @@ import notificationsReducer, {
 import balancesReducer, {
   name as balancesSliceName,
 } from './slices/balancesSlice'
-import hotspotReducer, {
-  name as hotspotSliceName,
-} from './slices/hotspotsSlice'
 
 const solanaConfig = {
   key: solanaSliceName,
@@ -37,7 +34,6 @@ const reducer = combineReducers({
     notificationsConfig,
     notificationsReducer,
   ),
-  [hotspotSliceName]: hotspotReducer,
 })
 
 export const rootReducer = (state: RootState, action: AnyAction) => {
