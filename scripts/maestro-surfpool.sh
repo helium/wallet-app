@@ -2,7 +2,7 @@
 # Starts a surfpool mainnet fork and a local blockchain-api, then seeds a
 # fresh fixture wallet for the Maestro chain flows.
 #
-#   eval "$(scripts/maestro-surfpool.sh env)"  # point Metro at the fork
+#   scripts/maestro-surfpool.sh env | sed 's/^export //' > .env.development.local  # point Metro at the fork
 #   eval "$(scripts/maestro-surfpool.sh)"      # start, seed, export the env
 #   scripts/maestro-surfpool.sh stop           # stop surfpool and the API
 #
@@ -17,8 +17,8 @@ RPC_URL="http://127.0.0.1:8899"
 API_URL="http://127.0.0.1:3000"
 
 if [ "${1:-}" = "env" ]; then
-  # Metro inlines EXPO_PUBLIC_* values when it bundles, and a value set in the
-  # shell wins over .env, so only a Metro started from that shell serves the fork.
+  # A dev bundle reads the .env files over the shell. So write these lines
+  # without `export` to .env.development.local (see .maestro/README.md).
   printf 'export EXPO_PUBLIC_MAINNET_RPC_URL=%s\nexport EXPO_PUBLIC_MAINNET_HELIUM_TRANSACTION_API=%s\n' \
     "$RPC_URL" "$API_URL"
   exit 0

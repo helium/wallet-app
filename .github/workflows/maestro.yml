@@ -52,9 +52,10 @@ jobs:
           DOT_ENV: ${{ secrets.DOT_ENV }}
         run: printf '%s\n' "$DOT_ENV" > .env
 
-      # Every later step, Metro included, then serves the fork.
+      # A dev bundle reads the .env files over the shell, and reads
+      # .env.development.local last. So the fork URLs go there and into every later step.
       - name: Point the app at the fork
-        run: scripts/maestro-surfpool.sh env | sed 's/^export //' >> "$GITHUB_ENV"
+        run: scripts/maestro-surfpool.sh env | sed 's/^export //' | tee .env.development.local >> "$GITHUB_ENV"
 
       # Firebase config is not in the repo; the google-services plugin needs a
       # file whose package_name matches the applicationId.
@@ -118,13 +119,15 @@ jobs:
             adb install android/app/build/outputs/apk/debug/app-debug.apk
             maestro test .maestro
 
+      # Do not upload the Maestro output directory. Each flow's commands.json
+      # records every MAESTRO_* variable in plaintext, the Privy test
+      # credentials included, and the repo's artifacts are public.
       - name: Upload logs
         if: failure() || cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-logs
           path: |
-            ~/.maestro/tests
             .maestro/surfpool/surfpool.log
             ${{ runner.temp }}/metro.log
           retention-days: 7

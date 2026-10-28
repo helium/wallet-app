@@ -14,12 +14,15 @@ script directly).
 1. Make a debug build that points at this machine. Android debug builds
    allow the plain-HTTP local URLs. The `env` command prints exports for
    `EXPO_PUBLIC_MAINNET_RPC_URL` and `EXPO_PUBLIC_MAINNET_HELIUM_TRANSACTION_API`.
-   Metro inlines them when it bundles. A value set in the shell wins over
-   `.env`. Start Metro in that shell with a clean cache. Then build in a
-   second terminal and reuse that Metro. Release and EAS builds do not change.
+   A debug bundle reads the `.env` files over the shell, and reads
+   `.env.development.local` last, so write the values there. Release and EAS
+   builds do not read that file. This command overwrites any
+   `.env.development.local` you have. Delete the file after the run. Start
+   Metro with a clean cache. Then build in a second terminal and reuse that
+   Metro.
 
    ```bash
-   eval "$(scripts/maestro-surfpool.sh env)"
+   scripts/maestro-surfpool.sh env | sed 's/^export //' > .env.development.local
    yarn start --reset-cache
    ```
 
@@ -57,6 +60,7 @@ script directly).
 
    ```bash
    scripts/maestro-surfpool.sh stop
+   rm .env.development.local
    ```
 
 Maestro passes shell variables that start with `MAESTRO_` to the flows.
@@ -67,9 +71,12 @@ Maestro passes shell variables that start with `MAESTRO_` to the flows.
 each pull request from this repository and on manual runs. Fork pull
 requests get no secrets, so the job skips them. It installs a pinned surfpool release, runs
 `scripts/maestro-surfpool.sh` to start surfpool and blockchain-api in Docker
-and seed the wallet. It exports the fork URLs to every later step, Metro
-included. It writes a stub `google-services.json` and builds a debug APK. It
-needs these repository secrets, none of which holds funds:
+and seed the wallet. It writes the fork URLs to `.env.development.local` and
+exports them to every later step. It writes a stub `google-services.json` and
+builds a debug APK. On a failed or cancelled run, it uploads only the surfpool
+and Metro logs. It does not upload the Maestro output, because that output
+holds the `MAESTRO_*` values in plaintext. It needs these repository secrets,
+none of which may hold funds:
 
 - `DOT_ENV`: the app `.env` file, as EAS builds use it
 - `JUPITER_API_KEY`: swap quotes in flow 04
