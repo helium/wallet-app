@@ -17,7 +17,7 @@
         "buildType": "apk"
       },
       "ios": {
-        "image": "macos-sequoia-15.6-xcode-26.2"
+        "image": "macos-tahoe-26.6-xcode-27.1"
       },
       "env": {
         "NODE_OPTIONS": "--max-old-space-size=8192"
@@ -29,7 +29,7 @@
         "resourceClass": "large"
       },
       "ios": {
-        "image": "macos-sequoia-15.6-xcode-26.2"
+        "image": "macos-tahoe-26.6-xcode-27.1"
       },
       "env": {
         "NODE_OPTIONS": "--max-old-space-size=8192"

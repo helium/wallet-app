@@ -19,3 +19,15 @@ index 20928cf..ab7efe1 100644
    google()
  
    def found = false
+diff --git a/node_modules/bcrypt-react-native/bcrypt-react-native.podspec b/node_modules/bcrypt-react-native/bcrypt-react-native.podspec
+index cc18629..4bedf5d 100644
+--- a/node_modules/bcrypt-react-native/bcrypt-react-native.podspec
++++ b/node_modules/bcrypt-react-native/bcrypt-react-native.podspec
+@@ -19,4 +19,7 @@ Pod::Spec.new do |s|
+ 
+   s.dependency "React"
+   s.dependency "BCrypt"
++  # BCrypt's Swift module imports bcryptc, whose module map BCrypt keeps
++  # out of its dependents' search paths.
++  s.pod_target_xcconfig = { "SWIFT_INCLUDE_PATHS" => "$(PODS_ROOT)/BCrypt/BCrypt/Classes/bcryptc/include" }
+ end

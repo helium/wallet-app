@@ -68,7 +68,7 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}
-        style={StyleSheet.absoluteFillObject}
+        style={StyleSheet.absoluteFill}
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         ratio="16:9"

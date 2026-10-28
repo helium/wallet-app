@@ -13,6 +13,12 @@ const POD_POST_INSTALL = `
         config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
+        # Raise pods (resource bundles among them) below the app's iOS floor.
+        pod_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        app_target = podfile_properties['ios.deploymentTarget']
+        if pod_target && Gem::Version.new(pod_target) < Gem::Version.new(app_target)
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = app_target
+        end
       end
     end
 `
