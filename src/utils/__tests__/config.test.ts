@@ -1,193 +1,194 @@
+import { loadOptions, transformFileSync } from '@babel/core'
 import { spawnSync } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-
-jest.mock('expo-constants', () => ({
-  __esModule: true,
-  default: {
-    expoConfig: {
-      extra: {
-        MAINNET_RPC_URL: 'https://rpc.example.com',
-        LOG_ANIMATIONS: true,
-      },
-    },
-  },
-}))
+import vm from 'vm'
 
 const ROOT = path.join(__dirname, '..', '..', '..')
 
-// The script both native builds run to embed the app config
-// (EXConstants podspec phase on iOS, get-app-config-android.gradle).
-const EMBED_SCRIPT = path.join(
-  ROOT,
-  'node_modules',
-  'expo-constants',
-  'scripts',
-  'getAppConfig.js',
-)
+// Every key the app reads, each from EXPO_PUBLIC_<key>
+const KEYS = [
+  'MAINNET_RPC_URL',
+  'DEVNET_RPC_URL',
+  'MAINNET_HELIUM_TRANSACTION_API',
+  'DEVNET_HELIUM_TRANSACTION_API',
+  'ONBOARDING_API_URL',
+  'WALLET_REST_URI',
+  'MIGRATION_SERVER_URL',
+  'TOKENS_TO_RENT_SERVICE_URL',
+  'TOKENS_TO_RENT_SERVICE_DEVNET_URL',
+  'PMTILES_URL',
+  'ONE_SIGNAL_APP_ID',
+  'ONE_SIGNAL_ACCOUNT_TAG_SALT',
+  'WALLET_CONNECT_PROJECT_ID',
+  'WALLET_CONNECT_METADATA_URL',
+  'HELIUM_VOTE_API_URL',
+  'DEVNET_HELIUM_VOTE_API_URL',
+  'PRIVY_APP_ID',
+  'PRIVY_CLIENT_ID',
+  'LOG_ANIMATIONS',
+  'LOG_BREADCRUMBS',
+  'OVERRIDE_MODEL_ID',
+  'OVERRIDE_WIRED',
+  'VIEW_AS',
+]
 
-// Runs the embed script against a temp copy of the project that holds the
-// given env files, with a minimal process env plus `env`.
-const embedAppConfig = (
-  files: Record<string, string>,
-  env: Record<string, string> = {},
-) => {
-  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'app-project-'))
-  const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'app-config-'))
+// Runs `fn` with the env the Metro babel transformer sets for a release
+// bundle (BABEL_ENV=production) plus `env`, then restores process.env.
+const withBuildEnv = <T>(env: Record<string, string>, fn: () => T): T => {
+  const saved = { ...process.env }
+  Object.assign(process.env, { BABEL_ENV: 'production' }, env)
   try {
-    ;['package.json', 'app.json', 'app.config.ts'].forEach((name) => {
+    return fn()
+  } finally {
+    Object.keys(process.env).forEach((key) => {
+      if (!(key in saved)) delete process.env[key]
+    })
+    Object.assign(process.env, saved)
+  }
+}
+
+// The caller the Metro babel transformer passes (metro.config.js
+// babelTransformerPath -> metro-react-native-babel-transformer).
+const METRO_CALLER = { name: 'metro', bundler: 'metro', platform: 'ios' }
+
+// Loads metro.config.js, as every bundle command does, in a temp copy of the
+// project that holds `dotEnv` as .env, and returns the EXPO_PUBLIC_ vars it
+// leaves in the bundler env.
+const loadBundlerEnv = (dotEnv: string): Record<string, string> => {
+  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'app-project-'))
+  try {
+    ;['package.json', 'app.json', 'metro.config.js'].forEach((name) => {
       fs.copyFileSync(path.join(ROOT, name), path.join(projectDir, name))
     })
     fs.symlinkSync(
       path.join(ROOT, 'node_modules'),
       path.join(projectDir, 'node_modules'),
     )
-    Object.entries(files).forEach(([name, contents]) => {
-      fs.writeFileSync(path.join(projectDir, name), contents)
+    fs.writeFileSync(path.join(projectDir, '.env'), dotEnv)
+    const script = `require('./metro.config.js')
+const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => k.startsWith('EXPO_PUBLIC_')))
+process.stdout.write(JSON.stringify(env))`
+    const result = spawnSync(process.execPath, ['-e', script], {
+      cwd: projectDir,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: {
+        PATH: process.env.PATH,
+        HOME: process.env.HOME,
+      } as unknown as NodeJS.ProcessEnv,
     })
-    const result = spawnSync(
-      process.execPath,
-      [EMBED_SCRIPT, projectDir, outDir],
-      {
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-        env: {
-          PATH: process.env.PATH,
-          HOME: process.env.HOME,
-          ...env,
-          // expo's global types require NODE_ENV, which this env leaves out.
-        } as unknown as NodeJS.ProcessEnv,
-      },
-    )
     if (result.error) throw result.error
     if (result.status !== 0) {
-      throw new Error(`Embed script failed: ${result.stderr}`)
+      throw new Error(`metro.config.js failed: ${result.stderr}`)
     }
-    return {
-      ...JSON.parse(fs.readFileSync(path.join(outDir, 'app.config'), 'utf8')),
-      stderr: result.stderr,
-    }
+    return JSON.parse(result.stdout)
   } finally {
     fs.rmSync(projectDir, { recursive: true, force: true })
-    fs.rmSync(outDir, { recursive: true, force: true })
   }
 }
 
-describe('app config', () => {
-  it('embeds every key the app reads from the build environment', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { CONFIG_KEYS } = require('../config')
-    const literals: Record<string, string> = {
-      ONE_SIGNAL_ACCOUNT_TAG_SALT: '$2a$10$abcdefghijklmnopqrstuv',
-      PRIVY_CLIENT_ID: 'client-$HOME-x',
-      WALLET_REST_URI: 'https://wallet.example.com/api#frag',
-    }
-    const expected: Record<string, string> = Object.fromEntries(
-      CONFIG_KEYS.map((key: string) => [
-        key,
-        literals[key] ?? `value-of-${key}`,
-      ]),
+describe('Config', () => {
+  it('loads .env into the bundler env, with \\$ kept as a literal $', () => {
+    const env = loadBundlerEnv(
+      [
+        '# comment',
+        'EXPO_PUBLIC_ONE_SIGNAL_ACCOUNT_TAG_SALT=\\$2a\\$10\\$abcdefghijklmnopqrstuv',
+        'EXPO_PUBLIC_PRIVY_CLIENT_ID="client-\\$HOME-x"',
+        "EXPO_PUBLIC_WALLET_REST_URI='https://wallet.example.com/api#frag'",
+        'EXPO_PUBLIC_MAINNET_RPC_URL=https://rpc.example.com',
+      ].join('\n'),
     )
-    expected.PRIVY_APP_ID = 'quoted-id'
-    expected.VIEW_AS = 'unbalanced'
-    const lines: Record<string, string> = {
-      PRIVY_APP_ID: "PRIVY_APP_ID='quoted-id'",
-      MAINNET_RPC_URL: `MAINNET_RPC_URL = ${expected.MAINNET_RPC_URL}`,
-      DEVNET_RPC_URL: `  DEVNET_RPC_URL=${expected.DEVNET_RPC_URL}`,
-      PMTILES_URL: `PMTILES_URL=${expected.PMTILES_URL}   `,
-      VIEW_AS: 'VIEW_AS="unbalanced',
-    }
-    const entries = CONFIG_KEYS.map(
-      (key: string) => lines[key] ?? `${key}=${expected[key]}`,
-    )
-    const middle = Math.floor(entries.length / 2)
-    const dotEnv = `${[
-      '# comment',
-      ...entries.slice(0, middle),
-      '',
-      ...entries.slice(middle),
-    ].join('\n')}\n`
 
-    const { extra } = embedAppConfig({ '.env': dotEnv })
-
-    CONFIG_KEYS.forEach((key: string) => {
-      expect(extra[key]).toBe(expected[key])
+    expect(env).toEqual({
+      EXPO_PUBLIC_ONE_SIGNAL_ACCOUNT_TAG_SALT: '$2a$10$abcdefghijklmnopqrstuv',
+      EXPO_PUBLIC_PRIVY_CLIENT_ID: 'client-$HOME-x',
+      EXPO_PUBLIC_WALLET_REST_URI: 'https://wallet.example.com/api#frag',
+      EXPO_PUBLIC_MAINNET_RPC_URL: 'https://rpc.example.com',
     })
-    const appJson = JSON.parse(
-      fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'),
+  })
+
+  it('inlines every EXPO_PUBLIC_ key into a release bundle', () => {
+    const env = Object.fromEntries(
+      KEYS.map((key) => [`EXPO_PUBLIC_${key}`, `value-of-${key}`]),
     )
-    expect(extra.eas.projectId).toBe(appJson.extra.eas.projectId)
-  })
 
-  it('fails the build on a malformed .env line without printing it', () => {
-    let message = ''
-    try {
-      embedAppConfig({ '.env': 'not a valid line' })
-    } catch (error) {
-      message = (error as Error).message
-    }
+    const code = withBuildEnv(
+      env,
+      () =>
+        transformFileSync(path.join(ROOT, 'src', 'utils', 'config.ts'), {
+          cwd: ROOT,
+          root: ROOT,
+          configFile: path.join(ROOT, 'babel.config.js'),
+          babelrc: false,
+          caller: METRO_CALLER,
+        })?.code ?? '',
+    )
 
-    expect(message).toMatch(/Invalid entry in .env at line 1/)
-    expect(message).not.toContain('not a valid line')
-  })
-
-  it('reads only .env, not .env.local or the shell env', () => {
-    const { extra } = embedAppConfig(
-      {
-        '.env': 'MAINNET_RPC_URL=https://rpc.example.com',
-        '.env.local': 'VIEW_AS=from-env-local',
+    expect(code).not.toContain('EXPO_PUBLIC_')
+    expect(code).not.toContain('expo/virtual/env')
+    // The app has no build-time env at runtime, and Config needs no module
+    const module = { exports: {} as { default?: Record<string, unknown> } }
+    vm.runInNewContext(code, {
+      module,
+      exports: module.exports,
+      require: (id: string) => {
+        throw new Error(`Config requires ${id}`)
       },
-      { VIEW_AS: 'from-shell' },
-    )
-
-    expect(extra.VIEW_AS).toBeUndefined()
-  })
-
-  it('embeds undefined values and warns when .env is missing', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { CONFIG_KEYS } = require('../config')
-
-    const { extra, stderr } = embedAppConfig({})
-
-    CONFIG_KEYS.forEach((key: string) => {
-      expect(extra[key]).toBeUndefined()
+      process: { env: {} },
     })
-    const appJson = JSON.parse(
-      fs.readFileSync(path.join(ROOT, 'app.json'), 'utf8'),
+    const Config = module.exports.default ?? {}
+    expect(Object.keys(Config).sort()).toEqual([...KEYS].sort())
+    KEYS.forEach((key) => {
+      expect(Config[key]).toBe(`value-of-${key}`)
+    })
+  })
+
+  it('runs the reanimated plugin once in a release bundle', () => {
+    const options = withBuildEnv({}, () =>
+      loadOptions({
+        cwd: ROOT,
+        root: ROOT,
+        configFile: path.join(ROOT, 'babel.config.js'),
+        babelrc: false,
+        caller: METRO_CALLER,
+        filename: path.join(ROOT, 'src', 'utils', 'config.ts'),
+      }),
     )
-    expect(extra.eas.projectId).toBe(appJson.extra.eas.projectId)
-    expect(stderr).toContain('Missing .env')
+
+    const { plugins } = options as { plugins: { key: string }[] }
+    expect(plugins.filter(({ key }) => key === 'reanimated')).toHaveLength(1)
   })
 
-  it('reads the embedded values in the app', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const Config = require('../config').default
-
-    expect(Config.MAINNET_RPC_URL).toBe('https://rpc.example.com')
-    expect(Config.DEVNET_RPC_URL).toBeUndefined()
-    expect(Config.LOG_ANIMATIONS).toBeUndefined()
-  })
-
-  it('warns and reads undefined when the embedded app config is missing', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    // Earlier tests cached the expo-constants mock, which doMock cannot
-    // override inside isolateModules.
-    jest.resetModules()
-    try {
-      jest.isolateModules(() => {
-        jest.doMock('expo-constants', () => ({
-          __esModule: true,
-          default: { expoConfig: null },
-        }))
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const Config = require('../config').default
-
-        expect(warn).toHaveBeenCalled()
-        expect(Config.MAINNET_RPC_URL).toBeUndefined()
+  it('is the only place the app reads a key', () => {
+    const CONFIG_FILE = path.join(ROOT, 'src', 'utils', 'config.ts')
+    const sourceFiles = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const file = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          return entry.name === '__tests__' ? [] : sourceFiles(file)
+        }
+        return /\.(js|jsx|ts|tsx)$/.test(entry.name) ? [file] : []
       })
-    } finally {
-      warn.mockRestore()
-    }
+
+    const reads = sourceFiles(path.join(ROOT, 'src'))
+      .filter((file) => file !== CONFIG_FILE)
+      .flatMap((file) => {
+        const source = fs.readFileSync(file, 'utf8')
+        const envReads = [...source.matchAll(/process\.env\.(\w+)/g)]
+          .map(([, name]) => name)
+          .filter(
+            (name) => name.startsWith('EXPO_PUBLIC_') || KEYS.includes(name),
+          )
+        const otherReads = ['react-native-config', 'expoConfig'].filter(
+          (term) => source.includes(term),
+        )
+        return [...envReads, ...otherReads].map(
+          (read) => `${path.relative(ROOT, file)}: ${read}`,
+        )
+      })
+
+    expect(reads).toEqual([])
   })
 })

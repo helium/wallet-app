@@ -1,6 +1,12 @@
 const path = require('path')
 const { getDefaultConfig } = require('expo/metro-config')
 
+// Load .env (and .env.local) into the bundler env, as Expo CLI does, so
+// babel-preset-expo can inline EXPO_PUBLIC_* values. The react-native CLI
+// that Xcode, Gradle and `yarn start` run does not load them. Silent because
+// that CLI sets NODE_ENV only after it reads this file.
+require('@expo/env').load(__dirname, { silent: true })
+
 const defaultConfig = getDefaultConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
 

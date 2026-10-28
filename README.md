@@ -73,7 +73,7 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   yarn
   ```
-- Fill out your env.sample with your values and rename it to `.env`.
+- Fill out your `.env.sample` with your values and rename it to `.env`. See [Environment variables](#environment-variables).
 - Install Pods
   ```bash
   yarn pod-install
@@ -109,6 +109,18 @@ For Android:
 ```bash
 yarn android
 ```
+
+### Environment variables
+
+The app reads its keys from `EXPO_PUBLIC_*` variables. `metro.config.js` loads `.env` into the bundler, and `babel-preset-expo` writes each value into the JS bundle at build time.
+
+- Give every key the `EXPO_PUBLIC_` prefix, as in `.env.sample`.
+- Write each literal `$` as `\$`. The loader expands `$NAME` and `${NAME}`, also inside quotes, so an unescaped `$2a$10$...` value becomes empty. Example: `EXPO_PUBLIC_ONE_SIGNAL_ACCOUNT_TAG_SALT=\$2a\$10\$...`.
+- Put a value that contains `#` in quotes. Without quotes, `#` starts a comment.
+- A key that is set in the shell, or in `.env.local`, overrides `.env`.
+- After you change `.env`, restart Metro with `yarn clean-start`. The bundler caches the values it wrote into the bundle.
+
+EAS builds copy the `DOT_ENV` file secret to `.env` (see `scripts/eas-build-setup.sh`). When you update that secret, add the `EXPO_PUBLIC_` prefix to each key and write each literal `$` as `\$`. If you use EAS environment variables instead of `DOT_ENV`, give them the `EXPO_PUBLIC_` names.
 
 ## Usage
 

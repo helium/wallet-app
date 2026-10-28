@@ -4,13 +4,9 @@ import { accountSolanaAddress } from '../accountSolanaAddress'
 
 const VIEW_AS = 'ViewAsWa11et1111111111111111111111111111111'
 
-jest.mock('expo-constants', () => ({
+jest.mock('../../utils/config', () => ({
   __esModule: true,
-  default: {
-    expoConfig: {
-      extra: { VIEW_AS: 'ViewAsWa11et1111111111111111111111111111111' },
-    },
-  },
+  default: { VIEW_AS: 'ViewAsWa11et1111111111111111111111111111111' },
 }))
 
 // Native module that accountUtils imports; the address conversion never uses it

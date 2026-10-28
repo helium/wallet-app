@@ -21,14 +21,12 @@ export const BlockchainApiProvider: React.FC<React.PropsWithChildren> = ({
   const client = useMemo(() => {
     const url =
       cluster === 'devnet'
-        ? Config.DEVNET_HELIUM_TRANSACTION_API ||
-          process.env.DEVNET_HELIUM_TRANSACTION_API
-        : Config.MAINNET_HELIUM_TRANSACTION_API ||
-          process.env.MAINNET_HELIUM_TRANSACTION_API
+        ? Config.DEVNET_HELIUM_TRANSACTION_API
+        : Config.MAINNET_HELIUM_TRANSACTION_API
 
     if (!url || url.trim() === '') {
       console.error(
-        `Missing blockchain API URL configuration for cluster: ${cluster}. Please set ${
+        `Missing blockchain API URL configuration for cluster: ${cluster}. Please set EXPO_PUBLIC_${
           cluster === 'devnet' ? 'DEVNET' : 'MAINNET'
         }_HELIUM_TRANSACTION_API in your .env file.`,
       )
