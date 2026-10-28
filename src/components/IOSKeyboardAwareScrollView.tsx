@@ -1,6 +1,6 @@
 import React, { memo, ReactNode, useMemo } from 'react'
 import { Platform } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const IOSKeyboardAwareScrollView = ({
   scrollEnabled,

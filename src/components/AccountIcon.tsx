@@ -1,19 +1,51 @@
 import React, { memo, useMemo } from 'react'
-import Jazzicon, { IJazziconProps } from 'react-native-jazzicon'
+import { StyleSheet, View } from 'react-native'
+import { Rect, Svg } from 'react-native-svg'
 import { getJazzSeed } from '../utils/accountUtils'
+import { jazzicon } from '../utils/jazzicon'
 
-type Props = { address?: string; size: number } & Omit<
-  IJazziconProps,
-  'seed' | 'size'
->
-const AccountIcon = ({ address, ...jazzIconProps }: Props) => {
-  const seed = useMemo(() => {
+type Props = { address?: string; size: number }
+const AccountIcon = ({ address, size }: Props) => {
+  const icon = useMemo(() => {
     if (!address) return null
-    return getJazzSeed(address)
-  }, [address])
+    const seed = getJazzSeed(address)
+    if (!seed) return null
+    return jazzicon(seed, size)
+  }, [address, size])
 
-  if (!seed) return null
+  if (!icon) return null
 
-  return <Jazzicon {...jazzIconProps} seed={seed} />
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          width: size,
+          height: size,
+          backgroundColor: icon.background,
+          borderRadius: size / 2,
+        },
+      ]}
+    >
+      <Svg width={size} height={size}>
+        {icon.shapes.map(({ fill, transform }) => (
+          <Rect
+            key={transform}
+            x={0}
+            y={0}
+            width={size}
+            height={size}
+            fill={fill}
+            transform={transform}
+          />
+        ))}
+      </Svg>
+    </View>
+  )
 }
+
+const styles = StyleSheet.create({
+  container: { overflow: 'hidden' },
+})
+
 export default memo(AccountIcon)

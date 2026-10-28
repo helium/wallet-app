@@ -40,7 +40,7 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
 import AddressBookSelector, {
   AddressBookRef,
@@ -365,10 +365,7 @@ const BurnScreen = () => {
                 </TouchableOpacityBox>
               </Box>
 
-              <KeyboardAwareScrollView
-                enableOnAndroid
-                keyboardShouldPersistTaps="always"
-              >
+              <KeyboardAwareScrollView keyboardShouldPersistTaps="always">
                 <AccountButton
                   backgroundColor="secondary"
                   accountIconSize={41}

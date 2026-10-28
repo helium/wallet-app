@@ -18,6 +18,7 @@ import { LogBox } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from '@utils/config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { OneSignal } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -121,35 +122,36 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={globalStyles.container}>
-        <SafeAreaProvider>
-          <ThemeProvider theme={colorAdaptedTheme}>
-            <PortalProvider>
-              <BottomSheetModalProvider>
-                <SolanaProvider>
-                  <BlockchainApiProvider>
-                    <SplashScreen>
-                      <WalletOnboardingProvider
-                        baseUrl={Config.ONBOARDING_API_URL}
-                      >
-                        <KeystoneOnboardingProvider>
-                          <WalletConnectProvider>
-                            <HotspotOnboardingProvider
-                              baseUrl={Config.ONBOARDING_API_URL}
-                            >
-                              <LockScreen>
-                                {accountsRestored && (
-                                  <>
-                                    <NavigationContainer
-                                      theme={navTheme}
-                                      linking={linking}
-                                      ref={navigationRef}
-                                    >
-                                      <BalanceProvider>
-                                        <TokensProvider>
-                                          <ModalProvider>
-                                            <WalletSignProvider>
-                                              <GovernanceProvider>
-                                                {/* One Privy provider for the
+        <KeyboardProvider>
+          <SafeAreaProvider>
+            <ThemeProvider theme={colorAdaptedTheme}>
+              <PortalProvider>
+                <BottomSheetModalProvider>
+                  <SolanaProvider>
+                    <BlockchainApiProvider>
+                      <SplashScreen>
+                        <WalletOnboardingProvider
+                          baseUrl={Config.ONBOARDING_API_URL}
+                        >
+                          <KeystoneOnboardingProvider>
+                            <WalletConnectProvider>
+                              <HotspotOnboardingProvider
+                                baseUrl={Config.ONBOARDING_API_URL}
+                              >
+                                <LockScreen>
+                                  {accountsRestored && (
+                                    <>
+                                      <NavigationContainer
+                                        theme={navTheme}
+                                        linking={linking}
+                                        ref={navigationRef}
+                                      >
+                                        <BalanceProvider>
+                                          <TokensProvider>
+                                            <ModalProvider>
+                                              <WalletSignProvider>
+                                                <GovernanceProvider>
+                                                  {/* One Privy provider for the
                                                     whole subtree so the embedded
                                                     -wallet WebView bridge stays
                                                     warm across the modal →
@@ -158,48 +160,49 @@ const App = () => {
                                                     cold bridge on navigation and
                                                     races "proxy not initialized".
                                                 */}
-                                                <PrivyAppProvider>
-                                                  <AutoGasBanner />
-                                                  <NetworkAwareStatusBar />
-                                                  <RootNavigator />
+                                                  <PrivyAppProvider>
+                                                    <AutoGasBanner />
+                                                    <NetworkAwareStatusBar />
+                                                    <RootNavigator />
 
-                                                  {/* place app specific modals here */}
-                                                  <InsufficientSolConversionModal />
-                                                  <MigrateToWorldModal />
-                                                  <MigrateToWorldCheck />
-                                                  <JupiterProvider>
-                                                    <DeprecatedTokensProvider>
-                                                      <DeprecatedTokensModal />
-                                                      <DeprecatedTokensCheck />
-                                                    </DeprecatedTokensProvider>
-                                                  </JupiterProvider>
-                                                </PrivyAppProvider>
-                                              </GovernanceProvider>
-                                            </WalletSignProvider>
-                                          </ModalProvider>
-                                        </TokensProvider>
-                                      </BalanceProvider>
-                                    </NavigationContainer>
-                                    <SecurityScreen
-                                      visible={
-                                        appState !== 'active' &&
-                                        appState !== 'unknown'
-                                      }
-                                    />
-                                  </>
-                                )}
-                              </LockScreen>
-                            </HotspotOnboardingProvider>
-                          </WalletConnectProvider>
-                        </KeystoneOnboardingProvider>
-                      </WalletOnboardingProvider>
-                    </SplashScreen>
-                  </BlockchainApiProvider>
-                </SolanaProvider>
-              </BottomSheetModalProvider>
-            </PortalProvider>
-          </ThemeProvider>
-        </SafeAreaProvider>
+                                                    {/* place app specific modals here */}
+                                                    <InsufficientSolConversionModal />
+                                                    <MigrateToWorldModal />
+                                                    <MigrateToWorldCheck />
+                                                    <JupiterProvider>
+                                                      <DeprecatedTokensProvider>
+                                                        <DeprecatedTokensModal />
+                                                        <DeprecatedTokensCheck />
+                                                      </DeprecatedTokensProvider>
+                                                    </JupiterProvider>
+                                                  </PrivyAppProvider>
+                                                </GovernanceProvider>
+                                              </WalletSignProvider>
+                                            </ModalProvider>
+                                          </TokensProvider>
+                                        </BalanceProvider>
+                                      </NavigationContainer>
+                                      <SecurityScreen
+                                        visible={
+                                          appState !== 'active' &&
+                                          appState !== 'unknown'
+                                        }
+                                      />
+                                    </>
+                                  )}
+                                </LockScreen>
+                              </HotspotOnboardingProvider>
+                            </WalletConnectProvider>
+                          </KeystoneOnboardingProvider>
+                        </WalletOnboardingProvider>
+                      </SplashScreen>
+                    </BlockchainApiProvider>
+                  </SolanaProvider>
+                </BottomSheetModalProvider>
+              </PortalProvider>
+            </ThemeProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
   )

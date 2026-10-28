@@ -8831,15 +8831,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-addons-shallow-compare@npm:^0.14.22":
-  version: 0.14.25
-  resolution: "@types/react-addons-shallow-compare@npm:0.14.25"
-  dependencies:
-    "@types/react": "npm:*"
-  checksum: 10/6bd0c23572e01ae6bce43533fb10cdb76c9376d36520b4ffe217374fce2e090f0941ddbb19650f03515105551c97e33ed2b0f60331a60d8fc86634c39cc6fdf4
-  languageName: node
-  linkType: hard
-
 "@types/react-native-charts-wrapper@npm:0.5.2":
   version: 0.5.2
   resolution: "@types/react-native-charts-wrapper@npm:0.5.2"
@@ -8854,16 +8845,6 @@ __metadata:
   version: 1.1.1
   resolution: "@types/react-native-shared-group-preferences@npm:1.1.1"
   checksum: 10/bf7a44a7b860d15848207cdccdf6aabc6817ed41f7c1e7fd5a0009304c0a597315e000cf5fbe2b22b63bf85d3f617d071130a8b1b537051cc40b578c19c00fbc
-  languageName: node
-  linkType: hard
-
-"@types/react-native-snap-carousel@npm:3.8.5":
-  version: 3.8.5
-  resolution: "@types/react-native-snap-carousel@npm:3.8.5"
-  dependencies:
-    "@types/react": "npm:*"
-    "@types/react-native": "npm:*"
-  checksum: 10/d716c815860babf4399ac98c09ac861ffa6d71293a023cd3bbde5864b8803a60bd09156b14eca60941275186a89cdcad6cf20c3006f6fa31db5b5dcb1aed5c87
   languageName: node
   linkType: hard
 
@@ -10338,7 +10319,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"asap@npm:~2.0.3, asap@npm:~2.0.6":
+"asap@npm:~2.0.6":
   version: 2.0.6
   resolution: "asap@npm:2.0.6"
   checksum: 10/b244c0458c571945e4b3be0b14eb001bea5596f9868cc50cc711dc03d58a7e953517d3f0dad81ccde3ff37d1f074701fa76a6f07d41aaa992d7204a37b915dda
@@ -11834,7 +11815,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-convert@npm:^1.9.0, color-convert@npm:^1.9.3":
+"color-convert@npm:^1.9.0":
   version: 1.9.3
   resolution: "color-convert@npm:1.9.3"
   dependencies:
@@ -11866,23 +11847,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-string@npm:^1.6.0, color-string@npm:^1.9.0":
+"color-string@npm:^1.9.0":
   version: 1.9.1
   resolution: "color-string@npm:1.9.1"
   dependencies:
     color-name: "npm:^1.0.0"
     simple-swizzle: "npm:^0.2.2"
   checksum: 10/72aa0b81ee71b3f4fb1ac9cd839cdbd7a011a7d318ef58e6cb13b3708dca75c7e45029697260488709f1b1c7ac4e35489a87e528156c1e365917d1c4ccb9b9cd
-  languageName: node
-  linkType: hard
-
-"color@npm:^3.0.0":
-  version: 3.2.1
-  resolution: "color@npm:3.2.1"
-  dependencies:
-    color-convert: "npm:^1.9.3"
-    color-string: "npm:^1.6.0"
-  checksum: 10/bf70438e0192f4f62f4bfbb303e7231289e8cc0d15ff6b6cbdb722d51f680049f38d4fdfc057a99cb641895cf5e350478c61d98586400b060043afc44285e7ae
   languageName: node
   linkType: hard
 
@@ -12113,13 +12084,6 @@ __metadata:
   version: 3.45.0
   resolution: "core-js-pure@npm:3.45.0"
   checksum: 10/af7481fefd0b8caab0ec633eef29870ab74e89edcfe641ff118786c7f85e2803fe2aebe3231f9e4584fa51066c0dd3bcfa338c353d969c743713001e073ce107
-  languageName: node
-  linkType: hard
-
-"core-js@npm:^1.0.0":
-  version: 1.2.7
-  resolution: "core-js@npm:1.2.7"
-  checksum: 10/834f3398eb587af52e0731d44ae3ead0d331a10fb253c8358c801cac9c1788d96faba8d83c4e8e53270b560969f512596dfdeca875ae626e8af2c901598706fc
   languageName: node
   linkType: hard
 
@@ -12972,7 +12936,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"encoding@npm:^0.1.11, encoding@npm:^0.1.13":
+"encoding@npm:^0.1.13":
   version: 0.1.13
   resolution: "encoding@npm:0.1.13"
   dependencies:
@@ -14494,21 +14458,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fbjs@npm:^0.8.4":
-  version: 0.8.18
-  resolution: "fbjs@npm:0.8.18"
-  dependencies:
-    core-js: "npm:^1.0.0"
-    isomorphic-fetch: "npm:^2.1.1"
-    loose-envify: "npm:^1.0.0"
-    object-assign: "npm:^4.1.0"
-    promise: "npm:^7.1.1"
-    setimmediate: "npm:^1.0.5"
-    ua-parser-js: "npm:^0.7.30"
-  checksum: 10/80e855a89b956071676681c9481f399f2356435dc1745d47bd609ce9bd1dda1c487b18c8ffc58423f96452dab6932811ef70758ec8a875dac9ff319c0a5f9adc
-  languageName: node
-  linkType: hard
-
 "fdir@npm:^6.4.4":
   version: 6.4.6
   resolution: "fdir@npm:6.4.6"
@@ -15477,7 +15426,6 @@ __metadata:
     "@types/react": "npm:~19.3.0"
     "@types/react-native-charts-wrapper": "npm:0.5.2"
     "@types/react-native-shared-group-preferences": "npm:1.1.1"
-    "@types/react-native-snap-carousel": "npm:3.8.5"
     "@types/react-native-video": "npm:5.0.14"
     "@types/react-test-renderer": "npm:^19.0.0"
     "@types/semver": "npm:7.3.12"
@@ -15564,12 +15512,10 @@ __metadata:
     react-native-cli-bump-version: "npm:1.5.0"
     react-native-codegen: "npm:0.0.7"
     react-native-device-info: "npm:8.7.1"
-    react-native-flash-message: "npm:0.2.1"
     react-native-gesture-handler: "npm:~3.3.0"
     react-native-get-random-values: "npm:~1.11.0"
     react-native-icloudstore: "npm:0.9.0"
-    react-native-jazzicon: "npm:0.1.2"
-    react-native-keyboard-aware-scroll-view: "npm:0.9.5"
+    react-native-keyboard-controller: "npm:1.22.7"
     react-native-level-fs: "npm:3.0.1"
     react-native-linear-gradient: "npm:2.6.2"
     react-native-localize: "npm:2.2.3"
@@ -15586,16 +15532,17 @@ __metadata:
     react-native-quick-crypto: "npm:^0.7.17"
     react-native-randombytes: "npm:3.6.1"
     react-native-reanimated: "npm:4.7.1"
+    react-native-reanimated-carousel: "npm:5.2.0"
     react-native-safe-area-context: "npm:~5.10.1"
     react-native-screens: "npm:~4.30.0"
     react-native-share: "npm:7.9.0"
     react-native-shared-group-preferences: "npm:1.1.24"
     react-native-simple-toast: "npm:1.1.4"
-    react-native-snap-carousel: "npm:4.0.0-beta.6"
     react-native-svg: "npm:15.16.0"
     react-native-svg-transformer: "npm:0.14.3"
     react-native-test-flight: "npm:1.1.0"
     react-native-text-ticker: "npm:1.14.0"
+    react-native-toast-message: "npm:2.5.2"
     react-native-url-polyfill: "npm:2.0.0"
     react-native-video: "npm:6.12.0"
     react-native-webview: "npm:14.0.1"
@@ -16356,13 +16303,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"is-stream@npm:^1.0.1":
-  version: 1.1.0
-  resolution: "is-stream@npm:1.1.0"
-  checksum: 10/351aa77c543323c4e111204482808cfad68d2e940515949e31ccd0b010fc13d5fba4b9c230e4887fd24284713040f43e542332fbf172f6b9944b7d62e389c0ec
-  languageName: node
-  linkType: hard
-
 "is-stream@npm:^2.0.0":
   version: 2.0.1
   resolution: "is-stream@npm:2.0.1"
@@ -16511,16 +16451,6 @@ __metadata:
   version: 3.0.1
   resolution: "isobject@npm:3.0.1"
   checksum: 10/db85c4c970ce30693676487cca0e61da2ca34e8d4967c2e1309143ff910c207133a969f9e4ddb2dc6aba670aabce4e0e307146c310350b298e74a31f7d464703
-  languageName: node
-  linkType: hard
-
-"isomorphic-fetch@npm:^2.1.1":
-  version: 2.2.1
-  resolution: "isomorphic-fetch@npm:2.2.1"
-  dependencies:
-    node-fetch: "npm:^1.0.1"
-    whatwg-fetch: "npm:>=0.10.0"
-  checksum: 10/bb5daa7c3785d6742f4379a81e55b549a469503f7c9bf9411b48592e86632cf5e8fe8ea878dba185c0f33eb7c510c23abdeb55aebfdf5d3c70f031ced68c5424
   languageName: node
   linkType: hard
 
@@ -18254,13 +18184,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mersenne-twister@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "mersenne-twister@npm:1.1.0"
-  checksum: 10/1123526199091097102f2f91639ad7d5b3df4b098de9a4a72c835920e11ef0ce08e25737d5af1d363325a60da8804365eae8a41e03b7a46a1acc22e18fa8f261
-  languageName: node
-  linkType: hard
-
 "metro-babel-transformer@npm:0.87.1":
   version: 0.87.1
   resolution: "metro-babel-transformer@npm:0.87.1"
@@ -19262,16 +19185,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^1.0.1":
-  version: 1.7.3
-  resolution: "node-fetch@npm:1.7.3"
-  dependencies:
-    encoding: "npm:^0.1.11"
-    is-stream: "npm:^1.0.1"
-  checksum: 10/17be1a182eec37ba43c1b02673329ab1fa1c2e3ddbdf9b5f62d5157aa118c253dcd42f338eb1b6fe84fb0689c4dd8eb5aaebf46a9b5a066fae88c74e36522688
-  languageName: node
-  linkType: hard
-
 "node-fetch@npm:^2.6.7, node-fetch@npm:^2.7.0":
   version: 2.7.0
   resolution: "node-fetch@npm:2.7.0"
@@ -19476,7 +19389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"object-assign@npm:^4, object-assign@npm:^4.1.0, object-assign@npm:^4.1.1":
+"object-assign@npm:^4, object-assign@npm:^4.1.1":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
   checksum: 10/fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
@@ -20556,15 +20469,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"promise@npm:^7.1.1":
-  version: 7.3.1
-  resolution: "promise@npm:7.3.1"
-  dependencies:
-    asap: "npm:~2.0.3"
-  checksum: 10/37dbe58ca7b0716cc881f0618128f1fd6ff9c46cdc529a269fd70004e567126a449a94e9428e2d19b53d06182d11b45d0c399828f103e06b2bb87643319bd2e7
-  languageName: node
-  linkType: hard
-
 "promise@npm:^8.3.0":
   version: 8.3.0
   resolution: "promise@npm:8.3.0"
@@ -20584,7 +20488,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:*, prop-types@npm:^15.5.10, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -20878,16 +20782,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-addons-shallow-compare@npm:15.6.2":
-  version: 15.6.2
-  resolution: "react-addons-shallow-compare@npm:15.6.2"
-  dependencies:
-    fbjs: "npm:^0.8.4"
-    object-assign: "npm:^4.1.0"
-  checksum: 10/0f7d8eaf07d1c3f9f7517c43e2913eeec6aa2c37d8885c7f6355f4de9a44e62e4bd3d1d480fbb5ac0983ce348bd92c561268461392be46702651302dda84468a
-  languageName: node
-  linkType: hard
-
 "react-async-hook@npm:4.0.0, react-async-hook@npm:^4.0.0":
   version: 4.0.0
   resolution: "react-async-hook@npm:4.0.0"
@@ -21055,20 +20949,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-flash-message@npm:0.2.1":
-  version: 0.2.1
-  resolution: "react-native-flash-message@npm:0.2.1"
-  dependencies:
-    prop-types: "npm:^15.8.1"
-    react-native-iphone-x-helper: "npm:^1.3.1"
-  peerDependencies:
-    prop-types: ^15.0 || ^16.0
-    react: "*"
-    react-native: "*"
-  checksum: 10/9a6c4b723347cd6a9240707b993a6866fae2333fd849bdad63c14e4d5881bfae4584e4c772095149f2d77d4e2430c9724bae1a6c7b9e7a900a2804ba807fbfe2
-  languageName: node
-  linkType: hard
-
 "react-native-gesture-handler@npm:~3.3.0":
   version: 3.3.0
   resolution: "react-native-gesture-handler@npm:3.3.0"
@@ -21100,16 +20980,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-iphone-x-helper@npm:^1.0.3, react-native-iphone-x-helper@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "react-native-iphone-x-helper@npm:1.3.1"
-  peerDependencies:
-    react-native: ">=0.42.0"
-  checksum: 10/024376646009a966e33e12fc2358751830818b0fb73b1c601a64eb5e490d2dc43eec23668991b985a8c412a84d087f20eb45bb9b593567c08b66e741b7bddda5
-  languageName: node
-  linkType: hard
-
-"react-native-is-edge-to-edge@npm:^1.3.1":
+"react-native-is-edge-to-edge@npm:^1.2.1, react-native-is-edge-to-edge@npm:^1.3.1":
   version: 1.3.1
   resolution: "react-native-is-edge-to-edge@npm:1.3.1"
   peerDependencies:
@@ -21119,29 +20990,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-jazzicon@npm:0.1.2":
-  version: 0.1.2
-  resolution: "react-native-jazzicon@npm:0.1.2"
+"react-native-keyboard-controller@npm:1.22.7":
+  version: 1.22.7
+  resolution: "react-native-keyboard-controller@npm:1.22.7"
   dependencies:
-    color: "npm:^3.0.0"
-    mersenne-twister: "npm:^1.1.0"
+    react-native-is-edge-to-edge: "npm:^1.2.1"
   peerDependencies:
-    react: ^16.4.2
-    react-native: ^0.56.0
-    react-native-svg: ^6.5.2
-  checksum: 10/c49ec82ba047399476915ef3b2c2297962721655ea9e5561beec0d05990dd5bc9dfbb6fd1ce3d637f5596ec5db5c963aa2d90930dbb784a9f956e2656fceaf37
-  languageName: node
-  linkType: hard
-
-"react-native-keyboard-aware-scroll-view@npm:0.9.5":
-  version: 0.9.5
-  resolution: "react-native-keyboard-aware-scroll-view@npm:0.9.5"
-  dependencies:
-    prop-types: "npm:^15.6.2"
-    react-native-iphone-x-helper: "npm:^1.0.3"
-  peerDependencies:
-    react-native: ">=0.48.4"
-  checksum: 10/95d8ed8a46426b16e819713495d64766a3eed5d63a03fb4feca0351cce55d74197f75d8b01dd3f2c491cda29c155bb71c8063d2fba23e8a0044208aad03d0d91
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: ">=3.0.0"
+  checksum: 10/0ae8ccbbf171743b18f5704482cc6f71fb938a5cd0df5fc40ea509260411a51dc30f89c277d30031236ad047446acf97f32a62f6ebea4533fe5affe8050aeaf2
   languageName: node
   linkType: hard
 
@@ -21320,6 +21178,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-reanimated-carousel@npm:5.2.0":
+  version: 5.2.0
+  resolution: "react-native-reanimated-carousel@npm:5.2.0"
+  peerDependencies:
+    react: ">=18.0.0"
+    react-native: ">=0.80.0"
+    react-native-gesture-handler: ">=2.9.0 <4.0.0"
+    react-native-reanimated: ">=4.1.0"
+    react-native-worklets: ">=0.5.0"
+  bin:
+    rnrc-v5-codemod: scripts/codemods/v5.mjs
+  checksum: 10/aafe94e92e0fb3ba8c9a4ed91a05666698b66920490f54ee710ce384107e3edf1432081fb98905d3be655999cb30d62e8725caf0b2266dd4f5977c492d6b0b2a
+  languageName: node
+  linkType: hard
+
 "react-native-reanimated@npm:4.7.1":
   version: 4.7.1
   resolution: "react-native-reanimated@npm:4.7.1"
@@ -21380,19 +21253,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-snap-carousel@npm:4.0.0-beta.6":
-  version: 4.0.0-beta.6
-  resolution: "react-native-snap-carousel@npm:4.0.0-beta.6"
-  dependencies:
-    "@types/react-addons-shallow-compare": "npm:^0.14.22"
-    react-addons-shallow-compare: "npm:15.6.2"
-  peerDependencies:
-    react: ">=16.0.0"
-    react-native: ">=0.58.0"
-  checksum: 10/768db04581c0f195291a09ed1370f0c24cae1aea10c875480167fe097227fd520cfd631a113d76de59f93bfe8d586817a104e99da5eff6b8da41586063686168
-  languageName: node
-  linkType: hard
-
 "react-native-svg-transformer@npm:0.14.3":
   version: 0.14.3
   resolution: "react-native-svg-transformer@npm:0.14.3"
@@ -21447,6 +21307,16 @@ __metadata:
   version: 1.14.0
   resolution: "react-native-text-ticker@npm:1.14.0"
   checksum: 10/34c78050d2192af31e5e10e7162f02474d4ec3d58b359a8703dd9e62c6a04cba981d7d821126c5dbe2c9f995a7e9af57b074bbafec7cc55b31d2d52178a068b7
+  languageName: node
+  linkType: hard
+
+"react-native-toast-message@npm:2.5.2":
+  version: 2.5.2
+  resolution: "react-native-toast-message@npm:2.5.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10/c70284a5bde90593695d765f472177960831c0f16f7f0e923cd8ff22f51e9e15f36c672ea490ab317d6d5925e6a942a1880145e1ab55a377f452368d14a6364a
   languageName: node
   linkType: hard
 
@@ -22665,13 +22535,6 @@ __metadata:
     is-plain-object: "npm:^2.0.3"
     split-string: "npm:^3.0.1"
   checksum: 10/4f1ccac2e9ad4d1b0851761d41df4bbd3780ed69805f24a80ab237a56d9629760b7b98551cd370931620defe5da329645834e1e9a18574cecad09ce7b2b83296
-  languageName: node
-  linkType: hard
-
-"setimmediate@npm:^1.0.5":
-  version: 1.0.5
-  resolution: "setimmediate@npm:1.0.5"
-  checksum: 10/76e3f5d7f4b581b6100ff819761f04a984fa3f3990e72a6554b57188ded53efce2d3d6c0932c10f810b7c59414f85e2ab3c11521877d1dea1ce0b56dc906f485
   languageName: node
   linkType: hard
 
@@ -24093,15 +23956,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ua-parser-js@npm:^0.7.30":
-  version: 0.7.40
-  resolution: "ua-parser-js@npm:0.7.40"
-  bin:
-    ua-parser-js: script/cli.js
-  checksum: 10/914b8134894e0060a695e519c4b25625613572911466fdcd60f995babc2a61e75a318d98f5e777961ab428069b6ee2f7c5e3a4595eee858a1e86de694579baac
-  languageName: node
-  linkType: hard
-
 "uc.micro@npm:^1.0.1, uc.micro@npm:^1.0.5":
   version: 1.0.6
   resolution: "uc.micro@npm:1.0.6"
@@ -24732,7 +24586,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"whatwg-fetch@npm:>=0.10.0, whatwg-fetch@npm:^3.0.0, whatwg-fetch@npm:^3.6.20":
+"whatwg-fetch@npm:^3.0.0, whatwg-fetch@npm:^3.6.20":
   version: 3.6.20
   resolution: "whatwg-fetch@npm:3.6.20"
   checksum: 10/2b4ed92acd6a7ad4f626a6cb18b14ec982bbcaf1093e6fe903b131a9c6decd14d7f9c9ca3532663c2759d1bdf01d004c77a0adfb2716a5105465c20755a8c57c
