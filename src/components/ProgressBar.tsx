@@ -5,6 +5,7 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import {
   useAnimatedStyle,
   useSharedValue,
+  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
@@ -33,7 +34,10 @@ const ProgressBar = ({
 
   useEffect(() => {
     // withRepeat to repeat the animation
-    width.value = withSpring((progressIn / 100) * PROGRESS_WIDTH)
+    width.value = withSpring(
+      (progressIn / 100) * PROGRESS_WIDTH,
+      Reanimated3DefaultSpringConfig,
+    )
   }, [PROGRESS_WIDTH, width, progressIn])
 
   const progress = useAnimatedStyle(() => {

@@ -11,6 +11,7 @@ import {
 import {
   useAnimatedStyle,
   useSharedValue,
+  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
@@ -45,11 +46,11 @@ const ButtonPressAnimation = ({
 
   const onPressIn = () => {
     triggerImpact('light')
-    animation.value = withSpring(0.3)
+    animation.value = withSpring(0.3, Reanimated3DefaultSpringConfig)
     onPressInProp?.()
   }
   const onPressOut = () => {
-    animation.value = withSpring(0)
+    animation.value = withSpring(0, Reanimated3DefaultSpringConfig)
     onPressOutProp?.()
   }
 

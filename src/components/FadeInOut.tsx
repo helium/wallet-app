@@ -1,6 +1,10 @@
 import React, { memo, ReactNode } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated, {
+  AnimatedStyle,
+  FadeIn,
+  FadeOut,
+} from 'react-native-reanimated'
 
 export const FadeInSlow = FadeIn.duration(1200)
 export const FadeOutSlow = FadeOut.duration(1200)
@@ -13,7 +17,7 @@ const FadeInOut = ({
   slow,
 }: {
   children: ReactNode
-  style?: StyleProp<Animated.AnimateStyle<StyleProp<ViewStyle>>>
+  style?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>
   slow?: boolean
 }) => {
   return (

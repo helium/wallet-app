@@ -10,6 +10,7 @@ import { Insets, LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
@@ -166,7 +167,10 @@ const NavBar = ({
       return
     }
 
-    offset.value = withSpring(nextOffset, { mass: 0.5 })
+    offset.value = withSpring(nextOffset, {
+      ...Reanimated3DefaultSpringConfig,
+      mass: 0.5,
+    })
   }, [itemRects, offset, selectedValue])
 
   const items = useMemo(() => {

@@ -19,7 +19,6 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   interpolate,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -27,6 +26,7 @@ import {
   withTiming,
   cancelAnimation,
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
@@ -97,7 +97,7 @@ const AirdropScreen = () => {
           {
             duration: 2000,
           },
-          runOnJS(onAnimationComplete),
+          () => scheduleOnRN(onAnimationComplete),
         ),
         -1,
       )
@@ -126,7 +126,7 @@ const AirdropScreen = () => {
             {
               duration: 2000,
             },
-            runOnJS(onAnimationDropComplete),
+            () => scheduleOnRN(onAnimationDropComplete),
           ),
         ),
         -1,

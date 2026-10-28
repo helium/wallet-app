@@ -150,7 +150,7 @@ describe('Config', () => {
     })
   })
 
-  it('runs the reanimated plugin once in a release bundle', () => {
+  it('runs the worklets plugin once in a release bundle', () => {
     const options = withBuildEnv({}, () =>
       loadOptions({
         cwd: ROOT,
@@ -163,7 +163,7 @@ describe('Config', () => {
     )
 
     const { plugins } = options as { plugins: { key: string }[] }
-    expect(plugins.filter(({ key }) => key === 'reanimated')).toHaveLength(1)
+    expect(plugins.filter(({ key }) => key === 'worklets')).toHaveLength(1)
   })
 
   it('is the only place the app reads a key', () => {

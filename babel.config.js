@@ -2,7 +2,7 @@ module.exports = (api) => {
   api.cache(true)
 
   return {
-    // reanimated: false, as the plugin is listed below
+    // reanimated: false, as the worklets plugin is listed below
     presets: [['babel-preset-expo', { reanimated: false }]],
     plugins: [
       [
@@ -27,7 +27,7 @@ module.exports = (api) => {
           },
         },
       ],
-      'react-native-reanimated/plugin',
+      'react-native-worklets/plugin',
     ],
     env: {
       // Uncomment if you want to remove all logs in development

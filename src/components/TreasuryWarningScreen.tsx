@@ -10,11 +10,11 @@ import { ScrollView, View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import globalStyles from '@theme/globalStyles'
 import { useColors } from '@theme/themeHooks'
 import Text from './Text'
@@ -50,10 +50,8 @@ const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
     let animVal = animValue.value
 
     if (animValue.value === 0) {
-      animVal = withTiming(
-        animValue.value,
-        { duration: 300 },
-        runOnJS(animationCompleted),
+      animVal = withTiming(animValue.value, { duration: 300 }, () =>
+        scheduleOnRN(animationCompleted),
       )
     }
     return {

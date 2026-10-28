@@ -5,6 +5,7 @@ import { Modal } from 'react-native'
 import {
   useAnimatedStyle,
   useSharedValue,
+  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { Theme } from '@theme/theme'
@@ -45,10 +46,11 @@ const HeliumBottomSheet = ({
   const animate = useCallback(
     (val: number) => {
       offset.value = withSpring(val, {
+        ...Reanimated3DefaultSpringConfig,
         damping: 80,
         overshootClamping: true,
-        restDisplacementThreshold: 0.1,
-        restSpeedThreshold: 0.1,
+        // Matches the old 0.1 rest thresholds at the default 260 travel
+        energyThreshold: 1.5e-7,
         stiffness: 500,
       })
     },
