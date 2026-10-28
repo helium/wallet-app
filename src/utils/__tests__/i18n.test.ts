@@ -52,3 +52,38 @@ describe('i18n', () => {
     )
   })
 })
+
+describe('i18n without Intl.PluralRules', () => {
+  const intl = Intl as { PluralRules?: typeof Intl.PluralRules }
+  const originalPluralRules = Intl.PluralRules
+  let isolatedI18n: typeof i18n
+
+  beforeAll(() => {
+    intl.PluralRules = undefined
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      isolatedI18n = require('../i18n').default
+    })
+  })
+
+  afterAll(() => {
+    intl.PluralRules = originalPluralRules
+  })
+
+  it.each([
+    [0, '0 Recipients'],
+    [1, '1 Recipient'],
+    [2, '2 Recipients'],
+  ])('pluralizes %i recipients', (count, expected) => {
+    expect(isolatedI18n.t('payment.totalRecipients', { count })).toBe(expected)
+  })
+
+  it.each([
+    [1, '1 Hotspot'],
+    [5, '5 Hotspots'],
+  ])('pluralizes %i hotspots', (count, expected) => {
+    expect(
+      isolatedI18n.t('collectablesScreen.hotspots.hotspotCount', { count }),
+    ).toBe(expected)
+  })
+})
