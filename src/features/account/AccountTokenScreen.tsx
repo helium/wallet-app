@@ -5,14 +5,10 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import FadeInOut, { DelayedFadeIn } from '@components/FadeInOut'
 import ListItem from '@components/ListItem'
-import { NavBarHeight } from '@components/NavBar'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BottomSheet, {
-  BottomSheetFlatList,
-  WINDOW_HEIGHT,
-} from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -65,6 +61,7 @@ const AccountTokenScreen = () => {
   const [bottomScreenHeaderHeight, setBottomScreenHeaderHeight] =
     useLayoutHeight()
   const [backHeaderHeight, setBackHeaderHeight] = useLayoutHeight()
+  const [actualHeight, setActualHeight] = useLayoutHeight()
   const topHeaderRef = useRef<View>(null)
   const headerContainerRef = useRef<View>(null)
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
@@ -123,12 +120,8 @@ const AccountTokenScreen = () => {
     setOnEndReachedCalledDuringMomentum(false)
   }, [])
 
-  const actualHeight = useMemo(() => {
-    return WINDOW_HEIGHT - insets.bottom - NavBarHeight
-  }, [insets.bottom])
-
   const snapPoints = useMemo(() => {
-    if (!topHeaderYPos || !headerContainerYPos) return
+    if (!actualHeight || !topHeaderYPos || !headerContainerYPos) return
     const collapsed = Math.max(
       actualHeight - headerContainerYPos,
       MIN_BOTTOM_BAR_HEIGHT,
@@ -427,7 +420,11 @@ const AccountTokenScreen = () => {
   }, [mint])
 
   return (
-    <ReAnimatedBox entering={DelayedFadeIn} style={globalStyles.container}>
+    <ReAnimatedBox
+      entering={DelayedFadeIn}
+      style={globalStyles.container}
+      onLayout={setActualHeight}
+    >
       <BackScreen
         padding="none"
         title={t('accountsScreen.title', {
