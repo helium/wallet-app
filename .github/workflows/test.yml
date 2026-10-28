@@ -32,9 +32,11 @@ jobs:
         run: yarn
       - name: Write CI env
         run: cp .env.sample .env
+      - name: Generate native project
+        run: npx expo prebuild --clean --platform ios --no-install
       - name: Install pods
         working-directory: ios
-        run: RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
+        run: bundle exec pod install
       - name: Build iOS
         run: >-
           xcodebuild build
@@ -68,7 +70,11 @@ jobs:
           "client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000",
           "android_client_info":{"package_name":"com.helium.wallet.app"}},
           "api_key":[{"current_key":"ci-stub"}]}],"configuration_version":"1"}'
-          > android/app/google-services.json
+          > "$RUNNER_TEMP/google-services.json"
+      - name: Generate native project
+        run: >-
+          GOOGLE_SERVICES_JSON="$RUNNER_TEMP/google-services.json"
+          npx expo prebuild --clean --platform android --no-install
       - name: Build Android
         working-directory: android
         run: ./gradlew assembleDebug -PreactNativeArchitectures=x86_64

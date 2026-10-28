@@ -13,7 +13,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'react-native-url-polyfill/auto'
 import { Provider as ReduxProvider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
-import { name as appName } from './app.json'
 import App from './src/App'
 import { GlobalError } from './src/components/GlobalError'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
@@ -94,4 +93,4 @@ const render = () => {
   )
 }
 
-AppRegistry.registerComponent(appName, () => render)
+AppRegistry.registerComponent('main', () => render)

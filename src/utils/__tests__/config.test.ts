@@ -59,7 +59,12 @@ const METRO_CALLER = { name: 'metro', bundler: 'metro', platform: 'ios' }
 const loadBundlerEnv = (dotEnv: string): Record<string, string> => {
   const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), 'app-project-'))
   try {
-    ;['package.json', 'app.json', 'metro.config.js'].forEach((name) => {
+    ;[
+      'package.json',
+      'app.json',
+      'metro.config.js',
+      'metro.transformer.js',
+    ].forEach((name) => {
       fs.copyFileSync(path.join(ROOT, name), path.join(projectDir, name))
     })
     fs.symlinkSync(

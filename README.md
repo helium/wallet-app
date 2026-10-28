@@ -74,9 +74,9 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   yarn
   ```
 - Fill out your `.env.sample` with your values and rename it to `.env`. See [Environment variables](#environment-variables).
-- Install Pods
+- Generate the native projects (`ios/` and `android/` are generated, not committed)
   ```bash
-  yarn pod-install
+  yarn prebuild:clean
   ```
 - Start the ios app
   ```bash
@@ -93,10 +93,10 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
 git clone https://github.com/helium/wallet-app.git
 cd wallet-app
 yarn
-yarn pod-install
+yarn prebuild:clean
 ```
 
-> If `yarn pod-install` fails with error `xcrun: error: SDK "iphoneos" cannot be located`, run `sudo xcode-select --switch /Applications/Xcode.app` [[Stack Overflow]](https://stackoverflow.com/questions/68565356/xcrun-error-sdk-iphoneos-cannot-be-located)
+> If `yarn prebuild:clean` fails with error `xcrun: error: SDK "iphoneos" cannot be located`, run `sudo xcode-select --switch /Applications/Xcode.app` [[Stack Overflow]](https://stackoverflow.com/questions/68565356/xcrun-error-sdk-iphoneos-cannot-be-located)
 
 For IOS:
 

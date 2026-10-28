@@ -21,7 +21,9 @@ elif [ -f .env.sample ]; then
   done < .env.sample
 fi
 
-if [ -n "${GOOGLE_SERVICES_JSON:-}" ]; then
+# With CNG, an iOS build has no android/ folder, and Android prebuild copies
+# the file through android.googleServicesFile in app.config.ts.
+if [ -n "${GOOGLE_SERVICES_JSON:-}" ] && [ -d ./android/app ]; then
   echo "Copying google-services.json into place..."
   cp "$GOOGLE_SERVICES_JSON" ./android/app/google-services.json
 fi

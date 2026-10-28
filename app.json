@@ -1,23 +1,259 @@
 {
-  "name": "HeliumWallet",
-  "displayName": "Helium Wallet",
+  "name": "Helium Wallet",
+  "slug": "heliumwallet",
   "scheme": "heliumwallet",
   "jsEngine": "hermes",
+  "newArchEnabled": true,
+  "orientation": "portrait",
+  "icon": "./assets/icon.png",
   "ios": {
-    "bundleIdentifier": "com.helium.wallet.app"
+    "bundleIdentifier": "com.helium.wallet.app",
+    "appleTeamId": "PVM9KJZ2AD",
+    "supportsTablet": false,
+    "config": {
+      "usesNonExemptEncryption": false
+    },
+    "associatedDomains": ["applinks:wallet.helium.com"],
+    "entitlements": {
+      "com.apple.developer.icloud-container-identifiers": [],
+      "com.apple.developer.ubiquity-kvstore-identifier": "$(TeamIdentifierPrefix)$(CFBundleIdentifier)",
+      "com.apple.security.application-groups": [
+        "group.com.helium.wallet.app.onesignal",
+        "group.com.helium.mobile.wallet.widget"
+      ]
+    },
+    "infoPlist": {
+      "CFBundleURLTypes": [
+        {
+          "CFBundleTypeRole": "Editor",
+          "CFBundleURLSchemes": [
+            "com.googleusercontent.apps.605970674117-ll6b47atjj62m8i7j698pojgrbdf3ko1"
+          ]
+        },
+        {
+          "CFBundleURLSchemes": ["heliumwallet"]
+        }
+      ],
+      "NSAppTransportSecurity": {
+        "NSAllowsArbitraryLoads": false,
+        "NSAllowsLocalNetworking": true,
+        "NSExceptionDomains": {
+          "ec2-35-82-2-45.us-west-2.compute.amazonaws.com": {
+            "NSExceptionAllowsInsecureHTTPLoads": true
+          }
+        }
+      },
+      "NSBluetoothPeripheralUsageDescription": "This app uses Bluetooth to connect to Helium hotspots and other compatible devices for management.",
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow this app to use your location to add your Hotspots to the network",
+      "NSLocationAlwaysUsageDescription": "Allow this app to use your location to add your Hotspots to the network",
+      "NSLocationWhenInUseUsageDescription": "Allow this app to use your location to add your Hotspots to the network",
+      "NSUserActivityTypes": ["ConfigurationIntent"],
+      "UIBackgroundModes": ["remote-notification"],
+      "UIRequiredDeviceCapabilities": ["arm64"],
+      "UIViewControllerBasedStatusBarAppearance": false
+    },
+    "privacyManifests": {
+      "NSPrivacyTracking": false,
+      "NSPrivacyAccessedAPITypes": [
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+          "NSPrivacyAccessedAPITypeReasons": ["C617.1", "0A2A.1", "3B52.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+          "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+          "NSPrivacyAccessedAPITypeReasons": ["E174.1", "85F4.1"]
+        },
+        {
+          "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategorySystemBootTime",
+          "NSPrivacyAccessedAPITypeReasons": ["35F9.1"]
+        }
+      ]
+    }
   },
   "android": {
-    "package": "com.helium.wallet.app"
+    "package": "com.helium.wallet.app",
+    "icon": "./assets/android-icon.png",
+    "allowBackup": false,
+    "softwareKeyboardLayoutMode": "resize",
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.CAMERA",
+      "android.permission.BLUETOOTH",
+      "android.permission.BLUETOOTH_ADMIN",
+      "android.permission.ACCESS_FINE_LOCATION",
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.BLUETOOTH_CONNECT"
+    ],
+    "blockedPermissions": [
+      "android.permission.READ_PHONE_STATE",
+      "android.permission.ACCESS_BACKGROUND_LOCATION",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE",
+      "android.permission.SYSTEM_ALERT_WINDOW"
+    ],
+    "intentFilters": [
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "category": ["DEFAULT", "BROWSABLE"],
+        "data": [
+          {
+            "scheme": "https",
+            "host": "wallet.helium.com",
+            "pathPrefix": "/link_wallet"
+          }
+        ]
+      },
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "category": ["DEFAULT", "BROWSABLE"],
+        "data": [
+          {
+            "scheme": "https",
+            "host": "wallet.helium.com",
+            "pathPrefix": "/import_key"
+          }
+        ]
+      },
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "category": ["DEFAULT", "BROWSABLE"],
+        "data": [
+          {
+            "scheme": "https",
+            "host": "wallet.helium.com",
+            "pathPrefix": "/sign_hotspot"
+          }
+        ]
+      },
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "category": ["DEFAULT", "BROWSABLE"],
+        "data": [
+          {
+            "scheme": "https",
+            "host": "wallet.helium.com",
+            "pathPrefix": "/payment"
+          }
+        ]
+      },
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "category": ["DEFAULT", "BROWSABLE"],
+        "data": [
+          {
+            "scheme": "https",
+            "host": "wallet.helium.com",
+            "pathPrefix": "/dapp_login"
+          }
+        ]
+      },
+      {
+        "action": "VIEW",
+        "autoVerify": true,
+        "category": ["DEFAULT", "BROWSABLE"],
+        "data": [
+          {
+            "scheme": "https",
+            "host": "wallet.helium.com",
+            "pathPrefix": "/governance"
+          }
+        ]
+      }
+    ]
   },
   "plugins": [
     "@maplibre/maplibre-react-native",
     [
       "react-native-ble-plx",
       {
-        "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
+        "bluetoothAlwaysPermission": "This app uses Bluetooth to connect to Helium hotspots and other compatible devices for management."
       }
     ],
-    "expo-font",
+    [
+      "react-native-permissions",
+      {
+        "iosPermissions": ["Bluetooth", "LocationAlways", "LocationWhenInUse"]
+      }
+    ],
+    [
+      "expo-camera",
+      {
+        "cameraPermission": "Allow Helium to use the camera to scan QR codes",
+        "microphonePermission": false,
+        "recordAudioAndroid": false
+      }
+    ],
+    [
+      "expo-local-authentication",
+      {
+        "faceIDPermission": "Allow Helium to authenticate with Face ID"
+      }
+    ],
+    [
+      "expo-font",
+      {
+        "fonts": [
+          "./src/assets/fonts/DMSans-Bold.ttf",
+          "./src/assets/fonts/DMSans-BoldItalic.ttf",
+          "./src/assets/fonts/DMSans-Italic.ttf",
+          "./src/assets/fonts/DMSans-Medium.ttf",
+          "./src/assets/fonts/DMSans-MediumItalic.ttf",
+          "./src/assets/fonts/DMSans-Regular.ttf"
+        ]
+      }
+    ],
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/splash.png",
+        "backgroundColor": "#000000",
+        "resizeMode": "cover"
+      }
+    ],
+    [
+      "expo-build-properties",
+      {
+        "android": {
+          "compileSdkVersion": 36,
+          "targetSdkVersion": 36,
+          "minSdkVersion": 24,
+          "buildToolsVersion": "36.0.0",
+          "kotlinVersion": "2.0.21",
+          "enableMinifyInReleaseBuilds": false,
+          "packagingOptions": {
+            "pickFirst": [
+              "lib/x86/libc++_shared.so",
+              "lib/x86_64/libc++_shared.so",
+              "lib/armeabi-v7a/libc++_shared.so",
+              "lib/arm64-v8a/libc++_shared.so",
+              "**/libcrypto.so"
+            ]
+          },
+          "extraMavenRepos": ["https://jitpack.io"]
+        },
+        "ios": {
+          "deploymentTarget": "15.1"
+        }
+      }
+    ],
+    [
+      "onesignal-expo-plugin",
+      {
+        "mode": "development",
+        "iPhoneDeploymentTarget": "13.4"
+      }
+    ],
+    "@bacons/apple-targets",
+    "./plugins/withHeliumNative",
     "expo-secure-store",
     "expo-web-browser"
   ],
@@ -26,5 +262,6 @@
       "projectId": "737e4e9e-0a70-4685-b6cd-4ac3e91b0286"
     }
   },
-  "owner": "nova-labs"
+  "owner": "nova-labs",
+  "userInterfaceStyle": "automatic"
 }

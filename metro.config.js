@@ -18,7 +18,7 @@ const { assetExts, sourceExts } = defaultConfig.resolver
  */
 defaultConfig.transformer = {
   ...defaultConfig.transformer,
-  babelTransformerPath: require.resolve('react-native-svg-transformer'),
+  babelTransformerPath: require.resolve('./metro.transformer'),
   getTransformOptions: async () => ({
     transform: {
       experimentalImportSupport: false,
@@ -69,7 +69,12 @@ defaultConfig.resolver = {
   ...defaultConfig.resolver,
   assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie', 'ico'],
   sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
-  resolveRequest: (context, moduleName, platform) => {
+  resolveRequest: (expoContext, moduleName, platform) => {
+    // Expo's transform worker flags every `import` as an ES import, so Metro
+    // resolves package exports with the "import" condition and picks ESM
+    // builds the RN CLI never bundled (use-latest-callback's esm.mjs breaks
+    // TabBar). Resolve with "require", as the bare app always did.
+    const context = { ...expoContext, isESMImport: false }
     const singleCopyPkg = SINGLE_COPY_PKGS.find(
       (p) => moduleName === p || moduleName.startsWith(`${p}/`),
     )
