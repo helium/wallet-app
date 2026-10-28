@@ -1,0 +1,15 @@
+diff --git a/node_modules/@react-native-community/netinfo/android/build.gradle b/node_modules/@react-native-community/netinfo/android/build.gradle
+index d5fda29..46ea8c0 100644
+--- a/node_modules/@react-native-community/netinfo/android/build.gradle
++++ b/node_modules/@react-native-community/netinfo/android/build.gradle
+@@ -80,6 +80,10 @@ if (isNewArchitectureEnabled()) {
+ }
+ 
+ android {
++  // AGP 9 removed the global default; buildConfigField needs it on.
++  buildFeatures {
++    buildConfig true
++  }
+   compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
+ 
+   def agpVersion = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION

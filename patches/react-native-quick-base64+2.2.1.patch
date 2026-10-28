@@ -1,0 +1,39 @@
+diff --git a/node_modules/react-native-quick-base64/android/build.gradle b/node_modules/react-native-quick-base64/android/build.gradle
+index 6a104e7..b8fc42d 100644
+--- a/node_modules/react-native-quick-base64/android/build.gradle
++++ b/node_modules/react-native-quick-base64/android/build.gradle
+@@ -50,7 +50,7 @@ android {
+     externalNativeBuild {
+       cmake {
+         cppFlags "-O2 -frtti -fexceptions -Wall -Wno-unused-variable -fstack-protector-all"
+-        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
++        arguments "-DANDROID_STL=c++_shared"
+         abiFilters (*reactNativeArchitectures())
+       }
+     }
+diff --git a/node_modules/react-native-quick-base64/ios/QuickBase64Module.mm b/node_modules/react-native-quick-base64/ios/QuickBase64Module.mm
+index 726dcb8..f6363a6 100644
+--- a/node_modules/react-native-quick-base64/ios/QuickBase64Module.mm
++++ b/node_modules/react-native-quick-base64/ios/QuickBase64Module.mm
+@@ -3,6 +3,12 @@
+ #import <React/RCTUtils.h>
+ #import "../cpp/react-native-quick-base64.h"
+ 
++// RN 0.88 drops the RCTCxxBridge interface. The bridgeless RCTBridgeProxy
++// still answers -runtime, so declare that selector on RCTBridge.
++@interface RCTBridge (QuickBase64Runtime)
++- (void *)runtime;
++@end
++
+ @implementation QuickBase64Module
+ 
+ @synthesize bridge = _bridge;
+@@ -20,7 +26,7 @@ RCT_EXPORT_MODULE(QuickBase64)
+ }
+ 
+ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install) {
+-  RCTCxxBridge *cxxBridge = (RCTCxxBridge *)_bridge;
++  RCTBridge *cxxBridge = _bridge;
+   if (cxxBridge == nil || cxxBridge.runtime == nil) {
+     NSLog(@"[QuickBase64] Could not access JSI runtime");
+     return @false;

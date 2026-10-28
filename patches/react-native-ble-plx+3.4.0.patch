@@ -1,11 +1,26 @@
+diff --git a/node_modules/react-native-ble-plx/android/build.gradle b/node_modules/react-native-ble-plx/android/build.gradle
+index 54b4275..e452bb1 100644
+--- a/node_modules/react-native-ble-plx/android/build.gradle
++++ b/node_modules/react-native-ble-plx/android/build.gradle
+@@ -44,6 +44,10 @@ def supportsNamespace() {
+ }
+ 
+ android {
++  // AGP 9 removed the global default; buildConfigField needs it on.
++  buildFeatures {
++    buildConfig true
++  }
+   if (supportsNamespace()) {
+     namespace "com.bleplx"
+ 
 diff --git a/node_modules/react-native-ble-plx/ios/BlePlx.m b/node_modules/react-native-ble-plx/ios/BlePlx.m
 index 8e0da36..2e28852 100644
 --- a/node_modules/react-native-ble-plx/ios/BlePlx.m
 +++ b/node_modules/react-native-ble-plx/ios/BlePlx.m
-@@ -54,10 +54,14 @@ + (BOOL)requiresMainQueueSetup {
+@@ -54,10 +54,14 @@ RCT_EXPORT_MODULE();
      return YES;
  }
-
+ 
 -RCT_EXPORT_METHOD(createClient:(NSString*)restoreIdentifierKey) {
 -    _manager = [BleAdapterFactory getNewAdapterWithQueue:self.methodQueue
 +RCT_EXPORT_METHOD(createClient:(id)restoreIdentifierKey) {
@@ -18,10 +33,10 @@ index 8e0da36..2e28852 100644
 -    _manager.delegate = self;
 +  _manager.delegate = self;
  }
-
+ 
  RCT_EXPORT_METHOD(destroyClient) {
-@@ -97,7 +101,13 @@ - (void)invalidate {
-
+@@ -97,7 +101,13 @@ RCT_EXPORT_METHOD(   state:(RCTPromiseResolveBlock)resolve
+ 
  RCT_EXPORT_METHOD(startDeviceScan:(NSArray*)filteredUUIDs
                            options:(NSDictionary*)options) {
 -    [_manager startDeviceScan:filteredUUIDs options:options];
@@ -33,5 +48,5 @@ index 8e0da36..2e28852 100644
 +  }
 +  [_manager startDeviceScan:filteredUUIDs options:options];
  }
-
+ 
  RCT_EXPORT_METHOD(stopDeviceScan) {

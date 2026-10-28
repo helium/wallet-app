@@ -12,9 +12,9 @@
     "strict": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "customConditions": ["react-native", "react-native-legacy-deep-imports"],
     "paths": {
       "@helium/idls/lib/types/lazy_distributor": [
         "./node_modules/@helium/idls/lib/types/lazy_distributor.d.ts"
@@ -44,12 +44,13 @@
       "@assets": ["./src/assets"],
       "@components/*": ["./src/components/*"],
       "@constants/*": ["./src/constants/*"],
-      "@components": ["src/components/index"],
+      "@components": ["./src/components/index"],
       "@hooks/*": ["./src/hooks/*"],
       "@theme/*": ["./src/theme/*"],
       "@utils/*": ["./src/utils/*"],
       "@storage/*": ["./src/storage/*"],
-      "@types/*": ["./src/types/*"]
+      "@types/*": ["./src/types/*"],
+      "src/*": ["./src/*"]
     }
   },
   "exclude": [

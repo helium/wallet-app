@@ -1,0 +1,15 @@
+diff --git a/node_modules/@react-native-community/checkbox/android/build.gradle b/node_modules/@react-native-community/checkbox/android/build.gradle
+index 743c7d1..1e4e61f 100644
+--- a/node_modules/@react-native-community/checkbox/android/build.gradle
++++ b/node_modules/@react-native-community/checkbox/android/build.gradle
+@@ -42,6 +42,10 @@ def supportsNamespace() {
+ }
+ 
+ android {
++  // AGP 9 removed the global default; buildConfigField needs it on.
++  buildFeatures {
++    buildConfig true
++  }
+     if (supportsNamespace()) {
+         namespace "com.reactnativecommunity.checkbox"
+     }

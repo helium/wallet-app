@@ -1,0 +1,15 @@
+diff --git a/node_modules/lottie-react-native/android/build.gradle b/node_modules/lottie-react-native/android/build.gradle
+index 5e939d6..117dc91 100644
+--- a/node_modules/lottie-react-native/android/build.gradle
++++ b/node_modules/lottie-react-native/android/build.gradle
+@@ -45,6 +45,10 @@ if (isNewArchitectureEnabled()) {
+ }
+ 
+ android {
++  // AGP 9 removed the global default; buildConfigField needs it on.
++  buildFeatures {
++    buildConfig true
++  }
+     // Conditional for compatibility with AGP <4.2.
+     if (project.android.hasProperty("namespace")) {
+         namespace = "com.airbnb.android.react.lottie"

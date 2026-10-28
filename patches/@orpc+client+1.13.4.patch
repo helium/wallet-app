@@ -1,0 +1,14 @@
+diff --git a/node_modules/@orpc/client/dist/index.mjs b/node_modules/@orpc/client/dist/index.mjs
+index 4c6a02a..b467b40 100644
+--- a/node_modules/@orpc/client/dist/index.mjs
++++ b/node_modules/@orpc/client/dist/index.mjs
+@@ -65,7 +65,8 @@ function consumeEventIterator(iterator, options) {
+ 
+ function createORPCClient(link, options = {}) {
+   const path = options.path ?? [];
+-  const procedureClient = async (...[input, options2 = {}]) => {
++  // Hermes V1 rejects a destructured rest parameter.
++  const procedureClient = async (input, options2 = {}) => {
+     return await link.call(path, input, resolveFriendlyClientOptions(options2));
+   };
+   const recursive = new Proxy(procedureClient, {

@@ -1,0 +1,15 @@
+diff --git a/node_modules/@maplibre/maplibre-react-native/android/build.gradle b/node_modules/@maplibre/maplibre-react-native/android/build.gradle
+index 7d42963..1cc86e8 100644
+--- a/node_modules/@maplibre/maplibre-react-native/android/build.gradle
++++ b/node_modules/@maplibre/maplibre-react-native/android/build.gradle
+@@ -53,6 +53,10 @@ def supportsNamespace() {
+ }
+ 
+ android {
++  // AGP 9 removed the global default; buildConfigField needs it on.
++  buildFeatures {
++    buildConfig true
++  }
+   if (supportsNamespace()) {
+     namespace "org.maplibre.reactnative"
+ 

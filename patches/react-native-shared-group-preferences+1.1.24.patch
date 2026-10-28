@@ -11,3 +11,14 @@ index a0014bc..cdafb5f 100644
      }
  
      dependencies {
+@@ -12,8 +12,8 @@
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion 33
+-    buildToolsVersion "33.0.0"
++    compileSdkVersion rootProject.ext.has('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 36
++    buildToolsVersion rootProject.ext.has('buildToolsVersion') ? rootProject.ext.buildToolsVersion : "36.0.0"
+ 
+     defaultConfig {
+         minSdkVersion 21

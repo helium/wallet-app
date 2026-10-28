@@ -10,3 +10,27 @@ diff --git a/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/
                          requestCode: Int,
                          resultCode: Int,
                          data: Intent?
+@@ -93,7 +93,7 @@
+                         localAssociation.close()
+                     }
+                 }
+-                currentActivity?.startActivityForResult(intent, REQUEST_LOCAL_ASSOCIATION)
++                getCurrentActivity()?.startActivityForResult(intent, REQUEST_LOCAL_ASSOCIATION)
+                         ?: throw NullPointerException(
+                                 "Could not find a current activity from which to launch a local association"
+                         )
+diff --git a/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/build.gradle b/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/build.gradle
+index 0000000..0000000 100644
+--- a/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/build.gradle
++++ b/node_modules/@solana-mobile/mobile-wallet-adapter-protocol/android/build.gradle
+@@ -34,6 +34,10 @@
+ }
+ 
+ android {
++  // AGP 9 removed the global default; buildConfigField needs it on.
++  buildFeatures {
++    buildConfig true
++  }
+   compileSdkVersion getExtOrIntegerDefault('compileSdkVersion')
+ 
+   defaultConfig {

@@ -38,7 +38,7 @@ const withPodPostInstall = (config) =>
 const GRADLE_PROPERTIES = {
   'org.gradle.jvmargs': '-Xmx8192m -XX:MaxMetaspaceSize=1024m',
   'android.enableJetifier': 'true',
-  'android.suppressUnsupportedCompileSdk': '36',
+  'android.suppressUnsupportedCompileSdk': '37',
 }
 
 const withHeliumGradleProperties = (config) =>
