@@ -67,21 +67,27 @@ const useTxn = (
     true,
   )
   const decimalsByMint = useMemo(() => {
-    return mintAccs?.reduce((acc, curr) => {
-      if (curr.info) {
-        acc[curr.publicKey.toBase58()] = (curr.info as Mint).decimals
-      }
-      return acc
-    }, {} as { [key: string]: number })
+    return mintAccs?.reduce(
+      (acc, curr) => {
+        if (curr.info) {
+          acc[curr.publicKey.toBase58()] = (curr.info as Mint).decimals
+        }
+        return acc
+      },
+      {} as { [key: string]: number },
+    )
   }, [mintAccs])
 
   const symbolsByMint = useMemo(() => {
-    return metadataAccs?.reduce((acc, curr, index) => {
-      if (curr.info && mintKeys[index]) {
-        acc[mintKeys[index].toBase58()] = curr.info.data.symbol
-      }
-      return acc
-    }, {} as { [key: string]: string })
+    return metadataAccs?.reduce(
+      (acc, curr, index) => {
+        if (curr.info && mintKeys[index]) {
+          acc[mintKeys[index].toBase58()] = curr.info.data.symbol
+        }
+        return acc
+      },
+      {} as { [key: string]: string },
+    )
   }, [metadataAccs, mintKeys])
 
   const isSending = useMemo(() => {

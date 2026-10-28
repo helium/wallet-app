@@ -917,8 +917,8 @@ export const LockTokensModal = ({
                     isSubmitting
                       ? ''
                       : insufficientBalance
-                      ? t('generic.insufficientSol')
-                      : t('gov.transactions.lockTokens')
+                        ? t('generic.insufficientSol')
+                        : t('gov.transactions.lockTokens')
                   }
                   titleColor="black"
                   onPress={handleSubmit}

@@ -323,8 +323,8 @@ export const DelegateTokensModal = ({
                   isSubmitting
                     ? ''
                     : insufficientBalance
-                    ? 'Insufficient SOL Balance'
-                    : 'Delegate Tokens'
+                      ? 'Insufficient SOL Balance'
+                      : 'Delegate Tokens'
                 }
                 titleColor="black"
                 onPress={handleSubmit}

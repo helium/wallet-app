@@ -97,9 +97,8 @@ export const syncTokenAccounts = createAsyncThunk(
         const batchMints = uniqueMints.slice(i, i + BATCH_SIZE)
 
         try {
-          const mintAccountInfos = await connection.getMultipleAccountsInfo(
-            batch,
-          )
+          const mintAccountInfos =
+            await connection.getMultipleAccountsInfo(batch)
 
           const batchMintInfos = batchMints.map((mintStr, index) => {
             try {

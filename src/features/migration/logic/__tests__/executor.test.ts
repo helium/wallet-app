@@ -22,7 +22,7 @@ const makeDeps = (
   const log: string[] = []
   const deps: ExecutorDeps = {
     requestMigrate: async () =>
-      ({ transactionData: txData(1) } as MigrateOutput),
+      ({ transactionData: txData(1) }) as MigrateOutput,
     signBatch: async (data) => {
       log.push(`sign:${data.transactions.length}`)
       return data.transactions
@@ -87,7 +87,7 @@ describe('runMigration', () => {
           transactionData: txData(2),
           hasMore: true,
           nextParams: input,
-        } as MigrateOutput),
+        }) as MigrateOutput,
       pollStatus: async () => ({
         status: 'partial',
         transactions: [

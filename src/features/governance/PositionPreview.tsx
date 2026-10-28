@@ -101,8 +101,8 @@ export const PositionPreview: React.FC<
             {isConstant
               ? getMinDurationFmt(lockup.startTs, lockup.endTs)
               : isDelegated
-              ? getTimeLeftFromNowFmt(lockup.endTs.add(new BN(EPOCH_LENGTH)))
-              : getTimeLeftFromNowFmt(lockup.endTs)}
+                ? getTimeLeftFromNowFmt(lockup.endTs.add(new BN(EPOCH_LENGTH)))
+                : getTimeLeftFromNowFmt(lockup.endTs)}
           </Text>
           <Text variant="body3" mr="xxs">
             {isConstant ? 'decaying delayed' : 'decaying'}

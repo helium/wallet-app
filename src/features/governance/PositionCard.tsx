@@ -943,10 +943,10 @@ export const PositionCard = ({
                       {isConstant
                         ? getMinDurationFmt(lockup.startTs, lockup.endTs)
                         : isDelegated
-                        ? getTimeLeftFromNowFmt(
-                            lockup.endTs.add(new BN(EPOCH_LENGTH)),
-                          )
-                        : getTimeLeftFromNowFmt(lockup.endTs)}
+                          ? getTimeLeftFromNowFmt(
+                              lockup.endTs.add(new BN(EPOCH_LENGTH)),
+                            )
+                          : getTimeLeftFromNowFmt(lockup.endTs)}
                     </Text>
                   </Box>
                   {hasGenesisMultiplier && (

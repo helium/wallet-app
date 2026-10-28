@@ -93,10 +93,13 @@ export const RevokeProxyScreen = () => {
 
   const handleSubmit = useCallback(async () => {
     if (proxyWallet && positions) {
-      const positionsByKey = positions.reduce((acc, p) => {
-        acc[p.pubkey.toString()] = p
-        return acc
-      }, {} as Record<string, PositionWithMeta>)
+      const positionsByKey = positions.reduce(
+        (acc, p) => {
+          acc[p.pubkey.toString()] = p
+          return acc
+        },
+        {} as Record<string, PositionWithMeta>,
+      )
       const selectedPositionKeys = Array.from(selectedPositions)
       const positionMints = selectedPositionKeys
         .map((k) => positionsByKey[k]?.mint.toBase58())

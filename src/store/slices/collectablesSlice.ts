@@ -41,9 +41,8 @@ export const fetchCollectables = createAsyncThunk(
     )
     const groupedCollectables = solUtils.groupNFTs(fetchedCollectables)
 
-    const collectablesWithMetadata = await solUtils.getNFTsMetadata(
-      fetchedCollectables,
-    )
+    const collectablesWithMetadata =
+      await solUtils.getNFTsMetadata(fetchedCollectables)
 
     const groupedCollectablesWithMeta = solUtils.groupNFTsWithMetaData(
       collectablesWithMetadata,

@@ -64,7 +64,7 @@ const StatusBanner = () => {
   }, [hitSlop, primaryText])
 
   const iconStyle = useMemo(
-    () => ({ icon: 'danger', position: 'right' } as Icon),
+    () => ({ icon: 'danger', position: 'right' }) as Icon,
     [],
   )
 

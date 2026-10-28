@@ -5,11 +5,7 @@ import type { MigrateInput } from '@helium/blockchain-api'
 export type { MigrateInput }
 
 export type MigrationStatus =
-  | 'idle'
-  | 'running'
-  | 'partial'
-  | 'failed'
-  | 'complete'
+  'idle' | 'running' | 'partial' | 'failed' | 'complete'
 
 export type RunStatus = 'complete' | 'partial' | 'failed' | 'pending'
 

@@ -192,9 +192,8 @@ const useSolTxns = ({
         anchorProvider,
       )) as unknown as Program<HeliumEntityManager>
       const keyToAssetKey = keyToAssetForAsset(asset)
-      const keyToAsset = await hemProgram.account.keyToAssetV0.fetch(
-        keyToAssetKey,
-      )
+      const keyToAsset =
+        await hemProgram.account.keyToAssetV0.fetch(keyToAssetKey)
       const entityKey = decodeEntityKey(
         keyToAsset.entityKey,
         keyToAsset.keySerialization,

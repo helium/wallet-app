@@ -182,7 +182,7 @@ export const SolanaConnection = () =>
     devnet: new WrappedConnection(`${Config.DEVNET_RPC_URL}`),
     testnet: new WrappedConnection(clusterApiUrl('testnet')),
     'mainnet-beta': new WrappedConnection(`${Config.MAINNET_RPC_URL}`),
-  } as const)
+  }) as const
 
 export const getConnection = (cluster: Cluster) =>
   SolanaConnection()[cluster] || SolanaConnection().devnet
@@ -245,9 +245,8 @@ export const calculateRequiredSol = async (
   try {
     let transaction: VersionedTransaction
 
-    const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
-      'recent',
-    )
+    const { blockhash } =
+      await anchorProvider.connection.getLatestBlockhash('recent')
     if (typeof tx === 'string') {
       try {
         const buffer = Buffer.from(tx, 'base64')
@@ -1010,19 +1009,22 @@ export const getNFTsMetadata = async (collectables: CompressedNFT[]) =>
  * @returns grouped collecables by token type
  */
 export const groupNFTs = (collectables: CompressedNFT[]) => {
-  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.content.metadata
-    const collection = cur.grouping.find(
-      (k) => k.group_key === 'collection',
-    )?.group_value
+  const collectablesGroupedByName = collectables.reduce(
+    (acc, cur) => {
+      const { symbol } = cur.content.metadata
+      const collection = cur.grouping.find(
+        (k) => k.group_key === 'collection',
+      )?.group_value
 
-    if (!acc[collection || symbol]) {
-      acc[collection || symbol] = [cur]
-    } else {
-      acc[collection || symbol].push(cur)
-    }
-    return acc
-  }, {} as Record<string, any[]>)
+      if (!acc[collection || symbol]) {
+        acc[collection || symbol] = [cur]
+      } else {
+        acc[collection || symbol].push(cur)
+      }
+      return acc
+    },
+    {} as Record<string, any[]>,
+  )
 
   return collectablesGroupedByName
 }
@@ -1033,19 +1035,22 @@ export const groupNFTs = (collectables: CompressedNFT[]) => {
  * @returns grouped collecables by token type
  */
 export const groupNFTsWithMetaData = (collectables: CompressedNFT[]) => {
-  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const { symbol } = cur.content.metadata
-    const collection = cur.grouping.find(
-      (k) => k.group_key === 'collection',
-    )?.group_value
+  const collectablesGroupedByName = collectables.reduce(
+    (acc, cur) => {
+      const { symbol } = cur.content.metadata
+      const collection = cur.grouping.find(
+        (k) => k.group_key === 'collection',
+      )?.group_value
 
-    if (!acc[collection || symbol]) {
-      acc[collection || symbol] = [cur]
-    } else {
-      acc[collection || symbol].push(cur)
-    }
-    return acc
-  }, {} as Record<string, Collectable[]>)
+      if (!acc[collection || symbol]) {
+        acc[collection || symbol] = [cur]
+      } else {
+        acc[collection || symbol].push(cur)
+      }
+      return acc
+    },
+    {} as Record<string, Collectable[]>,
+  )
 
   return collectablesGroupedByName
 }
@@ -1064,10 +1069,9 @@ export const getHotspotPendingRewards = async (
   const dao = DAO_KEY
   const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
-  const entityKeys = ktaAccs.map(
-    (kta) =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      decodeEntityKey(kta.entityKey, kta.keySerialization)!,
+  const entityKeys = ktaAccs.map((kta) =>
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    decodeEntityKey(kta.entityKey, kta.keySerialization)!,
   )
 
   const mobileRewards = await getPendingRewards(
@@ -1349,10 +1353,9 @@ export async function annotateWithPendingRewards(
     keyToAssetForAsset(toAsset(h as CompressedNFT)),
   )
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
-  const entityKeys = ktaAccs.map(
-    (kta) =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      decodeEntityKey(kta.entityKey, kta.keySerialization)!,
+  const entityKeys = ktaAccs.map((kta) =>
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    decodeEntityKey(kta.entityKey, kta.keySerialization)!,
   )
 
   const mobileRewards = await getPendingRewards(
@@ -1414,20 +1417,23 @@ export async function annotateWithPendingRewards(
  * @returns grouped collecables by token type
  */
 export const groupCollectables = (collectables: CompressedNFT[]) => {
-  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const {
-      content: {
-        metadata: { symbol },
-      },
-    } = cur
+  const collectablesGroupedByName = collectables.reduce(
+    (acc, cur) => {
+      const {
+        content: {
+          metadata: { symbol },
+        },
+      } = cur
 
-    if (!acc[symbol || 'UNKNOWN']) {
-      acc[symbol || 'UNKNOWN'] = [cur]
-    } else {
-      acc[symbol || 'UNKOWN'].push(cur)
-    }
-    return acc
-  }, {} as Record<string, CompressedNFT[]>)
+      if (!acc[symbol || 'UNKNOWN']) {
+        acc[symbol || 'UNKNOWN'] = [cur]
+      } else {
+        acc[symbol || 'UNKOWN'].push(cur)
+      }
+      return acc
+    },
+    {} as Record<string, CompressedNFT[]>,
+  )
 
   return collectablesGroupedByName
 }
@@ -1440,19 +1446,22 @@ export const groupCollectables = (collectables: CompressedNFT[]) => {
 export const groupCollectablesWithMetaData = (
   collectables: CompressedNFT[],
 ) => {
-  const collectablesGroupedByName = collectables.reduce((acc, cur) => {
-    const {
-      content: {
-        metadata: { symbol },
-      },
-    } = cur
-    if (!acc[symbol || 'UNKNOWN']) {
-      acc[symbol || 'UNKNOWN'] = [cur]
-    } else {
-      acc[symbol || 'UNKNOWN'].push(cur)
-    }
-    return acc
-  }, {} as Record<string, CompressedNFT[]>)
+  const collectablesGroupedByName = collectables.reduce(
+    (acc, cur) => {
+      const {
+        content: {
+          metadata: { symbol },
+        },
+      } = cur
+      if (!acc[symbol || 'UNKNOWN']) {
+        acc[symbol || 'UNKNOWN'] = [cur]
+      } else {
+        acc[symbol || 'UNKNOWN'].push(cur)
+      }
+      return acc
+    },
+    {} as Record<string, CompressedNFT[]>,
+  )
 
   return collectablesGroupedByName
 }
@@ -1525,13 +1534,16 @@ export const getAllTransactions = async (
         commitment: 'confirmed',
         maxSupportedTransactionVersion: 1,
       })
-    ).reduce((acc, tx) => {
-      const sig = tx?.transaction.signatures[0]
-      if (sig) {
-        acc[sig] = tx
-      }
-      return acc
-    }, {} as { [key: string]: VersionedTransactionResponse })
+    ).reduce(
+      (acc, tx) => {
+        const sig = tx?.transaction.signatures[0]
+        if (sig) {
+          acc[sig] = tx
+        }
+        return acc
+      },
+      {} as { [key: string]: VersionedTransactionResponse },
+    )
     const cachedLuts: { [key: string]: AddressLookupTableAccount } = {}
     // eslint-disable-next-line no-restricted-syntax
     for (const rawTx of Object.values(txs)) {

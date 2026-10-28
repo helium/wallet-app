@@ -30,10 +30,13 @@ const useVisibleTokensHook = () => {
 
       if (response) {
         setVisibleTokens(
-          Object.entries(response).reduce((acc, [key, s]) => {
-            acc[key] = new Set([...s, ...DEFAULT_TOKENS])
-            return acc
-          }, {} as Record<string, Set<string>>),
+          Object.entries(response).reduce(
+            (acc, [key, s]) => {
+              acc[key] = new Set([...s, ...DEFAULT_TOKENS])
+              return acc
+            },
+            {} as Record<string, Set<string>>,
+          ),
         )
       }
     } catch {

@@ -429,8 +429,8 @@ const AutomationSetupScreen = () => {
                 {error instanceof Error
                   ? error.message
                   : statusError instanceof Error
-                  ? statusError.message
-                  : String(error || statusError)}
+                    ? statusError.message
+                    : String(error || statusError)}
               </Text>
             </Box>
           )}
@@ -515,8 +515,8 @@ const AutomationSetupScreen = () => {
                 insufficientSol
                   ? t('generic.insufficientSol')
                   : createAutomationLoading
-                  ? undefined
-                  : t('generic.save')
+                    ? undefined
+                    : t('generic.save')
               }
               backgroundColor="white"
               backgroundColorDisabled="grey400"

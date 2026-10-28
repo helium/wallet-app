@@ -7,12 +7,15 @@ export function useHotspotAddress(
 ): string | undefined {
   const { metadata } = hotspot?.content || {}
   const attributes = useMemo(() => {
-    return metadata?.attributes?.reduce((acc: any, att: any) => {
-      if (att && att.trait_type && typeof att.value !== 'undefined') {
-        acc[att.trait_type] = att.value
-      }
-      return acc
-    }, {} as Record<string, string>)
+    return metadata?.attributes?.reduce(
+      (acc: any, att: any) => {
+        if (att && att.trait_type && typeof att.value !== 'undefined') {
+          acc[att.trait_type] = att.value
+        }
+        return acc
+      },
+      {} as Record<string, string>,
+    )
   }, [metadata])
   return useMemo(() => {
     if (attributes) {

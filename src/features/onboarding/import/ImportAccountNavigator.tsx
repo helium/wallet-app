@@ -21,7 +21,7 @@ const ImportAccountNavigator = () => {
     () =>
       ({
         headerShown: false,
-      } as StackNavigationOptions),
+      }) as StackNavigationOptions,
     [],
   )
 

@@ -21,7 +21,7 @@ const CreateAccountNavigator = () => {
     () =>
       ({
         headerShown: false,
-      } as StackNavigationOptions),
+      }) as StackNavigationOptions,
     [],
   )
   return (

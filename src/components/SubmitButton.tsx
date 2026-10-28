@@ -27,12 +27,11 @@ const SubmitButton = ({
   const backgroundActual =
     rest[backgroundColor as keyof typeof rest] || rest.secondaryIcon
   const icon = useMemo(
-    () => () =>
-      (
-        <Box testID="SubmitButton.Thumb">
-          <SwipeIcon color={colorActual} />
-        </Box>
-      ),
+    () => () => (
+      <Box testID="SubmitButton.Thumb">
+        <SwipeIcon color={colorActual} />
+      </Box>
+    ),
     [colorActual],
   )
 

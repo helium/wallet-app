@@ -93,7 +93,7 @@ const SettingsListItem = ({
         variant: 'regular',
         fontSize: 16,
         color: 'surfaceSecondaryText',
-      } as TextProps),
+      }) as TextProps,
     [],
   )
 

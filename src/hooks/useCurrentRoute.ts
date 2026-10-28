@@ -9,8 +9,7 @@ export const useCurrentRoute = () => {
     ): NavigationState | undefined => {
       if (!state || !state.routes || state.routes.length === 0) return state
       const nestedState = state.routes[state.index]?.state as
-        | NavigationState
-        | undefined
+        NavigationState | undefined
       return nestedState ? getCurrentRoute(nestedState) : state
     }
 

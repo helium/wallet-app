@@ -57,12 +57,12 @@ const WifiSettings = () => {
 
   const handleNetworkSelected = useCallback(
     ({
-        network,
-        type,
-      }: {
-        network: string
-        type: 'configured' | 'available'
-      }) =>
+      network,
+      type,
+    }: {
+      network: string
+      type: 'configured' | 'available'
+    }) =>
       async () => {
         if (type === 'available') {
           navigation.push('WifiSetup', { network })

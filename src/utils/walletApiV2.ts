@@ -125,9 +125,8 @@ export const postPayment = async ({
 }
 
 export const getRecommendedDapps = async () => {
-  const { data } = await axiosInstance.get<Record<Cluster, string[]>>(
-    '/recommendedDapps',
-  )
+  const { data } =
+    await axiosInstance.get<Record<Cluster, string[]>>('/recommendedDapps')
   return data
 }
 

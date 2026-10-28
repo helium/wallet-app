@@ -275,9 +275,8 @@ const useLedger = () => {
 
       try {
         // Batch check SOL balances
-        const accountInfos = await rpcConnection.getMultipleAccountsInfo(
-          publicKeys,
-        )
+        const accountInfos =
+          await rpcConnection.getMultipleAccountsInfo(publicKeys)
 
         if (accountInfos) {
           solBalances.push(
@@ -292,9 +291,8 @@ const useLedger = () => {
           publicKeys.map((pk) => getAssociatedTokenAddress(HNT_MINT, pk)),
         )
 
-        const hntAccountInfos = await rpcConnection.getMultipleAccountsInfo(
-          hntTokenAddresses,
-        )
+        const hntAccountInfos =
+          await rpcConnection.getMultipleAccountsInfo(hntTokenAddresses)
 
         if (hntAccountInfos) {
           hntBalances.push(
@@ -366,9 +364,8 @@ const useLedger = () => {
         }
 
         // Batch check balances for all accounts in this batch
-        const { solBalances, hntBalances } = await checkBatchBalances(
-          batchPublicKeys,
-        )
+        const { solBalances, hntBalances } =
+          await checkBatchBalances(batchPublicKeys)
 
         // Create account objects with balance info
         const batchAccounts = (

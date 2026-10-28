@@ -31,15 +31,15 @@ export function deriveKeyFromPassword(
     typeof password === 'string'
       ? new Uint8Array(Buffer.from(password))
       : password instanceof Buffer
-      ? new Uint8Array(password)
-      : password
+        ? new Uint8Array(password)
+        : password
 
   const saltBytes =
     typeof salt === 'string'
       ? new Uint8Array(Buffer.from(salt, 'base64'))
       : salt instanceof Buffer
-      ? new Uint8Array(salt)
-      : salt
+        ? new Uint8Array(salt)
+        : salt
 
   return argon2id(passwordBytes, saltBytes, ARGON2ID_MODERATE_PARAMS)
 }
@@ -60,15 +60,15 @@ export function decryptSecretBox(
     typeof ciphertext === 'string'
       ? new Uint8Array(Buffer.from(ciphertext, 'base64'))
       : ciphertext instanceof Buffer
-      ? new Uint8Array(ciphertext)
-      : ciphertext
+        ? new Uint8Array(ciphertext)
+        : ciphertext
 
   const nonceBytes =
     typeof nonce === 'string'
       ? new Uint8Array(Buffer.from(nonce, 'base64'))
       : nonce instanceof Buffer
-      ? new Uint8Array(nonce)
-      : nonce
+        ? new Uint8Array(nonce)
+        : nonce
 
   const cipher = xsalsa20poly1305(key, nonceBytes)
   return cipher.decrypt(cipherBytes)

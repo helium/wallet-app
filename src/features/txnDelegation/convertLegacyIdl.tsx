@@ -142,9 +142,7 @@ type LegacyIdlType =
   | { definedWithTypeArgs: { name: string; args: LegacyIdlDefinedTypeArg[] } }
 
 type LegacyIdlDefinedTypeArg =
-  | { generic: string }
-  | { value: string }
-  | { type: LegacyIdlType }
+  { generic: string } | { value: string } | { type: LegacyIdlType }
 
 // Remove the dynamic import
 function getSnakeCase(str: string): string {

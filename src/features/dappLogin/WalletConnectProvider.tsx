@@ -20,12 +20,7 @@ const breadcrumbOpts = { category: 'Wallet Connect' }
 const NAMESPACE = 'helium'
 const MAINNET = `${NAMESPACE}:mainnet`
 type ConnectionState =
-  | 'undetermined'
-  | 'proposal'
-  | 'allowed'
-  | 'denied'
-  | 'approving'
-  | 'approved'
+  'undetermined' | 'proposal' | 'allowed' | 'denied' | 'approving' | 'approved'
 const useWalletConnectHook = () => {
   const [signClient, setSignClient] = useState<SignClient>()
   const [sessionProposal, setSessionProposal] =

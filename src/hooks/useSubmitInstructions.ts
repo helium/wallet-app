@@ -111,9 +111,8 @@ export function useSubmitInstructions() {
       )
 
       // Get finalized blockhash for all transactions
-      const { blockhash } = await anchorProvider.connection.getLatestBlockhash(
-        'finalized',
-      )
+      const { blockhash } =
+        await anchorProvider.connection.getLatestBlockhash('finalized')
 
       const populatedDrafts = await Promise.all(
         transactions.map((tx) =>
@@ -178,9 +177,8 @@ export function useSubmitInstructions() {
             },
           })
 
-          const { batchId: currentBatchId } = await client.transactions.submit(
-            txnData,
-          )
+          const { batchId: currentBatchId } =
+            await client.transactions.submit(txnData)
 
           batchId = currentBatchId
           // Poll for completion
@@ -205,9 +203,8 @@ export function useSubmitInstructions() {
       }
 
       // Sign all transactions (no batching)
-      const signedTxns = await anchorProvider.wallet.signAllTransactions(
-        asVersionedTx,
-      )
+      const signedTxns =
+        await anchorProvider.wallet.signAllTransactions(asVersionedTx)
 
       // Apply additional keypair signers if needed (e.g., for new position keypairs)
       signedTxns.forEach((tx, i) => {

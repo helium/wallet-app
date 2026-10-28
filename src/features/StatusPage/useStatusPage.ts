@@ -82,7 +82,7 @@ const useStatusPage = () => {
     })
 
     const nextStoredIncidents = [
-      ...next.map(({ id, status }) => ({ id, status } as StoredIncident)),
+      ...next.map(({ id, status }) => ({ id, status }) as StoredIncident),
       ...storedIncidents,
     ].slice(0, 20) // limit number of stored incidents. This is just an arbitrary number. May need adjustment.
 

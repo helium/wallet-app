@@ -39,30 +39,33 @@ const ActivityScreen = () => {
     data: (EnrichedTransaction | ConfirmedSignatureInfo)[]
   }[] => {
     // Group by date
-    const grouped = transactions.reduce((acc, tx) => {
-      const enrichedTx = tx as EnrichedTransaction
-      const confirmedSig = tx as ConfirmedSignatureInfo
+    const grouped = transactions.reduce(
+      (acc, tx) => {
+        const enrichedTx = tx as EnrichedTransaction
+        const confirmedSig = tx as ConfirmedSignatureInfo
 
-      const date = new Date()
+        const date = new Date()
 
-      if (enrichedTx.timestamp) {
-        date.setTime(enrichedTx.timestamp * 1000)
-      }
+        if (enrichedTx.timestamp) {
+          date.setTime(enrichedTx.timestamp * 1000)
+        }
 
-      if (confirmedSig.blockTime) {
-        date.setTime(confirmedSig.blockTime * 1000)
-      }
+        if (confirmedSig.blockTime) {
+          date.setTime(confirmedSig.blockTime * 1000)
+        }
 
-      const key = date.toDateString()
-      if (!acc[key]) {
-        acc[key] = []
-      }
+        const key = date.toDateString()
+        if (!acc[key]) {
+          acc[key] = []
+        }
 
-      if (!tx) return acc
+        if (!tx) return acc
 
-      acc[key].push(tx)
-      return acc
-    }, {} as Record<string, (EnrichedTransaction | ConfirmedSignatureInfo)[]>)
+        acc[key].push(tx)
+        return acc
+      },
+      {} as Record<string, (EnrichedTransaction | ConfirmedSignatureInfo)[]>,
+    )
 
     // Create array of objects
     const sections = Object.keys(grouped).map((date) => {

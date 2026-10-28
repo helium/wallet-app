@@ -174,8 +174,8 @@ export const CollapsibleWritableAccountPreview = ({
                   warnings.length > 1
                     ? `${warnings.length} Warnings`
                     : warnings[0].shortMessage === 'Unchanged'
-                    ? 'Unknown Changes'
-                    : warnings[0].shortMessage
+                      ? 'Unknown Changes'
+                      : warnings[0].shortMessage
                 }
                 color={
                   warnings.some((w) => w.severity === 'critical')

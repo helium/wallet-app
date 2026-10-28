@@ -94,8 +94,8 @@ export function useAutomation() {
                 schedule === 'daily'
                   ? 'days'
                   : schedule === 'weekly'
-                  ? 'weeks'
-                  : 'months',
+                    ? 'weeks'
+                    : 'months',
             }),
           }),
         suppressWarnings: false,
@@ -157,8 +157,8 @@ export function useAutomation() {
                 currentSchedule?.schedule === 'daily'
                   ? 'days'
                   : currentSchedule?.schedule === 'weekly'
-                  ? 'weeks'
-                  : 'months',
+                    ? 'weeks'
+                    : 'months',
               totalFunding: estimate.totalSolNeeded,
             }),
           }),

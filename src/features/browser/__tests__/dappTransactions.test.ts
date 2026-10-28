@@ -73,7 +73,7 @@ const asInput = (bytes: Uint8Array) =>
     transaction: { ...Array.from(bytes) },
     chain: 'solana:mainnet',
     options: {},
-  } as unknown as SolanaSignAndSendTransactionInput)
+  }) as unknown as SolanaSignAndSendTransactionInput
 
 const isUnsupported = async (...txs: Uint8Array[]) => {
   const { transactions } = await deserializeTransactionInputs(txs.map(asInput))

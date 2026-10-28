@@ -62,13 +62,16 @@ const WalletSignBottomSheetTransaction = ({
       !nonAccountWarnings.some((w) => w.severity === 'critical'),
   )
   const warningsByAccount = useMemo(() => {
-    return transaction.warnings.reduce((acc, warning) => {
-      if (warning.account) {
-        acc[warning.account.toBase58()] ||= []
-        acc[warning.account.toBase58()].push(warning)
-      }
-      return acc
-    }, {} as Record<string, Warning[]>)
+    return transaction.warnings.reduce(
+      (acc, warning) => {
+        if (warning.account) {
+          acc[warning.account.toBase58()] ||= []
+          acc[warning.account.toBase58()].push(warning)
+        }
+        return acc
+      },
+      {} as Record<string, Warning[]>,
+    )
   }, [transaction])
 
   // Collapse non-token accounts with unchanged warning

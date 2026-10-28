@@ -46,7 +46,7 @@ const SecurityScreen = ({ visible }: Props) => {
         opacity: fadeAnim.current,
         height: '100%',
         width: '100%',
-      } as Animated.AnimatedProps<ImageStyle>),
+      }) as Animated.AnimatedProps<ImageStyle>,
     [],
   )
 

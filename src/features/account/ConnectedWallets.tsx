@@ -94,13 +94,16 @@ const ConnectedWallets = forwardRef(
     const filteredAccounts = useMemo(() => {
       const grouped = sortedAccounts
         .filter((a) => a.netType !== NetTypes.TESTNET)
-        .reduce((acc, account) => {
-          acc[account.mnemonicHash || 'none'] = [
-            ...(acc[account.mnemonicHash || 'none'] || []),
-            account,
-          ]
-          return acc
-        }, {} as { [key: string]: CSAccount[] })
+        .reduce(
+          (acc, account) => {
+            acc[account.mnemonicHash || 'none'] = [
+              ...(acc[account.mnemonicHash || 'none'] || []),
+              account,
+            ]
+            return acc
+          },
+          {} as { [key: string]: CSAccount[] },
+        )
 
       const { none, ...rest } = grouped
       const ret = Object.values(rest).map((accounts, index) => ({

@@ -108,8 +108,8 @@ const HotspotList = () => {
           network: iot?.location
             ? 'IOT'
             : mobile?.location
-            ? 'MOBILE'
-            : undefined,
+              ? 'MOBILE'
+              : undefined,
         })
       }
     },

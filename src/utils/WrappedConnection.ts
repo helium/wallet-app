@@ -13,11 +13,7 @@ export type SearchAssetsOpts = {
   creatorAddress?: string
   creatorVerified?: boolean
   tokenType?:
-    | 'all'
-    | 'compressedNft'
-    | 'regularNft'
-    | 'nonFungible'
-    | 'fungible'
+    'all' | 'compressedNft' | 'regularNft' | 'nonFungible' | 'fungible'
 } & { [key: string]: unknown }
 
 export class WrappedConnection extends Connection {

@@ -39,19 +39,22 @@ const NotificationsList = ({
     data: Notification[]
   }[] => {
     // Group by date
-    const grouped = notifications.reduce((acc, noti) => {
-      const date = new Date(noti.time)
+    const grouped = notifications.reduce(
+      (acc, noti) => {
+        const date = new Date(noti.time)
 
-      const key = date.toDateString()
-      if (!acc[key]) {
-        acc[key] = []
-      }
+        const key = date.toDateString()
+        if (!acc[key]) {
+          acc[key] = []
+        }
 
-      if (!noti) return acc
+        if (!noti) return acc
 
-      acc[key].push(noti as Notification)
-      return acc
-    }, {} as Record<string, Notification[]>)
+        acc[key].push(noti as Notification)
+        return acc
+      },
+      {} as Record<string, Notification[]>,
+    )
 
     // Create array of objects
     const sections = Object.keys(grouped).map((date) => {

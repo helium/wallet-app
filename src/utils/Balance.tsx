@@ -142,17 +142,20 @@ const useBalanceHook = () => {
         setOraclePriceError(undefined)
         // Drop the price once it is too old, unless a newer one arrived.
         clearTimeout(expiry)
-        expiry = setTimeout(() => {
-          setOraclePrice((prev) =>
-            prev && prev.publishTime > publishTime ? prev : undefined,
-          )
-          // Fetch now instead of waiting out the poll with no price.
-          // An in-flight fetch already schedules the next poll.
-          if (!fetching) {
-            clearTimeout(timeout)
-            timeout = setTimeout(fetchOraclePrice, 0)
-          }
-        }, Math.max(0, publishTime * 1000 + ORACLE_MAX_AGE - Date.now()))
+        expiry = setTimeout(
+          () => {
+            setOraclePrice((prev) =>
+              prev && prev.publishTime > publishTime ? prev : undefined,
+            )
+            // Fetch now instead of waiting out the poll with no price.
+            // An in-flight fetch already schedules the next poll.
+            if (!fetching) {
+              clearTimeout(timeout)
+              timeout = setTimeout(fetchOraclePrice, 0)
+            }
+          },
+          Math.max(0, publishTime * 1000 + ORACLE_MAX_AGE - Date.now()),
+        )
       } catch (e) {
         if (cancelled) return
         delay = ORACLE_RETRY_INTERVAL

@@ -19,7 +19,7 @@ const OnboardingNavigator = () => {
     () =>
       ({
         headerShown: false,
-      } as StackNavigationOptions),
+      }) as StackNavigationOptions,
     [],
   )
   const subScreenOptions = useMemo(
@@ -27,7 +27,7 @@ const OnboardingNavigator = () => {
       ({
         headerShown: false,
         ...TransitionPresets.ModalPresentationIOS,
-      } as StackNavigationOptions),
+      }) as StackNavigationOptions,
     [],
   )
   return (

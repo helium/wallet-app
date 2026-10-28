@@ -11,12 +11,7 @@ export type VoteChoiceWithMeta = VoteChoice & {
 }
 
 export type ProposalFilter =
-  | 'all'
-  | 'active'
-  | 'cancelled'
-  | 'passed'
-  | 'failed'
-  | 'unseen'
+  'all' | 'active' | 'cancelled' | 'passed' | 'failed' | 'unseen'
 
 export type GovernanceStackParamList = {
   GovernanceTutorialScreen: undefined

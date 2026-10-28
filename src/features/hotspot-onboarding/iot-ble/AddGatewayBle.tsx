@@ -134,13 +134,13 @@ const AddGatewayBle = () => {
           }),
         )
       : insufficientMakerDcBal
-      ? new Error(
-          t('hotspotOnboarding.onboarding.manufacturerMissing', {
-            name: maker?.name,
-            tokens: 'DC',
-          }),
-        )
-      : undefined
+        ? new Error(
+            t('hotspotOnboarding.onboarding.manufacturerMissing', {
+              name: maker?.name,
+              tokens: 'DC',
+            }),
+          )
+        : undefined
     : undefined
 
   const {

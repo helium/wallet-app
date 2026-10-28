@@ -2,11 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 
 export type BatchStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'failed'
-  | 'expired'
-  | 'partial'
+  'pending' | 'confirmed' | 'failed' | 'expired' | 'partial'
 
 export const TERMINAL_STATUSES: BatchStatus[] = [
   'confirmed',

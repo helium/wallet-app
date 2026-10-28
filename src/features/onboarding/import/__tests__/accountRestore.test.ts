@@ -26,7 +26,7 @@ const account = (
     solanaAddress: keypair.publicKey.toBase58(),
     netType: 0,
     ...extra,
-  } as CSAccount)
+  }) as CSAccount
 
 const byAddress = (...accts: CSAccount[]): CSAccounts =>
   Object.fromEntries(accts.map((a) => [a.address, a]))

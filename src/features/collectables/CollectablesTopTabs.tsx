@@ -82,7 +82,7 @@ const CollectablesTopTabs = () => {
         tabBarActiveTintColor: colors.primaryText,
         tabBarInactiveTintColor: colors.secondaryText,
         title: t(`collectablesScreen.${route.name.toLowerCase()}.title`),
-      } as MaterialTopTabNavigationOptions),
+      }) as MaterialTopTabNavigationOptions,
 
     [colors.primaryBackground, colors.primaryText, colors.secondaryText, t],
   )
