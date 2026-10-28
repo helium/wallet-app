@@ -49,7 +49,7 @@ const LedgerConnectSteps = ({
   const { t } = useTranslation()
   const { primaryText } = useColors()
   const steps = useMemo<string[]>(
-    () => t('ledger.connectError.steps', { returnObjects: true }),
+    () => t('ledger.connectError.steps', { returnObjects: true }) as string[],
     [t],
   )
 

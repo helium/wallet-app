@@ -286,7 +286,6 @@ export default {
       hotspotCount: '{{count}} Hotspot',
       hotspotCount_one: '{{count}} Hotspot',
       hotspotCount_other: '{{count}} Hotspots',
-      hotspotCount_plural: '{{count}} Hotspots',
       chooseAmountOfHotspots: 'Choose amount of hotspots to show per page',
       connect: 'Connect Hotspot',
       openMap: 'Open Map',
@@ -1032,7 +1031,6 @@ export default {
     totalRecipients: '{{count}} Recipient',
     totalRecipients_one: '{{count}} Recipient',
     totalRecipients_other: '{{count}} Recipients',
-    totalRecipients_plural: '{{count}} Recipients',
     wrongNetType: 'Wrong Net Type',
     programOwnedWarning:
       'This is a smart-contract owned account. Are you sure this is the correct address?',
@@ -1650,8 +1648,6 @@ export default {
       leftBehind:
         "{{count}} token can't move automatically. It stays in your wallet.",
       leftBehind_other:
-        "{{count}} tokens can't move automatically. They stay in your wallet.",
-      leftBehind_plural:
         "{{count}} tokens can't move automatically. They stay in your wallet.",
       leftBehindHint:
         'To include a hidden token, make it visible in Manage Visible Tokens.',
