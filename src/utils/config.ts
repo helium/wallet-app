@@ -30,6 +30,12 @@ export const CONFIG_KEYS = [
 
 type ConfigKey = (typeof CONFIG_KEYS)[number]
 
+if (!Constants.expoConfig) {
+  console.warn(
+    'Embedded app config is missing; every Config key reads undefined',
+  )
+}
+
 const extra: Record<string, unknown> = Constants.expoConfig?.extra ?? {}
 
 // A key missing from the build reads as undefined. The type keeps the

@@ -63,6 +63,8 @@ yalc.lock
 
 #
 .env
+.env.*
+!.env.sample
 
 *.hprof
 .expo
