@@ -13,7 +13,7 @@ import * as bip39 from 'bip39'
 import { Buffer } from 'buffer'
 import * as ed25519 from 'ed25519-hd-key'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import {
   HELIUM_DERIVATION,

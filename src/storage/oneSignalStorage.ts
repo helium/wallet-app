@@ -1,5 +1,5 @@
 import { OneSignal } from 'react-native-onesignal'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import Bcrypt from 'bcrypt-react-native'
 
 export const tagAccount = async (address: string) => {

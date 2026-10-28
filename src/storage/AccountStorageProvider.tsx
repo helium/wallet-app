@@ -13,7 +13,7 @@ import React, {
   useState,
 } from 'react'
 import { useAsync } from 'react-async-hook'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { authSlice } from '../store/slices/authSlice'
 import { useAppDispatch } from '../store/store'
 import {

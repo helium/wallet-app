@@ -20,7 +20,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import {
   initialWindowMetrics,

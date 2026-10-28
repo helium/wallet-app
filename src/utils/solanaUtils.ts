@@ -109,7 +109,7 @@ import {
 import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,

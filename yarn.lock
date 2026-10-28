@@ -13949,7 +13949,6 @@ __metadata:
     react-native-clean-project: "npm:4.0.3"
     react-native-cli-bump-version: "npm:1.5.0"
     react-native-codegen: "npm:0.0.7"
-    react-native-config: "npm:1.4.6"
     react-native-device-info: "npm:8.7.1"
     react-native-flash-message: "npm:0.2.1"
     react-native-gesture-handler: "npm:^2.27.1"
@@ -19128,18 +19127,6 @@ __metadata:
     jscodeshift: "npm:^0.11.0"
     nullthrows: "npm:^1.1.1"
   checksum: 10/b8717d4c63eb8bef3cde5d7569efa242836aa1e424b60d87a397def3fbd05380a7394d268ca1da794b0e76a8612458518504225da699d10d5b6229e6cfe1ba93
-  languageName: node
-  linkType: hard
-
-"react-native-config@npm:1.4.6":
-  version: 1.4.6
-  resolution: "react-native-config@npm:1.4.6"
-  peerDependencies:
-    react-native-windows: ">=0.61"
-  peerDependenciesMeta:
-    react-native-windows:
-      optional: true
-  checksum: 10/a8894d593eb0a91a991f3120175ae674dcc79287a7becb7b35f9fe15037289bc7fb2672f6e6697b706a06c267daa57e203fd99da2d10be969592a8c33a3f3b57
   languageName: node
   linkType: hard
 

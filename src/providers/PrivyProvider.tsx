@@ -1,6 +1,6 @@
 import React, { FC, ReactNode } from 'react'
 import { PrivyProvider as PrivyProviderBase } from '@privy-io/expo'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 
 const PrivyAppProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const appId = Config.PRIVY_APP_ID

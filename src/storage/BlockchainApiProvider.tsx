@@ -4,7 +4,7 @@ import { RPCLink } from '@orpc/client/fetch'
 import { ContractRouterClient } from '@orpc/contract'
 import React, { createContext, useContext, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { RootState } from '../store/rootReducer'
 
 const BlockchainApiContext = createContext<ContractRouterClient<

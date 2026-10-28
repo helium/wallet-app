@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import Config from 'react-native-config'
+import Config from '@utils/config'
 
 export const prettyPrintToConsole = (whatever: unknown, prefix = '') => {
   console.log(`${prefix}\n${JSON.stringify(whatever, null, 2)}`)

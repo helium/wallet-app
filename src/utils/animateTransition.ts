@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { LayoutAnimation, LayoutAnimationConfig, Platform } from 'react-native'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 
 type AnimationOptions = {
   enabledOnAndroid: boolean

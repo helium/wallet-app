@@ -21,7 +21,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import Toast from 'react-native-simple-toast'
 import {
   RootNavigationProp,

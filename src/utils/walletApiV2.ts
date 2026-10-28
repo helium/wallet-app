@@ -1,5 +1,5 @@
 import axios from 'axios'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { Cluster } from '@solana/web3.js'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { getSecureItem } from '../storage/secureStorage'

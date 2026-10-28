@@ -12,7 +12,7 @@ import {
   SessionTypes,
   SignClientTypes,
 } from '@walletconnect/types'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import * as Logger from '../../utils/logger'
 
 const breadcrumbOpts = { category: 'Wallet Connect' }

@@ -1545,11 +1545,6 @@ PODS:
     - Charts (= 4.1.0)
     - React
     - SwiftyJSON (= 5.0)
-  - react-native-config (1.4.6):
-    - react-native-config/App (= 1.4.6)
-  - react-native-config/App (1.4.6):
-    - React-Core
-  - react-native-config/Extension (1.4.6)
   - react-native-get-random-values (1.8.0):
     - React-Core
   - react-native-mail (6.1.1):
@@ -2558,8 +2553,6 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-ble-plx (from `../node_modules/react-native-ble-plx`)
   - react-native-charts-wrapper (from `../node_modules/react-native-charts-wrapper`)
-  - react-native-config (from `../node_modules/react-native-config`)
-  - react-native-config/Extension (from `../node_modules/react-native-config`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-mail (from `../node_modules/react-native-mail`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -2769,8 +2762,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-ble-plx"
   react-native-charts-wrapper:
     :path: "../node_modules/react-native-charts-wrapper"
-  react-native-config:
-    :path: "../node_modules/react-native-config"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-mail:
@@ -2967,7 +2958,6 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: bda561d2648e1e52bd9e5a87f8889836bdbde2e2
   react-native-ble-plx: f2c13ceb441f17266d3dc6a56e603e2ae820a574
   react-native-charts-wrapper: d7b8f60a5ad07947798902bf805bcac01ea6273a
-  react-native-config: 8e425892a531627c52db765be3088185cb871e19
   react-native-get-random-values: 0fd2b6a3129988d701d10e30f0622d5f039531bc
   react-native-mail: 6e83813066984b26403d3fdfe79ac7bb31857e3c
   react-native-netinfo: be701059f57093572e5ba08cba14483d334b425d
@@ -3035,6 +3025,6 @@ SPEC CHECKSUMS:
   Yoga: adb397651e1c00672c12e9495babca70777e411e
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 6d0eb5dde6cd8ff9469f7224335af5830df0a060
+PODFILE CHECKSUM: 1278beeb4f71b4d930131b74017058a8a3042d5d
 
 COCOAPODS: 1.15.2

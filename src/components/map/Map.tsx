@@ -1,7 +1,7 @@
 import * as MapLibreRN from '@maplibre/maplibre-react-native'
 import { Position } from '@turf/helpers'
 import React, { PropsWithChildren, useMemo } from 'react'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 import { mapLayers } from './mapLayers'
 import {
   INITIAL_MAP_VIEW_STATE,

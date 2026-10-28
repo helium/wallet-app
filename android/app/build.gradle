@@ -13,7 +13,6 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: 'com.onesignal.androidsdk.onesignal-gradle-plugin'
 apply plugin: 'com.google.gms.google-services'
-apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 
 import groovy.json.JsonSlurper
 

@@ -1,7 +1,7 @@
 // import { Device } from "@ledgerhq/live-common/hw/actions/types";
 import { DeviceModelId } from '@ledgerhq/types-devices'
 import type { LottieViewProps } from 'lottie-react-native'
-import Config from 'react-native-config'
+import Config from '@utils/config'
 
 export type Device = {
   deviceId: string
