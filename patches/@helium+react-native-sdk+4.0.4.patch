@@ -1,0 +1,21 @@
+diff --git a/node_modules/@helium/react-native-sdk/android/build.gradle b/node_modules/@helium/react-native-sdk/android/build.gradle
+index 916ab3b..d379c62 100644
+--- a/node_modules/@helium/react-native-sdk/android/build.gradle
++++ b/node_modules/@helium/react-native-sdk/android/build.gradle
+@@ -4,7 +4,7 @@ buildscript {
+ 
+   repositories {
+     google()
+-    jcenter()
++    mavenCentral()
+   }
+ 
+   dependencies {
+@@ -53,7 +53,6 @@ android {
+ 
+ repositories {
+   mavenCentral()
+-  jcenter()
+   google()
+   maven { url 'https://www.jitpack.io' }
+ 

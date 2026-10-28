@@ -1,7 +1,16 @@
 diff --git a/node_modules/react-native-os/android/build.gradle b/node_modules/react-native-os/android/build.gradle
-index 7055b60..aca9a6b 100644
+index 7055b60..4025c40 100644
 --- a/node_modules/react-native-os/android/build.gradle
 +++ b/node_modules/react-native-os/android/build.gradle
+@@ -4,7 +4,7 @@ def safeExtGet(prop, fallback) {
+ 
+ buildscript {
+     repositories {
+-        jcenter()
++        mavenCentral()
+     }
+ 
+     dependencies {
 @@ -15,12 +15,12 @@ buildscript {
  apply plugin: 'com.android.library'
  

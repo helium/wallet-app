@@ -1,0 +1,21 @@
+diff --git a/node_modules/bcrypt-react-native/android/build.gradle b/node_modules/bcrypt-react-native/android/build.gradle
+index 20928cf..ab7efe1 100644
+--- a/node_modules/bcrypt-react-native/android/build.gradle
++++ b/node_modules/bcrypt-react-native/android/build.gradle
+@@ -4,7 +4,7 @@ buildscript {
+ 
+   repositories {
+     google()
+-    jcenter()
++    mavenCentral()
+   }
+ 
+   dependencies {
+@@ -52,7 +52,6 @@ android {
+ 
+ repositories {
+   mavenCentral()
+-  jcenter()
+   google()
+ 
+   def found = false

@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-network-info/android/build.gradle b/node_modules/react-native-network-info/android/build.gradle
+index 33236e8..cbd14f8 100644
+--- a/node_modules/react-native-network-info/android/build.gradle
++++ b/node_modules/react-native-network-info/android/build.gradle
+@@ -1,7 +1,7 @@
+ buildscript {
+     repositories {
+         google()
+-        jcenter()
++        mavenCentral()
+     }
+     dependencies {
+         classpath 'com.android.tools.build:gradle:3.0.1'
