@@ -90,11 +90,11 @@ const LinkWallet = () => {
       },
       keypair,
     )
-    callback({ token, status: 'success' })
+    await callback({ token, status: 'success' })
   }, [currentAccount, requestAppId, callbackUrl, appName, callback])
 
   const handleCancel = useCallback(async () => {
-    callback({ status: 'user_cancelled' })
+    await callback({ status: 'user_cancelled' })
   }, [callback])
 
   useEffect(() => {

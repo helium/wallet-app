@@ -77,7 +77,7 @@ const KeystoneAccountAssignScreen = () => {
         version: 'v1' as CSAccountVersion,
       }),
     )
-    accountStorage.upsertAccounts(accountBulk)
+    await accountStorage.upsertAccounts(accountBulk)
 
     if (hasAccounts) {
       rootNav.reset({

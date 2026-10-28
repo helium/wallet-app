@@ -67,7 +67,7 @@ const useAccountStorageHook = () => {
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
-    storeSecureItem('walletApiToken', apiToken)
+    await storeSecureItem('walletApiToken', apiToken)
     dispatch(authSlice.actions.setApiToken(apiToken))
   }, [currentAccount, dispatch])
 

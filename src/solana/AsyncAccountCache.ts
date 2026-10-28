@@ -56,7 +56,7 @@ export class AsyncAccountCache implements AccountCache {
       clearTimeout(this.timeout)
     }
     this.timeout = setTimeout(() => {
-      this.setAsyncStorage()
+      void this.setAsyncStorage()
     }, 10000)
   }
 
@@ -105,7 +105,7 @@ export class AsyncAccountCache implements AccountCache {
     this.debouncedSet()
   }
 
-  setAsyncStorage = (): void => {
+  setAsyncStorage = (): Promise<void> => {
     // Make sure we purge the least recently used items
     const orderedCache = [...this.cache.keys()]
       .sort(
@@ -135,7 +135,7 @@ export class AsyncAccountCache implements AccountCache {
       dataSizeInBytes = Buffer.byteLength(serializedData)
     }
 
-    AsyncStorage.setItem(this.cacheKey, serializedData)
+    return AsyncStorage.setItem(this.cacheKey, serializedData)
   }
 }
 

@@ -527,7 +527,7 @@ const useSolTxns = ({
     ) => {
       const signer = await getSolanaKeypair(heliumAddress)
       if (!signer) {
-        callback({ status: 'token_not_found' })
+        await callback({ status: 'token_not_found' })
         throw new Error('Failed to sign transfer txn')
       }
 
@@ -559,7 +559,7 @@ const useSolTxns = ({
         responseParams.configurationMessage =
           Buffer.from(signedMsg).toString('base64')
       }
-      callback(responseParams)
+      await callback(responseParams)
     },
     [configMsg, configMsgStr, gatewayAddress, heliumAddress, transactionList],
   )

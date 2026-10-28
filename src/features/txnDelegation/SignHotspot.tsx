@@ -142,16 +142,16 @@ const SignHotspot = () => {
     }
 
     if (solana.hasTransactions) {
-      solana.sign(callback)
+      await solana.sign(callback)
     }
   }, [callback, parsedToken, solana, submit, submitNow])
 
   const handleCancel = useCallback(async () => {
-    callback({ status: 'user_cancelled' })
+    await callback({ status: 'user_cancelled' })
   }, [callback])
 
   const handleError = useCallback(async () => {
-    callback({ status: 'invalid_link' })
+    await callback({ status: 'invalid_link' })
   }, [callback])
 
   const name = useMemo(() => {
