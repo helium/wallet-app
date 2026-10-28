@@ -6,9 +6,11 @@ import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/co
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { useQueryClient } from '@tanstack/react-query'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
+import { syncTokenAccounts } from '@utils/balances'
 import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
@@ -18,8 +20,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Box from '@components/Box'
 import { GovMints } from '../../utils/constants'
 import { useSolana } from '../../solana/SolanaProvider'
-import { syncTokenAccounts } from '../../store/slices/balancesSlice'
-import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { deriveVisibleMints } from './logic/visibleTokens'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
@@ -35,7 +35,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
   const colors = useColors()
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   const { loading: refetchingTokens, execute: refetchTokens } =
     useAsyncCallback(async () => {
@@ -47,16 +47,14 @@ const AccountTokenList = ({ onLayout }: Props) => {
       )
         return
 
-      // Trigger Redux state sync to get accurate balances from blockchain
+      // Sync the token accounts to get accurate balances from blockchain
       // This is the source of truth and will update the UI correctly
       try {
-        await dispatch(
-          syncTokenAccounts({
-            cluster,
-            acct: currentAccount,
-            anchorProvider,
-          }),
-        )
+        await syncTokenAccounts(queryClient, {
+          cluster,
+          acct: currentAccount,
+          anchorProvider,
+        })
         // Successfully synced token accounts
       } catch (_err) {
         // Swallow sync errors (likely cooldown blocks)
@@ -65,7 +63,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   // Note: Removed automatic refresh on app state change since Balance.tsx
   // already handles token syncing via syncTokenAccounts(). The UI updates
-  // automatically when Redux state changes.
+  // automatically when the token accounts query changes.
   //
   // Manual refresh is still available via pull-to-refresh gesture.
   const onManageTokenList = useCallback(() => {

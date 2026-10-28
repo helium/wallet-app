@@ -5,9 +5,6 @@ import solanaReducer, { name as solanaSliceName } from './slices/solanaSlice'
 import notificationsReducer, {
   name as notificationsSliceName,
 } from './slices/notificationsSlice'
-import balancesReducer, {
-  name as balancesSliceName,
-} from './slices/balancesSlice'
 
 const solanaConfig = {
   key: solanaSliceName,
@@ -21,15 +18,8 @@ const notificationsConfig = {
   blacklist: ['notificationsLoading'],
 }
 
-const balancesConfig = {
-  key: balancesSliceName,
-  storage: AsyncStorage,
-  blacklist: ['balancesLoading'],
-}
-
 const reducer = combineReducers({
   [solanaSliceName]: persistReducer(solanaConfig, solanaReducer),
-  [balancesSliceName]: persistReducer(balancesConfig, balancesReducer),
   [notificationsSliceName]: persistReducer(
     notificationsConfig,
     notificationsReducer,

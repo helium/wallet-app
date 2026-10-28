@@ -126,7 +126,7 @@ const AccountsScreen = () => {
   }, [rootNav, sortedAccounts.length])
 
   const showChart = useMemo(() => {
-    return balanceHistory?.length >= 2
+    return (balanceHistory?.length ?? 0) >= 2
   }, [balanceHistory])
 
   const chartValues = useMemo(() => {

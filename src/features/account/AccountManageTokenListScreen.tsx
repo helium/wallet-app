@@ -15,8 +15,10 @@ import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
+import { useQueryClient } from '@tanstack/react-query'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
+import { syncTokenAccounts } from '@utils/balances'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useCallback, useMemo, useRef } from 'react'
@@ -25,8 +27,6 @@ import { RefreshControl } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
-import { syncTokenAccounts } from '../../store/slices/balancesSlice'
-import { useAppDispatch } from '../../store/store'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { getSortValue } from './logic/visibleTokens'
@@ -145,7 +145,7 @@ const AccountManageTokenListScreen: React.FC = () => {
         return getSortValue(b) - getSortValue(a)
       })
   }, [tokenAccounts])
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const { anchorProvider, cluster } = useSolana()
   const { currentAccount } = useAccountStorage()
   const colors = useColors()
@@ -153,9 +153,15 @@ const AccountManageTokenListScreen: React.FC = () => {
   const { loading: refetchingTokens, execute: refetchTokens } =
     useAsyncCallback(async () => {
       if (!anchorProvider || !currentAccount || !cluster) return
-      await dispatch(
-        syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
-      )
+      try {
+        await syncTokenAccounts(queryClient, {
+          cluster,
+          acct: currentAccount,
+          anchorProvider,
+        })
+      } catch (_err) {
+        // Swallow sync errors (likely cooldown blocks)
+      }
     })
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types

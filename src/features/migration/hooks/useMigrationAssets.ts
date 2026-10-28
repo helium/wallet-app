@@ -2,11 +2,11 @@ import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { usePublicKey } from '@hooks/usePublicKey'
+import { useIsFetching } from '@tanstack/react-query'
 import { useBalance } from '@utils/Balance'
+import { TOKEN_ACCOUNTS_QUERY_KEY } from '@utils/balances'
 import { useEffect, useMemo } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../../store/rootReducer'
 import { classifyHoldings } from '../logic/assets'
 
 export type MigratableHotspot = {
@@ -24,9 +24,8 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
   const { tokenAccounts } = useBalance()
   const { visibleTokens } = useVisibleTokens()
-  const balancesLoading = useSelector(
-    (s: RootState) => s.balances.balancesLoading,
-  )
+  const balancesLoading =
+    useIsFetching({ queryKey: TOKEN_ACCOUNTS_QUERY_KEY }) > 0
   const { amount: lamports, loading: solLoading } = useSolOwnedAmount(
     usePublicKey(sourceWallet),
   )

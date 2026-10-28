@@ -10,14 +10,14 @@ import { AccountInfo, Keypair, PublicKey } from '@solana/web3.js'
 import { CSAccount } from '../../../storage/cloudStorage'
 import { AccountBalance } from '../../../types/balance'
 import { getBalanceHistory, getTokenPrices } from '../../../utils/walletApiV2'
-import { BalancesPort, reduxBalancesPort } from './balancesPort'
+import { BalancesPort, tanstackBalancesPort } from './balancesPort'
 
 jest.mock('../../../utils/walletApiV2', () => ({
   getTokenPrices: jest.fn(),
   getBalanceHistory: jest.fn(),
 }))
 
-const makePort = reduxBalancesPort
+const makePort = tanstackBalancesPort
 
 const encodeTokenAccount = (args: {
   mint: PublicKey

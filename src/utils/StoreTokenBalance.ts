@@ -1,11 +1,11 @@
 import { useTokenAccount } from '@helium/helium-react-hooks'
 import { AccountLayout } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { balancesSlice } from '../store/slices/balancesSlice'
-import { useAppDispatch } from '../store/store'
+import { updateSolBalance } from './balances'
 
 type TokenInput = {
   tokenAccount: string
@@ -14,7 +14,7 @@ type TokenInput = {
 const StoreTokenBalance = ({ tokenAccount }: TokenInput) => {
   const tokenAccountResponse = useTokenAccount(new PublicKey(tokenAccount))
   const { currentAccount } = useAccountStorage()
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const { cluster } = useSolana()
 
   useEffect(() => {
@@ -33,18 +33,16 @@ const StoreTokenBalance = ({ tokenAccount }: TokenInput) => {
       amount = Number(decoded.amount)
     }
 
-    dispatch(
-      balancesSlice.actions.updateBalance({
-        cluster,
-        solanaAddress: currentAccount?.solanaAddress,
-        balance: amount,
-        tokenAccount,
-      }),
-    )
+    updateSolBalance(queryClient, {
+      cluster,
+      solanaAddress: currentAccount?.solanaAddress,
+      balance: amount,
+      tokenAccount,
+    })
   }, [
     cluster,
     currentAccount?.solanaAddress,
-    dispatch,
+    queryClient,
     tokenAccount,
     tokenAccountResponse,
   ])

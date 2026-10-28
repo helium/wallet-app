@@ -90,6 +90,38 @@ describe('queryPersistOptions', () => {
     expect(restored.getQueryData(allKey)).toEqual(all)
   })
 
+  it('saves token accounts, prices and balance history to MMKV', async () => {
+    const wallet = collectablesKey[2]
+    const tokensKey = ['balances', 'tokens', 'mainnet-beta', wallet]
+    const pricesKey = ['balances', 'prices', 'usd']
+    const historyKey = ['balances', 'history', 'mainnet-beta', wallet, 'usd']
+    const tokens = {
+      atas: [
+        {
+          tokenAccount: 'ata-1',
+          mint: 'mint-1',
+          balance: 5,
+          decimals: 8,
+          frozen: false,
+        },
+      ],
+      sol: { tokenAccount: wallet, balance: 1000 },
+    }
+    const prices = { helium: { usd: 2.5 } }
+    const history = [{ date: '2026-10-01', balance: 25 }]
+    const client = newClient()
+    client.setQueryData(tokensKey, tokens)
+    client.setQueryData(pricesKey, prices)
+    client.setQueryData(historyKey, history)
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(tokensKey)).toEqual(tokens)
+    expect(restored.getQueryData(pricesKey)).toEqual(prices)
+    expect(restored.getQueryData(historyKey)).toEqual(history)
+  })
+
   it('restores a cache saved 7 days ago', async () => {
     const client = newClient()
     client.setQueryData(collectablesKey, collectables)

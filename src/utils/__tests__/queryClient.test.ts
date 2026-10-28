@@ -51,4 +51,18 @@ describe('createQueryClient', () => {
 
     queryClient.clear()
   })
+  it('keeps an unobserved balances query in memory for 7 days', () => {
+    jest.useFakeTimers()
+    const queryClient = createQueryClient()
+    const balancesKey = ['balances', 'tokens', 'mainnet-beta', 'wallet']
+    queryClient.setQueryData(balancesKey, {})
+
+    jest.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1)
+    expect(queryClient.getQueryData(balancesKey)).toEqual({})
+
+    jest.advanceTimersByTime(1)
+    expect(queryClient.getQueryData(balancesKey)).toBeUndefined()
+
+    queryClient.clear()
+  })
 })

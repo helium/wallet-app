@@ -1,60 +1,34 @@
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
-import { useSelector } from 'react-redux'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { RootState } from '../store/rootReducer'
-import { useAppDispatch } from '../store/store'
-import { readBalanceHistory } from '../store/slices/balancesSlice'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useSolana } from '../solana/SolanaProvider'
-import { SyncGuard } from './syncGuard'
-
-// Global balance history sync guard to prevent overlapping requests
-const balanceHistorySyncGuard = new SyncGuard()
+import { balanceHistoryQueryOptions } from './balances'
 
 export const useBalanceHistory = () => {
   const { currentAccount } = useAccountStorage()
   const { currency } = useAppStorage()
   const { cluster } = useSolana()
-  const dispatch = useAppDispatch()
   const appState = useRef(AppState.currentState)
-  const prevQuery = useRef('')
+  const solanaAddress = currentAccount?.solanaAddress || ''
+  const enabled = !!cluster && !!solanaAddress && !!currency
 
-  const balanceHistory = useSelector(
-    (state: RootState) =>
-      state.balances.balanceHistory[cluster]?.[
-        currentAccount?.solanaAddress || ''
-      ]?.[currency],
-  )
+  const { data: balanceHistory, refetch } = useQuery({
+    ...balanceHistoryQueryOptions({ cluster, solanaAddress, currency }),
+    enabled,
+  })
 
+  // Read the history again when the app comes back to the foreground
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState) => {
       if (
+        enabled &&
         appState.current.match(/inactive|background/) &&
-        nextAppState === 'active' &&
-        currentAccount?.solanaAddress &&
-        currency &&
-        cluster
+        nextAppState === 'active'
       ) {
-        const syncKey = `${cluster}-${currentAccount.solanaAddress}-${currency}`
-
-        // Check if sync can proceed
-        if (!balanceHistorySyncGuard.canSync(syncKey)) {
-          appState.current = nextAppState
-          return
-        }
-
-        balanceHistorySyncGuard.startSync(syncKey)
-
-        dispatch(
-          readBalanceHistory({
-            cluster,
-            solanaAddress: currentAccount?.solanaAddress || '',
-            currency,
-          }),
-        ).finally(() => {
-          balanceHistorySyncGuard.endSync()
-        })
+        // Join a fetch in flight instead of restarting it
+        refetch({ cancelRefetch: false })
       }
 
       appState.current = nextAppState
@@ -63,37 +37,7 @@ export const useBalanceHistory = () => {
     return () => {
       subscription.remove()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (!cluster || !currentAccount?.solanaAddress || !currency) {
-      return
-    }
-
-    const query = `${cluster}.${currentAccount.solanaAddress}.${currency}`
-
-    if (query === prevQuery.current) return
-
-    prevQuery.current = query
-
-    // Check if sync can proceed
-    if (!balanceHistorySyncGuard.canSync(query)) {
-      return
-    }
-
-    balanceHistorySyncGuard.startSync(query)
-
-    dispatch(
-      readBalanceHistory({
-        cluster,
-        solanaAddress: currentAccount?.solanaAddress,
-        currency,
-      }),
-    ).finally(() => {
-      balanceHistorySyncGuard.endSync()
-    })
-  }, [cluster, currency, currentAccount?.solanaAddress, dispatch])
+  }, [enabled, refetch])
 
   return { balanceHistory }
 }
