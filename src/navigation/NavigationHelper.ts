@@ -8,5 +8,8 @@ export const navToImportAccount = (
   params: HomeStackParamList['ReImportAccountNavigator'],
 ) => {
   if (!navigationRef.isReady()) return
-  navigationRef.navigate('ReImportAccountNavigator' as any, params as any)
+  navigationRef.navigate('TabBarNavigator', {
+    screen: 'Home',
+    params: { screen: 'ReImportAccountNavigator', params },
+  })
 }

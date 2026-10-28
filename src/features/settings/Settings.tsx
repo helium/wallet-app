@@ -79,7 +79,7 @@ const Settings = () => {
   )
 
   const onRequestClose = useCallback(() => {
-    homeNav.navigate('AccountsScreen')
+    homeNav.navigate('AccountsScreen', undefined, { pop: true })
   }, [homeNav])
 
   const contentContainer = useMemo(

@@ -28,7 +28,7 @@ const PairSuccess = () => {
         ],
       })
     } else {
-      navigation.navigate('DeviceScan')
+      navigation.navigate('DeviceScan', undefined, { pop: true })
     }
   }, [hasAccounts, rootNav, navigation])
 

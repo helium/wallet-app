@@ -5,16 +5,16 @@ import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { HomeNavigationProp } from '../home/homeTypes'
 import { usePersistedMigrationResume } from '../migration/hooks/useMigrationSession'
 import { navigationRef } from '../../navigation/NavigationHelper'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const MigrateToWorldCheck: FC = () => {
   const wallet = useCurrentWallet()
   const walletAddress = wallet?.toBase58()
   const { shouldShowMigrateToWorld } = useAppStorage()
   const { showModal, type } = useModal()
-  const homeNav = useNavigation<HomeNavigationProp>()
+  const homeNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const { showOKCancelAlert } = useAlert()
   // Reuses the same AsyncStorage parsing/deriveResume as the flow screen so the
@@ -28,12 +28,13 @@ const MigrateToWorldCheck: FC = () => {
   // announcement. Gate on actually being on the wallet home screen, and
   // re-evaluate on every navigation change so the card fires once the user
   // truly lands there.
-  const onWalletHome = useCallback(
-    () =>
-      navigationRef.isReady() &&
-      navigationRef.getCurrentRoute()?.name === 'AccountsScreen',
-    [],
-  )
+  const onWalletHome = useCallback(() => {
+    if (!navigationRef.isReady()) return false
+    // The focused leaf route can be in any nested navigator, so compare
+    // its name as a plain string.
+    const routeName: string | undefined = navigationRef.getCurrentRoute()?.name
+    return routeName === 'AccountsScreen'
+  }, [])
 
   useEffect(() => {
     const unsubscribe = navigationRef.addListener('state', () =>
@@ -65,8 +66,12 @@ const MigrateToWorldCheck: FC = () => {
         cancelStyle: 'cancel',
       }).then((confirmed) => {
         if (confirmed) {
-          homeNav.navigate('SettingsNavigator', {
-            screen: 'MigrateToWorld',
+          homeNav.navigate('TabBarNavigator', {
+            screen: 'Home',
+            params: {
+              screen: 'SettingsNavigator',
+              params: { screen: 'MigrateToWorld' },
+            },
           })
         }
       })

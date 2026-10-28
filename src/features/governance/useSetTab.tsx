@@ -11,19 +11,25 @@ export function useSetTab() {
     (tab: string) => {
       switch (tab) {
         case 'proposals':
-          navigation.navigate('ProposalsScreen', {
-            mint: mint.toBase58(),
-          })
+          navigation.navigate(
+            'ProposalsScreen',
+            { mint: mint.toBase58() },
+            { pop: true },
+          )
           break
         case 'positions':
-          navigation.navigate('PositionsScreen', {
-            mint: mint.toBase58(),
-          })
+          navigation.navigate(
+            'PositionsScreen',
+            { mint: mint.toBase58() },
+            { pop: true },
+          )
           break
         case 'proxies':
-          navigation.navigate('ProxiesScreen', {
-            mint: mint.toBase58(),
-          })
+          navigation.navigate(
+            'ProxiesScreen',
+            { mint: mint.toBase58() },
+            { pop: true },
+          )
           break
         default:
           break

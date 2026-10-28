@@ -47,10 +47,11 @@ export const GovernanceWrapper: React.FC<
     // this is used for deep linking and to maintain
     // ProposalsScreen as the back button
     if (route.params?.mint && route.params?.proposal) {
-      navigation.navigate('ProposalsScreen', {
-        mint: route.params.mint,
-        proposal: route.params.proposal,
-      })
+      navigation.navigate(
+        'ProposalsScreen',
+        { mint: route.params.mint, proposal: route.params.proposal },
+        { pop: true },
+      )
     }
   }, [route, navigation])
 

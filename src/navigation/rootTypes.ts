@@ -1,10 +1,14 @@
 import { LinkWalletRequest, SignHotspotRequest } from '@helium/wallet-link'
+import { NavigatorScreenParams } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack'
-import { PaymentRouteParam } from '../features/home/homeTypes'
+import {
+  HomeStackParamList,
+  PaymentRouteParam,
+} from '../features/home/homeTypes'
 
 export type RootStackParamList = {
   OnboardingNavigator: undefined
-  TabBarNavigator: undefined
+  TabBarNavigator: NavigatorScreenParams<TabBarStackParamList> | undefined
   LinkWallet: LinkWalletRequest
   SignHotspot: SignHotspotRequest & { submit?: boolean }
   PaymentScreen: undefined | PaymentRouteParam
@@ -14,7 +18,7 @@ export type RootStackParamList = {
 }
 
 export type TabBarStackParamList = {
-  Home: undefined
+  Home: NavigatorScreenParams<HomeStackParamList> | undefined
   Collectables: undefined
   Swaps: undefined
   Activity: undefined

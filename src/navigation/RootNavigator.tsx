@@ -57,7 +57,10 @@ const RootNavigator = () => {
   }, [colors.primaryBackground])
 
   const handleAddNew = useCallback(() => {
-    navigation.navigate('AddNewAccountNavigator')
+    navigation.navigate('TabBarNavigator', {
+      screen: 'Home',
+      params: { screen: 'AddNewAccountNavigator' },
+    })
   }, [navigation])
 
   const { execute: handleAddSub } = useAsyncCallback(async (acc: CSAccount) => {

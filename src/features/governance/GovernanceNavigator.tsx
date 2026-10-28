@@ -17,7 +17,7 @@ import ProxiesScreen from './ProxiesScreen'
 const GovernanceStack = createStackNavigator()
 const screenOptions: StackNavigationOptions = {
   headerShown: false,
-  animationEnabled: false,
+  animation: 'none',
 }
 
 const GovernanceStackScreen = () => {

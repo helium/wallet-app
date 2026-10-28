@@ -267,9 +267,17 @@ const AddGatewayBle = () => {
     )
 
     if (networkInfo) {
-      collectNav.navigate('HotspotMapScreen', { hotspot: collectable, network })
+      collectNav.navigate(
+        'HotspotMapScreen',
+        { hotspot: collectable, network },
+        { pop: true },
+      )
     } else {
-      collectNav.navigate('AssertLocationScreen', { collectable })
+      collectNav.navigate(
+        'AssertLocationScreen',
+        { collectable },
+        { pop: true },
+      )
     }
   })
   const error =

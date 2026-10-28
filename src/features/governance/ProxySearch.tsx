@@ -138,9 +138,11 @@ export const ProxySearch = React.forwardRef<
 
   const navigation = useNavigation<GovernanceNavigationProp>()
   const handleBrowseVoters = useCallback(() => {
-    navigation.navigate('ProxiesScreen', {
-      mint: mint.toBase58(),
-    })
+    navigation.navigate(
+      'ProxiesScreen',
+      { mint: mint.toBase58() },
+      { pop: true },
+    )
   }, [navigation, mint])
 
   const keyboard = useKeyboard()

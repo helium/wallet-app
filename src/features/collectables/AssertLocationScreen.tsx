@@ -330,10 +330,11 @@ const AssertLocationScreen = () => {
           title: t('assertLocationScreen.success.title'),
           message: t('assertLocationScreen.success.message'),
         })
-        navigation.navigate('HotspotMapScreen', {
-          hotspot: collectable,
-          network: type,
-        })
+        navigation.navigate(
+          'HotspotMapScreen',
+          { hotspot: collectable, network: type },
+          { pop: true },
+        )
       } catch (error) {
         setAsserting(false)
         Logger.error(error)

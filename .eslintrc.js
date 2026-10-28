@@ -1,3 +1,5 @@
+const airbnbBestPractices = require('eslint-config-airbnb-base/rules/best-practices')
+
 module.exports = {
   extends: [
     'airbnb',
@@ -62,6 +64,14 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
+    'no-restricted-properties': [
+      ...airbnbBestPractices.rules['no-restricted-properties'],
+      {
+        property: 'navigateDeprecated',
+        message:
+          'Use navigate, popTo, or navigate(name, params, { pop: true }).',
+      },
+    ],
   },
   settings: {
     'import/extensions': ['.js', '.jsx', '.ts', '.tsx'],
