@@ -33,6 +33,7 @@ export type SettingsListItemType = {
   openUrl?: string
   disabled?: boolean
   staticText?: boolean
+  testID?: string
 }
 
 const SettingsListItem = ({
@@ -49,6 +50,7 @@ const SettingsListItem = ({
     openUrl,
     disabled,
     staticText,
+    testID,
   },
   isTop = false,
 }: {
@@ -123,6 +125,7 @@ const SettingsListItem = ({
 
   return (
     <TouchableOpacityBox
+      testID={testID}
       flexDirection="row"
       justifyContent="space-between"
       alignItems="center"

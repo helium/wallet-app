@@ -71,6 +71,7 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
         {!!balanceString && (
           <FadeInOut>
             <Text
+              testID="AccountView.Balance"
               maxFontSizeMultiplier={1.1}
               variant="h0"
               color="primaryText"

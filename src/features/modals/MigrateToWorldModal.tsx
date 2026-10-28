@@ -142,12 +142,14 @@ const MigrateToWorldCard: FC = () => {
             variant="primary"
             title={t('migrateToWorldModal.welcome.next')}
             onPress={handleGetStarted}
+            testID="MigrateToWorld.GetStarted"
             marginTop="l"
           />
           <WorldButton
             variant="ghost"
             title={t('migrateToWorldModal.dismiss')}
             onPress={handleNotNow}
+            testID="MigrateToWorld.NotNow"
             marginTop="s"
           />
           <Text

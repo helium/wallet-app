@@ -1,0 +1,25 @@
+# Switches the cluster back to mainnet, then adds a new account
+# from the wallet list.
+appId: com.helium.wallet.app
+tags:
+  - settings
+---
+- runFlow: ../subflows/home.yaml
+- runFlow:
+    file: ../subflows/set-cluster.yaml
+    env:
+      CLUSTER: mainnet-beta
+- tapOn:
+    id: AccountsTopNav.Wallet
+- tapOn:
+    id: ConnectedWallets.AddNew
+- tapOn:
+    id: AccountCreateStart.Create
+- runFlow:
+    file: ../subflows/create-words.yaml
+    env:
+      ALIAS: Maestro Added
+- extendedWaitUntil:
+    visible:
+      id: AccountView.Balance
+    timeout: 30000

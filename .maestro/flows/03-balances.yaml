@@ -1,0 +1,19 @@
+# Home shows the total balance; the HNT row opens token detail.
+appId: com.helium.wallet.app
+tags:
+  - account
+---
+- runFlow: ../subflows/home.yaml
+- assertVisible:
+    id: AccountView.Balance
+- scrollUntilVisible:
+    element:
+      id: TokenListItem.HNT
+- tapOn:
+    id: TokenListItem.HNT
+- extendedWaitUntil:
+    visible:
+      id: AccountToken.Balance
+    timeout: 30000
+- tapOn:
+    id: NavBar.account

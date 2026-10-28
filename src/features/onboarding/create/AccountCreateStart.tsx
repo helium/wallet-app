@@ -68,6 +68,7 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
         {t('accountImport.accountLimit')}
       </Text>
       <ButtonPressable
+        testID="AccountCreateStart.Create"
         disabled={reachedAccountLimit}
         borderRadius="round"
         titleColor="secondary"

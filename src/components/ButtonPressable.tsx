@@ -34,6 +34,7 @@ type Props = BoxProps<Theme> & {
   style?: ViewStyle
   LeadingComponent?: React.ReactNode
   TrailingComponent?: React.ReactNode
+  testID?: string
 }
 
 const ButtonPressable = ({

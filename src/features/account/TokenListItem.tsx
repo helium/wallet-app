@@ -99,6 +99,7 @@ export const TokenListItem = ({ mint }: Props) => {
   return (
     <FadeInOut>
       <TouchableContainer
+        testID={`TokenListItem.${symbol}`}
         onPress={handleNavigation}
         flexDirection="row"
         minHeight={ITEM_HEIGHT}

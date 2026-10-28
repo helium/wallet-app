@@ -699,6 +699,7 @@ export const PositionCard = ({
                 {canDelegate && (
                   <ListItem
                     key="delegate"
+                    testID="PositionCard.Delegate"
                     title={t('gov.positions.delegate')}
                     onPress={() => {
                       setActionsOpen(false)
@@ -816,7 +817,10 @@ export const PositionCard = ({
             exiting={FadeOut}
             {...boxProps}
           >
-            <TouchableOpacityBox onPress={() => setActionsOpen(true)}>
+            <TouchableOpacityBox
+              testID="PositionCard"
+              onPress={() => setActionsOpen(true)}
+            >
               <Box paddingHorizontal="m" paddingVertical="ms">
                 <Box
                   flexDirection="row"

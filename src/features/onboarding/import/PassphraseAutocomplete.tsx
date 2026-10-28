@@ -105,6 +105,7 @@ const PassphraseAutocomplete = ({
       <Box marginHorizontal="l">
         <TextInput
           textInputProps={{
+            testID: 'PassphraseAutocomplete.Input',
             placeholder: t('accountImport.wordEntry.placeholder', {
               ordinal,
             }),
@@ -127,6 +128,7 @@ const PassphraseAutocomplete = ({
         {complete && (
           <Box position="absolute" right={0}>
             <FabButton
+              testID="PassphraseAutocomplete.Submit"
               size={36}
               onPress={onSubmit}
               icon="arrowRight"

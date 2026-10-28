@@ -85,12 +85,16 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
       zIndex={1}
     >
       <Box flexDirection="row">
-        <IconPressedContainer onPress={navToSettings}>
+        <IconPressedContainer
+          testID="AccountsTopNav.Settings"
+          onPress={navToSettings}
+        >
           <CogIco color="white" />
         </IconPressedContainer>
         <Box paddingHorizontal="m" />
       </Box>
       <TouchableOpacityBox
+        testID="AccountsTopNav.Wallet"
         flexDirection="row"
         flex={1}
         flexGrow={1}

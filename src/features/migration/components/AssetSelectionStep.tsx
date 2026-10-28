@@ -215,6 +215,7 @@ const AssetSelectionStep: FC<{
 
         <Box flex={1} />
         <WorldButton
+          testID="MigrateSelect.Review"
           title={t('migrateToWorld.selectAssets.review')}
           onPress={() => onReview({ hotspotKeys, tokenAmounts })}
           disabled={!canReview}

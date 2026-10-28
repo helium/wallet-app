@@ -18,6 +18,7 @@ export type SwapItemProps = {
   loading?: boolean
   onPress?: ((event: GestureResponderEvent) => void) | null | undefined
   disabled?: boolean
+  testID?: string
 } & BoxProps<Theme>
 
 const SwapItem = ({

@@ -1,0 +1,17 @@
+# Confirms the security words held in output.words on ConfirmWordsScreen:
+# types each word and taps its matching chip, then submits.
+appId: com.helium.wallet.app
+---
+- evalScript: ${output.confirmed = 0}
+- repeat:
+    while:
+      true: ${output.confirmed < output.words.length}
+    commands:
+      - tapOn:
+          id: PassphraseAutocomplete.Input
+      - inputText: ${output.words[output.confirmed]}
+      - tapOn:
+          id: MatchingWord.${output.words[output.confirmed]}
+      - evalScript: ${output.confirmed = output.confirmed + 1}
+- tapOn:
+    id: PassphraseAutocomplete.Submit

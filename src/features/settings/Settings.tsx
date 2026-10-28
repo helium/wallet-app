@@ -384,6 +384,7 @@ const Settings = () => {
       ...devData,
       {
         title: t('settings.sections.dev.solanaCluster.title'),
+        testID: 'Settings.Cluster',
         value: cluster,
         select: {
           items,
@@ -435,6 +436,7 @@ const Settings = () => {
       title: string
       onPress?: () => void
       destructive?: boolean
+      testID?: string
     }[]
 
     accountSettings.push({
@@ -444,6 +446,7 @@ const Settings = () => {
 
     accountSettings.push({
       title: t('settings.sections.account.migrateToWorld'),
+      testID: 'Settings.MigrateToWorld',
       onPress: handleMigrateToWorld,
     })
 

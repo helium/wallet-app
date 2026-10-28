@@ -1,0 +1,55 @@
+# Devnet: send 0.001 HNT from the fixture account to
+# MAESTRO_DEVNET_RECIPIENT. This submits a real devnet transaction.
+appId: com.helium.wallet.app
+tags:
+  - payment
+---
+- runFlow: ../subflows/home.yaml
+- runFlow:
+    file: ../subflows/set-cluster.yaml
+    env:
+      CLUSTER: devnet
+- tapOn:
+    id: AccountActionBar.Send
+- runFlow:
+    when:
+      visible:
+        id: Keypad.1
+    file: ../subflows/enter-pin.yaml
+- tapOn:
+    id: PaymentItem.Address
+- inputText: ${MAESTRO_DEVNET_RECIPIENT}
+- hideKeyboard
+- tapOn:
+    id: PaymentItem.Amount
+- tapOn:
+    id: Keypad.0
+- tapOn:
+    id: Keypad.decimal
+- tapOn:
+    id: Keypad.0
+- tapOn:
+    id: Keypad.0
+- tapOn:
+    id: Keypad.1
+- tapOn:
+    id: HNTKeyboard.Confirm
+- tapOn:
+    id: PaymentCard.Pay
+- swipe:
+    from:
+      id: SubmitButton.Thumb
+    direction: RIGHT
+- runFlow:
+    when:
+      visible:
+        id: WalletSign.Approve
+    commands:
+      - tapOn:
+          id: WalletSign.Approve
+- extendedWaitUntil:
+    visible:
+      id: PaymentSuccess.Title
+    timeout: 90000
+- tapOn:
+    id: PaymentSuccess.Done

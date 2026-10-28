@@ -1,0 +1,28 @@
+# Mainnet: swap 1 MOBILE to HNT up to the sign sheet, then cancel.
+# Does not submit.
+appId: com.helium.wallet.app
+tags:
+  - swap
+---
+- runFlow: ../subflows/home.yaml
+- tapOn:
+    id: AccountActionBar.Swaps
+- tapOn:
+    id: Swap.PayItem
+- tapOn:
+    id: Keypad.1
+- tapOn:
+    id: HNTKeyboard.Confirm
+- extendedWaitUntil:
+    visible:
+      id: Swap.Submit
+      enabled: true
+    timeout: 60000
+- tapOn:
+    id: Swap.Submit
+- extendedWaitUntil:
+    visible:
+      id: WalletSign.Approve
+    timeout: 60000
+- tapOn:
+    id: WalletSign.Cancel

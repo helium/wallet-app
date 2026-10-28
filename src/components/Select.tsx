@@ -17,6 +17,7 @@ export type SelectProps = {
     value: string
     icon?: React.ReactNode
   }[]
+  testID?: string
 } & BoxProps<Theme>
 export const Select: React.FC<SelectProps> = ({
   title,
@@ -58,6 +59,7 @@ export const Select: React.FC<SelectProps> = ({
           {options.map((option) => (
             <ListItem
               key={option.value}
+              testID={`Select.${option.value}`}
               title={option.label}
               onPress={() => {
                 onValueChange(option.value)

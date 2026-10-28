@@ -122,6 +122,7 @@ export const WalletSignBottomSheetCompact = ({
           titleColor="white"
           title={t('browserScreen.cancel')}
           onPress={onCancel}
+          testID="WalletSign.Cancel"
         />
         <ButtonPressable
           width="48%"
@@ -134,6 +135,7 @@ export const WalletSignBottomSheetCompact = ({
           title={t('browserScreen.approve')}
           titleColor="black"
           onPress={onAccept}
+          testID="WalletSign.Approve"
         />
       </Box>
     </Box>

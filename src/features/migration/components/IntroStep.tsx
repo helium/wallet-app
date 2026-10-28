@@ -47,6 +47,7 @@ const IntroStep: FC<{
             variant="primary"
             title={t('migrateToWorldModal.choosePath.emailTitle')}
             onPress={onContinue}
+            testID="MigrateIntro.Email"
           />
           <Text
             variant="body3"

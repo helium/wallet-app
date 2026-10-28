@@ -1,0 +1,21 @@
+# Relaunches the app and brings it to the home screen:
+# unlocks the PIN screen and closes the Migrate to World card.
+appId: com.helium.wallet.app
+---
+- launchApp
+- runFlow:
+    when:
+      visible:
+        id: Keypad.1
+    file: enter-pin.yaml
+- extendedWaitUntil:
+    visible:
+      id: AccountView.Balance
+    timeout: 30000
+- runFlow:
+    when:
+      visible:
+        id: MigrateToWorld.NotNow
+    commands:
+      - tapOn:
+          id: MigrateToWorld.NotNow

@@ -52,6 +52,7 @@ const NavBarItem = ({
 
   return (
     <TouchableOpacityBox
+      testID={`NavBar.${value}`}
       accessibilityRole="button"
       accessibilityState={selected ? { selected: true } : {}}
       accessibilityLabel={value}

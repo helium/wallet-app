@@ -1,0 +1,15 @@
+# Types the PIN 123456 on the shared Keypad.
+appId: com.helium.wallet.app
+---
+- tapOn:
+    id: Keypad.1
+- tapOn:
+    id: Keypad.2
+- tapOn:
+    id: Keypad.3
+- tapOn:
+    id: Keypad.4
+- tapOn:
+    id: Keypad.5
+- tapOn:
+    id: Keypad.6

@@ -27,7 +27,7 @@ const HeliumActionSheetItem = ({
   disabled,
   Icon,
   labelShort: _labelShort,
-  value: _value,
+  value,
   action: _action,
 }: Props) => {
   const colors = useColors()
@@ -40,6 +40,7 @@ const HeliumActionSheetItem = ({
 
   return (
     <TouchableOpacityBox
+      testID={`ActionSheet.${value}`}
       height={HeliumActionSheetItemHeight}
       onPress={onPress}
       alignItems="center"

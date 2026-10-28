@@ -240,6 +240,7 @@ const ConnectedWallets = forwardRef(
       () => (
         <Box onLayout={setFooterHeight} paddingBottom="xl">
           <TouchableContainer
+            testID="ConnectedWallets.AddNew"
             onPress={handleAddNew(NetTypes.MAINNET)}
             flexDirection="row"
             paddingHorizontal="l"

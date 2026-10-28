@@ -24,6 +24,7 @@ export type ButtonPressAnimationProps = {
   hitSlop?: Insets | undefined
   activeOpacity?: number
   idleOpacity?: number
+  testID?: string
 } & BoxProps<Theme>
 
 const IconPressedContainer = ({

@@ -20,6 +20,7 @@ const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
   )
   return (
     <TouchableOpacityBox
+      testID={`MatchingWord.${fullWord}`}
       justifyContent="center"
       alignContent="center"
       marginLeft={{ smallPhone: 'm', phone: 'ms' }}

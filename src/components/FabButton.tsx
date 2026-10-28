@@ -66,6 +66,7 @@ type Props = BoxProps<Theme> & {
   disabled?: boolean
   title?: string
   reverse?: boolean
+  testID?: string
 }
 
 const ButtonPressable = ({
@@ -118,6 +119,7 @@ const ButtonPressable = ({
           style={styles.pressable}
           disabled={disabled}
           accessibilityRole="button"
+          testID={boxProps.testID}
         >
           <Box
             style={backgroundColorStyle}

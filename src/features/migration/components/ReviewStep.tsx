@@ -183,6 +183,7 @@ const ReviewStep: FC<{
           </Text>
         ) : null}
         <WorldButton
+          testID="MigrateReview.Confirm"
           title={t('migrateToWorld.confirm.button')}
           onPress={onConfirm}
           marginTop="m"

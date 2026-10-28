@@ -22,6 +22,7 @@ export type ButtonPressAnimationProps = React.PropsWithChildren<
     pressableStyles?: ViewStyle
     onPressIn?: () => void
     onPressOut?: () => void
+    testID?: string
   } & BoxProps<Theme>
 >
 

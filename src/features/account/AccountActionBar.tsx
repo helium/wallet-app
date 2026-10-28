@@ -150,6 +150,7 @@ const AccountActionBar = ({
           flexDirection={hasBottomTitle ? 'column' : 'row'}
         >
           <FabButton
+            testID={compact ? 'AccountActionBar.Swaps' : undefined}
             icon="swaps"
             backgroundColor="orange500"
             backgroundColorOpacity={0.2}
@@ -212,6 +213,7 @@ const AccountActionBar = ({
           flex={compact || maxCompact ? undefined : 1}
         >
           <FabButton
+            testID={compact ? 'AccountActionBar.Send' : undefined}
             icon="fatArrowUp"
             backgroundColor="blueBright500"
             backgroundColorOpacity={0.2}

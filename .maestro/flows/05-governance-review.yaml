@@ -1,0 +1,57 @@
+# Mainnet: open the first position, delegate it up to the sign sheet,
+# then cancel. Then open Manage and, when claim is enabled, take
+# claim rewards up to the sign sheet and cancel. Does not submit.
+appId: com.helium.wallet.app
+tags:
+  - governance
+---
+- runFlow: ../subflows/home.yaml
+- tapOn:
+    id: NavBar.governance
+- runFlow:
+    when:
+      visible:
+        id: GovernanceTutorial.Start
+    commands:
+      - tapOn:
+          id: GovernanceTutorial.Start
+- tapOn:
+    id: Governance.TabSelect
+- tapOn:
+    id: Select.positions
+- extendedWaitUntil:
+    visible:
+      id: PositionCard
+    timeout: 60000
+- tapOn:
+    id: PositionCard
+    index: 0
+- tapOn:
+    id: PositionCard.Delegate
+- tapOn:
+    id: DelegateTokens.SubDao
+    index: 0
+- tapOn:
+    id: DelegateTokens.Submit
+- extendedWaitUntil:
+    visible:
+      id: WalletSign.Approve
+    timeout: 60000
+- tapOn:
+    id: WalletSign.Cancel
+- tapOn:
+    id: Positions.Manage
+- runFlow:
+    when:
+      visible:
+        id: Positions.Manage.claim
+        enabled: true
+    commands:
+      - tapOn:
+          id: Positions.Manage.claim
+      - extendedWaitUntil:
+          visible:
+            id: WalletSign.Approve
+          timeout: 60000
+      - tapOn:
+          id: WalletSign.Cancel

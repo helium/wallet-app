@@ -763,6 +763,7 @@ const SwapScreen = () => {
                   {Header}
                   <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
                     <SwapItem
+                      testID="Swap.PayItem"
                       onPress={onTokenItemPressed(true)}
                       marginHorizontal="m"
                       isPaying
@@ -895,6 +896,7 @@ const SwapScreen = () => {
                     titleColorPressedOpacity={0.3}
                     title={swapping ? '' : t('swapsScreen.swapTokens')}
                     onPress={handleSwapTokens}
+                    testID="Swap.Submit"
                     TrailingComponent={
                       swapping ? (
                         <CircleLoader loaderSize={20} color="white" />

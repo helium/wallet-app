@@ -1,0 +1,39 @@
+# Fresh install: import the fixture account from MAESTRO_FIXTURE_SEED
+# (12 or 24 words, space separated), set the PIN.
+appId: com.helium.wallet.app
+tags:
+  - onboarding
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- evalScript: ${output.words = MAESTRO_FIXTURE_SEED.trim().split(/\s+/)}
+- tapOn:
+    id: CreateImport.Import
+- tapOn:
+    id: AccountImportStart.SecretPhrase
+- runFlow:
+    when:
+      true: ${output.words.length == 24}
+    commands:
+      - tapOn:
+          id: AccountImport.WordCount
+- runFlow: ../subflows/confirm-words.yaml
+- extendedWaitUntil:
+    visible:
+      id: ImportSubAccounts.Next
+    timeout: 60000
+- tapOn:
+    id: ImportSubAccounts.Next
+- tapOn:
+    id: AccountAssign.Alias
+- inputText: Maestro Fixture
+- hideKeyboard
+- tapOn:
+    id: AccountAssign.Continue
+- runFlow: ../subflows/enter-pin.yaml
+- runFlow: ../subflows/enter-pin.yaml
+- extendedWaitUntil:
+    visible:
+      id: AccountView.Balance
+    timeout: 30000

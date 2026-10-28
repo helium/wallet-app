@@ -148,6 +148,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
             paddingHorizontal="m"
           >
             <TextInput
+              testID="MigrateLogin.Input"
               value={codeSent ? code : email}
               onChangeText={codeSent ? setCode : setEmail}
               placeholder={
@@ -163,6 +164,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
             />
           </Box>
           <WorldButton
+            testID={codeSent ? 'MigrateLogin.Verify' : 'MigrateLogin.SendCode'}
             title={
               codeSent
                 ? t('migrateToWorld.linkEmail.verify')

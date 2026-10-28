@@ -44,7 +44,11 @@ const CreateImportAccountScreen = () => {
       <Text variant="h0">{t('accountSetup.createImport.title')}</Text>
       <Box marginVertical="l" borderRadius="xl" overflow="hidden">
         <BackgroundFill backgroundColor="surfaceContrast" opacity={0.06} />
-        <TouchableOpacityBox onPress={importAccount} padding="lm">
+        <TouchableOpacityBox
+          testID="CreateImport.Import"
+          onPress={importAccount}
+          padding="lm"
+        >
           <Box flexDirection="row" alignItems="center">
             <Text variant="subtitle1" color="blueBright500" flex={1}>
               {t('accountSetup.createImport.import')}
@@ -53,7 +57,11 @@ const CreateImportAccountScreen = () => {
           </Box>
         </TouchableOpacityBox>
         <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox onPress={createAccount} padding="lm">
+        <TouchableOpacityBox
+          testID="CreateImport.Create"
+          onPress={createAccount}
+          padding="lm"
+        >
           <Box flexDirection="row" alignItems="center">
             <Text variant="subtitle1" color="greenBright500" flex={1}>
               {t('accountSetup.createImport.create')}

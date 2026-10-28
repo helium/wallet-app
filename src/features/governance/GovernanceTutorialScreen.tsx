@@ -160,6 +160,7 @@ export const GovernanceTutorialScreen = () => {
               title={viewedSlides ? t('gov.tutorial.goToVote') : ' '}
               titleColor="black"
               onPress={handleVotePressed}
+              testID="GovernanceTutorial.Start"
             />
           </Box>
         </Box>

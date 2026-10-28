@@ -291,6 +291,7 @@ const AccountImportScreen = () => {
           onPaste={handleOnPaste}
         />
         <TouchableOpacityBox
+          testID="AccountImport.WordCount"
           onPress={onWordAmountClicked}
           flex={1}
           alignItems="center"

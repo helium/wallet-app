@@ -33,7 +33,12 @@ const PaymentSuccess = ({
       <Box padding="l" paddingBottom="none">
         <SuccessIcon />
       </Box>
-      <Text variant="h2" color="surfaceText" padding="l">
+      <Text
+        testID="PaymentSuccess.Title"
+        variant="h2"
+        color="surfaceText"
+        padding="l"
+      >
         {t('payment.submitSuccess')}
       </Text>
       <Box
@@ -53,6 +58,7 @@ const PaymentSuccess = ({
         <TouchableOpacityBox
           marginTop="xxl"
           marginBottom="m"
+          testID="PaymentSuccess.Done"
           onPress={onSuccess}
           backgroundColor="blueBright500"
           paddingVertical="m"

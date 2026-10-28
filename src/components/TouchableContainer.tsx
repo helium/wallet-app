@@ -21,6 +21,7 @@ export type ButtonPressAnimationProps = {
   pressableStyles?: ViewStyle
   onLayout?: (event: LayoutChangeEvent) => void | undefined
   hitSlop?: Insets | undefined
+  testID?: string
 } & BoxProps<Theme>
 
 const TouchableContainer = ({

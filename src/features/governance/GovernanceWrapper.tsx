@@ -99,6 +99,7 @@ export const GovernanceWrapper: React.FC<
             <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
               {header}
               <Select
+                testID="Governance.TabSelect"
                 title=""
                 mb="xl"
                 value={selectedTab}

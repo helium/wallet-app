@@ -490,7 +490,11 @@ const AccountTokenScreen = () => {
                 <Box alignItems="center" marginBottom="m">
                   <TokenIcon img={json?.image} size={50} />
                 </Box>
-                <AccountTokenBalance marginTop="s" mint={mint} />
+                <AccountTokenBalance
+                  testID="AccountToken.Balance"
+                  marginTop="s"
+                  mint={mint}
+                />
                 {!!symbol && (
                   <AccountTokenCurrencyBalance
                     ticker={symbol.toUpperCase()}

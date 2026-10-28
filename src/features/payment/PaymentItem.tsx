@@ -235,6 +235,7 @@ const PaymentItem = ({
                     variant="transparent"
                     flex={1}
                     textInputProps={{
+                      testID: 'PaymentItem.Address',
                       placeholder: t('payment.enterAddress'),
                       value: rawAddress || address,
                       onChangeText: setRawAddress,
@@ -281,6 +282,7 @@ const PaymentItem = ({
           {!amount || amount?.isZero() ? (
             <>
               <TouchableOpacityBox
+                testID="PaymentItem.Amount"
                 onPress={handleEditAmount}
                 flex={1}
                 justifyContent="center"

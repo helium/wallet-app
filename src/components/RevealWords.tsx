@@ -56,6 +56,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
             adjustsFontSizeToFit
           >{`${index + 1}. `}</Text>
           <Text
+            testID={`RevealWords.Word.${index}`}
             fontSize={16}
             color="primaryText"
             maxFontSizeMultiplier={1}
@@ -103,6 +104,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
         </TouchableOpacityBox>
         <Box flex={1} />
         <ButtonPressable
+          testID="RevealWords.Next"
           height={60}
           borderRadius="round"
           backgroundColor="surfaceSecondary"

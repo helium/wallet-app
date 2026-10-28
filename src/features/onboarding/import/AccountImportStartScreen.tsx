@@ -129,6 +129,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
           titleColor="black900"
           title={t('accountImport.recoveryPhrase')}
           onPress={navNext()}
+          testID="AccountImportStart.SecretPhrase"
           titleColorDisabled="black800"
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="havelockBlue"

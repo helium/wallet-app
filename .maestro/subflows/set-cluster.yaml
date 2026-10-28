@@ -1,0 +1,18 @@
+# From home, opens Settings and selects the Solana cluster in ${CLUSTER}
+# (devnet or mainnet-beta), then goes back to home.
+appId: com.helium.wallet.app
+---
+- tapOn:
+    id: AccountsTopNav.Settings
+- scrollUntilVisible:
+    element:
+      id: Settings.Cluster
+- tapOn:
+    id: Settings.Cluster
+- tapOn:
+    id: ActionSheet.${CLUSTER}
+- back
+- extendedWaitUntil:
+    visible:
+      id: AccountView.Balance
+    timeout: 30000

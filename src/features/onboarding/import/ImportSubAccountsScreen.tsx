@@ -278,6 +278,7 @@ export default () => {
             titleColor="black500"
             disabled={!selected || selected.size === 0 || !!error || loading}
             onPress={onNext}
+            testID="ImportSubAccounts.Next"
             title={t('generic.next')}
             marginBottom="l"
             marginHorizontal="l"

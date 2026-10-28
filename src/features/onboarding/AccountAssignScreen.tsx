@@ -220,6 +220,7 @@ const AccountAssignScreen = () => {
               marginLeft="m"
               marginRight="xl"
               textInputProps={{
+                testID: 'AccountAssign.Alias',
                 placeholder: t('accountAssign.AccountNamePlaceholder'),
                 autoCorrect: false,
                 autoComplete: 'off',
@@ -279,6 +280,7 @@ const AccountAssignScreen = () => {
             <CircleLoader />
           ) : (
             <FabButton
+              testID="AccountAssign.Continue"
               onPress={handlePress}
               icon="arrowRight"
               iconColor="primary"

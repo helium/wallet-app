@@ -19,6 +19,7 @@ type Props = {
   mint: PublicKey
   textVariant?: 'h0' | 'h1' | 'h2' | 'h2Medium'
   showTicker?: boolean
+  testID?: string
 } & BoxProps<Theme>
 
 const EscrowDetails = () => {

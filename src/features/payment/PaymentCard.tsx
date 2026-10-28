@@ -112,6 +112,7 @@ const PaymentCard = ({
                 opacity={disabled ? 0.6 : 1}
                 justifyContent="center"
                 alignItems="center"
+                testID="PaymentCard.Pay"
                 onPress={handlePayPressed}
                 disabled={disabled}
                 borderRadius="round"

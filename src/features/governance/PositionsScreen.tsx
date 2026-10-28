@@ -410,6 +410,7 @@ export const PositionsScreen = () => {
                     title={t('gov.manage')}
                     titleColor="white"
                     onPress={() => setIsManageSheetOpen(true)}
+                    testID="Positions.Manage"
                     flexDirection="row"
                     justifyContent="center"
                     alignItems="center"
@@ -429,6 +430,7 @@ export const PositionsScreen = () => {
                       {manageActions.map((action) => (
                         <ListItem
                           key={action.value}
+                          testID={`Positions.Manage.${action.value}`}
                           title={action.label}
                           onPress={action.onPress}
                           disabled={action.disabled}

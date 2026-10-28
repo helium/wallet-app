@@ -1,0 +1,22 @@
+# Fresh install: create an account, confirm the security words, set the PIN.
+appId: com.helium.wallet.app
+tags:
+  - onboarding
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- tapOn:
+    id: CreateImport.Create
+- tapOn:
+    id: AccountCreateStart.Create
+- runFlow:
+    file: ../subflows/create-words.yaml
+    env:
+      ALIAS: Maestro Created
+- runFlow: ../subflows/enter-pin.yaml
+- runFlow: ../subflows/enter-pin.yaml
+- extendedWaitUntil:
+    visible:
+      id: AccountView.Balance
+    timeout: 30000

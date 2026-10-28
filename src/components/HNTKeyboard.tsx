@@ -554,6 +554,7 @@ const HNTKeyboardSelector = forwardRef(
                       </Text>
                     </TouchableOpacityBox>
                     <TouchableOpacityBox
+                      testID="HNTKeyboard.Confirm"
                       onPress={handleConfirm}
                       marginLeft="xs"
                       minHeight={66}

@@ -1,0 +1,15 @@
+# Baseline regression suite. Run from the repo root:
+#   maestro test .maestro
+flows:
+  - flows/*
+executionOrder:
+  continueOnFailure: false
+  flowsOrder:
+    - 01-create-account
+    - 02-import-account
+    - 03-balances
+    - 04-swap-review
+    - 05-governance-review
+    - 06-migration-review
+    - 07-send-devnet
+    - 08-settings

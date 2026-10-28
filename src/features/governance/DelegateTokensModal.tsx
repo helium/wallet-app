@@ -254,6 +254,7 @@ export const DelegateTokensModal = ({
                     return (
                       <TouchableOpacityBox
                         key={subDao.pubkey.toString()}
+                        testID="DelegateTokens.SubDao"
                         borderRadius="l"
                         marginTop={idx > 0 ? 'm' : 'none'}
                         backgroundColor={
@@ -327,6 +328,7 @@ export const DelegateTokensModal = ({
                 }
                 titleColor="black"
                 onPress={handleSubmit}
+                testID="DelegateTokens.Submit"
                 disabled={
                   !selectedSubDao || isSubmitting || insufficientBalance
                 }

@@ -1,0 +1,23 @@
+# Starts on the security words screen of a new account.
+# Copies the 24 words, confirms them and names the wallet.
+appId: com.helium.wallet.app
+---
+- evalScript: ${output.words = []}
+- repeat:
+    times: 24
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: RevealWords.Word.${output.words.length}
+      - copyTextFrom:
+          id: RevealWords.Word.${output.words.length}
+      - evalScript: ${output.words.push(maestro.copiedText.trim().toLowerCase())}
+- tapOn:
+    id: RevealWords.Next
+- runFlow: confirm-words.yaml
+- tapOn:
+    id: AccountAssign.Alias
+- inputText: ${ALIAS}
+- hideKeyboard
+- tapOn:
+    id: AccountAssign.Continue

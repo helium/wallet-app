@@ -1,0 +1,56 @@
+# Mainnet: open Migrate to World from Settings, log in with the Privy
+# test account (MAESTRO_PRIVY_TEST_EMAIL, MAESTRO_PRIVY_TEST_OTP), keep
+# the default asset selection and stop on the review screen.
+# Does not tap Confirm: Confirm signs and submits with no sign sheet.
+appId: com.helium.wallet.app
+tags:
+  - migration
+---
+- runFlow: ../subflows/home.yaml
+- tapOn:
+    id: AccountsTopNav.Settings
+- scrollUntilVisible:
+    element:
+      id: Settings.MigrateToWorld
+- tapOn:
+    id: Settings.MigrateToWorld
+- tapOn:
+    id: MigrateToWorld.GetStarted
+- tapOn:
+    id: MigrateIntro.Email
+# A live Privy session skips the login step and goes to asset selection.
+- extendedWaitUntil:
+    visible:
+      id: MigrateLogin\.Input|MigrateSelect\.Review
+    timeout: 60000
+- runFlow:
+    when:
+      visible:
+        id: MigrateLogin.Input
+    commands:
+      - tapOn:
+          id: MigrateLogin.Input
+      - inputText: ${MAESTRO_PRIVY_TEST_EMAIL}
+      - hideKeyboard
+      - tapOn:
+          id: MigrateLogin.SendCode
+      - extendedWaitUntil:
+          visible:
+            id: MigrateLogin.Verify
+          timeout: 30000
+      - tapOn:
+          id: MigrateLogin.Input
+      - inputText: ${MAESTRO_PRIVY_TEST_OTP}
+      - hideKeyboard
+      - tapOn:
+          id: MigrateLogin.Verify
+- extendedWaitUntil:
+    visible:
+      id: MigrateSelect.Review
+    timeout: 60000
+- tapOn:
+    id: MigrateSelect.Review
+- extendedWaitUntil:
+    visible:
+      id: MigrateReview.Confirm
+    timeout: 60000
