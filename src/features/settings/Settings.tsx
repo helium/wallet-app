@@ -643,6 +643,7 @@ const Settings = () => {
       >
         <Text variant="h1">{t('settings.title')}</Text>
         <CloseButton
+          testID="Settings.Close"
           onPress={onRequestClose}
           hitSlop={hitSlop}
           paddingVertical="m"

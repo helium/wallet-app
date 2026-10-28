@@ -20,7 +20,7 @@ In order to interact with any package contained in this repository you will need
 
 - [**NVM**](https://github.com/nvm-sh/nvm/blob/master/README.md)
 - [**Homebrew**](https://brew.sh/)
-- [**Node.js@18.x.x**](https://nodejs.org/)
+- [**Node.js**](https://nodejs.org/) (version in `.nvmrc`)
 - [**Yarn**](https://www.npmjs.com/package/yarn)
 - [**Cocoapods**](https://cocoapods.org/)
 - [**Xcode@14.2**](https://xcodereleases.com/)
@@ -41,13 +41,13 @@ Follow the instructions for "React Native CLI Quickstart" found [here](https://r
   ```bash
   brew install nvm
   ```
-- Install Node Version 20.18
+- Install the Node version in `.nvmrc`
   ```bash
-  nvm install 20.18
+  nvm install
   ```
-- Set Node version to 20.18
+- Set the Node version from `.nvmrc`
   ```bash
-  nvm use 20.18
+  nvm use
   ```
 - Install Yarn
   ```bash
