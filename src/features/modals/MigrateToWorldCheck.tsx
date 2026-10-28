@@ -14,7 +14,7 @@ const MigrateToWorldCheck: FC = () => {
   const walletAddress = wallet?.toBase58()
   const { shouldShowMigrateToWorld } = useAppStorage()
   const { showModal, type } = useModal()
-  const homeNav = useNavigation<RootNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
   const { showOKCancelAlert } = useAlert()
   // Reuses the same AsyncStorage parsing/deriveResume as the flow screen so the
@@ -66,13 +66,17 @@ const MigrateToWorldCheck: FC = () => {
         cancelStyle: 'cancel',
       }).then((confirmed) => {
         if (confirmed) {
-          homeNav.navigate('TabBarNavigator', {
-            screen: 'Home',
-            params: {
-              screen: 'SettingsNavigator',
-              params: { screen: 'MigrateToWorld' },
+          rootNav.navigate(
+            'TabBarNavigator',
+            {
+              screen: 'Home',
+              params: {
+                screen: 'SettingsNavigator',
+                params: { screen: 'MigrateToWorld' },
+              },
             },
-          })
+            { pop: true },
+          )
         }
       })
       return undefined
@@ -100,7 +104,7 @@ const MigrateToWorldCheck: FC = () => {
     walletAddress,
     resume.canResume,
     loaded,
-    homeNav,
+    rootNav,
     t,
     onWalletHome,
     navTick,

@@ -51,6 +51,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
+import { navigateToHomeScreen } from '../../navigation/NavigationHelper'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -286,7 +287,7 @@ const PaymentScreen = () => {
   )
 
   const handleQrScan = useCallback(() => {
-    navigation.navigate('PaymentQrScanner')
+    navigateToHomeScreen(navigation, 'PaymentQrScanner')
   }, [navigation])
 
   const canAddPayee = useMemo(() => {

@@ -28,7 +28,7 @@ const MigrateToWorldCard: FC = () => {
   const { hideModal } = useModal()
   const wallet = useCurrentWallet()
   const { dismissMigrateToWorld } = useAppStorage()
-  const homeNav = useNavigation<RootNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
   const sheetRef = useRef<BottomSheet>(null)
 
   // Once a close has been requested the card is on its way out; the back
@@ -53,15 +53,19 @@ const MigrateToWorldCard: FC = () => {
   const handleGetStarted = useCallback(() => {
     closing.current = true
     // Navigate first so the flow screen slides in beneath the closing sheet.
-    homeNav.navigate('TabBarNavigator', {
-      screen: 'Home',
-      params: {
-        screen: 'SettingsNavigator',
-        params: { screen: 'MigrateToWorld' },
+    rootNav.navigate(
+      'TabBarNavigator',
+      {
+        screen: 'Home',
+        params: {
+          screen: 'SettingsNavigator',
+          params: { screen: 'MigrateToWorld' },
+        },
       },
-    })
+      { pop: true },
+    )
     sheetRef.current?.close()
-  }, [homeNav])
+  }, [rootNav])
 
   // Sheets don't handle the Android hardware back button on their own; close
   // the card (recording the dismissal) instead of letting the tap fall through
