@@ -69,7 +69,7 @@ export const useBlockchainApi = (): ContractRouterClient<
 
   if (!context) {
     throw new Error(
-      'useBlockchainApi must be used within a BlockchainApiProvider. Make sure DEVNET_HELIUM_TRANSACTION_API or MAINNET_HELIUM_TRANSACTION_API is set in your .env file.',
+      'useBlockchainApi must be used within a BlockchainApiProvider. Make sure EXPO_PUBLIC_DEVNET_HELIUM_TRANSACTION_API or EXPO_PUBLIC_MAINNET_HELIUM_TRANSACTION_API is set in your .env file.',
     )
   }
 
