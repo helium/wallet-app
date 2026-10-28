@@ -2,8 +2,6 @@
   "name": "Helium Wallet",
   "slug": "heliumwallet",
   "scheme": "heliumwallet",
-  "jsEngine": "hermes",
-  "newArchEnabled": true,
   "orientation": "portrait",
   "icon": "./assets/icon.png",
   "ios": {
