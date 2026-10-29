@@ -1,3 +1,6 @@
+import { Button } from '@ui/Button'
+import { type ButtonSize, type ButtonVariant } from '@ui/buttonVariants'
+import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { type TextSize } from '@ui/textVariants'
 import * as SplashLib from 'expo-splash-screen'
@@ -36,6 +39,18 @@ const SURFACES = [
   'bg-primary',
   'bg-destructive',
 ]
+
+const BUTTON_VARIANTS: ButtonVariant[] = [
+  'default',
+  'secondary',
+  'outline',
+  'ghost',
+  'link',
+  'destructive',
+  'cta',
+]
+
+const BUTTON_SIZES: ButtonSize[] = ['sm', 'default', 'lg', 'icon', 'dashboard']
 
 const Section = ({
   title,
@@ -107,6 +122,36 @@ const UiGalleryScreen = () => {
             </Text>
           </View>
         ))}
+      </Section>
+
+      <Section title="Button variants">
+        {BUTTON_VARIANTS.map((variant) => (
+          <Button key={variant} variant={variant} onPress={() => {}}>
+            {variant}
+          </Button>
+        ))}
+        <Button disabled onPress={() => {}}>
+          disabled
+        </Button>
+      </Section>
+
+      <Section title="Button sizes">
+        <View className="flex-row flex-wrap items-center gap-2">
+          {BUTTON_SIZES.map((size) => (
+            <Button key={size} size={size} onPress={() => {}}>
+              {size === 'icon' ? '+' : size}
+            </Button>
+          ))}
+        </View>
+      </Section>
+
+      <Section title="PressableScale">
+        <PressableScale
+          className="rounded-2xl border border-border bg-background p-4"
+          onPress={() => {}}
+        >
+          <Text>Press and hold: scale 0.97, 120ms</Text>
+        </PressableScale>
       </Section>
     </ScrollView>
   )

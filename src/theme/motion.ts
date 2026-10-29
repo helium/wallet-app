@@ -10,6 +10,12 @@ export const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1)
 export const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1)
 export const EASE_SHEET = Easing.bezier(0.32, 0.72, 0, 1)
 
+// EASE_OUT as a CSS timing function, for Reanimated CSS transitions.
+export const EASE_OUT_CSS = 'cubic-bezier(0.23, 1, 0.32, 1)'
+
+// Press primitive: scale while pressed. Reduced motion fades instead.
+export const PRESS = { scale: 0.97, opacity: 0.7 }
+
 export const DUR = {
   press: 120,
   state: 150,

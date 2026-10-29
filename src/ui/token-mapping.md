@@ -114,3 +114,5 @@ differ from Tailwind's defaults.
 | `Box`, `ImageBox`      | React Native `View`, `Image` + `className`           |
 | `SafeAreaBox`          | `SafeAreaView` from `react-native-safe-area-context` |
 | `TouchableOpacityBox`  | `PressableScale` (gate 2) or `Pressable`             |
+| `ButtonPressable`      | `@ui/Button`                                         |
+| `FabButton`            | `@ui/Button` with `size="icon"`                      |
