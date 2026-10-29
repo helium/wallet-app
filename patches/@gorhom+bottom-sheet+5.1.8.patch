@@ -8,8 +8,8 @@ index b577b8b..5324f67 100644
    restDisplacementThreshold: 10,
 -  restSpeedThreshold: 10
 +  restSpeedThreshold: 10,
-+  // Reanimated 4 ignores the rest thresholds; 1e-4 stops near the old ~5 px rest point at 500 px travel.
-+  energyThreshold: 1e-4
++  // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++  energyThreshold: 3e-6
  };
  const ANIMATION_CONFIGS_ANDROID = {
    duration: ANIMATION_DURATION,
@@ -23,8 +23,8 @@ index 92211b1..41812a5 100644
    restDisplacementThreshold: 10,
 -  restSpeedThreshold: 10
 +  restSpeedThreshold: 10,
-+  // Reanimated 4 ignores the rest thresholds; 1e-4 stops near the old ~5 px rest point at 500 px travel.
-+  energyThreshold: 1e-4
++  // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++  energyThreshold: 3e-6
  };
  const ANIMATION_CONFIGS_ANDROID = {
    duration: ANIMATION_DURATION,
@@ -36,8 +36,8 @@ index 87afaa1..8fb7190 100644
    overshootClamping: true,
    restDisplacementThreshold: 10,
    restSpeedThreshold: 10,
-+  // Reanimated 4 ignores the rest thresholds; 1e-4 stops near the old ~5 px rest point at 500 px travel.
-+  energyThreshold: 1e-4,
++  // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++  energyThreshold: 3e-6,
  };
  
  const ANIMATION_CONFIGS_ANDROID = {
