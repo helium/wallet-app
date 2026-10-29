@@ -22,6 +22,7 @@ const IOSKeyboardAwareScrollView = ({
     <KeyboardAwareScrollView
       contentContainerStyle={contentContainer}
       scrollEnabled={scrollEnabled}
+      bottomOffset={75}
     >
       {children}
     </KeyboardAwareScrollView>

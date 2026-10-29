@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import WalletUpdate from '@assets/images/walletUpdateIcon.svg'
 import HeliumUpdate from '@assets/images/heliumUpdateIcon.svg'
 import { Carousel, CarouselRef } from 'react-native-reanimated-carousel'
@@ -102,6 +102,13 @@ const AccountSlider = () => {
     },
     [data, updateSelectedList],
   )
+
+  // Re-centre when the selection changes after mount; defaultIndex is read once.
+  useEffect(() => {
+    const index = selectedList ? data.indexOf(selectedList) : -1
+    if (index < 0 || index === carouselRef.current?.getCurrentIndex()) return
+    carouselRef.current?.scrollTo({ index, animated: true })
+  }, [data, selectedList])
 
   const renderItem = useCallback(
     ({ index, item }) => {
