@@ -87,4 +87,15 @@ describe('saveCacheThenSlot', () => {
     await expect(saved).rejects.toThrow('disk full')
     expect(storeSlot).not.toHaveBeenCalled()
   })
+
+  it('rejects when the slot write fails', async () => {
+    setItem.mockResolvedValue(undefined)
+    const slotWrite = deferred()
+    storeSlot.mockReturnValueOnce(slotWrite.promise)
+
+    const saved = saveCacheThenSlot(cacheWithOneAccount(), 42)
+    slotWrite.reject(new Error('keychain locked'))
+
+    await expect(saved).rejects.toThrow('keychain locked')
+  })
 })
