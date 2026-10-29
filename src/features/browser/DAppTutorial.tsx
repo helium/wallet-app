@@ -74,7 +74,6 @@ const DAppTutorial = () => {
   }, [])
 
   const renderCarouselItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: CarouselItem }) => {
       return (
         <Box flex={1} justifyContent="center">

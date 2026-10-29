@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react'
 import { BoxProps } from '@shopify/restyle'
 import { Insets } from 'react-native'

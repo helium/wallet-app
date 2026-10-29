@@ -54,16 +54,13 @@ export const useMigrationExecutor = (
 
       const pollStatus = async (batchId: string): Promise<BatchStatus> => {
         const start = Date.now()
-        // eslint-disable-next-line no-constant-condition
         while (true) {
-          // eslint-disable-next-line no-await-in-loop
           const status = await client.transactions.get({
             id: batchId,
             commitment: 'confirmed',
           })
           if (TERMINAL_STATUSES.includes(status.status)) return status
           if (Date.now() - start > POLL_TIMEOUT_MS) return status
-          // eslint-disable-next-line no-await-in-loop
           await sleep(POLL_INTERVAL_MS)
         }
       }

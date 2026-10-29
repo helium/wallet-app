@@ -317,7 +317,7 @@ const TransferCollectableScreen = () => {
                     title={transferring ? '' : t('collectablesScreen.transfer')}
                     disabled={!solAddressIsValid(recipient) || transferring}
                     titleColor="black"
-                    onPress={handleTransfer}
+                    onPress={() => void handleTransfer().catch(console.error)}
                     TrailingComponent={
                       transferring ? (
                         <CircleLoader loaderSize={20} color="white" />

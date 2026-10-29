@@ -83,7 +83,6 @@ export const TransferTokensModal = ({
       try {
         setIsSubmitting(true)
         await onSubmit(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           positions.find((pos) => pos.pubkey.equals(selectedPosPk))!,
           amount,
         )
@@ -334,7 +333,7 @@ export const TransferTokensModal = ({
                   isSubmitting ? '' : t('gov.transactions.transferPosition')
                 }
                 titleColor="black"
-                onPress={handleSubmit}
+                onPress={() => void handleSubmit().catch(console.error)}
                 disabled={!amount || !selectedPosPk || isSubmitting}
                 TrailingComponent={
                   isSubmitting ? <CircleLoader color="white" /> : undefined

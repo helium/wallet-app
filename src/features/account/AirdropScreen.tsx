@@ -187,7 +187,7 @@ const AirdropScreen = () => {
         </Text>
         <ButtonPressable
           borderRadius="round"
-          onPress={onAirdrop}
+          onPress={() => void onAirdrop().catch(console.error)}
           backgroundColor="primaryText"
           backgroundColorOpacityPressed={0.7}
           backgroundColorDisabled="surfaceSecondary"

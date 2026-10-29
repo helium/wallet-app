@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { BoxProps } from '@shopify/restyle'
 import React, { memo } from 'react'
 import { Theme } from '@theme/theme'

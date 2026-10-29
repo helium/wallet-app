@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useRef, useEffect } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
@@ -53,7 +52,6 @@ const CircleLoader = ({
         animationRef.current.stop()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

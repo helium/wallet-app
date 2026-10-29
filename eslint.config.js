@@ -85,12 +85,7 @@ module.exports = [
         { argsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-floating-promises': 'error',
-      // Async JSX handlers stay allowed; promises passed anywhere else must
-      // be handled.
-      '@typescript-eslint/no-misused-promises': [
-        'error',
-        { checksVoidReturn: { attributes: false } },
-      ],
+      '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       // Metro loads assets and locale JSON through require.
       '@typescript-eslint/no-require-imports': [

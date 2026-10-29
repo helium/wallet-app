@@ -74,7 +74,7 @@ const StatusBanner = () => {
       autoHide={false}
       floating
       icon={iconStyle}
-      onPress={onTapStatusBanner}
+      onPress={() => void onTapStatusBanner().catch(console.error)}
       renderFlashMessageIcon={icon}
     />
   )

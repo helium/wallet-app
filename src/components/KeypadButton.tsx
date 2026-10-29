@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback } from 'react'
 import { Pressable } from 'react-native'
 import Backspace from '@assets/images/backspace.svg'

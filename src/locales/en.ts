@@ -58,7 +58,6 @@ export default {
       onboardAndPay: 'Onboard and Pay Maker Fees',
       responsible:
         'In almost all cases, Hotspots manufacturers are responsible for paying the onboarding and initial location assert fees.',
-      // eslint-disable-next-line no-template-curly-in-string
       pay: 'I understand that the ${{usd}} onboarding fee was included in the purchase price of my Hotspot and the manufacturer is responsible for paying that fee.  Nonetheless, I would like to pay the ${{usd}} onboarding fee out of my wallet to onboard my Hotspot now. I will also pay the ${{assertUsd}} fee to assert this hotspot location.',
       wrongOwner: 'You do not own this hotspot, so you cannot onboard it',
       notEnoughSol: 'You do not have enough sol to self-onboard',
@@ -72,7 +71,6 @@ export default {
       optionContact:
         'Contact the manufacturer and request assistance onboarding your Hotspot.',
       optionPay:
-        // eslint-disable-next-line no-template-curly-in-string
         'Pay ${{usd}} in Data Credits or burn HNT to onboard my Hotspot. I will also pay the ${{assertUsd}} to assert this hotspot location.',
       contact: 'Contact Manufacturer',
       failedToFind:
@@ -477,7 +475,6 @@ export default {
       wrongOwner:
         'You do not own this hotspot, so you cannot assert its location',
       insufficientFunds:
-        // eslint-disable-next-line no-template-curly-in-string
         'Assertion costs ${{usd}}. You do not have enough HNT or DC.',
     },
   },

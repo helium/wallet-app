@@ -592,7 +592,9 @@ export const HotspotMapHotspotDetails = ({
                         />
                       )
                     }
-                    onPress={() => handleConfirmExplorer(a.value)}
+                    onPress={() =>
+                      void handleConfirmExplorer(a.value).catch(console.error)
+                    }
                     selected={explorer?.value === a.value}
                     hasPressedState={false}
                   />
@@ -741,7 +743,7 @@ export const HotspotMapHotspotDetails = ({
               </TouchableOpacityBox>
               <ListItem
                 title={t('collectablesScreen.hotspots.viewInExplorer')}
-                onPress={handleViewInExplorer}
+                onPress={() => void handleViewInExplorer().catch(console.error)}
                 selected={false}
                 hasPressedState={false}
               />
@@ -769,7 +771,7 @@ export const HotspotMapHotspotDetails = ({
                 <ListItem
                   key="onboard"
                   title={t('collectablesScreen.hotspots.onboard.title')}
-                  onPress={handleOnboard}
+                  onPress={() => void handleOnboard().catch(console.error)}
                   selected={false}
                   hasPressedState={false}
                 />

@@ -159,11 +159,10 @@ const ScanHotspots = () => {
   )
 
   const renderItem = React.useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Device }) => {
       return (
         <TouchableOpacityBox
-          onPress={connectDevice(item)}
+          onPress={() => void connectDevice(item)().catch(console.error)}
           alignItems="center"
           padding="m"
           flexDirection="row"
@@ -233,14 +232,13 @@ const ScanHotspots = () => {
         borderWidth={scanning ? 2 : 0}
         backgroundColor={scanning ? 'transparent' : 'white'}
         title={
-          // eslint-disable-next-line no-nested-ternary
           canScan
             ? scanning
               ? t('hotspotOnboarding.scan.stop')
               : t('hotspotOnboarding.scan.start')
             : t('hotspotOnboarding.scan.notEnabled')
         }
-        onPress={handleScanPress}
+        onPress={() => void handleScanPress().catch(console.error)}
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         disabled={!canScan || connecting}

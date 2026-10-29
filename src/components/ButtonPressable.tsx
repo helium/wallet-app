@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { BoxProps } from '@shopify/restyle'
 import React, { FC, memo, useState, useMemo } from 'react'
 import { GestureResponderEvent, ViewStyle } from 'react-native'

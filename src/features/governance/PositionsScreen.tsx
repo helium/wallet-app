@@ -347,9 +347,9 @@ export const PositionsScreen = () => {
     {
       label: t('gov.transactions.claimRewards'),
       value: 'claim',
-      onPress: async () => {
+      onPress: () => {
         setIsManageSheetOpen(false)
-        await handleClaimRewards()
+        void handleClaimRewards().catch(console.error)
       },
       disabled:
         !positionsWithRewards?.length ||

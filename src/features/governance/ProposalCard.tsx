@@ -126,7 +126,9 @@ export const ProposalCard = ({
       exiting={FadeOut}
       {...boxProps}
     >
-      <TouchableOpacityBox onPress={handleOnPress}>
+      <TouchableOpacityBox
+        onPress={() => void handleOnPress().catch(console.error)}
+      >
         <Box
           position="relative"
           paddingTop="ms"

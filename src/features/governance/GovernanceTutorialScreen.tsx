@@ -79,7 +79,6 @@ export const GovernanceTutorialScreen = () => {
   }, [])
 
   const renderCarouselItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: CarouselItem }) => {
       return (
         <Box flex={1}>

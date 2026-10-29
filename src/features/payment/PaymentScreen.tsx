@@ -328,11 +328,8 @@ const PaymentScreen = () => {
         paymentState.payments
           .filter((p) => p.address && p.amount)
           .map((payment) => ({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             payee: payment.address!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             balanceAmount: payment.amount!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             max: payment.max!,
           })),
         paymentState.mint,
@@ -717,7 +714,9 @@ const PaymentScreen = () => {
         <AccountSelector ref={accountSelectorRef}>
           <AddressBookSelector
             ref={addressBookRef}
-            onContactSelected={handleContactSelected}
+            onContactSelected={(selection) =>
+              void handleContactSelected(selection).catch(console.error)
+            }
             hideCurrentAccount
           >
             <TokenSelector
@@ -800,7 +799,6 @@ const PaymentScreen = () => {
                   />
 
                   {paymentState.payments.map((p, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <React.Fragment key={index}>
                       <PaymentItem
                         {...p}
@@ -814,7 +812,9 @@ const PaymentScreen = () => {
                         onAddressBookSelected={handleAddressBookSelected}
                         onEditAmount={handleEditAmount}
                         onToggleMax={handleToggleMax}
-                        onEditAddress={handleEditAddress}
+                        onEditAddress={(edit) =>
+                          void handleEditAddress(edit).catch(console.error)
+                        }
                         handleAddressError={handleAddressError}
                         onUpdateError={handleSetPaymentError}
                         mint={mint}
@@ -852,7 +852,7 @@ const PaymentScreen = () => {
                   totalBalance={paymentState.totalAmount}
                   feeTokenBalance={paymentState.networkFee}
                   disabled={!isFormValid}
-                  onSubmit={handleSubmit}
+                  onSubmit={() => void handleSubmit().catch(console.error)}
                   payments={payments}
                   errors={errors}
                   handleCancel={navBack}
@@ -875,7 +875,7 @@ const PaymentScreen = () => {
         totalBalance={submittedTotal}
         payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
-        onRetry={handleSubmit}
+        onRetry={() => void handleSubmit().catch(console.error)}
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}
       />

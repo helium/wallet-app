@@ -34,7 +34,6 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   }, [copyText, triggerImpact, mnemonic, t])
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: string; index: number }) => {
       return (
         <Box

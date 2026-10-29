@@ -95,7 +95,6 @@ export default () => {
   }, [setOnboardingData, selected, derivationAccounts])
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: ResolvedPath; index: number }) => {
       const onSelect = () => {
         setSelected((prev) => {

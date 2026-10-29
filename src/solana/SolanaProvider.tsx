@@ -34,19 +34,14 @@ import KeystoneModal, {
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { CSAccount } from '../storage/cloudStorage'
-import {
-  checkSecureAccount,
-  getSolanaKeypair,
-  getSecureItem,
-  storeSecureItem,
-  SecureStorageKeys,
-} from '../storage/secureStorage'
+import { checkSecureAccount, getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
+import { getLastCheckedSlot, saveCacheThenSlot } from './lastCheckedSlot'
 
 const useSolanaHook = () => {
   const { currentAccount, secureAccountsVersion } = useAccountStorage()
@@ -156,9 +151,7 @@ const useSolanaHook = () => {
         transactions: (Transaction | VersionedTransaction)[],
       ) => {
         const signedTxns: (Transaction | VersionedTransaction)[] = []
-        // eslint-disable-next-line no-restricted-syntax
         for (const transaction of transactions) {
-          // eslint-disable-next-line no-await-in-loop
           const signedTx = await signTxn(transaction)
           signedTxns.push(signedTx)
         }
@@ -212,12 +205,7 @@ const useSolanaHook = () => {
 
         // Get current slot and last checked slot
         const currentSlot = await nonWrappedConnection.getSlot('confirmed')
-        const lastCheckedSlotStr = await getSecureItem(
-          SecureStorageKeys.LAST_CHECKED_SLOT,
-        )
-        const lastCheckedSlot = lastCheckedSlotStr
-          ? parseInt(lastCheckedSlotStr, 10)
-          : undefined
+        const lastCheckedSlot = await getLastCheckedSlot(asyncCache.cacheKey)
 
         // Make direct RPC calls in chunks
         const responses = await Promise.all(
@@ -225,7 +213,6 @@ const useSolanaHook = () => {
             const keyStrings = keyChunk.map((k) => k.toBase58())
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore - accessing private method for direct RPC call
-            // eslint-disable-next-line no-underscore-dangle
             const response = await nonWrappedConnection._rpcRequest(
               'getMultipleAccounts',
               [
@@ -297,12 +284,8 @@ const useSolanaHook = () => {
           })
         })
 
-        await asyncCache.setAsyncStorage()
         // Store the current slot as the last checked slot for next time
-        await storeSecureItem(
-          SecureStorageKeys.LAST_CHECKED_SLOT,
-          currentSlot.toString(),
-        )
+        await saveCacheThenSlot(asyncCache, currentSlot)
       } catch (e) {
         console.error('Failed to fetch accounts', e)
       }
@@ -331,7 +314,6 @@ const useSolanaHook = () => {
             },
           }
         }
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return oldGetAccountinfoAndContext!(publicKey, com)
       }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

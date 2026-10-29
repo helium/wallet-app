@@ -80,7 +80,7 @@ const SettingsConfirmPinScreen = () => {
       originalPin={params.pin}
       title={title}
       subtitle={subtitle}
-      pinSuccess={pinSuccess}
+      pinSuccess={() => void pinSuccess().catch(console.error)}
       onCancel={navigation.goBack}
     />
   )

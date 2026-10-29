@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, {
   forwardRef,
   memo,
@@ -79,7 +78,6 @@ const AddressBookSelector = forwardRef(
         <BottomSheetBackdrop
           disappearsOnIndex={-1}
           appearsOnIndex={0}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         />
       ),

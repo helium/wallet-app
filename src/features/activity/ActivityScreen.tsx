@@ -168,13 +168,13 @@ const ActivityScreen = () => {
             <RefreshControl
               enabled
               refreshing={loading}
-              onRefresh={refresh}
+              onRefresh={() => void refresh().catch(console.error)}
               title=""
               tintColor={colors.primaryText}
             />
           }
           onEndReachedThreshold={0.05}
-          onEndReached={fetchMore}
+          onEndReached={() => void fetchMore().catch(console.error)}
           ListFooterComponent={Footer}
         />
       </SafeAreaBox>

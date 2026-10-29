@@ -32,6 +32,11 @@ export const VoteOption = ({
   onRelinquishVote?: () => Promise<void>
 } & BoxProps<Theme>) => {
   const colors = useColors()
+  const handleVote = canVote
+    ? onVote
+    : canRelinquishVote
+      ? onRelinquishVote
+      : undefined
 
   return (
     <TouchableOpacityBox
@@ -41,10 +46,7 @@ export const VoteOption = ({
       borderRadius="m"
       backgroundColor="surfaceSecondary"
       {...boxProps}
-      onPress={
-        // eslint-disable-next-line no-nested-ternary
-        canVote ? onVote : canRelinquishVote ? onRelinquishVote : undefined
-      }
+      onPress={handleVote && (() => void handleVote().catch(console.error))}
     >
       <Box flexDirection="row">
         {!voting ? (

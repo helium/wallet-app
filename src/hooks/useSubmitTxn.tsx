@@ -101,7 +101,6 @@ export default () => {
 
       const requestTransfer = (pmts: typeof payments) =>
         client.tokens.multiTransfer({
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           walletAddress: currentAccount.solanaAddress!,
           mint: mint.toBase58(),
           recipients: pmts.map((payment) => ({
@@ -120,7 +119,6 @@ export default () => {
       const requestTransferShavingMax = async () => {
         let shavedPayments = payments
         for (let attempt = 0; ; attempt += 1) {
-          // eslint-disable-next-line no-await-in-loop
           const { error, data } = await safe(requestTransfer(shavedPayments))
           if (!error) {
             return {
@@ -593,7 +591,6 @@ export default () => {
           network,
         })
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const { transactionData } = response
 
@@ -883,7 +880,6 @@ export default () => {
         gateway: entityKey,
         // Onboarding record isn't actually used or needed, but if we don't
         // do this, the sdk will throw an error
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onboardingRecord: {
           maker: {
             address: currentAccount.address,

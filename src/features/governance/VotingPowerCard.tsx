@@ -245,7 +245,9 @@ export const VotingPowerCard = ({
         exiting={FadeOut}
         {...boxProps}
       >
-        <TouchableOpacityBox onPress={handleOnPress}>
+        <TouchableOpacityBox
+          onPress={() => void handleOnPress().catch(console.error)}
+        >
           {renderCard(false)}
         </TouchableOpacityBox>
       </ReAnimatedBox>

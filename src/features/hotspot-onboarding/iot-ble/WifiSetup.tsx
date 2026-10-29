@@ -80,7 +80,7 @@ const WifiSetup = () => {
         borderColor="white"
         borderWidth={1}
         backgroundColor="transparent"
-        onPress={handleSetWifi}
+        onPress={() => void handleSetWifi().catch(console.error)}
         disabled={loading}
         title={t('hotspotOnboarding.wifiSettings.setup')}
       />

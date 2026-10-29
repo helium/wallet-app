@@ -35,7 +35,6 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
     >
       {payments.map(({ payee, balanceAmount }, index) => (
         <Box
-          // eslint-disable-next-line react/no-array-index-key
           key={`payment-${index}`}
           justifyContent="space-between"
           flexDirection="row"
