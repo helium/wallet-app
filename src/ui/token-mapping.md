@@ -108,11 +108,102 @@ differ from Tailwind's defaults.
 
 ## Components
 
-| Legacy (`@components`) | Replacement                                          |
-| ---------------------- | ---------------------------------------------------- |
-| `Text`                 | `@ui/Text`                                           |
-| `Box`, `ImageBox`      | React Native `View`, `Image` + `className`           |
-| `SafeAreaBox`          | `SafeAreaView` from `react-native-safe-area-context` |
-| `TouchableOpacityBox`  | `PressableScale` (gate 2) or `Pressable`             |
-| `ButtonPressable`      | `@ui/Button`                                         |
-| `FabButton`            | `@ui/Button` with `size="icon"`                      |
+| Legacy (`@components`)                                  | Replacement                                           |
+| ------------------------------------------------------- | ----------------------------------------------------- |
+| `Text`                                                  | `@ui/Text`                                            |
+| `Box`, `ImageBox`                                       | React Native `View`, `Image` + `className`            |
+| `SafeAreaBox`                                           | `SafeAreaView` from `react-native-safe-area-context`  |
+| `TouchableOpacityBox`                                   | `PressableScale` (gate 2) or `Pressable`              |
+| `ButtonPressable`                                       | `@ui/Button`                                          |
+| `FabButton`                                             | `@ui/Button` with `size="icon"`                       |
+| `TextInput`, `TextInput` from `@components`             | `@ui/Input` (`variant="form"` for World's form field) |
+| `Box` styled as a card or panel                         | `@ui/Card` (`variant="panel"` for a secondary panel)  |
+| `HeliumBottomSheet`, a direct gorhom `BottomSheetModal` | `@ui/Sheet`; present and dismiss it through its ref   |
+
+## Icons
+
+Use `lucide-react-native` for UI glyphs. Wrap a glyph once at module scope
+with `withUniwind` from `uniwind`, then set its colour with an `accent-`
+class: `<Icon size={16} colorClassName="accent-muted-foreground" />`. World's
+default size is 16.
+
+The SVG set in `src/assets/images` sorts into three groups. Confirm each
+lucide name visually when you make the swap.
+
+### Swap for lucide
+
+| SVG                                                                                                   | lucide                                 |
+| ----------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `account`, `createAccount`, `unknownAccount`                                                          | `CircleUser`, `UserPlus`, `CircleHelp` |
+| `add`, `plus`                                                                                         | `Plus`                                 |
+| `addDapp`                                                                                             | `SquarePlus`                           |
+| `alert`, `warning`, `warning2`, `customWarning`                                                       | `TriangleAlert`                        |
+| `arrowRight`, `detailArrow`, `listItemRight`, `carot-right`                                           | `ChevronRight`                         |
+| `arrowUp`                                                                                             | `ArrowUp`                              |
+| `backArrow`                                                                                           | `ChevronLeft`                          |
+| `backspace`                                                                                           | `Delete`                               |
+| `bluetooth`                                                                                           | `Bluetooth`                            |
+| `bookmark` / `bookmarkFilled`                                                                         | `Bookmark` (filled: `fill` set)        |
+| `carot-down`, `carotDownFull`, `chevronDown`, `downArrow`, `remixChevronDown`                         | `ChevronDown`                          |
+| `remixChevronUp`                                                                                      | `ChevronUp`                            |
+| `checkIco`, `checkmark`, `blueCheck`                                                                  | `Check`                                |
+| `checkmarkFill`, `paymentSuccess`                                                                     | `CircleCheck`                          |
+| `close`, `closeModal`, `remixCancel`, `remove`                                                        | `X`                                    |
+| `CloseCircle`, `closeCircleFilled`, `error`, `fail`, `infoError`, `paymentFailure`, `cancelledCircle` | `CircleX`                              |
+| `cog`, `config`                                                                                       | `Settings`                             |
+| `copyAddress`                                                                                         | `Copy`                                 |
+| `courthouse`                                                                                          | `Landmark`                             |
+| `dapp-ellipsis`, `dots`                                                                               | `Ellipsis`                             |
+| `kabob`                                                                                               | `EllipsisVertical`                     |
+| `dollar`                                                                                              | `DollarSign`                           |
+| `earth-globe`, `globe`                                                                                | `Globe`                                |
+| `externalLink`                                                                                        | `ExternalLink`                         |
+| `filter`                                                                                              | `ListFilter`                           |
+| `flag`                                                                                                | `Flag`                                 |
+| `importIcon`                                                                                          | `Import`                               |
+| `indentArrow`                                                                                         | `CornerDownRight`                      |
+| `info`, `questionMark`                                                                                | `Info`, `CircleHelp`                   |
+| `lightningBolt`                                                                                       | `Zap`                                  |
+| `link`                                                                                                | `Link`                                 |
+| `lock`, `lockClosed`                                                                                  | `Lock`                                 |
+| `mapPin`                                                                                              | `MapPin`                               |
+| `mapUserLocation`                                                                                     | `LocateFixed`                          |
+| `menu`                                                                                                | `Menu`                                 |
+| `notificationBell`                                                                                    | `Bell`                                 |
+| `payment`, `send`, `txnSend`, `paymentArrow`                                                          | `ArrowUpRight`                         |
+| `receive`, `txnReceive`                                                                               | `ArrowDownLeft`                        |
+| `pending`, `circleLoader`                                                                             | `Clock`, `LoaderCircle`                |
+| `qr`                                                                                                  | `QrCode`                               |
+| `refresh`                                                                                             | `RefreshCw`                            |
+| `remixArrowRight`                                                                                     | `ArrowRight`                           |
+| `search`                                                                                              | `Search`                               |
+| `share`, `shareAddress`, `userShare`                                                                  | `Share`                                |
+| `swaps`                                                                                               | `ArrowLeftRight`                       |
+| `terminal`                                                                                            | `SquareTerminal`                       |
+| `transactions`                                                                                        | `History`                              |
+| `userStar`, `userX`                                                                                   | `UserStar`, `UserX`                    |
+| `automation`                                                                                          | `Repeat`                               |
+| `airdrop`                                                                                             | `Droplet`                              |
+| `stake`                                                                                               | `Layers`                               |
+| `browseProxies`                                                                                       | `Users`                                |
+| `collectableIcon`, `nft`                                                                              | `Image`                                |
+| `swipeIcon`                                                                                           | `Hand`                                 |
+| `activeCircle`, `majorityCircle`, `minorityCircle`                                                    | `Circle`, `CircleDot`                  |
+
+### Keep as SVG
+
+Brand, token and illustration art has no lucide equivalent: `anchorAccount`,
+`crowdspot`, `dripLogo`, `heliumUpdateIcon`, `hex`, `hnt`, `hotspot`, `iot`,
+`iotSymbol`, `keystoneLogo`, `ledger`, `ledger-circle`, `mobile`,
+`mobileSymbol`, `rewardBg`, `walletUpdateIcon`. Replace a hard-coded fill with
+`currentColor` when a screen needs a token colour.
+
+### Unused
+
+No file imports these. Delete them in the PR that next touches the icon set:
+`accountIntroIconOne`, `boxTriangleTop`, `buy`, `crowdspot-question`, `dc`,
+`expandedViewIcon`, `helium`, `intro`, `iotCircle`, `iotRewardIcon`,
+`listViewIcon`, `mini-icon`, `mobileCircle`, `mobileIcon`, `mobileRewardIcon`,
+`multiply`, `notifications`, `solanaCircle`, `tip-up`, `tokenDC`, `tokenHNT`,
+`tokenIOT`, `tokenMOBILE`, `tokenSOL`, `tokenSolana`, `trash`, `triangleDown`,
+`vote`, `voteChevron`, `warningKeystone`.

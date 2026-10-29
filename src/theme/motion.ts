@@ -33,4 +33,13 @@ export const SPRING = {
   },
 }
 
+// Sheet motion for gorhom. gorhom runs any config with `duration` as
+// withTiming, so SPRING.sheet would lose its damping there. Sheets use
+// EASE_SHEET over the sheet duration instead.
+export const SHEET_TIMING = {
+  duration: SPRING.sheet.duration,
+  easing: EASE_SHEET,
+  reduceMotion: ReduceMotion.System,
+}
+
 export { useReducedMotion }

@@ -152,6 +152,7 @@
     "long": "5.2.0",
     "lottie-ios": "4.5.1",
     "lottie-react-native": "~7.5.0",
+    "lucide-react-native": "1.57.0",
     "markdown-it": "13.0.2",
     "metro-react-native-babel-transformer": "^0.77.0",
     "parse5": "6.0.1",

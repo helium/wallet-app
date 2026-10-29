@@ -7,24 +7,30 @@ import React, {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { BoxProps } from '@shopify/restyle'
 import CarotDown from '@assets/images/carot-down.svg'
 import Kabob from '@assets/images/kabob.svg'
+import Close from '@assets/images/close.svg'
+import {
+  BottomSheetFlatList,
+  type BottomSheetModal,
+} from '@gorhom/bottom-sheet'
+import useDisappear from '@hooks/useDisappear'
+import { Sheet } from '@ui/Sheet'
 import { useTranslation } from 'react-i18next'
+import { StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { FlatList } from 'react-native-gesture-handler'
 import { Color, Theme } from '@theme/theme'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import HeliumActionSheetItem, {
-  HeliumActionSheetItemHeight,
   HeliumActionSheetItemType,
 } from './HeliumActionSheetItem'
 import Text, { TextProps } from './Text'
 import Box from './Box'
 import TouchableOpacityBox from './TouchableOpacityBox'
-import HeliumBottomSheet from './HeliumBottomSheet'
 
 type Props = BoxProps<Theme> & {
   data: Array<HeliumActionSheetItemType>
@@ -42,6 +48,8 @@ type Props = BoxProps<Theme> & {
   closeOnSelect?: boolean
   maxModalHeight?: number
 }
+const styles = StyleSheet.create({ list: { paddingHorizontal: 28 } })
+
 type ListItem = { item: HeliumActionSheetItemType; index: number }
 
 export type HeliumActionSheetRef = {
@@ -69,8 +77,7 @@ const HeliumActionSheet = forwardRef(
     ref: Ref<HeliumActionSheetRef>,
   ) => {
     const insets = useSafeAreaInsets()
-    const [modalVisible, setModalVisible] = useState(false)
-    const [sheetHeight, setSheetHeight] = useState(0)
+    const sheetRef = useRef<BottomSheetModal>(null)
     const [data, setData] = useState<Array<HeliumActionSheetItemType>>([])
     const { t } = useTranslation()
     const colors = useColors()
@@ -80,24 +87,17 @@ const HeliumActionSheet = forwardRef(
       setData(propsData)
     }, [propsData])
 
-    useEffect(() => {
-      let nextSheetHeight =
-        data.length * HeliumActionSheetItemHeight + 200 + (insets?.bottom || 0)
-      if (maxModalHeight && nextSheetHeight > maxModalHeight) {
-        nextSheetHeight = maxModalHeight
-      }
-      setSheetHeight(nextSheetHeight)
-    }, [data.length, insets, maxModalHeight])
-
     const handlePresentModalPress = useCallback(async () => {
-      setModalVisible(true)
+      sheetRef.current?.present()
     }, [])
 
     useImperativeHandle(ref, () => ({ show: handlePresentModalPress }))
 
-    const handleClose = useCallback(async () => {
-      setModalVisible(false)
+    const handleClose = useCallback(() => {
+      sheetRef.current?.dismiss()
     }, [])
+
+    useDisappear(handleClose)
 
     const buttonTitle = useMemo(() => {
       if (initialValue && !selectedValue) {
@@ -116,7 +116,7 @@ const HeliumActionSheet = forwardRef(
       (value: string | number, index: number, action?: () => void) =>
         async () => {
           if (closeOnSelect) {
-            await handleClose()
+            handleClose()
           }
 
           if (action) {
@@ -147,9 +147,36 @@ const HeliumActionSheet = forwardRef(
       [handleItemSelected, selected],
     )
 
+    const header = useMemo(() => {
+      return (
+        <Box
+          flexDirection="row"
+          borderBottomWidth={1}
+          borderBottomColor="secondaryText"
+          marginTop="s"
+          marginBottom="m"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Text color="secondaryText" variant="body2">
+            {title}
+          </Text>
+          <TouchableOpacityBox
+            onPress={handleClose}
+            height={50}
+            justifyContent="center"
+            paddingHorizontal="m"
+            marginEnd="n_m"
+          >
+            <Close color={colors.secondaryText} height={14} width={14} />
+          </TouchableOpacityBox>
+        </Box>
+      )
+    }, [colors.secondaryText, handleClose, title])
+
     const footer = useMemo(() => {
       return (
-        <Box marginBottom="xl">
+        <Box marginBottom="xl" style={{ paddingBottom: insets.bottom }}>
           <TouchableOpacityBox
             onPress={handleClose}
             backgroundColor="surface"
@@ -170,7 +197,7 @@ const HeliumActionSheet = forwardRef(
           </TouchableOpacityBox>
         </Box>
       )
-    }, [handleClose, t])
+    }, [handleClose, insets.bottom, t])
 
     const icon = useMemo(() => {
       if (iconVariant === 'none') return
@@ -233,19 +260,16 @@ const HeliumActionSheet = forwardRef(
     return (
       <Box {...boxProps}>
         {displayText}
-        <HeliumBottomSheet
-          isVisible={modalVisible}
-          onClose={handleClose}
-          sheetHeight={sheetHeight}
-          title={title}
-        >
-          <FlatList
+        <Sheet ref={sheetRef} maxDynamicContentSize={maxModalHeight}>
+          <BottomSheetFlatList
             data={data}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
+            ListHeaderComponent={header}
+            ListFooterComponent={footer}
+            contentContainerStyle={styles.list}
           />
-          {footer}
-        </HeliumBottomSheet>
+        </Sheet>
       </Box>
     )
   },

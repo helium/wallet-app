@@ -1,5 +1,5 @@
 import { ReduceMotion } from 'react-native-reanimated'
-import { DUR, SPRING } from '../motion'
+import { DUR, EASE_SHEET, SHEET_TIMING, SPRING } from '../motion'
 
 // Reanimated ships ESM that the node test runner cannot load. The token
 // module only needs the enum, the easing factory and the hook.
@@ -29,5 +29,15 @@ describe('motion tokens', () => {
     Object.values(SPRING).forEach((spring) =>
       expect(spring.reduceMotion).toBe(ReduceMotion.System),
     )
+  })
+
+  it('gives gorhom sheets a 300ms timing on the sheet curve', () => {
+    // gorhom runs any config with `duration` as withTiming, so the sheet
+    // motion is a timing config, held to the 300ms withTiming cap.
+    expect(SHEET_TIMING).toEqual({
+      duration: 300,
+      easing: EASE_SHEET,
+      reduceMotion: ReduceMotion.System,
+    })
   })
 })
