@@ -29,10 +29,12 @@ import {
 } from '../../storage/secureStorage'
 import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
+import { queryClient, removePersistedQueries } from '../../utils/queryClient'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
+import { withICloudSignOutWarning } from './signOutWarning'
 import useAuthIntervals from './useAuthIntervals'
 
 const Settings = () => {
@@ -212,13 +214,17 @@ const Settings = () => {
         t('settings.sections.account.signOutAlert.title', {
           alias: currentAccount?.alias,
         }),
-        t(
-          `settings.sections.account.signOutAlert.${
-            isLastAccount ? 'bodyLastAccount' : 'body'
-          }`,
-          {
-            alias: currentAccount?.alias,
-          },
+        withICloudSignOutWarning(
+          t,
+          t(
+            `settings.sections.account.signOutAlert.${
+              isLastAccount ? 'bodyLastAccount' : 'body'
+            }`,
+            {
+              alias: currentAccount?.alias,
+            },
+          ),
+          isLastAccount ? 'allWallets' : 'oneWallet',
         ),
         [
           {
@@ -399,6 +405,7 @@ const Settings = () => {
                 style: 'destructive',
                 onPress: async () => {
                   await persistor.purge()
+                  removePersistedQueries(queryClient)
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-ignore
                   Object.keys(cache?.genericCache.cache).forEach((key) => {

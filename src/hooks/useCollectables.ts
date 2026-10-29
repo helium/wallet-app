@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -22,6 +22,9 @@ export type WalletCollectables = {
   collectablesWithMeta: Record<string, Collectable[]>
   loading: boolean
 }
+
+// A refresh this soon after a fetch is skipped: each one reads every NFT
+const REFRESH_COOLDOWN_MS = 5_000
 
 const collectablesQueryKey = (
   cluster: Cluster,
@@ -51,6 +54,7 @@ const useCollectables = (): WalletCollectables & {
   refresh: () => void
 } => {
   const { cluster, anchorProvider } = useSolana()
+  const queryClient = useQueryClient()
   const accountSubscriptionId = useRef<number | null>(null)
   const { currentAccount } = useAccountStorage()
   const { locked } = useAppStorage()
@@ -74,9 +78,16 @@ const useCollectables = (): WalletCollectables & {
 
   const refresh = useCallback(() => {
     if (!enabled) return
+    // Read here, so a fetch does not change the identity of refresh
+    const lastFetch =
+      queryClient.getQueryState(
+        collectablesQueryKey(cluster, solanaAddress || ''),
+      )?.dataUpdatedAt ?? 0
+    const age = Date.now() - lastFetch
+    if (age >= 0 && age < REFRESH_COOLDOWN_MS) return
     // Join a fetch in flight instead of restarting it
     refetch({ cancelRefetch: false })
-  }, [enabled, refetch])
+  }, [enabled, queryClient, cluster, solanaAddress, refetch])
 
   useEffect(() => {
     if (!solanaAddress || !anchorProvider || locked) return
