@@ -1,11 +1,4 @@
-import React, {
-  memo,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { memo, ReactNode, useCallback, useMemo, useState } from 'react'
 import { ScrollView, View } from 'react-native'
 import InfoWarning from '@assets/images/warning.svg'
 import { useTranslation } from 'react-i18next'
@@ -28,23 +21,22 @@ import {
 const TreausuryWarningScreen = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
   const animValue = useSharedValue(1)
-  const [animationComplete, setAnimationComplete] = useState(false)
   const { data: status } = useGetSolanaStatusQuery(undefined)
   const { primaryBackground } = useColors()
 
   const realStatus = useMemo(() => parseSolanaStatus(status), [status])
+  const [animationComplete, setAnimationComplete] = useState(
+    () => !realStatus?.treasuryWarning,
+  )
+  const [prevRealStatus, setPrevRealStatus] = useState(realStatus)
+  if (prevRealStatus !== realStatus) {
+    setPrevRealStatus(realStatus)
+    setAnimationComplete(!realStatus?.treasuryWarning)
+  }
 
   const animationCompleted = useCallback(() => {
     setAnimationComplete(true)
   }, [])
-
-  useEffect(() => {
-    if (!realStatus?.treasuryWarning) {
-      setAnimationComplete(true)
-    } else {
-      setAnimationComplete(false)
-    }
-  }, [realStatus])
 
   const style = useAnimatedStyle(() => {
     let animVal = animValue.get()

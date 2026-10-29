@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   deriveResume,
   deserializeSession,
@@ -36,11 +36,15 @@ export const usePersistedMigrationResume = (
   // False until the initial AsyncStorage read resolves. Consumers gate on this
   // so an in-flight-session check can't lose a race against a UI timer.
   const [loaded, setLoaded] = useState(false)
+  const [prevSourceWallet, setPrevSourceWallet] = useState(sourceWallet)
+  if (sourceWallet !== prevSourceWallet) {
+    setPrevSourceWallet(sourceWallet)
+    if (sourceWallet) setLoaded(false)
+  }
 
   useEffect(() => {
     if (!sourceWallet) return undefined
     let cancelled = false
-    setLoaded(false)
     void AsyncStorage.getItem(keyFor(sourceWallet)).then((raw) => {
       if (!cancelled) {
         setResume(deriveResume(deserializeSession(raw)))
@@ -80,7 +84,8 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
     usePersistedMigrationResume(sourceWallet)
   const [step, setStep] = useState<FlowStep>('intro')
 
-  const hasRoutedRef = useRef(false)
+  const [hasRouted, setHasRouted] = useState(false)
+  const [prevCanResume, setPrevCanResume] = useState(false)
   // An interrupted session (app closed mid-migration) resumes straight to the
   // screen its persisted status maps to — the same mapping the live run uses,
   // so a batch-level failure lands on retry, not the "still processing" screen.
@@ -88,14 +93,13 @@ export const useMigrationSession = (sourceWallet: string | undefined) => {
   // run; routing off that would yank the user off the 'migrating' screen. Guard
   // it to the initial load: only route from 'intro' (a live run has already
   // moved past it) and latch it so it fires exactly once.
-  useEffect(() => {
-    if (hasRoutedRef.current) return
-    if (resume.canResume && step === 'intro') {
-      hasRoutedRef.current = true
+  if (resume.canResume !== prevCanResume) {
+    setPrevCanResume(resume.canResume)
+    if (!hasRouted && resume.canResume && step === 'intro') {
+      setHasRouted(true)
       setStep(stepForOutcome(resume.status))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resume.canResume])
+  }
 
   return { step, setStep, persist, resume, clear, loaded }
 }

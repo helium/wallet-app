@@ -54,6 +54,8 @@ const selectedTokens = (
     }))
 
 const MigrateToWorld = () => {
+  'use no memo'
+
   const { t } = useTranslation()
   const navigation = useNavigation()
   // Bottom-only so the asset sheets (and their dimming backdrop) fill the full
@@ -130,6 +132,7 @@ const MigrateToWorld = () => {
   useEffect(() => {
     if (!user || creating.current || step === 'walletError') return
     if (solanaWallet.status === 'not-created') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- creates the Privy wallet (external system) when its status reports none; the component is not compiled anyway (try/finally in createWallet)
       void createWallet()
     } else if (solanaWallet.status === 'error') {
       // Privy can land the wallet in 'error' (e.g. a failed reconnect)

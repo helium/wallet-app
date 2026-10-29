@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-restricted-syntax */
 import React, { useCallback, useEffect, useState } from 'react'
 import Box from '@components/Box'
@@ -46,13 +45,18 @@ const SelectKeystoneAccountsScreen = () => {
     new Set(derivationAccounts.map((item) => item.path)),
   )
   const { t } = useTranslation()
-  const [loading, setLoading] = useState<boolean>(true)
   const { connection } = useSolana()
+  const [loaded, setLoaded] = useState<{
+    source: KeystoneAccountType[]
+    accounts: KeystoneAccountType[]
+  }>()
+  const loading = loaded?.source !== derivationAccounts
+  const accounts = (!loading && loaded?.accounts) || derivationAccounts
   // storage the selected accounts
   const storageSelectedAccounts = () => {
     const selectedAccounts: KeystoneAccountType[] = Array.from(selected).map(
       (path) => {
-        const account = derivationAccounts.find((item) => item.path === path)
+        const account = accounts.find((item) => item.path === path)
         return {
           path,
           publicKey: account?.publicKey || '',
@@ -69,7 +73,7 @@ const SelectKeystoneAccountsScreen = () => {
   // next page
   const navigation = useNavigation<RootNavigationProp>()
 
-  const onNext = useCallback(() => {
+  const onNext = () => {
     storageSelectedAccounts()
     if (hasAccounts) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -90,43 +94,46 @@ const SelectKeystoneAccountsScreen = () => {
         },
       })
     }
-  }, [hasAccounts, navigation, selected])
-
-  const fetchBalance = async (publicKey: string) => {
-    if (connection) {
-      const balance = await connection.getBalance(
-        new PublicKey(base58.encode(Buffer.from(publicKey, 'hex'))),
-      )
-      return balance.toString()
-    }
-    return '0'
   }
+
   useEffect(() => {
-    setLoading(true)
+    const fetchBalance = async (publicKey: string) => {
+      if (connection) {
+        const balance = await connection.getBalance(
+          new PublicKey(base58.encode(Buffer.from(publicKey, 'hex'))),
+        )
+        return balance.toString()
+      }
+      return '0'
+    }
     async function fetchBalanceForAccounts() {
+      const accountsWithBalance: KeystoneAccountType[] = []
       for (const account of derivationAccounts) {
         const balance = await retryWithBackoff(() =>
           fetchBalance(account.publicKey),
         )
-        account.balanceSol = balance
+        accountsWithBalance.push({ ...account, balanceSol: balance })
       }
+      return accountsWithBalance
     }
-    void fetchBalanceForAccounts().then(() => {
-      setLoading(false)
+    void fetchBalanceForAccounts().then((accountsWithBalance) => {
+      setLoaded({ source: derivationAccounts, accounts: accountsWithBalance })
     })
-  }, [derivationAccounts])
+  }, [connection, derivationAccounts])
 
   const renderItem = useCallback(
     // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: KeystoneAccountType; index: number }) => {
       const onSelect = () => {
-        if (selected.has(item.path as string)) {
-          selected.delete(item.path as string)
-          setSelected(selected)
-        } else {
-          selected.add(item.path as string)
-          setSelected(selected)
-        }
+        setSelected((prev) => {
+          const next = new Set(prev)
+          if (next.has(item.path as string)) {
+            next.delete(item.path as string)
+          } else {
+            next.add(item.path as string)
+          }
+          return next
+        })
       }
 
       return (
@@ -225,7 +232,7 @@ const SelectKeystoneAccountsScreen = () => {
               tintColor={colors.primaryText}
             />
           }
-          data={derivationAccounts}
+          data={accounts}
           renderItem={renderItem}
           keyExtractor={(item) => item.path as string}
           refreshing={loading}

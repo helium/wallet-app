@@ -43,8 +43,6 @@ const AddressBookSelector = forwardRef(
     { children, onContactSelected, hideCurrentAccount, ...boxProps }: Props,
     ref: Ref<AddressBookRef>,
   ) => {
-    useImperativeHandle(ref, () => ({ showAddressBook }))
-
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { m } = useSpacing()
@@ -65,6 +63,8 @@ const AddressBookSelector = forwardRef(
       },
       [setIsShowing],
     )
+
+    useImperativeHandle(ref, () => ({ showAddressBook }))
 
     const handleContactSelected = useCallback(
       (contact: CSAccount) => {

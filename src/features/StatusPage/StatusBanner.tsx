@@ -1,4 +1,10 @@
-import React, { memo, useEffect, useCallback, useMemo } from 'react'
+import React, {
+  memo,
+  useEffect,
+  useCallback,
+  useEffectEvent,
+  useMemo,
+} from 'react'
 import FlashMessage, {
   hideMessage,
   Icon,
@@ -11,7 +17,7 @@ import Close from '@assets/images/closeModal.svg'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import useStatusPage from './useStatusPage'
-import { HELIUM_STATUS_URL } from './statusPageTypes'
+import { HELIUM_STATUS_URL, Incident } from './statusPageTypes'
 import shortLocale from '../../utils/formatDistance'
 
 const onTapStatusBanner = async () => {
@@ -36,17 +42,20 @@ const StatusBanner = () => {
     [t],
   )
 
-  useEffect(() => {
-    if (!incidents.length) return
-
-    const [lastIncident] = incidents
-
+  const showIncident = useEffectEvent((lastIncident: Incident) => {
     showMessage({
       type: lastIncident.impact === 'critical' ? 'danger' : 'warning',
       message: lastIncident.name,
       description: getAlertDescription(lastIncident.updated_at),
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+
+  useEffect(() => {
+    if (!incidents.length) return
+
+    const [lastIncident] = incidents
+
+    showIncident(lastIncident)
   }, [incidents])
 
   const icon = useCallback(() => {

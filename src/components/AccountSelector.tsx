@@ -35,8 +35,6 @@ const isGesture = (
 
 const AccountSelector = forwardRef(
   ({ children }: { children: ReactNode }, ref: Ref<AccountSelectorRef>) => {
-    useImperativeHandle(ref, () => ({ show, showAccountTypes }))
-
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { m, xl } = useSpacing()
@@ -68,6 +66,8 @@ const AccountSelector = forwardRef(
       },
       [show],
     )
+
+    useImperativeHandle(ref, () => ({ show, showAccountTypes }))
 
     const hide = useCallback(() => {
       bottomSheetModalRef.current?.dismiss()

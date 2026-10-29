@@ -67,6 +67,27 @@ async function migrateWallet(
   }
 }
 
+const Wrapper = ({
+  hideBack,
+  children,
+}: {
+  hideBack: boolean
+  children: ReactNode
+}) => {
+  const boxProps = {
+    backgroundColor: 'transparent',
+    flex: 1,
+    padding: 'm',
+    alignItems: 'center',
+    justifyContent: 'center',
+  } as BoxProps<Theme>
+
+  if (hideBack) {
+    return <SafeAreaBox {...boxProps}>{children}</SafeAreaBox>
+  }
+  return <BackScreen {...boxProps}>{children}</BackScreen>
+}
+
 const SolanaMigration = ({
   manual = false,
   hideBack = true,
@@ -167,24 +188,9 @@ const SolanaMigration = ({
     return null
   }
 
-  const Wrapper = ({ children }: { children: ReactNode }) => {
-    const boxProps = {
-      backgroundColor: 'transparent',
-      flex: 1,
-      padding: 'm',
-      alignItems: 'center',
-      justifyContent: 'center',
-    } as BoxProps<Theme>
-
-    if (hideBack) {
-      return <SafeAreaBox {...boxProps}>{children}</SafeAreaBox>
-    }
-    return <BackScreen {...boxProps}>{children}</BackScreen>
-  }
-
   return (
     <ReAnimatedBox flex={1} backgroundColor="secondaryBackground" {...props}>
-      <Wrapper>
+      <Wrapper hideBack={hideBack}>
         <Box flexGrow={1} justifyContent="center" alignItems="center">
           <Box
             shadowColor="black"

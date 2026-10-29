@@ -68,7 +68,6 @@ const HeliumActionSheet = forwardRef(
     }: Props,
     ref: Ref<HeliumActionSheetRef>,
   ) => {
-    useImperativeHandle(ref, () => ({ show: handlePresentModalPress }))
     const insets = useSafeAreaInsets()
     const [modalVisible, setModalVisible] = useState(false)
     const [sheetHeight, setSheetHeight] = useState(0)
@@ -93,6 +92,8 @@ const HeliumActionSheet = forwardRef(
     const handlePresentModalPress = useCallback(async () => {
       setModalVisible(true)
     }, [])
+
+    useImperativeHandle(ref, () => ({ show: handlePresentModalPress }))
 
     const handleClose = useCallback(async () => {
       setModalVisible(false)

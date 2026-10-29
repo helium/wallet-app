@@ -44,11 +44,12 @@ const useVisibleTokensHook = () => {
     }
   }, [])
 
+  const address = currentAccount?.address
   const handleUpdateTokens = useCallback(
     (token: PublicKey, value: boolean) => {
-      if (!currentAccount?.address) return
+      if (!address) return
 
-      const tokens = new Set(visibleTokens[currentAccount.address] || new Set())
+      const tokens = new Set(visibleTokens[address] || new Set())
       if (value) {
         tokens.add(token.toBase58())
       } else {
@@ -56,7 +57,7 @@ const useVisibleTokensHook = () => {
       }
       const newVisibleTokens = {
         ...visibleTokens,
-        [currentAccount.address]: tokens,
+        [address]: tokens,
       }
 
       void updateVisibleTokens(
@@ -67,7 +68,7 @@ const useVisibleTokensHook = () => {
       )
       setVisibleTokens(newVisibleTokens)
     },
-    [currentAccount?.address, visibleTokens],
+    [address, visibleTokens],
   )
 
   return {

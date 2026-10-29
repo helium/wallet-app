@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { AppState } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -27,8 +27,8 @@ export const useBalanceHistory = () => {
       ]?.[currency],
   )
 
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (nextAppState) => {
+  const onAppStateChange = useEffectEvent(
+    (nextAppState: typeof AppState.currentState) => {
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active' &&
@@ -58,12 +58,17 @@ export const useBalanceHistory = () => {
       }
 
       appState.current = nextAppState
+    },
+  )
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      onAppStateChange(nextAppState)
     })
 
     return () => {
       subscription.remove()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {

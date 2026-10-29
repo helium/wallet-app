@@ -1,4 +1,10 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+} from 'react'
 import { useIsFocused } from '@react-navigation/native'
 import { Linking } from 'react-native'
 import { useTranslation } from 'react-i18next'
@@ -19,10 +25,13 @@ const NotificationsScreen = () => {
     useNotificationStorage()
   const isFocused = useIsFocused()
 
+  const onFocus = useEffectEvent(() => {
+    updateAllNotifications()
+  })
+
   useEffect(() => {
     if (!isFocused) return
-    updateAllNotifications()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    onFocus()
   }, [isFocused])
 
   const onActionPress = useCallback(() => {

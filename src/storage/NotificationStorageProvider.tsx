@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
 } from 'react'
@@ -39,10 +40,13 @@ const useNotificationStorageHook = () => {
   )
   const { currentAccount, sortedAccounts } = useAccountStorage()
 
-  useEffect(() => {
-    if (!currentAccount?.address) return
-    setSelectedList(currentAccount.address)
-  }, [currentAccount?.address])
+  const [prevAddress, setPrevAddress] = useState<string>()
+  if (prevAddress !== currentAccount?.address) {
+    setPrevAddress(currentAccount?.address)
+    if (currentAccount?.address) {
+      setSelectedList(currentAccount.address)
+    }
+  }
 
   const apiResource = useMemo(() => {
     try {
@@ -139,17 +143,19 @@ const useNotificationStorageHook = () => {
     })
   }, [currentAccount?.solanaAddress, dispatch, sortedAccounts])
 
-  useEffect(() => {
+  const onUpdateNotifications = useEffectEvent(() => {
     updateNotifications()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+
+  useEffect(() => {
+    onUpdateNotifications()
   }, [selectedList])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      updateNotifications()
+      onUpdateNotifications()
     }, 60000 * 5) // Every 5 mins
     return () => clearInterval(interval)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateSelectedList = useCallback(

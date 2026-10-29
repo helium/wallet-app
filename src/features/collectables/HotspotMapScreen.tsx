@@ -99,21 +99,20 @@ const HotspotMapScreen = () => {
   const [legendVisible, setLegendVisible] = useState(false)
   const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
-  const [initialCenterSet, setInitalCenter] = useState(false)
+  const initialCenterSet = useRef(false)
   const [userLocation, setUserLocation] = useState<MapLibreRN.Location>()
   const onUserLocationUpdate = useCallback(
     (loc: MapLibreRN.Location) => {
       setUserLocation(loc)
+      const coords = loc?.coords
+      if (coords) {
+        setInitialUserLocation(
+          (prev) => prev || [coords.longitude, coords.latitude],
+        )
+      }
     },
     [setUserLocation],
   )
-
-  useEffect(() => {
-    const coords = userLocation?.coords
-    if (!initialUserLocation && coords) {
-      setInitialUserLocation([coords.longitude, coords.latitude])
-    }
-  }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
 
   const initialCenter = useMemo(() => {
     return initialUserLocation || INITIAL_MAP_VIEW_STATE.centerCoordinate
@@ -124,15 +123,15 @@ const HotspotMapScreen = () => {
       initialCenter &&
       JSON.stringify(initialCenter) !==
         JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
-      !initialCenterSet
+      !initialCenterSet.current
     ) {
-      setInitalCenter(true)
+      initialCenterSet.current = true
       cameraRef.current?.setCamera({
         centerCoordinate: initialCenter,
         animationDuration: 0,
       })
     }
-  }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
+  }, [initialCenter, cameraRef])
 
   // - fetch all hotspots
   useEffect(() => {

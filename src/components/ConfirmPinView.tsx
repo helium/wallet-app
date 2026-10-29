@@ -1,4 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback, memo } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useEffectEvent,
+  useCallback,
+  memo,
+} from 'react'
 import { Animated } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import useHaptic from '@hooks/useHaptic'
@@ -28,16 +35,15 @@ const ConfirmPinView = ({
   const { triggerImpact } = useHaptic()
   const success = useRef(false)
   const [pin, setPin] = useState('')
-  const shakeAnim = useRef(new Animated.Value(0))
+  const [shakeAnim] = useState(() => new Animated.Value(0))
   const { t } = useTranslation()
 
   const pinFailure = useCallback(() => {
-    const { current } = shakeAnim
     const move = (direction: 'left' | 'right' | 'center') => {
       let value = 0
       if (direction === 'left') value = -15
       if (direction === 'right') value = 15
-      return Animated.timing(current, {
+      return Animated.timing(shakeAnim, {
         toValue: value,
         duration: 85,
         useNativeDriver: true,
@@ -53,18 +59,21 @@ const ConfirmPinView = ({
     ]).start(() => setPin(''))
 
     triggerImpact()
-  }, [triggerImpact])
+  }, [shakeAnim, triggerImpact])
+
+  const onPinComplete = useEffectEvent((completedPin: string) => {
+    if (originalPin === completedPin) {
+      success.current = true
+      pinSuccess(completedPin)
+    } else {
+      pinFailure()
+    }
+  })
 
   useEffect(() => {
     if (pin.length === 6) {
-      if (originalPin === pin) {
-        success.current = true
-        pinSuccess(pin)
-      } else {
-        pinFailure()
-      }
+      onPinComplete(pin)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pin])
 
   const handlePress = useCallback(
@@ -104,7 +113,7 @@ const ConfirmPinView = ({
       <Text variant="body1" maxFontSizeMultiplier={1.2}>
         {subtitle}
       </Text>
-      <Animated.View style={{ transform: [{ translateX: shakeAnim.current }] }}>
+      <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
         <PinDisplay length={pin.length} marginVertical="xl" />
       </Animated.View>
       <Keypad

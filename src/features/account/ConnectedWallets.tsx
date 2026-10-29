@@ -22,7 +22,6 @@ import React, {
   forwardRef,
   memo,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -54,7 +53,6 @@ const ConnectedWallets = forwardRef(
     { onClose, onAddNew, onAddSub, children }: Props,
     ref: Ref<ConnectedWalletsRef>,
   ) => {
-    useImperativeHandle(ref, () => ({ show, hide }))
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const keyExtractor = useCallback((item) => item.address, [])
     const { primaryText, secondaryText } = useColors()
@@ -78,7 +76,9 @@ const ConnectedWallets = forwardRef(
 
     const { sortedAccounts, currentAccount, setCurrentAccount } =
       useAccountStorage()
-    useEffect(() => {
+    const [prevSortedAccounts, setPrevSortedAccounts] = useState(sortedAccounts)
+    if (prevSortedAccounts !== sortedAccounts) {
+      setPrevSortedAccounts(sortedAccounts)
       const hashes = new Set(
         sortedAccounts.map((a) => a.mnemonicHash || 'none'),
       )
@@ -87,7 +87,7 @@ const ConnectedWallets = forwardRef(
           .filter(([key]) => hashes.has(key))
           .reduce((acc, [key, height]) => ({ ...acc, [key]: height }), {}),
       )
-    }, [sortedAccounts])
+    }
     const navigation = useNavigation<TabBarNavigationProp>()
     const { enableTestnet } = useAppStorage()
 
@@ -158,6 +158,8 @@ const ConnectedWallets = forwardRef(
       bottomSheetModalRef.current?.dismiss()
       setIsShowing(false)
     }, [setIsShowing])
+
+    useImperativeHandle(ref, () => ({ show, hide }))
 
     const handleNetTypeChange = useCallback(
       (nextNetType?: NetTypes.NetType) => {

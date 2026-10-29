@@ -16,14 +16,7 @@ import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
-import React, {
-  FC,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
 import { Switch } from 'react-native-gesture-handler'
@@ -96,7 +89,10 @@ const InsufficientSolConversionModal: FC = () => {
     }
   }, [inputMint, solConvertTxByMint])
 
-  useEffect(() => {
+  const [prevHasEnoughForSolByMint, setPrevHasEnoughForSolByMint] =
+    useState<typeof hasEnoughForSolByMint>()
+  if (prevHasEnoughForSolByMint !== hasEnoughForSolByMint) {
+    setPrevHasEnoughForSolByMint(hasEnoughForSolByMint)
     if (hasAtLeastOne) {
       const [[firstMint]] = Object.entries(hasEnoughForSolByMint).filter(
         ([_mint, value]) => Boolean(value),
@@ -106,7 +102,7 @@ const InsufficientSolConversionModal: FC = () => {
         setInputMint(new PublicKey(firstMint))
       }
     }
-  }, [hasAtLeastOne, setInputMint, hasEnoughForSolByMint])
+  }
 
   const onMintSelect = useCallback(
     (mint: PublicKey) => () => {

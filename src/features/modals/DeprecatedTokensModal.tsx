@@ -38,6 +38,8 @@ import { FadeIn } from 'react-native-reanimated'
 import { DUR } from '@theme/motion'
 
 const DeprecatedTokensModal: FC = () => {
+  'use no memo'
+
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
   const { hideModal } = useModal()
@@ -191,6 +193,7 @@ const DeprecatedTokensModal: FC = () => {
   // Load estimate when modal opens and data is ready
   React.useEffect(() => {
     if (!isLoadingPositions && hasAnyTokens) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the estimate shows its loader (setLoadingEstimate(true)) before the swap-route fetch; the component is not compiled anyway (try/finally, throw in try/catch)
       void calculateEstimatedHnt()
     }
   }, [isLoadingPositions, hasAnyTokens, calculateEstimatedHnt])

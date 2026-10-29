@@ -65,8 +65,6 @@ const TokenSelector = forwardRef(
     { children, onTokenSelected, tokenData, ...boxProps }: Props,
     ref: Ref<TokenSelectorRef>,
   ) => {
-    useImperativeHandle(ref, () => ({ showTokens }))
-
     const { bottom } = useSafeAreaInsets()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
@@ -77,6 +75,8 @@ const TokenSelector = forwardRef(
       bottomSheetModalRef.current?.present()
       setIsShowing(true)
     }, [setIsShowing])
+
+    useImperativeHandle(ref, () => ({ showTokens }))
 
     const renderBackdrop = useCallback(
       (props) => (

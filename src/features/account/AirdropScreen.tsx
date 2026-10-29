@@ -50,20 +50,20 @@ const AirdropScreen = () => {
   const mint = usePublicKey(mintStr)
   const { symbol, json } = useMetaplexMetadata(mint)
 
+  const solanaAddress = currentAccount?.solanaAddress
+
   const onAirdrop = useCallback(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider) return
+    if (!solanaAddress || !anchorProvider) return
 
     setLoading(true)
     if (mint?.equals(NATIVE_MINT)) {
-      void solUtils.airdrop(anchorProvider, currentAccount?.solanaAddress)
+      void solUtils.airdrop(anchorProvider, solanaAddress)
       setLoading(false)
       navigation.goBack()
     } else {
       try {
         await axios.get(
-          `https://faucet.web.test-helium.com/${symbol?.toLowerCase()}/${
-            currentAccount?.solanaAddress
-          }?amount=2)`,
+          `https://faucet.web.test-helium.com/${symbol?.toLowerCase()}/${solanaAddress}?amount=2)`,
         )
 
         setLoading(false)
@@ -74,7 +74,7 @@ const AirdropScreen = () => {
         setErrorMessage((error as Error).message)
       }
     }
-  }, [anchorProvider, currentAccount?.solanaAddress, mint, navigation, symbol])
+  }, [anchorProvider, solanaAddress, mint, navigation, symbol])
 
   const edges = useMemo(() => ['bottom'] as Edge[], [])
 

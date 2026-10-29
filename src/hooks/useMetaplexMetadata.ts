@@ -81,12 +81,12 @@ export function useMetaplexMetadata(mint: PublicKey | undefined): {
   symbol: string | undefined
   name: string | undefined
 } {
+  const mintStr = mint?.toBase58()
   const metadataAddr = useMemo(() => {
-    if (mint) {
-      return getMetadataId(mint)
+    if (mintStr) {
+      return getMetadataId(new PublicKey(mintStr))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mint?.toBase58()])
+  }, [mintStr])
 
   const { info: metadataAcc, loading } = useAccount(
     metadataAddr,

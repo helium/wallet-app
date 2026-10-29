@@ -54,6 +54,7 @@ export const AssignProxyScreen = () => {
     new Set<string>([position].filter(truthy)),
   )
   const today = new Date()
+  const now = today.getTime()
   const augustFirst = Date.UTC(
     today.getMonth() >= 6 ? today.getFullYear() + 1 : today.getFullYear(),
     7,
@@ -77,9 +78,7 @@ export const AssignProxyScreen = () => {
       ),
     [augustFirst, selectablePositions, selectedPositions],
   )
-  const maxDays = Math.floor(
-    (maxDate - today.getTime()) / (1000 * 60 * 60 * 24),
-  )
+  const maxDays = Math.floor((maxDate - now) / (1000 * 60 * 60 * 24))
   const [selectedDays, setSelectedDays] = useState(maxDays)
   const expirationTime = useMemo(
     () =>

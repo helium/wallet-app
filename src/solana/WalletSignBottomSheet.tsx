@@ -33,7 +33,6 @@ const WalletSignBottomSheet = forwardRef(
     // A ref, not state: context callers hold a stale show(), so settling
     // the pending request must not depend on a re-render
     const signRequestRef = useRef(createSignRequestResolver())
-    useImperativeHandle(ref, () => ({ show, hide }))
     const { secondaryText } = useColors()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
 
@@ -62,6 +61,8 @@ const WalletSignBottomSheet = forwardRef(
       bottomSheetModalRef.current?.snapToIndex(0)
       return decision
     }, [])
+
+    useImperativeHandle(ref, () => ({ show, hide }))
 
     const renderBackdrop = useCallback(
       (props) => (

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { memo, useRef, useEffect } from 'react'
+import React, { memo, useRef, useEffect, useState } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'
 import CircleLoaderSvg from '@assets/images/circleLoader.svg'
@@ -19,30 +19,30 @@ const CircleLoader = ({
   color = 'white',
   ...props
 }: Props) => {
-  const rotateAnim = useRef(new Animated.Value(0))
-  const opacityAnim = useRef(new Animated.Value(0))
+  const [rotateAnim] = useState(() => new Animated.Value(0))
+  const [opacityAnim] = useState(() => new Animated.Value(0))
   const animationRef = useRef<Animated.CompositeAnimation | null>(null)
 
-  const anim = () => {
-    animationRef.current = Animated.loop(
-      Animated.timing(rotateAnim.current, {
-        toValue: -1,
-        duration: 1000,
-        useNativeDriver: true,
-        easing: Easing.linear,
-      }),
-    )
-    animationRef.current.start()
-
-    Animated.timing(opacityAnim.current, {
-      toValue: 1,
-      duration: 500,
-      easing: Easing.linear,
-      useNativeDriver: true,
-    }).start()
-  }
-
   useEffect(() => {
+    const anim = () => {
+      animationRef.current = Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: -1,
+          duration: 1000,
+          useNativeDriver: true,
+          easing: Easing.linear,
+        }),
+      )
+      animationRef.current.start()
+
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }).start()
+    }
+
     const scan = async () => {
       anim()
     }
@@ -53,8 +53,7 @@ const CircleLoader = ({
         animationRef.current.stop()
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [rotateAnim, opacityAnim])
 
   return (
     <Box
@@ -69,10 +68,10 @@ const CircleLoader = ({
           maxHeight: 105,
           height: loaderSize,
           width: loaderSize,
-          opacity: opacityAnim.current,
+          opacity: opacityAnim,
           transform: [
             {
-              rotate: rotateAnim.current.interpolate({
+              rotate: rotateAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: ['0deg', '360deg'],
               }),

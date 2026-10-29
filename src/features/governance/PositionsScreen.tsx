@@ -9,6 +9,7 @@ import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
 import { NATIVE_MINT } from '@solana/spl-token'
 import {
+  PositionWithMeta,
   SubDaoWithMeta,
   calcLockupMultiplier,
   useSubDaos,
@@ -26,7 +27,13 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 import { DelegateTokensModal } from './DelegateTokensModal'
@@ -35,6 +42,50 @@ import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
+
+const getDefaultDelegateAllSubDao = (
+  subDaos: SubDaoWithMeta[] | undefined,
+  delegatedPositions: PositionWithMeta[] | undefined,
+): SubDaoWithMeta | undefined => {
+  if (!subDaos || !delegatedPositions) return undefined
+  const mobileSubDao = subDaos.find((sd) =>
+    sd.pubkey.equals(MOBILE_SUB_DAO_KEY),
+  )
+  const iotSubDao = subDaos.find((sd) => sd.pubkey.equals(IOT_SUB_DAO_KEY))
+  if (!mobileSubDao) return undefined
+
+  let mobileDelegations = 0
+  let iotDelegations = 0
+  let totalDelegated = 0
+
+  delegatedPositions?.forEach((position) => {
+    if (position.isDelegated && position.delegatedSubDao) {
+      totalDelegated += 1
+      if (position.delegatedSubDao.equals(MOBILE_SUB_DAO_KEY)) {
+        mobileDelegations += 1
+      } else if (position.delegatedSubDao.equals(IOT_SUB_DAO_KEY)) {
+        iotDelegations += 1
+      }
+    }
+  })
+
+  if (totalDelegated === 0) {
+    return mobileSubDao
+  }
+  if (mobileDelegations === totalDelegated) {
+    return mobileSubDao
+  }
+  if (iotDelegations === totalDelegated && iotSubDao) {
+    return iotSubDao
+  }
+  if (mobileDelegations >= iotDelegations) {
+    return mobileSubDao
+  }
+  if (iotDelegations > mobileDelegations && iotSubDao) {
+    return iotSubDao
+  }
+  return mobileSubDao
+}
 
 export const PositionsScreen = () => {
   const { t } = useTranslation()
@@ -105,30 +156,26 @@ export const PositionsScreen = () => {
     [mint, registrar],
   )
 
-  const handlePrepareCreatePosition = useCallback(
-    (values: LockTokensModalFormValues) => {
-      if (!decimals) return
-      const amountToLock = toBN(values.amount, decimals)
-      const subDaoMint = values.subDao
-        ? values.subDao.pubkey.equals(IOT_SUB_DAO_KEY)
-          ? Mints.IOT
-          : Mints.MOBILE
-        : undefined
+  const handlePrepareCreatePosition = (values: LockTokensModalFormValues) => {
+    if (!decimals) return
+    const amountToLock = toBN(values.amount, decimals)
+    const subDaoMint = values.subDao
+      ? values.subDao.pubkey.equals(IOT_SUB_DAO_KEY)
+        ? Mints.IOT
+        : Mints.MOBILE
+      : undefined
 
-      createPositionMutation
-        .prepare({
-          amount: amountToLock.toString(),
-          lockupKind: values.lockupKind.value,
-          lockupPeriodsInDays: values.lockupPeriodInDays,
-          mint: mint.toBase58(),
-          subDaoMint,
-          automationEnabled,
-        })
-        .catch((e) => console.warn('Fee estimate failed:', e))
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [createPositionMutation.prepare, automationEnabled, decimals, mint],
-  )
+    createPositionMutation
+      .prepare({
+        amount: amountToLock.toString(),
+        lockupKind: values.lockupKind.value,
+        lockupPeriodsInDays: values.lockupPeriodInDays,
+        mint: mint.toBase58(),
+        subDaoMint,
+        automationEnabled,
+      })
+      .catch((e) => console.warn('Fee estimate failed:', e))
+  }
 
   const handleLockTokens = useCallback(
     async (values: LockTokensModalFormValues) => {
@@ -217,63 +264,42 @@ export const PositionsScreen = () => {
     [positions, now],
   )
 
-  useEffect(() => {
-    if (!subDaos || !delegatedPositions) return
-    const mobileSubDao = subDaos.find((sd) =>
-      sd.pubkey.equals(MOBILE_SUB_DAO_KEY),
+  const [prevSubDaos, setPrevSubDaos] = useState<SubDaoWithMeta[]>()
+  const [prevDelegatedPositions, setPrevDelegatedPositions] =
+    useState<PositionWithMeta[]>()
+  if (
+    subDaos !== prevSubDaos ||
+    delegatedPositions !== prevDelegatedPositions
+  ) {
+    setPrevSubDaos(subDaos)
+    setPrevDelegatedPositions(delegatedPositions)
+    const defaultSubDao = getDefaultDelegateAllSubDao(
+      subDaos,
+      delegatedPositions,
     )
-    const iotSubDao = subDaos.find((sd) => sd.pubkey.equals(IOT_SUB_DAO_KEY))
-    if (!mobileSubDao) return
+    if (defaultSubDao) setDelegateAllSubDao(defaultSubDao)
+  }
 
-    let mobileDelegations = 0
-    let iotDelegations = 0
-    let totalDelegated = 0
-
-    delegatedPositions?.forEach((position) => {
-      if (position.isDelegated && position.delegatedSubDao) {
-        totalDelegated += 1
-        if (position.delegatedSubDao.equals(MOBILE_SUB_DAO_KEY)) {
-          mobileDelegations += 1
-        } else if (position.delegatedSubDao.equals(IOT_SUB_DAO_KEY)) {
-          iotDelegations += 1
-        }
-      }
-    })
-
-    if (totalDelegated === 0) {
-      setDelegateAllSubDao(mobileSubDao)
-    } else if (mobileDelegations === totalDelegated) {
-      setDelegateAllSubDao(mobileSubDao)
-    } else if (iotDelegations === totalDelegated && iotSubDao) {
-      setDelegateAllSubDao(iotSubDao)
-    } else if (mobileDelegations >= iotDelegations) {
-      setDelegateAllSubDao(mobileSubDao)
-    } else if (iotDelegations > mobileDelegations && iotSubDao) {
-      setDelegateAllSubDao(iotSubDao)
-    } else {
-      setDelegateAllSubDao(mobileSubDao)
-    }
-  }, [subDaos, delegatedPositions])
-
-  useEffect(() => {
-    if (
-      isDelegateAllModalOpen &&
-      delegateAllSubDao &&
-      unexpiredPositions?.length
-    ) {
+  const prepareDelegateAll = useEffectEvent(
+    (subDao: SubDaoWithMeta, automation: boolean) => {
+      if (!unexpiredPositions?.length) return
       const positionMints = unexpiredPositions.map((p) => p.mint.toBase58())
-      const subDaoMint = delegateAllSubDao.pubkey.equals(IOT_SUB_DAO_KEY)
+      const subDaoMint = subDao.pubkey.equals(IOT_SUB_DAO_KEY)
         ? Mints.IOT
         : Mints.MOBILE
       delegateAllMutation
         .prepare({
           positionMints,
           subDaoMint,
-          automationEnabled: delegateAllAutomationEnabled,
+          automationEnabled: automation,
         })
         .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+  )
+  useEffect(() => {
+    if (isDelegateAllModalOpen && delegateAllSubDao) {
+      prepareDelegateAll(delegateAllSubDao, delegateAllAutomationEnabled)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDelegateAllModalOpen, delegateAllSubDao, delegateAllAutomationEnabled])
 
   const handleDelegateAll = useCallback(async () => {

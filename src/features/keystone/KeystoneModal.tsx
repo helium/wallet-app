@@ -40,7 +40,6 @@ const KeystoneModal = forwardRef(
     { children }: { children: ReactNode },
     ref: Ref<KeystoneModalRef | undefined>,
   ) => {
-    useImperativeHandle(ref, () => ({ showKeystoneModal }))
     const eventEmitter = useMemo(() => new EventEmitter(), [])
     const { currentAccount } = useAccountStorage()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
@@ -111,6 +110,7 @@ const KeystoneModal = forwardRef(
         currentAccount?.keystoneDevice?.masterFingerprint,
       ],
     )
+    useImperativeHandle(ref, () => ({ showKeystoneModal }))
     const renderBackdrop = useCallback(
       (props) => (
         <BottomSheetBackdrop

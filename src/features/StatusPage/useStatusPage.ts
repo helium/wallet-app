@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import {
   STATUS_API_BASE_URL,
@@ -30,6 +30,36 @@ const fetchSummary = () => statusPageApi<Summary>('/summary.json')
 
 const FETCH_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
+// Incidents not yet shown, or undefined when the app component is unknown
+const getNewIncidents = (
+  summary: Summary | undefined,
+  unresolved: Incident[],
+  storedIncidents: StoredIncident[],
+): Incident[] | undefined => {
+  if (!unresolved || !summary) return undefined
+
+  const component = summary.components.find(({ id }) => id === APP_ID)
+  if (!component) return undefined
+
+  const componentIds = component.components
+
+  return unresolved.flatMap((incident) => {
+    if (
+      // verify this incident belongs to at least one relevant component
+      !incident.components.find(({ id }) => componentIds.includes(id)) ||
+      // verify the status is one we want to show
+      !INCIDENT_STATUSES.includes(incident.status) ||
+      // make sure we haven't already shown this incident/status
+      storedIncidents.find(
+        ({ id, status }) => id === incident.id && status === incident.status,
+      )
+    ) {
+      return []
+    }
+    return [incident]
+  })
+}
+
 const useStatusPage = () => {
   const [storedIncidents, setStoredIncidents] = useState<StoredIncident[]>([])
   const [summary, setSummary] = useState<Summary>()
@@ -57,42 +87,30 @@ const useStatusPage = () => {
     void fetchUnresolved().then(setUnresolved)
   })
 
-  const incidents = useMemo((): Incident[] => {
-    if (!unresolved || !summary) return []
+  const [incidents, setIncidents] = useState<Incident[]>([])
+  const [incidentsToStore, setIncidentsToStore] = useState<StoredIncident[]>()
+  const [prevSummary, setPrevSummary] = useState(summary)
+  const [prevUnresolved, setPrevUnresolved] = useState(unresolved)
+  if (summary !== prevSummary || unresolved !== prevUnresolved) {
+    setPrevSummary(summary)
+    setPrevUnresolved(unresolved)
+    const next = getNewIncidents(summary, unresolved, storedIncidents)
+    if (next) {
+      const nextStoredIncidents = [
+        ...next.map(({ id, status }) => ({ id, status }) as StoredIncident),
+        ...storedIncidents,
+      ].slice(0, 20) // limit number of stored incidents. This is just an arbitrary number. May need adjustment.
 
-    const component = summary.components.find(({ id }) => id === APP_ID)
-    if (!component) return []
+      setIncidentsToStore(nextStoredIncidents)
+      setStoredIncidents(nextStoredIncidents)
+    }
+    setIncidents(next || [])
+  }
 
-    const componentIds = component.components
-
-    const next = unresolved.flatMap((incident) => {
-      if (
-        // verify this incident belongs to at least one relevant component
-        !incident.components.find(({ id }) => componentIds.includes(id)) ||
-        // verify the status is one we want to show
-        !INCIDENT_STATUSES.includes(incident.status) ||
-        // make sure we haven't already shown this incident/status
-        storedIncidents.find(
-          ({ id, status }) => id === incident.id && status === incident.status,
-        )
-      ) {
-        return []
-      }
-      return [incident]
-    })
-
-    const nextStoredIncidents = [
-      ...next.map(({ id, status }) => ({ id, status }) as StoredIncident),
-      ...storedIncidents,
-    ].slice(0, 20) // limit number of stored incidents. This is just an arbitrary number. May need adjustment.
-
-    void AsyncStorage.setItem(STATUS_KEY, JSON.stringify(nextStoredIncidents))
-
-    setStoredIncidents(nextStoredIncidents)
-
-    return next
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [summary, unresolved])
+  useEffect(() => {
+    if (!incidentsToStore) return
+    void AsyncStorage.setItem(STATUS_KEY, JSON.stringify(incidentsToStore))
+  }, [incidentsToStore])
 
   return incidents
 }

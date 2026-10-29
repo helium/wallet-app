@@ -82,6 +82,41 @@ const EstimateDisplay = ({
   )
 }
 
+const ScheduleOption = ({
+  schedule,
+  index,
+  selected,
+  onSelect,
+}: {
+  schedule: Schedule
+  index: number
+  selected: boolean
+  onSelect: (schedule: Schedule) => void
+}) => {
+  const { t } = useTranslation()
+  return (
+    <TouchableOpacityBox
+      onPress={() => onSelect(schedule)}
+      backgroundColor={selected ? 'white' : 'black'}
+      marginBottom="none"
+      alignItems="center"
+      justifyContent="center"
+      flex={1}
+      padding="s"
+      borderRadius="xl"
+      marginLeft={index > 0 ? 'xxs' : 'none'}
+    >
+      <Text
+        variant="subtitle4"
+        color={selected ? 'black' : 'grey300'}
+        textAlign="center"
+      >
+        {t(`automationScreen.schedule.${schedule}`)}
+      </Text>
+    </TouchableOpacityBox>
+  )
+}
+
 const AutomationSetupScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
@@ -222,34 +257,6 @@ const AutomationSetupScreen = () => {
     })
   }
 
-  const ScheduleOption = ({
-    schedule,
-    index,
-  }: {
-    schedule: Schedule
-    index: number
-  }) => (
-    <TouchableOpacityBox
-      onPress={() => handleScheduleSelect(schedule)}
-      backgroundColor={selectedSchedule === schedule ? 'white' : 'black'}
-      marginBottom="none"
-      alignItems="center"
-      justifyContent="center"
-      flex={1}
-      padding="s"
-      borderRadius="xl"
-      marginLeft={index > 0 ? 'xxs' : 'none'}
-    >
-      <Text
-        variant="subtitle4"
-        color={selectedSchedule === schedule ? 'black' : 'grey300'}
-        textAlign="center"
-      >
-        {t(`automationScreen.schedule.${schedule}`)}
-      </Text>
-    </TouchableOpacityBox>
-  )
-
   return (
     <BackScreen
       padding="s"
@@ -384,9 +391,24 @@ const AutomationSetupScreen = () => {
                 padding="xxs"
                 marginBottom="l"
               >
-                <ScheduleOption schedule="daily" index={0} />
-                <ScheduleOption schedule="weekly" index={1} />
-                <ScheduleOption schedule="monthly" index={2} />
+                <ScheduleOption
+                  schedule="daily"
+                  index={0}
+                  selected={selectedSchedule === 'daily'}
+                  onSelect={handleScheduleSelect}
+                />
+                <ScheduleOption
+                  schedule="weekly"
+                  index={1}
+                  selected={selectedSchedule === 'weekly'}
+                  onSelect={handleScheduleSelect}
+                />
+                <ScheduleOption
+                  schedule="monthly"
+                  index={2}
+                  selected={selectedSchedule === 'monthly'}
+                  onSelect={handleScheduleSelect}
+                />
               </Box>
 
               {selectedSchedule && (

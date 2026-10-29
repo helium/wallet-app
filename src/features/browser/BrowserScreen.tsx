@@ -112,74 +112,60 @@ const BrowserScreen = () => {
     [navigation, addRecent],
   )
 
-  const BrowserHeader = useCallback(() => {
-    return (
-      <Box
-        backgroundColor="black900"
-        padding="s"
-        flexDirection={inputFocused ? 'row' : 'column'}
+  const browserHeader = (
+    <Box
+      backgroundColor="black900"
+      padding="s"
+      flexDirection={inputFocused ? 'row' : 'column'}
+    >
+      <ReAnimatedBox
+        backgroundColor="surfaceSecondary"
+        borderRadius="l"
+        marginHorizontal="s"
+        style={headerStyles}
       >
-        <ReAnimatedBox
-          backgroundColor="surfaceSecondary"
-          borderRadius="l"
-          marginHorizontal="s"
-          style={headerStyles}
+        <TextInput
+          ref={textInputRef}
+          variant="transparentSmall"
+          fontSize={14}
+          onTouchEnd={onBrowserInputFocus}
+          TrailingIcon={inputFocused ? CloseCircle : undefined}
+          onTrailingIconPress={onClearPressed}
+          TrailingIconOptions={{
+            paddingStart: 's',
+          }}
+          textInputProps={{
+            placeholder: 'Search or type URL',
+            autoFocus: false,
+            onFocus: onBrowserInputFocus,
+            selectTextOnFocus: true,
+            selectionColor: colors.transparent10,
+            onBlur: onBrowserInputBlur,
+            onSubmitEditing,
+            defaultValue: DEFAULT_URL,
+            autoComplete: 'off',
+            autoCapitalize: 'none',
+            returnKeyType: 'done',
+            autoCorrect: false,
+            textAlign: inputFocused ? 'left' : 'center',
+            keyboardAppearance: 'dark',
+          }}
+        />
+      </ReAnimatedBox>
+      {inputFocused && (
+        <TouchableOpacityBox
+          marginStart="n_xxl"
+          justifyContent="center"
+          width={spacing.xxxl + spacing.l}
+          onPress={onCancelPressed}
         >
-          <TextInput
-            ref={textInputRef}
-            variant="transparentSmall"
-            fontSize={14}
-            onTouchEnd={onBrowserInputFocus}
-            TrailingIcon={inputFocused ? CloseCircle : undefined}
-            onTrailingIconPress={onClearPressed}
-            TrailingIconOptions={{
-              paddingStart: 's',
-            }}
-            textInputProps={{
-              placeholder: 'Search or type URL',
-              autoFocus: false,
-              onFocus: onBrowserInputFocus,
-              selectTextOnFocus: true,
-              selectionColor: colors.transparent10,
-              onBlur: onBrowserInputBlur,
-              onSubmitEditing,
-              defaultValue: DEFAULT_URL,
-              autoComplete: 'off',
-              autoCapitalize: 'none',
-              returnKeyType: 'done',
-              autoCorrect: false,
-              textAlign: inputFocused ? 'left' : 'center',
-              keyboardAppearance: 'dark',
-            }}
-          />
-        </ReAnimatedBox>
-        {inputFocused && (
-          <TouchableOpacityBox
-            marginStart="n_xxl"
-            justifyContent="center"
-            width={spacing.xxxl + spacing.l}
-            onPress={onCancelPressed}
-          >
-            <Text textAlign="center" variant="body1Medium">
-              {t('generic.cancel')}
-            </Text>
-          </TouchableOpacityBox>
-        )}
-      </Box>
-    )
-  }, [
-    t,
-    headerStyles,
-    inputFocused,
-    onBrowserInputBlur,
-    onBrowserInputFocus,
-    onClearPressed,
-    onCancelPressed,
-    textInputRef,
-    colors,
-    spacing,
-    onSubmitEditing,
-  ])
+          <Text textAlign="center" variant="body1Medium">
+            {t('generic.cancel')}
+          </Text>
+        </TouchableOpacityBox>
+      )}
+    </Box>
+  )
 
   const renderSectionHeader = useCallback(({ section: { title } }) => {
     const firstSection = title === 'My Favorites'
@@ -276,7 +262,7 @@ const BrowserScreen = () => {
         right={0}
       />
       <SafeAreaBox flex={1} edges={edges}>
-        <BrowserHeader />
+        {browserHeader}
         <SectionList
           contentContainerStyle={contentContainer}
           sections={SectionData}

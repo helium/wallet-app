@@ -1,4 +1,4 @@
-import React, { useEffect, memo, useRef, useMemo, useState } from 'react'
+import React, { useEffect, memo, useMemo, useState } from 'react'
 import { Animated, ImageStyle, Image, Platform } from 'react-native'
 import Box from '@components/Box'
 
@@ -6,48 +6,42 @@ const AnimatedImage = Animated.createAnimatedComponent(Image)
 
 type Props = { visible: boolean }
 const SecurityScreen = ({ visible }: Props) => {
-  const fadeAnim = useRef(new Animated.Value(0))
-  const [mounted, setMounted] = useState(false)
-
-  const fadeIn = () => {
-    setMounted(true)
-    Animated.timing(fadeAnim.current, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start()
-  }
-
-  const fadeOut = () => {
-    Animated.timing(fadeAnim.current, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => setMounted(false))
+  const [fadeAnim] = useState(() => new Animated.Value(0))
+  const [mounted, setMounted] = useState(visible)
+  const [prevVisible, setPrevVisible] = useState(visible)
+  if (visible !== prevVisible) {
+    setPrevVisible(visible)
+    if (visible) setMounted(true)
   }
 
   useEffect(() => {
     if (mounted) {
-      fadeIn()
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start()
     }
-  }, [mounted])
+  }, [fadeAnim, mounted])
 
   useEffect(() => {
-    if (visible) {
-      setMounted(true)
-    } else {
-      fadeOut()
+    if (!visible) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setMounted(false))
     }
-  }, [visible])
+  }, [fadeAnim, visible])
 
   const style = useMemo(
     () =>
       ({
-        opacity: fadeAnim.current,
+        opacity: fadeAnim,
         height: '100%',
         width: '100%',
       }) as Animated.AnimatedProps<ImageStyle>,
-    [],
+    [fadeAnim],
   )
 
   if (Platform.OS === 'android' || !mounted) {

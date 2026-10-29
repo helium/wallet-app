@@ -170,7 +170,7 @@ export const TokenListItem = ({ mint }: Props) => {
 
 export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const navigation = useNavigation()
-  const { anchorProvider, connection } = useSolana()
+  const { connection } = useSolana()
   const wallet = useCurrentWallet()
   const { triggerImpact } = useHaptic()
   const { json, symbol, loading } = useMetaplexMetadata(mint)
@@ -189,25 +189,18 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
 
   const { registrarKey } = useRegistrarForMint(mint)
 
+  const registrarKeyStr = registrarKey?.toBase58()
+  const walletStr = wallet?.toBase58()
   const args = useMemo(
     () =>
-      wallet &&
-      mint &&
+      walletStr &&
       connection &&
-      registrarKey && {
-        registrar: registrarKey,
-        owner: wallet,
+      registrarKeyStr && {
+        registrar: new PublicKey(registrarKeyStr),
+        owner: new PublicKey(walletStr),
         connection,
       },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      registrarKey?.toBase58(),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      wallet?.toBase58(),
-      connection,
-      anchorProvider,
-    ],
+    [registrarKeyStr, walletStr, connection],
   )
 
   const { result, loading: loadingPositionKeys } = useAsync(

@@ -16,6 +16,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useMemo,
   useState,
 } from 'react'
@@ -50,8 +51,6 @@ const useBalanceHook = () => {
   const { tokenPrices } = usePollTokenPrices()
   const { balanceHistory } = useBalanceHistory()
   const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>()
-  const prevCluster = usePrevious(cluster)
-  const prevSolAddress = usePrevious(currentAccount?.solanaAddress)
 
   const solanaAddress = useMemo(
     () => currentAccount?.solanaAddress || '',
@@ -65,18 +64,18 @@ const useBalanceHook = () => {
 
   const dispatch = useAppDispatch()
 
-  useEffect(() => {
+  // Use anchorProvider.connection instead of anchorProvider to prevent unnecessary re-syncs
+  // when the provider object reference changes but the connection hasn't
+  const providerConnection = anchorProvider?.connection
+  const syncTokens = useEffectEvent(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
     void dispatch(
       syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
     )
-
-    // Use anchorProvider.connection instead of anchorProvider to prevent unnecessary re-syncs
-    // when the provider object reference changes but the connection hasn't
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anchorProvider?.connection, cluster, currentAccount, dispatch, locked])
-
-  const [oracleDateTime, setOracleDateTime] = useState<Date>()
+  })
+  useEffect(() => {
+    syncTokens()
+  }, [providerConnection, cluster, currentAccount, dispatch, locked])
 
   const tokenAccounts = useMemo(() => {
     if (!cluster || !anchorProvider || !anchorProvider.publicKey)
@@ -101,11 +100,17 @@ const useBalanceHook = () => {
     [oracleRpcEndpoint],
   )
 
+  const [prevOracleConnection, setPrevOracleConnection] =
+    useState(oracleConnection)
+  if (prevOracleConnection !== oracleConnection) {
+    setPrevOracleConnection(oracleConnection)
+    setOraclePrice(undefined)
+    setOraclePriceError(undefined)
+  }
+
   // Poll the HNT oracle price. Retry sooner after an error, and keep the
   // last good price only while it is fresh enough to mint DC with.
   useEffect(() => {
-    setOraclePrice(undefined)
-    setOraclePriceError(undefined)
     if (!oracleConnection) return
 
     let cancelled = false
@@ -185,12 +190,6 @@ const useBalanceHook = () => {
 
     return tokenPrices.solana[currency]
   }, [currency, tokenPrices])
-
-  useEffect(() => {
-    if (!tokenPrices?.helium) {
-      setOracleDateTime(new Date())
-    }
-  }, [tokenPrices])
 
   const dcToNetworkTokens = useCallback(
     (dcBalance: BN): BN | undefined => {
@@ -282,29 +281,34 @@ const useBalanceHook = () => {
   // cluster and solanaAddress stay the same until a new value
   // is available. If cluster or solanaAddress change, we clear
   // `balanceInfo`
-  useEffect(() => {
-    const shouldClear =
-      prevSolAddress !== solanaAddress || prevCluster !== cluster
-    if (shouldClear) {
-      setBalanceInfo(undefined)
-      return
+  const rawSolAddress = currentAccount?.solanaAddress
+  const [prevTokenInfo, setPrevTokenInfo] = useState(tokenInfo)
+  const [prevCluster, setPrevCluster] = useState<typeof cluster>()
+  const [prevSolAddress, setPrevSolAddress] = useState<string>()
+  // A missing account never matches '' so it always clears, as before
+  const shouldClear =
+    prevSolAddress !== solanaAddress ||
+    prevCluster !== cluster ||
+    rawSolAddress === undefined
+  if (shouldClear) {
+    if (prevSolAddress !== solanaAddress) setPrevSolAddress(solanaAddress)
+    if (prevCluster !== cluster) setPrevCluster(cluster)
+    if (prevTokenInfo !== tokenInfo) setPrevTokenInfo(tokenInfo)
+    if (balanceInfo !== undefined) setBalanceInfo(undefined)
+  } else if (prevTokenInfo !== tokenInfo) {
+    setPrevTokenInfo(tokenInfo)
+    if (tokenInfo) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setBalanceInfo(tokenInfo)
     }
-
-    if (!tokenInfo) {
-      return
-    }
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    setBalanceInfo(tokenInfo)
-  }, [cluster, prevCluster, prevSolAddress, solanaAddress, tokenInfo])
+  }
 
   return {
     balanceHistory,
     dcToNetworkTokens,
     ...balanceInfo,
     networkTokensToDc,
-    oracleDateTime,
     oraclePrice: hntToDcPrice,
     oraclePriceError,
     solanaPrice,
@@ -322,7 +326,6 @@ const initialState = {
   formattedSolValue: '',
   formattedTotal: undefined,
   networkTokensToDc: () => undefined,
-  oracleDateTime: undefined,
   oraclePrice: undefined,
   oraclePriceError: undefined,
   solanaPrice: undefined,

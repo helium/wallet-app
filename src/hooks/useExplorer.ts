@@ -10,19 +10,19 @@ export function useExplorer(): {
   updateExplorer: (nextExplorer: string) => Promise<void>
 } {
   const { updateExplorer, explorer } = useAppStorage()
-  const { result: available, loading } = useAsync(getExplorers, [])
+  // Randomize the order of items in the available array
+  // to not bias explorers
+  const { result: available, loading } = useAsync(
+    async () => (await getExplorers()).sort(() => Math.random() - 0.5),
+    [],
+  )
   const current = useMemo(
     () => available?.find((a) => a.value === explorer),
     [available, explorer],
   )
-  // Randomize the order of items in the available array
-  // to not bias explorers
-  const randomizedAvailable = useMemo(() => {
-    return available?.sort(() => Math.random() - 0.5)
-  }, [available])
   return {
     updateExplorer,
-    explorers: randomizedAvailable,
+    explorers: available,
     current,
     loading,
   }

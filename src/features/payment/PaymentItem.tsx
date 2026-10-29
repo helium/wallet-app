@@ -67,6 +67,19 @@ type Props = {
 
 const ITEM_HEIGHT = 80
 
+const AddressIcon = ({
+  address,
+  color,
+}: {
+  address?: string
+  color: string
+}) => {
+  if (address && Address.isValid(address)) {
+    return <AccountIcon address={address} size={40} />
+  }
+  return <ContactIcon color={color} />
+}
+
 const PaymentItem = ({
   account,
   address,
@@ -187,13 +200,6 @@ const PaymentItem = ({
     [account, address],
   )
 
-  const AddressIcon = useCallback(() => {
-    if (address && Address.isValid(address)) {
-      return <AccountIcon address={address} size={40} />
-    }
-    return <ContactIcon color={secondaryText} />
-  }, [address, secondaryText])
-
   return (
     <Box
       marginHorizontal="l"
@@ -258,7 +264,7 @@ const PaymentItem = ({
                   marginEnd="l"
                   onPress={handleAddressBookSelected}
                 >
-                  <AddressIcon />
+                  <AddressIcon address={address} color={secondaryText} />
                 </TouchableOpacityBox>
               </Box>
             </Box>

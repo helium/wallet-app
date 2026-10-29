@@ -37,10 +37,9 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
     void SplashLib.hideAsync()
   }, [])
 
-  useEffect(() => {
-    if (!accountsRestored || !imageReady || locked === undefined) return
+  if (!isAppReady && accountsRestored && imageReady && locked !== undefined) {
     setAppReady(true)
-  }, [accountsRestored, imageReady, locked])
+  }
 
   return (
     <View style={globalStyles.container}>

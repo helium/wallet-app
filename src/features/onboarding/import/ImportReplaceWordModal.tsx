@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { Modal, ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/close.svg'
@@ -26,16 +26,13 @@ const ImportReplaceWordModal = ({
   totalWords,
 }: Props) => {
   const [word, setWord] = useState('')
-  const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
   const ordinal = wordIdx <= totalWords ? t(`ordinals.${wordIdx}`) : ''
   const { primaryText } = useColors()
 
-  useEffect(() => {
-    setMatchingWords(
-      wordlist.filter((w) => w.indexOf(word.toLowerCase()) === 0),
-    )
-  }, [word])
+  const matchingWords = wordlist.filter(
+    (w) => w.indexOf(word.toLowerCase()) === 0,
+  )
 
   const handleWordSelect = useCallback(
     (selectedWord: string) => {

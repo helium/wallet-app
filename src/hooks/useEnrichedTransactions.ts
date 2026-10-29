@@ -1,6 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { EnrichedTransaction } from '../types/solana'
@@ -47,11 +54,13 @@ const useEnrichedTransactions = (): {
   }, [transactions, cluster, currentAccount])
 
   // Reset new transactions when account changes. Maybe we add this all into a slice?
-  useEffect(() => {
+  const [prevAccount, setPrevAccount] = useState(currentAccount)
+  if (prevAccount !== currentAccount) {
+    setPrevAccount(currentAccount)
     if (currentAccount?.solanaAddress) {
       setHasNewTransactions(false)
     }
-  }, [currentAccount])
+  }
 
   const refresh = useCallback(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider) {
@@ -72,25 +81,6 @@ const useEnrichedTransactions = (): {
     setLoading(false)
     setOnEndReached(false)
   }, [currentAccount, cluster, anchorProvider])
-  const loadTransactionsFromStorage = useCallback(async () => {
-    try {
-      const storageKey = `txs-${cluster}-${currentAccount?.solanaAddress}`
-      const storedTransactions = await AsyncStorage.getItem(storageKey)
-      if (storedTransactions && storedTransactions.length > 0) {
-        const parsedTransactions = JSON.parse(storedTransactions)
-        setTransactions(parsedTransactions)
-        setOldestTransaction(
-          parsedTransactions.length > 0
-            ? parsedTransactions[parsedTransactions.length - 1].signature
-            : '',
-        )
-      } else {
-        await refresh()
-      }
-    } catch (error) {
-      console.error('Error loading transactions from AsyncStorage:', error)
-    }
-  }, [refresh, cluster, currentAccount])
 
   const fetchMore = useCallback(async () => {
     if (
@@ -159,16 +149,40 @@ const useEnrichedTransactions = (): {
     firstSig,
   ])
 
+  const onNewLogs = useEffectEvent(() => {
+    void fetchNew()
+    setHasNewTransactions(true)
+  })
+
   useEffect(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider) {
       return
     }
 
+    const loadTransactionsFromStorage = async () => {
+      try {
+        const storageKey = `txs-${cluster}-${currentAccount?.solanaAddress}`
+        const storedTransactions = await AsyncStorage.getItem(storageKey)
+        if (storedTransactions && storedTransactions.length > 0) {
+          const parsedTransactions = JSON.parse(storedTransactions)
+          setTransactions(parsedTransactions)
+          setOldestTransaction(
+            parsedTransactions.length > 0
+              ? parsedTransactions[parsedTransactions.length - 1].signature
+              : '',
+          )
+        } else {
+          await refresh()
+        }
+      } catch (error) {
+        console.error('Error loading transactions from AsyncStorage:', error)
+      }
+    }
+
     void loadTransactionsFromStorage()
 
     const subId = onLogs(anchorProvider, currentAccount?.solanaAddress, () => {
-      void fetchNew()
-      setHasNewTransactions(true)
+      onNewLogs()
     })
 
     if (accountSubscriptionId.current !== undefined) {
@@ -178,8 +192,7 @@ const useEnrichedTransactions = (): {
       )
     }
     accountSubscriptionId.current = subId
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anchorProvider, currentAccount])
+  }, [anchorProvider, cluster, currentAccount, refresh])
 
   const resetNewTransactions = useCallback(() => {
     setHasNewTransactions(false)

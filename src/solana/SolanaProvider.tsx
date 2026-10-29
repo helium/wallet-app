@@ -49,6 +49,8 @@ import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
 
 const useSolanaHook = () => {
+  'use no memo'
+
   const { currentAccount, secureAccountsVersion } = useAccountStorage()
   const dispatch = useAppDispatch()
   const cluster = useSelector(
@@ -171,6 +173,7 @@ const useSolanaHook = () => {
         }
       },
     } as Wallet
+    // eslint-disable-next-line react-hooks/refs -- the wallet signs through the Ledger/Keystone modal refs only when Anchor calls it, never during render
     return new AnchorProvider(connection, anchorWallet, {
       preflightCommitment: 'confirmed',
       commitment: 'confirmed',
@@ -314,6 +317,7 @@ const useSolanaHook = () => {
         connection.getAccountInfoAndContext.bind(connection)
 
       // Anchor uses this call on .fetch and .fetchNullable even though it doesn't actually need the context. Add caching.
+      // eslint-disable-next-line react-hooks/immutability -- monkey-patches the shared connection once (guarded by connection.wrapped) so Anchor reads go through the account cache
       connection.getAccountInfoAndContext = async (
         publicKey: PublicKey,
         com?: Commitment,

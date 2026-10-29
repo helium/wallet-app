@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { upperCase } from 'lodash'
@@ -6,7 +6,6 @@ import wordlist from '@constants/wordlists/english.json'
 import TextInput from '@components/TextInput'
 import Box from '@components/Box'
 import FabButton from '@components/FabButton'
-import usePrevious from '@hooks/usePrevious'
 import { Color } from '@theme/theme'
 import Clipboard from '@react-native-clipboard/clipboard'
 import MatchingWord from './MatchingWord'
@@ -35,22 +34,29 @@ const PassphraseAutocomplete = ({
   onPaste,
 }: Props) => {
   const [word, setWord] = useState('')
-  const [matchingWords, setMatchingWords] = useState<Array<string>>([])
   const { t } = useTranslation()
   const ordinal = wordIdx < totalWords ? t(`ordinals.${wordIdx}`) : ''
   const matchingListRef = useRef<ScrollView>(null)
-  const prevIndex = usePrevious(wordIdx)
+  const [synced, setSynced] = useState<{
+    wordIdx: number
+    complete: boolean
+    propsWord: string | null
+  }>()
 
-  useEffect(() => {
-    if (wordIdx === prevIndex && !complete) return
-    setWord(propsWord ? upperCase(propsWord) : '')
-  }, [complete, prevIndex, propsWord, wordIdx])
+  if (
+    wordIdx !== synced?.wordIdx ||
+    complete !== synced.complete ||
+    propsWord !== synced.propsWord
+  ) {
+    setSynced({ wordIdx, complete, propsWord })
+    if (wordIdx !== synced?.wordIdx || complete) {
+      setWord(propsWord ? upperCase(propsWord) : '')
+    }
+  }
 
-  useEffect(() => {
-    setMatchingWords(
-      wordlist.filter((w) => w.indexOf(word.trim().toLowerCase()) === 0),
-    )
-  }, [word])
+  const matchingWords = wordlist.filter(
+    (w) => w.indexOf(word.trim().toLowerCase()) === 0,
+  )
 
   const handleWordSelect = useCallback(
     (selectedWord: string) => {

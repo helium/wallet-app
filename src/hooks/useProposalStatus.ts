@@ -6,7 +6,7 @@ import { ProposalWithVotes } from '@helium/voter-stake-registry-sdk'
 import { PublicKey } from '@solana/web3.js'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import BN from 'bn.js'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ProposalV0 } from '../features/governance/governanceTypes'
 
 function usePublicKey(
@@ -51,7 +51,19 @@ export function useProposalStatus(proposal?: ProposalV0 | ProposalWithVotes) {
           )?.offsetFromStartTs?.offset ?? new BN(0),
         ))
 
-  const timeExpired = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
+  const endTsSeconds = endTs?.toNumber()
+  const [now, setNow] = useState(() => Date.now())
+  // Re-read the clock when the proposal end time passes
+  useEffect(() => {
+    if (endTsSeconds === undefined) return
+    const timer = setTimeout(
+      () => setNow(Date.now()),
+      Math.max(endTsSeconds * 1000 - Date.now(), 0),
+    )
+    return () => clearTimeout(timer)
+  }, [endTsSeconds])
+
+  const timeExpired = endTs && endTs.toNumber() <= now / 1000
   const isLoading = loadingConfig || loadingResolution
   const isActive = derivedState === 'active'
   const isCancelled = derivedState === 'cancelled'

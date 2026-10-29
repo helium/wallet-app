@@ -59,7 +59,9 @@ const ContactDetails = ({ action, contact }: Props) => {
   const { backgroundStyle } = useOpacity('surface', keyboardShown ? 0.85 : 0.4)
   const { addContact, editContact, deleteContact } = useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
-  const [address, setAddress] = useState('')
+  const [address, setAddress] = useState(
+    route.params?.address || contact?.solanaAddress || '',
+  )
   const nicknameInput = useRef<RNTextInput | null>(null)
   const { blueBright500 } = useColors()
   const { scannedAddress, setScannedAddress } = useAppStorage()
@@ -69,13 +71,25 @@ const ContactDetails = ({ action, contact }: Props) => {
   // debounce is needed to avoid unneccessary rpc calls
   const [debouncedAddress] = useDebounce(address, 800)
 
-  useEffect(() => {
+  const [prevContact, setPrevContact] = useState(contact)
+  const [prevRoute, setPrevRoute] = useState(route)
+  if (prevContact !== contact || prevRoute !== route) {
+    setPrevContact(contact)
+    setPrevRoute(route)
     if (route.params?.address) {
       setAddress(route.params.address)
     } else if (contact?.solanaAddress) {
       setAddress(contact.solanaAddress)
     }
-  }, [contact, route])
+  }
+
+  const [prevScannedAddress, setPrevScannedAddress] = useState<string>()
+  if (prevScannedAddress !== scannedAddress) {
+    setPrevScannedAddress(scannedAddress)
+    if (scannedAddress && solAddressIsValid(scannedAddress)) {
+      setAddress(scannedAddress)
+    }
+  }
 
   const handleDomainAddress = useCallback(
     async ({ domain }: { domain: string }) => {
@@ -164,7 +178,6 @@ const ContactDetails = ({ action, contact }: Props) => {
     if (!scannedAddress) return
 
     if (solAddressIsValid(scannedAddress)) {
-      setAddress(scannedAddress)
       setScannedAddress(undefined)
     }
   }, [scannedAddress, setScannedAddress])

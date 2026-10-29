@@ -57,7 +57,13 @@ import {
   useUndelegatePositionMutation,
   useRelinquishPositionVotesMutation,
 } from '@hooks/useGovernanceMutations'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useState,
+} from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -92,9 +98,9 @@ export const PositionCard = ({
   const { delegations, refetch: refetchDelegations } = usePositionDelegations()
   const delegation = delegations[position.mint.toBase58()]
   const [actionsOpen, setActionsOpen] = useState(false)
-  const actionRef = useRef<
-    null | 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
-  >(null)
+  const [pendingAction, setPendingAction] = useState<null | {
+    action: 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
+  }>(null)
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
@@ -109,77 +115,86 @@ export const PositionCard = ({
   )
   const { info: delegationClaimBot } =
     useDelegationClaimBot(delegationClaimBotK)
-  const [automationEnabled, setAutomationEnabled] = useState(true)
-  useEffect(() => {
+  const [automationEnabled, setAutomationEnabled] =
+    useState(!!delegationClaimBot)
+  const [prevDelegationClaimBot, setPrevDelegationClaimBot] =
+    useState(delegationClaimBot)
+  if (prevDelegationClaimBot !== delegationClaimBot) {
+    setPrevDelegationClaimBot(delegationClaimBot)
     setAutomationEnabled(!!delegationClaimBot)
-  }, [delegationClaimBot])
+  }
   const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
-  useEffect(() => {
-    if (subDaos && !subDao) {
-      setSubDao(
-        subDaos.find((sd) =>
-          sd.pubkey.equals(position?.delegatedSubDao || MOBILE_SUB_DAO_KEY),
-        ) || null,
-      )
-    }
-  }, [subDaos, subDao, position?.delegatedSubDao])
+  if (subDaos && !subDao) {
+    const defaultSubDao = subDaos.find((sd) =>
+      sd.pubkey.equals(position?.delegatedSubDao || MOBILE_SUB_DAO_KEY),
+    )
+    if (defaultSubDao) setSubDao(defaultSubDao)
+  }
   const { positions, mint, network, refetch: refetchState } = useGovernance()
-  useEffect(() => {
-    if (isDelegateModalOpen && subDao) {
-      const subDaoMint = subDao.pubkey.equals(IOT_SUB_DAO_KEY)
+  const prepareDelegate = useEffectEvent(
+    (delegateSubDao: SubDaoWithMeta, delegateAutomation: boolean) => {
+      const subDaoMint = delegateSubDao.pubkey.equals(IOT_SUB_DAO_KEY)
         ? Mints.IOT
         : Mints.MOBILE
       delegateMutation
         .prepare({
           positionMints: [position.mint.toBase58()],
           subDaoMint,
-          automationEnabled,
+          automationEnabled: delegateAutomation,
         })
         .catch((e) => console.warn('Fee estimate failed:', e))
+    },
+  )
+  useEffect(() => {
+    if (isDelegateModalOpen && subDao) {
+      prepareDelegate(subDao, automationEnabled)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDelegateModalOpen, subDao, automationEnabled])
+  const prepareExtend = useEffectEvent(() => {
+    const minDays = isConstant
+      ? Math.ceil(
+          secsToDays(
+            position.lockup.endTs.sub(position.lockup.startTs).toNumber(),
+          ),
+        )
+      : Math.ceil(
+          secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
+        )
+    extendMutation
+      .prepare({
+        positionMint: position.mint.toBase58(),
+        lockupPeriodsInDays: minDays,
+      })
+      .catch((e) => console.warn('Fee estimate failed:', e))
+  })
   useEffect(() => {
     if (isExtendModalOpen) {
-      const minDays = isConstant
-        ? Math.ceil(
-            secsToDays(
-              position.lockup.endTs.sub(position.lockup.startTs).toNumber(),
-            ),
-          )
-        : Math.ceil(
-            secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
-          )
-      extendMutation
-        .prepare({
-          positionMint: position.mint.toBase58(),
-          lockupPeriodsInDays: minDays,
-        })
-        .catch((e) => console.warn('Fee estimate failed:', e))
+      prepareExtend()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isExtendModalOpen])
+  const prepareSplit = useEffectEvent(() => {
+    const minDays = isConstant
+      ? Math.ceil(
+          secsToDays(
+            position.lockup.endTs.sub(position.lockup.startTs).toNumber() + 1,
+          ),
+        )
+      : Math.ceil(
+          secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
+        )
+    splitMutation
+      .prepare({
+        sourcePositionMint: position.mint.toBase58(),
+        amount: position.amountDepositedNative.toString(),
+        lockupKind: isConstant ? 'constant' : 'cliff',
+        lockupPeriodsInDays: minDays,
+      })
+      .catch((e) => console.warn('Fee estimate failed:', e))
+  })
   useEffect(() => {
     if (isSplitModalOpen) {
-      const minDays = isConstant
-        ? Math.ceil(
-            secsToDays(
-              position.lockup.endTs.sub(position.lockup.startTs).toNumber() + 1,
-            ),
-          )
-        : Math.ceil(
-            secsToDays(position.lockup.endTs.sub(new BN(unixNow)).toNumber()),
-          )
-      splitMutation
-        .prepare({
-          sourcePositionMint: position.mint.toBase58(),
-          amount: position.amountDepositedNative.toString(),
-          lockupKind: isConstant ? 'constant' : 'cliff',
-          lockupPeriodsInDays: minDays,
-        })
-        .catch((e) => console.warn('Fee estimate failed:', e))
+      prepareSplit()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSplitModalOpen])
   const { backgroundStyle } = useCreateOpacity()
   const organization = useMemo(() => organizationKey(network)[0], [network])
@@ -265,49 +280,26 @@ export const PositionCard = ({
     [votingMint.mint, registrar],
   )
 
-  const handlePrepareExtend = useCallback(
-    (values: LockTokensModalFormValues) => {
-      extendMutation
-        .prepare({
-          positionMint: position.mint.toBase58(),
-          lockupPeriodsInDays: values.lockupPeriodInDays,
-        })
-        .catch((e) => console.warn('Fee estimate failed:', e))
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [extendMutation.prepare],
-  )
+  const handlePrepareExtend = (values: LockTokensModalFormValues) => {
+    extendMutation
+      .prepare({
+        positionMint: position.mint.toBase58(),
+        lockupPeriodsInDays: values.lockupPeriodInDays,
+      })
+      .catch((e) => console.warn('Fee estimate failed:', e))
+  }
 
-  const handlePrepareSplit = useCallback(
-    (values: LockTokensModalFormValues) => {
-      if (!mintAcc) return
-      splitMutation
-        .prepare({
-          sourcePositionMint: position.mint.toBase58(),
-          amount: toBN(values.amount, mintAcc.decimals).toString(),
-          lockupKind: values.lockupKind.value,
-          lockupPeriodsInDays: values.lockupPeriodInDays,
-        })
-        .catch((e) => console.warn('Fee estimate failed:', e))
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [splitMutation.prepare, mintAcc],
-  )
-
-  // used for actions that run right after clicking the action button
-  useAsync(async () => {
-    const ref = actionRef.current
-    actionRef.current = null
-
-    if (ref !== null) {
-      await {
-        relinquish: handleRelinquishVotes,
-        flipLockupKind: handleFlipPositionLockupKind,
-        undelegate: handleUndelegateTokens,
-        close: handleClosePosition,
-      }[ref]?.()
-    }
-  }, [actionRef.current])
+  const handlePrepareSplit = (values: LockTokensModalFormValues) => {
+    if (!mintAcc) return
+    splitMutation
+      .prepare({
+        sourcePositionMint: position.mint.toBase58(),
+        amount: toBN(values.amount, mintAcc.decimals).toString(),
+        lockupKind: values.lockupKind.value,
+        lockupPeriodsInDays: values.lockupPeriodInDays,
+      })
+      .catch((e) => console.warn('Fee estimate failed:', e))
+  }
 
   const transactionError = useMemo(() => {
     const sources: [Error | null, string][] = [
@@ -489,6 +481,18 @@ export const PositionCard = ({
     refetchState()
   }
 
+  // used for actions that run right after clicking the action button
+  useAsync(async () => {
+    if (pendingAction !== null) {
+      await {
+        relinquish: handleRelinquishVotes,
+        flipLockupKind: handleFlipPositionLockupKind,
+        undelegate: handleUndelegateTokens,
+        close: handleClosePosition,
+      }[pendingAction.action]?.()
+    }
+  }, [pendingAction])
+
   const govNavigation = useNavigation<GovernanceNavigationProp>()
 
   // Add status indicators for proxy and delegation
@@ -568,7 +572,7 @@ export const PositionCard = ({
                     }),
                   })
                 } else {
-                  actionRef.current = 'undelegate'
+                  setPendingAction({ action: 'undelegate' })
                 }
               }}
               selected={false}
@@ -617,7 +621,7 @@ export const PositionCard = ({
                       message: t('gov.positions.partakingInVote'),
                     })
                   } else {
-                    actionRef.current = 'close'
+                    setPendingAction({ action: 'close' })
                   }
                 }}
                 selected={false}
@@ -688,7 +692,7 @@ export const PositionCard = ({
                             message: t('gov.positions.partakingInVote'),
                           })
                         } else {
-                          actionRef.current = 'flipLockupKind'
+                          setPendingAction({ action: 'flipLockupKind' })
                         }
                       }}
                       selected={false}
@@ -715,7 +719,7 @@ export const PositionCard = ({
                     title={t('gov.positions.relinquish')}
                     onPress={() => {
                       setActionsOpen(false)
-                      actionRef.current = 'relinquish'
+                      setPendingAction({ action: 'relinquish' })
                     }}
                     selected={false}
                     hasPressedState={false}

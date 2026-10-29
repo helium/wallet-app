@@ -15,7 +15,7 @@ import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
@@ -66,8 +66,9 @@ export const ProposalCard = ({
   )
 
   const hasSeen = useMemo(() => {
-    if (currentAccount?.proposalIdsSeenByMint) {
-      return currentAccount.proposalIdsSeenByMint[mint.toBase58()]?.includes(
+    const proposalIdsSeenByMint = currentAccount?.proposalIdsSeenByMint
+    if (proposalIdsSeenByMint) {
+      return proposalIdsSeenByMint[mint.toBase58()]?.includes(
         proposalKey.toBase58(),
       )
     }
@@ -110,7 +111,8 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
-  const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
+  const [now] = useState(() => Date.now())
+  const completed = endTs && endTs.toNumber() <= now / 1000
   const isLoading = descLoading
   const handleOnPress = useCallback(async () => {
     if (onPress) await onPress(mint, proposalKey)

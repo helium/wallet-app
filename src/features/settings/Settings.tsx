@@ -165,8 +165,7 @@ const Settings = () => {
     },
     [
       accounts,
-      currentAccount?.alias,
-      currentAccount?.address,
+      currentAccount,
       defaultAccountAddress,
       isDefaultAccount,
       showOKAlert,

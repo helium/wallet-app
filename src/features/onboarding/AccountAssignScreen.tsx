@@ -80,7 +80,7 @@ const AccountAssignScreen = () => {
       ]
     }
     return paths
-  }, [paths, route.params?.secretKey, route.params?.derivationPath])
+  }, [paths, route.params])
 
   const storeAllSecureAccounts = useCallback(async () => {
     const secureAccounts = allPaths
@@ -104,10 +104,9 @@ const AccountAssignScreen = () => {
 
   const generateUniqueName = useCallback(
     (baseAlias: string, index: number): string => {
-      const name = `${baseAlias} ${index + 1}`
-      return existingNames?.has(name)
-        ? generateUniqueName(baseAlias, index + 1)
-        : name
+      let i = index
+      while (existingNames?.has(`${baseAlias} ${i + 1}`)) i += 1
+      return `${baseAlias} ${i + 1}`
     },
     [existingNames],
   )

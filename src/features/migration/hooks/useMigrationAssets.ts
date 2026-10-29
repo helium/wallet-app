@@ -41,8 +41,7 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
 
   useEffect(() => {
     if (sourceWallet) void execute()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceWallet])
+  }, [sourceWallet, execute])
 
   // The migratable set is the wallet's own view of what it holds — no token
   // list from the server, so one fewer call that can fail.

@@ -123,11 +123,12 @@ const DappLoginScreen = () => {
     },
   )
 
+  const currentAddress = currentAccount?.address
   const handleLogin = useCallback(async () => {
-    if (!currentAccount?.address) return
+    if (!currentAddress) return
 
     try {
-      await approvePair(currentAccount.address)
+      await approvePair(currentAddress)
     } catch (error) {
       await showOKAlert({
         title: t('dappLogin.error', {
@@ -136,7 +137,7 @@ const DappLoginScreen = () => {
         message: (error as Error).toString(),
       })
     }
-  }, [approvePair, currentAccount?.address, sessionProposal, showOKAlert, t])
+  }, [approvePair, currentAddress, sessionProposal, showOKAlert, t])
 
   useAsync(async () => {
     if (!currentAccount?.address || !loginRequest) return

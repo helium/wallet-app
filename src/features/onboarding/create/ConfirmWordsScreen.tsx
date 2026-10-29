@@ -44,7 +44,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
 }) => {
   const { triggerImpact } = useHaptic()
   const [wordIndex, setWordIndex] = useState(0)
-  const shakeAnim = useRef(new Animated.Value(0))
+  const [shakeAnim] = useState(() => new Animated.Value(0))
   const { t } = useTranslation()
   const navigation = useNavigation<CreateAccountNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
@@ -73,12 +73,11 @@ const ConfirmWordsScreen: React.FC<Props> = ({
   )
 
   const wordFailure = useCallback(() => {
-    const { current } = shakeAnim
     const move = (direction: 'left' | 'right' | 'center') => {
       let value = 0
       if (direction === 'left') value = -15
       if (direction === 'right') value = 15
-      return Animated.timing(current, {
+      return Animated.timing(shakeAnim, {
         toValue: value,
         duration: 85,
         useNativeDriver: true,
@@ -94,7 +93,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     ]).start()
 
     triggerImpact()
-  }, [triggerImpact])
+  }, [triggerImpact, shakeAnim])
 
   const handleSelectWord = useCallback(
     (selectedWordd: string) => {
@@ -202,9 +201,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
         enableOnAndroid
         keyboardShouldPersistTaps="always"
       >
-        <Animated.View
-          style={{ transform: [{ translateX: shakeAnim.current }] }}
-        >
+        <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
           <Text
             variant="subtitle1"
             color="secondaryText"

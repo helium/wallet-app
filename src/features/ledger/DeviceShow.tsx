@@ -1,4 +1,4 @@
-import React, { useCallback, memo, useState, useMemo, useEffect } from 'react'
+import React, { useCallback, memo, useState, useMemo } from 'react'
 import { ActivityIndicator, Image, SectionList } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -44,12 +44,13 @@ const DeviceShow = () => {
     ledgerAccounts,
     ledgerAccountsLoading: isScanning,
   } = useLedger()
-  const [newLedgerAccounts, setNewLedgerAccounts] = useState<LedgerAccount[]>(
-    [],
+  const accountAddresses = Object.keys(accounts || {})
+  const existingLedgerAccounts = ledgerAccounts.filter((a) =>
+    accountAddresses.includes(a.address),
   )
-  const [existingLedgerAccounts, setExistingLedgerAccounts] = useState<
-    LedgerAccount[]
-  >([])
+  const newLedgerAccounts = ledgerAccounts.filter(
+    (a) => !accountAddresses.includes(a.address),
+  )
   const [selectAll, setSelectAll] = useState<boolean>(false)
   const [selectedAccounts, setSelectedAccounts] = useState<
     Record<string, boolean>
@@ -63,7 +64,9 @@ const DeviceShow = () => {
     [newLedgerAccounts, selectedAccounts],
   )
 
-  useEffect(() => {
+  const [prevLedgerAccounts, setPrevLedgerAccounts] = useState(ledgerAccounts)
+  if (prevLedgerAccounts !== ledgerAccounts) {
+    setPrevLedgerAccounts(ledgerAccounts)
     const selected = {} as Record<string, boolean>
     ledgerAccounts.forEach((a) => {
       if (selected[a.address] === undefined) {
@@ -72,7 +75,7 @@ const DeviceShow = () => {
     })
 
     setSelectedAccounts(selected)
-  }, [ledgerAccounts])
+  }
 
   const reachedAccountLimit = useMemo(() => {
     const { length } = Object.keys(accounts as CSAccounts)
@@ -271,18 +274,6 @@ const DeviceShow = () => {
       )
     }
   }, [])
-
-  useEffect(() => {
-    const accountAddresses = Object.keys(accounts || {})
-
-    setExistingLedgerAccounts([
-      ...ledgerAccounts.filter((a) => accountAddresses.includes(a.address)),
-    ])
-
-    setNewLedgerAccounts([
-      ...ledgerAccounts.filter((a) => !accountAddresses.includes(a.address)),
-    ])
-  }, [accounts, ledgerAccounts, selectedAccounts])
 
   const handleNext = useCallback(async () => {
     if (!accountsToAdd) return

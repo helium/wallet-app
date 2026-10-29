@@ -40,6 +40,7 @@ import React, {
   memo as reactMemo,
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -110,6 +111,8 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
+  'use no memo'
+
   const route = useRoute<Route>()
   const addressBookRef = useRef<AddressBookRef>(null)
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
@@ -173,9 +176,7 @@ const PaymentScreen = () => {
     if (!linkedPayments?.length) return accountNetType()
 
     return accountNetType(linkedPayments[0].payee)
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route])
+  }, [route.params, currentAccount?.address])
 
   const [paymentState, dispatch] = usePaymentsReducer({
     mint,
@@ -214,7 +215,19 @@ const PaymentScreen = () => {
 
   const { top } = useSafeAreaInsets()
 
-  useEffect(() => {
+  const onTokenSelected = useCallback(
+    (m: PublicKey) => {
+      setMint(m)
+
+      dispatch({
+        type: 'changeToken',
+        mint: m,
+      })
+    },
+    [dispatch],
+  )
+
+  const handleDeepLink = useEffectEvent(() => {
     if (!route.params) return
 
     // Deep link handling
@@ -267,7 +280,11 @@ const PaymentScreen = () => {
         }
       }),
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deep link handler with side effects (toast, navigation, account switch) that sets the token mint when the route params change
+    handleDeepLink()
   }, [route])
 
   const handleBalance = useCallback(
@@ -283,7 +300,7 @@ const PaymentScreen = () => {
         payer: currentAccount.address,
       })
     },
-    [currentAccount?.address, dispatch],
+    [currentAccount, dispatch],
   )
 
   const handleQrScan = useCallback(() => {
@@ -464,18 +481,6 @@ const PaymentScreen = () => {
   const handleTokenTypeSelected = useCallback(() => {
     tokenSelectorRef?.current?.showTokens()
   }, [])
-
-  const onTokenSelected = useCallback(
-    (m: PublicKey) => {
-      setMint(m)
-
-      dispatch({
-        type: 'changeToken',
-        mint: m,
-      })
-    },
-    [dispatch],
-  )
 
   const handleAddressBookSelected = useCallback(
     ({ address, index }: { address?: string | undefined; index: number }) => {

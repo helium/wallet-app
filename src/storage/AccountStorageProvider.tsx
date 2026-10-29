@@ -160,13 +160,16 @@ const useAccountStorageHook = () => {
     void updateCloudContacts(updated)
   }, [contacts])
 
-  useEffect(() => {
-    if (!restoredAccounts) return
-
-    setAccounts(restoredAccounts.csAccounts)
-    setCurrentAccount(restoredAccounts.current)
-    setContacts(restoredAccounts.contacts)
-  }, [restoredAccounts])
+  const [prevRestoredAccounts, setPrevRestoredAccounts] =
+    useState<typeof restoredAccounts>()
+  if (prevRestoredAccounts !== restoredAccounts) {
+    setPrevRestoredAccounts(restoredAccounts)
+    if (restoredAccounts) {
+      setAccounts(restoredAccounts.csAccounts)
+      setCurrentAccount(restoredAccounts.current)
+      setContacts(restoredAccounts.contacts)
+    }
+  }
 
   useAsync(async () => {
     if (!accounts || Object.values(accounts)?.length === 0) return

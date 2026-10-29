@@ -24,7 +24,9 @@ const ScanHotspots = () => {
   const { startScan, stopScan, connect, scannedDevices } = useHotspotBle()
   const [scanning, setScanning] = useState(false)
   const { bleInstructions } = useIotBleOptions()
-  const [canScan, setCanScan] = useState<boolean | undefined>(undefined)
+  const [canScan, setCanScan] = useState<boolean | undefined>(
+    Platform.OS === 'ios' ? true : undefined,
+  )
   const navigation = useNavigation<HotspotBleNavProp>()
   const { t } = useTranslation()
   const [error, setError] = useState<string | undefined>(undefined)
@@ -49,10 +51,7 @@ const ScanHotspots = () => {
   }, [])
 
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      setCanScan(true)
-      return
-    }
+    if (Platform.OS === 'ios') return
 
     check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
       .then(updateCanScan)

@@ -1,11 +1,11 @@
 import SafeAreaBox from '@components/SafeAreaBox'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import Keystone from '@assets/images/keystoneLogo.svg'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import { useTranslation } from 'react-i18next'
-import KeystoneSDK, { SolSignature } from '@keystonehq/keystone-sdk'
+import KeystoneSDK from '@keystonehq/keystone-sdk'
 import { AnimatedQrCode } from '@components/StaticQrCode'
 import useAlert from '@hooks/useAlert'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
@@ -112,7 +112,6 @@ const ScanTxQrcodeScreen = ({
   }, [keystoneSDK, solSignRequest])
   const [openQrCodeScanner, setOpenQrCodeScanner] = useState(false)
   const [progress, setProgress] = useState<number>(0)
-  const [signature, setSignature] = useState<SolSignature | null>(null)
   const [isUnexpectedQrCode, setIsUnexpectedQrCode] = useState(false)
   const handleGetSignature = () => {
     setIsUnexpectedQrCode(false)
@@ -120,11 +119,14 @@ const ScanTxQrcodeScreen = ({
   }
 
   // A half-scanned signature from a previous request must not carry over
-  useEffect(() => {
-    scanner.reset()
-    setSignature(null)
+  const [prevRequestId, setPrevRequestId] = useState(solSignRequest?.requestId)
+  if (prevRequestId !== solSignRequest?.requestId) {
+    setPrevRequestId(solSignRequest?.requestId)
     setProgress(0)
     setIsUnexpectedQrCode(false)
+  }
+  useEffect(() => {
+    scanner.reset()
   }, [scanner, solSignRequest?.requestId])
 
   const handleBarCodeScanned = (qrString: string) => {
@@ -132,8 +134,12 @@ const ScanTxQrcodeScreen = ({
     if (result.status === 'progress') {
       setProgress(result.progress)
     } else if (result.status === 'complete') {
-      setProgress(100)
-      setSignature(result.signature)
+      setOpenQrCodeScanner(false)
+      eventEmitter.emit(
+        `keystoneSignature_${solSignRequest.requestId}`,
+        result.signature.signature,
+      )
+      setProgress(0)
     } else {
       setOpenQrCodeScanner(false)
       setProgress(0)
@@ -141,26 +147,17 @@ const ScanTxQrcodeScreen = ({
     }
   }
   // The camera keeps scanning until it unmounts, so alert once per bad scan
+  const alertUnexpectedQrCode = useEffectEvent(() => {
+    Alert.alert(
+      t('keystone.connectKeystoneStart.unexpectedQrCodeTitle'),
+      t('keystone.connectKeystoneStart.unexpectedQrCodeContent'),
+    )
+  })
   useEffect(() => {
     if (isUnexpectedQrCode) {
-      Alert.alert(
-        t('keystone.connectKeystoneStart.unexpectedQrCodeTitle'),
-        t('keystone.connectKeystoneStart.unexpectedQrCodeContent'),
-      )
+      alertUnexpectedQrCode()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnexpectedQrCode])
-  useEffect(() => {
-    if (progress === 100 && signature) {
-      setOpenQrCodeScanner(false)
-      eventEmitter.emit(
-        `keystoneSignature_${solSignRequest.requestId}`,
-        signature?.signature,
-      )
-      setProgress(0)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signature, progress])
 
   const hitSlop = useHitSlop('l')
   return (

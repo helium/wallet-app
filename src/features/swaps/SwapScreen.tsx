@@ -85,6 +85,8 @@ enum SelectorMode {
 }
 
 const SwapScreen = () => {
+  'use no memo'
+
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
   const { isDevnet, anchorProvider, connection } = useSolana()
@@ -273,18 +275,16 @@ const SwapScreen = () => {
     void refresh()
   }, [])
 
-  useEffect(() => {
-    // ensure outputMint can be swapable to inputMint
-    if (!inputMint.equals(HNT_MINT) && !outputMint.equals(DC_MINT)) {
-      if (
-        validOutputMints &&
-        validOutputMints[0] &&
-        !validOutputMints?.includes(outputMint?.toBase58() || '')
-      ) {
-        setOutputMint(new PublicKey(validOutputMints[0]))
-      }
+  // ensure outputMint can be swapable to inputMint
+  if (!inputMint.equals(HNT_MINT) && !outputMint.equals(DC_MINT)) {
+    if (
+      validOutputMints &&
+      validOutputMints[0] &&
+      !validOutputMints?.includes(outputMint?.toBase58() || '')
+    ) {
+      setOutputMint(new PublicKey(validOutputMints[0]))
     }
-  }, [inputMint, outputMint, validOutputMints])
+  }
 
   const Header = useMemo(() => {
     return (
@@ -532,6 +532,7 @@ const SwapScreen = () => {
       return
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- recomputes the quote when the swap inputs change; the Jupiter route is async and the devnet/DC paths share the same setters
     void getOutputAmount({
       balance: toBN(inputAmount, inputMintAcc.decimals),
     })
@@ -701,7 +702,7 @@ const SwapScreen = () => {
     }
   }, [
     connection,
-    currentAccount?.solanaAddress,
+    currentAccount,
     recipient,
     inputMint,
     inputAmount,

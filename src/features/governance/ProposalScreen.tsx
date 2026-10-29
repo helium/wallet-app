@@ -227,7 +227,8 @@ export const ProposalScreen = () => {
           )?.offsetFromStartTs?.offset ?? new BN(0),
         ))
 
-  const completed = endTs && endTs.toNumber() <= Date.now().valueOf() / 1000
+  const [now] = useState(() => Date.now())
+  const completed = endTs && endTs.toNumber() <= now / 1000
   const noVotingPower = !loading && (!votingPower || votingPower.isZero())
   const voted = !voteMutPending && didVote?.some((n) => n)
   const showVoteResults =

@@ -62,6 +62,8 @@ const QR_CONTAINER_SIZE = 220
 
 type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
+  'use no memo'
+
   const { visibleTokens } = useVisibleTokens()
   const { currentAccount, currentNetworkAddress: networkAddress } =
     useAccountStorage()
@@ -148,6 +150,7 @@ const RequestScreen = () => {
     if (nextEditing === isEditing) return
 
     animateTransition('RequestScreen.Editing')
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- LayoutAnimation.configureNext must run after the link/keyboard commit and right before the isEditing commit it animates; deriving isEditing in render would need the native side effect in render
     setIsEditing(nextEditing)
   }, [hntKeyboardVisible, isEditing, keyboardShown, link, qrLink])
 

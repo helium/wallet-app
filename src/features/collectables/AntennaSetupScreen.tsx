@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, memo } from 'react'
+import React, { useState, useMemo, useCallback, memo } from 'react'
 import BackScreen from '@components/BackScreen'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
@@ -51,19 +51,17 @@ const AntennaSetupScreen = () => {
     return parseH3BNLocation(iotInfoAcc.info.location).reverse()
   }, [iotInfoAcc])
 
-  useEffect(() => {
-    if (!hasSetDefaults && iotInfoAcc?.info) {
-      if (iotInfoAcc?.info?.gain) {
-        setGain(`${iotInfoAcc?.info?.gain / 10}`)
-      }
-
-      if (iotInfoAcc?.info?.elevation) {
-        setElevation(`${iotInfoAcc?.info?.elevation}`)
-      }
-
-      setHasSetDefaults(true)
+  if (!hasSetDefaults && iotInfoAcc?.info) {
+    if (iotInfoAcc?.info?.gain) {
+      setGain(`${iotInfoAcc?.info?.gain / 10}`)
     }
-  }, [iotInfoAcc, setGain, setElevation, hasSetDefaults, setHasSetDefaults])
+
+    if (iotInfoAcc?.info?.elevation) {
+      setElevation(`${iotInfoAcc?.info?.elevation}`)
+    }
+
+    setHasSetDefaults(true)
+  }
 
   const handleUpdateElevGain = useCallback(async () => {
     if (iotLocation && entityKey) {

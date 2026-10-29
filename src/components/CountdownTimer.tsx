@@ -28,8 +28,6 @@ type Props = { onExpired: () => void; visible: boolean } & BoxProps<Theme>
 
 const CountdownTimer = forwardRef(
   ({ onExpired, visible, ...boxProps }: Props, ref: Ref<TimerRef>) => {
-    useImperativeHandle(ref, () => ({ start, clear }))
-
     const [timerWidth, setTimerWidth] = useState(0)
     const [timerSeconds, setTimerSeconds] = useState(-1)
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -53,6 +51,8 @@ const CountdownTimer = forwardRef(
         clearInterval(timerRef.current)
       }
     }, [])
+
+    useImperativeHandle(ref, () => ({ start, clear }))
 
     useEffect(() => {
       if (timerSeconds !== 0) {

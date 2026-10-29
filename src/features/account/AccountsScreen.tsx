@@ -40,7 +40,6 @@ import { useBalance } from '../../utils/Balance'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
-import { OnboardingOpt } from '../onboarding/onboardingTypes'
 import AccountActionBar from './AccountActionBar'
 import AccountBalanceChart from './AccountBalanceChart'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
@@ -64,7 +63,6 @@ const AccountsScreen = () => {
   const { locked, currency } = useAppStorage()
   const { cluster } = useSolana()
   const { reset } = useOnboarding()
-  const [onboardingType, setOnboardingType] = useState<OnboardingOpt>('import')
   const [selectedBalance, setSelectedBalance] = useState<AccountBalance>()
   const { top } = useSafeAreaInsets()
   const bottomSheetRef = useRef<BottomSheet>(null)
@@ -157,13 +155,6 @@ const AccountsScreen = () => {
       navigation.push('NotificationsNavigator')
     }
   }, [navigation, openedNotification, locked])
-
-  useEffect(() => {
-    if (!currentAccount?.address || onboardingType === 'import') return
-
-    // Set onboarding back to import when navigating away
-    setOnboardingType('import')
-  }, [currentAccount?.address, onboardingType])
 
   // Hook that is used for helium balance widget.
   useAsync(async () => {

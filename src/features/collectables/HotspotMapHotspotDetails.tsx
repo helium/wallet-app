@@ -35,7 +35,7 @@ import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import { Explorer } from '@utils/walletApiV2'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
@@ -333,11 +333,13 @@ export const HotspotMapHotspotDetails = ({
     )?.value
   }, [metadata])
 
-  useEffect(() => {
+  const [prevExplorer, setPrevExplorer] = useState(explorer)
+  if (prevExplorer !== explorer) {
+    setPrevExplorer(explorer)
     if (explorer) {
       setSelectExplorerOpen(false)
     }
-  }, [explorer])
+  }
 
   const handleCopyAddress = useCallback(() => {
     if (!eccCompact) return

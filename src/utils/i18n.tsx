@@ -53,10 +53,6 @@ void i18n.use(initReactI18next).init({
 export const useLanguage = () => {
   const [language, setLanguage] = useState('en')
 
-  useAsync(async () => {
-    await initLanguage()
-  }, [])
-
   const changeLanguage = useCallback(async (l: string) => {
     setLanguage(l)
     await AsyncStorage.setItem('language', l)
@@ -70,6 +66,10 @@ export const useLanguage = () => {
     }
     setLanguage(l || phoneLang)
   }, [changeLanguage])
+
+  useAsync(async () => {
+    await initLanguage()
+  }, [])
 
   return { language, changeLanguage }
 }

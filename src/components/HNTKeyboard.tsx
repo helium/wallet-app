@@ -97,7 +97,6 @@ const HNTKeyboardSelector = forwardRef(
     }: Props,
     ref: Ref<HNTKeyboardRef>,
   ) => {
-    useImperativeHandle(ref, () => ({ show, hide }))
     const decimals = useMint(mint)?.info?.decimals
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
@@ -111,6 +110,7 @@ const HNTKeyboardSelector = forwardRef(
     const [paymentIndex, setPaymentIndex] = useState<number>()
     const [containerHeight, setContainerHeight] = useState(0)
     const [headerHeight, setHeaderHeight] = useState(0)
+    const [maxEnabled, setMaxEnabled] = useState(false)
     const containerStyle = useSafeTopPaddingStyle('android')
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const wallet = useCurrentWallet()
@@ -199,13 +199,13 @@ const HNTKeyboardSelector = forwardRef(
       bottomSheetModalRef.current?.dismiss()
     }, [])
 
+    useImperativeHandle(ref, () => ({ show, hide }))
+
     const handleHeaderLayout = useCallback(
       (layout: LayoutChangeEvent) =>
         setHeaderHeight(layout.nativeEvent.layout.height),
       [],
     )
-
-    const [maxEnabled, setMaxEnabled] = useState(false)
 
     const handleSetMax = useCallback(() => {
       if (!valueAsBalance || !networkFee) return

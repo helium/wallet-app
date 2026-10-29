@@ -6,7 +6,7 @@ import useLayoutHeight from '@hooks/useLayoutHeight'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import { useLanguage } from '@utils/i18n'
-import React, { memo, useEffect, useState } from 'react'
+import React, { memo } from 'react'
 import { GestureResponderEvent } from 'react-native'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { AccountBalance } from '../../types/balance'
@@ -20,7 +20,6 @@ type Props = {
 } & BoxProps<Theme>
 
 const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
-  const [balanceString, setBalanceString] = useState('')
   const { formattedTotal } = useBalance()
   const { currency } = useAppStorage()
   const [actionBarHeight, setActionBarHeight] = useLayoutHeight()
@@ -31,15 +30,9 @@ const AccountView = ({ selectedBalance, ...boxProps }: Props) => {
 
   const { language } = useLanguage()
 
-  useEffect(() => {
-    if (selectedBalance) {
-      setBalanceString(
-        numberFormat(language, currency, Number(selectedBalance.balance)),
-      )
-    } else {
-      setBalanceString(formattedTotal || '')
-    }
-  }, [language, currency, selectedBalance, formattedTotal])
+  const balanceString = selectedBalance
+    ? numberFormat(language, currency, Number(selectedBalance.balance))
+    : formattedTotal || ''
 
   return (
     <Box flexDirection="column" alignItems="center" {...boxProps}>

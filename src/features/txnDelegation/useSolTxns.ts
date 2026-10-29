@@ -510,7 +510,7 @@ const useSolTxns = ({
     if (configMsg?.hmhPubKey) {
       return bs58.encode(configMsg.hmhPubKey)
     }
-  }, [configMsg?.hmhPubKey, transactions])
+  }, [configMsg, transactions])
 
   const burnAmounts = useMemo(() => {
     if (!transactions.mintDataCreditsV0) return
@@ -564,7 +564,7 @@ const useSolTxns = ({
     [configMsg, configMsgStr, gatewayAddress, heliumAddress, transactionList],
   )
 
-  const assertData = useMemo(() => {
+  const assertData = (() => {
     if (!transactionList.length) return
 
     let location: string | undefined
@@ -585,7 +585,7 @@ const useSolTxns = ({
     })
 
     return { location, elevation, gain }
-  }, [transactionList])
+  })()
 
   const transferData = useMemo((): { newOwner: string } | undefined => {
     const key = ValidTxnKeys.find((k) => {

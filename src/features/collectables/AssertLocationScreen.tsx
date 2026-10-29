@@ -87,8 +87,12 @@ const AssertLocationScreen = () => {
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
-  const [gain, setGain] = useState<string>()
-  const [elevation, setElevation] = useState<string>()
+  const [gain, setGain] = useState<string | undefined>(() =>
+    iotInfoAcc?.gain ? `${iotInfoAcc.gain / 10}` : undefined,
+  )
+  const [elevation, setElevation] = useState<string | undefined>(() =>
+    iotInfoAcc?.elevation ? `${iotInfoAcc.elevation}` : undefined,
+  )
   const [asserting, setAsserting] = useState(false)
   const [transactionError, setTransactionError] = useState<string>()
   const reverseGeo = useReverseGeo(mapCenter)
@@ -136,22 +140,21 @@ const AssertLocationScreen = () => {
   }, [iotLocation, mobileLocation])
 
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
-  const [initialCenterSet, setInitalCenter] = useState(false)
+  const initialCenterSet = useRef(false)
 
   const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
   const onUserLocationUpdate = useCallback(
     (loc: MapLibreGL.Location) => {
       setUserLocation(loc)
+      const coords = loc?.coords
+      if (coords) {
+        setInitialUserLocation(
+          (prev) => prev || [coords.longitude, coords.latitude],
+        )
+      }
     },
     [setUserLocation],
   )
-
-  useEffect(() => {
-    const coords = userLocation?.coords
-    if (!initialUserLocation && coords) {
-      setInitialUserLocation([coords.longitude, coords.latitude])
-    }
-  }, [initialUserLocation, setInitialUserLocation, userLocation?.coords])
 
   const initialCenter = useMemo(() => {
     return (
@@ -167,17 +170,25 @@ const AssertLocationScreen = () => {
       initialCenter &&
       JSON.stringify(initialCenter) !==
         JSON.stringify(INITIAL_MAP_VIEW_STATE.centerCoordinate) &&
-      !initialCenterSet
+      !initialCenterSet.current
     ) {
-      setInitalCenter(true)
+      initialCenterSet.current = true
       cameraRef.current?.setCamera({
         centerCoordinate: initialCenter,
         animationDuration: 0,
       })
     }
-  }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
+  }, [initialCenter, cameraRef])
 
-  useEffect(() => {
+  const [prevIotInfoAcc, setPrevIotInfoAcc] = useState(iotInfoAcc)
+  const [prevElevGainVisible, setPrevElevGainVisible] =
+    useState(elevGainVisible)
+  if (
+    prevIotInfoAcc !== iotInfoAcc ||
+    prevElevGainVisible !== elevGainVisible
+  ) {
+    setPrevIotInfoAcc(iotInfoAcc)
+    setPrevElevGainVisible(elevGainVisible)
     if (!elevGainVisible) {
       if (iotInfoAcc?.gain) {
         setGain(`${iotInfoAcc?.gain / 10}`)
@@ -187,7 +198,7 @@ const AssertLocationScreen = () => {
         setElevation(`${iotInfoAcc?.elevation}`)
       }
     }
-  }, [iotInfoAcc, elevGainVisible, setGain, setElevation])
+  }
 
   const resetGain = useCallback(
     () => setGain(iotInfoAcc?.gain ? `${iotInfoAcc.gain / 10}` : undefined),
@@ -267,6 +278,8 @@ const AssertLocationScreen = () => {
     }
   }, [cameraRef, userLocation?.coords])
 
+  const iotNumLocationAsserts = iotInfoAcc?.numLocationAsserts
+  const mobileNumLocationAsserts = mobileInfoAcc?.numLocationAsserts
   const assertLocation = useCallback(
     async (type: NetworkType) => {
       if (
@@ -297,9 +310,9 @@ const AssertLocationScreen = () => {
 
         let numLocationChanges = 0
         if (type === 'IOT') {
-          numLocationChanges = iotInfoAcc?.numLocationAsserts || 0
+          numLocationChanges = iotNumLocationAsserts || 0
         } else {
-          numLocationChanges = mobileInfoAcc?.numLocationAsserts || 0
+          numLocationChanges = mobileNumLocationAsserts || 0
         }
         const isPayer =
           insufficientMakerDcBal ||
@@ -362,8 +375,8 @@ const AssertLocationScreen = () => {
       t,
       navigation,
       collectable,
-      iotInfoAcc?.numLocationAsserts,
-      mobileInfoAcc?.numLocationAsserts,
+      iotNumLocationAsserts,
+      mobileNumLocationAsserts,
     ],
   )
 

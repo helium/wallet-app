@@ -21,7 +21,13 @@ import { getFormattedStringFromDays, yearsToDays } from '@utils/dateTools'
 import { getMintMinAmountAsDecimal, precision } from '@utils/formatting'
 import { TXN_FEE_IN_LAMPORTS } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   KeyboardAvoidingView,
@@ -125,9 +131,7 @@ export const LockTokensModal = ({
   const [step, setStep] = useState<1 | 2>(1)
   const [showLockupKindInfo, setShowLockupKindInfo] = useState<boolean>(false)
   const [showCustomDuration, setShowCustomDuration] = useState<boolean>(false)
-  const [selectedSubDaoPk, setSelectedSubDaoPk] = useState<PublicKey | null>(
-    null,
-  )
+  const [pickedSubDaoPk, setSelectedSubDaoPk] = useState<PublicKey | null>(null)
   const [transactionError, setTransactionError] = useState()
   const { loading, result: subDaos } = useSubDaos()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
@@ -135,14 +139,11 @@ export const LockTokensModal = ({
   const currentPrecision = precision(mintMinAmount)
   const hasMinLockup = minLockupTimeInDays && minLockupTimeInDays > 0
 
-  useEffect(() => {
-    if (subDaos && !selectedSubDaoPk) {
-      setSelectedSubDaoPk(
-        subDaos.find((subDao) => subDao.pubkey.equals(MOBILE_SUB_DAO_KEY))
-          ?.pubkey || null,
-      )
-    }
-  }, [subDaos, selectedSubDaoPk, setSelectedSubDaoPk])
+  const selectedSubDaoPk =
+    pickedSubDaoPk ||
+    subDaos?.find((subDao) => subDao.pubkey.equals(MOBILE_SUB_DAO_KEY))
+      ?.pubkey ||
+    null
 
   const lockupKindOptions = [
     { value: LockupKind.cliff, display: t('gov.positions.decaying') },
@@ -184,11 +185,15 @@ export const LockTokensModal = ({
     }
   }
 
-  useEffect(() => {
-    if (lockupPeriod) {
-      setLockupPeriodInDays(lockupPeriod.value)
-    }
-  }, [lockupPeriod, setLockupPeriodInDays])
+  const prepare = useEffectEvent(() => {
+    onPrepare?.({
+      lockupKind,
+      lockupPeriod,
+      amount: amount ?? 0,
+      lockupPeriodInDays,
+      automationEnabled,
+    })
+  })
 
   const isInitialRender = useRef(true)
   useEffect(() => {
@@ -199,17 +204,8 @@ export const LockTokensModal = ({
     }
     if (mode === 'split' && !amount) return
 
-    const timer = setTimeout(() => {
-      onPrepare?.({
-        lockupKind,
-        lockupPeriod,
-        amount: amount ?? 0,
-        lockupPeriodInDays,
-        automationEnabled,
-      })
-    }, 300)
+    const timer = setTimeout(prepare, 300)
     return () => clearTimeout(timer)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, lockupPeriodInDays, lockupKind.value, amount])
 
   const handleAmountChange = ({ balance }: { balance: BN }) => {
@@ -523,6 +519,9 @@ export const LockTokensModal = ({
                                       }
                                       onPress={() => {
                                         setLockupPeriod(lockupPeriodOptions[0])
+                                        setLockupPeriodInDays(
+                                          lockupPeriodOptions[0].value,
+                                        )
                                         setShowCustomDuration(false)
                                       }}
                                     >
@@ -567,6 +566,7 @@ export const LockTokensModal = ({
                                         }
                                         onPress={() => {
                                           setLockupPeriod(option)
+                                          setLockupPeriodInDays(option.value)
                                           setShowCustomDuration(false)
                                         }}
                                       >

@@ -4,7 +4,7 @@ import { SerializedError } from '@reduxjs/toolkit'
 import { PublicKey } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
 import BN from 'bn.js'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { submitStage } from './logic/submitStage'
 import PaymentError from './PaymentError'
@@ -48,29 +48,17 @@ const PaymentSubmit = ({
     onRetry()
   }, [onRetry])
 
-  useEffect(() => {
-    if (loading || !submitLoading) {
-      return
-    }
-
+  if (!loading && submitLoading) {
     setLoading(true)
-  }, [loading, submitLoading])
+  }
 
-  useEffect(() => {
-    if (succeeded || !submitSucceeded) {
-      return
-    }
-
+  if (!succeeded && submitSucceeded) {
     setSucceeded(true)
-  }, [submitSucceeded, succeeded])
+  }
 
-  useEffect(() => {
-    if (error || !submitError) {
-      return
-    }
-
+  if (!error && submitError) {
     setError(submitError)
-  }, [error, submitError])
+  }
 
   const containerStyle = useMemo(
     () => [StyleSheet.absoluteFill, { backgroundColor: '#111419' }],

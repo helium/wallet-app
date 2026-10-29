@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import DynamicQrScanner from '@components/DynamicQrScanner'
 import SafeAreaBox from '@components/SafeAreaBox'
 import { URDecoder } from '@ngraveio/bc-ur'
@@ -12,9 +12,7 @@ import { KeystoneNavigationProp } from './keystoneNavigatorTypes'
 const ScanQrCodeScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<KeystoneNavigationProp>()
-  const [multiAccounts, setMultiAccounts] = useState<MultiAccounts>()
   const decoder = useMemo(() => new URDecoder(), [])
-  const [isScanQrCodeComplete, setIsScanQrCodeComplete] = useState(false)
   const [progress, setProgress] = useState<number>(0)
   const [isUnexpectedQrCode, setIsUnexpectedQrCode] = useState(false)
   const handleBarCodeScanned = (qrString: string) => {
@@ -28,44 +26,37 @@ const ScanQrCodeScreen = () => {
           new KeystoneSDK().parseMultiAccounts(
             new UR(Buffer.from(ur.cbor.toString('hex'), 'hex'), ur.type),
           )
-        setProgress(100)
-        setIsScanQrCodeComplete(true)
-        setMultiAccounts(qrCodeDataRes)
+        const derivationAccounts: KeystoneAccountType[] = []
+        qrCodeDataRes.keys.forEach((key) => {
+          derivationAccounts.push({
+            path: key.path,
+            publicKey: key.publicKey,
+            masterFingerprint: qrCodeDataRes.masterFingerprint,
+            device: qrCodeDataRes.device || 'Keystone Device',
+          })
+        })
+        setProgress(0)
+        navigation.navigate('SelectKeystoneAccounts', {
+          derivationAccounts,
+        })
       }
     } catch {
       setIsUnexpectedQrCode(true)
     }
   }
 
-  useEffect(() => {
-    if (isUnexpectedQrCode) {
-      Alert.alert(
-        t('keystone.connectKeystoneStart.unexpectedQrCodeTitle'),
-        t('keystone.connectKeystoneStart.unexpectedQrCodeContent'),
-      )
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUnexpectedQrCode])
+  const alertUnexpectedQrCode = useEffectEvent(() => {
+    Alert.alert(
+      t('keystone.connectKeystoneStart.unexpectedQrCodeTitle'),
+      t('keystone.connectKeystoneStart.unexpectedQrCodeContent'),
+    )
+  })
 
   useEffect(() => {
-    if (isScanQrCodeComplete) {
-      const derivationAccounts: KeystoneAccountType[] = []
-      multiAccounts?.keys.forEach((key) => {
-        derivationAccounts.push({
-          path: key.path,
-          publicKey: key.publicKey,
-          masterFingerprint: multiAccounts.masterFingerprint,
-          device: multiAccounts.device || 'Keystone Device',
-        })
-      })
-      setProgress(0)
-      setIsScanQrCodeComplete(false)
-      navigation.navigate('SelectKeystoneAccounts', {
-        derivationAccounts,
-      })
+    if (isUnexpectedQrCode) {
+      alertUnexpectedQrCode()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isScanQrCodeComplete])
+  }, [isUnexpectedQrCode])
   return (
     <SafeAreaBox flex={1}>
       <DynamicQrScanner
