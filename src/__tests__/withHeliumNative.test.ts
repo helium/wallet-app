@@ -66,5 +66,8 @@ describe('withHeliumNative', () => {
     expect(result.modResults.contents).toContain(
       'config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"',
     )
+    expect(result.modResults.contents).toContain(
+      "if pod_target && Gem::Version.new(pod_target) < Gem::Version.new(app_target)\n          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = app_target",
+    )
   })
 })

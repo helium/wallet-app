@@ -1,5 +1,57 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheet/BottomSheet.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheet/BottomSheet.js
+index 8c2b1cf..b706e37 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheet/BottomSheet.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheet/BottomSheet.js
+@@ -1180,7 +1180,7 @@ const BottomSheetComponent = /*#__PURE__*/(0, _react.forwardRef)(function Bottom
+         children: [BackdropComponent ? /*#__PURE__*/(0, _jsxRuntime.jsx)(BackdropComponent, {
+           animatedIndex: animatedIndex,
+           animatedPosition: animatedPosition,
+-          style: _reactNative.StyleSheet.absoluteFillObject
++          style: _reactNative.StyleSheet.absoluteFill
+         }) : null, /*#__PURE__*/(0, _jsxRuntime.jsx)(_bottomSheetHostingContainer.BottomSheetHostingContainer, {
+           shouldCalculateHeight: !$modal,
+           containerHeight: _animatedContainerHeight,
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackdrop/styles.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackdrop/styles.js
+index c1f62f6..55ec957 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackdrop/styles.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackdrop/styles.js
+@@ -7,7 +7,7 @@ exports.styles = void 0;
+ var _reactNative = require("react-native");
+ const styles = exports.styles = _reactNative.StyleSheet.create({
+   backdrop: {
+-    ..._reactNative.StyleSheet.absoluteFillObject,
++    ..._reactNative.StyleSheet.absoluteFill,
+     backgroundColor: 'black'
+   }
+ });
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackground/styles.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackground/styles.js
+index 4e4fb38..d5aab4d 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackground/styles.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackground/styles.js
+@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
+ exports.styles = void 0;
+ var _reactNative = require("react-native");
+ const styles = exports.styles = _reactNative.StyleSheet.create({
+-  container: _reactNative.StyleSheet.absoluteFillObject,
++  container: _reactNative.StyleSheet.absoluteFill,
+   background: {
+     backgroundColor: 'white',
+     borderRadius: 15
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetHostingContainer/styles.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetHostingContainer/styles.js
+index c563e17..e2e5c5c 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetHostingContainer/styles.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetHostingContainer/styles.js
+@@ -7,7 +7,7 @@ exports.styles = void 0;
+ var _reactNative = require("react-native");
+ const styles = exports.styles = _reactNative.StyleSheet.create({
+   container: {
+-    ..._reactNative.StyleSheet.absoluteFillObject,
++    ..._reactNative.StyleSheet.absoluteFill,
+     pointerEvents: 'box-none'
+   }
+ });
 diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
-index b577b8b..5324f67 100644
+index b577b8b..ecb0984 100644
 --- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
 +++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
 @@ -89,7 +89,9 @@ const ANIMATION_CONFIGS_IOS = {
@@ -13,8 +65,60 @@ index b577b8b..5324f67 100644
  };
  const ANIMATION_CONFIGS_ANDROID = {
    duration: ANIMATION_DURATION,
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheet/BottomSheet.js b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheet/BottomSheet.js
+index fd1ebe7..1dbb67b 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheet/BottomSheet.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheet/BottomSheet.js
+@@ -1172,7 +1172,7 @@ const BottomSheetComponent = /*#__PURE__*/forwardRef(function BottomSheet(props,
+         children: [BackdropComponent ? /*#__PURE__*/_jsx(BackdropComponent, {
+           animatedIndex: animatedIndex,
+           animatedPosition: animatedPosition,
+-          style: StyleSheet.absoluteFillObject
++          style: StyleSheet.absoluteFill
+         }) : null, /*#__PURE__*/_jsx(BottomSheetHostingContainer, {
+           shouldCalculateHeight: !$modal,
+           containerHeight: _animatedContainerHeight,
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackdrop/styles.js b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackdrop/styles.js
+index 4bf1c1b..d0cbc8f 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackdrop/styles.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackdrop/styles.js
+@@ -3,7 +3,7 @@
+ import { StyleSheet } from 'react-native';
+ export const styles = StyleSheet.create({
+   backdrop: {
+-    ...StyleSheet.absoluteFillObject,
++    ...StyleSheet.absoluteFill,
+     backgroundColor: 'black'
+   }
+ });
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackground/styles.js b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackground/styles.js
+index 863e5d6..9802fa2 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackground/styles.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackground/styles.js
+@@ -2,7 +2,7 @@
+ 
+ import { StyleSheet } from 'react-native';
+ export const styles = StyleSheet.create({
+-  container: StyleSheet.absoluteFillObject,
++  container: StyleSheet.absoluteFill,
+   background: {
+     backgroundColor: 'white',
+     borderRadius: 15
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetHostingContainer/styles.js b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetHostingContainer/styles.js
+index 49412c3..24b8d00 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetHostingContainer/styles.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetHostingContainer/styles.js
+@@ -3,7 +3,7 @@
+ import { StyleSheet } from 'react-native';
+ export const styles = StyleSheet.create({
+   container: {
+-    ...StyleSheet.absoluteFillObject,
++    ...StyleSheet.absoluteFill,
+     pointerEvents: 'box-none'
+   }
+ });
 diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/constants.js b/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
-index 92211b1..41812a5 100644
+index 92211b1..674bcb5 100644
 --- a/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
 +++ b/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
 @@ -81,7 +81,9 @@ const ANIMATION_CONFIGS_IOS = {
@@ -28,8 +132,58 @@ index 92211b1..41812a5 100644
  };
  const ANIMATION_CONFIGS_ANDROID = {
    duration: ANIMATION_DURATION,
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx
+index 18ad861..3731e87 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx
+@@ -1788,7 +1788,7 @@ const BottomSheetComponent = forwardRef<BottomSheet, BottomSheetProps>(
+               <BackdropComponent
+                 animatedIndex={animatedIndex}
+                 animatedPosition={animatedPosition}
+-                style={StyleSheet.absoluteFillObject}
++                style={StyleSheet.absoluteFill}
+               />
+             ) : null}
+             <BottomSheetHostingContainer
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackdrop/styles.ts b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackdrop/styles.ts
+index 6151fe8..973796c 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackdrop/styles.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackdrop/styles.ts
+@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
+ 
+ export const styles = StyleSheet.create({
+   backdrop: {
+-    ...StyleSheet.absoluteFillObject,
++    ...StyleSheet.absoluteFill,
+     backgroundColor: 'black',
+   },
+ });
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackground/styles.ts b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackground/styles.ts
+index 45d8dfa..5c4da0a 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackground/styles.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackground/styles.ts
+@@ -1,7 +1,7 @@
+ import { StyleSheet } from 'react-native';
+ 
+ export const styles = StyleSheet.create({
+-  container: StyleSheet.absoluteFillObject,
++  container: StyleSheet.absoluteFill,
+   background: {
+     backgroundColor: 'white',
+     borderRadius: 15,
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/styles.ts b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/styles.ts
+index 95826d9..830dda4 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/styles.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/styles.ts
+@@ -1,5 +1,5 @@
+ import { StyleSheet } from 'react-native';
+ 
+ export const styles = StyleSheet.create({
+-  container: { ...StyleSheet.absoluteFillObject, pointerEvents: 'box-none' },
++  container: { ...StyleSheet.absoluteFill, pointerEvents: 'box-none' },
+ });
 diff --git a/node_modules/@gorhom/bottom-sheet/src/constants.ts b/node_modules/@gorhom/bottom-sheet/src/constants.ts
-index 87afaa1..8fb7190 100644
+index 87afaa1..4fd3f57 100644
 --- a/node_modules/@gorhom/bottom-sheet/src/constants.ts
 +++ b/node_modules/@gorhom/bottom-sheet/src/constants.ts
 @@ -78,6 +78,8 @@ const ANIMATION_CONFIGS_IOS = {

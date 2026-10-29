@@ -1,9 +1,10 @@
 import path from 'path'
 import { getConfig } from 'expo/config'
 
-// SDK 55 (ExpoModulesCore) sets the iOS floor at 15.1. Prebuild writes each
-// value below as IPHONEOS_DEPLOYMENT_TARGET of its Xcode target.
-const IOS_FLOOR = [15, 1]
+// SDK 56 (Expo.podspec and ExpoModulesCore.podspec) sets the iOS floor at 16.4.
+// Prebuild writes each value below as IPHONEOS_DEPLOYMENT_TARGET of its Xcode
+// target.
+const IOS_FLOOR = [16, 4]
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..')
 
