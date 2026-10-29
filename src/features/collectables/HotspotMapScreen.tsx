@@ -279,6 +279,7 @@ const HotspotMapScreen = () => {
       cameraRef.current?.setStop({
         center: [cords[0], cords[1] - degreeShift],
         duration: 200,
+        easing: 'ease',
       })
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
@@ -352,6 +353,7 @@ const HotspotMapScreen = () => {
     if (cameraRef?.current && userLocation?.coords) {
       cameraRef.current.setStop({
         duration: 500,
+        easing: 'ease',
         zoom: 14,
         center: [userLocation.coords.longitude, userLocation.coords.latitude],
       })

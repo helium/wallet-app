@@ -222,6 +222,7 @@ const AssertLocationScreen = () => {
         if (cameraRef?.current && coords) {
           cameraRef.current.setStop({
             duration: 500,
+            easing: 'ease',
             center: coords as LngLat,
             zoom: MAX_MAP_ZOOM / 1.2,
           })
@@ -255,6 +256,7 @@ const AssertLocationScreen = () => {
     if (cameraRef?.current && userLocation?.coords) {
       cameraRef.current.setStop({
         duration: 500,
+        easing: 'ease',
         zoom: MAX_MAP_ZOOM,
         center: [userLocation?.coords.longitude, userLocation?.coords.latitude],
       })
