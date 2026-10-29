@@ -4,6 +4,7 @@
 // global.Buffer exists leaves the Keystone sign request unable to encode
 // ("Unsupported output format: undefined").
 import './src/polyfill'
+import './src/global.css'
 import { ThemeProvider } from '@shopify/restyle'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -15,6 +16,7 @@ import { Provider as ReduxProvider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import App from './src/App'
 import { GlobalError } from './src/components/GlobalError'
+import UniwindSpikeScreen from './src/features/uniwindSpike/UniwindSpikeScreen'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
@@ -93,4 +95,7 @@ const render = () => {
   )
 }
 
-AppRegistry.registerComponent('main', () => render)
+// EXPO_PUBLIC_UNIWIND_SPIKE=1 at bundle time shows the Uniwind spike screen.
+AppRegistry.registerComponent('main', () =>
+  process.env.EXPO_PUBLIC_UNIWIND_SPIKE === '1' ? UniwindSpikeScreen : render,
+)

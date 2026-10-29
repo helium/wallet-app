@@ -1,5 +1,10 @@
 import path from 'path'
 
+// @tailwindcss/node calls module.registerHooks(), which Jest rejects.
+jest.mock('uniwind/metro', () => ({
+  withUniwindConfig: (config: unknown) => config,
+}))
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const metroConfig = require('../../metro.config')
 

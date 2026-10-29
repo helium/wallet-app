@@ -125,6 +125,7 @@
     "browserify-zlib": "0.2.0",
     "bs58": "5.0.0",
     "buffer": "6.0.3",
+    "class-variance-authority": "0.7.1",
     "date-fns": "2.29.2",
     "ed25519-hd-key": "1.3.0",
     "events": "3.3.0",
@@ -208,8 +209,10 @@
     "snakecase-keys": "5.4.2",
     "stream": "^0.0.3",
     "stream-browserify": "^3.0.0",
+    "tailwindcss": "4.3.3",
     "text-encoding-polyfill": "^0.6.7",
     "tinycolor2": "^1.6.0",
+    "uniwind": "1.13.1",
     "use-debounce": "^10.0.4",
     "viem": "^2.47.5",
     "web-streams-polyfill": "^4.2.0"

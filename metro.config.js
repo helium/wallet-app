@@ -1,5 +1,6 @@
 const path = require('path')
 const { getDefaultConfig } = require('expo/metro-config')
+const { withUniwindConfig } = require('uniwind/metro')
 
 // Load .env (and .env.local) into the bundler env, as Expo CLI does, so
 // babel-preset-expo can inline EXPO_PUBLIC_* values. The react-native CLI
@@ -105,4 +106,7 @@ defaultConfig.resolver = {
   },
 }
 
-module.exports = defaultConfig
+// Uniwind must wrap the final config, after our resolver and transformer.
+module.exports = withUniwindConfig(defaultConfig, {
+  cssEntryFile: './src/global.css',
+})
