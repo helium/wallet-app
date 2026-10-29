@@ -33,6 +33,7 @@ import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
+import { withICloudSignOutWarning } from './signOutWarning'
 import useAuthIntervals from './useAuthIntervals'
 
 const Settings = () => {
@@ -212,13 +213,16 @@ const Settings = () => {
         t('settings.sections.account.signOutAlert.title', {
           alias: currentAccount?.alias,
         }),
-        t(
-          `settings.sections.account.signOutAlert.${
-            isLastAccount ? 'bodyLastAccount' : 'body'
-          }`,
-          {
-            alias: currentAccount?.alias,
-          },
+        withICloudSignOutWarning(
+          t,
+          t(
+            `settings.sections.account.signOutAlert.${
+              isLastAccount ? 'bodyLastAccount' : 'body'
+            }`,
+            {
+              alias: currentAccount?.alias,
+            },
+          ),
         ),
         [
           {

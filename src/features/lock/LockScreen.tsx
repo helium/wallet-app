@@ -15,6 +15,7 @@ import {
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
+import { withICloudSignOutWarning } from '../settings/signOutWarning'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -74,7 +75,7 @@ const LockScreen = ({ children }: Props) => {
   const handleSignOut = useCallback(async () => {
     const decision = await showOKCancelAlert({
       title: t('auth.signOutAlert.title'),
-      message: t('auth.signOutAlert.body'),
+      message: withICloudSignOutWarning(t, t('auth.signOutAlert.body')),
     })
     if (decision) {
       await signOut()
