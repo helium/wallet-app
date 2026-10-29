@@ -247,7 +247,7 @@
       "onesignal-expo-plugin",
       {
         "mode": "development",
-        "iPhoneDeploymentTarget": "13.4"
+        "iPhoneDeploymentTarget": "15.1"
       }
     ],
     "@bacons/apple-targets",
