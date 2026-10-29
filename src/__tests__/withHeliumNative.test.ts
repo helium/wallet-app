@@ -1,7 +1,12 @@
+import path from 'path'
+import { getConfig } from 'expo/config'
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const withHeliumNative = require('../../plugins/withHeliumNative')
 
 const { addPodPostInstall } = withHeliumNative
+
+const PROJECT_ROOT = path.resolve(__dirname, '../..')
 
 const ANCHOR = 'post_install do |installer|'
 
@@ -69,5 +74,38 @@ describe('withHeliumNative', () => {
     expect(result.modResults.contents).toContain(
       "if pod_target && Gem::Version.new(pod_target) < Gem::Version.new(app_target)\n          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = app_target",
     )
+  })
+
+  it('suppresses the unsupported compileSdk warning at the app compileSdk', async () => {
+    const { exp } = getConfig(PROJECT_ROOT, { skipSDKVersionRequirement: true })
+    const buildProperties = exp.plugins?.find(
+      (plugin) =>
+        Array.isArray(plugin) && plugin[0] === 'expo-build-properties',
+    )
+    if (!Array.isArray(buildProperties))
+      throw new Error('expo-build-properties has no props in app.json')
+    const config = withHeliumNative({
+      name: 'x',
+      slug: 'x',
+      ios: {},
+      android: {},
+    })
+    const result = await config.mods.android.gradleProperties({
+      ...config,
+      modResults: [],
+      modRequest: {
+        nextMod: async (c: unknown) => c,
+        platform: 'android',
+        modName: 'gradleProperties',
+        projectRoot: '/tmp',
+        platformProjectRoot: '/tmp/android',
+        introspect: false,
+      },
+    })
+    expect(result.modResults).toContainEqual({
+      type: 'property',
+      key: 'android.suppressUnsupportedCompileSdk',
+      value: String(buildProperties[1].android.compileSdkVersion),
+    })
   })
 })
