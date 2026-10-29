@@ -1,16 +1,16 @@
 diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/react/VideoEventEmitter.kt b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/react/VideoEventEmitter.kt
+index 02b2922..fe469fc 100644
 --- a/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/react/VideoEventEmitter.kt
 +++ b/node_modules/react-native-video/android/src/main/java/com/brentvatne/common/react/VideoEventEmitter.kt
-@@ -287,13 +287,18 @@
-             }
+@@ -288,12 +288,17 @@ class VideoEventEmitter {
          }
      }
-+
+ 
 +    private class VideoCustomEvent(surfaceId: Int, viewId: Int, private val event: EventTypes, private val paramsSetter: (WritableMap.() -> Unit)?) :
 +        Event<VideoCustomEvent>(surfaceId, viewId) {
 +
 +        override fun getEventName(): String = "top${event.eventName.removePrefix("on")}"
- 
++
 +        override fun getEventData(): WritableMap? = Arguments.createMap().apply(paramsSetter ?: {})
 +    }
 +
@@ -24,3 +24,47 @@ diff --git a/node_modules/react-native-video/android/src/main/java/com/brentvatn
      }
  
      private fun audioTracksToArray(audioTracks: java.util.ArrayList<Track>?): WritableArray =
+diff --git a/node_modules/react-native-video/lib/Video.js b/node_modules/react-native-video/lib/Video.js
+index 920f768..97e0acc 100644
+--- a/node_modules/react-native-video/lib/Video.js
++++ b/node_modules/react-native-video/lib/Video.js
+@@ -452,7 +452,7 @@ const Video = (0, react_1.forwardRef)(({ source, style, resizeMode, poster, post
+         }
+         // poster style
+         const baseStyle = {
+-            ...react_native_1.StyleSheet.absoluteFillObject,
++            ...react_native_1.StyleSheet.absoluteFill,
+             resizeMode: _posterResizeMode,
+         };
+         let posterStyle = baseStyle;
+@@ -486,7 +486,7 @@ const Video = (0, react_1.forwardRef)(({ source, style, resizeMode, poster, post
+         resizeMode,
+     ]);
+     const _style = (0, react_1.useMemo)(() => ({
+-        ...react_native_1.StyleSheet.absoluteFillObject,
++        ...react_native_1.StyleSheet.absoluteFill,
+     }), []);
+     return (react_1.default.createElement(react_native_1.View, { style: style },
+         react_1.default.createElement(VideoNativeComponent_1.default, { ref: nativeRef, ...rest, src: src, style: _style, resizeMode: resizeMode, restoreUserInterfaceForPIPStopCompletionHandler: _restoreUserInterfaceForPIPStopCompletionHandler, selectedTextTrack: _selectedTextTrack, selectedAudioTrack: _selectedAudioTrack, selectedVideoTrack: _selectedVideoTrack, shutterColor: _shutterColor, onGetLicense: usingExternalGetLicense ? onGetLicense : undefined, onVideoLoad: onLoad || hasPoster
+diff --git a/node_modules/react-native-video/src/Video.tsx b/node_modules/react-native-video/src/Video.tsx
+index bf4824d..7580206 100644
+--- a/node_modules/react-native-video/src/Video.tsx
++++ b/node_modules/react-native-video/src/Video.tsx
+@@ -768,7 +768,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
+ 
+       // poster style
+       const baseStyle: StyleProp<ImageStyle> = {
+-        ...StyleSheet.absoluteFillObject,
++        ...StyleSheet.absoluteFill,
+         resizeMode: _posterResizeMode,
+       };
+ 
+@@ -821,7 +821,7 @@ const Video = forwardRef<VideoRef, ReactVideoProps>(
+ 
+     const _style: StyleProp<ViewStyle> = useMemo(
+       () => ({
+-        ...StyleSheet.absoluteFillObject,
++        ...StyleSheet.absoluteFill,
+       }),
+       [],
+     );
