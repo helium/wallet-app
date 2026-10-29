@@ -5,9 +5,12 @@ import {
 } from '@tanstack/react-query-persist-client'
 import { mmkv } from '../../storage/mmkv'
 import { useCloudStore } from '../../store/cloudStore'
+import { heliumAddressToSolAddress } from '../accountUtils'
 import { createQueryClient } from '../queryClient'
 import { QUERY_CACHE_KEY, queryPersistOptions } from '../queryPersistence'
 
+// accountUtils imports this native module, which jest cannot parse
+jest.mock('bcrypt-react-native', () => ({}))
 jest.mock('react-native-mmkv', () => ({
   createMMKV: jest.requireActual(
     'react-native-mmkv/lib/createMMKV/createMockMMKV',
@@ -16,11 +19,8 @@ jest.mock('react-native-mmkv', () => ({
 
 const DAY = 24 * 60 * 60 * 1000
 const heliumAddress = '13BnsQ6hHjfvJXYxwpWeMaD5Ep5nN1b4BPRJy4AqBkDq3mTF8Sk'
-const collectablesKey = [
-  'collectables',
-  'mainnet-beta',
-  'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4',
-]
+const solanaAddress = 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4'
+const collectablesKey = ['collectables', 'mainnet-beta', solanaAddress]
 const collectables = {
   collectables: { HOTSPOT: [{ id: 'nft-1' }] },
   collectablesWithMeta: { HOTSPOT: [{ id: 'nft-1', content: {} }] },
@@ -60,7 +60,12 @@ beforeEach(() => {
   // Signed in: the cloud store holds an account
   useCloudStore.setState({
     accounts: {
-      [heliumAddress]: { alias: 'Main', address: heliumAddress, netType: 0 },
+      [heliumAddress]: {
+        alias: 'Main',
+        address: heliumAddress,
+        solanaAddress,
+        netType: 0,
+      },
     },
   })
 })
@@ -91,7 +96,8 @@ describe('queryPersistOptions', () => {
     client.setQueryData(collectablesKey, collectables)
     await save(client)
 
-    jest.advanceTimersByTime(7 * DAY)
+    // save steps 1 s past the fetch, so the data is 7 days old at restore
+    jest.advanceTimersByTime(7 * DAY - 1_000)
     const restored = await restore()
 
     expect(restored.getQueryData(collectablesKey)).toEqual(collectables)
@@ -146,6 +152,96 @@ describe('queryPersistOptions', () => {
     await save(client)
 
     expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
+  })
+
+  it('saves only the queries of accounts still stored', async () => {
+    const otherHeliumAddress = 'other-helium-address'
+    const otherSolanaAddress = 'other-solana-address'
+    const otherKey = ['collectables', 'mainnet-beta', otherSolanaAddress]
+    useCloudStore.setState({
+      accounts: {
+        ...useCloudStore.getState().accounts,
+        [otherHeliumAddress]: {
+          alias: 'Other',
+          address: otherHeliumAddress,
+          solanaAddress: otherSolanaAddress,
+          netType: 0,
+        },
+      },
+    })
+    const client = newClient()
+    client.setQueryData(collectablesKey, collectables)
+    client.setQueryData(otherKey, collectables)
+
+    // Sign out the first account
+    const remaining = { ...useCloudStore.getState().accounts }
+    delete remaining[heliumAddress]
+    useCloudStore.setState({ accounts: remaining })
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(collectablesKey)).toBeUndefined()
+    expect(restored.getQueryData(otherKey)).toEqual(collectables)
+  })
+
+  it('saves the queries of an account stored with no Solana address', async () => {
+    const validHeliumAddress =
+      '13PuqyWXzPYeXcF1B9ZRx7RLkEygeL374ZABiQdwRSNzASdA1sn'
+    const derivedAddress = heliumAddressToSolAddress(validHeliumAddress)
+    expect(derivedAddress).not.toBe('')
+    useCloudStore.setState({
+      accounts: {
+        [validHeliumAddress]: {
+          alias: 'Legacy',
+          address: validHeliumAddress,
+          netType: 0,
+        },
+      },
+    })
+    const key = ['collectables', 'mainnet-beta', derivedAddress]
+    const client = newClient()
+    client.setQueryData(key, collectables)
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(key)).toEqual(collectables)
+  })
+
+  it('saves no paused mutation', async () => {
+    const client = newClient()
+    client.getMutationCache().build(
+      client,
+      { mutationKey: ['send'] },
+      {
+        context: undefined,
+        data: undefined,
+        error: null,
+        failureCount: 0,
+        failureReason: null,
+        isPaused: true,
+        status: 'pending',
+        variables: { signedTransaction: 'signed-bytes' },
+        submittedAt: Date.now(),
+      },
+    )
+    await save(client)
+
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
+  })
+
+  it('drops on restore collectables more than 7 days old', async () => {
+    const client = newClient()
+    client.setQueryData(collectablesKey, collectables, {
+      updatedAt: Date.now() - 6 * DAY,
+    })
+    await save(client)
+
+    jest.advanceTimersByTime(2 * DAY)
+    const restored = await restore()
+
+    expect(restored.getQueryData(collectablesKey)).toBeUndefined()
   })
 
   it('saves no collectables fetched more than 7 days ago', async () => {

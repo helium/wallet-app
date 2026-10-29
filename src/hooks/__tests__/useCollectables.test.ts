@@ -142,4 +142,18 @@ describe('useCollectables', () => {
     await advance(FETCH_MS)
     expect(getNFTs).toHaveBeenCalledTimes(2)
   })
+
+  it('refreshes when the last fetch is later than the device clock', async () => {
+    await mount()
+    await unlock()
+    await advance(FETCH_MS)
+    expect(getNFTs).toHaveBeenCalledTimes(1)
+
+    // The device clock moved back by a minute
+    jest.setSystemTime(Date.now() - 60_000)
+    await refresh()
+    await advance(FETCH_MS)
+
+    expect(getNFTs).toHaveBeenCalledTimes(2)
+  })
 })

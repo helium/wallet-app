@@ -83,7 +83,8 @@ const useCollectables = (): WalletCollectables & {
       queryClient.getQueryState(
         collectablesQueryKey(cluster, solanaAddress || ''),
       )?.dataUpdatedAt ?? 0
-    if (Date.now() - lastFetch < REFRESH_COOLDOWN_MS) return
+    const age = Date.now() - lastFetch
+    if (age >= 0 && age < REFRESH_COOLDOWN_MS) return
     // Join a fetch in flight instead of restarting it
     refetch({ cancelRefetch: false })
   }, [enabled, queryClient, cluster, solanaAddress, refetch])

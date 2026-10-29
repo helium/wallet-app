@@ -21,6 +21,8 @@ import {
 const mockICloud = new Map<string, string>()
 
 jest.mock('react-native', () => ({ Platform: { OS: 'ios' } }))
+// accountUtils imports this native module, which jest cannot parse
+jest.mock('bcrypt-react-native', () => ({}))
 jest.mock('react-native-mmkv', () => ({
   createMMKV: jest.requireActual(
     'react-native-mmkv/lib/createMMKV/createMockMMKV',
@@ -45,7 +47,12 @@ const solanaAddress = 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4'
 const heliumAddress = '13BnsQ6hHjfvJXYxwpWeMaD5Ep5nN1b4BPRJy4AqBkDq3mTF8Sk'
 
 const cloudAccounts = {
-  [heliumAddress]: { alias: 'Main', address: heliumAddress, netType: 0 },
+  [heliumAddress]: {
+    alias: 'Main',
+    address: heliumAddress,
+    solanaAddress,
+    netType: 0,
+  },
 }
 
 // What the old cloudStorage.ts wrote for the five cloud keys
