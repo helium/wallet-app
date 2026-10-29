@@ -1,4 +1,4 @@
-import { createQueryClient } from '../queryClient'
+import { createQueryClient, removePersistedQueries } from '../queryClient'
 
 afterEach(() => {
   jest.useRealTimers()
@@ -48,6 +48,22 @@ describe('createQueryClient', () => {
 
     jest.advanceTimersByTime(1)
     expect(queryClient.getQueryData(hotspotsKey)).toBeUndefined()
+
+    queryClient.clear()
+  })
+})
+
+describe('removePersistedQueries', () => {
+  it('removes persisted queries and keeps the others', () => {
+    const queryClient = createQueryClient()
+    const collectablesKey = ['collectables', 'devnet', 'addr']
+    queryClient.setQueryData(collectablesKey, {})
+    queryClient.setQueryData(['balance'], 1)
+
+    removePersistedQueries(queryClient)
+
+    expect(queryClient.getQueryData(collectablesKey)).toBeUndefined()
+    expect(queryClient.getQueryData(['balance'])).toBe(1)
 
     queryClient.clear()
   })
