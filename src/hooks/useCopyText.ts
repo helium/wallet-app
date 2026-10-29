@@ -15,6 +15,7 @@ export default () => {
         t('generic.copied', {
           target: message,
         }),
+        Toast.SHORT,
       )
     },
     [t],

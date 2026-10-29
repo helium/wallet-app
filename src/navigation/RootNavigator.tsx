@@ -126,7 +126,7 @@ const RootNavigator = () => {
         connectedWalletsRef.current?.hide()
       }
     } catch (e: any) {
-      Toast.show(e.message || e.toString())
+      Toast.show(e.message || e.toString(), Toast.SHORT)
     }
   })
 

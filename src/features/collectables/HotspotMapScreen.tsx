@@ -29,7 +29,7 @@ import useHotspots from '@hooks/useHotspots'
 import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
 import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import * as MapLibreRN from '@maplibre/maplibre-react-native'
-import { ShapeSource } from '@maplibre/maplibre-react-native'
+import { GeoJSONSource } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import { Polygon, feature, featureCollection } from '@turf/helpers'
@@ -67,7 +67,7 @@ import {
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 type OnPress = NonNullable<
-  Pick<ComponentProps<typeof ShapeSource>, 'onPress'>['onPress']
+  Pick<ComponentProps<typeof GeoJSONSource>, 'onPress'>['onPress']
 >
 
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
@@ -78,7 +78,7 @@ const HotspotMapScreen = () => {
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const navigation = useNavigation<CollectableNavigationProp>()
   const colors = useColors()
-  const mapRef = useRef<MapLibreRN.MapViewRef>(null)
+  const mapRef = useRef<MapLibreRN.MapRef>(null)
   const cameraRef = useRef<MapLibreRN.CameraRef>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
@@ -99,13 +99,7 @@ const HotspotMapScreen = () => {
   const { hotspots, fetchAll, loading, onEndReached } = useHotspots()
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
   const [initialCenterSet, setInitalCenter] = useState(false)
-  const [userLocation, setUserLocation] = useState<MapLibreRN.Location>()
-  const onUserLocationUpdate = useCallback(
-    (loc: MapLibreRN.Location) => {
-      setUserLocation(loc)
-    },
-    [setUserLocation],
-  )
+  const userLocation = MapLibreRN.useCurrentPosition()
 
   useEffect(() => {
     const coords = userLocation?.coords
@@ -126,9 +120,9 @@ const HotspotMapScreen = () => {
       !initialCenterSet
     ) {
       setInitalCenter(true)
-      cameraRef.current?.setCamera({
-        centerCoordinate: initialCenter,
-        animationDuration: 0,
+      cameraRef.current?.setStop({
+        center: initialCenter as MapLibreRN.LngLat,
+        duration: 0,
       })
     }
   }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
@@ -282,9 +276,9 @@ const HotspotMapScreen = () => {
       // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
       // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
       // viewable area above the bottom sheet.
-      cameraRef.current?.setCamera({
-        centerCoordinate: [cords[0], cords[1] - degreeShift],
-        animationDuration: 200,
+      cameraRef.current?.setStop({
+        center: [cords[0], cords[1] - degreeShift],
+        duration: 200,
       })
     }
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
@@ -356,13 +350,10 @@ const HotspotMapScreen = () => {
 
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocation?.coords) {
-      cameraRef.current.setCamera({
-        animationDuration: 500,
-        zoomLevel: 14,
-        centerCoordinate: [
-          userLocation.coords.longitude,
-          userLocation.coords.latitude,
-        ],
+      cameraRef.current.setStop({
+        duration: 500,
+        zoom: 14,
+        center: [userLocation.coords.longitude, userLocation.coords.latitude],
       })
     }
   }, [userLocation, cameraRef])
@@ -387,7 +378,8 @@ const HotspotMapScreen = () => {
 
   const handleHexClick: OnPress = useCallback(
     (event) => {
-      const hex = event.features[0]
+      event.stopPropagation()
+      const hex = event.nativeEvent.features[0]
       setLegendVisible(false)
       const id = hex.properties?.id
       setActiveHex(id)
@@ -438,7 +430,6 @@ const HotspotMapScreen = () => {
           <Map
             map={mapRef}
             camera={cameraRef}
-            onUserLocationUpdate={onUserLocationUpdate}
             centerCoordinate={initialCenter}
             mapProps={{
               onRegionDidChange: handleRegionChanged,
@@ -456,21 +447,26 @@ const HotspotMapScreen = () => {
                 mobileHexActive: require('@assets/images/mapMobileHexActive.png'),
               }}
             />
-            <MapLibreRN.ShapeSource
+            <MapLibreRN.GeoJSONSource
               id="hexsFeature"
-              shape={hexsFeature}
+              data={hexsFeature}
               onPress={handleHexClick}
-              hitbox={{ width: iconSize, height: iconSize }}
+              hitbox={{
+                top: iconSize / 2,
+                right: iconSize / 2,
+                bottom: iconSize / 2,
+                left: iconSize / 2,
+              }}
             >
-              <MapLibreRN.FillLayer
-                sourceID="hexs"
+              <MapLibreRN.Layer
+                type="fill"
                 id="hexs-fill"
                 style={{
                   fillColor: ['get', 'color'],
                   fillOpacity: ['get', 'opacity'],
                 }}
               />
-            </MapLibreRN.ShapeSource>
+            </MapLibreRN.GeoJSONSource>
           </Map>
           <Box
             flexDirection="row"

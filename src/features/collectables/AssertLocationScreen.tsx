@@ -33,9 +33,12 @@ import { useMobileInfo } from '@hooks/useMobileInfo'
 import { useOnboardingBalnces } from '@hooks/useOnboardingBalances'
 import { useReverseGeo } from '@hooks/useReverseGeo'
 import useSubmitTxn from '@hooks/useSubmitTxn'
-import MapLibreGL, {
+import {
   CameraRef,
-  MapViewRef,
+  LngLat,
+  MapRef,
+  Marker,
+  useCurrentPosition,
 } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useColors, useCreateOpacity } from '@theme/themeHooks'
@@ -79,7 +82,7 @@ const AssertLocationScreen = () => {
   const { info: iotInfoAcc } = useIotInfo(entityKey)
   const { info: mobileInfoAcc } = useMobileInfo(entityKey)
   const backEdges = useMemo(() => ['top'] as Edge[], [])
-  const mapRef = useRef<MapViewRef>(null)
+  const mapRef = useRef<MapRef>(null)
   const cameraRef = useRef<CameraRef>(null)
   const { showOKAlert } = useAlert()
   const colors = useColors()
@@ -138,13 +141,7 @@ const AssertLocationScreen = () => {
   const [initialUserLocation, setInitialUserLocation] = useState<number[]>()
   const [initialCenterSet, setInitalCenter] = useState(false)
 
-  const [userLocation, setUserLocation] = useState<MapLibreGL.Location>()
-  const onUserLocationUpdate = useCallback(
-    (loc: MapLibreGL.Location) => {
-      setUserLocation(loc)
-    },
-    [setUserLocation],
-  )
+  const userLocation = useCurrentPosition()
 
   useEffect(() => {
     const coords = userLocation?.coords
@@ -170,9 +167,9 @@ const AssertLocationScreen = () => {
       !initialCenterSet
     ) {
       setInitalCenter(true)
-      cameraRef.current?.setCamera({
-        centerCoordinate: initialCenter,
-        animationDuration: 0,
+      cameraRef.current?.setStop({
+        center: initialCenter as LngLat,
+        duration: 0,
       })
     }
   }, [initialCenter, cameraRef, initialCenterSet, setInitalCenter])
@@ -223,10 +220,10 @@ const AssertLocationScreen = () => {
         const coords = await forwardGeo.execute(searchValue)
 
         if (cameraRef?.current && coords) {
-          cameraRef.current.setCamera({
-            animationDuration: 500,
-            centerCoordinate: coords,
-            zoomLevel: MAX_MAP_ZOOM / 1.2,
+          cameraRef.current.setStop({
+            duration: 500,
+            center: coords as LngLat,
+            zoom: MAX_MAP_ZOOM / 1.2,
           })
         }
       } catch (error) {
@@ -256,13 +253,10 @@ const AssertLocationScreen = () => {
 
   const handleUserLocationPress = useCallback(() => {
     if (cameraRef?.current && userLocation?.coords) {
-      cameraRef.current.setCamera({
-        animationDuration: 500,
-        zoomLevel: MAX_MAP_ZOOM,
-        centerCoordinate: [
-          userLocation?.coords.longitude,
-          userLocation?.coords.latitude,
-        ],
+      cameraRef.current.setStop({
+        duration: 500,
+        zoom: MAX_MAP_ZOOM,
+        center: [userLocation?.coords.longitude, userLocation?.coords.latitude],
       })
     }
   }, [cameraRef, userLocation?.coords])
@@ -474,7 +468,6 @@ const AssertLocationScreen = () => {
           <Map
             map={mapRef}
             camera={cameraRef}
-            onUserLocationUpdate={onUserLocationUpdate}
             centerCoordinate={initialCenter}
             mapProps={{
               onPress: hideSearch,
@@ -496,10 +489,10 @@ const AssertLocationScreen = () => {
 
                 const key = `MarkerView-${i + 1}-${location[0]}-${location[1]}`
                 return (
-                  <MapLibreGL.MarkerView
+                  <Marker
                     key={key}
                     id={`MarkerView-${i + 1}`}
-                    coordinate={[location[0], location[1]]}
+                    lngLat={[location[0], location[1]]}
                   >
                     {sameLocation ? (
                       <Box flexDirection="row">
@@ -541,7 +534,7 @@ const AssertLocationScreen = () => {
                         }
                       />
                     )}
-                  </MapLibreGL.MarkerView>
+                  </Marker>
                 )
               })
               .filter(Boolean)}

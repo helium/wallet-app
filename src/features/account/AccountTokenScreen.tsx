@@ -9,10 +9,7 @@ import { NavBarHeight } from '@components/NavBar'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BottomSheet, {
-  BottomSheetFlatList,
-  WINDOW_HEIGHT,
-} from '@gorhom/bottom-sheet'
+import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -27,7 +24,7 @@ import { useColors } from '@theme/themeHooks'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform, ScrollView, View } from 'react-native'
+import { Dimensions, Platform, ScrollView, View } from 'react-native'
 import Animated, {
   FadeIn,
   useAnimatedStyle,
@@ -50,6 +47,7 @@ import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
 
 const delayedAnimation = FadeIn.delay(300)
+const { height: WINDOW_HEIGHT } = Dimensions.get('window')
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
 
