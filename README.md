@@ -1,5 +1,5 @@
 <h3 align="center">
-  <image src="https://raw.githubusercontent.com/helium/wallet-app/main/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="wallet-logo" height="100" />
+  <image src="assets/icon.png" alt="wallet-logo" height="100" />
   <br/>
   <h3 align="center">Helium Wallet App</h3>
 </h3>
@@ -115,6 +115,7 @@ yarn android
 The app reads its keys from `EXPO_PUBLIC_*` variables. `metro.config.js` loads `.env` into the bundler, and `babel-preset-expo` writes each value into the JS bundle at build time.
 
 - Give every key the `EXPO_PUBLIC_` prefix, as in `.env.sample`.
+- `GOOGLE_SERVICES_JSON` is the one exception. Set it to the path of a `google-services.json` file. `expo prebuild` reads it (`app.config.ts`) and copies the file into the Android project. Leave it empty and the Android build has no Firebase config.
 - Write each literal `$` as `\$`. The loader expands `$NAME` and `${NAME}`, also inside quotes, so an unescaped `$2a$10$...` value becomes empty. Example: `EXPO_PUBLIC_ONE_SIGNAL_ACCOUNT_TAG_SALT=\$2a\$10\$...`.
 - Put a value that contains `#` in quotes. Without quotes, `#` starts a comment.
 - In a release bundle, a key that is set in the shell, or in `.env.local`, overrides `.env`. In a dev bundle, the `.env` files override the shell, and `.env.development` and `.env.local` override `.env`.
