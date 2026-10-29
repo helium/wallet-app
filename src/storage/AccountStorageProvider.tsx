@@ -31,6 +31,7 @@ import {
   updateCloudAccounts,
   updateCloudContacts,
 } from './cloudStorage'
+import { subscribeCloudItemChanges } from './importLegacyState'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import { resetAppState } from './resetAppState'
 import {
@@ -78,7 +79,13 @@ const useAccountStorageHook = () => {
     return currentAccount?.solanaAddress
   }, [currentAccount])
 
-  const { result: restoredAccounts } = useAsync(restoreAccounts, [])
+  const { result: restoredAccounts, execute: reloadAccounts } = useAsync(
+    restoreAccounts,
+    [],
+  )
+
+  // Another device on the Apple ID changed the shared list
+  useEffect(() => subscribeCloudItemChanges(reloadAccounts), [reloadAccounts])
 
   const restored = useMemo(() => accounts !== undefined, [accounts])
 
@@ -160,7 +167,12 @@ const useAccountStorageHook = () => {
     if (!restoredAccounts) return
 
     setAccounts(restoredAccounts.csAccounts)
-    setCurrentAccount(restoredAccounts.current)
+    // A reload keeps the open wallet while the list still holds it
+    setCurrentAccount(
+      (current) =>
+        (current && restoredAccounts.csAccounts[current.address]) ||
+        restoredAccounts.current,
+    )
     setContacts(restoredAccounts.contacts)
   }, [restoredAccounts])
 

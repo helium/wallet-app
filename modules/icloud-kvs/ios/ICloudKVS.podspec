@@ -1,8 +1,8 @@
 Pod::Spec.new do |s|
   s.name           = 'ICloudKVS'
   s.version        = '1.0.0'
-  s.summary        = 'Reads strings from the iCloud key-value store'
-  s.description    = 'Read-only NSUbiquitousKeyValueStore access for the first-launch import'
+  s.summary        = 'Reads and removes strings in the iCloud key-value store'
+  s.description    = 'NSUbiquitousKeyValueStore access for the first-launch import and sign-out'
   s.author         = ''
   s.homepage       = 'https://docs.expo.dev/modules/'
   s.platforms      = { :ios => '15.1' }

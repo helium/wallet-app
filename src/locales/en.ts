@@ -1120,6 +1120,10 @@ export default {
           body: 'You are removing your wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
           bodyLastAccount:
             'You are removing your only wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+          iCloudMessage:
+            '\n\nAny device using the same iCloud account will also be signed out.',
+          iCloudMessageOneWallet:
+            '\n\nThis wallet will also be removed from any device using the same iCloud account.',
           title: 'Remove {{alias}}?',
         },
         title: '{{alias}} Wallet Settings',
