@@ -2,6 +2,7 @@ import { requireOptionalNativeModule } from 'expo'
 
 type ICloudKVSModule = {
   getString(key: string): string | null
+  setString(key: string, value: string): void
   remove(keys: string[]): void
 }
 
@@ -13,12 +14,16 @@ const requireICloudKVS = () => {
   return ICloudKVS
 }
 
-// Reads one string from NSUbiquitousKeyValueStore. The app no longer writes
-// iCloud values; it only removes them on sign-out. Only iOS calls it; Android
+// Reads one string from NSUbiquitousKeyValueStore. Only iOS calls it; Android
 // reads AsyncStorage. Throws when the module is missing, so a broken build
 // does not look like a fresh install.
 export const getICloudKVSString = (key: string) =>
   requireICloudKVS().getString(key)
+
+// Writes one string to NSUbiquitousKeyValueStore and syncs, so a reinstall or
+// a new device restores the current value.
+export const setICloudKVSString = (key: string, value: string) =>
+  requireICloudKVS().setString(key, value)
 
 // Removes keys from NSUbiquitousKeyValueStore and syncs, so sign-out also
 // clears them on other devices and on a reinstall.

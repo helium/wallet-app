@@ -4,6 +4,7 @@ import { Platform } from 'react-native'
 import {
   getICloudKVSString,
   removeICloudKVSKeys,
+  setICloudKVSString,
 } from '../../modules/icloud-kvs'
 import { useAppStore } from '../store/appStore'
 import { BrowserDetails, useBrowserStore } from '../store/browserStore'
@@ -23,14 +24,39 @@ const readCloudItem = (key: keyof CloudState) =>
     ? getICloudKVSString(`${ICLOUD_PREFIX}${key}`)
     : AsyncStorage.getItem(key)
 
-// Every CloudState key, so a new cloud key fails to compile until listed here
-const CLOUD_KEYS = Object.keys({
-  accounts: true,
-  contacts: true,
-  lastViewedNotifications: true,
-  visibleTokens: true,
-  defaultAccountAddress: true,
-} satisfies Record<keyof CloudState, true>)
+// The string the old cloudStorage.ts stored for each CloudState key. Typed
+// over every key, so a new cloud key fails to compile until listed here.
+type CloudItems = Required<CloudState>
+const formatCloudItem: {
+  [K in keyof CloudItems]: (value: CloudItems[K]) => string
+} = {
+  accounts: JSON.stringify,
+  contacts: JSON.stringify,
+  lastViewedNotifications: (time) => time.toString(),
+  visibleTokens: JSON.stringify,
+  defaultAccountAddress: (address) => address,
+}
+
+const CLOUD_KEYS = Object.keys(formatCloudItem)
+
+const writeICloudItem = <K extends keyof CloudItems>(
+  key: K,
+  value: CloudItems[K] | undefined,
+) =>
+  value === undefined
+    ? removeICloudKVSKeys([`${ICLOUD_PREFIX}${key}`])
+    : setICloudKVSString(`${ICLOUD_PREFIX}${key}`, formatCloudItem[key](value))
+
+/**
+ * Keeps the iCloud keys current on iOS, in the old format, so a reinstall or
+ * a new device imports the wallets and contacts the user has now. Android
+ * turns off backup (allowBackup="false"), so it has nothing to keep current.
+ */
+export const writeCloudItems = (state: CloudState) => {
+  if (Platform.OS !== 'ios') return
+  const keys = Object.keys(state) as Array<keyof CloudState>
+  keys.forEach((key) => writeICloudItem(key, state[key]))
+}
 
 /**
  * Removes the old cloud keys on sign-out, so a reinstall or a new device does

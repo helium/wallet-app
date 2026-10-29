@@ -6,8 +6,8 @@ import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { createHash } from 'crypto'
 import { cloneDeep, sortBy, values } from 'lodash'
-import { useCloudStore } from '../store/cloudStore'
-import { importLegacyState } from './importLegacyState'
+import { CloudState, useCloudStore } from '../store/cloudStore'
+import { importLegacyState, writeCloudItems } from './importLegacyState'
 import { getSecureAccount } from './secureStorage'
 
 export type LedgerDevice = {
@@ -50,11 +50,10 @@ const readCloudStore = async () => {
   return cloneDeep(useCloudStore.getState())
 }
 
-const writeCloudStore = async (
-  state: Parameters<typeof useCloudStore.setState>[0],
-) => {
+const writeCloudStore = async (state: CloudState) => {
   await importLegacyState()
   useCloudStore.setState(state)
+  writeCloudItems(state)
 }
 
 export const restoreVisibleTokens = async () =>

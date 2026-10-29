@@ -36,6 +36,28 @@ describe('getICloudKVSString', () => {
   })
 })
 
+describe('setICloudKVSString', () => {
+  it('throws when the native module is not linked', () => {
+    mockRequireOptionalNativeModule.mockReturnValue(null)
+    const { setICloudKVSString } = load()
+
+    expect(() => setICloudKVSString('k', 'v')).toThrow(
+      'ICloudKVS native module is not linked',
+    )
+  })
+
+  it('passes the key and value to the native module', () => {
+    const setString = jest.fn()
+    mockRequireOptionalNativeModule.mockReturnValue({ setString })
+    const { setICloudKVSString } = load()
+
+    setICloudKVSString('k', 'v')
+
+    expect(setString).toHaveBeenCalledTimes(1)
+    expect(setString).toHaveBeenCalledWith('k', 'v')
+  })
+})
+
 describe('removeICloudKVSKeys', () => {
   it('throws when the native module is not linked', () => {
     mockRequireOptionalNativeModule.mockReturnValue(null)
