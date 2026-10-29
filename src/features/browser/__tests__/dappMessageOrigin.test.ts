@@ -1,50 +1,38 @@
-import { isSameOrigin } from '../dappMessageOrigin'
+import { senderOrigin } from '../dappMessageOrigin'
 
-describe('isSameOrigin', () => {
-  it('accepts a top-frame message from another path of the top page', () => {
-    expect(
-      isSameOrigin('https://app.example/swap?x=1', 'https://app.example/'),
-    ).toBe(true)
-  })
-
-  it('accepts an Android message, which carries only the frame origin', () => {
-    expect(
-      isSameOrigin('https://app.example', 'https://app.example/swap'),
-    ).toBe(true)
-  })
-
-  it('rejects a message from an iframe on another host', () => {
-    expect(
-      isSameOrigin('https://ads.example/frame', 'https://app.example/'),
-    ).toBe(false)
-  })
-
-  it('rejects a message from the same host on another scheme', () => {
-    expect(isSameOrigin('http://app.example/', 'https://app.example/')).toBe(
-      false,
+describe('senderOrigin', () => {
+  it('attributes a message to the origin of its sender, without path or query', () => {
+    expect(senderOrigin('https://app.example/swap?x=1#y')).toBe(
+      'https://app.example',
     )
   })
 
-  it('rejects a message from the same host on another port', () => {
-    expect(
-      isSameOrigin('https://app.example:8443/', 'https://app.example/'),
-    ).toBe(false)
+  it('attributes an Android message, which carries only the frame origin', () => {
+    expect(senderOrigin('https://app.example')).toBe('https://app.example')
   })
 
-  it('rejects a message from a frame with an opaque origin', () => {
-    expect(isSameOrigin('about:blank', 'https://app.example/')).toBe(false)
-    expect(isSameOrigin('about:srcdoc', 'https://app.example/')).toBe(false)
-    expect(isSameOrigin('null', 'https://app.example/')).toBe(false)
+  it('attributes an iframe message to the iframe, not the top page', () => {
+    expect(senderOrigin('https://ads.example/frame')).toBe(
+      'https://ads.example',
+    )
   })
 
-  it('rejects a message without a parseable url', () => {
-    expect(isSameOrigin('', 'https://app.example/')).toBe(false)
-    expect(isSameOrigin(undefined, 'https://app.example/')).toBe(false)
+  it('keeps the scheme and a non-default port in the origin', () => {
+    expect(senderOrigin('http://app.example/')).toBe('http://app.example')
+    expect(senderOrigin('https://app.example:8443/')).toBe(
+      'https://app.example:8443',
+    )
   })
 
-  it('rejects every message while the top page has no origin', () => {
-    expect(isSameOrigin('about:blank', 'about:blank')).toBe(false)
-    expect(isSameOrigin('null', 'null')).toBe(false)
-    expect(isSameOrigin(undefined, '')).toBe(false)
+  it('rejects a sender with an opaque origin', () => {
+    expect(senderOrigin('about:blank')).toBeUndefined()
+    expect(senderOrigin('about:srcdoc')).toBeUndefined()
+    expect(senderOrigin('data:text/html,hi')).toBeUndefined()
+    expect(senderOrigin('null')).toBeUndefined()
+  })
+
+  it('rejects a sender without a parseable url', () => {
+    expect(senderOrigin('')).toBeUndefined()
+    expect(senderOrigin(undefined)).toBeUndefined()
   })
 })

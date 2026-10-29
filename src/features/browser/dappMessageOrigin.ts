@@ -1,19 +1,15 @@
-const originOf = (url: string | undefined) => {
+// Never an opaque 'null' origin
+export type DappOrigin = string & { readonly __brand: 'DappOrigin' }
+
+// Every frame can post to the native bridge, so a request is shown under the
+// origin of the frame that sent it, never the top page's
+export const senderOrigin = (
+  senderUrl: string | undefined,
+): DappOrigin | undefined => {
   try {
-    const { origin } = new URL(url ?? '')
-    return origin === 'null' ? undefined : origin
+    const { origin } = new URL(senderUrl ?? '')
+    return origin === 'null' ? undefined : (origin as DappOrigin)
   } catch {
     return undefined
   }
-}
-
-// True when a webview message came from a frame on the top page's origin.
-// Every frame can post to the native bridge, but only the top frame gets the
-// wallet provider, so a message from another origin is not the dApp's.
-export const isSameOrigin = (
-  frameUrl: string | undefined,
-  topUrl: string,
-): boolean => {
-  const frameOrigin = originOf(frameUrl)
-  return frameOrigin !== undefined && frameOrigin === originOf(topUrl)
 }

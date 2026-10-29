@@ -43,7 +43,7 @@ import {
   UNSUPPORTED_VERSION_ERROR,
 } from './dappTransactions'
 import { runOneRequest } from './dappRequestGate'
-import { isSameOrigin } from './dappMessageOrigin'
+import { DappOrigin, senderOrigin } from './dappMessageOrigin'
 import injectWalletStandard from './walletStandard'
 
 type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
@@ -150,8 +150,6 @@ const BrowserWebViewScreen = () => {
   const pendingRequestRef = useRef<boolean>(false)
 
   const [currentUrl, setCurrentUrl] = useState(uri)
-  // Full URL of the top page; currentUrl is a display string cut from it
-  const topUrlRef = useRef(uri)
   const accountAddress = useMemo(
     () => currentAccount?.solanaAddress,
     [currentAccount?.solanaAddress],
@@ -171,11 +169,11 @@ const BrowserWebViewScreen = () => {
   }, [])
 
   const handleConnect = useCallback(
-    async (id: number) => {
+    async (id: number, origin: DappOrigin) => {
       Logger.breadcrumb('connect')
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.connect,
-        url: currentUrl,
+        url: origin,
         serializedTxs: undefined,
       })
 
@@ -186,11 +184,15 @@ const BrowserWebViewScreen = () => {
 
       postMessage({ id, type: 'connectApproved' })
     },
-    [currentUrl, postMessage],
+    [postMessage],
   )
 
   const handleSignAndSendTransaction = useCallback(
-    async (id: number, inputs: SolanaSignAndSendTransactionInput[]) => {
+    async (
+      id: number,
+      origin: DappOrigin,
+      inputs: SolanaSignAndSendTransactionInput[],
+    ) => {
       Logger.breadcrumb('signAndSendTransaction')
 
       try {
@@ -229,7 +231,7 @@ const BrowserWebViewScreen = () => {
 
         const decision = await walletSignBottomSheetRef.current?.show({
           type: WalletStandardMessageTypes.signAndSendTransaction,
-          url: currentUrl,
+          url: origin,
           serializedTxs: txBuffers,
         })
 
@@ -270,11 +272,15 @@ const BrowserWebViewScreen = () => {
         })
       }
     },
-    [anchorProvider, currentUrl, postMessage],
+    [anchorProvider, postMessage],
   )
 
   const handleSignTransaction = useCallback(
-    async (id: number, inputs: SolanaSignAndSendTransactionInput[]) => {
+    async (
+      id: number,
+      origin: DappOrigin,
+      inputs: SolanaSignAndSendTransactionInput[],
+    ) => {
       Logger.breadcrumb('signTransaction')
 
       try {
@@ -313,7 +319,7 @@ const BrowserWebViewScreen = () => {
 
         const decision = await walletSignBottomSheetRef.current?.show({
           type: WalletStandardMessageTypes.signTransaction,
-          url: currentUrl,
+          url: origin,
           serializedTxs: txBuffers,
         })
 
@@ -346,11 +352,15 @@ const BrowserWebViewScreen = () => {
         })
       }
     },
-    [anchorProvider, currentUrl, postMessage],
+    [anchorProvider, postMessage],
   )
 
   const handleSignMessage = useCallback(
-    async (id: number, inputs: SolanaSignMessageInput[]) => {
+    async (
+      id: number,
+      origin: DappOrigin,
+      inputs: SolanaSignMessageInput[],
+    ) => {
       Logger.breadcrumb('signMessage')
 
       const messages = inputs.map(({ message }) => messageBytes(message))
@@ -366,7 +376,7 @@ const BrowserWebViewScreen = () => {
 
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signMessage,
-        url: currentUrl,
+        url: origin,
         message: messages.map((message) => message.toString('utf-8')).join(','),
         serializedTxs: undefined,
       })
@@ -388,15 +398,16 @@ const BrowserWebViewScreen = () => {
 
       postMessage({ id, type: 'messageSigned', data: signedMessages })
     },
-    [currentUrl, postMessage, signMsg],
+    [postMessage, signMsg],
   )
 
   const onMessage = useCallback(
     async (msg: WebViewMessageEvent) => {
+      const origin = senderOrigin(msg.nativeEvent.url)
       // No reply: the frame picked the id, and a decline could end the top
       // page's pending request with the same id
-      if (!isSameOrigin(msg.nativeEvent.url, topUrlRef.current)) {
-        Logger.breadcrumb('Dropped message from another origin')
+      if (!origin) {
+        Logger.breadcrumb('Dropped message from an opaque origin')
         return
       }
 
@@ -429,22 +440,22 @@ const BrowserWebViewScreen = () => {
         switch (type) {
           case WalletStandardMessageTypes.connect:
             await runOneRequest(pendingRequestRef, decline, () =>
-              handleConnect(id),
+              handleConnect(id, origin),
             )
             break
           case WalletStandardMessageTypes.signAndSendTransaction:
             await runOneRequest(pendingRequestRef, decline, () =>
-              handleSignAndSendTransaction(id, inputs),
+              handleSignAndSendTransaction(id, origin, inputs),
             )
             break
           case WalletStandardMessageTypes.signTransaction:
             await runOneRequest(pendingRequestRef, decline, () =>
-              handleSignTransaction(id, inputs),
+              handleSignTransaction(id, origin, inputs),
             )
             break
           case WalletStandardMessageTypes.signMessage:
             await runOneRequest(pendingRequestRef, decline, () =>
-              handleSignMessage(id, inputs),
+              handleSignMessage(id, origin, inputs),
             )
             break
           default:
@@ -524,7 +535,6 @@ const BrowserWebViewScreen = () => {
   }, [])
 
   const onNavigationChange = useCallback((event: WebViewNavigation) => {
-    topUrlRef.current = event.url
     const baseUrl = event.url.replace('https://', '').split('/')
     setCurrentUrl(baseUrl[0])
   }, [])
