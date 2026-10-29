@@ -1,8 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Keypair } from '@solana/web3.js'
 import { AsyncAccountCache } from '../AsyncAccountCache'
-import { saveCacheThenSlot } from '../lastCheckedSlot'
-import { SecureStorageKeys, storeSecureItem } from '../../storage/secureStorage'
+import { getLastCheckedSlot, saveCacheThenSlot } from '../lastCheckedSlot'
+import {
+  SecureStorageKeys,
+  getSecureItem,
+  storeSecureItem,
+} from '../../storage/secureStorage'
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -11,10 +15,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 jest.mock('../../storage/secureStorage', () => ({
   SecureStorageKeys: { LAST_CHECKED_SLOT: 'lastCheckedSlot' },
   storeSecureItem: jest.fn(() => Promise.resolve()),
+  getSecureItem: jest.fn(),
 }))
 
 const setItem = AsyncStorage.setItem as jest.Mock
 const storeSlot = storeSecureItem as jest.Mock
+const readSlot = getSecureItem as jest.Mock
 
 const deferred = () => {
   let resolve!: () => void
@@ -29,8 +35,8 @@ const deferred = () => {
   return { promise, resolve, reject }
 }
 
-const cacheWithOneAccount = () => {
-  const cache = new AsyncAccountCache('accounts-test')
+const cacheWithOneAccount = (cacheKey = 'accounts-test') => {
+  const cache = new AsyncAccountCache(cacheKey)
   const pubkey = Keypair.generate().publicKey
   cache.set(pubkey.toBase58(), {
     pubkey,
@@ -73,7 +79,7 @@ describe('saveCacheThenSlot', () => {
 
     expect(storeSlot).toHaveBeenCalledWith(
       SecureStorageKeys.LAST_CHECKED_SLOT,
-      '42',
+      '{"cacheKey":"accounts-test","slot":42}',
     )
   })
 
@@ -97,5 +103,57 @@ describe('saveCacheThenSlot', () => {
     slotWrite.reject(new Error('keychain locked'))
 
     await expect(saved).rejects.toThrow('keychain locked')
+  })
+})
+
+describe('getLastCheckedSlot', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+    setItem.mockReset()
+    setItem.mockResolvedValue(undefined)
+    storeSlot.mockClear()
+    readSlot.mockReset()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  // Route the slot write to the read, as SecureStore does.
+  const saveThenRead = async (savedFor: string, readFor: string) => {
+    await saveCacheThenSlot(cacheWithOneAccount(savedFor), 42)
+    const [[key, stored]] = storeSlot.mock.calls
+    readSlot.mockImplementation((k: string) =>
+      Promise.resolve(k === key ? stored : null),
+    )
+    return getLastCheckedSlot(readFor)
+  }
+
+  it('returns the slot saved with the same account cache', async () => {
+    await expect(
+      saveThenRead('accounts-mainnet-beta', 'accounts-mainnet-beta'),
+    ).resolves.toBe(42)
+  })
+
+  it('ignores a slot saved with another cluster cache', async () => {
+    await expect(
+      saveThenRead('accounts-mainnet-beta', 'accounts-devnet'),
+    ).resolves.toBeUndefined()
+  })
+
+  it('treats an old bare slot as no slot', async () => {
+    readSlot.mockResolvedValue('42')
+
+    await expect(
+      getLastCheckedSlot('accounts-mainnet-beta'),
+    ).resolves.toBeUndefined()
+  })
+
+  it('treats a missing slot as no slot', async () => {
+    readSlot.mockResolvedValue(null)
+
+    await expect(
+      getLastCheckedSlot('accounts-mainnet-beta'),
+    ).resolves.toBeUndefined()
   })
 })

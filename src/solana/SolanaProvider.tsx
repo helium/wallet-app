@@ -34,19 +34,14 @@ import KeystoneModal, {
 import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { CSAccount } from '../storage/cloudStorage'
-import {
-  checkSecureAccount,
-  getSolanaKeypair,
-  getSecureItem,
-  SecureStorageKeys,
-} from '../storage/secureStorage'
+import { checkSecureAccount, getSolanaKeypair } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
 import { appSlice } from '../store/slices/appSlice'
 import { useAppDispatch } from '../store/store'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
-import { saveCacheThenSlot } from './lastCheckedSlot'
+import { getLastCheckedSlot, saveCacheThenSlot } from './lastCheckedSlot'
 
 const useSolanaHook = () => {
   const { currentAccount, secureAccountsVersion } = useAccountStorage()
@@ -210,12 +205,7 @@ const useSolanaHook = () => {
 
         // Get current slot and last checked slot
         const currentSlot = await nonWrappedConnection.getSlot('confirmed')
-        const lastCheckedSlotStr = await getSecureItem(
-          SecureStorageKeys.LAST_CHECKED_SLOT,
-        )
-        const lastCheckedSlot = lastCheckedSlotStr
-          ? parseInt(lastCheckedSlotStr, 10)
-          : undefined
+        const lastCheckedSlot = await getLastCheckedSlot(asyncCache.cacheKey)
 
         // Make direct RPC calls in chunks
         const responses = await Promise.all(
