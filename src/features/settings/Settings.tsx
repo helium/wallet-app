@@ -29,6 +29,7 @@ import {
 } from '../../storage/secureStorage'
 import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
+import { queryClient, removePersistedQueries } from '../../utils/queryClient'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
@@ -404,6 +405,7 @@ const Settings = () => {
                 style: 'destructive',
                 onPress: async () => {
                   await persistor.purge()
+                  removePersistedQueries(queryClient)
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-ignore
                   Object.keys(cache?.genericCache.cache).forEach((key) => {

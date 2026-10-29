@@ -20,4 +20,11 @@ export const createQueryClient = () => {
   return queryClient
 }
 
+// Drops every query that is saved to disk, so the next save clears it too
+export const removePersistedQueries = (client: QueryClient) => {
+  PERSISTED_QUERY_ROOTS.forEach((root) =>
+    client.removeQueries({ queryKey: [root] }),
+  )
+}
+
 export const queryClient = createQueryClient()

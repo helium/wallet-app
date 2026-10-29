@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native'
-import { persistQueryClientSave } from '@tanstack/react-query-persist-client'
+import {
+  persistQueryClientSave,
+  persistQueryClientSubscribe,
+} from '@tanstack/react-query-persist-client'
 import { resetAppState } from '../resetAppState'
 import { importLegacyState } from '../importLegacyState'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from '../mmkv'
@@ -41,6 +44,10 @@ jest.mock('../../store/persistence', () => ({
 const solanaAddress = 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4'
 const heliumAddress = '13BnsQ6hHjfvJXYxwpWeMaD5Ep5nN1b4BPRJy4AqBkDq3mTF8Sk'
 
+const cloudAccounts = {
+  [heliumAddress]: { alias: 'Main', address: heliumAddress, netType: 0 },
+}
+
 // What the old cloudStorage.ts wrote for the five cloud keys
 const legacyCloudItems: Array<[string, string]> = [
   [
@@ -72,6 +79,7 @@ describe('resetAppState', () => {
     useBrowserStore.getState().addFavorite(solanaAddress, 'https://jup.ag')
     useBrowserStore.getState().addRecent(solanaAddress, 'https://jup.ag')
     useCloudStore.setState({
+      accounts: cloudAccounts,
       defaultAccountAddress: solanaAddress,
       lastViewedNotifications: 1700000000,
     })
@@ -102,6 +110,35 @@ describe('resetAppState', () => {
     expect(useCloudStore.getState()).toEqual({})
     expect(queryClient.getQueryCache().getAll()).toEqual([])
     expect(persistor.purge).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves no query cache when a save follows the reset', async () => {
+    jest.useFakeTimers()
+    // What PersistQueryClientProvider runs: a throttled save on each change
+    const unsubscribe = persistQueryClientSubscribe({
+      queryClient,
+      ...queryPersistOptions,
+    })
+    mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
+    useCloudStore.setState({
+      accounts: cloudAccounts,
+    })
+    queryClient.setQueryData(['collectables', 'devnet', solanaAddress], {})
+    await jest.advanceTimersByTimeAsync(1_001)
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(true)
+
+    await resetAppState()
+    // NftList renders once more with the old account and refetches it
+    queryClient.setQueryData(['collectables', 'devnet', solanaAddress], {
+      collectables: {},
+      collectablesWithMeta: {},
+    })
+    await jest.advanceTimersByTimeAsync(1_001)
+
+    expect(mmkv.getAllKeys()).toEqual([LEGACY_IMPORT_DONE_KEY])
+    unsubscribe()
+    queryClient.clear()
+    jest.useRealTimers()
   })
 
   it('removes the iCloud keys, so a reinstall imports no signed-out wallet', async () => {

@@ -4,6 +4,7 @@ import {
   persistQueryClientSave,
 } from '@tanstack/react-query-persist-client'
 import { mmkv } from '../../storage/mmkv'
+import { useCloudStore } from '../../store/cloudStore'
 import { createQueryClient } from '../queryClient'
 import { QUERY_CACHE_KEY, queryPersistOptions } from '../queryPersistence'
 
@@ -14,6 +15,7 @@ jest.mock('react-native-mmkv', () => ({
 }))
 
 const DAY = 24 * 60 * 60 * 1000
+const heliumAddress = '13BnsQ6hHjfvJXYxwpWeMaD5Ep5nN1b4BPRJy4AqBkDq3mTF8Sk'
 const collectablesKey = [
   'collectables',
   'mainnet-beta',
@@ -49,8 +51,18 @@ beforeAll(() => {
   jest.useFakeTimers()
 })
 
+const resetCloudStore = () =>
+  useCloudStore.setState(useCloudStore.getInitialState(), true)
+
 beforeEach(() => {
   mmkv.clearAll()
+  resetCloudStore()
+  // Signed in: the cloud store holds an account
+  useCloudStore.setState({
+    accounts: {
+      [heliumAddress]: { alias: 'Main', address: heliumAddress, netType: 0 },
+    },
+  })
 })
 
 afterEach(() => {
@@ -110,6 +122,55 @@ describe('queryPersistOptions', () => {
     const restored = await restore()
 
     expect(restored.getQueryData(collectablesKey)).toBeUndefined()
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
+  })
+
+  it('drops a cache saved before the cache schema version existed', async () => {
+    const client = newClient()
+    client.setQueryData(collectablesKey, collectables)
+    await save(client)
+    const stored = JSON.parse(mmkv.getString(QUERY_CACHE_KEY) as string)
+    // With no buster option the persister writes an empty buster
+    mmkv.set(QUERY_CACHE_KEY, JSON.stringify({ ...stored, buster: '' }))
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(collectablesKey)).toBeUndefined()
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
+  })
+
+  it('saves no query while the cloud store holds no account', async () => {
+    resetCloudStore()
+    const client = newClient()
+    client.setQueryData(collectablesKey, collectables)
+    await save(client)
+
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
+  })
+
+  it('saves no collectables fetched more than 7 days ago', async () => {
+    const client = newClient()
+    client.setQueryData(collectablesKey, collectables, {
+      updatedAt: Date.now() - 7 * DAY - 1,
+    })
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(collectablesKey)).toBeUndefined()
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
+  })
+
+  it('removes the saved cache when no query is left to save', async () => {
+    const client = newClient()
+    client.setQueryData(collectablesKey, collectables)
+    await save(client)
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(true)
+
+    client.removeQueries({ queryKey: collectablesKey })
+    client.setQueryData(['notifications'], ['note'])
+    await save(client)
+
     expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(false)
   })
 })
