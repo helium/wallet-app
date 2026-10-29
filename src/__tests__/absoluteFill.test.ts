@@ -15,6 +15,9 @@ const SPRING_CONFIG_FILES = [
   'node_modules/@gorhom/bottom-sheet/src/constants.ts',
   'node_modules/@gorhom/bottom-sheet/lib/module/constants.js',
   'node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js',
+  'node_modules/@gorhom/bottom-sheet/src/utilities/getKeyboardAnimationConfigs.ts',
+  'node_modules/@gorhom/bottom-sheet/lib/module/utilities/getKeyboardAnimationConfigs.js',
+  'node_modules/@gorhom/bottom-sheet/lib/commonjs/utilities/getKeyboardAnimationConfigs.js',
 ]
 
 const sourceFiles = (dir: string): string[] =>
