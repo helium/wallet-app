@@ -23,15 +23,26 @@ const POD_POST_INSTALL = `
     end
 `
 
+const POD_POST_INSTALL_ANCHOR = 'post_install do |installer|'
+
+const addPodPostInstall = (contents) => {
+  if (contents.includes('ONLY_ACTIVE_ARCH')) {
+    return contents
+  }
+  if (!contents.includes(POD_POST_INSTALL_ANCHOR)) {
+    throw new Error(
+      'withHeliumNative: Podfile has no "post_install do |installer|" block',
+    )
+  }
+  return contents.replace(
+    POD_POST_INSTALL_ANCHOR,
+    `${POD_POST_INSTALL_ANCHOR}${POD_POST_INSTALL}`,
+  )
+}
+
 const withPodPostInstall = (config) =>
   withPodfile(config, (cfg) => {
-    const anchor = 'post_install do |installer|'
-    if (!cfg.modResults.contents.includes('ONLY_ACTIVE_ARCH')) {
-      cfg.modResults.contents = cfg.modResults.contents.replace(
-        anchor,
-        `${anchor}${POD_POST_INSTALL}`,
-      )
-    }
+    cfg.modResults.contents = addPodPostInstall(cfg.modResults.contents)
     return cfg
   })
 
@@ -92,3 +103,5 @@ const withHeliumManifest = (config) =>
 
 module.exports = (config) =>
   withHeliumManifest(withHeliumGradleProperties(withPodPostInstall(config)))
+
+module.exports.addPodPostInstall = addPodPostInstall
