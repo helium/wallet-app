@@ -113,7 +113,7 @@ describe('updateActivityHead', () => {
     queryClient.clear()
   })
 
-  it('keeps the new head when it lands during fetchNextPage', async () => {
+  it('keeps the new head and the next page when both are in flight', async () => {
     // Newest first. More than one page, so fetchNextPage reads a real page.
     const older = Array.from({ length: 30 }, (_, i) => `old${i}`)
     let chain = older
@@ -167,8 +167,74 @@ describe('updateActivityHead', () => {
 
     const shown = hashes(queryClient.getQueryData(options.queryKey)?.pages)
     const flat = shown?.flat() ?? []
-    expect(flat.slice(0, 2)).toEqual(['new1', 'new0'])
-    expect(flat).toEqual(chain.slice(0, flat.length))
+    expect(flat).toEqual(chain)
+    unsubscribe()
+    queryClient.clear()
+  })
+
+  it('keeps the new head when the next page in flight fails', async () => {
+    const older = Array.from({ length: 30 }, (_, i) => `old${i}`)
+    let chain = older
+    // Each call answers from the chain as it is at call time, and waits
+    // until the test lets it settle. A next page read fails.
+    const calls: Array<{
+      options: SignaturesForAddressOptions
+      resolve: () => void
+    }> = []
+    const fetchActivity = jest.fn(
+      (opts: SignaturesForAddressOptions) =>
+        new Promise<Activity[]>((resolve, reject) => {
+          const start = opts.before ? chain.indexOf(opts.before) + 1 : 0
+          const end = opts.until ? chain.indexOf(opts.until) : chain.length
+          const answer = txns(...chain.slice(start, end).slice(0, opts.limit))
+          calls.push({
+            options: opts,
+            resolve: () =>
+              opts.before
+                ? reject(new Error('next page failed'))
+                : resolve(answer),
+          })
+        }),
+    )
+    const resolveCall = (
+      match: (o: SignaturesForAddressOptions) => boolean,
+    ) => {
+      const index = calls.findIndex((call) => match(call.options))
+      calls.splice(index, 1)[0].resolve()
+    }
+    const tick = () => new Promise((resolve) => setTimeout(resolve, 0))
+    const queryClient = createQueryClient()
+    const options = solanaActivityQuery({
+      address: ADDRESS,
+      mint: MINT,
+      fetchActivity,
+    })
+    const settle = async () => {
+      await tick()
+      while (calls.length || queryClient.isFetching()) {
+        calls.shift()?.resolve()
+        // eslint-disable-next-line no-await-in-loop
+        await tick()
+      }
+    }
+    const observer = new InfiniteQueryObserver(queryClient, {
+      ...options,
+      retry: false,
+    })
+    const unsubscribe = observer.subscribe(() => {})
+    await settle()
+
+    chain = ['new1', 'new0', ...older]
+    const nextPage = observer.fetchNextPage()
+    const update = updateActivityHead(queryClient, options, fetchActivity)
+    await tick()
+    resolveCall((o) => o.until !== undefined)
+    await settle()
+    await nextPage
+
+    await expect(update).resolves.toBeUndefined()
+    const shown = hashes(queryClient.getQueryData(options.queryKey)?.pages)
+    expect(shown?.flat()).toEqual(['new1', 'new0', ...older.slice(0, 20)])
     unsubscribe()
     queryClient.clear()
   })

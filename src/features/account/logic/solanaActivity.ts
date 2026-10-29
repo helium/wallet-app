@@ -41,9 +41,11 @@ export const updateActivityHead = async (
 
   const head = await fetchActivity({ limit: PAGE_SIZE, until: newest.hash })
   // A fetch in flight builds its pages from the data it read at its start, so
-  // it would overwrite the prepend. Refetch after it instead.
-  if (queryClient.isFetching({ queryKey }) > 0) {
-    return queryClient.invalidateQueries({ queryKey })
+  // it would overwrite the prepend. Wait for it to land, then prepend.
+  const query = queryClient.getQueryCache().find({ queryKey })
+  while (query?.promise && query.state.fetchStatus === 'fetching') {
+    // eslint-disable-next-line no-await-in-loop
+    await query.promise.catch(() => undefined)
   }
   queryClient.setQueryData(queryKey, (data) => {
     if (!data) return data

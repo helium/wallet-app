@@ -31,5 +31,7 @@ export const resetAppState = async () => {
   queryClient.clear()
   await persistor.purge()
   // A device that ran the import before it dropped this key still has it
-  await AsyncStorage.removeItem(LEGACY_SOLANA_KEY)
+  await AsyncStorage.removeItem(LEGACY_SOLANA_KEY).catch((error) =>
+    console.warn('Could not remove the old solana state', error),
+  )
 }
