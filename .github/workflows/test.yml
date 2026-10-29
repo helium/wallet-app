@@ -57,7 +57,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          cache: 'gradle'
       - name: Install modules
         run: yarn
       - name: Write CI env
