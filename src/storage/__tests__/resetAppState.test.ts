@@ -117,6 +117,6 @@ describe('resetAppState', () => {
 
     await resetAppState()
 
-    expect(await AsyncStorage.getAllKeys()).toEqual(['persist:solana'])
+    expect(await AsyncStorage.getAllKeys()).toEqual([])
   })
 })

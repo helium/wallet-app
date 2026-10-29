@@ -1,7 +1,9 @@
 import { QueryClient, infiniteQueryOptions } from '@tanstack/react-query'
+import { DC_MINT } from '@helium/spl-utils'
 import { SignaturesForAddressOptions } from '@solana/web3.js'
 import { last } from 'lodash'
 import { Activity } from '../../../types/activity'
+import { FilterType } from '../AccountActivityFilter'
 
 export type FetchActivity = (
   options: SignaturesForAddressOptions,
@@ -38,12 +40,46 @@ export const updateActivityHead = async (
   if (!newest) return
 
   const head = await fetchActivity({ limit: PAGE_SIZE, until: newest.hash })
-  queryClient.setQueryData(
-    queryKey,
-    (data) =>
-      data && {
-        ...data,
-        pages: [[...head, ...data.pages[0]], ...data.pages.slice(1)],
-      },
-  )
+  // A fetch in flight builds its pages from the data it read at its start, so
+  // it would overwrite the prepend. Refetch after it instead.
+  if (queryClient.isFetching({ queryKey }) > 0) {
+    return queryClient.invalidateQueries({ queryKey })
+  }
+  queryClient.setQueryData(queryKey, (data) => {
+    if (!data) return data
+    // Another head update may have prepended these already
+    const shown = new Set(data.pages[0].map(({ hash }) => hash))
+    const fresh = head.filter(({ hash }) => !shown.has(hash))
+    return {
+      ...data,
+      pages: [[...fresh, ...data.pages[0]], ...data.pages.slice(1)],
+    }
+  })
+}
+
+/** The activity to show for a filter, a mint and the wallet that owns it. */
+export const filterActivity = (
+  activity: Activity[],
+  { filter, mint, owner }: { filter: FilterType; mint: string; owner: string },
+) => {
+  if (
+    mint === DC_MINT.toBase58() &&
+    (filter === 'delegate' || filter === 'mint')
+  ) {
+    return activity
+  }
+
+  if (filter !== 'in' && filter !== 'out' && filter !== 'all') return []
+  if (filter === 'in' || filter === 'out') {
+    return activity.filter((txn) =>
+      txn.payments?.some(
+        (payment) =>
+          payment.mint === mint &&
+          payment.owner === owner &&
+          (filter === 'out' ? payment.amount < 0 : payment.amount > 0),
+      ),
+    )
+  }
+
+  return activity
 }

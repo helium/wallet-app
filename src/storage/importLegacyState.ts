@@ -12,9 +12,13 @@ import { BrowserDetails, useBrowserStore } from '../store/browserStore'
 import { CloudState, useCloudStore } from '../store/cloudStore'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from './mmkv'
 
-// The old redux-persist root key. The solana, balances and notifications
-// configs stay in use by the Redux store, so the import keeps them.
+// The old redux-persist root key. The balances and notifications configs stay
+// in use by the Redux store, so the import keeps them.
 const LEGACY_ROOT_KEY = 'persist:root'
+
+// The old solana config. Activity now lives in the query cache, so the import
+// drops it.
+export const LEGACY_SOLANA_KEY = 'persist:solana'
 
 // react-native-icloudstore stored every iCloud key under this prefix
 const ICLOUD_PREFIX = '@com.manicakes.iCloudStorage/'
@@ -158,7 +162,7 @@ const runImport = async () => {
     useCloudStore.setState(Object.fromEntries(cloudEntries))
   }
 
-  await AsyncStorage.removeItem(LEGACY_ROOT_KEY)
+  await AsyncStorage.multiRemove([LEGACY_ROOT_KEY, LEGACY_SOLANA_KEY])
   mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
 }
 
