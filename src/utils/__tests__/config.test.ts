@@ -50,7 +50,8 @@ const withBuildEnv = <T>(env: Record<string, string>, fn: () => T): T => {
 }
 
 // The caller the Metro babel transformer passes (metro.config.js
-// babelTransformerPath -> metro-react-native-babel-transformer).
+// babelTransformerPath -> metro.transformer.js ->
+// @expo/metro-config/babel-transformer for non-SVG files).
 const METRO_CALLER = { name: 'metro', bundler: 'metro', platform: 'ios' }
 
 // Loads metro.config.js, as every bundle command does, in a temp copy of the
