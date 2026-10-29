@@ -5,6 +5,7 @@ import {
   getICloudKVSString,
   removeICloudKVSKeys,
   setICloudKVSString,
+  subscribeICloudKVSChanges,
 } from '../../modules/icloud-kvs'
 import { useAppStore } from '../store/appStore'
 import { BrowserDetails, useBrowserStore } from '../store/browserStore'
@@ -59,6 +60,14 @@ export const writeCloudItems = (state: CloudState) => {
 }
 
 /**
+ * Calls the listener when another device on the Apple ID changes the iCloud
+ * keys, or when the first download from iCloud lands. Returns the unsubscribe.
+ * Android has no shared keys, so it never calls the listener.
+ */
+export const subscribeCloudItemChanges = (listener: () => void) =>
+  Platform.OS === 'ios' ? subscribeICloudKVSChanges(listener) : () => {}
+
+/**
  * Removes the old cloud keys on sign-out, so a reinstall or a new device does
  * not import the signed-out wallets.
  */
@@ -98,34 +107,43 @@ const parseTimestamp = (raw: string | null) => {
   return Number.isNaN(value) ? undefined : value
 }
 
-const runImport = async () => {
-  if (mmkv.getBoolean(LEGACY_IMPORT_DONE_KEY)) return
-
+/**
+ * Reads the five cloud keys in the old format. An unreadable or missing value
+ * is undefined.
+ */
+export const readCloudItems = async (): Promise<CloudState> => {
   const [
-    rawRoot,
     rawAccounts,
     rawContacts,
     rawLastViewed,
     rawVisibleTokens,
     defaultAccountAddress,
   ] = await Promise.all([
-    AsyncStorage.getItem(LEGACY_ROOT_KEY),
     readCloudItem('accounts'),
     readCloudItem('contacts'),
     readCloudItem('lastViewedNotifications'),
     readCloudItem('visibleTokens'),
     readCloudItem('defaultAccountAddress'),
   ])
-
-  // Parse everything before writing. An unreadable value is skipped, not imported.
-  const { app, browser } = parseRoot(rawRoot)
-  const cloud: CloudState = {
+  return {
     accounts: parseJSON(rawAccounts),
     contacts: parseJSON(rawContacts),
     lastViewedNotifications: parseTimestamp(rawLastViewed),
     visibleTokens: parseJSON(rawVisibleTokens),
     defaultAccountAddress: defaultAccountAddress || undefined,
   }
+}
+
+const runImport = async () => {
+  if (mmkv.getBoolean(LEGACY_IMPORT_DONE_KEY)) return
+
+  const [rawRoot, cloud] = await Promise.all([
+    AsyncStorage.getItem(LEGACY_ROOT_KEY),
+    readCloudItems(),
+  ])
+
+  // Parse everything before writing. An unreadable value is skipped, not imported.
+  const { app, browser } = parseRoot(rawRoot)
 
   if (app) {
     const appEntries = Object.entries({

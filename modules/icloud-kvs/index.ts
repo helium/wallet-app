@@ -1,8 +1,10 @@
-import { requireOptionalNativeModule } from 'expo'
+import { NativeModule, requireOptionalNativeModule } from 'expo'
 
-type ICloudKVSModule = {
+declare class ICloudKVSModule extends NativeModule<{ onChange: () => void }> {
   getString(key: string): string | null
+
   setString(key: string, value: string): void
+
   remove(keys: string[]): void
 }
 
@@ -29,3 +31,10 @@ export const setICloudKVSString = (key: string, value: string) =>
 // clears them on other devices and on a reinstall.
 export const removeICloudKVSKeys = (keys: string[]) =>
   requireICloudKVS().remove(keys)
+
+// Calls the listener when iCloud changes the store from outside the app: another
+// device's write, or the first download after an install. Returns the unsubscribe.
+export const subscribeICloudKVSChanges = (listener: () => void) => {
+  const subscription = requireICloudKVS().addListener('onChange', listener)
+  return () => subscription.remove()
+}

@@ -80,4 +80,30 @@ describe('removeICloudKVSKeys', () => {
   })
 })
 
+describe('subscribeICloudKVSChanges', () => {
+  it('throws when the native module is not linked', () => {
+    mockRequireOptionalNativeModule.mockReturnValue(null)
+    const { subscribeICloudKVSChanges } = load()
+
+    expect(() => subscribeICloudKVSChanges(jest.fn())).toThrow(
+      'ICloudKVS native module is not linked',
+    )
+  })
+
+  it('listens for the native change event until unsubscribed', () => {
+    const remove = jest.fn()
+    const addListener = jest.fn(() => ({ remove }))
+    mockRequireOptionalNativeModule.mockReturnValue({ addListener })
+    const { subscribeICloudKVSChanges } = load()
+    const listener = jest.fn()
+
+    const unsubscribe = subscribeICloudKVSChanges(listener)
+
+    expect(addListener).toHaveBeenCalledWith('onChange', listener)
+    expect(remove).not.toHaveBeenCalled()
+    unsubscribe()
+    expect(remove).toHaveBeenCalledTimes(1)
+  })
+})
+
 export {}

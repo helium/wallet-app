@@ -6,8 +6,13 @@ import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { createHash } from 'crypto'
 import { cloneDeep, sortBy, values } from 'lodash'
+import { Platform } from 'react-native'
 import { CloudState, useCloudStore } from '../store/cloudStore'
-import { importLegacyState, writeCloudItems } from './importLegacyState'
+import {
+  importLegacyState,
+  readCloudItems,
+  writeCloudItems,
+} from './importLegacyState'
 import { getSecureAccount } from './secureStorage'
 
 export type LedgerDevice = {
@@ -43,10 +48,13 @@ export type CSAccounts = Record<string, CSAccount>
 export type CSToken = Record<string, string[]>
 
 // The first-launch import fills the cloud store, so every read and write
-// waits for it. Reads return copies, as the old JSON reads did, so callers
-// can change them without changing the store.
+// waits for it. On iOS, iCloud holds the list every device on the Apple ID
+// shares, so each read takes all five keys from it, as the old reads did: a
+// key another device removed is removed here too. Reads return copies, as the
+// old JSON reads did, so callers can change them without changing the store.
 const readCloudStore = async () => {
   await importLegacyState()
+  if (Platform.OS === 'ios') useCloudStore.setState(await readCloudItems())
   return cloneDeep(useCloudStore.getState())
 }
 
