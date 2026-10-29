@@ -41,4 +41,10 @@ describe('isSameOrigin', () => {
     expect(isSameOrigin('', 'https://app.example/')).toBe(false)
     expect(isSameOrigin(undefined, 'https://app.example/')).toBe(false)
   })
+
+  it('rejects every message while the top page has no origin', () => {
+    expect(isSameOrigin('about:blank', 'about:blank')).toBe(false)
+    expect(isSameOrigin('null', 'null')).toBe(false)
+    expect(isSameOrigin(undefined, '')).toBe(false)
+  })
 })

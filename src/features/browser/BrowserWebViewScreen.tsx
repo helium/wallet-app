@@ -150,7 +150,7 @@ const BrowserWebViewScreen = () => {
   const pendingRequestRef = useRef<boolean>(false)
 
   const [currentUrl, setCurrentUrl] = useState(uri)
-  // Full URL of the top page; currentUrl keeps only its host
+  // Full URL of the top page; currentUrl is a display string cut from it
   const topUrlRef = useRef(uri)
   const accountAddress = useMemo(
     () => currentAccount?.solanaAddress,
