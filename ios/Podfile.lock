@@ -111,6 +111,8 @@ PODS:
   - hermes-engine (0.79.5):
     - hermes-engine/Pre-built (= 0.79.5)
   - hermes-engine/Pre-built (0.79.5)
+  - ICloudKVS (1.0.0):
+    - ExpoModulesCore
   - lottie-ios (4.5.0)
   - lottie-react-native (7.2.4):
     - DoubleConversion
@@ -144,7 +146,60 @@ PODS:
   - maplibre-react-native/DynamicLibrary (10.1.1):
     - React
     - React-Core
+  - MMKVCore (2.4.0)
   - MultiplatformBleAdapter (0.2.0)
+  - NitroMmkv (4.3.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - MMKVCore (= 2.4.0)
+    - NitroModules
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - NitroModules (0.37.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - OneSignalXCFramework (5.2.10):
     - OneSignalXCFramework/OneSignalComplete (= 5.2.10)
   - OneSignalXCFramework/OneSignal (5.2.10):
@@ -2217,8 +2272,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNICloudStore (0.1.0):
-    - React
   - RNLocalize (2.2.3):
     - React-Core
   - RNOS (1.2.6):
@@ -2519,9 +2572,12 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - "helium-react-native-sdk (from `../node_modules/@helium/react-native-sdk`)"
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
+  - ICloudKVS (from `../modules/icloud-kvs/ios`)
   - lottie-ios
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - "maplibre-react-native (from `../node_modules/@maplibre/maplibre-react-native`)"
+  - NitroMmkv (from `../node_modules/react-native-mmkv`)
+  - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - OneSignalXCFramework (< 6.0, >= 5.0)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2610,7 +2666,6 @@ DEPENDENCIES:
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
-  - RNICloudStore (from `../node_modules/react-native-icloudstore`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
@@ -2628,6 +2683,7 @@ SPEC REPOS:
     - BEMCheckBox
     - Charts
     - lottie-ios
+    - MMKVCore
     - MultiplatformBleAdapter
     - OneSignalXCFramework
     - OpenSSL-Universal
@@ -2699,10 +2755,16 @@ EXTERNAL SOURCES:
   hermes-engine:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2025-06-04-RNv0.79.3-7f9a871eefeb2c3852365ee80f0b6733ec12ac3b
+  ICloudKVS:
+    :path: "../modules/icloud-kvs/ios"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
   maplibre-react-native:
     :path: "../node_modules/@maplibre/maplibre-react-native"
+  NitroMmkv:
+    :path: "../node_modules/react-native-mmkv"
+  NitroModules:
+    :path: "../node_modules/react-native-nitro-modules"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2871,8 +2933,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-device-info"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
-  RNICloudStore:
-    :path: "../node_modules/react-native-icloudstore"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
   RNOS:
@@ -2928,10 +2988,14 @@ SPEC CHECKSUMS:
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   helium-react-native-sdk: 22ade11d0986df17d7233b1dedb58d9b8743032f
   hermes-engine: f03b0e06d3882d71e67e45b073bb827da1a21aae
+  ICloudKVS: 0d2f7d034f2bbcf15d36f2cc15a267541cf812af
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 4669b14d8ebd00d58e80caf862736d28ca5045e3
   maplibre-react-native: 275e81319b9d75e120902a09f4ca07cce9537234
+  MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
+  NitroMmkv: 007cb8b9136c1d3ca17e7725677b4ef3ba9ce275
+  NitroModules: 9d06c6cd0cd7735efb0f942e125faa7289282b3b
   OneSignalXCFramework: 1a3b28dfbff23aabce585796d23c1bef37772774
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
@@ -3018,7 +3082,6 @@ SPEC CHECKSUMS:
   RNCClipboard: ea6045252d5c0753cf17f62290f647dc0096f6ac
   RNDeviceInfo: d3e91ffb33ee97a7982108476edb68cb3672efa6
   RNGestureHandler: 0397fea67f39d5a2d17fcf4a028e206f7ba098ba
-  RNICloudStore: e0a579c3658e4ef49b84de2575886459c3ad695d
   RNLocalize: 5bcbb34b6f9cb4c2010ccfedb03f6a2b6f98466d
   RNOS: d07e5090b5060c6f2b83116d740a32cfdb33afe3
   RNPermissions: 9510a70fa724380332102d11514ad0d38f33f231

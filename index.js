@@ -20,7 +20,11 @@ import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
-import { persistor } from './src/store/persistence'
+import {
+  LegacyImportGate,
+  persistor,
+  resetAfterError,
+} from './src/store/persistence'
 import store from './src/store/store'
 import { darkThemeColors, theme } from './src/theme/theme'
 import './src/utils/i18n'
@@ -70,23 +74,20 @@ const render = () => {
         colors: darkThemeColors,
       }}
     >
-      <ErrorBoundary
-        fallbackRender={fallbackRender}
-        onReset={async () => {
-          await persistor.purge()
-        }}
-      >
+      <ErrorBoundary fallbackRender={fallbackRender} onReset={resetAfterError}>
         <ReduxProvider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <LanguageProvider>
-              <AppStorageProvider>
-                <AccountStorageProvider>
-                  <NotificationStorageProvider>
-                    <App />
-                  </NotificationStorageProvider>
-                </AccountStorageProvider>
-              </AppStorageProvider>
-            </LanguageProvider>
+            <LegacyImportGate>
+              <LanguageProvider>
+                <AppStorageProvider>
+                  <AccountStorageProvider>
+                    <NotificationStorageProvider>
+                      <App />
+                    </NotificationStorageProvider>
+                  </AccountStorageProvider>
+                </AppStorageProvider>
+              </LanguageProvider>
+            </LegacyImportGate>
           </PersistGate>
         </ReduxProvider>
       </ErrorBoundary>
