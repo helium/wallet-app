@@ -4,6 +4,7 @@ import Toast, {
   ToastConfigParams,
 } from 'react-native-toast-message'
 import { Linking } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
 import Close from '@assets/images/closeModal.svg'
@@ -68,6 +69,7 @@ const toastConfig: ToastConfig = {
 
 const StatusBanner = () => {
   const { t } = useTranslation()
+  const { top } = useSafeAreaInsets()
   const incidents = useStatusPage()
 
   const getAlertDescription = useCallback(
@@ -98,7 +100,7 @@ const StatusBanner = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [incidents])
 
-  return <Toast config={toastConfig} />
+  return <Toast config={toastConfig} topOffset={top + 10} />
 }
 
 export default memo(StatusBanner)

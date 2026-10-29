@@ -253,6 +253,7 @@ const AccountImportScreen = () => {
       </TouchableOpacityBox>
       <KeyboardAwareScrollView
         extraKeyboardSpace={80}
+        bottomOffset={155}
         keyboardShouldPersistTaps="always"
       >
         <Text

@@ -365,7 +365,10 @@ const BurnScreen = () => {
                 </TouchableOpacityBox>
               </Box>
 
-              <KeyboardAwareScrollView keyboardShouldPersistTaps="always">
+              <KeyboardAwareScrollView
+                bottomOffset={75}
+                keyboardShouldPersistTaps="always"
+              >
                 <AccountButton
                   backgroundColor="secondary"
                   accountIconSize={41}

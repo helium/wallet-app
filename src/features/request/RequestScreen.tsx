@@ -255,7 +255,7 @@ const RequestScreen = () => {
               onItemSelected={handleRequestTypePress}
               marginVertical="l"
             />
-            <KeyboardAwareScrollView>
+            <KeyboardAwareScrollView bottomOffset={75}>
               <Box marginHorizontal="l">
                 <Box
                   height={QR_CONTAINER_SIZE}

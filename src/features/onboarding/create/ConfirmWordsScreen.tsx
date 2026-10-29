@@ -199,6 +199,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
       </Box>
       <KeyboardAwareScrollView
         extraKeyboardSpace={80}
+        bottomOffset={155}
         keyboardShouldPersistTaps="always"
       >
         <Animated.View

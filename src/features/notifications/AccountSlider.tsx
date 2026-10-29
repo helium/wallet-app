@@ -16,14 +16,18 @@ import { isValidAccountHash } from '../../utils/accountUtils'
 
 const ITEM_WIDTH = 72
 const SLIDER_WIDTH = wp(100)
+const ITEM_OFFSET_X = 7
 
-// Centers the active item and dims the others, like the old snap carousel.
+// Centers the active item and dims the others.
 const itemAnimation = (value: number) => {
   'worklet'
 
   return {
     transform: [
-      { translateX: value * ITEM_WIDTH + (SLIDER_WIDTH - ITEM_WIDTH) / 2 + 7 },
+      {
+        translateX:
+          value * ITEM_WIDTH + (SLIDER_WIDTH - ITEM_WIDTH) / 2 + ITEM_OFFSET_X,
+      },
     ],
     opacity: interpolate(value, [-1, 0, 1], [0.7, 1, 0.7], Extrapolation.CLAMP),
   }
@@ -125,7 +129,10 @@ const AccountSlider = () => {
     <Box marginBottom="l" marginTop="m">
       <Carousel
         ref={carouselRef}
-        defaultIndex={selectedList ? data.indexOf(selectedList) : 0}
+        defaultIndex={Math.max(
+          0,
+          selectedList ? data.indexOf(selectedList) : 0,
+        )}
         onSnapToItem={onSnap}
         style={styles.carouselContainer}
         data={data}
