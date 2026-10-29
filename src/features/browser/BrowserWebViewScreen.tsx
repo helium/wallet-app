@@ -320,7 +320,6 @@ const BrowserWebViewScreen = () => {
         }
 
         const signedTransactions: VersionedTransaction[] = []
-        // eslint-disable-next-line no-restricted-syntax
         for (const { transaction } of transactions) {
           const signedTransaction =
             await anchorProvider?.wallet.signTransaction(transaction)

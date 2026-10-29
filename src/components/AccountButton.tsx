@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useCallback, useMemo } from 'react'
 import ChevronDown from '@assets/images/chevronDown.svg'
 import { Keyboard, StyleSheet } from 'react-native'

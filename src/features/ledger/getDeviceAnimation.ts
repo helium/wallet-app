@@ -13,7 +13,6 @@ export type Device = {
 type AnimationSource = LottieViewProps['source']
 type AnimationRecord = Record<'light' | 'dark', AnimationSource>
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 type S_SP_BLUE = DeviceModelId.nanoS | DeviceModelId.nanoSP | DeviceModelId.blue
 export type Animations = {
   [modelId in S_SP_BLUE]: Record<string, AnimationRecord>

@@ -1,7 +1,7 @@
 import path from 'path'
 import { getConfig } from 'expo/config'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const withHeliumNative = require('../../plugins/withHeliumNative')
 
 const { addPodPostInstall } = withHeliumNative

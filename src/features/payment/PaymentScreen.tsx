@@ -328,11 +328,8 @@ const PaymentScreen = () => {
         paymentState.payments
           .filter((p) => p.address && p.amount)
           .map((payment) => ({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             payee: payment.address!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             balanceAmount: payment.amount!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             max: payment.max!,
           })),
         paymentState.mint,
@@ -800,7 +797,6 @@ const PaymentScreen = () => {
                   />
 
                   {paymentState.payments.map((p, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <React.Fragment key={index}>
                       <PaymentItem
                         {...p}

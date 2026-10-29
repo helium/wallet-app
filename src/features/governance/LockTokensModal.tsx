@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import Close from '@assets/images/close.svg'
 import InfoIcon from '@assets/images/info.svg'
 import { ReAnimatedBlurBox } from '@components/AnimatedBox'
@@ -614,7 +613,6 @@ export const LockTokensModal = ({
                                     const val = lockupPeriodInDays
 
                                     setLockupPeriodInDays(
-                                      // eslint-disable-next-line no-nested-ternary
                                       val > minLockupTimeInDays
                                         ? val > maxLockupTimeInDays
                                           ? maxLockupTimeInDays
@@ -694,7 +692,6 @@ export const LockTokensModal = ({
                               {lockupInfosByType[type.value].map(
                                 (info, idx) => (
                                   <Text
-                                    // eslint-disable-next-line react/no-array-index-key
                                     key={`info-${idx}`}
                                     variant="subtitle4"
                                     color="secondaryText"

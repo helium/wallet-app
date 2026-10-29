@@ -11,7 +11,6 @@ export const useReverseGeo = (coords: number[] | undefined) =>
     const cacheKey = coords.join(',')
 
     if (cache.has(cacheKey)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return cache.get(cacheKey)!
     }
 

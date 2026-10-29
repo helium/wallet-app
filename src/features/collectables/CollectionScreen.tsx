@@ -41,7 +41,6 @@ const CollectionScreen = () => {
   )
 
   const renderCollectable = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Collectable }) => {
       const { json } = item
 

@@ -40,7 +40,7 @@ describe('iOS deployment targets', () => {
   })
 
   it('builds the widget extension at the SDK floor or higher', () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const widget = require('../../targets/HeliumWalletWidget/expo-target.config')
     expect(isAtLeastFloor(widget.deploymentTarget)).toBe(true)
   })

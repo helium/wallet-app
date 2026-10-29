@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useCallback } from 'react'
 import { Linking, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'

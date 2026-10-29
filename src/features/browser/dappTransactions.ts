@@ -74,10 +74,8 @@ export const sendInSequence = async <T>(
   send: (item: T) => Promise<string>,
 ): Promise<string[]> => {
   const sent: string[] = []
-  // eslint-disable-next-line no-restricted-syntax
   for (const item of items) {
     try {
-      // eslint-disable-next-line no-await-in-loop
       sent.push(await send(item))
     } catch (e) {
       if (sent.length === 0) throw e

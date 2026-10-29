@@ -179,7 +179,6 @@ const WalletSignBottomSheetTransaction = ({
           <Box mt="s">
             {nonAccountWarnings.map((warning, idx) => (
               <WarningBox
-                // eslint-disable-next-line react/no-array-index-key
                 key={warning.shortMessage + idx}
                 header={warning.shortMessage}
                 body={warning.message}

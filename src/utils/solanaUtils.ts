@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-underscore-dangle */
 import { AnchorProvider, BN, IdlAccounts, Program } from '@anchor-lang/core'
 import { getSingleton } from '@helium/account-fetch-cache'
 import {
@@ -130,7 +129,6 @@ import { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isInsufficientBal(e: any) {
   return (
     e.toString().includes('Insufficient Balance') ||
@@ -1070,7 +1068,6 @@ export const getHotspotPendingRewards = async (
   const keyToAssets = hotspots.map((h) => keyToAssetForAsset(toAsset(h)))
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const entityKeys = ktaAccs.map((kta) =>
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     decodeEntityKey(kta.entityKey, kta.keySerialization)!,
   )
 
@@ -1354,7 +1351,6 @@ export async function annotateWithPendingRewards(
   )
   const ktaAccs = await getCachedKeyToAssets(hemProgram as any, keyToAssets)
   const entityKeys = ktaAccs.map((kta) =>
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     decodeEntityKey(kta.entityKey, kta.keySerialization)!,
   )
 
@@ -1545,12 +1541,10 @@ export const getAllTransactions = async (
       {} as { [key: string]: VersionedTransactionResponse },
     )
     const cachedLuts: { [key: string]: AddressLookupTableAccount } = {}
-    // eslint-disable-next-line no-restricted-syntax
     for (const rawTx of Object.values(txs)) {
       const message = rawTx?.transaction.message
       if (message) {
         const { addressTableLookups } = message
-        // eslint-disable-next-line no-restricted-syntax
         for (const addressTableLookup of addressTableLookups) {
           if (!cachedLuts[addressTableLookup.accountKey.toBase58()]) {
             const result = await conn?.getAddressLookupTable(
@@ -1576,7 +1570,6 @@ export const getAllTransactions = async (
           const { addressTableLookups } = message
           const addressLookupTableAccounts: Array<AddressLookupTableAccount> =
             []
-          // eslint-disable-next-line no-restricted-syntax
           for (const addressTableLookup of addressTableLookups) {
             addressLookupTableAccounts.push(
               cachedLuts[addressTableLookup.accountKey.toBase58()],
@@ -1862,7 +1855,6 @@ export const solInstructionsToActivity = (
       if (amount !== 0 && !Number.isNaN(amount)) {
         const p: Payment = {
           amount: amount / LAMPORTS_PER_SOL,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           owner:
             parsedTxn.transaction.message.accountKeys[index].pubkey.toBase58(),
           mint: NATIVE_MINT.toBase58(),
@@ -1890,7 +1882,6 @@ export const solInstructionsToActivity = (
       if (amount !== 0 && !Number.isNaN(amount)) {
         const p: Payment = {
           amount,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           owner: (post.owner || pre.owner)!,
           mint: post.mint,
         }
@@ -2043,7 +2034,6 @@ function recursivelyConvertPubkeysToString(value: any): any {
 
   if (typeof value === 'object' && value !== null) {
     const newObj: any = {}
-    // eslint-disable-next-line no-restricted-syntax, guard-for-in
     for (const key in value) {
       newObj[key] = recursivelyConvertPubkeysToString(value[key])
     }

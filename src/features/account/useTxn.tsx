@@ -339,7 +339,7 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
     const amountTitle = await getAmountTitle()
 
     setDetails({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
       feePayer: item?.feePayer!,
       icon: listIcon,
       title,

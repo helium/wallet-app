@@ -54,10 +54,8 @@ export const PositionPreview: React.FC<
     () =>
       subDaos?.find(
         (s) =>
-          // eslint-disable-next-line react/prop-types
           position.delegatedSubDao && s.pubkey.equals(position.delegatedSubDao),
       ),
-    // eslint-disable-next-line react/prop-types
     [subDaos, position.delegatedSubDao],
   )
 

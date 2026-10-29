@@ -213,7 +213,6 @@ const AccountImportScreen = () => {
   )
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: w }: { item: string | null; index: number }) => {
       return (
         <TouchableOpacityBox

@@ -22,7 +22,6 @@ const Keypad = ({ onPress, customButtonType, ...boxProps }: Props) => {
   )
 
   return (
-    // eslint-disable-next-line react/jsx-props-no-spreading
     <Box flex={1} {...boxProps}>
       <Box flex={1} flexDirection="row">
         {[...Array(3).keys()].map((idx) => (

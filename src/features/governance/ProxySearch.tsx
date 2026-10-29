@@ -76,7 +76,6 @@ export const ProxySearch = React.forwardRef<
   }, [resultPaged, debouncedInput])
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: { value: string; label: string } }) => {
       return (
         <TouchableContainer

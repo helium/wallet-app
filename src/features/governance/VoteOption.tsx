@@ -42,7 +42,6 @@ export const VoteOption = ({
       backgroundColor="surfaceSecondary"
       {...boxProps}
       onPress={
-        // eslint-disable-next-line no-nested-ternary
         canVote ? onVote : canRelinquishVote ? onRelinquishVote : undefined
       }
     >

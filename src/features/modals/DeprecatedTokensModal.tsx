@@ -209,7 +209,6 @@ const DeprecatedTokensModal: FC = () => {
       // Step 1: Close all positions (both IOT and MOBILE) if any exist
       if (hasStaked) {
         // Close IOT positions
-        // eslint-disable-next-line no-restricted-syntax
         for (const position of iotPositions || []) {
           await closePosition({
             position: {
@@ -229,7 +228,6 @@ const DeprecatedTokensModal: FC = () => {
         }
 
         // Close MOBILE positions
-        // eslint-disable-next-line no-restricted-syntax
         for (const position of mobilePositions || []) {
           await closePosition({
             position: {

@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useMemo } from 'react'
 import { Trans } from 'react-i18next'
 import { ResponsiveValue, TextProps } from '@shopify/restyle'

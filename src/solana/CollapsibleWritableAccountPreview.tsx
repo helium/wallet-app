@@ -62,11 +62,7 @@ const TokenBalanceChange = ({
     <Pill
       text={
         showText
-          ? `${humanReadable(
-              bn,
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              writableAccount.metadata!.decimals,
-            )}`
+          ? `${humanReadable(bn, writableAccount.metadata!.decimals)}`
           : undefined
       }
       Icon={amount < 0 ? Send : Receive}

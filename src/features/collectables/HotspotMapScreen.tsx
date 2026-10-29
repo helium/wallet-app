@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
 import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'

@@ -100,9 +100,7 @@ const WifiSettings = () => {
       item: network,
       section: { type },
     }: {
-      // eslint-disable-next-line react/no-unused-prop-types
       item: string
-      // eslint-disable-next-line react/no-unused-prop-types
       section: Section
     }) => {
       return (

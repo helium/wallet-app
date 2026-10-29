@@ -85,7 +85,6 @@ const DeviceScan = () => {
         disappearsOnIndex={-1}
         appearsOnIndex={0}
         opacity={0.8}
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       />
     ),

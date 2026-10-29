@@ -158,7 +158,6 @@ const AccountManageTokenListScreen: React.FC = () => {
       )
     })
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: token }: { index: number; item: string }) => {
       return (
         <CheckableTokenListItem

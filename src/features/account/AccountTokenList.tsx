@@ -83,21 +83,17 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const bottomSpace = useMemo(() => bottom * 2, [bottom])
 
-  const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
-    ({ item }: { item: PublicKey }) => {
-      if (GovMints.some((m) => new PublicKey(m).equals(item)))
-        return (
-          <Box>
-            <TokenListItem mint={item} />
-            <TokenListGovItem mint={item} />
-          </Box>
-        )
+  const renderItem = useCallback(({ item }: { item: PublicKey }) => {
+    if (GovMints.some((m) => new PublicKey(m).equals(item)))
+      return (
+        <Box>
+          <TokenListItem mint={item} />
+          <TokenListGovItem mint={item} />
+        </Box>
+      )
 
-      return <TokenListItem mint={item} />
-    },
-    [],
-  )
+    return <TokenListItem mint={item} />
+  }, [])
 
   const renderEmptyComponent = useCallback(() => {
     return (

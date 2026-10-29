@@ -159,7 +159,6 @@ const ScanHotspots = () => {
   )
 
   const renderItem = React.useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item }: { item: Device }) => {
       return (
         <TouchableOpacityBox
@@ -233,7 +232,6 @@ const ScanHotspots = () => {
         borderWidth={scanning ? 2 : 0}
         backgroundColor={scanning ? 'transparent' : 'white'}
         title={
-          // eslint-disable-next-line no-nested-ternary
           canScan
             ? scanning
               ? t('hotspotOnboarding.scan.stop')

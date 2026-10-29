@@ -80,7 +80,6 @@ const AccountTokenScreen = () => {
   ] = useState(true)
 
   const mintStr = useMemo(() => route.params.mint, [route.params.mint])
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const mint = usePublicKey(mintStr)!
 
   const { json, symbol } = useMetaplexMetadata(mint)
@@ -108,7 +107,6 @@ const AccountTokenScreen = () => {
   } = useSolanaActivityList({
     account: currentAccount,
     filter: filterState.filter,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mint: mint!,
   })
 

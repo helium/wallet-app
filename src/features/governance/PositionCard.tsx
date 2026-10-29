@@ -427,7 +427,6 @@ export const PositionCard = ({
           symbol,
           targetAmount: humanReadable(
             targetPosition.amountDepositedNative,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             mintAcc!.decimals,
           ),
         }),
@@ -733,8 +732,7 @@ export const PositionCard = ({
   const { knownProxy } = useKnownProxy(position?.proxy?.nextVoter)
 
   const delegatedSubDaoMetadata = position.delegatedSubDao
-    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      subDaos?.find((sd) => sd.pubkey.equals(position.delegatedSubDao!))
+    ? subDaos?.find((sd) => sd.pubkey.equals(position.delegatedSubDao!))
         ?.dntMetadata
     : null
 

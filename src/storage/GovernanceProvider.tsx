@@ -199,7 +199,6 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
       proposalCountByMint !== undefined
     ) {
       return Object.keys(currentAccount.proposalCountByMint).some(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         (m) => currentAccount.proposalCountByMint![m] < proposalCountByMint[m],
       )
     }

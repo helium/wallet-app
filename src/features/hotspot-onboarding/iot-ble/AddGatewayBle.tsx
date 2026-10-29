@@ -123,10 +123,8 @@ const AddGatewayBle = () => {
   const { implicitBurn } = useImplicitBurn()
   const { submitAndAwait } = useSubmitAndAwait()
 
-  // eslint-disable-next-line no-nested-ternary
   const balError = maker
-    ? // eslint-disable-next-line no-nested-ternary
-      insufficientMakerSolBal
+    ? insufficientMakerSolBal
       ? new Error(
           t('hotspotOnboarding.onboarding.manufacturerMissing', {
             name: maker?.name,
@@ -195,7 +193,6 @@ const AddGatewayBle = () => {
         ) || []
     }
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const txn of createHotspotTxns || []) {
       const tx = VersionedTransaction.deserialize(txn)
       const hotspotAddress = onboardingAddress || 'unknown'
@@ -205,7 +202,6 @@ const AddGatewayBle = () => {
         tag,
         metadata: { type: 'hotspot', description: 'Create Hotspot' },
       })
-      // eslint-disable-next-line no-await-in-loop
       await submitAndAwait({ transactionData })
     }
 
@@ -225,7 +221,6 @@ const AddGatewayBle = () => {
         await implicitBurn(requiredDc.toNumber())
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const { solanaTransactions } = await getOnboardTransactions({
         hotspotAddress: onboardingAddress,
         payer,
@@ -250,10 +245,8 @@ const AddGatewayBle = () => {
     let keyToAssetPostOnboard = keyToAsset
     // Wait up to 30s for hotspot to exist
     while (!keyToAssetPostOnboard && totalTime < 30 * 1000) {
-      // eslint-disable-next-line no-await-in-loop
       await sleep(2000)
       totalTime += 2000
-      // eslint-disable-next-line no-await-in-loop
       keyToAssetPostOnboard =
         await hemProgram.account.keyToAssetV0.fetchNullable(keyToAssetK)
     }

@@ -156,9 +156,7 @@ const useSolanaHook = () => {
         transactions: (Transaction | VersionedTransaction)[],
       ) => {
         const signedTxns: (Transaction | VersionedTransaction)[] = []
-        // eslint-disable-next-line no-restricted-syntax
         for (const transaction of transactions) {
-          // eslint-disable-next-line no-await-in-loop
           const signedTx = await signTxn(transaction)
           signedTxns.push(signedTx)
         }
@@ -225,7 +223,6 @@ const useSolanaHook = () => {
             const keyStrings = keyChunk.map((k) => k.toBase58())
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore - accessing private method for direct RPC call
-            // eslint-disable-next-line no-underscore-dangle
             const response = await nonWrappedConnection._rpcRequest(
               'getMultipleAccounts',
               [
@@ -331,7 +328,6 @@ const useSolanaHook = () => {
             },
           }
         }
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return oldGetAccountinfoAndContext!(publicKey, com)
       }
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

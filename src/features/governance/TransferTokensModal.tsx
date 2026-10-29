@@ -82,7 +82,6 @@ export const TransferTokensModal = ({
       try {
         setIsSubmitting(true)
         await onSubmit(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           positions.find((pos) => pos.pubkey.equals(selectedPosPk))!,
           amount,
         )

@@ -5,7 +5,7 @@ jest.mock('react-native-svg-transformer', () => ({
   transform: jest.fn(() => 'svg'),
 }))
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const transformer = require('../../metro.transformer')
 
 const expoTransformer = jest.requireMock('@expo/metro-config/babel-transformer')

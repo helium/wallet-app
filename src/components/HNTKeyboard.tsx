@@ -276,7 +276,6 @@ const HNTKeyboardSelector = forwardRef(
           disappearsOnIndex={-1}
           opacity={1}
           appearsOnIndex={0}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         >
           <BackdropWrapper>

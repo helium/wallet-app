@@ -35,11 +35,9 @@ async function migrateWallet(
 ) {
   let offset = 0
   const limit = 1000
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const url = `${Config.MIGRATION_SERVER_URL}/migrate/${wallet}`
     try {
-      // eslint-disable-next-line no-await-in-loop
       const { transactions, count } = (await axios.get(url)).data
       if (count === 0) break
       const txs = transactions.map((tx: number[]) =>
@@ -54,7 +52,6 @@ async function migrateWallet(
       if (transactionData.transactions.length === 0) {
         break
       }
-      // eslint-disable-next-line no-await-in-loop
       await client.transactions.submit(transactionData)
       onProgress(offset, count)
       offset += limit
@@ -109,7 +106,6 @@ const SolanaMigration = ({
         !manual)
     )
       return
-    // eslint-disable-next-line no-console
     try {
       await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
 
