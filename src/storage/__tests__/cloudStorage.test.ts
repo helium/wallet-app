@@ -129,15 +129,16 @@ describe('iCloud restore after the upgrade', () => {
     await upgraded.updateLastViewedNotifications(1700000001)
 
     // iCloud holds the strings a main build writes and reads
-    expect(mockICloud.get(`${ICLOUD_PREFIX}accounts`)).toBe(
-      JSON.stringify(current),
-    )
+    const mainAccounts =
+      '{"helium-B":{"alias":"B","address":"helium-B","solanaAddress":"sol-b","netType":0,"version":"v1"},' +
+      '"helium-C":{"alias":"C","address":"helium-C","solanaAddress":"sol-c","netType":0,"version":"v1"}}'
+    const mainContacts =
+      '[{"alias":"Friend","address":"helium-Friend","solanaAddress":"sol-friend","netType":0,"version":"v1"}]'
+    expect(mockICloud.get(`${ICLOUD_PREFIX}accounts`)).toBe(mainAccounts)
     expect(mockICloud.get(`${ICLOUD_PREFIX}defaultAccountAddress`)).toBe(
       'helium-C',
     )
-    expect(mockICloud.get(`${ICLOUD_PREFIX}contacts`)).toBe(
-      JSON.stringify([friend]),
-    )
+    expect(mockICloud.get(`${ICLOUD_PREFIX}contacts`)).toBe(mainContacts)
     expect(mockICloud.get(`${ICLOUD_PREFIX}lastViewedNotifications`)).toBe(
       '1700000001',
     )
