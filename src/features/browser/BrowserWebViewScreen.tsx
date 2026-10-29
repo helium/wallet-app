@@ -43,6 +43,7 @@ import {
   UNSUPPORTED_VERSION_ERROR,
 } from './dappTransactions'
 import { runOneRequest } from './dappRequestGate'
+import { isSameOrigin } from './dappMessageOrigin'
 import injectWalletStandard from './walletStandard'
 
 type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
@@ -149,6 +150,8 @@ const BrowserWebViewScreen = () => {
   const pendingRequestRef = useRef<boolean>(false)
 
   const [currentUrl, setCurrentUrl] = useState(uri)
+  // Full URL of the top page; currentUrl keeps only its host
+  const topUrlRef = useRef(uri)
   const accountAddress = useMemo(
     () => currentAccount?.solanaAddress,
     [currentAccount?.solanaAddress],
@@ -390,6 +393,13 @@ const BrowserWebViewScreen = () => {
 
   const onMessage = useCallback(
     async (msg: WebViewMessageEvent) => {
+      // No reply: the frame picked the id, and a decline could end the top
+      // page's pending request with the same id
+      if (!isSameOrigin(msg.nativeEvent.url, topUrlRef.current)) {
+        Logger.breadcrumb('Dropped message from another origin')
+        return
+      }
+
       const { id, type, inputs } = JSON.parse(msg.nativeEvent.data)
 
       if (
@@ -514,6 +524,7 @@ const BrowserWebViewScreen = () => {
   }, [])
 
   const onNavigationChange = useCallback((event: WebViewNavigation) => {
+    topUrlRef.current = event.url
     const baseUrl = event.url.replace('https://', '').split('/')
     setCurrentUrl(baseUrl[0])
   }, [])
