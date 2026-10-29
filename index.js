@@ -16,7 +16,7 @@ import { Provider as ReduxProvider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import App from './src/App'
 import { GlobalError } from './src/components/GlobalError'
-import UniwindSpikeScreen from './src/features/uniwindSpike/UniwindSpikeScreen'
+import UiGalleryScreen from './src/features/uiGallery/UiGalleryScreen'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
@@ -95,7 +95,7 @@ const render = () => {
   )
 }
 
-// EXPO_PUBLIC_UNIWIND_SPIKE=1 at bundle time shows the Uniwind spike screen.
+// EXPO_PUBLIC_UI_GALLERY=1 at bundle time shows the dev UI gallery.
 AppRegistry.registerComponent('main', () =>
-  process.env.EXPO_PUBLIC_UNIWIND_SPIKE === '1' ? UniwindSpikeScreen : render,
+  process.env.EXPO_PUBLIC_UI_GALLERY === '1' ? UiGalleryScreen : render,
 )

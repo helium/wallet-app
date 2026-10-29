@@ -18,6 +18,19 @@ const reactCompilerRules = Object.fromEntries(
     .map((rule) => [rule, 'error']),
 )
 
+// Legacy components and Restyle get bug fixes only; new code uses @ui. The
+// ban is an error in migrated code and a warning elsewhere.
+const legacyImports = {
+  paths: [
+    { name: '@components', message: 'Legacy component. Use @ui.' },
+    { name: '@shopify/restyle', message: 'Restyle is legacy. Use @ui.' },
+  ],
+  patterns: [
+    { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
+  ],
+}
+const migratedFiles = ['src/ui/**', 'src/features/uiGallery/**']
+
 module.exports = [
   {
     ignores: [
@@ -64,6 +77,7 @@ module.exports = [
       ],
       'import-x/no-duplicates': 'error',
       'import-x/no-extraneous-dependencies': 'error',
+      'no-restricted-imports': ['warn', legacyImports],
       'no-restricted-properties': [
         'error',
         {
@@ -100,6 +114,12 @@ module.exports = [
         'error',
         { allow: ['\\.json$', '\\.png$'] },
       ],
+    },
+  },
+  {
+    files: migratedFiles,
+    rules: {
+      'no-restricted-imports': ['error', legacyImports],
     },
   },
   {

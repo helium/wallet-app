@@ -35,6 +35,7 @@ module.exports = (api) => {
             '@utils': './src/utils',
             '@storage': './src/storage',
             '@types': './src/types',
+            '@ui': './src/ui',
           },
         },
       ],

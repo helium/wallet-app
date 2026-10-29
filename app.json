@@ -205,7 +205,13 @@
           "./src/assets/fonts/DMSans-Italic.ttf",
           "./src/assets/fonts/DMSans-Medium.ttf",
           "./src/assets/fonts/DMSans-MediumItalic.ttf",
-          "./src/assets/fonts/DMSans-Regular.ttf"
+          "./src/assets/fonts/DMSans-Regular.ttf",
+          "./src/assets/fonts/Figtree-Light.ttf",
+          "./src/assets/fonts/Figtree-Regular.ttf",
+          "./src/assets/fonts/Figtree-Medium.ttf",
+          "./src/assets/fonts/Figtree-SemiBold.ttf",
+          "./src/assets/fonts/Figtree-Bold.ttf",
+          "./src/assets/fonts/Figtree-Black.ttf"
         ]
       }
     ],
@@ -261,5 +267,5 @@
     }
   },
   "owner": "nova-labs",
-  "userInterfaceStyle": "automatic"
+  "userInterfaceStyle": "light"
 }

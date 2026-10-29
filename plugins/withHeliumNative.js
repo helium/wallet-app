@@ -3,6 +3,7 @@
 const {
   AndroidConfig,
   withAndroidManifest,
+  withAndroidStyles,
   withGradleProperties,
   withPodfile,
 } = require('expo/config-plugins')
@@ -90,5 +91,18 @@ const withHeliumManifest = (config) =>
     return cfg
   })
 
+// The app is light only. The template's DayNight theme would follow the
+// system dark mode in native chrome (dialogs, pickers).
+const withLightAppTheme = (config) =>
+  withAndroidStyles(config, (cfg) => {
+    const appTheme = cfg.modResults.resources.style.find(
+      (style) => style.$.name === 'AppTheme',
+    )
+    appTheme.$.parent = 'Theme.AppCompat.Light.NoActionBar'
+    return cfg
+  })
+
 module.exports = (config) =>
-  withHeliumManifest(withHeliumGradleProperties(withPodPostInstall(config)))
+  withLightAppTheme(
+    withHeliumManifest(withHeliumGradleProperties(withPodPostInstall(config))),
+  )

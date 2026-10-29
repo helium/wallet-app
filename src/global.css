@@ -1,3 +1,17 @@
 @import 'tailwindcss';
 @import 'uniwind';
 @import './theme/world-theme.css';
+
+/*
+ * Figtree, one static file per weight: Android does not synthesize weights
+ * for custom fonts. A --font-<weight> family wins over --font-weight-<weight>,
+ * so `font-medium` sets fontFamily 'Figtree-Medium' and no fontWeight.
+ */
+@theme {
+  --font-light: 'Figtree-Light';
+  --font-normal: 'Figtree-Regular';
+  --font-medium: 'Figtree-Medium';
+  --font-semibold: 'Figtree-SemiBold';
+  --font-bold: 'Figtree-Bold';
+  --font-black: 'Figtree-Black';
+}
