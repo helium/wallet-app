@@ -1,6 +1,6 @@
 import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { PortalProvider } from '@gorhom/portal'
+import { PortalHost, PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { DarkTheme, NavigationContainer } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
@@ -197,6 +197,10 @@ const App = () => {
                     </SplashScreen>
                   </BlockchainApiProvider>
                 </SolanaProvider>
+                {/* BottomSheetModalProvider wraps its children in its own
+                    PortalProvider, which has no 'root' host. Default
+                    <Portal>s register there and need this host. */}
+                <PortalHost name="root" />
               </BottomSheetModalProvider>
             </PortalProvider>
           </ThemeProvider>
