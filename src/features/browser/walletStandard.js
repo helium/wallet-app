@@ -8,7 +8,7 @@ var isConnecting = false
 // guessable id would let it end the page's pending request.
 const randomRequestId = () => {
     const words = crypto.getRandomValues(new Uint32Array(2))
-    // 53 bits, the most JSON carries exactly; never 0, which the app drops
+    // 53 bits, the most JSON carries exactly; never 0, which the app's not-ready reply skips
     return (words[0] >>> 11) * 2 ** 32 + words[1] || 1
 }
 var parent = isAndroid ? document : window

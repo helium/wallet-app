@@ -212,7 +212,7 @@ describe.each([
       expect(setup.lastRequest().id).toBe(Number.MAX_SAFE_INTEGER)
     })
 
-    it('never sends id 0, which the app drops', async () => {
+    it("never sends id 0, which the app's not-ready reply skips", async () => {
       fillRandomBytes(0)
       setup.wallet.features['standard:connect'].connect()
       expect(setup.lastRequest().id).toBeGreaterThan(0)
