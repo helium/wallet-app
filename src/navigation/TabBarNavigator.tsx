@@ -98,7 +98,7 @@ const TabBarNavigator = () => {
           tabPress: () => {
             triggerImpact('light')
 
-            // A tab press on the Activity tab marks its transactions as seen
+            // Any tab press while Activity is focused marks its transactions as seen
             const { routes, index } = navigation.getState()
             if (routes[index].name === 'Activity' && hasNewTransactions) {
               resetNewTransactions()

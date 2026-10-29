@@ -126,9 +126,8 @@ const AccountTokenScreen = () => {
       actualHeight - headerContainerYPos,
       MIN_BOTTOM_BAR_HEIGHT,
     )
-    const expanded = actualHeight
-      ? actualHeight - insets.top - backHeaderHeight - topHeaderHeight
-      : 0
+    const expanded =
+      actualHeight - insets.top - backHeaderHeight - topHeaderHeight
     return [collapsed, expanded]
   }, [
     actualHeight,
