@@ -130,14 +130,28 @@ describe('NotificationStorageProvider', () => {
         },
       ]),
     )
-    expect(fetchedResources()).not.toContain(otherAccount.solanaAddress)
     expect(storage.notificationsByResource).not.toHaveProperty('helium-update')
     expect(storage.notificationsByResource).toEqual({
       'wallet-update': [notificationFor('wallet-update', 1)],
       [currentAccount.solanaAddress]: [
         notificationFor(currentAccount.solanaAddress, 1),
       ],
+      [otherAccount.solanaAddress]: [
+        notificationFor(otherAccount.solanaAddress, 1),
+      ],
     })
+  })
+
+  it('fetches every account at launch, before updateAllNotifications', async () => {
+    await renderProvider()
+
+    expect(mockGetNotifications).toHaveBeenCalledWith({
+      resource: otherAccount.solanaAddress,
+      wallet: currentAccount.solanaAddress,
+    })
+    expect(storage.notificationsByResource[otherAccount.solanaAddress]).toEqual(
+      [notificationFor(otherAccount.solanaAddress, 1)],
+    )
   })
 
   it('updateAllNotifications fetches every account and refetches the current resources', async () => {
