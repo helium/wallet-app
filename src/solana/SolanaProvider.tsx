@@ -38,7 +38,6 @@ import {
   checkSecureAccount,
   getSolanaKeypair,
   getSecureItem,
-  storeSecureItem,
   SecureStorageKeys,
 } from '../storage/secureStorage'
 import { RootState } from '../store/rootReducer'
@@ -47,6 +46,7 @@ import { useAppDispatch } from '../store/store'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
+import { saveCacheThenSlot } from './lastCheckedSlot'
 
 const useSolanaHook = () => {
   const { currentAccount, secureAccountsVersion } = useAccountStorage()
@@ -294,12 +294,8 @@ const useSolanaHook = () => {
           })
         })
 
-        await asyncCache.setAsyncStorage()
         // Store the current slot as the last checked slot for next time
-        await storeSecureItem(
-          SecureStorageKeys.LAST_CHECKED_SLOT,
-          currentSlot.toString(),
-        )
+        await saveCacheThenSlot(asyncCache, currentSlot)
       } catch (e) {
         console.error('Failed to fetch accounts', e)
       }
