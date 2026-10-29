@@ -4,12 +4,14 @@ import { getNotifications, Notification } from '../../utils/walletApiV2'
 export const notificationsQueryKey = (resource: string, wallet?: string) =>
   ['notifications', resource, wallet] as const
 
-// Not persisted: notifications always refetch on launch.
+export const NOTIFICATIONS_REFETCH_INTERVAL_MS = 5 * 60_000
+
+// Not persisted: notifications always refetch on launch, once a wallet is known.
 export const notificationsQuery = (resource: string, wallet?: string) =>
   queryOptions({
     queryKey: notificationsQueryKey(resource, wallet),
     queryFn: () => getNotifications({ resource, wallet }),
-    refetchInterval: 5 * 60_000,
+    enabled: !!wallet,
   })
 
 export const markNotificationViewed = (

@@ -21,7 +21,6 @@ jest.mock('../rootReducer', () => ({
 }))
 jest.mock('../slices/solanaSlice', () => ({ name: 'solana' }))
 jest.mock('../slices/balancesSlice', () => ({ name: 'balances' }))
-jest.mock('../slices/notificationsSlice', () => ({ name: 'notifications' }))
 jest.mock('../../storage/importLegacyState', () => ({
   importLegacyState: () => mockImportLegacyState(),
 }))

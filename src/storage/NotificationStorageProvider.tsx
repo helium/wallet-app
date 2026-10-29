@@ -17,6 +17,7 @@ import {
 } from '../features/notifications/notificationTypes'
 import {
   markNotificationViewed,
+  NOTIFICATIONS_REFETCH_INTERVAL_MS,
   notificationsQuery,
 } from '../features/notifications/notificationsQuery'
 import { useAccountStorage } from './AccountStorageProvider'
@@ -64,12 +65,16 @@ const useNotificationStorageHook = () => {
       : []),
   ])
 
-  // Outside QueryClientProvider, so the client is passed in.
+  // Outside QueryClientProvider, so the client is passed in. Only the current
+  // resources poll; other accounts refetch on updateAllNotifications.
   const notificationQueries = useQueries(
     {
-      queries: resources.map((r) =>
-        notificationsQuery(r, currentAccount?.solanaAddress),
-      ),
+      queries: resources.map((r) => ({
+        ...notificationsQuery(r, currentAccount?.solanaAddress),
+        refetchInterval: currentResources.includes(r)
+          ? NOTIFICATIONS_REFETCH_INTERVAL_MS
+          : false,
+      })),
     },
     queryClient,
   )
