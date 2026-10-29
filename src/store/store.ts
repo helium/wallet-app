@@ -14,7 +14,8 @@ if (Reactotron.createEnhancer && __DEV__) {
 }
 
 const persistConfig = {
-  key: 'root',
+  // Not 'root': the legacy import reads and removes persist:root
+  key: 'root.v2',
   storage: AsyncStorage,
   version: 1,
   blacklist: [solanaSliceName, balancesSliceName, notificationsSliceName],
