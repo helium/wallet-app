@@ -1,0 +1,43 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
+index b577b8b..5324f67 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
+@@ -89,7 +89,9 @@ const ANIMATION_CONFIGS_IOS = {
+   mass: 3,
+   overshootClamping: true,
+   restDisplacementThreshold: 10,
+-  restSpeedThreshold: 10
++  restSpeedThreshold: 10,
++  // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++  energyThreshold: 3e-6
+ };
+ const ANIMATION_CONFIGS_ANDROID = {
+   duration: ANIMATION_DURATION,
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/constants.js b/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
+index 92211b1..41812a5 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
+@@ -81,7 +81,9 @@ const ANIMATION_CONFIGS_IOS = {
+   mass: 3,
+   overshootClamping: true,
+   restDisplacementThreshold: 10,
+-  restSpeedThreshold: 10
++  restSpeedThreshold: 10,
++  // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++  energyThreshold: 3e-6
+ };
+ const ANIMATION_CONFIGS_ANDROID = {
+   duration: ANIMATION_DURATION,
+diff --git a/node_modules/@gorhom/bottom-sheet/src/constants.ts b/node_modules/@gorhom/bottom-sheet/src/constants.ts
+index 87afaa1..8fb7190 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/constants.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/constants.ts
+@@ -78,6 +78,8 @@ const ANIMATION_CONFIGS_IOS = {
+   overshootClamping: true,
+   restDisplacementThreshold: 10,
+   restSpeedThreshold: 10,
++  // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++  energyThreshold: 3e-6,
+ };
+ 
+ const ANIMATION_CONFIGS_ANDROID = {
