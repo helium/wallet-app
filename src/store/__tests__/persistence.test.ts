@@ -17,7 +17,7 @@ jest.mock('../../../ReactotronConfig', () => ({
 }))
 jest.mock('../rootReducer', () => ({
   __esModule: true,
-  default: (state = { hotspots: {} }) => state,
+  default: (state = {}) => state,
 }))
 jest.mock('../slices/solanaSlice', () => ({ name: 'solana' }))
 jest.mock('../slices/balancesSlice', () => ({ name: 'balances' }))

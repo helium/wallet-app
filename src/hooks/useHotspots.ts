@@ -160,6 +160,7 @@ export const refreshHotspots = (
 export const selectHotspots = (
   pagesData: InfiniteData<HotspotsPage> | undefined,
   allHotspots: AllHotspots | undefined,
+  allHotspotsFailed: boolean,
 ) => {
   const pages = pagesData?.pages || []
   const hotspotsById = new Map<string, CompressedNFT>()
@@ -208,7 +209,7 @@ export const selectHotspots = (
     hotspots,
     hotspotsWithMeta,
     totalHotspots: lastPage?.grandTotal,
-    onEndReached: !lastPage || isLastPage(lastPage),
+    onEndReached: allHotspotsFailed || !lastPage || isLastPage(lastPage),
   }
 }
 
@@ -242,14 +243,15 @@ const useHotspots = (): {
   const {
     data: allHotspots,
     isFetching: fetchingAll,
+    isError: allHotspotsFailed,
     refetch: refetchAll,
   } = useQuery({ ...allHotspotsQueryOptions(args), enabled: false })
 
   const loading = (isFetching && !isFetchingNextPage) || fetchingAll
 
   const { hotspots, hotspotsWithMeta, totalHotspots, onEndReached } = useMemo(
-    () => selectHotspots(pagesData, allHotspots),
-    [pagesData, allHotspots],
+    () => selectHotspots(pagesData, allHotspots, allHotspotsFailed),
+    [pagesData, allHotspots, allHotspotsFailed],
   )
 
   const refresh = useCallback(() => {

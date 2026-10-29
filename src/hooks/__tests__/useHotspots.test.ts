@@ -1,17 +1,31 @@
 import { AnchorProvider } from '@anchor-lang/core'
-import { InfiniteQueryObserver, QueryClient } from '@tanstack/react-query'
+import {
+  InfiniteQueryObserver,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+import React, { useEffect } from 'react'
+import TestRenderer, { act, ReactTestRenderer } from 'react-test-renderer'
 import { CompressedNFT } from '../../types/solana'
 import * as solUtils from '../../utils/solanaUtils'
 import { createQueryClient } from '../../utils/queryClient'
-import {
+import useHotspots, {
   allHotspotsQueryOptions,
   hotspotsQueryOptions,
   refreshHotspots,
   selectHotspots,
 } from '../useHotspots'
 
-jest.mock('../../solana/SolanaProvider', () => ({}))
-jest.mock('../../storage/AccountStorageProvider', () => ({}))
+jest.mock('../../solana/SolanaProvider', () => ({
+  useSolana: () => ({ cluster: 'mainnet-beta', anchorProvider: {} }),
+}))
+jest.mock('../../storage/AccountStorageProvider', () => ({
+  useAccountStorage: () => ({
+    currentAccount: {
+      solanaAddress: 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4',
+    },
+  }),
+}))
 jest.mock('../../utils/solanaUtils', () => ({
   getCompressedCollectablesByCreator: jest.fn(),
   getCompressedNFTMetadata: jest.fn(),
@@ -86,18 +100,37 @@ afterEach(() => {
 })
 
 describe('hotspots query', () => {
+  // The persister reads the wallet address at index 2 of each key
+  it('keys both queries by cluster and wallet address', () => {
+    expect(hotspotsQueryOptions(args).queryKey).toEqual([
+      'hotspots',
+      args.cluster,
+      args.solanaAddress,
+    ])
+    expect(allHotspotsQueryOptions(args).queryKey).toEqual([
+      'hotspots',
+      args.cluster,
+      args.solanaAddress,
+      'all',
+    ])
+  })
+
   it('loads 20 hotspots a page until a short page ends the list', async () => {
     ownHotspots(45)
 
     await refreshHotspots(client, args)
     await fetchMore()
-    expect(selectHotspots(pagesData(), allData())).toMatchObject({
+    expect(selectHotspots(pagesData(), allData(), false)).toMatchObject({
       totalHotspots: 45,
       onEndReached: false,
     })
 
     await fetchMore()
-    const { hotspots, onEndReached } = selectHotspots(pagesData(), allData())
+    const { hotspots, onEndReached } = selectHotspots(
+      pagesData(),
+      allData(),
+      false,
+    )
 
     expect(requestedPages()).toEqual([
       [1, 20],
@@ -115,7 +148,9 @@ describe('hotspots query', () => {
 
     await refreshHotspots(client, args)
 
-    expect(selectHotspots(pagesData(), allData()).hotspotsWithMeta).toEqual([
+    expect(
+      selectHotspots(pagesData(), allData(), false).hotspotsWithMeta,
+    ).toEqual([
       {
         id: 'hotspot-0',
         content: {
@@ -133,7 +168,7 @@ describe('hotspots query', () => {
     await refreshHotspots(client, args)
     await client.fetchQuery(allHotspotsQueryOptions(args))
     const { hotspots, hotspotsWithMeta, totalHotspots, onEndReached } =
-      selectHotspots(pagesData(), allData())
+      selectHotspots(pagesData(), allData(), false)
 
     expect(hotspots).toHaveLength(45)
     expect(totalHotspots).toBe(45)
@@ -154,7 +189,11 @@ describe('hotspots query', () => {
     mocked.getCompressedCollectablesByCreator.mockClear()
 
     await refreshHotspots(client, args)
-    const { hotspots, onEndReached } = selectHotspots(pagesData(), allData())
+    const { hotspots, onEndReached } = selectHotspots(
+      pagesData(),
+      allData(),
+      false,
+    )
 
     expect(requestedPages()).toEqual([[1, 20]])
     expect(allData()).toBeUndefined()
@@ -163,11 +202,155 @@ describe('hotspots query', () => {
   })
 
   it('shows no hotspots and an ended list before the first fetch', () => {
-    expect(selectHotspots(undefined, undefined)).toEqual({
+    expect(selectHotspots(undefined, undefined, false)).toEqual({
       hotspots: [],
       hotspotsWithMeta: [],
       totalHotspots: undefined,
       onEndReached: true,
     })
+  })
+
+  it('ends the list after a full page when the full list failed', () => {
+    const fullPage = {
+      pages: [
+        {
+          items: makeHotspots(20),
+          grandTotal: 45,
+          metadata: [],
+          rewards: [],
+          recipients: [],
+        },
+      ],
+      pageParams: [0],
+    }
+
+    expect(selectHotspots(fullPage, undefined, true).onEndReached).toBe(true)
+    expect(selectHotspots(fullPage, undefined, false).onEndReached).toBe(false)
+  })
+
+  it('rejects both fetches without a Solana connection', async () => {
+    const noProvider = { ...args, anchorProvider: undefined }
+
+    await expect(
+      client.fetchInfiniteQuery(hotspotsQueryOptions(noProvider)),
+    ).rejects.toThrow('Solana connection missing')
+    await expect(
+      client.fetchQuery(allHotspotsQueryOptions(noProvider)),
+    ).rejects.toThrow('Solana connection missing')
+  })
+})
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true
+
+describe('useHotspots', () => {
+  let hook: ReturnType<typeof useHotspots>
+  let renderer: ReactTestRenderer
+
+  // Fetches the full list whenever the list has not ended, like the map
+  const MapHarness = () => {
+    hook = useHotspots()
+    const { loading, onEndReached, fetchAll } = hook
+    useEffect(() => {
+      if (!loading && !onEndReached) fetchAll()
+    }, [loading, onEndReached, fetchAll])
+    return null
+  }
+
+  const ListHarness = () => {
+    hook = useHotspots()
+    return null
+  }
+
+  const mount = async (harness: () => null) => {
+    await act(async () => {
+      renderer = TestRenderer.create(
+        React.createElement(
+          QueryClientProvider,
+          { client },
+          React.createElement(harness),
+        ),
+      )
+    })
+  }
+
+  const advance = async (ms: number) => {
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(ms)
+    })
+  }
+
+  const fullListRequests = () =>
+    requestedPages().filter(([, limit]) => limit === 1000)
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+    client.setDefaultOptions({
+      queries: { ...client.getDefaultOptions().queries, retry: false },
+    })
+  })
+
+  afterEach(async () => {
+    await act(async () => {
+      renderer.unmount()
+    })
+    jest.useRealTimers()
+  })
+
+  it('fetches the full list once and ends the list when it fails', async () => {
+    ownHotspots(45)
+    const servePage = mocked.getCompressedCollectablesByCreator
+      .getMockImplementation()
+      ?.bind(null)
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      async (pubKey, provider, page, limit) => {
+        if (limit === 1000) throw new Error('full list failed')
+        if (!servePage) throw new Error('no page mock')
+        return servePage(pubKey, provider, page, limit)
+      },
+    )
+    await mount(MapHarness)
+
+    await act(async () => {
+      hook.refresh()
+    })
+    await advance(100)
+
+    expect(fullListRequests()).toHaveLength(1)
+    expect(hook.onEndReached).toBe(true)
+  })
+
+  it('starts no fetch while the first page loads', async () => {
+    ownHotspots(45)
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve({
+                items: makeHotspots(20),
+                grandTotal: 45,
+              } as Awaited<ReturnType<typeof solUtils.getCompressedCollectablesByCreator>>),
+            100,
+          )
+        }),
+    )
+    await mount(ListHarness)
+
+    await act(async () => {
+      hook.refresh()
+    })
+    await advance(0)
+    expect(hook.loading).toBe(true)
+    expect(mocked.getCompressedCollectablesByCreator).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      hook.fetchMore()
+      hook.fetchAll()
+    })
+    await advance(0)
+    expect(mocked.getCompressedCollectablesByCreator).toHaveBeenCalledTimes(1)
+
+    await advance(100)
   })
 })

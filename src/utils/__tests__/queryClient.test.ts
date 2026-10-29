@@ -1,4 +1,8 @@
-import { createQueryClient, removePersistedQueries } from '../queryClient'
+import {
+  PERSISTED_QUERY_ROOTS,
+  createQueryClient,
+  removePersistedQueries,
+} from '../queryClient'
 
 afterEach(() => {
   jest.useRealTimers()
@@ -23,34 +27,23 @@ describe('createQueryClient', () => {
     queryClient.clear()
   })
 
-  it('keeps an unobserved collectables query in memory for 7 days', () => {
-    jest.useFakeTimers()
-    const queryClient = createQueryClient()
-    const collectablesKey = ['collectables', 'mainnet-beta', 'wallet']
-    queryClient.setQueryData(collectablesKey, {})
+  it.each(PERSISTED_QUERY_ROOTS)(
+    'keeps an unobserved %s query in memory for 7 days',
+    (root) => {
+      jest.useFakeTimers()
+      const queryClient = createQueryClient()
+      const key = [root, 'mainnet-beta', 'wallet']
+      queryClient.setQueryData(key, {})
 
-    jest.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1)
-    expect(queryClient.getQueryData(collectablesKey)).toEqual({})
+      jest.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1)
+      expect(queryClient.getQueryData(key)).toEqual({})
 
-    jest.advanceTimersByTime(1)
-    expect(queryClient.getQueryData(collectablesKey)).toBeUndefined()
+      jest.advanceTimersByTime(1)
+      expect(queryClient.getQueryData(key)).toBeUndefined()
 
-    queryClient.clear()
-  })
-  it('keeps an unobserved hotspots query in memory for 7 days', () => {
-    jest.useFakeTimers()
-    const queryClient = createQueryClient()
-    const hotspotsKey = ['hotspots', 'mainnet-beta', 'wallet']
-    queryClient.setQueryData(hotspotsKey, {})
-
-    jest.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 - 1)
-    expect(queryClient.getQueryData(hotspotsKey)).toEqual({})
-
-    jest.advanceTimersByTime(1)
-    expect(queryClient.getQueryData(hotspotsKey)).toBeUndefined()
-
-    queryClient.clear()
-  })
+      queryClient.clear()
+    },
+  )
 })
 
 describe('removePersistedQueries', () => {
