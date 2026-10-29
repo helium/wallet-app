@@ -26,6 +26,7 @@ const OnboardingNavigator = () => {
       ({
         headerShown: false,
         presentation: 'modal',
+        animation: 'slide_from_bottom',
       } as NativeStackNavigationOptions),
     [],
   )
