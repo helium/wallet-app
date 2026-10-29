@@ -42,4 +42,20 @@ describe('metro resolveRequest', () => {
   it('resolves @anchor-lang/core to the root copy', () => {
     expect(resolve('@anchor-lang/core', PYTH_FILE)).toBe(ANCHOR_CORE)
   })
+
+  it('resolves plain modules with isESMImport set to false', () => {
+    const resolveRequest = jest.fn(
+      (_context: unknown, target: string) => target,
+    )
+    metroConfig.resolver.resolveRequest(
+      { originModulePath: APP_FILE, resolveRequest, isESMImport: true },
+      'react',
+      'ios',
+    )
+    expect(resolveRequest).toHaveBeenCalledWith(
+      expect.objectContaining({ isESMImport: false }),
+      'react',
+      'ios',
+    )
+  })
 })

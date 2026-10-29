@@ -15,9 +15,9 @@
     "ios-clean": "rm -rf ios/Pods && rm -rf ios/build",
     "prebuild:clean": "expo prebuild --clean",
     "clean-install": "react-native-clean-project",
-    "bump-patch": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type patch",
-    "bump-minor": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type minor",
-    "bump-major": "npx react-native bump-version --skip-semver-for android --skip-code-for all --type major",
+    "bump-patch": "npm version patch --no-git-tag-version",
+    "bump-minor": "npm version minor --no-git-tag-version",
+    "bump-major": "npm version major --no-git-tag-version",
     "prettier": "prettier --write *.ts*",
     "gen-types:all": "yarn gen-types",
     "prepare": "husky install"
