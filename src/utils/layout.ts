@@ -31,6 +31,9 @@ export const useContentWidth = () => {
   return width - marginLeft - marginRight
 }
 
+// A collectable tile is half the content width tall
+export const useCollectableHeight = () => useContentWidth() / 2
+
 // Font scaling utilities for responsive design
 const BASE_WIDTH = 375 // iPhone 6/7/8 width as baseline
 const BASE_HEIGHT = 667

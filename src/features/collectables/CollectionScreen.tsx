@@ -10,7 +10,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
 import { useBorderRadii } from '@theme/themeHooks'
-import { useContentWidth } from '@utils/layout'
+import { useCollectableHeight } from '@utils/layout'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -26,7 +26,7 @@ type Route = RouteProp<CollectableStackParamList, 'CollectionScreen'>
 const CollectionScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const COLLECTABLE_HEIGHT = useContentWidth() / 2
+  const collectableHeight = useCollectableHeight()
   const collectables = route.params.collection
   const { lm: borderRadius } = useBorderRadii()
   const { triggerImpact } = useHaptic()
@@ -62,7 +62,7 @@ const CollectionScreen = () => {
           >
             <Image
               borderRadius={borderRadius}
-              style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
+              style={{ height: collectableHeight, width: '100%' }}
               source={{
                 uri: json?.image || '',
               }}
@@ -71,7 +71,7 @@ const CollectionScreen = () => {
         </ReAnimatedBox>
       )
     },
-    [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
+    [collectableHeight, borderRadius, handleNavigateToCollectable],
   )
 
   const keyExtractor = useCallback((item: Collectable) => item.id, [])

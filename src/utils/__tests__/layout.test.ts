@@ -1,4 +1,12 @@
-import { contentColumnMargins, responsiveFontSize } from '../layout'
+import { useWindowDimensions } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  contentColumnMargins,
+  getMaxFontSizeMultiplier,
+  responsiveFontSize,
+  useCollectableHeight,
+  useContentWidth,
+} from '../layout'
 
 jest.mock('react-native', () => ({
   PixelRatio: { roundToNearestPixel: (size: number) => size },
@@ -50,5 +58,51 @@ describe('responsiveFontSize', () => {
     expect(responsiveFontSize(42, { width: 466, height: 678 })).toBe(43)
     // Inner display, 669x951pt: min(1.784, 1.426) clamps to 1.2, 42 * 1.2 = 50.4
     expect(responsiveFontSize(42, { width: 669, height: 951 })).toBe(50)
+  })
+})
+
+describe('getMaxFontSizeMultiplier', () => {
+  it.each([
+    [375, 1.2],
+    [376, 1.3],
+    [390, 1.3],
+    [391, 1.4],
+    [430, 1.4],
+  ])('gives a %ipt-wide window a %f multiplier', (width, multiplier) => {
+    expect(getMaxFontSizeMultiplier({ width, height: 800 })).toBe(multiplier)
+  })
+})
+
+const mockWindow = (
+  width: number,
+  height: number,
+  insets: { left: number; right: number },
+) => {
+  ;(useWindowDimensions as jest.Mock).mockReturnValue({ width, height })
+  ;(useSafeAreaInsets as jest.Mock).mockReturnValue({
+    ...insets,
+    top: 0,
+    bottom: 0,
+  })
+}
+
+describe('useContentWidth', () => {
+  it('caps the column on a wide window with a rail inset', () => {
+    // margins 192 + 108, so 900 - 300 = 600
+    mockWindow(900, 1200, { left: 84, right: 0 })
+    expect(useContentWidth()).toBe(600)
+  })
+
+  it('uses the full width of a phone window', () => {
+    mockWindow(393, 852, noInsets)
+    expect(useContentWidth()).toBe(393)
+  })
+})
+
+describe('useCollectableHeight', () => {
+  it('is half the content width', () => {
+    // content width 600, see useContentWidth
+    mockWindow(900, 1200, { left: 84, right: 0 })
+    expect(useCollectableHeight()).toBe(300)
   })
 })

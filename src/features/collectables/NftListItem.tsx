@@ -9,7 +9,7 @@ import { useBorderRadii } from '@theme/themeHooks'
 import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
-import { useContentWidth } from '../../utils/layout'
+import { useCollectableHeight } from '../../utils/layout'
 import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
 
@@ -21,7 +21,7 @@ const NftListItem = ({
   collectables: Collectable[]
 }) => {
   const { lm } = useBorderRadii()
-  const COLLECTABLE_HEIGHT = useContentWidth() / 2
+  const collectableHeight = useCollectableHeight()
   const { json } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
   const { triggerImpact } = useHaptic()
@@ -55,7 +55,7 @@ const NftListItem = ({
       >
         <Image
           borderRadius={lm}
-          style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
+          style={{ height: collectableHeight, width: '100%' }}
           source={{
             uri: json?.image || '',
             cache: 'force-cache',
@@ -85,7 +85,7 @@ const NftListItem = ({
 }
 
 export const NFTSkeleton = () => {
-  const COLLECTABLE_HEIGHT = useContentWidth() / 2
+  const collectableHeight = useCollectableHeight()
   return (
     <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
       <TouchableOpacityBox
@@ -96,7 +96,7 @@ export const NFTSkeleton = () => {
         <Box
           backgroundColor="surface"
           borderRadius="xl"
-          height={COLLECTABLE_HEIGHT}
+          height={collectableHeight}
           width="100%"
           justifyContent="center"
           alignItems="center"
