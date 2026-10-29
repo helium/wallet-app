@@ -223,6 +223,7 @@ const Settings = () => {
               alias: currentAccount?.alias,
             },
           ),
+          isLastAccount ? 'allWallets' : 'oneWallet',
         ),
         [
           {

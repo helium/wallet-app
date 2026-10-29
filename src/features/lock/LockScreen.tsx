@@ -75,7 +75,11 @@ const LockScreen = ({ children }: Props) => {
   const handleSignOut = useCallback(async () => {
     const decision = await showOKCancelAlert({
       title: t('auth.signOutAlert.title'),
-      message: withICloudSignOutWarning(t, t('auth.signOutAlert.body')),
+      message: withICloudSignOutWarning(
+        t,
+        t('auth.signOutAlert.body'),
+        'allWallets',
+      ),
     })
     if (decision) {
       await signOut()

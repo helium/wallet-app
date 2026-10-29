@@ -62,6 +62,7 @@ const ConfirmSignoutScreen = () => {
             alias: currentAccount?.alias,
           },
         ),
+        isLastAccount ? 'allWallets' : 'oneWallet',
       ),
       [
         {
