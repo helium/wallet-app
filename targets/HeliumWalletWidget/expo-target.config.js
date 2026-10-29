@@ -4,7 +4,7 @@ module.exports = {
   name: 'HeliumWalletWidgetExtension',
   displayName: 'Helium Wallet Widget',
   bundleIdentifier: '.HeliumWalletWidget',
-  deploymentTarget: '15.0',
+  deploymentTarget: '16.4',
   frameworks: ['SwiftUI', 'WidgetKit'],
   // An object here, not a hand .entitlements file: the plugin parses a hand
   // file into a null-prototype object that breaks Expo config serialization.
