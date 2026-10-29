@@ -24,14 +24,16 @@ describe('metro transformer', () => {
     expect(expoTransformer.transform).not.toHaveBeenCalled()
   })
 
-  it.each(['a/b/index.ts', 'a/b/App.tsx', 'a/b/streams.js'])(
-    'sends %s to the Expo transformer only',
-    (filename) => {
-      const props = { filename, src: 'export {}' }
-      expect(transformer.transform(props)).toBe('expo')
-      expect(expoTransformer.transform).toHaveBeenCalledTimes(1)
-      expect(expoTransformer.transform).toHaveBeenCalledWith(props)
-      expect(svgTransformer.transform).not.toHaveBeenCalled()
-    },
-  )
+  it.each([
+    'a/b/index.ts',
+    'a/b/App.tsx',
+    'a/b/streams.js',
+    'node_modules/react-native-svg/lib/module/index.js',
+  ])('sends %s to the Expo transformer only', (filename) => {
+    const props = { filename, src: 'export {}' }
+    expect(transformer.transform(props)).toBe('expo')
+    expect(expoTransformer.transform).toHaveBeenCalledTimes(1)
+    expect(expoTransformer.transform).toHaveBeenCalledWith(props)
+    expect(svgTransformer.transform).not.toHaveBeenCalled()
+  })
 })

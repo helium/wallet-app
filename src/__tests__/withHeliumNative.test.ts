@@ -1,5 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { addPodPostInstall } = require('../../plugins/withHeliumNative')
+const withHeliumNative = require('../../plugins/withHeliumNative')
+
+const { addPodPostInstall } = withHeliumNative
 
 const ANCHOR = 'post_install do |installer|'
 
@@ -37,6 +39,32 @@ describe('addPodPostInstall', () => {
       addPodPostInstall("target 'HeliumWallet' do\n  use_react_native!\nend\n"),
     ).toThrow(
       'withHeliumNative: Podfile has no "post_install do |installer|" block',
+    )
+  })
+})
+
+describe('withHeliumNative', () => {
+  it('adds the build settings to the Podfile through the podfile mod', async () => {
+    const config = withHeliumNative({
+      name: 'x',
+      slug: 'x',
+      ios: {},
+      android: {},
+    })
+    const result = await config.mods.ios.podfile({
+      ...config,
+      modResults: { contents: PODFILE },
+      modRequest: {
+        nextMod: async (c: unknown) => c,
+        platform: 'ios',
+        modName: 'podfile',
+        projectRoot: '/tmp',
+        platformProjectRoot: '/tmp/ios',
+        introspect: false,
+      },
+    })
+    expect(result.modResults.contents).toContain(
+      'config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"',
     )
   })
 })

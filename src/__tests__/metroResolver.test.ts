@@ -59,3 +59,11 @@ describe('metro resolveRequest', () => {
     )
   })
 })
+
+describe('metro transformer config', () => {
+  it('points babelTransformerPath at metro.transformer.js', () => {
+    expect(metroConfig.transformer.babelTransformerPath).toBe(
+      require.resolve('../../metro.transformer'),
+    )
+  })
+})
