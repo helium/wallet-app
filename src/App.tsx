@@ -2,7 +2,7 @@ import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
-import { DarkTheme, NavigationContainer } from '@react-navigation/native'
+import { NavigationContainer } from '@react-navigation/native'
 import { ThemeProvider } from '@shopify/restyle'
 import { BlockchainApiProvider } from '@storage/BlockchainApiProvider'
 import { JupiterProvider } from '@storage/JupiterProvider'
@@ -37,6 +37,7 @@ import WalletOnboardingProvider from './features/onboarding/OnboardingProvider'
 import SecurityScreen from './features/security/SecurityScreen'
 import useMount from './hooks/useMount'
 import { navigationRef } from './navigation/NavigationHelper'
+import { navigationTheme } from './navigation/navigationTheme'
 import RootNavigator from './navigation/RootNavigator'
 import SolanaProvider from './solana/SolanaProvider'
 import WalletSignProvider from './solana/WalletSignProvider'
@@ -85,21 +86,7 @@ const App = () => {
     [colorScheme],
   )
 
-  const navTheme = useMemo(
-    () => ({
-      ...DarkTheme,
-      dark: colorScheme === 'light',
-      colors: {
-        ...DarkTheme.colors,
-        background:
-          colorScheme === 'light'
-            ? lightThemeColors.primaryBackground
-            : darkThemeColors.primaryBackground,
-      },
-    }),
-
-    [colorScheme],
-  )
+  const navTheme = useMemo(() => navigationTheme(colorScheme), [colorScheme])
 
   useMount(() => {
     // init OneSignal
