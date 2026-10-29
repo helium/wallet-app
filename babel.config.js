@@ -1,3 +1,8 @@
+const path = require('path')
+
+// The compiler matches `sources` entries as substrings of the file path.
+const appSource = path.join(__dirname, 'src') + path.sep
+
 module.exports = (api) => {
   api.cache(true)
 
@@ -5,6 +10,12 @@ module.exports = (api) => {
     // reanimated: false, as the worklets plugin is listed below
     presets: [['babel-preset-expo', { reanimated: false }]],
     plugins: [
+      // The compiler must run first. A component it cannot compile is left
+      // as written.
+      [
+        'babel-plugin-react-compiler',
+        { panicThreshold: 'none', sources: [appSource] },
+      ],
       [
         'module-resolver',
         {

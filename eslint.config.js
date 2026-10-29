@@ -6,7 +6,8 @@ const tseslint = require('typescript-eslint')
 
 const tsFiles = ['**/*.ts', '**/*.tsx']
 
-// React Compiler rules stay at warn until the compiler is adopted.
+// React Compiler rules are errors: a component that breaks one is not
+// compiled.
 const reactCompilerRules = Object.fromEntries(
   Object.keys(reactHooks.configs.flat.recommended.rules)
     .filter(
@@ -14,7 +15,7 @@ const reactCompilerRules = Object.fromEntries(
         rule !== 'react-hooks/rules-of-hooks' &&
         rule !== 'react-hooks/exhaustive-deps',
     )
-    .map((rule) => [rule, 'warn']),
+    .map((rule) => [rule, 'error']),
 )
 
 module.exports = [
