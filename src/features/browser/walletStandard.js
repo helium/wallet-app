@@ -3,8 +3,14 @@ const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAn
 if (window.heliumWalletInjected) return;
 
 var isConnecting = false
-// Each request carries an id; a listener settles only on the reply with its id
-let nextRequestId = 0
+// Each request carries an id; a listener settles only on the reply with its id.
+// Ids are random: an iframe can make the app decline any id it sends, so a
+// guessable id would let it end the page's pending request.
+const randomRequestId = () => {
+    const words = crypto.getRandomValues(new Uint32Array(2))
+    // 53 bits, the most JSON carries exactly; never 0, which the app drops
+    return (words[0] >>> 11) * 2 ** 32 + words[1] || 1
+}
 var parent = isAndroid ? document : window
 
 class PublicKey {
@@ -267,11 +273,13 @@ class HeliumWallet {
 
     #connect = async ({ silent } = {}) => {
         isConnecting = true
-        const id = ++nextRequestId
+        const id = randomRequestId()
         window.ReactNativeWebView.postMessage(JSON.stringify({ id, type: 'connect' }))
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
+              // Only the app's replies have no source; a page or iframe postMessage has one
+              if (message.source !== null) return
               // Metamask provider sends some weird objects that we don't use
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
@@ -297,7 +305,7 @@ class HeliumWallet {
 
     #signAndSendTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const id = ++nextRequestId
+        const id = randomRequestId()
 
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ id, type: 'signAndSendTransaction', inputs }),
@@ -305,6 +313,7 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
+              if (message.source !== null) return
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.id !== id) return
@@ -332,7 +341,7 @@ class HeliumWallet {
 
     #signTransaction = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const id = ++nextRequestId
+        const id = randomRequestId()
 
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ id, type: 'signTransaction', inputs }),
@@ -340,6 +349,7 @@ class HeliumWallet {
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
+              if (message.source !== null) return
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.id !== id) return
@@ -367,13 +377,14 @@ class HeliumWallet {
 
     #signMessage = async (...inputs) => {
         if (!this.#account) throw new Error('not connected')
-        const id = ++nextRequestId
+        const id = randomRequestId()
         window.ReactNativeWebView.postMessage(
             JSON.stringify({ id, type: 'signMessage', inputs }),
         )
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
+              if (message.source !== null) return
               if (typeof message.data == "string") {
                 const parsedData = JSON.parse(message.data)
                 if (parsedData.id !== id) return
