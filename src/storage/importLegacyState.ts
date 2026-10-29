@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { Cluster } from '@solana/web3.js'
 import { Platform } from 'react-native'
-import { getICloudKVSString } from '../../modules/icloud-kvs'
+import {
+  getICloudKVSString,
+  removeICloudKVSKeys,
+} from '../../modules/icloud-kvs'
 import { useAppStore } from '../store/appStore'
 import { BrowserDetails, useBrowserStore } from '../store/browserStore'
 import { CloudState, useCloudStore } from '../store/cloudStore'
@@ -19,6 +22,24 @@ const readCloudItem = (key: keyof CloudState) =>
   Platform.OS === 'ios'
     ? getICloudKVSString(`${ICLOUD_PREFIX}${key}`)
     : AsyncStorage.getItem(key)
+
+// Every CloudState key, so a new cloud key fails to compile until listed here
+const CLOUD_KEYS = Object.keys({
+  accounts: true,
+  contacts: true,
+  lastViewedNotifications: true,
+  visibleTokens: true,
+  defaultAccountAddress: true,
+} satisfies Record<keyof CloudState, true>)
+
+/**
+ * Removes the old cloud keys on sign-out, so a reinstall or a new device does
+ * not import the signed-out wallets.
+ */
+export const removeLegacyCloudItems = () =>
+  Platform.OS === 'ios'
+    ? removeICloudKVSKeys(CLOUD_KEYS.map((key) => `${ICLOUD_PREFIX}${key}`))
+    : AsyncStorage.multiRemove(CLOUD_KEYS)
 
 type LegacyRootState = {
   app?: { showBanner?: boolean; cluster?: Cluster }
