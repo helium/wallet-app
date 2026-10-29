@@ -139,6 +139,33 @@ describe('queryPersistOptions', () => {
     expect(restored.getQueryData(historyKey)).toEqual(history)
   })
 
+  it('saves no token accounts or history of a wallet not stored', async () => {
+    const wallet = 'other-solana-address'
+    const tokensKey = ['balances', 'tokens', 'mainnet-beta', wallet]
+    const historyKey = ['balances', 'history', 'mainnet-beta', wallet, 'usd']
+    const client = newClient()
+    client.setQueryData(tokensKey, { atas: [] })
+    client.setQueryData(historyKey, [{ date: '2026-10-01', balance: 25 }])
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(tokensKey)).toBeUndefined()
+    expect(restored.getQueryData(historyKey)).toBeUndefined()
+  })
+
+  it('saves no token prices while the cloud store holds no account', async () => {
+    resetCloudStore()
+    const pricesKey = ['balances', 'prices', 'usd']
+    const client = newClient()
+    client.setQueryData(pricesKey, { helium: { usd: 2.5 } })
+    await save(client)
+
+    const restored = await restore()
+
+    expect(restored.getQueryData(pricesKey)).toBeUndefined()
+  })
+
   it('restores a cache saved 7 days ago', async () => {
     const client = newClient()
     client.setQueryData(collectablesKey, collectables)

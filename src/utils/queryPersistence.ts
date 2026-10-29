@@ -27,6 +27,25 @@ const isStoredAccountAddress = (address: unknown) =>
       address,
   )
 
+const NO_ADDRESS = Symbol('no address')
+
+// The wallet address in a persisted key. The balances key layout comes from
+// src/utils/balances.ts.
+const walletAddressOf = (queryKey: readonly unknown[]) => {
+  if (queryKey[0] !== 'balances') return queryKey[2]
+  if (queryKey[1] === 'prices') return NO_ADDRESS
+  return queryKey[3]
+}
+
+// A key with no address saves only while an account is stored
+const isSavedForStoredAccount = (queryKey: readonly unknown[]) => {
+  const address = walletAddressOf(queryKey)
+  if (address === NO_ADDRESS) {
+    return Object.keys(useCloudStore.getState().accounts ?? {}).length > 0
+  }
+  return isStoredAccountAddress(address)
+}
+
 const isFresh = (dataUpdatedAt: number) =>
   Date.now() - dataUpdatedAt <= PERSISTED_QUERY_MAX_AGE
 
@@ -63,7 +82,7 @@ export const queryPersistOptions: PersistQueryClientProviderProps['persistOption
       shouldDehydrateQuery: (query) =>
         defaultShouldDehydrateQuery(query) &&
         isPersistedQueryKey(query.queryKey) &&
-        isStoredAccountAddress(query.queryKey[2]) &&
+        isSavedForStoredAccount(query.queryKey) &&
         isFresh(query.state.dataUpdatedAt),
       // No mutation is saved: paused mutation variables hold signed transactions
       shouldDehydrateMutation: () => false,

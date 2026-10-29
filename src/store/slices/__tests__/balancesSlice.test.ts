@@ -10,7 +10,11 @@ import { AccountInfo, Keypair, PublicKey } from '@solana/web3.js'
 import { CSAccount } from '../../../storage/cloudStorage'
 import { AccountBalance } from '../../../types/balance'
 import { getBalanceHistory, getTokenPrices } from '../../../utils/walletApiV2'
-import { BalancesPort, tanstackBalancesPort } from './balancesPort'
+import {
+  BalancesPort,
+  clearBalancesPorts,
+  tanstackBalancesPort,
+} from './balancesPort'
 
 jest.mock('../../../utils/walletApiV2', () => ({
   getTokenPrices: jest.fn(),
@@ -138,6 +142,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.restoreAllMocks()
+  clearBalancesPorts()
 })
 
 describe('syncTokenAccounts', () => {

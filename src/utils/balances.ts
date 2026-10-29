@@ -158,6 +158,8 @@ export const syncTokenAccounts = async (
     anchorProvider: AnchorProvider
   },
 ): Promise<Tokens> => {
+  if (!acct?.solanaAddress) throw new Error('No solana account found')
+
   const syncKey = `${cluster}-${acct.solanaAddress}`
 
   // Check if sync can proceed
@@ -168,8 +170,6 @@ export const syncTokenAccounts = async (
   balancesSyncGuard.startSync(syncKey)
 
   try {
-    if (!acct?.solanaAddress) throw new Error('No solana account found')
-
     return await queryClient.fetchQuery({
       ...tokenAccountsQueryOptions({
         cluster,
