@@ -37,6 +37,15 @@ export const retryLegacyImport = () => {
 }
 
 /**
+ * The error boundary's reset: runs the import again before the purge, so
+ * the gate waits for the new run instead of showing the old failure.
+ */
+export const resetAfterError = async () => {
+  retryLegacyImport()
+  await persistor.purge()
+}
+
+/**
  * Shows the app once the import is done. A failed import throws to the error
  * boundary, whose reset calls retryLegacyImport.
  */

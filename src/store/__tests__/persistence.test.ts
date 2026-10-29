@@ -60,7 +60,7 @@ const mount = ({
   ErrorBoundary,
   renderer,
   LegacyImportGate,
-  retryLegacyImport,
+  resetAfterError,
 }: Loaded) => {
   let resetErrorBoundary = () => {}
   let root: { toJSON: () => unknown } | undefined
@@ -69,7 +69,7 @@ const mount = ({
       React.createElement(
         ErrorBoundary,
         {
-          onReset: retryLegacyImport,
+          onReset: resetAfterError,
           fallbackRender: (props: { resetErrorBoundary: () => void }) => {
             resetErrorBoundary = props.resetErrorBoundary
             return React.createElement('error-screen')

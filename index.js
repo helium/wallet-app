@@ -23,7 +23,7 @@ import NotificationStorageProvider from './src/storage/NotificationStorageProvid
 import {
   LegacyImportGate,
   persistor,
-  retryLegacyImport,
+  resetAfterError,
 } from './src/store/persistence'
 import store from './src/store/store'
 import { darkThemeColors, theme } from './src/theme/theme'
@@ -74,13 +74,7 @@ const render = () => {
         colors: darkThemeColors,
       }}
     >
-      <ErrorBoundary
-        fallbackRender={fallbackRender}
-        onReset={async () => {
-          retryLegacyImport()
-          await persistor.purge()
-        }}
-      >
+      <ErrorBoundary fallbackRender={fallbackRender} onReset={resetAfterError}>
         <ReduxProvider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <LegacyImportGate>
