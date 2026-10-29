@@ -137,11 +137,13 @@ export const allHotspotsQueryOptions = ({
 
 // Fetch the first page again and drop the later pages and the full list, so
 // the list starts over from the top
-export const refreshHotspots = (
+export const refreshHotspots = async (
   queryClient: QueryClient,
   args: HotspotsQueryArgs & { anchorProvider: AnchorProvider },
 ) => {
   const options = hotspotsQueryOptions(args)
+  // Cancel a next page in flight, or it writes the old pages back
+  await queryClient.cancelQueries({ queryKey: options.queryKey, exact: true })
   queryClient.setQueryData(
     options.queryKey,
     (data) =>
@@ -161,6 +163,7 @@ export const selectHotspots = (
   pagesData: InfiniteData<HotspotsPage> | undefined,
   allHotspots: AllHotspots | undefined,
   allHotspotsFailed: boolean,
+  pagesFailed: boolean,
 ) => {
   const pages = pagesData?.pages || []
   const hotspotsById = new Map<string, CompressedNFT>()
@@ -209,7 +212,8 @@ export const selectHotspots = (
     hotspots,
     hotspotsWithMeta,
     totalHotspots: lastPage?.grandTotal,
-    onEndReached: allHotspotsFailed || !lastPage || isLastPage(lastPage),
+    onEndReached:
+      allHotspotsFailed || (lastPage ? isLastPage(lastPage) : !pagesFailed),
   }
 }
 
@@ -238,6 +242,7 @@ const useHotspots = (): {
     data: pagesData,
     isFetching,
     isFetchingNextPage,
+    isError: pagesFailed,
     fetchNextPage,
   } = useInfiniteQuery({ ...hotspotsQueryOptions(args), enabled: false })
   const {
@@ -250,8 +255,9 @@ const useHotspots = (): {
   const loading = (isFetching && !isFetchingNextPage) || fetchingAll
 
   const { hotspots, hotspotsWithMeta, totalHotspots, onEndReached } = useMemo(
-    () => selectHotspots(pagesData, allHotspots, allHotspotsFailed),
-    [pagesData, allHotspots, allHotspotsFailed],
+    () =>
+      selectHotspots(pagesData, allHotspots, allHotspotsFailed, pagesFailed),
+    [pagesData, allHotspots, allHotspotsFailed, pagesFailed],
   )
 
   const refresh = useCallback(() => {

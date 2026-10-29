@@ -120,7 +120,7 @@ describe('hotspots query', () => {
 
     await refreshHotspots(client, args)
     await fetchMore()
-    expect(selectHotspots(pagesData(), allData(), false)).toMatchObject({
+    expect(selectHotspots(pagesData(), allData(), false, false)).toMatchObject({
       totalHotspots: 45,
       onEndReached: false,
     })
@@ -129,6 +129,7 @@ describe('hotspots query', () => {
     const { hotspots, onEndReached } = selectHotspots(
       pagesData(),
       allData(),
+      false,
       false,
     )
 
@@ -149,7 +150,7 @@ describe('hotspots query', () => {
     await refreshHotspots(client, args)
 
     expect(
-      selectHotspots(pagesData(), allData(), false).hotspotsWithMeta,
+      selectHotspots(pagesData(), allData(), false, false).hotspotsWithMeta,
     ).toEqual([
       {
         id: 'hotspot-0',
@@ -168,7 +169,7 @@ describe('hotspots query', () => {
     await refreshHotspots(client, args)
     await client.fetchQuery(allHotspotsQueryOptions(args))
     const { hotspots, hotspotsWithMeta, totalHotspots, onEndReached } =
-      selectHotspots(pagesData(), allData(), false)
+      selectHotspots(pagesData(), allData(), false, false)
 
     expect(hotspots).toHaveLength(45)
     expect(totalHotspots).toBe(45)
@@ -193,6 +194,7 @@ describe('hotspots query', () => {
       pagesData(),
       allData(),
       false,
+      false,
     )
 
     expect(requestedPages()).toEqual([[1, 20]])
@@ -201,8 +203,92 @@ describe('hotspots query', () => {
     expect(onEndReached).toBe(false)
   })
 
+  it('refresh while a next page loads fetches the first page again and keeps only it', async () => {
+    ownHotspots(45)
+    const servePage = mocked.getCompressedCollectablesByCreator
+      .getMockImplementation()
+      ?.bind(null)
+    let releaseNextPage: () => void = () => {}
+    let nextPageStarted: () => void = () => {}
+    const nextPageRequested = new Promise<void>((resolve) => {
+      nextPageStarted = resolve
+    })
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      async (pubKey, provider, page, limit) => {
+        if (!servePage) throw new Error('no page mock')
+        if (page === 2 && limit === 20) {
+          nextPageStarted()
+          await new Promise<void>((resolve) => {
+            releaseNextPage = resolve
+          })
+        }
+        return servePage(pubKey, provider, page, limit)
+      },
+    )
+    await refreshHotspots(client, args)
+    const loadingMore = fetchMore()
+    await nextPageRequested
+    mocked.getCompressedCollectablesByCreator.mockClear()
+
+    let refreshed: Promise<void> | undefined
+    try {
+      refreshed = refreshHotspots(client, args)
+    } finally {
+      releaseNextPage()
+    }
+    await refreshed
+    await loadingMore
+
+    expect(requestedPages()).toEqual([[1, 20]])
+    expect(pagesData()?.pageParams).toEqual([0])
+    expect(pagesData()?.pages).toHaveLength(1)
+    expect(pagesData()?.pages[0].items).toEqual(makeHotspots(20))
+  })
+
+  // Pins the await on cancelQueries: refresh starts no first-page fetch until
+  // the cancelled next page has settled
+  it('refresh waits for the cancelled next page before it fetches again', async () => {
+    ownHotspots(45)
+    const servePage = mocked.getCompressedCollectablesByCreator
+      .getMockImplementation()
+      ?.bind(null)
+    let releaseNextPage: () => void = () => {}
+    let nextPageStarted: () => void = () => {}
+    const nextPageRequested = new Promise<void>((resolve) => {
+      nextPageStarted = resolve
+    })
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      async (pubKey, provider, page, limit) => {
+        if (!servePage) throw new Error('no page mock')
+        if (page === 2 && limit === 20) {
+          nextPageStarted()
+          await new Promise<void>((resolve) => {
+            releaseNextPage = resolve
+          })
+        }
+        return servePage(pubKey, provider, page, limit)
+      },
+    )
+    await refreshHotspots(client, args)
+    const loadingMore = fetchMore()
+    await nextPageRequested
+
+    let refreshed: Promise<void> | undefined
+    try {
+      refreshed = refreshHotspots(client, args)
+      expect(
+        client.getQueryState(hotspotsQueryOptions(args).queryKey)?.fetchStatus,
+      ).toBe('idle')
+    } finally {
+      releaseNextPage()
+      await refreshed
+      await loadingMore
+    }
+    expect(pagesData()?.pages).toHaveLength(1)
+  })
+
   it('shows no hotspots and an ended list before the first fetch', () => {
-    expect(selectHotspots(undefined, undefined, false)).toEqual({
+    expect(selectHotspots(undefined, undefined, false, false)).toEqual({
       hotspots: [],
       hotspotsWithMeta: [],
       totalHotspots: undefined,
@@ -224,8 +310,21 @@ describe('hotspots query', () => {
       pageParams: [0],
     }
 
-    expect(selectHotspots(fullPage, undefined, true).onEndReached).toBe(true)
-    expect(selectHotspots(fullPage, undefined, false).onEndReached).toBe(false)
+    expect(selectHotspots(fullPage, undefined, true, false).onEndReached).toBe(
+      true,
+    )
+    expect(selectHotspots(fullPage, undefined, false, false).onEndReached).toBe(
+      false,
+    )
+  })
+
+  it('keeps the list open when the first page failed', () => {
+    expect(selectHotspots(undefined, undefined, false, true).onEndReached).toBe(
+      false,
+    )
+    expect(selectHotspots(undefined, undefined, true, true).onEndReached).toBe(
+      true,
+    )
   })
 
   it('rejects both fetches without a Solana connection', async () => {
@@ -320,6 +419,81 @@ describe('useHotspots', () => {
     expect(hook.onEndReached).toBe(true)
   })
 
+  it('fetches the full list once when the first page fails', async () => {
+    ownHotspots(45)
+    const servePage = mocked.getCompressedCollectablesByCreator
+      .getMockImplementation()
+      ?.bind(null)
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      async (pubKey, provider, page, limit) => {
+        if (limit === 20) throw new Error('first page failed')
+        if (!servePage) throw new Error('no page mock')
+        return servePage(pubKey, provider, page, limit)
+      },
+    )
+    await mount(ListHarness)
+    await act(async () => {
+      hook.refresh()
+    })
+    await advance(100)
+    await act(async () => {
+      renderer.unmount()
+    })
+
+    await mount(MapHarness)
+    await advance(100)
+
+    expect(fullListRequests()).toHaveLength(1)
+    expect(hook.onEndReached).toBe(true)
+    expect(hook.hotspots.map(({ id }) => id)).toEqual(
+      makeHotspots(45).map(({ id }) => id),
+    )
+  })
+
+  it('starts no next page while the full list loads', async () => {
+    ownHotspots(45)
+    const servePage = mocked.getCompressedCollectablesByCreator
+      .getMockImplementation()
+      ?.bind(null)
+    let resolveFullList: () => void = () => {}
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      async (pubKey, provider, page, limit) => {
+        if (!servePage) throw new Error('no page mock')
+        if (limit === 1000) {
+          await new Promise<void>((resolve) => {
+            resolveFullList = resolve
+          })
+        }
+        return servePage(pubKey, provider, page, limit)
+      },
+    )
+    await mount(ListHarness)
+    await act(async () => {
+      hook.refresh()
+    })
+    await advance(100)
+    expect(hook.onEndReached).toBe(false)
+
+    try {
+      await act(async () => {
+        hook.fetchAll()
+      })
+      await advance(0)
+      expect(hook.loading).toBe(true)
+
+      await act(async () => {
+        hook.fetchMore()
+      })
+      await advance(0)
+      expect(requestedPages().filter(([, limit]) => limit === 20)).toEqual([
+        [1, 20],
+      ])
+    } finally {
+      resolveFullList()
+      await advance(100)
+    }
+  })
+
   it('starts no fetch while the first page loads', async () => {
     ownHotspots(45)
     mocked.getCompressedCollectablesByCreator.mockImplementation(
@@ -352,5 +526,29 @@ describe('useHotspots', () => {
     expect(mocked.getCompressedCollectablesByCreator).toHaveBeenCalledTimes(1)
 
     await advance(100)
+  })
+
+  it('opens the list on the mounted hook after the first page fails', async () => {
+    ownHotspots(45)
+    const servePage = mocked.getCompressedCollectablesByCreator
+      .getMockImplementation()
+      ?.bind(null)
+    mocked.getCompressedCollectablesByCreator.mockImplementation(
+      async (pubKey, provider, page, limit) => {
+        if (limit === 20) throw new Error('first page failed')
+        if (!servePage) throw new Error('no page mock')
+        return servePage(pubKey, provider, page, limit)
+      },
+    )
+    await mount(ListHarness)
+    expect(hook.onEndReached).toBe(true)
+
+    await act(async () => {
+      hook.refresh()
+    })
+    await advance(100)
+
+    expect(requestedPages()).toEqual([[1, 20]])
+    expect(hook.onEndReached).toBe(false)
   })
 })
