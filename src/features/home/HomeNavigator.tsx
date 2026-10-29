@@ -26,8 +26,11 @@ import KeystoneAccountAssignScreen from '../keystone/KeystoneAccountAssignScreen
 
 const HomeStack = createNativeStackNavigator()
 
+// A native iOS modal would cover the root overlays (sign sheet, Ledger,
+// Keystone, keyboard portal), so slide a card up instead.
 const screenModalOptions = {
-  presentation: 'modal',
+  presentation: 'card',
+  animation: 'slide_from_bottom',
 } as NativeStackNavigationOptions
 
 const navigatorScreenOptions = {

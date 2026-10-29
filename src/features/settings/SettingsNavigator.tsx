@@ -83,7 +83,9 @@ const SettingsNavigator = () => {
       <SettingsStack.Screen
         name="MigrateToWorld"
         component={MigrateToWorldScreen}
-        options={{ presentation: 'fullScreenModal' }}
+        // Signing opens the root Ledger or Keystone overlay, which a native
+        // iOS modal would cover.
+        options={{ presentation: 'card', animation: 'slide_from_bottom' }}
       />
       <SettingsStack.Screen
         name="AutoGasManager"
