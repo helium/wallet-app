@@ -80,7 +80,7 @@ const AccountConfirmPinScreen = () => {
       originalPin={params.pin}
       title={t('accountSetup.confirmPin.title')}
       subtitle={t('accountSetup.confirmPin.subtitle')}
-      pinSuccess={pinSuccess}
+      pinSuccess={(pin) => void pinSuccess(pin).catch(console.error)}
       onCancel={navigation.goBack}
     />
   )

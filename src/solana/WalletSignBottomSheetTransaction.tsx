@@ -167,7 +167,11 @@ const WalletSignBottomSheetTransaction = ({
               alignItems="center"
               mb="xxs"
               ml="s"
-              onPress={() => Linking.openURL(transaction.explorerLink)}
+              onPress={() =>
+                void Linking.openURL(transaction.explorerLink).catch(
+                  console.error,
+                )
+              }
             >
               <ExternalLink />
             </TouchableOpacityBox>

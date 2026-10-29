@@ -480,7 +480,9 @@ const AutomationSetupScreen = () => {
                       <CircleLoader loaderSize={20} color="black" />
                     ) : undefined
                   }
-                  onPress={handleFundAutomation}
+                  onPress={() =>
+                    void handleFundAutomation().catch(console.error)
+                  }
                   borderRadius="round"
                   padding="m"
                   marginBottom="m"
@@ -503,7 +505,9 @@ const AutomationSetupScreen = () => {
                     <CircleLoader loaderSize={20} color="error" />
                   ) : undefined
                 }
-                onPress={handleRemoveAutomation}
+                onPress={() =>
+                  void handleRemoveAutomation().catch(console.error)
+                }
                 borderRadius="round"
                 padding="m"
                 marginBottom="m"
@@ -536,7 +540,7 @@ const AutomationSetupScreen = () => {
                   <CircleLoader loaderSize={20} color="black" />
                 ) : undefined
               }
-              onPress={handleSave}
+              onPress={() => void handleSave().catch(console.error)}
               borderRadius="round"
               padding="m"
               marginBottom="m"

@@ -714,7 +714,9 @@ const PaymentScreen = () => {
         <AccountSelector ref={accountSelectorRef}>
           <AddressBookSelector
             ref={addressBookRef}
-            onContactSelected={handleContactSelected}
+            onContactSelected={(selection) =>
+              void handleContactSelected(selection).catch(console.error)
+            }
             hideCurrentAccount
           >
             <TokenSelector
@@ -810,7 +812,9 @@ const PaymentScreen = () => {
                         onAddressBookSelected={handleAddressBookSelected}
                         onEditAmount={handleEditAmount}
                         onToggleMax={handleToggleMax}
-                        onEditAddress={handleEditAddress}
+                        onEditAddress={(edit) =>
+                          void handleEditAddress(edit).catch(console.error)
+                        }
                         handleAddressError={handleAddressError}
                         onUpdateError={handleSetPaymentError}
                         mint={mint}
@@ -848,7 +852,7 @@ const PaymentScreen = () => {
                   totalBalance={paymentState.totalAmount}
                   feeTokenBalance={paymentState.networkFee}
                   disabled={!isFormValid}
-                  onSubmit={handleSubmit}
+                  onSubmit={() => void handleSubmit().catch(console.error)}
                   payments={payments}
                   errors={errors}
                   handleCancel={navBack}
@@ -871,7 +875,7 @@ const PaymentScreen = () => {
         totalBalance={submittedTotal}
         payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
-        onRetry={handleSubmit}
+        onRetry={() => void handleSubmit().catch(console.error)}
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}
       />

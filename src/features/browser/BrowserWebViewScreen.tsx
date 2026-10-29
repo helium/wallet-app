@@ -549,7 +549,7 @@ const BrowserWebViewScreen = () => {
           injectedJavaScriptBeforeContentLoaded={injectedJavascript()}
           onLoadEnd={isAndroid ? undefined : onLoadEnd}
           onNavigationStateChange={onNavigationChange}
-          onMessage={onMessage}
+          onMessage={(msg) => void onMessage(msg).catch(console.error)}
           source={{ uri }}
           onShouldStartLoadWithRequest={(event) => {
             return !event.url.startsWith('solana-wallet:')

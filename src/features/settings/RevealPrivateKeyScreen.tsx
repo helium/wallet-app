@@ -78,7 +78,7 @@ const RevealPrivateKeyScreen = () => {
         </>
       ) : (
         <TouchableOpacityBox
-          onPress={showConfirmDialog}
+          onPress={() => void showConfirmDialog().catch(console.error)}
           marginHorizontal="xs"
           height={{ smallPhone: 80, phone: 100 }}
           marginVertical="l"

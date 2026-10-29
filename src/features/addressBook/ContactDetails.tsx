@@ -310,7 +310,7 @@ const ContactDetails = ({ action, contact }: Props) => {
                 borderRadius="round"
                 marginRight="s"
                 title={t('editContact.delete')}
-                onPress={handleDeleteContact}
+                onPress={() => void handleDeleteContact().catch(console.error)}
               />
               <ButtonPressable
                 flex={1}

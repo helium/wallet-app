@@ -389,7 +389,7 @@ const ActivityDetailsScreen = () => {
                 backgroundColorDisabledOpacity={0.1}
                 title={t('activityScreen.viewOnExplorer')}
                 titleColor="black"
-                onPress={handleOpenExplorer}
+                onPress={() => void handleOpenExplorer().catch(console.error)}
               />
             </Box>
           </Box>

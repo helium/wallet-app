@@ -108,7 +108,9 @@ const WifiSettings = () => {
           alignItems="center"
           padding="m"
           flexDirection="row"
-          onPress={handleNetworkSelected({ network, type })}
+          onPress={() =>
+            void handleNetworkSelected({ network, type })().catch(console.error)
+          }
         >
           <FabButton
             icon={type === 'configured' ? 'close' : 'add'}
@@ -168,7 +170,7 @@ const WifiSettings = () => {
         keyExtractor={keyExtractor}
         renderSectionHeader={renderSectionHeader}
         refreshing={refreshing}
-        onRefresh={handleRefresh}
+        onRefresh={() => void handleRefresh().catch(console.error)}
       />
       <ButtonPressable
         marginTop="l"

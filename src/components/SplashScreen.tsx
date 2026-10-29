@@ -67,7 +67,7 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
         <Animated.Image
           style={style}
           source={require('../assets/images/SplashScreen.png')}
-          onLoadEnd={onImageLoaded}
+          onLoadEnd={() => void onImageLoaded().catch(console.error)}
           fadeDuration={0}
         />
       </ReAnimatedBox>

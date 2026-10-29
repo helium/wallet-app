@@ -116,7 +116,7 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
       <Box paddingHorizontal="l" paddingBottom="l">
         <WorldButton
           title={t('migrateToWorld.connect.openWorld')}
-          onPress={() => Linking.openURL(WORLD_URL)}
+          onPress={() => void Linking.openURL(WORLD_URL).catch(console.error)}
         />
         {onDismiss ? (
           <WorldButton

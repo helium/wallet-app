@@ -628,7 +628,7 @@ const DeprecatedTokensModal: FC = () => {
                     ? t('deprecatedTokensModal.unstakeAndSwap')
                     : t('deprecatedTokensModal.swapNow')
                 }
-                onPress={handleSwapAll}
+                onPress={() => void handleSwapAll().catch(console.error)}
                 marginBottom="m"
                 disabled={!hasAnyTokens}
               />

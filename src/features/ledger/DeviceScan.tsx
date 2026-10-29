@@ -196,7 +196,7 @@ const DeviceScan = () => {
             data={devices}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
-            onRefresh={startScan}
+            onRefresh={() => void startScan().catch(console.error)}
             refreshing={refreshing}
           />
         </Box>

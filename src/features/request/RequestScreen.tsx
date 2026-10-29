@@ -368,7 +368,7 @@ const RequestScreen = () => {
                     justifyContent="center"
                     alignItems="center"
                     borderRadius="round"
-                    onPress={handleShare}
+                    onPress={() => void handleShare().catch(console.error)}
                     flexDirection="row"
                   >
                     <ShareIcon color={secondaryText} />

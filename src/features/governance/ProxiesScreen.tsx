@@ -174,7 +174,7 @@ export default function ProxiesScreen() {
         refreshControl={
           <RefreshControl
             refreshing={loading || isLoading || isFetchingNextPage}
-            onRefresh={refetch}
+            onRefresh={() => void refetch().catch(console.error)}
             title=""
             tintColor={primaryText}
           />

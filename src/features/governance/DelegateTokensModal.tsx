@@ -327,7 +327,7 @@ export const DelegateTokensModal = ({
                       : 'Delegate Tokens'
                 }
                 titleColor="black"
-                onPress={handleSubmit}
+                onPress={() => void handleSubmit().catch(console.error)}
                 testID="DelegateTokens.Submit"
                 disabled={
                   !selectedSubDao || isSubmitting || insufficientBalance

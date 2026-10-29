@@ -162,7 +162,7 @@ const ScanHotspots = () => {
     ({ item }: { item: Device }) => {
       return (
         <TouchableOpacityBox
-          onPress={connectDevice(item)}
+          onPress={() => void connectDevice(item)().catch(console.error)}
           alignItems="center"
           padding="m"
           flexDirection="row"
@@ -238,7 +238,7 @@ const ScanHotspots = () => {
               : t('hotspotOnboarding.scan.start')
             : t('hotspotOnboarding.scan.notEnabled')
         }
-        onPress={handleScanPress}
+        onPress={() => void handleScanPress().catch(console.error)}
         backgroundColorDisabled="surfaceSecondary"
         backgroundColorDisabledOpacity={0.5}
         disabled={!canScan || connecting}

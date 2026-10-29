@@ -332,7 +332,7 @@ export const TransferTokensModal = ({
                   isSubmitting ? '' : t('gov.transactions.transferPosition')
                 }
                 titleColor="black"
-                onPress={handleSubmit}
+                onPress={() => void handleSubmit().catch(console.error)}
                 disabled={!amount || !selectedPosPk || isSubmitting}
                 TrailingComponent={
                   isSubmitting ? <CircleLoader color="white" /> : undefined

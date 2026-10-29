@@ -186,7 +186,9 @@ const AntennaSetupScreen = () => {
                   titleColorDisabled="grey600"
                   title={updating ? '' : t('antennaSetupScreen.submit')}
                   titleColor="black"
-                  onPress={handleUpdateElevGain}
+                  onPress={() =>
+                    void handleUpdateElevGain().catch(console.error)
+                  }
                   TrailingComponent={
                     updating ? (
                       <CircleLoader loaderSize={20} color="black" />

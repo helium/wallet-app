@@ -64,7 +64,9 @@ const QrScanner = ({ onBarCodeScanned }: Props) => {
   return (
     <BackScreen>
       <CameraView
-        onBarcodeScanned={handleBarCodeScanned}
+        onBarcodeScanned={(result) =>
+          void handleBarCodeScanned(result).catch(console.error)
+        }
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
         }}

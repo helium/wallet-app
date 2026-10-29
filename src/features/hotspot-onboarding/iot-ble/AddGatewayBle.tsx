@@ -369,15 +369,17 @@ const AddGatewayBle = () => {
                 borderColor="transparent"
                 backgroundColor="white"
                 title={t('hotspotOnboarding.onboarding.contact')}
-                onPress={async () => {
-                  const url = `https://docs.helium.com/hotspot-makers/#${maker?.name.toLowerCase()}`
-                  const supported = await Linking.canOpenURL(url)
-                  if (supported) {
-                    void Linking.openURL(url)
-                  } else {
-                    Alert.alert(`Don't know how to open URL: ${url}`)
-                  }
-                }}
+                onPress={() =>
+                  void (async () => {
+                    const url = `https://docs.helium.com/hotspot-makers/#${maker?.name.toLowerCase()}`
+                    const supported = await Linking.canOpenURL(url)
+                    if (supported) {
+                      await Linking.openURL(url)
+                    } else {
+                      Alert.alert(`Don't know how to open URL: ${url}`)
+                    }
+                  })().catch(console.error)
+                }
               />
             )}
 
@@ -419,7 +421,9 @@ const AddGatewayBle = () => {
                           ? undefined
                           : t('hotspotOnboarding.onboarding.onboardAndPay')
                       }
-                      onPress={handleAddGateway}
+                      onPress={() =>
+                        void handleAddGateway().catch(console.error)
+                      }
                       disabled={disabled}
                       LeadingComponent={loading ? <CircleLoader /> : undefined}
                     />
@@ -438,7 +442,7 @@ const AddGatewayBle = () => {
             opacity={disabled ? 0.5 : undefined}
             backgroundColor="white"
             title={t('hotspotOnboarding.onboarding.onboard')}
-            onPress={handleAddGateway}
+            onPress={() => void handleAddGateway().catch(console.error)}
             disabled={disabled}
             LeadingComponent={loading ? <CircleLoader /> : undefined}
           />

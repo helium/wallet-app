@@ -663,7 +663,7 @@ const AssertLocationScreen = () => {
                 <SearchInput
                   placeholder={t('assertLocationScreen.searchLocation')}
                   onChangeText={setSearchValue}
-                  onEnter={handleOnSearch}
+                  onEnter={() => void handleOnSearch().catch(console.error)}
                   value={searchValue}
                   width="100%"
                   borderRadius="none"
@@ -746,7 +746,9 @@ const AssertLocationScreen = () => {
               height={65}
               alignItems="center"
               justifyContent="center"
-              onPress={handleAssertLocationPress}
+              onPress={() =>
+                void handleAssertLocationPress().catch(console.error)
+              }
             >
               {disabled || asserting ? (
                 <CircleLoader loaderSize={19} color="black" />
@@ -867,7 +869,9 @@ const AssertLocationScreen = () => {
                       titleColorDisabled="grey600"
                       title={asserting ? '' : t('assertLocationScreen.title')}
                       titleColor="black"
-                      onPress={handleAssertLocationPress}
+                      onPress={() =>
+                        void handleAssertLocationPress().catch(console.error)
+                      }
                     />
                   </Box>
                 </Box>

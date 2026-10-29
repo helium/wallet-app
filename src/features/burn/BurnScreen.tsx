@@ -519,7 +519,7 @@ const BurnScreen = () => {
                     title={t(
                       isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
                     )}
-                    onSubmit={handleSubmit}
+                    onSubmit={() => void handleSubmit().catch(console.error)}
                   />
                 </Box>
               </Box>
@@ -536,7 +536,7 @@ const BurnScreen = () => {
               }
               totalBalance={amountBalance}
               feeTokenBalance={FEE}
-              onRetry={handleSubmit}
+              onRetry={() => void handleSubmit().catch(console.error)}
               onSuccess={navigation.popToTop}
               actionTitle={t('generic.ok')}
             />

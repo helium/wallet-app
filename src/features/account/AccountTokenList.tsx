@@ -142,7 +142,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
         <RefreshControl
           enabled
           refreshing={refetchingTokens}
-          onRefresh={refetchTokens}
+          onRefresh={() => void refetchTokens().catch(console.error)}
           title=""
           tintColor={colors.primaryText}
         />

@@ -858,7 +858,7 @@ export const LockTokensModal = ({
                           }[mode]
                     }
                     titleColor="black"
-                    onPress={handleSubmit}
+                    onPress={() => void handleSubmit().catch(console.error)}
                     disabled={
                       {
                         lock:
@@ -918,7 +918,7 @@ export const LockTokensModal = ({
                         : t('gov.transactions.lockTokens')
                   }
                   titleColor="black"
-                  onPress={handleSubmit}
+                  onPress={() => void handleSubmit().catch(console.error)}
                   disabled={isSubmitting || insufficientBalance}
                   TrailingComponent={
                     isSubmitting ? <CircleLoader color="white" /> : undefined

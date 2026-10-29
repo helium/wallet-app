@@ -191,7 +191,7 @@ export const RevokeProxyScreen = () => {
           titleColorDisabled="secondaryText"
           title={isSubmitting ? undefined : t('gov.revokeProxy.title')}
           titleColor="black"
-          onPress={handleSubmit}
+          onPress={() => void handleSubmit().catch(console.error)}
           disabled={
             isSubmitting || selectedPositions.size === 0 || !proxyWallet
           }

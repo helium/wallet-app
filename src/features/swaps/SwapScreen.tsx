@@ -297,7 +297,10 @@ const SwapScreen = () => {
         <Text variant="h4" color="white" flex={1} textAlign="center">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox paddingEnd="m" onPress={refresh}>
+        <TouchableOpacityBox
+          paddingEnd="m"
+          onPress={() => void refresh().catch(console.error)}
+        >
           <Refresh width={16} height={16} />
         </TouchableOpacityBox>
       </Box>
@@ -735,7 +738,9 @@ const SwapScreen = () => {
         <HNTKeyboard
           ref={hntKeyboardRef}
           allowOverdraft={selectorMode === SelectorMode.youReceive}
-          onConfirmBalance={onConfirmBalance}
+          onConfirmBalance={(confirmation) =>
+            void onConfirmBalance(confirmation).catch(console.error)
+          }
           mint={selectorMode === SelectorMode.youPay ? inputMint : outputMint}
           networkFee={SOL_TXN_FEE}
           // Ensure that we keep at least 0.02 sol
@@ -895,7 +900,7 @@ const SwapScreen = () => {
                     }
                     titleColorPressedOpacity={0.3}
                     title={swapping ? '' : t('swapsScreen.swapTokens')}
-                    onPress={handleSwapTokens}
+                    onPress={() => void handleSwapTokens().catch(console.error)}
                     testID="Swap.Submit"
                     TrailingComponent={
                       swapping ? (

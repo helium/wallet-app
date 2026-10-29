@@ -321,7 +321,9 @@ const SolanaMigration = ({
                 titleColorPressedOpacity={0.3}
                 title={t('solanaMigrationScreen.migrateLater')}
                 titleColor="white"
-                onPress={handleManualMigration}
+                onPress={() =>
+                  void handleManualMigration().catch(console.error)
+                }
               />
             )}
             <ButtonPressable

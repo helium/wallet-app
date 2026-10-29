@@ -206,7 +206,7 @@ const Settings = () => {
           backgroundColor="white"
           disabled={loading || !!error || !address}
           title={iotInfo ? t('generic.done') : t('generic.next')}
-          onPress={navNext}
+          onPress={() => void navNext().catch(console.error)}
         />
       )}
     </BackScreen>

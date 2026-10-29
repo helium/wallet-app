@@ -327,7 +327,7 @@ const InsufficientSolConversionModal: FC = () => {
                 titleColor="white"
                 title={t('generic.cancel')}
                 disabled={loading}
-                onPress={handleCancel}
+                onPress={() => void handleCancel().catch(console.error)}
               />
               {hasAtLeastOne && (
                 <ButtonPressable
@@ -341,7 +341,7 @@ const InsufficientSolConversionModal: FC = () => {
                   disabled={!inputMint}
                   titleColorPressedOpacity={0.3}
                   title={swapping ? '' : t('generic.swap')}
-                  onPress={handleSwapTokens}
+                  onPress={() => void handleSwapTokens().catch(console.error)}
                   TrailingComponent={
                     swapping ? (
                       <CircleLoader loaderSize={20} color="black" />

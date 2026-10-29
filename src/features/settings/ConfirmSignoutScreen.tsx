@@ -116,7 +116,7 @@ const ConfirmSignoutScreen = () => {
           title={t('settings.confirmSignout.title')}
           mnemonic={mnemonic}
           onComplete={onWordsConfirmed}
-          onForgotWords={onForgotWords}
+          onForgotWords={() => void onForgotWords().catch(console.error)}
         />
       ) : (
         <Box flex={1} justifyContent="center" alignItems="center">

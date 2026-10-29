@@ -115,8 +115,8 @@ const LockScreen = ({ children }: Props) => {
             originalPin={pin?.value || ''}
             title={t('auth.title')}
             subtitle={t('auth.enterCurrent')}
-            pinSuccess={handleSuccess}
-            onCancel={handleSignOut}
+            pinSuccess={() => void handleSuccess().catch(console.error)}
+            onCancel={() => void handleSignOut().catch(console.error)}
             clearable
           />
         </ReAnimatedBox>

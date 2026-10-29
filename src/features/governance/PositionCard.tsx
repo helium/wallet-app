@@ -555,7 +555,7 @@ export const PositionCard = ({
             <ListItem
               key="undelegate"
               title={t('gov.positions.undelegate')}
-              onPress={async () => {
+              onPress={() => {
                 setActionsOpen(false)
                 // undelegate has to claim every unclaimed epoch first, which
                 // fails on-chain while any of them is still awaiting issuance
@@ -608,7 +608,7 @@ export const PositionCard = ({
               <ListItem
                 key="close"
                 title={t('gov.positions.close')}
-                onPress={async () => {
+                onPress={() => {
                   setActionsOpen(false)
                   if (hasActiveVotes) {
                     void showOKAlert({
@@ -677,7 +677,7 @@ export const PositionCard = ({
                           ? t('gov.transactions.unpauseLockup')
                           : t('gov.transactions.pauseLockup')
                       }
-                      onPress={async () => {
+                      onPress={() => {
                         setActionsOpen(false)
                         if (hasActiveVotes) {
                           void showOKAlert({
