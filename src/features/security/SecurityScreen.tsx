@@ -9,6 +9,7 @@ type Props = { visible: boolean }
 const SecurityScreen = ({ visible }: Props) => {
   const fadeAnim = useRef(new Animated.Value(0))
   const [mounted, setMounted] = useState(false)
+  const visibleRef = useRef(visible)
 
   const fadeIn = () => {
     setMounted(true)
@@ -24,7 +25,9 @@ const SecurityScreen = ({ visible }: Props) => {
       toValue: 0,
       duration: 300,
       useNativeDriver: true,
-    }).start(() => setMounted(false))
+    }).start(({ finished }) => {
+      if (finished && !visibleRef.current) setMounted(false)
+    })
   }
 
   useEffect(() => {
@@ -34,11 +37,18 @@ const SecurityScreen = ({ visible }: Props) => {
   }, [mounted])
 
   useEffect(() => {
+    visibleRef.current = visible
     if (visible) {
-      setMounted(true)
+      if (mounted) {
+        fadeIn()
+      } else {
+        setMounted(true)
+      }
     } else {
       fadeOut()
     }
+    // only a change of visible starts a fade; mounted is read, not watched
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible])
 
   const style = useMemo(
@@ -52,15 +62,15 @@ const SecurityScreen = ({ visible }: Props) => {
   )
 
   if (Platform.OS === 'android' || !mounted) {
-    // android ui doesn't update after "background" is detected in RN.
-    // We're using WindowManager.LayoutParams.FLAG_SECURE in
-    // MainActivity.java to hide the view.
+    // android ui doesn't update after "background" is detected in RN, so no
+    // cover renders here. Nothing sets FLAG_SECURE at present, so Android
+    // shows the app in recents.
 
     return null
   }
 
   // iOS draws the root view under native modal routes; FullWindowOverlay
-  // draws above them
+  // draws above the modals presented before it mounts
   return (
     <FullWindowOverlay>
       <Box

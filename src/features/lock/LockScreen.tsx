@@ -125,7 +125,7 @@ const LockScreen = ({ children }: Props) => {
     <>
       {children}
       {/* iOS draws the root view under native modal routes; FullWindowOverlay
-          draws above them */}
+          draws above the modals presented before it mounts */}
       {!!locked &&
         (Platform.OS === 'ios' ? (
           <FullWindowOverlay>{overlay}</FullWindowOverlay>
