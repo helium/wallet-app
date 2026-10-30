@@ -1,11 +1,11 @@
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
+import { SPRING } from '@theme/motion'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import {
   useAnimatedStyle,
   useSharedValue,
-  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
@@ -34,12 +34,7 @@ const ProgressBar = ({
 
   useEffect(() => {
     // withRepeat to repeat the animation
-    width.set(
-      withSpring(
-        (progressIn / 100) * PROGRESS_WIDTH,
-        Reanimated3DefaultSpringConfig,
-      ),
-    )
+    width.set(withSpring((progressIn / 100) * PROGRESS_WIDTH, SPRING.settle))
   }, [PROGRESS_WIDTH, width, progressIn])
 
   const progress = useAnimatedStyle(() => {

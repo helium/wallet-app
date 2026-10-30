@@ -10,13 +10,13 @@ import { Insets, LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { SvgProps } from 'react-native-svg'
 import useHaptic from '@hooks/useHaptic'
 import { Color } from '@theme/theme'
 import { useColors, useVerticalHitSlop } from '@theme/themeHooks'
+import { SPRING } from '@theme/motion'
 import Box from './Box'
 import Text from './Text'
 import TouchableOpacityBox, {
@@ -154,12 +154,7 @@ const TabBar = ({
       return
     }
 
-    offset.set(
-      withSpring(nextOffset, {
-        ...Reanimated3DefaultSpringConfig,
-        mass: 0.5,
-      }),
-    )
+    offset.set(withSpring(nextOffset, SPRING.settle))
   }, [itemRects, offset, selectedValue])
 
   const animatedStyles = useAnimatedStyle(() => {
