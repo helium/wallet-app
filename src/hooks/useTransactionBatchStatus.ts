@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 
 export type BatchStatus =
@@ -38,6 +39,18 @@ export function useTransactionBatchesStatus(batchIds: string[] | null) {
     },
   })
 
+  const transactions = useMemo(
+    () =>
+      data?.flatMap(
+        (batch) =>
+          batch.transactions?.map((t) => ({
+            signature: t.signature,
+            status: t.status as BatchStatus,
+          })) ?? [],
+      ) ?? [],
+    [data],
+  )
+
   const statuses = (data ?? []).map((batch) => batch.status as BatchStatus)
   const [firstStatus] = statuses
   let status: BatchStatus | undefined
@@ -57,6 +70,7 @@ export function useTransactionBatchesStatus(batchIds: string[] | null) {
       data?.flatMap(
         (batch) => batch.transactions?.map((t) => t.signature) ?? [],
       ) ?? [],
+    transactions,
     error,
     isLoading,
     refetch,

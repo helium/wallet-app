@@ -13,7 +13,7 @@ describe('batchSubmitError', () => {
   it('ends a partial batch in the error stage with a message', () => {
     expect(stageFor('partial')).toBe('error')
     expect(batchSubmitError('partial')?.message).toBe(
-      'Some transactions failed. Check your activity before you retry.',
+      'Some transactions failed. Retry sends only those.',
     )
   })
 

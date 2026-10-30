@@ -60,7 +60,7 @@ import {
 } from '../../utils/accountUtils'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
-import { batchSubmitError } from '../payment/logic/batchSubmitError'
+import { batchFailure } from '../payment/logic/batchFailure'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
@@ -88,8 +88,23 @@ const BurnScreen = () => {
 
   // Track batchId when mutation succeeds - only show loading after submission
   const batchId = delegateDataCreditsMutation.data
-  const { status, isLoading: batchLoading } = useTransactionBatchStatus(
-    batchId || null,
+  const {
+    status,
+    transactions,
+    isLoading: batchLoading,
+  } = useTransactionBatchStatus(batchId || null)
+
+  // The delegate goes out as one transaction, so it is retried only when every
+  // transaction the batch reports failed.
+  const batchFailed = useMemo(
+    () =>
+      batchFailure(status, transactions, [
+        {
+          item: 'delegate',
+          signatures: transactions.map((tx) => tx.signature),
+        },
+      ]),
+    [status, transactions],
   )
 
   // Only show loading after we have a batchId (transaction submitted)
@@ -530,11 +545,15 @@ const BurnScreen = () => {
               submitLoading={isSubmitting}
               submitSucceeded={status === 'confirmed'}
               submitError={
-                delegateDataCreditsMutation.error || batchSubmitError(status)
+                delegateDataCreditsMutation.error || batchFailed?.error
               }
               totalBalance={amountBalance}
               feeTokenBalance={FEE}
-              onRetry={() => void handleSubmit().catch(console.error)}
+              onRetry={
+                batchFailed?.kind === 'checkActivity'
+                  ? undefined
+                  : () => void handleSubmit().catch(console.error)
+              }
               onSuccess={navigation.popToTop}
               actionTitle={t('generic.ok')}
             />

@@ -15,10 +15,8 @@ export const batchSubmitError = (
     case 'expired':
       return new Error('Transaction expired')
     case 'partial':
-      // Some transactions landed; a blind retry can send them twice.
-      return new Error(
-        'Some transactions failed. Check your activity before you retry.',
-      )
+      // Some transactions landed; retry must send only the failed ones.
+      return new Error('Some transactions failed. Retry sends only those.')
     default: {
       const _exhaustive: never = status
       return _exhaustive

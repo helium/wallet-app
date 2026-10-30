@@ -70,7 +70,8 @@ import {
   HomeStackParamList,
   PaymentRouteParam,
 } from '../home/homeTypes'
-import { batchSubmitError } from './logic/batchSubmitError'
+import { batchFailure } from './logic/batchFailure'
+import { paymentTransactions } from './logic/paymentTransactions'
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
@@ -206,9 +207,11 @@ const PaymentScreen = () => {
 
   // Track batchId when mutation succeeds - only show loading after submission
   const batchId = paymentMutation.data?.batchId
-  const { status, isLoading: batchLoading } = useTransactionBatchStatus(
-    batchId || null,
-  )
+  const {
+    status,
+    transactions,
+    isLoading: batchLoading,
+  } = useTransactionBatchStatus(batchId || null)
 
   // Only show loading after we have a batchId (transaction submitted)
   const isSubmitting = batchId ? batchLoading || status === 'pending' : false
@@ -321,11 +324,25 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
-  const handleSubmit = useCallback(async () => {
-    // Reset mutation state on retry
-    paymentMutation.reset()
-    try {
-      await submitPayment(
+  const submitPayments = useCallback(
+    async (
+      toPay: Parameters<typeof submitPayment>[0],
+      paymentMint: PublicKey,
+    ) => {
+      // Reset mutation state on retry
+      paymentMutation.reset()
+      try {
+        await submitPayment(toPay, paymentMint)
+      } catch (e) {
+        logger.error(e)
+      }
+    },
+    [submitPayment, paymentMutation],
+  )
+
+  const handleSubmit = useCallback(
+    () =>
+      submitPayments(
         paymentState.payments
           .filter((p) => p.address && p.amount)
           .map((payment) => ({
@@ -334,11 +351,38 @@ const PaymentScreen = () => {
             max: payment.max!,
           })),
         paymentState.mint,
-      )
-    } catch (e) {
-      logger.error(e)
+      ),
+    [submitPayments, paymentState.mint, paymentState.payments],
+  )
+
+  // After a failed batch, Retry resends only the payments that did not land,
+  // and is not offered when the app cannot tell which did.
+  const { data: sent, variables: sentWith } = paymentMutation
+  const batchFailed = useMemo(() => {
+    if (!sent || !sentWith) return undefined
+    const failure = batchFailure(
+      status,
+      transactions,
+      paymentTransactions(sent.payments, sentWith.mint, sent.transactions),
+    )
+    if (!failure) return undefined
+    switch (failure.kind) {
+      case 'retry':
+        return {
+          error: failure.error,
+          retry: () =>
+            void submitPayments(failure.failed, sentWith.mint).catch(
+              console.error,
+            ),
+        }
+      case 'checkActivity':
+        return { error: failure.error, retry: undefined }
+      default: {
+        const _exhaustive: never = failure
+        return _exhaustive
+      }
     }
-  }, [submitPayment, paymentState.mint, paymentState.payments, paymentMutation])
+  }, [sent, sentWith, status, transactions, submitPayments])
 
   // Show the amounts actually submitted — the server-priced priority fee may
   // have shaved the max SOL payment.
@@ -867,11 +911,15 @@ const PaymentScreen = () => {
         mint={mint}
         submitLoading={isSubmitting}
         submitSucceeded={status === 'confirmed'}
-        submitError={paymentMutation.error || batchSubmitError(status)}
+        submitError={paymentMutation.error || batchFailed?.error}
         totalBalance={submittedTotal}
         payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
-        onRetry={() => void handleSubmit().catch(console.error)}
+        onRetry={
+          batchFailed
+            ? batchFailed.retry
+            : () => void handleSubmit().catch(console.error)
+        }
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}
       />

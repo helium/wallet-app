@@ -4,7 +4,7 @@ import { SerializedError } from '@reduxjs/toolkit'
 import { PublicKey } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
 import BN from 'bn.js'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { memo, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { submitStage } from './logic/submitStage'
 import PaymentError from './PaymentError'
@@ -20,7 +20,7 @@ type Props = {
   totalBalance: BN
   feeTokenBalance?: BN
   payments?: Payment[]
-  onRetry: () => void
+  onRetry?: () => void
   onSuccess: () => void
   actionTitle: string
 }
@@ -41,12 +41,17 @@ const PaymentSubmit = ({
   const [error, setError] = useState<Error | SerializedError>()
   const [succeeded, setSucceeded] = useState(false)
 
-  const handleRetry = useCallback(() => {
-    setError(undefined)
-    setSucceeded(false)
+  const handleRetry = useMemo(
+    () =>
+      onRetry &&
+      (() => {
+        setError(undefined)
+        setSucceeded(false)
 
-    onRetry()
-  }, [onRetry])
+        onRetry()
+      }),
+    [onRetry],
+  )
 
   useEffect(() => {
     if (loading || !submitLoading) {

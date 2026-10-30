@@ -184,8 +184,17 @@ export default () => {
       const { batchId } = await client.transactions.submit(signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
-      // any max-send shave.
-      return { batchId, payments: effectivePayments }
+      // any max-send shave, and the signed transactions so a failed batch can
+      // tell which payments landed.
+      return {
+        batchId,
+        payments: effectivePayments,
+        transactions: signedTxnData.transactions.map((tx) =>
+          VersionedTransaction.deserialize(
+            Buffer.from(tx.serializedTransaction, 'base64'),
+          ),
+        ),
+      }
     },
   })
 
