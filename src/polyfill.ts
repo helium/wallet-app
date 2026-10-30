@@ -1,6 +1,3 @@
-/* eslint-disable no-bitwise */
-/* eslint-disable func-names */
-
 import { Buffer } from 'buffer'
 import structuredClone from '@ungap/structured-clone'
 

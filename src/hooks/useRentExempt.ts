@@ -18,7 +18,6 @@ export function useRentExempt(dataLength = 0) {
     queryKey: ['rentExempt', connection?.rpcEndpoint, dataLength],
     queryFn: async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return await connection!.getMinimumBalanceForRentExemption(dataLength)
       } catch (e) {
         logger.error(e)

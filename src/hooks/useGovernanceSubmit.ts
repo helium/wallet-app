@@ -78,7 +78,6 @@ export function useGovernanceSubmit(): {
       const allSignatures: string[] = []
       let current = response
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const { transactionData } = current
 

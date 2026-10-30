@@ -56,7 +56,6 @@ const PaymentSummary = ({
       .slice(0, MAX_ACCOUNT_ICONS)
       .map(({ address }, index) => {
         return (
-          // eslint-disable-next-line react/no-array-index-key
           <Box key={`${index}.${address}`} style={{ marginLeft: index * -4 }}>
             <AccountIcon address={address} size={16} />
           </Box>

@@ -1,8 +1,22 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { extendTailwindMerge } from 'tailwind-merge'
+
+// The World theme maps each weight class to a Figtree family (global.css), so
+// weight and family classes conflict. `leading-*` wins over a size's line
+// height in any order, so a size class must not drop it.
+const twMerge = extendTailwindMerge({
+  override: { conflictingClassGroups: { 'font-size': [] } },
+  extend: {
+    conflictingClassGroups: {
+      'font-weight': ['font-family'],
+      'font-family': ['font-weight'],
+    },
+  },
+})
 
 // World's type scale (style guide §2.3). Weight is a plain class
 // (`font-medium`): global.css maps each weight class to its Figtree file.
-export const textVariants = cva('font-normal text-foreground', {
+const textVariants = cva('font-normal text-foreground', {
   variants: {
     size: {
       xs: 'text-xs',
@@ -21,3 +35,6 @@ export const textVariants = cva('font-normal text-foreground', {
 })
 
 export type TextSize = NonNullable<VariantProps<typeof textVariants>['size']>
+
+export const textClassName = (size?: TextSize, className?: string) =>
+  twMerge(textVariants({ size }), className)

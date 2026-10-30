@@ -142,7 +142,6 @@ export function useSubmitInstructions() {
 
       if (asVersionedTx.length > MAX_TRANSACTIONS_PER_SIGNATURE_BATCH) {
         let batchId: string
-        // eslint-disable-next-line no-restricted-syntax
         for (const chunk of chunks(
           asVersionedTx.map((i, index) => ({
             transaction: i,

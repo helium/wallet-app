@@ -1,6 +1,5 @@
 import CopyAddress from '@assets/images/copyAddress.svg'
 import useCopyText from '@hooks/useCopyText'
-import useHaptic from '@hooks/useHaptic'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
@@ -17,16 +16,14 @@ export const GlobalError = ({
   resetErrorBoundary: () => void
 }) => {
   const { t } = useTranslation()
-  const copyText = useCopyText()
-  const { triggerImpact } = useHaptic()
+  const copyText = useCopyText({ haptic: false })
   const text = `${error.message}\n${error.stack}`
   const handleCopyError = useCallback(() => {
-    triggerImpact('light')
     copyText({
       message: t('generic.toClipboard'),
       copyText: text,
     })
-  }, [copyText, triggerImpact, text, t])
+  }, [copyText, text, t])
   return (
     <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
       <Box flex={1} justifyContent="center" alignItems="center">

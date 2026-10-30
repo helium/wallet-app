@@ -1,6 +1,7 @@
 import useHaptic from '@hooks/useHaptic'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
+import { SPRING } from '@theme/motion'
 import React from 'react'
 import {
   GestureResponderEvent,
@@ -11,7 +12,6 @@ import {
 import {
   useAnimatedStyle,
   useSharedValue,
-  Reanimated3DefaultSpringConfig,
   withSpring,
 } from 'react-native-reanimated'
 import { ReAnimatedBox } from './AnimatedBox'
@@ -52,11 +52,11 @@ const ButtonPressAnimation = ({
     : onPress
 
   const onPressIn = () => {
-    animation.set(withSpring(0.3, Reanimated3DefaultSpringConfig))
+    animation.set(withSpring(0.3, SPRING.settle))
     onPressInProp?.()
   }
   const onPressOut = () => {
-    animation.set(withSpring(0, Reanimated3DefaultSpringConfig))
+    animation.set(withSpring(0, SPRING.settle))
     onPressOutProp?.()
   }
 

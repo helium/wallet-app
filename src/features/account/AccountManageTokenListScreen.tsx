@@ -158,7 +158,6 @@ const AccountManageTokenListScreen: React.FC = () => {
       )
     })
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: token }: { index: number; item: string }) => {
       return (
         <CheckableTokenListItem
@@ -203,7 +202,7 @@ const AccountManageTokenListScreen: React.FC = () => {
           <RefreshControl
             enabled
             refreshing={refetchingTokens}
-            onRefresh={refetchTokens}
+            onRefresh={() => void refetchTokens().catch(console.error)}
             title=""
             tintColor={colors.primaryText}
           />

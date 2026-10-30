@@ -180,7 +180,9 @@ const SettingsListItem = ({
           ref={actionSheetRef}
           data={select.items}
           selectedValue={value as string}
-          onValueSelected={handleSelect}
+          onValueSelected={(itemValue, itemIndex) =>
+            void handleSelect(itemValue, itemIndex).catch(console.error)
+          }
           title={title}
           textProps={actionSheetTextProps}
           iconVariant="none"

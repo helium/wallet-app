@@ -157,7 +157,6 @@ const PassphraseAutocomplete = ({
           {matchingWords.length <= 20 &&
             matchingWords.map((matchingWord, idx) => (
               <MatchingWord
-                // eslint-disable-next-line react/no-array-index-key
                 key={`${matchingWord}.${idx}`}
                 fullWord={matchingWord}
                 matchingText={word.toLowerCase()}

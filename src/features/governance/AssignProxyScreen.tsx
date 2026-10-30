@@ -273,7 +273,7 @@ export const AssignProxyScreen = () => {
             titleColorDisabled="secondaryText"
             title={isSubmitting ? undefined : t('gov.assignProxy.title')}
             titleColor="black"
-            onPress={handleSubmit}
+            onPress={() => void handleSubmit().catch(console.error)}
             disabled={
               isSubmitting || selectedPositions.size === 0 || !proxyWallet
             }

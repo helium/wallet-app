@@ -12,7 +12,8 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { parseTransactionError } from '@utils/solanaUtils'
 import React, { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTransactionBatchesStatus } from '../../hooks/useTransactionBatchStatus'
@@ -76,8 +77,8 @@ const ClaimingRewardsScreen = () => {
           {isConfirmed && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text variant="h1Medium" color="white" marginTop="xl">
                 {t('collectablesScreen.claimComplete')}
@@ -99,8 +100,8 @@ const ClaimingRewardsScreen = () => {
               style={{
                 alignItems: 'center',
               }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Box padding="m">
                 <Text variant="h2Medium" color="white" textAlign="center">
@@ -125,8 +126,8 @@ const ClaimingRewardsScreen = () => {
           {!route.params?.batchIds?.length ? (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Box padding="m">
                 <Text
@@ -144,8 +145,8 @@ const ClaimingRewardsScreen = () => {
           {isPending ? (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Box paddingHorizontal="m" mb="m">
                 <Text variant="h2Medium" color="white" textAlign="center">

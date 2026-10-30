@@ -164,7 +164,7 @@ const LinkWallet = () => {
           backgroundColor="surfaceContrast"
           justifyContent="center"
           borderRadius="round"
-          onPress={handleLink}
+          onPress={() => void handleLink().catch(console.error)}
         >
           <Text
             variant="subtitle1"
@@ -181,7 +181,7 @@ const LinkWallet = () => {
           backgroundColor="secondary"
           marginTop="ms"
           borderRadius="round"
-          onPress={handleCancel}
+          onPress={() => void handleCancel().catch(console.error)}
         >
           <Text variant="subtitle1" color="primaryText" textAlign="center">
             {t('linkWallet.no')}

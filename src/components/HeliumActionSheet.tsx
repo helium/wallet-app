@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, {
   forwardRef,
   memo,
@@ -137,7 +136,11 @@ const HeliumActionSheet = forwardRef(
           <HeliumActionSheetItem
             label={label}
             value={value}
-            onPress={handleItemSelected(value, index, action)}
+            onPress={() =>
+              void handleItemSelected(value, index, action)().catch(
+                console.error,
+              )
+            }
             selected={selected(value)}
             Icon={Icon}
             disabled={disabled}
@@ -151,7 +154,7 @@ const HeliumActionSheet = forwardRef(
       return (
         <Box marginBottom="xl">
           <TouchableOpacityBox
-            onPress={handleClose}
+            onPress={() => void handleClose().catch(console.error)}
             backgroundColor="surface"
             height={49}
             marginVertical="m"
@@ -183,7 +186,7 @@ const HeliumActionSheet = forwardRef(
     const displayText = useMemo(() => {
       return (
         <TouchableOpacityBox
-          onPress={handlePresentModalPress}
+          onPress={() => void handlePresentModalPress().catch(console.error)}
           flexDirection="row"
           alignItems="center"
           justifyContent="flex-end"
@@ -235,7 +238,7 @@ const HeliumActionSheet = forwardRef(
         {displayText}
         <HeliumBottomSheet
           isVisible={modalVisible}
-          onClose={handleClose}
+          onClose={() => void handleClose().catch(console.error)}
           sheetHeight={sheetHeight}
           title={title}
         >

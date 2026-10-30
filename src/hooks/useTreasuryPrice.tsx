@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-restricted-properties */
 import { PublicKey } from '@solana/web3.js'
 import { useMemo } from 'react'
 import * as tm from '@helium/treasury-management-sdk'

@@ -89,14 +89,12 @@ const useLedger = () => {
 
       for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
         try {
-          // eslint-disable-next-line no-await-in-loop
           await solana.getAppConfiguration()
           return
         } catch (error) {
           if (classifyLedgerError(error) !== 'appNotOpen') {
             throw error
           }
-          // eslint-disable-next-line no-await-in-loop
           await delay(APP_READY_DELAY_MS)
         }
       }
@@ -194,16 +192,13 @@ const useLedger = () => {
       let lastError: unknown = new Error('Transport could not be created')
       for (let attempt = 1; attempt <= RECONNECT_ATTEMPTS; attempt += 1) {
         try {
-          // eslint-disable-next-line no-await-in-loop
           const next = await getTransport(nextDeviceId, type)
           if (!next) throw new Error('Transport could not be created')
-          // eslint-disable-next-line no-await-in-loop
           await waitForSolanaApp(next)
           return next
         } catch (error) {
           if (!isRetryableReconnectError(error)) throw error
           lastError = error
-          // eslint-disable-next-line no-await-in-loop
           await delay(RECONNECT_DELAY_MS)
         }
       }

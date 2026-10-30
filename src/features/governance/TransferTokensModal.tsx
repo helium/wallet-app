@@ -21,8 +21,7 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { getMinDurationFmt, getTimeLeftFromNowFmt } from '@utils/dateTools'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useTranslation } from 'react-i18next'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const TransferTokensModal = ({
@@ -83,7 +82,6 @@ export const TransferTokensModal = ({
       try {
         setIsSubmitting(true)
         await onSubmit(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           positions.find((pos) => pos.pubkey.equals(selectedPosPk))!,
           amount,
         )
@@ -118,7 +116,7 @@ export const TransferTokensModal = ({
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeIn.duration(DUR.enter)}
+        entering={FADE_IN}
         position="absolute"
         height="100%"
         width="100%"
@@ -334,7 +332,7 @@ export const TransferTokensModal = ({
                   isSubmitting ? '' : t('gov.transactions.transferPosition')
                 }
                 titleColor="black"
-                onPress={handleSubmit}
+                onPress={() => void handleSubmit().catch(console.error)}
                 disabled={!amount || !selectedPosPk || isSubmitting}
                 TrailingComponent={
                   isSubmitting ? <CircleLoader color="white" /> : undefined

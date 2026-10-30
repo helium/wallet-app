@@ -9,8 +9,7 @@ import AccountIcon from '@components/AccountIcon'
 import { useTranslation } from 'react-i18next'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Platform } from 'react-native'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 export const ClaimingRewardsModal = () => {
   const { t } = useTranslation()
@@ -32,7 +31,7 @@ export const ClaimingRewardsModal = () => {
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeIn.duration(DUR.enter)}
+        entering={FADE_IN}
         position="absolute"
         height="100%"
         width="100%"

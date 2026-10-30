@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { BoxProps } from '@shopify/restyle'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
@@ -97,8 +97,8 @@ const HotspotListItem = ({
   return (
     <ReAnimatedBox
       style={{ width: '50%', justifyContent: 'flex-start' }}
-      entering={FadeIn}
-      exiting={FadeOut}
+      entering={FADE_IN}
+      exiting={FADE_OUT}
       {...rest}
     >
       <TouchableOpacityBox

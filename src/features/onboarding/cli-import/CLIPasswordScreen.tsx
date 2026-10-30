@@ -130,7 +130,7 @@ const CLIPasswordScreen = () => {
           borderRadius="round"
           backgroundColor="blueBright500"
           backgroundColorOpacityPressed={0.7}
-          onPress={handleNext}
+          onPress={() => void handleNext().catch(console.error)}
           title={t('accountImport.cli.password.buttonText')}
           marginBottom="m"
         />

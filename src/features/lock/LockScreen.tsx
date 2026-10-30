@@ -7,8 +7,7 @@ import React, { memo, useCallback, useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import useAppState from 'react-native-appstate-hook'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN_STATE, FADE_OUT_STATE } from '@theme/motion'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
@@ -16,9 +15,6 @@ import {
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
-
-const lockEntering = FadeIn.duration(DUR.state)
-const lockExiting = FadeOut.duration(DUR.state)
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -106,8 +102,8 @@ const LockScreen = ({ children }: Props) => {
       {children}
       {!!locked && (
         <ReAnimatedBox
-          entering={lockEntering}
-          exiting={lockExiting}
+          entering={FADE_IN_STATE}
+          exiting={FADE_OUT_STATE}
           zIndex={9999}
           top={0}
           bottom={0}
@@ -119,8 +115,8 @@ const LockScreen = ({ children }: Props) => {
             originalPin={pin?.value || ''}
             title={t('auth.title')}
             subtitle={t('auth.enterCurrent')}
-            pinSuccess={handleSuccess}
-            onCancel={handleSignOut}
+            pinSuccess={() => void handleSuccess().catch(console.error)}
+            onCancel={() => void handleSignOut().catch(console.error)}
             clearable
           />
         </ReAnimatedBox>
