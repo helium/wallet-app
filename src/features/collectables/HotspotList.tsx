@@ -253,6 +253,7 @@ const HotspotList = () => {
   return (
     <>
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         data={hotspotsWithMeta}
         numColumns={2}
         columnWrapperStyle={{

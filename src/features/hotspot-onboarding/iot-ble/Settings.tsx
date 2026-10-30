@@ -187,6 +187,7 @@ const Settings = () => {
   return (
     <BackScreen title={t('hotspotOnboarding.settings.title')}>
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         data={data}
         renderItem={renderItem}
         keyExtractor={keyExtractor}

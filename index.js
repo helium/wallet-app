@@ -8,7 +8,7 @@ import './src/global.css'
 import { ThemeProvider } from '@shopify/restyle'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { AppRegistry } from 'react-native'
+import { AppRegistry, useWindowDimensions } from 'react-native'
 import 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'react-native-url-polyfill/auto'
@@ -22,7 +22,7 @@ import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 import { persistor } from './src/store/persistence'
 import store from './src/store/store'
-import { darkThemeColors, theme } from './src/theme/theme'
+import { createAppTheme, darkThemeColors } from './src/theme/theme'
 import './src/utils/i18n'
 
 const originalHandler = global.ErrorUtils?.getGlobalHandler?.()
@@ -61,11 +61,12 @@ function fallbackRender(props) {
   )
 }
 
-const render = () => {
+const Root = () => {
+  const window = useWindowDimensions()
   return (
     <ThemeProvider
       theme={{
-        ...theme,
+        ...createAppTheme(window),
         colors: darkThemeColors,
       }}
     >
@@ -99,5 +100,5 @@ const render = () => {
 AppRegistry.registerComponent('main', () =>
   process.env.EXPO_PUBLIC_UI_GALLERY === '1'
     ? require('./src/features/uiGallery/UiGalleryScreen').default
-    : render,
+    : Root,
 )

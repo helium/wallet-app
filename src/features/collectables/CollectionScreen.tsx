@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Dimensions, Image, LogBox, FlatList } from 'react-native'
+import { Image, LogBox, FlatList } from 'react-native'
 import 'text-encoding-polyfill'
 import BackScreen from '@components/BackScreen'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -8,6 +8,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
 import { useBorderRadii } from '@theme/themeHooks'
+import { useCollectableHeight } from '@utils/layout'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -23,7 +24,7 @@ type Route = RouteProp<CollectableStackParamList, 'CollectionScreen'>
 const CollectionScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
-  const COLLECTABLE_HEIGHT = Dimensions.get('window').width / 2
+  const collectableHeight = useCollectableHeight()
   const collectables = route.params.collection
   const { lm: borderRadius } = useBorderRadii()
   const { triggerImpact } = useHaptic()
@@ -54,7 +55,7 @@ const CollectionScreen = () => {
           >
             <Image
               borderRadius={borderRadius}
-              style={{ height: COLLECTABLE_HEIGHT, width: '100%' }}
+              style={{ height: collectableHeight, width: '100%' }}
               source={{
                 uri: json?.image || '',
               }}
@@ -63,7 +64,7 @@ const CollectionScreen = () => {
         </ReAnimatedBox>
       )
     },
-    [COLLECTABLE_HEIGHT, borderRadius, handleNavigateToCollectable],
+    [collectableHeight, borderRadius, handleNavigateToCollectable],
   )
 
   const keyExtractor = useCallback((item: Collectable) => item.id, [])
@@ -77,6 +78,7 @@ const CollectionScreen = () => {
     >
       <ReAnimatedBox marginTop="s" style={globalStyles.container}>
         <FlatList
+          contentInsetAdjustmentBehavior="automatic"
           scrollEnabled
           data={collectables}
           numColumns={2}

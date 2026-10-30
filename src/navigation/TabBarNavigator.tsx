@@ -3,6 +3,7 @@ import { Platform } from 'react-native'
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable'
 import { SafeAreaView } from 'react-native-screens/experimental'
 import { Portal } from '@gorhom/portal'
+import ContentColumn from '@components/ContentColumn'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import { useColors } from '@theme/themeHooks'
@@ -92,7 +93,9 @@ const TabBarNavigator = () => {
         }}
         // Native tabs draw screens under the tab bar. Pad them clear of it.
         screenLayout={({ children }) => (
-          <SafeAreaView edges={{ bottom: true }}>{children}</SafeAreaView>
+          <SafeAreaView edges={{ bottom: true }}>
+            <ContentColumn>{children}</ContentColumn>
+          </SafeAreaView>
         )}
         screenListeners={({ navigation }) => ({
           tabPress: () => {

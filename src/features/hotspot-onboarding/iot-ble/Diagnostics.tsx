@@ -34,7 +34,7 @@ const Diagnostics = () => {
 
   return (
     <BackScreen title={t('hotspotOnboarding.diagnostics.title')}>
-      <ScrollView>
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
         {diagnosticInfo &&
           Object.entries(diagnosticInfo).map(([key, value]) => (
             <Box

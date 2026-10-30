@@ -316,7 +316,7 @@ export const LockTokensModal = ({
           padding="m"
           marginHorizontal="s"
         >
-          <ScrollView>
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
             {step === 1 && (
               <TouchableWithoutFeedback
                 onPress={() => Keyboard.dismiss()}
@@ -340,7 +340,7 @@ export const LockTokensModal = ({
                     }
                     onConfirmBalance={handleAmountChange}
                   >
-                    <ScrollView>
+                    <ScrollView contentInsetAdjustmentBehavior="automatic">
                       {!showLockupKindInfo && (
                         <Box flexGrow={1} justifyContent="center">
                           <Text

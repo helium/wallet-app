@@ -837,6 +837,7 @@ const PaymentScreen = () => {
                 </Box>
 
                 <KeyboardAwareScrollView
+                  contentInsetAdjustmentBehavior="automatic"
                   bottomOffset={75}
                   disableScrollOnKeyboardHide
                   keyboardShouldPersistTaps="always"

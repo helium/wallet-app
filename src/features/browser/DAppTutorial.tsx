@@ -13,7 +13,7 @@ import TextTransform from '@components/TextTransform'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Spacing } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
-import { wp } from '@utils/layout'
+import { useContentWidth } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import { BrowserNavigationProp } from './browserTypes'
@@ -56,6 +56,7 @@ const DAppTutorial = () => {
   const progress = useSharedValue(0)
   const [viewedSlides, setViewedSlides] = useState(false)
   const colors = useColors()
+  const contentWidth = useContentWidth()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { setDAppTutorialCompleted } = useAppStorage()
   const { cluster } = useSolana()
@@ -81,7 +82,7 @@ const DAppTutorial = () => {
             source={item.image}
             resizeMode="contain"
             alignSelf="center"
-            width={wp(50)}
+            width={Math.round(contentWidth * 0.5)}
           />
           <Text
             variant="h1"
@@ -101,7 +102,7 @@ const DAppTutorial = () => {
         </Box>
       )
     },
-    [t],
+    [contentWidth, t],
   )
 
   return (
@@ -117,7 +118,7 @@ const DAppTutorial = () => {
           </Text>
         </Box>
         <Carousel
-          style={styles.carousel}
+          style={[styles.carousel, { width: Math.round(contentWidth * 0.9) }]}
           contentContainerStyle={styles.carouselContent}
           data={slides}
           renderItem={renderCarouselItem}
@@ -159,7 +160,6 @@ const DAppTutorial = () => {
 const styles = StyleSheet.create({
   carousel: {
     flex: 1,
-    width: wp(90),
     alignSelf: 'center',
     overflow: 'visible',
   },

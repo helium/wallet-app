@@ -15,6 +15,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { createSignRequestResolver } from './signRequestResolver'
 import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
 import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'
@@ -37,6 +38,7 @@ const WalletSignBottomSheet = forwardRef(
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const [simulated, setSimulated] = useState(false)
     const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
       type: WalletStandardMessageTypes.connect,
@@ -102,6 +104,7 @@ const WalletSignBottomSheet = forwardRef(
             enableDismissOnClose
             handleIndicatorStyle={{ backgroundColor: secondaryText }}
             style={{
+              ...sheetMargins,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 12 },
               shadowOpacity: 0.58,
@@ -110,7 +113,7 @@ const WalletSignBottomSheet = forwardRef(
             }}
             enableDynamicSizing
           >
-            <BottomSheetScrollView>
+            <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
               {hasRenderer && !simulated ? (
                 <WalletSignBottomSheetCompact
                   {...walletSignOpts}

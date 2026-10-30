@@ -60,7 +60,7 @@ const NftMetadataScreen = () => {
       padding="none"
       headerTopMargin="l"
     >
-      <ScrollView>
+      <ScrollView contentInsetAdjustmentBehavior="automatic">
         <SafeAreaBox alignItems="center" flex={1}>
           <Text variant="subtitle1" color="grey600" marginBottom="l">
             {t('collectablesScreen.collectables.properties')}

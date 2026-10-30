@@ -7,9 +7,9 @@ import { Portal } from '@gorhom/portal'
 import { useOpacity } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, useWindowDimensions } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
-import { wh } from '../utils/layout'
+import { useContentColumnMargins } from '../utils/layout'
 import CustomBlurBackdrop from './CustomBlurBackdrop'
 import SafeAreaBox from './SafeAreaBox'
 
@@ -24,6 +24,9 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const [contentHeight, setContentHeight] = useState(0)
   const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
+  const { height } = useWindowDimensions()
+  // The sheet mounts at the root portal host, outside the content column
+  const sheetMargins = useContentColumnMargins()
 
   const handleOnClose = useCallback(() => {
     if (onClose) {
@@ -42,11 +45,11 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
   const snapPoints = useMemo(() => {
     let maxHeight: number | string = '75%'
     if (contentHeight > 0) {
-      maxHeight = Math.min(wh * 0.75, contentHeight)
+      maxHeight = Math.min(height * 0.75, contentHeight)
     }
 
     return [maxHeight]
-  }, [contentHeight])
+  }, [contentHeight, height])
 
   const renderBackdrop = useCallback(
     (props) => (
@@ -76,9 +79,10 @@ const BlurActionSheet = ({ title, open, children, onClose }: Props) => {
           snapPoints={snapPoints}
           backdropComponent={renderBackdrop}
           backgroundStyle={backgroundStyle}
+          style={sheetMargins}
           onDismiss={handleOnClose}
         >
-          <BottomSheetScrollView>
+          <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
             <SafeAreaBox edges={safeEdges} onLayout={handleContentLayout}>
               {children}
             </SafeAreaBox>

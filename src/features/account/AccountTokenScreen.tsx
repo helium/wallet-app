@@ -24,7 +24,7 @@ import { useColors } from '@theme/themeHooks'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dimensions, Platform, ScrollView, View } from 'react-native'
+import { Platform, ScrollView, View } from 'react-native'
 import Animated, {
   FadeIn,
   ReduceMotion,
@@ -50,7 +50,6 @@ import useSolanaActivityList from './useSolanaActivityList'
 const delayedAnimation = FadeIn.duration(DUR.enter)
   .delay(300)
   .reduceMotion(ReduceMotion.Never)
-const { height: WINDOW_HEIGHT } = Dimensions.get('window')
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
 
@@ -431,6 +430,7 @@ const AccountTokenScreen = () => {
         onHeaderLayout={setBackHeaderHeight}
       >
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           style={{
             flexGrow: 1,
           }}
@@ -560,6 +560,7 @@ const AccountTokenScreen = () => {
             entering={delayedAnimation}
           >
             <BottomSheetFlatList
+              contentInsetAdjustmentBehavior="automatic"
               onLayout={setListHeight}
               style={listStyle}
               keyExtractor={keyExtractor}

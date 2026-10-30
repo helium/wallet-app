@@ -265,6 +265,7 @@ const AutomationSetupScreen = () => {
       onClose={() => navigation.goBack()}
     >
       <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1 }}
       >

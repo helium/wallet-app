@@ -264,6 +264,7 @@ const BrowserScreen = () => {
       <SafeAreaBox flex={1} edges={edges}>
         {browserHeader}
         <SectionList
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={contentContainer}
           sections={SectionData}
           keyExtractor={keyExtractor}

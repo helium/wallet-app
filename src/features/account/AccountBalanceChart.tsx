@@ -87,7 +87,11 @@ const AccountBalanceChart = ({
 
   return (
     <FadeInOut>
-      <ScrollView contentContainerStyle={style} scrollEnabled={false}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={style}
+        scrollEnabled={false}
+      >
         <LineChart
           ref={chartsRef}
           style={{

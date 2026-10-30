@@ -324,6 +324,7 @@ const DeviceShow = () => {
     <Box flex={1} backgroundColor="primaryBackground">
       <Box height="89%">
         <SectionList
+          contentInsetAdjustmentBehavior="automatic"
           stickySectionHeadersEnabled={false}
           contentContainerStyle={contentContainer}
           sections={SectionData}

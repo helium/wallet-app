@@ -144,7 +144,7 @@ export const TransferTokensModal = ({
             }
             onConfirmBalance={handleAmountChange}
           >
-            <ScrollView>
+            <ScrollView contentInsetAdjustmentBehavior="automatic">
               <Box flexGrow={1} justifyContent="center">
                 <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
                   {t('gov.transactions.transferPosition')}

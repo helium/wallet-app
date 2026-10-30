@@ -198,6 +198,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
         <CloseButton onPress={onClose} />
       </Box>
       <KeyboardAwareScrollView
+        contentInsetAdjustmentBehavior="automatic"
         extraKeyboardSpace={80}
         bottomOffset={155}
         keyboardShouldPersistTaps="always"
@@ -223,6 +224,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
             })}
           </Text>
           <FlatList
+            contentInsetAdjustmentBehavior="automatic"
             data={words}
             contentContainerStyle={flatListStyle}
             renderItem={renderItem}

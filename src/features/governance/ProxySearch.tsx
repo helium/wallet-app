@@ -19,7 +19,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dimensions, FlatList, TextInput } from 'react-native'
+import { FlatList, TextInput, useWindowDimensions } from 'react-native'
 import { useKeyboard } from '@react-native-community/hooks'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -145,7 +145,7 @@ export const ProxySearch = React.forwardRef<
   }, [navigation, mint])
 
   const keyboard = useKeyboard()
-  const screenHeight = Dimensions.get('window').height
+  const { height: screenHeight } = useWindowDimensions()
   const maxListHeight = useMemo(() => {
     const availableHeight = screenHeight - keyboard.keyboardHeight
     return Math.max(150, Math.min(340, availableHeight))
@@ -153,6 +153,7 @@ export const ProxySearch = React.forwardRef<
 
   return (
     <FlatList
+      contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       data={focused ? result || [] : []}
       renderItem={renderItem}

@@ -155,6 +155,7 @@ const ActivityScreen = () => {
     <ReAnimatedBox style={globalStyles.container}>
       <SafeAreaBox edges={safeEdges}>
         <SectionList
+          contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={contentContainer}
           sections={SectionData}
           keyExtractor={keyExtractor}

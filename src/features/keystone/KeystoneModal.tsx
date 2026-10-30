@@ -19,6 +19,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import EventEmitter from 'events'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { KeystoneSolanaSDK } from '@keystonehq/keystone-sdk'
@@ -44,6 +45,7 @@ const KeystoneModal = forwardRef(
     const { currentAccount } = useAccountStorage()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const settleRef = useRef<((value: Buffer) => void) | undefined>(undefined)
     const [solSignRequest, setSolSignRequest] =
       useState<KeystoneSolSignRequest>()
@@ -143,6 +145,7 @@ const KeystoneModal = forwardRef(
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}
+            style={sheetMargins}
             index={0}
             enableDynamicSizing={false}
             backgroundStyle={backgroundStyle}

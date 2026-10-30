@@ -254,7 +254,7 @@ export const ProposalScreen = () => {
           flex={1}
           marginTop="l"
         >
-          <ScrollView>
+          <ScrollView contentInsetAdjustmentBehavior="automatic">
             <Box paddingHorizontal="m">
               <Box
                 flexGrow={1}

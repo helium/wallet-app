@@ -267,6 +267,7 @@ const HeliumActionSheet = forwardRef(
         {displayText}
         <Sheet ref={sheetRef} maxDynamicContentSize={maxModalHeight}>
           <BottomSheetFlatList
+            contentInsetAdjustmentBehavior="automatic"
             data={data}
             keyExtractor={keyExtractor}
             renderItem={renderItem}

@@ -9,6 +9,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -36,6 +37,7 @@ const isGesture = (
 const AccountSelector = forwardRef(
   ({ children }: { children: ReactNode }, ref: Ref<AccountSelectorRef>) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const { backgroundStyle } = useOpacity('surfaceSecondary', 1)
     const { m, xl } = useSpacing()
     const [accountsType, setAccountsTypes] = useState<AccountNetTypeOpt>('all')
@@ -127,6 +129,7 @@ const AccountSelector = forwardRef(
       <BottomSheetModalProvider>
         <BottomSheetModal
           ref={bottomSheetModalRef}
+          style={sheetMargins}
           index={0}
           backgroundStyle={backgroundStyle}
           backdropComponent={renderBackdrop}
@@ -136,6 +139,7 @@ const AccountSelector = forwardRef(
           handleIndicatorStyle={handleIndicatorStyle}
         >
           <BottomSheetFlatList
+            contentInsetAdjustmentBehavior="automatic"
             data={data}
             renderItem={renderFlatlistItem}
             keyExtractor={keyExtractor}

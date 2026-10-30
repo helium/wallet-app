@@ -25,7 +25,11 @@ jest.mock('@utils/layout', () => ({ getMaxFontSizeMultiplier: () => 1.5 }), {
 // The node test runner cannot load react-native or Reanimated. The host
 // components render as named elements so the test reads their props. The
 // token module only needs the easing factories and the fade builders.
-jest.mock('react-native', () => ({ Pressable: 'Pressable', Text: 'Text' }))
+jest.mock('react-native', () => ({
+  Pressable: 'Pressable',
+  Text: 'Text',
+  useWindowDimensions: () => ({ width: 390, height: 844 }),
+}))
 jest.mock('react-native-reanimated', () => {
   const builder = () => ({
     duration: () => ({ reduceMotion: () => ({}) }),

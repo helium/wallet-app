@@ -7,7 +7,7 @@ import {
 import { TextInput, TextStyle } from 'react-native'
 import tinycolor from 'tinycolor2'
 import { SvgProps } from 'react-native-svg'
-import { Color, theme, Theme } from '@theme/theme'
+import { Color, Theme } from '@theme/theme'
 import { useColors, useInputVariants, useTextVariants } from '@theme/themeHooks'
 import Box from './Box'
 import Text from './Text'
@@ -63,14 +63,14 @@ const TI = forwardRef(
       const findColor = () => {
         if (placeholderTextColor) return colors[placeholderTextColor]
 
-        return colors[theme.inputVariants.regular.color as Color]
+        return colors[inputVariants.regular.color as Color]
       }
 
       const color = findColor()
       if (!color) return
 
       return tinycolor(color).setAlpha(0.3).toRgbString()
-    }, [colors, placeholderTextColor])
+    }, [colors, inputVariants, placeholderTextColor])
 
     const getTextColor = useMemo(() => {
       if (textColor) return colors[textColor]

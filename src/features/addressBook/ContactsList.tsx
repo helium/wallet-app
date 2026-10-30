@@ -144,6 +144,7 @@ const ContactsList = ({
   if (insideBottomSheet) {
     return (
       <BottomSheetFlatList
+        contentInsetAdjustmentBehavior="automatic"
         ListHeaderComponent={header}
         data={data}
         renderItem={renderFlatlistItem}
@@ -154,6 +155,7 @@ const ContactsList = ({
 
   return (
     <FlatList
+      contentInsetAdjustmentBehavior="automatic"
       ListHeaderComponent={header}
       data={data}
       renderItem={renderFlatlistItem}

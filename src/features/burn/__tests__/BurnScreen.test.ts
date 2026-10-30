@@ -189,7 +189,7 @@ jest.mock('react-native', () => ({
   Platform: { OS: 'ios' },
   StyleSheet: { absoluteFill: {} },
 }))
-jest.mock('react-native-keyboard-aware-scroll-view', () => ({
+jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
 }))
 jest.mock('react-native-safe-area-context', () => ({

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef } from 'react'
-import { Linking, Platform, Switch } from 'react-native'
+import { Linking, Platform, Switch, useWindowDimensions } from 'react-native'
 import CarotRight from '@assets/images/carot-right.svg'
 import LinkImg from '@assets/images/link.svg'
 import { HeliumActionSheetItemType } from '@components/HeliumActionSheetItem'
@@ -11,7 +11,6 @@ import HeliumActionSheet, {
 } from '@components/HeliumActionSheet'
 import Box from '@components/Box'
 import { useColors } from '@theme/themeHooks'
-import { hp } from '@utils/layout'
 import sleep from '@utils/sleep'
 
 export type SelectProps = {
@@ -60,6 +59,7 @@ const SettingsListItem = ({
   const actionSheetRef = useRef<HeliumActionSheetRef>(null)
   const colors = useColors()
   const isAndroid = useMemo(() => Platform.OS === 'android', [])
+  const { height } = useWindowDimensions()
 
   const handlePress = () => {
     if (openUrl) {
@@ -186,7 +186,7 @@ const SettingsListItem = ({
           title={title}
           textProps={actionSheetTextProps}
           iconVariant="none"
-          maxModalHeight={hp(80)}
+          maxModalHeight={Math.round(height * 0.8)}
         />
       )}
       {staticText && (

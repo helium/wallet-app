@@ -116,6 +116,7 @@ const ReviewStep: FC<{
         </Text>
 
         <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={contentStyle}
         >

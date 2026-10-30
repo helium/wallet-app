@@ -135,6 +135,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   return (
     <BottomSheetFlatList
+      contentInsetAdjustmentBehavior="automatic"
       onLayout={onLayout}
       data={mints}
       numColumns={2}
@@ -148,7 +149,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
         />
       }
       refreshing={refetchingTokens}
-      onRefresh={refetchTokens}
+      onRefresh={() => void refetchTokens().catch(console.error)}
       columnWrapperStyle={{
         flexDirection: 'column',
       }}

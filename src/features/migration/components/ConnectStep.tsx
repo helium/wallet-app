@@ -82,7 +82,10 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
   return (
     <Box flex={1}>
       <StepBackHeader onBack={onBack} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
         <Box paddingHorizontal="l">
           <Text
             variant="h4"

@@ -8,30 +8,14 @@ import { useAsync } from 'react-async-hook'
 import AccountIcon from '@components/AccountIcon'
 import Box from '@components/Box'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { wp } from '../../utils/layout'
+import { useContentWidth } from '../../utils/layout'
 import AccountSliderIcon from './AccountSliderIcon'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { HELIUM_UPDATES_ITEM, WALLET_UPDATES_ITEM } from './notificationTypes'
 import { isValidAccountHash } from '../../utils/accountUtils'
 
 const ITEM_WIDTH = 72
-const SLIDER_WIDTH = wp(100)
 const ITEM_OFFSET_X = 7
-
-// Centers the active item and dims the others.
-const itemAnimation = (value: number) => {
-  'worklet'
-
-  return {
-    transform: [
-      {
-        translateX:
-          value * ITEM_WIDTH + (SLIDER_WIDTH - ITEM_WIDTH) / 2 + ITEM_OFFSET_X,
-      },
-    ],
-    opacity: interpolate(value, [-1, 0, 1], [0.7, 1, 0.7], Extrapolation.CLAMP),
-  }
-}
 
 const AccountSlider = () => {
   const carouselRef = useRef<CarouselRef>(null)
@@ -110,6 +94,33 @@ const AccountSlider = () => {
     carouselRef.current?.scrollTo({ index, animated: true })
   }, [data, selectedList])
 
+  const sliderWidth = useContentWidth()
+
+  // Centers the active item and dims the others.
+  const itemAnimation = useCallback(
+    (value: number) => {
+      'worklet'
+
+      return {
+        transform: [
+          {
+            translateX:
+              value * ITEM_WIDTH +
+              (sliderWidth - ITEM_WIDTH) / 2 +
+              ITEM_OFFSET_X,
+          },
+        ],
+        opacity: interpolate(
+          value,
+          [-1, 0, 1],
+          [0.7, 1, 0.7],
+          Extrapolation.CLAMP,
+        ),
+      }
+    },
+    [sliderWidth],
+  )
+
   const renderItem = useCallback(
     ({ index, item }) => {
       let icon
@@ -141,7 +152,7 @@ const AccountSlider = () => {
           selectedList ? data.indexOf(selectedList) : 0,
         )}
         onSnapToItem={(index) => void onSnap(index).catch(console.error)}
-        style={styles.carouselContainer}
+        style={[styles.carouselContainer, { width: sliderWidth }]}
         data={data}
         renderItem={renderItem}
         itemSize={ITEM_WIDTH}
@@ -153,7 +164,7 @@ const AccountSlider = () => {
 }
 
 const styles = StyleSheet.create({
-  carouselContainer: { width: SLIDER_WIDTH, height: 64 },
+  carouselContainer: { height: 64 },
 })
 
 export default memo(AccountSlider)

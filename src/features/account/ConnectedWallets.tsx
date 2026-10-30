@@ -27,6 +27,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent } from 'react-native'
 import { initialWindowMetrics } from 'react-native-safe-area-context'
@@ -58,6 +59,7 @@ const ConnectedWallets = forwardRef(
     const { primaryText, secondaryText } = useColors()
     const { t } = useTranslation()
     const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+    const sheetMargins = useSheetMargins()
     const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
     const [listItemHeight, setListItemHeight] = useLayoutHeight()
     const [sectionHeaderHeight, setSectionHeaderHeight] = useLayoutHeight()
@@ -337,6 +339,7 @@ const ConnectedWallets = forwardRef(
         {children}
         <BottomSheetModal
           ref={bottomSheetModalRef}
+          style={sheetMargins}
           index={0}
           backgroundStyle={backgroundStyle}
           backdropComponent={renderBackdrop}
@@ -345,6 +348,7 @@ const ConnectedWallets = forwardRef(
           handleIndicatorStyle={handleIndicatorStyle}
         >
           <BottomSheetSectionList
+            contentInsetAdjustmentBehavior="automatic"
             sections={filteredAccounts}
             keyExtractor={keyExtractor}
             renderItem={renderItem}

@@ -227,7 +227,11 @@ export const AssignProxyScreen = () => {
             </Text>
           </Box>
           <Box flex={1} mb="m">
-            <FlatList data={selectablePositions} renderItem={renderPosition} />
+            <FlatList
+              contentInsetAdjustmentBehavior="automatic"
+              data={selectablePositions}
+              renderItem={renderPosition}
+            />
           </Box>
           {error && (
             <Box

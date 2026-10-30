@@ -198,6 +198,7 @@ const AccountManageTokenListScreen: React.FC = () => {
       </Box>
 
       <FlatList
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             enabled

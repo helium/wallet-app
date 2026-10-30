@@ -160,7 +160,10 @@ export const DelegateTokensModal = ({
           padding="m"
           marginHorizontal="s"
         >
-          <ScrollView style={{ height: '100%' }}>
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            style={{ height: '100%' }}
+          >
             <Box flexGrow={1} justifyContent="center">
               {!loading && (
                 <>
