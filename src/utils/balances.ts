@@ -152,8 +152,8 @@ let lastSync: Promise<unknown> = Promise.resolve()
 
 // A sync of another wallet waits for the one in flight to end; a repeat of a
 // waiting wallet shares its sync. Rejects when this wallet's sync is in
-// flight, or this wallet synced on this cluster in the last 5 seconds; the
-// stored balances stay as they are
+// flight, or this wallet's sync on this cluster was the last one started, less
+// than 5 seconds ago; the stored balances stay as they are
 export const syncTokenAccounts = async (
   queryClient: QueryClient,
   {

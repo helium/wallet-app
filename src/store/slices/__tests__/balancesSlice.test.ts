@@ -9,6 +9,11 @@ import {
 import { AccountInfo, Keypair, PublicKey } from '@solana/web3.js'
 import { CSAccount } from '../../../storage/cloudStorage'
 import { AccountBalance } from '../../../types/balance'
+import {
+  syncTokenAccounts,
+  tokenAccountsQueryOptions,
+} from '../../../utils/balances'
+import { createQueryClient } from '../../../utils/queryClient'
 import { getBalanceHistory, getTokenPrices } from '../../../utils/walletApiV2'
 import {
   BalancesPort,
@@ -507,6 +512,156 @@ describe('syncTokenAccounts', () => {
       tokenAccount: ownerB.toBase58(),
       balance: 2000,
     })
+  })
+
+  it('runs two waiting syncs one after the other', async () => {
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const ownerC = Keypair.generate().publicKey
+    const a = hangingConnection(
+      fakeConnection({
+        owner: ownerA,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection,
+    )
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const c = fakeConnection({
+      owner: ownerC,
+      lamports: 3000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const port = makePort()
+
+    const syncA = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerA),
+      anchorProvider: providerFor(a.connection),
+    })
+    const syncB = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerB),
+      anchorProvider: providerFor(b.connection),
+    })
+    const syncC = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerC),
+      anchorProvider: providerFor(c.connection),
+    })
+    a.release()
+
+    expect(await Promise.all([syncA, syncB, syncC])).toEqual([
+      'fulfilled',
+      'fulfilled',
+      'fulfilled',
+    ])
+    expect(port.tokensOf('mainnet-beta', ownerC.toBase58())?.sol).toEqual({
+      tokenAccount: ownerC.toBase58(),
+      balance: 3000,
+    })
+  })
+
+  // Drives syncTokenAccounts on its own client: the test needs that client's
+  // in-flight fetch of A to act between A's end and B's start
+  it('queues a sync requested after one sync ends and before the waiting one starts', async () => {
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const ownerC = Keypair.generate().publicKey
+    const a = hangingConnection(
+      fakeConnection({
+        owner: ownerA,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection,
+    )
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const c = fakeConnection({
+      owner: ownerC,
+      lamports: 3000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const client = createQueryClient()
+    const outcomeOf = (read: Promise<unknown>) =>
+      read.then(
+        () => 'fulfilled',
+        () => 'rejected',
+      )
+    const solOf = (owner: PublicKey) =>
+      client.getQueryData(
+        tokenAccountsQueryOptions({
+          cluster: 'mainnet-beta',
+          solanaAddress: owner.toBase58(),
+          anchorProvider: undefined,
+        }).queryKey,
+      )?.sol
+
+    try {
+      const syncA = outcomeOf(
+        syncTokenAccounts(client, {
+          cluster: 'mainnet-beta',
+          acct: accountFor(ownerA),
+          anchorProvider: providerFor(a.connection),
+        }),
+      )
+      const syncB = outcomeOf(
+        syncTokenAccounts(client, {
+          cluster: 'mainnet-beta',
+          acct: accountFor(ownerB),
+          anchorProvider: providerFor(b.connection),
+        }),
+      )
+      // Shares A's in-flight fetch and settles after A's sync ends, before B's
+      // queued sync starts
+      const syncC = client
+        .fetchQuery({
+          ...tokenAccountsQueryOptions({
+            cluster: 'mainnet-beta',
+            solanaAddress: ownerA.toBase58(),
+            anchorProvider: providerFor(a.connection),
+          }),
+          staleTime: 0,
+        })
+        .then(() =>
+          outcomeOf(
+            syncTokenAccounts(client, {
+              cluster: 'mainnet-beta',
+              acct: accountFor(ownerC),
+              anchorProvider: providerFor(c.connection),
+            }),
+          ),
+        )
+      a.release()
+
+      expect(await Promise.all([syncA, syncB, syncC])).toEqual([
+        'fulfilled',
+        'fulfilled',
+        'fulfilled',
+      ])
+      expect(solOf(ownerB)).toEqual({
+        tokenAccount: ownerB.toBase58(),
+        balance: 2000,
+      })
+      expect(solOf(ownerC)).toEqual({
+        tokenAccount: ownerC.toBase58(),
+        balance: 3000,
+      })
+    } finally {
+      client.clear()
+    }
   })
 
   it('syncs a wallet again within 5 seconds when another wallet synced in between', async () => {
