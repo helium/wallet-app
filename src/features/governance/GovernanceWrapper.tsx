@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
 import Flag from '@assets/images/flag.svg'
 import LightningBolt from '@assets/images/lightningBolt.svg'
 import UserStar from '@assets/images/userStar.svg'

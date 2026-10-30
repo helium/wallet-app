@@ -1,6 +1,4 @@
-/* eslint-disable no-debugger */
 /* eslint-disable no-param-reassign */
-/* eslint-disable no-console */
 import { NetTypes as NetType } from '@helium/address'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
@@ -116,24 +114,20 @@ export const restoreAccounts = async () => {
     Object.entries(csAccounts).map(async ([address, acct]) => {
       if (!acct.version) {
         updatedVersions = true
-        // eslint-disable-next-line no-param-reassign
         acct.version = 'v1'
         const { mnemonic } = (await getSecureAccount(acct.address)) || {}
         if (mnemonic) {
           const mnemonicHash = createHash('sha256')
             .update(mnemonic.join(' '))
             .digest('hex')
-          // eslint-disable-next-line no-param-reassign
           acct.mnemonicHash = mnemonicHash
           if (!acct.derivationPath) {
-            // eslint-disable-next-line no-param-reassign
             acct.derivationPath = HELIUM_DERIVATION
           }
         }
       }
 
       if (!acct.solanaAddress) {
-        // eslint-disable-next-line no-param-reassign
         acct.solanaAddress = heliumAddressToSolAddress(acct.address)
       }
 
@@ -144,7 +138,6 @@ export const restoreAccounts = async () => {
   if (updatedVersions) {
     await updateCloudAccounts(
       changed.reduce((acc, { address, acct }) => {
-        // eslint-disable-next-line no-param-reassign
         acc[address] = acct
         return acc
       }, {} as CSAccounts),

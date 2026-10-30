@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useState, memo, useCallback } from 'react'
 import { upperCase } from 'lodash'
 import CheckMark from '@assets/images/checkmark.svg'

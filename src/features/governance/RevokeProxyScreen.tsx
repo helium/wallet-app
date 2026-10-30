@@ -40,9 +40,7 @@ export const RevokeProxyScreen = () => {
         (p) =>
           p.proxy &&
           !p.proxy.nextVoter.equals(PublicKey.default) &&
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (!proxyWalletKey || p.proxy.nextVoter.equals(proxyWalletKey!)) &&
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           (!positionKey || p.pubkey.equals(positionKey!)),
       ),
     [positions, proxyWalletKey, positionKey],
@@ -193,7 +191,7 @@ export const RevokeProxyScreen = () => {
           titleColorDisabled="secondaryText"
           title={isSubmitting ? undefined : t('gov.revokeProxy.title')}
           titleColor="black"
-          onPress={handleSubmit}
+          onPress={() => void handleSubmit().catch(console.error)}
           disabled={
             isSubmitting || selectedPositions.size === 0 || !proxyWallet
           }

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React, { useEffect, useState } from 'react'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Linking, Platform, StyleSheet } from 'react-native'

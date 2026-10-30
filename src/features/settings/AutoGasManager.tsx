@@ -134,7 +134,7 @@ const AutoGasManager: FC = () => {
             titleColor="black"
             titleColorPressedOpacity={0.3}
             title={t('generic.save')}
-            onPress={handleSave}
+            onPress={() => void handleSave().catch(console.error)}
           />
         </Box>
       </Box>

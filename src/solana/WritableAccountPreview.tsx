@@ -109,7 +109,6 @@ export const WritableAccountPreview = ({
     <Box flexDirection="column" p="s">
       {warnings.map((warning, idx) => (
         <WarningBox
-          // eslint-disable-next-line react/no-array-index-key
           key={warning.shortMessage + idx}
           header={warning.shortMessage}
           body={warning.message}
@@ -211,7 +210,6 @@ export const WritableAccountPreview = ({
           {instructions.map(({ parsed, raw }, index) => (
             <Box
               // Not really another unique index
-              // eslint-disable-next-line react/no-array-index-key
               key={index.toString()}
               flexDirection="row"
               justifyContent="space-between"

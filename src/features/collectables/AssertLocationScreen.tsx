@@ -65,8 +65,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
@@ -676,7 +675,7 @@ const AssertLocationScreen = () => {
                 <SearchInput
                   placeholder={t('assertLocationScreen.searchLocation')}
                   onChangeText={setSearchValue}
-                  onEnter={handleOnSearch}
+                  onEnter={() => void handleOnSearch().catch(console.error)}
                   value={searchValue}
                   width="100%"
                   borderRadius="none"
@@ -759,7 +758,9 @@ const AssertLocationScreen = () => {
               height={65}
               alignItems="center"
               justifyContent="center"
-              onPress={handleAssertLocationPress}
+              onPress={() =>
+                void handleAssertLocationPress().catch(console.error)
+              }
             >
               {disabled || asserting ? (
                 <CircleLoader loaderSize={19} color="black" />
@@ -790,7 +791,7 @@ const AssertLocationScreen = () => {
               />
             )}
             <ReAnimatedBlurBox
-              entering={FadeIn.duration(DUR.enter)}
+              entering={FADE_IN}
               flexDirection="row"
               position="absolute"
               bottom={0}
@@ -880,7 +881,9 @@ const AssertLocationScreen = () => {
                       titleColorDisabled="grey600"
                       title={asserting ? '' : t('assertLocationScreen.title')}
                       titleColor="black"
-                      onPress={handleAssertLocationPress}
+                      onPress={() =>
+                        void handleAssertLocationPress().catch(console.error)
+                      }
                     />
                   </Box>
                 </Box>

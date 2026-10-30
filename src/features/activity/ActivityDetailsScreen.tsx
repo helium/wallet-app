@@ -12,7 +12,6 @@ import ListItem from '@components/ListItem'
 import Text from '@components/Text'
 import useCopyText from '@hooks/useCopyText'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import useHaptic from '@hooks/useHaptic'
 import { RouteProp, useRoute } from '@react-navigation/native'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
@@ -85,8 +84,7 @@ const ActivityDetailsScreen = () => {
   const colors = useColors()
   const { t, i18n } = useTranslation()
   const createExplorerUrl = useCreateExplorerUrl()
-  const copyText = useCopyText()
-  const { triggerImpact } = useHaptic()
+  const copyText = useCopyText({ haptic: false })
 
   const { transaction } = route.params
 
@@ -317,13 +315,12 @@ const ActivityDetailsScreen = () => {
 
   const handleCopyAddress = useCallback(() => {
     if (!selectedAddress) return
-    triggerImpact('light')
     copyText({
       message: ellipsizeAddress(selectedAddress),
       copyText: selectedAddress,
     })
     setOptionsOpen(false)
-  }, [copyText, selectedAddress, triggerImpact])
+  }, [copyText, selectedAddress])
 
   const accountOptions = useCallback(
     () => (
@@ -388,7 +385,7 @@ const ActivityDetailsScreen = () => {
                 backgroundColorDisabledOpacity={0.1}
                 title={t('activityScreen.viewOnExplorer')}
                 titleColor="black"
-                onPress={handleOpenExplorer}
+                onPress={() => void handleOpenExplorer().catch(console.error)}
               />
             </Box>
           </Box>

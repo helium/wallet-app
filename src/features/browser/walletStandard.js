@@ -1,4 +1,3 @@
-/* eslint-disable */
 const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid) {
 if (window.heliumWalletInjected) return;
 

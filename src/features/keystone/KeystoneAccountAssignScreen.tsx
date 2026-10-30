@@ -44,7 +44,11 @@ const KeystoneAccountAssignScreen = () => {
     [accounts],
   )
   const accountStorage = useAccountStorage()
-  const { execute: handlePress, loading } = useAsyncCallback(async () => {
+  const {
+    execute: handlePress,
+    loading,
+    error,
+  } = useAsyncCallback(async () => {
     const getName = (index: number): string => {
       const name = `${alias} ${index + 1}`
       if (!existingNames?.has(name)) {
@@ -196,11 +200,16 @@ const KeystoneAccountAssignScreen = () => {
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
+          {!loading && error ? (
+            <Text mb="m" color="red500">
+              {error.message}
+            </Text>
+          ) : null}
           {loading ? (
             <CircleLoader />
           ) : (
             <FabButton
-              onPress={handlePress}
+              onPress={() => void handlePress().catch(console.error)}
               icon="arrowRight"
               iconColor="primary"
               disabled={!alias || existingNames?.has(alias)}

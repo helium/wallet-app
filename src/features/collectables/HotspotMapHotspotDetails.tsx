@@ -44,8 +44,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
-import { FadeOut } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_OUT_STATE } from '@theme/motion'
 
 const IotMapDetails = ({
   maker,
@@ -551,7 +550,7 @@ export const HotspotMapHotspotDetails = ({
           <ReAnimatedBlurBox
             visible={onboardLoading}
             zIndex={onboardLoading ? 100 : 0}
-            exiting={FadeOut.duration(DUR.state)}
+            exiting={FADE_OUT_STATE}
             position="absolute"
             width="100%"
             height="100%"
@@ -594,7 +593,9 @@ export const HotspotMapHotspotDetails = ({
                         />
                       )
                     }
-                    onPress={() => handleConfirmExplorer(a.value)}
+                    onPress={() =>
+                      void handleConfirmExplorer(a.value).catch(console.error)
+                    }
                     selected={explorer?.value === a.value}
                     hasPressedState={false}
                   />
@@ -743,7 +744,7 @@ export const HotspotMapHotspotDetails = ({
               </TouchableOpacityBox>
               <ListItem
                 title={t('collectablesScreen.hotspots.viewInExplorer')}
-                onPress={handleViewInExplorer}
+                onPress={() => void handleViewInExplorer().catch(console.error)}
                 selected={false}
                 hasPressedState={false}
               />
@@ -771,7 +772,7 @@ export const HotspotMapHotspotDetails = ({
                 <ListItem
                   key="onboard"
                   title={t('collectablesScreen.hotspots.onboard.title')}
-                  onPress={handleOnboard}
+                  onPress={() => void handleOnboard().catch(console.error)}
                   selected={false}
                   hasPressedState={false}
                 />

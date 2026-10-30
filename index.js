@@ -50,7 +50,6 @@ if (typeof global !== 'undefined' && global.addEventListener) {
   })
 }
 
-// eslint-disable-next-line no-undef
 if (__DEV__) {
   import('./ReactotronConfig')
 }

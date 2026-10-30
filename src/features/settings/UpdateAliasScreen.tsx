@@ -75,7 +75,7 @@ const UpdateAliasScreen = () => {
           <Box flex={1} />
 
           <FabButton
-            onPress={handlePress}
+            onPress={() => void handlePress().catch(console.error)}
             icon="arrowRight"
             disabled={!alias}
             backgroundColor="primaryText"

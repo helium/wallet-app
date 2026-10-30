@@ -112,7 +112,7 @@ const AccountSlider = () => {
       <Carousel
         ref={carouselRef}
         firstItem={selectedList ? data.indexOf(selectedList) : 0}
-        onSnapToItem={onSnap}
+        onSnapToItem={(index) => void onSnap(index).catch(console.error)}
         layout="default"
         containerCustomStyle={styles.carouselContainer}
         vertical={false}
