@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import Animated, {
   FadeIn,
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -86,6 +87,10 @@ const UniwindSpikeScreen = () => {
           {SIZES.map((size) => (
             <Pressable
               key={size}
+              accessibilityRole="button"
+              accessibilityLabel={
+                size === 'icon' ? `${variant} icon` : undefined
+              }
               className={buttonVariants({ variant, size })}
               onPress={() => setPresses((count) => count + 1)}
             >
@@ -98,6 +103,7 @@ const UniwindSpikeScreen = () => {
       ))}
       <Pressable
         disabled
+        accessibilityRole="button"
         className={buttonVariants({ variant: 'default', size: 'default' })}
       >
         <Text className={buttonTextVariants({ variant: 'default' })}>
@@ -124,7 +130,7 @@ const UniwindSpikeScreen = () => {
         style={slide}
       />
       <Animated.View
-        entering={FadeIn.duration(600)}
+        entering={FadeIn.duration(600).reduceMotion(ReduceMotion.Never)}
         className={buttonVariants({ variant: 'secondary', size: 'lg' })}
       >
         <Text className={buttonTextVariants({ variant: 'secondary' })}>

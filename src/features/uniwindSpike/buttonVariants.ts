@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 
-// World's button variant and size names (packages/ui button.tsx). Web-only
+// World's button variant and size names. Web-only
 // classes (hover, focus-visible, svg selectors) are left out.
 export const buttonVariants = cva(
   'flex-row items-center justify-center gap-2 rounded-md active:opacity-80 disabled:opacity-50',
