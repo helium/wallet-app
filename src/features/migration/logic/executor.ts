@@ -62,12 +62,10 @@ const withRetry = async <T>(
   let lastError: unknown
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     try {
-      // eslint-disable-next-line no-await-in-loop
       return await fn()
     } catch (err) {
       lastError = err
       if (attempt >= attempts - 1 || !isRetryable(err)) break
-      // eslint-disable-next-line no-await-in-loop
       await sleep(baseDelayMs * 2 ** attempt)
     }
   }
@@ -135,13 +133,11 @@ export const runMigration = async <TSigned = unknown>(
     }
   }
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     deps.onProgress({ phase: 'requesting', batch })
     // Bind to a loop-local const so the retry closure captures this batch's
     // input, not the reassigned outer `input`.
     const batchInput = input
-    // eslint-disable-next-line no-await-in-loop
     const out = await withRetry(() => deps.requestMigrate(batchInput), sleep)
     const data = out.transactionData
 
@@ -150,11 +146,9 @@ export const runMigration = async <TSigned = unknown>(
       batch,
       count: data.transactions.length,
     })
-    // eslint-disable-next-line no-await-in-loop
     const signed = await deps.signBatch(data)
 
     deps.onProgress({ phase: 'submitting', batch })
-    // eslint-disable-next-line no-await-in-loop
     const { batchId } = await withRetry(
       () => deps.submitBatch(signed, data),
       sleep,
@@ -163,16 +157,13 @@ export const runMigration = async <TSigned = unknown>(
     // Persist a resumable snapshot BEFORE confirmation carrying this batch's id:
     // if the app is killed while the batch is still confirming, the resume
     // re-polls it instead of re-requesting an orphaned in-flight submission.
-    // eslint-disable-next-line no-await-in-loop
     await deps.persist(snapshot('running', batchId))
 
     deps.onProgress({ phase: 'confirming', batch })
-    // eslint-disable-next-line no-await-in-loop
     const status = await withRetry(() => deps.pollStatus(batchId), sleep)
     const summary = collect(status)
 
     if (status.status === 'failed' || status.status === 'expired') {
-      // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('failed'))
       return { status: 'failed', confirmedSignatures, failedSignatures }
     }
@@ -184,7 +175,6 @@ export const runMigration = async <TSigned = unknown>(
       // re-sending already-confirmed transfers therefore depends on the server
       // recomputing remaining work from on-chain state. This is a documented
       // contract dependency, not something the client can guard here.
-      // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('partial'))
       return { status: 'partial', confirmedSignatures, failedSignatures }
     }
@@ -200,7 +190,6 @@ export const runMigration = async <TSigned = unknown>(
     ) {
       // Carry the in-flight batch id so a "check status" re-polls it before any
       // re-request — the funds-safety guard against a double-send.
-      // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('running', batchId))
       return { status: 'pending', confirmedSignatures, failedSignatures }
     }
@@ -211,13 +200,10 @@ export const runMigration = async <TSigned = unknown>(
       // batch, making a crash-resume re-request already-confirmed work.
       input = out.nextParams
       batch += 1
-      // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('running'))
-      // eslint-disable-next-line no-continue
       continue
     }
 
-    // eslint-disable-next-line no-await-in-loop
     await deps.persist(snapshot('complete'))
     return { status: 'complete', confirmedSignatures, failedSignatures }
   }

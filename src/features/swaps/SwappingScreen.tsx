@@ -14,7 +14,8 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { parseTransactionError } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import ArrowRight from '../../assets/images/arrowRight.svg'
@@ -94,8 +95,8 @@ const SwappingScreen = () => {
           {isConfirmed && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text variant="h2" color="white" marginTop="xl">
                 {t('swapsScreen.swapComplete')}
@@ -114,8 +115,8 @@ const SwappingScreen = () => {
           {hasError && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h2"
@@ -142,8 +143,8 @@ const SwappingScreen = () => {
           {!batchId && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h2"
@@ -159,8 +160,8 @@ const SwappingScreen = () => {
           {isPending && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h2"

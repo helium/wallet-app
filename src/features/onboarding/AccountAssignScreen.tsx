@@ -280,7 +280,7 @@ const AccountAssignScreen = () => {
           ) : (
             <FabButton
               testID="AccountAssign.Continue"
-              onPress={handlePress}
+              onPress={() => void handlePress().catch(console.error)}
               icon="arrowRight"
               iconColor="primary"
               disabled={!alias || existingNames?.has(alias)}

@@ -60,6 +60,8 @@ import {
 } from '../../utils/accountUtils'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { batchFailure } from '../payment/logic/batchFailure'
+import { retrySet } from '../payment/logic/retrySet'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
@@ -87,8 +89,23 @@ const BurnScreen = () => {
 
   // Track batchId when mutation succeeds - only show loading after submission
   const batchId = delegateDataCreditsMutation.data
-  const { status, isLoading: batchLoading } = useTransactionBatchStatus(
-    batchId || null,
+  const {
+    status,
+    transactions,
+    isLoading: batchLoading,
+  } = useTransactionBatchStatus(batchId || null)
+
+  // The delegate goes out as one transaction, so it is retried only when every
+  // transaction the batch reports failed.
+  const batchFailed = useMemo(
+    () =>
+      batchFailure(status, transactions, [
+        {
+          item: 'delegate',
+          signatures: transactions.map((tx) => tx.signature),
+        },
+      ]),
+    [status, transactions],
   )
 
   // Only show loading after we have a batchId (transaction submitted)
@@ -519,7 +536,7 @@ const BurnScreen = () => {
                     title={t(
                       isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
                     )}
-                    onSubmit={handleSubmit}
+                    onSubmit={() => void handleSubmit().catch(console.error)}
                   />
                 </Box>
               </Box>
@@ -529,14 +546,15 @@ const BurnScreen = () => {
               submitLoading={isSubmitting}
               submitSucceeded={status === 'confirmed'}
               submitError={
-                delegateDataCreditsMutation.error ||
-                (batchId && status === 'failed'
-                  ? new Error('Transaction failed')
-                  : undefined)
+                delegateDataCreditsMutation.error || batchFailed?.error
               }
               totalBalance={amountBalance}
               feeTokenBalance={FEE}
-              onRetry={handleSubmit}
+              onRetry={
+                retrySet(batchFailed, undefined, ['delegate'])
+                  ? () => void handleSubmit().catch(console.error)
+                  : undefined
+              }
               onSuccess={navigation.popToTop}
               actionTitle={t('generic.ok')}
             />

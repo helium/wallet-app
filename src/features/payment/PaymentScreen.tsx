@@ -71,6 +71,9 @@ import {
   HomeStackParamList,
   PaymentRouteParam,
 } from '../home/homeTypes'
+import { batchFailure } from './logic/batchFailure'
+import { paymentTransactions } from './logic/paymentTransactions'
+import { retrySet } from './logic/retrySet'
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
@@ -109,8 +112,13 @@ const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   return []
 }
 
+type PaymentInput = Parameters<
+  ReturnType<typeof useSubmitTxn>['submitPayment']
+>[0][number]
+
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
+  // Opt out: compiler cannot destructure context variables, see handleEditAddress
   'use no memo'
 
   const route = useRoute<Route>()
@@ -206,9 +214,11 @@ const PaymentScreen = () => {
 
   // Track batchId when mutation succeeds - only show loading after submission
   const batchId = paymentMutation.data?.batchId
-  const { status, isLoading: batchLoading } = useTransactionBatchStatus(
-    batchId || null,
-  )
+  const {
+    status,
+    transactions,
+    isLoading: batchLoading,
+  } = useTransactionBatchStatus(batchId || null)
 
   // Only show loading after we have a batchId (transaction submitted)
   const isSubmitting = batchId ? batchLoading || status === 'pending' : false
@@ -337,27 +347,79 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
-  const handleSubmit = useCallback(async () => {
-    // Reset mutation state on retry
-    paymentMutation.reset()
-    try {
-      await submitPayment(
-        paymentState.payments
-          .filter((p) => p.address && p.amount)
-          .map((payment) => ({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            payee: payment.address!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            balanceAmount: payment.amount!,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            max: payment.max!,
-          })),
-        paymentState.mint,
-      )
-    } catch (e) {
-      logger.error(e)
-    }
-  }, [submitPayment, paymentState.mint, paymentState.payments, paymentMutation])
+  const submitPayments = useCallback(
+    async (toPay: PaymentInput[], paymentMint: PublicKey) => {
+      // Reset mutation state on retry
+      paymentMutation.reset()
+      try {
+        await submitPayment(toPay, paymentMint)
+      } catch (e) {
+        logger.error(e)
+      }
+    },
+    [submitPayment, paymentMutation],
+  )
+
+  // What the last Retry was sending, so a Retry after it failed sends the
+  // same set and never a payment a settled batch reported landed. A lost
+  // submit response still resends that set.
+  const [unsent, setUnsent] = useState<{
+    payments: PaymentInput[]
+    mint: PublicKey
+  }>()
+
+  const allPayments = useMemo(
+    () =>
+      paymentState.payments
+        .filter((p) => p.address && p.amount)
+        .map((payment) => ({
+          payee: payment.address!,
+          balanceAmount: payment.amount!,
+          max: payment.max!,
+        })),
+    [paymentState.payments],
+  )
+
+  const handleSubmit = useCallback(() => {
+    setUnsent(undefined)
+    return submitPayments(allPayments, paymentState.mint)
+  }, [submitPayments, allPayments, paymentState.mint])
+
+  // After a failed batch, Retry resends only the payments that did not land,
+  // and is not offered when the app cannot tell which did.
+  const { data: sent, variables: sentWith } = paymentMutation
+  const failure = useMemo(
+    () =>
+      sent && sentWith
+        ? batchFailure(
+            status,
+            transactions,
+            paymentTransactions(
+              sent.payments,
+              sentWith.mint,
+              sent.transactions,
+            ),
+          )
+        : undefined,
+    [sent, sentWith, status, transactions],
+  )
+  const toRetry = useMemo(
+    () => retrySet(failure, unsent?.payments, allPayments),
+    [failure, unsent, allPayments],
+  )
+  // The mint the retried payments were sent in: the failed batch's, else the
+  // failed Retry's, else the form's.
+  const retryMint =
+    failure && sentWith ? sentWith.mint : (unsent?.mint ?? paymentState.mint)
+  const handleRetry = useMemo(
+    () =>
+      toRetry &&
+      (() => {
+        setUnsent({ payments: toRetry, mint: retryMint })
+        void submitPayments(toRetry, retryMint).catch(console.error)
+      }),
+    [toRetry, retryMint, submitPayments],
+  )
 
   // Show the amounts actually submitted — the server-priced priority fee may
   // have shaved the max SOL payment.
@@ -722,7 +784,9 @@ const PaymentScreen = () => {
         <AccountSelector ref={accountSelectorRef}>
           <AddressBookSelector
             ref={addressBookRef}
-            onContactSelected={handleContactSelected}
+            onContactSelected={(selection) =>
+              void handleContactSelected(selection).catch(console.error)
+            }
             hideCurrentAccount
           >
             <TokenSelector
@@ -805,7 +869,6 @@ const PaymentScreen = () => {
                   />
 
                   {paymentState.payments.map((p, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <React.Fragment key={index}>
                       <PaymentItem
                         {...p}
@@ -819,7 +882,9 @@ const PaymentScreen = () => {
                         onAddressBookSelected={handleAddressBookSelected}
                         onEditAmount={handleEditAmount}
                         onToggleMax={handleToggleMax}
-                        onEditAddress={handleEditAddress}
+                        onEditAddress={(edit) =>
+                          void handleEditAddress(edit).catch(console.error)
+                        }
                         handleAddressError={handleAddressError}
                         onUpdateError={handleSetPaymentError}
                         mint={mint}
@@ -857,7 +922,7 @@ const PaymentScreen = () => {
                   totalBalance={paymentState.totalAmount}
                   feeTokenBalance={paymentState.networkFee}
                   disabled={!isFormValid}
-                  onSubmit={handleSubmit}
+                  onSubmit={() => void handleSubmit().catch(console.error)}
                   payments={payments}
                   errors={errors}
                   handleCancel={navBack}
@@ -871,16 +936,11 @@ const PaymentScreen = () => {
         mint={mint}
         submitLoading={isSubmitting}
         submitSucceeded={status === 'confirmed'}
-        submitError={
-          paymentMutation.error ||
-          (batchId && status === 'failed'
-            ? new Error('Transaction failed')
-            : undefined)
-        }
+        submitError={paymentMutation.error || failure?.error}
         totalBalance={submittedTotal}
         payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
-        onRetry={handleSubmit}
+        onRetry={handleRetry}
         onSuccess={navigation.popToTop}
         actionTitle={t('payment.backToAccounts')}
       />

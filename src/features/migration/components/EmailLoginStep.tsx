@@ -170,7 +170,9 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
                 ? t('migrateToWorld.linkEmail.verify')
                 : t('migrateToWorld.linkEmail.button')
             }
-            onPress={codeSent ? handleVerify : handleSend}
+            onPress={() =>
+              void (codeSent ? handleVerify : handleSend)().catch(console.error)
+            }
             disabled={codeSent ? !code || verifying : !email || sending}
             marginTop="m"
             LeadingComponent={

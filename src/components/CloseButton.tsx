@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo } from 'react'
 import Close from '@assets/images/closeModal.svg'
 import { GestureResponderEvent, Insets } from 'react-native'

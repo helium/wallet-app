@@ -32,12 +32,7 @@ const NftList = () => {
   }, [collectablesWithMeta])
 
   const renderItem = useCallback(
-    ({
-      item: token,
-    }: {
-      // eslint-disable-next-line react/no-unused-prop-types
-      item: string
-    }) => {
+    ({ item: token }: { item: string }) => {
       return (
         <NFTListItem
           item={collectablesWithMeta[token][0]?.content?.metadata?.symbol}

@@ -200,7 +200,6 @@ const ConnectedWallets = forwardRef(
     )
 
     const renderItem = useCallback(
-      // eslint-disable-next-line react/no-unused-prop-types
       ({ item }: { index: number; item: CSAccount }) => {
         const isSelected = item.address === currentAccount?.address
         const accountAddress = item?.solanaAddress
@@ -288,7 +287,6 @@ const ConnectedWallets = forwardRef(
           disappearsOnIndex={-1}
           appearsOnIndex={0}
           pressBehavior="close"
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         />
       ),

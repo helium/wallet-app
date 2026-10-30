@@ -10,17 +10,18 @@ import {
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { Theme } from '@theme/theme'
 import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import useNowAfter from '@hooks/useNowAfter'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 import { ProposalTags } from './ProposalTags'
@@ -39,8 +40,8 @@ export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
     backgroundColor="black900"
     borderRadius="l"
     padding="xxxl"
-    entering={FadeIn}
-    exiting={FadeOut}
+    entering={FADE_IN}
+    exiting={FADE_OUT}
     {...boxProps}
   />
 )
@@ -111,7 +112,7 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
-  const [now] = useState(() => Date.now())
+  const now = useNowAfter(endTs?.toNumber())
   const completed = endTs && endTs.toNumber() <= now / 1000
   const isLoading = descLoading
   const handleOnPress = useCallback(async () => {
@@ -124,11 +125,13 @@ export const ProposalCard = ({
       backgroundColor="surfaceSecondary"
       borderRadius="l"
       position="relative"
-      entering={FadeIn}
-      exiting={FadeOut}
+      entering={FADE_IN}
+      exiting={FADE_OUT}
       {...boxProps}
     >
-      <TouchableOpacityBox onPress={handleOnPress}>
+      <TouchableOpacityBox
+        onPress={() => void handleOnPress().catch(console.error)}
+      >
         <Box
           position="relative"
           paddingTop="ms"

@@ -92,7 +92,7 @@ export const ProxyScreen = () => {
     <BackScreen padding="m" title={t('gov.title')}>
       <Box flexDirection="column">
         <VoteHistory
-          onRefresh={refetch}
+          onRefresh={() => void refetch().catch(console.error)}
           wallet={wallet}
           header={
             <>

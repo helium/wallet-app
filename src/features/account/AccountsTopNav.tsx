@@ -7,7 +7,6 @@ import Box from '@components/Box'
 import IconPressedContainer from '@components/IconPressedContainer'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import useHaptic from '@hooks/useHaptic'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
 import { useColors } from '@theme/themeHooks'
@@ -29,7 +28,6 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const { cluster } = useSolana()
-  const { triggerImpact } = useHaptic()
   const { showBanner } = useSelector((state: RootState) => state.app)
   const { isHealthy } = useSolanaHealth()
 
@@ -47,19 +45,16 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   }, [notificationsByResource])
 
   const navToSettings = useCallback(() => {
-    triggerImpact('light')
     navigation.navigate('SettingsNavigator')
-  }, [navigation, triggerImpact])
+  }, [navigation])
 
   const navToNotifs = useCallback(() => {
-    triggerImpact('light')
     navigation.push('NotificationsNavigator')
-  }, [navigation, triggerImpact])
+  }, [navigation])
 
   const navToAddressBook = useCallback(() => {
-    triggerImpact('light')
     navigation.push('AddressBookNavigator')
-  }, [navigation, triggerImpact])
+  }, [navigation])
 
   const { top } = useSafeAreaInsets()
 

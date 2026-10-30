@@ -241,7 +241,7 @@ const SignHotspot = () => {
               minHeight={56}
               justifyContent="center"
               borderRadius="l"
-              onPress={handleError}
+              onPress={() => void handleError().catch(console.error)}
             >
               <Text variant="body1" textAlign="center">
                 {t('signHotspot.error.takeMeBack', {
@@ -430,7 +430,7 @@ const SignHotspot = () => {
           marginEnd="m"
           backgroundColor="secondary"
           borderRadius="round"
-          onPress={handleCancel}
+          onPress={() => void handleCancel().catch(console.error)}
           disabled={submitLoading}
         >
           <Text variant="subtitle1" textAlign="center" color="primaryText">
@@ -443,7 +443,7 @@ const SignHotspot = () => {
           backgroundColor="surfaceContrast"
           justifyContent="center"
           borderRadius="round"
-          onPress={handleLink}
+          onPress={() => void handleLink().catch(console.error)}
           disabled={!validated || submitLoading || !solana.hasTransactions}
           flexDirection="row"
           alignItems="center"

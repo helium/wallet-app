@@ -1,4 +1,3 @@
-/* eslint-disable react/no-array-index-key */
 import BlurBox from '@components/BlurBox'
 import HandleBasic from '@components/HandleBasic'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -88,7 +87,6 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
         disappearsOnIndex={-1}
         opacity={0.8}
         appearsOnIndex={0}
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       />
     ),

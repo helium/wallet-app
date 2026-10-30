@@ -54,6 +54,7 @@ const selectedTokens = (
     }))
 
 const MigrateToWorld = () => {
+  // Opt out: compiler cannot lower try/finally, see createWallet
   'use no memo'
 
   const { t } = useTranslation()
@@ -298,7 +299,7 @@ const MigrateToWorld = () => {
               title={t('migrateToWorld.selectAssets.loadErrorTitle')}
               body={t('migrateToWorld.selectAssets.loadErrorBody')}
               primaryTitle={t('migrateToWorld.selectAssets.retry')}
-              onPrimary={assets.reload}
+              onPrimary={() => void assets.reload().catch(console.error)}
               onDismiss={dismiss}
             />
           )
@@ -385,7 +386,7 @@ const MigrateToWorld = () => {
         return (
           <SuccessStep
             destinationWallet={destinationWallet || ''}
-            onGoToWorld={goToWorld}
+            onGoToWorld={() => void goToWorld().catch(console.error)}
             onDone={dismiss}
           />
         )
@@ -394,7 +395,7 @@ const MigrateToWorld = () => {
         // succeeds — offer retry, and a support link after repeated failures.
         return (
           <WalletCreateErrorStep
-            onRetry={createWallet}
+            onRetry={() => void createWallet().catch(console.error)}
             onDismiss={dismiss}
             showSupport={shouldShowSupport(createAttempts)}
           />
