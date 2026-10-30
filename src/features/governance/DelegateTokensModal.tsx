@@ -22,8 +22,7 @@ import { Platform, ScrollView } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { SplitBar } from './SplitBar'
 import { AutomationFeesWidget } from './components/AutomationFeesWidget'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 export const DelegateTokensModal = ({
   onClose,
@@ -145,7 +144,7 @@ export const DelegateTokensModal = ({
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeIn.duration(DUR.enter)}
+        entering={FADE_IN}
         position="absolute"
         height="100%"
         width="100%"

@@ -79,37 +79,39 @@ const PaymentSubmit = ({
 
   const body = useMemo(() => {
     const stage = submitStage({ succeeded, hasError: !!submitError })
-    if (stage === 'loading') {
-      return <PaymentSubmitLoading />
-    }
-    if (stage === 'success') {
-      return (
-        <FadeInOut style={globalStyles.container}>
-          <PaymentSuccess
-            mint={mint}
-            totalBalance={totalBalance}
-            feeTokenBalance={feeTokenBalance}
-            payments={payments}
-            onSuccess={onSuccess}
-            actionTitle={actionTitle}
-          />
-        </FadeInOut>
-      )
-    }
-
-    if (submitError) {
-      return (
-        <FadeInOut style={globalStyles.container}>
-          <PaymentError
-            mint={mint}
-            totalBalance={totalBalance}
-            feeTokenBalance={feeTokenBalance}
-            payments={payments}
-            error={submitError}
-            onRetry={handleRetry}
-          />
-        </FadeInOut>
-      )
+    switch (stage) {
+      case 'loading':
+        return <PaymentSubmitLoading />
+      case 'success':
+        return (
+          <FadeInOut style={globalStyles.container}>
+            <PaymentSuccess
+              mint={mint}
+              totalBalance={totalBalance}
+              feeTokenBalance={feeTokenBalance}
+              payments={payments}
+              onSuccess={onSuccess}
+              actionTitle={actionTitle}
+            />
+          </FadeInOut>
+        )
+      case 'error':
+        return (
+          <FadeInOut style={globalStyles.container}>
+            <PaymentError
+              mint={mint}
+              totalBalance={totalBalance}
+              feeTokenBalance={feeTokenBalance}
+              payments={payments}
+              error={submitError}
+              onRetry={handleRetry}
+            />
+          </FadeInOut>
+        )
+      default: {
+        const _exhaustive: never = stage
+        return _exhaustive
+      }
     }
   }, [
     actionTitle,

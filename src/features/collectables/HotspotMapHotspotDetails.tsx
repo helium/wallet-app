@@ -44,8 +44,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
-import { FadeOut } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_OUT_STATE } from '@theme/motion'
 
 const IotMapDetails = ({
   maker,
@@ -549,7 +548,7 @@ export const HotspotMapHotspotDetails = ({
           <ReAnimatedBlurBox
             visible={onboardLoading}
             zIndex={onboardLoading ? 100 : 0}
-            exiting={FadeOut.duration(DUR.state)}
+            exiting={FADE_OUT_STATE}
             position="absolute"
             width="100%"
             height="100%"

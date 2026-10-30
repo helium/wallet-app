@@ -17,7 +17,8 @@ import React, { memo, ReactNode, useCallback, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import Config from '@utils/config'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import 'text-encoding-polyfill'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -194,8 +195,8 @@ const SolanaMigration = ({
           {!error && !migrationError && !loading && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h1Medium"
@@ -222,8 +223,8 @@ const SolanaMigration = ({
           {(error || migrationError) && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h1Medium"
@@ -248,8 +249,8 @@ const SolanaMigration = ({
           {loading && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h1Medium"

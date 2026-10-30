@@ -33,8 +33,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import { DataSplitBars } from './components/DataSplitBars'
 import { AutomationFeesWidget } from './components/AutomationFeesWidget'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 export const defaultLockupPeriods = [
@@ -304,7 +303,7 @@ export const LockTokensModal = ({
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeIn.duration(DUR.enter)}
+        entering={FADE_IN}
         position="absolute"
         height="100%"
         width="100%"

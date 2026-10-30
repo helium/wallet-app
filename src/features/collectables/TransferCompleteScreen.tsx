@@ -15,7 +15,8 @@ import { parseTransactionError } from '@utils/solanaUtils'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LogBox } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { Edge } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
@@ -122,8 +123,8 @@ const TransferCollectableScreen = () => {
             {isConfirmed && (
               <Animated.View
                 style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
+                entering={FADE_IN}
+                exiting={FADE_OUT}
               >
                 <Text variant="h2" color="white" marginTop="xl">
                   {t('collectablesScreen.transferComplete')}
@@ -134,8 +135,8 @@ const TransferCollectableScreen = () => {
             {hasError && (
               <Animated.View
                 style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
+                entering={FADE_IN}
+                exiting={FADE_OUT}
               >
                 <Text
                   variant="h2"
@@ -163,8 +164,8 @@ const TransferCollectableScreen = () => {
             {!batchId && (
               <Animated.View
                 style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
+                entering={FADE_IN}
+                exiting={FADE_OUT}
               >
                 <Text
                   variant="h2"
@@ -180,8 +181,8 @@ const TransferCollectableScreen = () => {
             {isPending && (
               <Animated.View
                 style={{ alignItems: 'center' }}
-                entering={FadeIn}
-                exiting={FadeOut}
+                entering={FADE_IN}
+                exiting={FADE_OUT}
               >
                 <Text
                   variant="h2"

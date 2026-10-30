@@ -60,7 +60,6 @@ import {
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
@@ -811,8 +810,6 @@ export const PositionCard = ({
           <ReAnimatedBox
             backgroundColor="surfaceSecondary"
             borderRadius="l"
-            entering={FadeIn}
-            exiting={FadeOut}
             {...boxProps}
           >
             <TouchableOpacityBox

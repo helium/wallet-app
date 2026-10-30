@@ -73,8 +73,7 @@ import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { swapRoute } from './logic/swapRoute'
 import { SwapNavigationProp } from './swapTypes'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
@@ -959,7 +958,7 @@ const SwapScreen = () => {
                 />
               )}
               <ReAnimatedBlurBox
-                entering={FadeIn.duration(DUR.enter)}
+                entering={FADE_IN}
                 position="absolute"
                 height="100%"
                 width="100%"

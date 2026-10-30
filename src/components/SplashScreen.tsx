@@ -4,10 +4,11 @@ import * as SplashLib from 'expo-splash-screen'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  ReduceMotion,
   withTiming,
 } from 'react-native-reanimated'
 import globalStyles from '@theme/globalStyles'
-import { EASE_OUT } from '@theme/motion'
+import { DUR, EASE_OUT } from '@theme/motion'
 import { useColors } from '@theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -28,7 +29,11 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
   }, [isAppReady, animValue])
 
   const style = useAnimatedStyle(() => ({
-    opacity: withTiming(animValue.get(), { duration: 300, easing: EASE_OUT }),
+    opacity: withTiming(animValue.get(), {
+      duration: DUR.splash,
+      easing: EASE_OUT,
+      reduceMotion: ReduceMotion.Never,
+    }),
     backgroundColor: primaryBackground,
   }))
 

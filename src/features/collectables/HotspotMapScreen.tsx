@@ -61,8 +61,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { FadeOut } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_OUT_STATE } from '@theme/motion'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 type OnPress = NonNullable<
@@ -423,7 +422,7 @@ const HotspotMapScreen = () => {
         >
           <ReAnimatedBlurBox
             visible={debouncedIsLoading}
-            exiting={FadeOut.duration(DUR.state)}
+            exiting={FADE_OUT_STATE}
             position="absolute"
             flex={1}
             width="100%"

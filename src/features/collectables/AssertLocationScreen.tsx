@@ -65,8 +65,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 
@@ -779,7 +778,7 @@ const AssertLocationScreen = () => {
               />
             )}
             <ReAnimatedBlurBox
-              entering={FadeIn.duration(DUR.enter)}
+              entering={FADE_IN}
               flexDirection="row"
               position="absolute"
               bottom={0}

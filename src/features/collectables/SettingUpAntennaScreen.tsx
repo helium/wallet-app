@@ -8,7 +8,8 @@ import BackArrow from '@assets/images/backArrow.svg'
 import AccountIcon from '@components/AccountIcon'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import Text from '@components/Text'
 import ButtonPressable from '@components/ButtonPressable'
 import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
@@ -77,8 +78,8 @@ const SettingUpAntennaScreen = () => {
           {(!route.params?.batchId || isConfirmed) && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text variant="h1Medium" color="white" marginTop="xl">
                 {t('antennaSetupScreen.settingUpComplete')}
@@ -100,8 +101,8 @@ const SettingUpAntennaScreen = () => {
               style={{
                 alignItems: 'center',
               }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h1Medium"
@@ -129,8 +130,8 @@ const SettingUpAntennaScreen = () => {
           {isPending && (
             <Animated.View
               style={{ alignItems: 'center' }}
-              entering={FadeIn}
-              exiting={FadeOut}
+              entering={FADE_IN}
+              exiting={FADE_OUT}
             >
               <Text
                 variant="h1Medium"

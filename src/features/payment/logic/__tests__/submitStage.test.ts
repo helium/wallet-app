@@ -12,4 +12,8 @@ describe('submitStage', () => {
   it('shows the error as soon as the send fails', () => {
     expect(submitStage({ succeeded: false, hasError: true })).toBe('error')
   })
+
+  it('shows the result when the send succeeded even if an error arrived', () => {
+    expect(submitStage({ succeeded: true, hasError: true })).toBe('success')
+  })
 })

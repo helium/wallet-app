@@ -46,9 +46,12 @@ const IconPressedContainer = ({
   const { triggerImpact } = useHaptic()
   const [iconPressed, setIconPressed] = useState(false)
 
-  const onTouchEnd = useCallback(() => {
-    triggerImpact()
-  }, [triggerImpact])
+  const handlePress = onPress
+    ? (event: GestureResponderEvent) => {
+        triggerImpact('light')
+        onPress(event)
+      }
+    : onPress
 
   const handleIconPressed = useCallback(
     (pressed: boolean) => () => {
@@ -69,11 +72,10 @@ const IconPressedContainer = ({
   return (
     <Pressable
       testID={testID}
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handleIconPressed(true)}
       onPressOut={handleIconPressed(false)}
       disabled={disabled}
-      onTouchEnd={onTouchEnd}
       style={pressableStyles || styles.pressable}
     >
       {() => (
