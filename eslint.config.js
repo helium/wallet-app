@@ -33,6 +33,7 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/activity/**',
 ]
 
 module.exports = [
