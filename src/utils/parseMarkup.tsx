@@ -1,5 +1,5 @@
-import React from 'react'
-import { ViewStyle } from 'react-native'
+import React, { ReactNode } from 'react'
+import { Linking, View, ViewStyle } from 'react-native'
 import parse5, {
   DefaultTreeElement,
   DefaultTreeNode,
@@ -8,24 +8,56 @@ import parse5, {
 } from 'parse5'
 import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
-import Text from '@components/Text'
-import Link from '@components/Link'
-import Bullet from '@components/Bullet'
+import { Text } from '@ui/Text'
 import * as Logger from './logger'
 
+const MarkupLink = ({
+  children,
+  href,
+}: {
+  children?: ReactNode
+  href?: string
+}) => (
+  <Text
+    onPress={() => {
+      if (href) void Linking.openURL(href).catch(console.error)
+    }}
+  >
+    {children}
+  </Text>
+)
+
+// `color` comes from the markup's attribute.
+const MarkupBullet = ({
+  children,
+  color,
+  style = {},
+}: {
+  children?: ReactNode
+  color?: string
+  style?: ViewStyle
+}) => (
+  <View className="mb-2 flex-row items-start" style={style}>
+    <Text className="mr-2 text-2xl leading-[22px]" style={{ color }}>
+      &bull;
+    </Text>
+    <Text className="w-[90%] text-muted-foreground">{children}</Text>
+  </View>
+)
+
 const symbols: Record<string, React.JSX.Element> = {
-  b: <Text fontWeight="700" variant="body2" />,
-  light: <Text fontWeight="200" variant="body2" />,
-  blue: <Text color="blueBright500" variant="body2" />,
-  green: <Text color="greenBright500" variant="body2" />,
-  purple: <Text color="purple500" variant="body2" />,
-  red: <Text color="red500" variant="body2" />,
-  orange: <Text color="orange500" variant="body2" />,
-  gray: <Text color="grey500" variant="body2" />,
-  center: <Text textAlign="center" variant="body2" />,
-  a: <Link />,
-  bullet: <Bullet />,
-  default: <Text variant="body2" color="primaryText" />,
+  b: <Text className="font-bold" />,
+  light: <Text className="font-light" />,
+  blue: <Text className="text-blue-dark-500" />,
+  green: <Text className="text-success-500" />,
+  purple: <Text className="text-purple-500" />,
+  red: <Text className="text-destructive" />,
+  orange: <Text className="text-warning-500" />,
+  gray: <Text className="text-muted-foreground" />,
+  center: <Text className="text-center" />,
+  a: <MarkupLink />,
+  bullet: <MarkupBullet />,
+  default: <Text />,
 }
 
 const parseMarkup = (

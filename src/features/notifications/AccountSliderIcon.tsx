@@ -1,7 +1,8 @@
-import React, { memo, useCallback, useMemo } from 'react'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Box from '@components/Box'
+import React from 'react'
+import { View } from 'react-native'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
+import { PressableScale } from '@ui/PressableScale'
+import { twMerge } from '@ui/twMerge'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 
 type Props = {
@@ -20,55 +21,36 @@ const AccountSliderIcon = ({
 }: Props) => {
   const { notificationsByResource } = useNotificationStorage()
 
-  const hasUnread = useMemo(() => {
-    let key = resource
-    try {
-      key = heliumAddressToSolAddress(resource || '')
-    } catch {}
-
-    const notifications = notificationsByResource[key] || []
-
-    return notifications.find((n) => !n.viewedAt)
-  }, [notificationsByResource, resource])
-
-  const selectIcon = useCallback(() => onPress(index), [index, onPress])
+  let key = resource
+  try {
+    key = heliumAddressToSolAddress(resource || '')
+  } catch {}
+  const hasUnread = (notificationsByResource[key] || []).some(
+    (n) => !n.viewedAt,
+  )
 
   return (
     <>
-      <TouchableOpacityBox
-        onPress={selectIcon}
-        flexDirection="column"
-        borderRadius="round"
-        borderWidth={selected ? 2 : 0}
-        borderColor="white"
-        width={64}
-        height={64}
-        justifyContent="center"
-        alignItems="center"
+      <PressableScale
+        feedback="opacity"
+        onPress={() => onPress(index)}
+        className={twMerge(
+          'size-16 items-center justify-center rounded-full',
+          selected && 'border-2 border-primary',
+        )}
       >
-        <Box
-          backgroundColor="black"
-          borderRadius="round"
-          padding="xxs"
-          justifyContent="center"
-          alignItems="center"
-        >
+        <View className="items-center justify-center rounded-full bg-primary p-0.5">
           {icon}
-        </Box>
-      </TouchableOpacityBox>
-      <Box
-        position="absolute"
-        opacity={hasUnread ? 100 : 0}
-        right={12}
-        height={15}
-        width={15}
-        borderWidth={2}
-        borderColor="primaryBackground"
-        borderRadius="round"
-        backgroundColor="malachite"
+        </View>
+      </PressableScale>
+      <View
+        className={twMerge(
+          'absolute right-3 size-[15px] rounded-full border-2 border-background bg-success-500',
+          !hasUnread && 'opacity-0',
+        )}
       />
     </>
   )
 }
 
-export default memo(AccountSliderIcon)
+export default AccountSliderIcon

@@ -1,11 +1,11 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { SectionList } from 'react-native'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { useSpacing } from '@theme/themeHooks'
-import FadeInOut from '@components/FadeInOut'
+import { SectionList, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { NotificationsListNavigationProp } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationListItem from './NotificationListItem'
@@ -23,125 +23,95 @@ const NotificationsList = ({
   const { t } = useTranslation()
   const navigator = useNavigation<NotificationsListNavigationProp>()
   const { setSelectedNotification, notifications } = useNotificationStorage()
-  const spacing = useSpacing()
 
-  const contentContainer = useMemo(
-    () => ({
-      paddingBottom: spacing.xxxl,
-    }),
-    [spacing.xxxl],
-  )
+  // Group by date
+  const grouped = notifications.reduce(
+    (acc, noti) => {
+      const date = new Date(noti.time)
 
-  const SectionData = useMemo((): {
-    title: string
-    data: Notification[]
-  }[] => {
-    // Group by date
-    const grouped = notifications.reduce(
-      (acc, noti) => {
-        const date = new Date(noti.time)
-
-        const key = date.toDateString()
-        if (!acc[key]) {
-          acc[key] = []
-        }
-
-        if (!noti) return acc
-
-        acc[key].push(noti as Notification)
-        return acc
-      },
-      {} as Record<string, Notification[]>,
-    )
-
-    // Create array of objects
-    const sections = Object.keys(grouped).map((date) => {
-      return {
-        title: date,
-        data: grouped[date],
-      }
-    })
-
-    return sections
-  }, [notifications])
-
-  const renderItem = useCallback(
-    ({ index, item, section }) => {
-      const notification = item as Notification
-      const isFirst = index === 0
-      const isLast = index === section.data.length - 1
-
-      const onItemSelected = () => {
-        navigator.navigate('NotificationDetails', { notification: item })
-        setSelectedNotification(item)
+      const key = date.toDateString()
+      if (!acc[key]) {
+        acc[key] = []
       }
 
-      return (
-        <NotificationListItem
-          marginHorizontal="m"
-          borderTopStartRadius={isFirst ? 'xl' : undefined}
-          borderTopEndRadius={isFirst ? 'xl' : undefined}
-          borderBottomStartRadius={isLast ? 'xl' : undefined}
-          borderBottomEndRadius={isLast ? 'xl' : undefined}
-          notification={notification}
-          viewed={!!notification.viewedAt}
-          hasDivider={!isLast || (isFirst && section.data.length !== 1)}
-          onPress={onItemSelected}
-        />
-      )
+      if (!noti) return acc
+
+      acc[key].push(noti as Notification)
+      return acc
     },
-    [navigator, setSelectedNotification],
+    {} as Record<string, Notification[]>,
   )
 
-  const EmptyListView = useCallback(
-    () => (
-      <FadeInOut>
-        <Box alignItems="center">
-          <Text color="primaryText" marginTop="xl">
-            {t('notifications.emptyTitle')}
-          </Text>
-        </Box>
-      </FadeInOut>
-    ),
-    [t],
+  const sections = Object.keys(grouped).map((date) => ({
+    title: date,
+    data: grouped[date],
+  }))
+
+  const renderItem = ({
+    index,
+    item,
+    section,
+  }: {
+    index: number
+    item: Notification
+    section: { data: Notification[] }
+  }) => {
+    const isFirst = index === 0
+    const isLast = index === section.data.length - 1
+
+    const onItemSelected = () => {
+      navigator.navigate('NotificationDetails', { notification: item })
+      setSelectedNotification(item)
+    }
+
+    return (
+      <NotificationListItem
+        className={twMerge(
+          'mx-4',
+          isFirst && 'rounded-t-[20px]',
+          isLast && 'rounded-b-[20px]',
+        )}
+        notification={item}
+        viewed={!!item.viewedAt}
+        hasDivider={!isLast || (isFirst && section.data.length !== 1)}
+        onPress={onItemSelected}
+      />
+    )
+  }
+
+  const emptyList = (
+    <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
+      <View className="items-center">
+        <Text className="mt-8">{t('notifications.emptyTitle')}</Text>
+      </View>
+    </Animated.View>
   )
 
-  const renderSectionHeader = useCallback(
-    ({ section: { title: sectionTitle } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="xl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-        justifyContent="center"
-      >
-        <Text variant="body2" textAlign="center" color="secondaryText">
-          {sectionTitle}
-        </Text>
-      </Box>
-    ),
-    [],
+  const renderSectionHeader = ({
+    section: { title: sectionTitle },
+  }: {
+    section: { title: string }
+  }) => (
+    <View className="flex-row items-center justify-center bg-background px-6 pb-4 pt-8">
+      <Text className="text-center text-muted-foreground">{sectionTitle}</Text>
+    </View>
   )
-
-  const keyExtractor = useCallback((item, index) => item.time + index, [])
 
   return (
-    <Box flex={1}>
+    <View className="flex-1">
       {HeaderComponent}
       <SectionList
         contentInsetAdjustmentBehavior="automatic"
-        keyExtractor={keyExtractor}
+        keyExtractor={(item, index) => item.time + index}
         ListFooterComponent={FooterComponent}
         renderSectionHeader={renderSectionHeader}
-        contentContainerStyle={contentContainer}
-        sections={SectionData}
+        contentContainerClassName="pb-15"
+        sections={sections}
         renderItem={renderItem}
-        ListEmptyComponent={EmptyListView}
+        ListEmptyComponent={emptyList}
       />
-    </Box>
+    </View>
   )
 }
 
-export default memo(NotificationsList)
+export default NotificationsList

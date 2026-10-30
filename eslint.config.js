@@ -33,6 +33,8 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/notifications/**',
+  'src/utils/parseMarkup.tsx',
 ]
 
 module.exports = [
