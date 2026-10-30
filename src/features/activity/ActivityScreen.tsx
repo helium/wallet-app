@@ -11,7 +11,6 @@ import Text from '@components/Text'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
-import useHaptic from '@hooks/useHaptic'
 import globalStyles from '@theme/globalStyles'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import { ActivityNavigationProp } from './activityTypes'
@@ -24,7 +23,6 @@ const ActivityScreen = () => {
   const spacing = useSpacing()
   const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
-  const { triggerImpact } = useHaptic()
 
   const contentContainer = useMemo(
     () => ({
@@ -113,12 +111,11 @@ const ActivityScreen = () => {
 
   const handleActivityItemPress = useCallback(
     (transaction: EnrichedTransaction | ConfirmedSignatureInfo) => () => {
-      triggerImpact()
       navigation.navigate('ActivityDetailsScreen', {
         transaction,
       })
     },
-    [navigation, triggerImpact],
+    [navigation],
   )
 
   const safeEdges = useMemo(() => ['top'] as Edge[], [])

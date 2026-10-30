@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo } from 'react'
 import useCopyText from '@hooks/useCopyText'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import useHaptic from '@hooks/useHaptic'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { ViewStyle } from 'react-native'
 import { useColors, useSpacing } from '@theme/themeHooks'
@@ -15,19 +14,16 @@ import Box from './Box'
 const CopyAddressPill = ({ ...rest }: BoxProps<Theme>) => {
   const copyText = useCopyText()
   const { currentAccount } = useAccountStorage()
-  const { triggerImpact } = useHaptic()
   const spacing = useSpacing()
   const { secondaryText } = useColors()
 
   const handleCopyAddress = useCallback(() => {
     if (!currentAccount?.solanaAddress) return
-
-    triggerImpact('light')
     copyText({
       message: ellipsizeAddress(currentAccount?.solanaAddress),
       copyText: currentAccount?.solanaAddress,
     })
-  }, [copyText, currentAccount?.solanaAddress, triggerImpact])
+  }, [copyText, currentAccount?.solanaAddress])
 
   const CopyAddressStyles = useMemo(() => {
     return {

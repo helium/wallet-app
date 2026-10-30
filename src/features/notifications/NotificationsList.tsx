@@ -6,7 +6,6 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import { useSpacing } from '@theme/themeHooks'
 import FadeInOut from '@components/FadeInOut'
-import useHaptic from '@hooks/useHaptic'
 import { NotificationsListNavigationProp } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationListItem from './NotificationListItem'
@@ -25,7 +24,6 @@ const NotificationsList = ({
   const navigator = useNavigation<NotificationsListNavigationProp>()
   const { setSelectedNotification, notifications } = useNotificationStorage()
   const spacing = useSpacing()
-  const { triggerImpact } = useHaptic()
 
   const contentContainer = useMemo(
     () => ({
@@ -74,7 +72,6 @@ const NotificationsList = ({
       const isLast = index === section.data.length - 1
 
       const onItemSelected = () => {
-        triggerImpact('light')
         navigator.navigate('NotificationDetails', { notification: item })
         setSelectedNotification(item)
       }
@@ -93,7 +90,7 @@ const NotificationsList = ({
         />
       )
     },
-    [navigator, setSelectedNotification, triggerImpact],
+    [navigator, setSelectedNotification],
   )
 
   const EmptyListView = useCallback(

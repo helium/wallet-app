@@ -16,7 +16,6 @@ import {
 } from '@helium/voter-stake-registry-hooks'
 import { getPositionKeysForOwner } from '@helium/voter-stake-registry-sdk'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import useHaptic from '@hooks/useHaptic'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import usePrevious from '@hooks/usePrevious'
 import { useNavigation } from '@react-navigation/native'
@@ -72,16 +71,14 @@ export const TokenListItem = ({ mint }: Props) => {
     decimals,
     loading: loadingOwned,
   } = useOwnedAmount(wallet, mint)
-  const { triggerImpact } = useHaptic()
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()
 
   const handleNavigation = useCallback(() => {
-    triggerImpact('light')
     navigation.navigate('AccountTokenScreen', {
       mint: mintStr,
     })
-  }, [navigation, mintStr, triggerImpact])
+  }, [navigation, mintStr])
 
   const balanceToDisplay = useMemo(() => {
     return amount && typeof decimals !== 'undefined'
@@ -172,7 +169,6 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const navigation = useNavigation()
   const { anchorProvider, connection } = useSolana()
   const wallet = useCurrentWallet()
-  const { triggerImpact } = useHaptic()
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const decimals = useMint(mint)?.info?.decimals
   const mintStr = mint.toBase58()
@@ -253,14 +249,13 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const prevLocked = usePrevious(amountLocked)
 
   const handleNavigation = useCallback(() => {
-    triggerImpact('light')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(navigation as any).navigate('Governance', {
       screen: 'PositionsScreen',
       initial: false,
       params: { mint: mintStr },
     })
-  }, [navigation, mintStr, triggerImpact])
+  }, [navigation, mintStr])
 
   const balanceToDisplay = useMemo(() => {
     return amountLocked && typeof decimals !== 'undefined'
