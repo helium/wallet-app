@@ -1,6 +1,5 @@
 import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
-import { NavBarHeight } from '@components/NavBar'
 import WarningBanner, { BannerType } from '@components/WarningBanner'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { HNT_MINT } from '@helium/spl-utils'
@@ -202,8 +201,7 @@ const AccountsScreen = () => {
       }
     }
 
-    const realHeight = pageHeight + NavBarHeight
-    const diff = realHeight - listAnimatedPos.get()
+    const diff = pageHeight - listAnimatedPos.get()
     const opacity =
       (listAnimatedPos.get() -
         actualTop -
@@ -215,7 +213,7 @@ const AccountsScreen = () => {
 
     return {
       opacity,
-      paddingBottom: diff - NavBarHeight,
+      paddingBottom: diff,
       display: opacity <= 0 ? 'none' : 'flex',
     }
   })

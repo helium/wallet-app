@@ -5,7 +5,6 @@ import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import FadeInOut from '@components/FadeInOut'
 import ListItem from '@components/ListItem'
-import { NavBarHeight } from '@components/NavBar'
 import Text from '@components/Text'
 import TokenIcon from '@components/TokenIcon'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
@@ -67,6 +66,7 @@ const AccountTokenScreen = () => {
   const [bottomScreenHeaderHeight, setBottomScreenHeaderHeight] =
     useLayoutHeight()
   const [backHeaderHeight, setBackHeaderHeight] = useLayoutHeight()
+  const [actualHeight, setActualHeight] = useLayoutHeight()
   const topHeaderRef = useRef<View>(null)
   const headerContainerRef = useRef<View>(null)
   const [topHeaderYPos, setTopHeaderYPos] = useState(0)
@@ -123,19 +123,14 @@ const AccountTokenScreen = () => {
     setOnEndReachedCalledDuringMomentum(false)
   }, [])
 
-  const actualHeight = useMemo(() => {
-    return WINDOW_HEIGHT - insets.bottom - NavBarHeight
-  }, [insets.bottom])
-
   const snapPoints = useMemo(() => {
-    if (!topHeaderYPos || !headerContainerYPos) return
+    if (!actualHeight || !topHeaderYPos || !headerContainerYPos) return
     const collapsed = Math.max(
       actualHeight - headerContainerYPos,
       MIN_BOTTOM_BAR_HEIGHT,
     )
-    const expanded = actualHeight
-      ? actualHeight - insets.top - backHeaderHeight - topHeaderHeight
-      : 0
+    const expanded =
+      actualHeight - insets.top - backHeaderHeight - topHeaderHeight
     return [collapsed, expanded]
   }, [
     actualHeight,
@@ -427,7 +422,7 @@ const AccountTokenScreen = () => {
   }, [mint])
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
+    <ReAnimatedBox style={globalStyles.container} onLayout={setActualHeight}>
       <BackScreen
         padding="none"
         title={t('accountsScreen.title', {

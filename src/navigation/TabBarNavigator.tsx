@@ -1,22 +1,11 @@
-import React, { FC, useCallback, useEffect, useMemo } from 'react'
-import { SvgProps } from 'react-native-svg'
-import {
-  BottomTabBarProps,
-  createBottomTabNavigator,
-} from '@react-navigation/bottom-tabs'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import Dollar from '@assets/images/dollar.svg'
-import Gem from '@assets/images/collectableIcon.svg'
-import Transactions from '@assets/images/transactions.svg'
-import Governance from '@assets/images/courthouse.svg'
+import React, { useEffect } from 'react'
+import { Platform } from 'react-native'
+import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable'
+import { SafeAreaView } from 'react-native-screens/experimental'
 import { Portal } from '@gorhom/portal'
-import NavBar, { NavBarHeight } from '@components/NavBar'
-import { Color } from '@theme/theme'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Box from '@components/Box'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
-import Globe from '@assets/images/earth-globe.svg'
+import { useColors } from '@theme/themeHooks'
 import { useDispatch } from 'react-redux'
 import { useGovernance } from '@storage/GovernanceProvider'
 import GovernanceNavigator from '../features/governance/GovernanceNavigator'
@@ -30,116 +19,21 @@ import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { appSlice } from '../store/slices/appSlice'
 import { useSolana } from '../solana/SolanaProvider'
 
-const Tab = createBottomTabNavigator()
+const Tab = createNativeBottomTabNavigator()
 
-function MyTabBar({ state, navigation }: BottomTabBarProps) {
-  const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
-  const { triggerImpact } = useHaptic()
-  const { hasUnseenProposals } = useGovernance()
-
-  const tabData = useMemo((): Array<{
-    value: string
-    Icon: FC<SvgProps>
-    iconColor: Color
-    hasBadge?: boolean
-  }> => {
-    return [
-      { value: 'account', Icon: Dollar, iconColor: 'white' },
-      {
-        value: 'collectables',
-        Icon: Gem,
-        iconColor: 'white',
-        hasBadge: false,
-      },
-      {
-        value: 'activity',
-        Icon: Transactions,
-        iconColor: 'white',
-        hasBadge: hasNewTransactions && state.index !== 2,
-      },
-      {
-        value: 'governance',
-        Icon: Governance,
-        iconColor: 'white',
-        hasBadge: hasUnseenProposals && state.index !== 3,
-      },
-      { value: 'browser', Icon: Globe, iconColor: 'white' },
-    ]
-  }, [hasNewTransactions, hasUnseenProposals, state.index])
-
-  const selectedValue = tabData[state.index].value
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-
-  const onPress = useCallback(
-    (type: string) => {
-      triggerImpact('light')
-      const index = tabData.findIndex((item) => item.value === type)
-      const isSelected = selectedValue === type
-      const event = navigation.emit({
-        type: 'tabPress',
-        target: state.routes[index || 0].key,
-        canPreventDefault: true,
-      })
-
-      // Check if activty tab is selected and has new transactions
-      if (selectedValue === 'activity' && hasNewTransactions) {
-        resetNewTransactions()
-      }
-
-      if (!isSelected && !event.defaultPrevented) {
-        // The `merge: true` option makes sure that the params inside the tab screen are preserved
-        navigation.navigate({
-          name: state.routes[index || 0].name,
-          merge: true,
-          params: undefined,
-        })
-      }
-    },
-    [
-      hasNewTransactions,
-      navigation,
-      resetNewTransactions,
-      selectedValue,
-      state.routes,
-      tabData,
-      triggerImpact,
-    ],
-  )
-
-  const onLongPress = useCallback(
-    (type: string) => {
-      const index = tabData.findIndex((item) => item.value === type)
-
-      navigation.emit({
-        type: 'tabLongPress',
-        target: state.routes[index || 0].key,
-      })
-    },
-    [navigation, state.routes, tabData],
-  )
-
-  return (
-    <Box position="absolute" bottom={0} left={0} right={0}>
-      <Box backgroundColor="black">
-        <SafeAreaBox edges={safeEdges}>
-          <NavBar
-            navBarOptions={tabData}
-            selectedValue={selectedValue}
-            onItemSelected={onPress}
-            onItemLongPress={onLongPress}
-          />
-        </SafeAreaBox>
-      </Box>
-    </Box>
-  )
-}
+// Android draws an empty badge as a dot. iOS hides an empty badge, so it
+// gets a blank one.
+const DOT_BADGE = Platform.select({ ios: ' ', default: '' })
 
 const TabBarNavigator = () => {
   const dispatch = useDispatch()
+  const colors = useColors()
+  const { triggerImpact } = useHaptic()
+  const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
+  const { hasUnseenProposals } = useGovernance()
 
   const { doneSolanaMigration, manualMigration } = useAppStorage()
   const { cluster, updateCluster } = useSolana()
-  const { bottom } = useSafeAreaInsets()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
 
@@ -188,20 +82,93 @@ const TabBarNavigator = () => {
           </Portal>
         )}
       <Tab.Navigator
-        tabBar={(props: BottomTabBarProps) => <MyTabBar {...props} />}
         screenOptions={{
           headerShown: false,
           lazy: true,
-          sceneStyle: {
-            paddingBottom: NavBarHeight + bottom,
-          },
+          tabBarActiveTintColor: colors.white,
+          tabBarInactiveTintColor: colors.secondaryText,
+          tabBarStyle: { backgroundColor: colors.black },
+          tabBarBadgeStyle: { backgroundColor: colors.malachite },
         }}
+        // Native tabs draw screens under the tab bar. Pad them clear of it.
+        screenLayout={({ children }) => (
+          <SafeAreaView edges={{ bottom: true }}>{children}</SafeAreaView>
+        )}
+        screenListeners={({ navigation }) => ({
+          tabPress: () => {
+            triggerImpact('light')
+
+            // Any tab press while Activity is focused marks its transactions as seen
+            const { routes, index } = navigation.getState()
+            if (routes[index].name === 'Activity' && hasNewTransactions) {
+              resetNewTransactions()
+            }
+          },
+        })}
       >
-        <Tab.Screen name="Home" component={HomeNavigator} />
-        <Tab.Screen name="Collectables" component={CollectablesNavigator} />
-        <Tab.Screen name="Activity" component={ActivityNavigator} />
-        <Tab.Screen name="Governance" component={GovernanceNavigator} />
-        <Tab.Screen name="Browser" component={BrowserNavigator} />
+        <Tab.Screen
+          name="Home"
+          component={HomeNavigator}
+          options={{
+            tabBarButtonTestID: 'NavBar.account',
+            tabBarIcon: {
+              type: 'image',
+              source: require('@assets/images/tabs/dollar.png'),
+            },
+          }}
+        />
+        <Tab.Screen
+          name="Collectables"
+          component={CollectablesNavigator}
+          options={{
+            tabBarButtonTestID: 'NavBar.collectables',
+            tabBarIcon: {
+              type: 'image',
+              source: require('@assets/images/tabs/collectableIcon.png'),
+            },
+          }}
+        />
+        <Tab.Screen
+          name="Activity"
+          component={ActivityNavigator}
+          options={({ navigation }) => ({
+            tabBarButtonTestID: 'NavBar.activity',
+            tabBarIcon: {
+              type: 'image',
+              source: require('@assets/images/tabs/transactions.png'),
+            },
+            tabBarBadge:
+              hasNewTransactions && !navigation.isFocused()
+                ? DOT_BADGE
+                : undefined,
+          })}
+        />
+        <Tab.Screen
+          name="Governance"
+          component={GovernanceNavigator}
+          options={({ navigation }) => ({
+            tabBarButtonTestID: 'NavBar.governance',
+            tabBarIcon: {
+              type: 'image',
+              source: require('@assets/images/tabs/courthouse.png'),
+            },
+            tabBarBadge:
+              hasUnseenProposals && !navigation.isFocused()
+                ? DOT_BADGE
+                : undefined,
+          })}
+        />
+        <Tab.Screen
+          name="Browser"
+          component={BrowserNavigator}
+          options={{
+            tabBarButtonTestID: 'NavBar.browser',
+            tabBarIcon: {
+              type: 'image',
+              source: require('@assets/images/tabs/earth-globe.png'),
+            },
+          }}
+        />
       </Tab.Navigator>
     </>
   )
