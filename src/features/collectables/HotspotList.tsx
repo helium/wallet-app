@@ -238,10 +238,6 @@ const HotspotList = () => {
     [fetchingMore],
   )
 
-  const handleRefresh = useCallback(() => {
-    refresh()
-  }, [refresh])
-
   useEffect(() => {
     return navigation.addListener('focus', () => {
       refresh()
@@ -261,7 +257,7 @@ const HotspotList = () => {
           <RefreshControl
             enabled
             refreshing={loadingHotspots}
-            onRefresh={handleRefresh}
+            onRefresh={refresh}
             title=""
             tintColor={primaryText}
           />

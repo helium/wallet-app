@@ -10,6 +10,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
+import { withICloudSignOutWarning } from './signOutWarning'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 
@@ -53,13 +54,17 @@ const ConfirmSignoutScreen = () => {
       t('settings.sections.account.signOutAlert.title', {
         alias: currentAccount?.alias,
       }),
-      t(
-        `settings.sections.account.signOutAlert.${
-          isLastAccount ? 'bodyLastAccount' : 'body'
-        }`,
-        {
-          alias: currentAccount?.alias,
-        },
+      withICloudSignOutWarning(
+        t,
+        t(
+          `settings.sections.account.signOutAlert.${
+            isLastAccount ? 'bodyLastAccount' : 'body'
+          }`,
+          {
+            alias: currentAccount?.alias,
+          },
+        ),
+        isLastAccount ? 'allWallets' : 'oneWallet',
       ),
       [
         {

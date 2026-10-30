@@ -1,3 +1,4 @@
+import { QueryObserver } from '@tanstack/react-query'
 import { createQueryClient } from '../../../utils/queryClient'
 import { getNotifications, Notification } from '../../../utils/walletApiV2'
 import {
@@ -24,6 +25,29 @@ describe('notificationsQuery', () => {
     await expect(
       queryClient.fetchQuery(notificationsQuery('helium-update', 'walletA')),
     ).resolves.toEqual(list)
+    expect(getNotifications).toHaveBeenCalledWith({
+      resource: 'helium-update',
+      wallet: 'walletA',
+    })
+    queryClient.clear()
+  })
+
+  it('fetches only once a wallet is known', async () => {
+    const queryClient = createQueryClient()
+    jest.mocked(getNotifications).mockClear().mockResolvedValue([])
+    const observe = async (wallet?: string) => {
+      const unsubscribe = new QueryObserver(
+        queryClient,
+        notificationsQuery('helium-update', wallet),
+      ).subscribe(() => undefined)
+      await new Promise(process.nextTick)
+      unsubscribe()
+    }
+
+    await observe()
+    expect(getNotifications).not.toHaveBeenCalled()
+
+    await observe('walletA')
     expect(getNotifications).toHaveBeenCalledWith({
       resource: 'helium-update',
       wallet: 'walletA',

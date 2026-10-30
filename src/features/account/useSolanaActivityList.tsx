@@ -1,4 +1,3 @@
-import { DC_MINT } from '@helium/spl-utils'
 import { PublicKey } from '@solana/web3.js'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -6,12 +5,13 @@ import {
   onLogs,
   removeAccountChangeListener,
 } from '@utils/solanaUtils'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { FilterType } from './AccountActivityFilter'
 import {
   FetchActivity,
+  filterActivity,
   solanaActivityQuery,
   updateActivityHead,
 } from './logic/solanaActivity'
@@ -45,7 +45,6 @@ export default ({
     ...query,
     enabled: !!address && !!anchorProvider,
   })
-  const accountSubscriptionId = useRef<number | null>(null)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,10 +66,9 @@ export default ({
       },
     )
 
-    if (accountSubscriptionId.current !== null) {
-      removeAccountChangeListener(anchorProvider, accountSubscriptionId.current)
+    return () => {
+      removeAccountChangeListener(anchorProvider, subId)
     }
-    accountSubscriptionId.current = subId
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, mintStr, anchorProvider, queryClient])
 
@@ -80,29 +78,11 @@ export default ({
 
   const data = useMemo(() => {
     if (!account?.solanaAddress || !pages) return []
-    const activity = pages.pages.flat()
-
-    if (
-      mintStr === DC_MINT.toBase58() &&
-      (filter === 'delegate' || filter === 'mint')
-    ) {
-      return activity
-    }
-
-    if (filter !== 'in' && filter !== 'out' && filter !== 'all') return []
-    if (filter === 'in' || filter === 'out') {
-      return activity.filter((txn) =>
-        txn.payments?.some((payment) =>
-          payment.mint === mintStr &&
-          payment.owner === account?.solanaAddress &&
-          filter === 'out'
-            ? payment.amount < 0
-            : payment.amount > 0,
-        ),
-      )
-    }
-
-    return activity
+    return filterActivity(pages.pages.flat(), {
+      filter,
+      mint: mintStr,
+      owner: account.solanaAddress,
+    })
   }, [account?.solanaAddress, pages, mintStr, filter])
 
   return {

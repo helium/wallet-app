@@ -30,6 +30,7 @@ import {
   updateCloudAccounts,
   updateCloudContacts,
 } from './cloudStorage'
+import { subscribeCloudItemChanges } from './importLegacyState'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
 import { resetAppState } from './resetAppState'
 import {
@@ -77,15 +78,25 @@ const useAccountStorageHook = () => {
     return currentAccount?.solanaAddress
   }, [currentAccount])
 
-  // Runs once: the restore also migrates and writes accounts, so it must not
-  // re-run when sign-out clears the query cache
+  // Runs on mount and when another device on the Apple ID changes the shared
+  // list, not when sign-out clears the query cache: the restore also migrates
+  // and writes accounts. Only the latest run's result is applied.
   const [restoredAccounts, setRestoredAccounts] =
     useState<Awaited<ReturnType<typeof restoreAccounts>>>()
-  useEffect(() => {
+  const restoreRun = useRef(0)
+  const reloadAccounts = useCallback(() => {
+    restoreRun.current += 1
+    const run = restoreRun.current
     restoreAccounts()
-      .then(setRestoredAccounts)
+      .then((result) => {
+        if (run === restoreRun.current) setRestoredAccounts(result)
+      })
       .catch((e) => console.error(e))
   }, [])
+  useEffect(reloadAccounts, [reloadAccounts])
+
+  // Another device on the Apple ID changed the shared list
+  useEffect(() => subscribeCloudItemChanges(reloadAccounts), [reloadAccounts])
 
   const restored = useMemo(() => accounts !== undefined, [accounts])
 
@@ -167,7 +178,12 @@ const useAccountStorageHook = () => {
     if (!restoredAccounts) return
 
     setAccounts(restoredAccounts.csAccounts)
-    setCurrentAccount(restoredAccounts.current)
+    // A reload keeps the open wallet while the list still holds it
+    setCurrentAccount(
+      (current) =>
+        (current && restoredAccounts.csAccounts[current.address]) ||
+        restoredAccounts.current,
+    )
     setContacts(restoredAccounts.contacts)
   }, [restoredAccounts])
 

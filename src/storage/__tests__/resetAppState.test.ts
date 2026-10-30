@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { persistQueryClientSave } from '@tanstack/react-query-persist-client'
+import { Platform } from 'react-native'
+import {
+  persistQueryClientSave,
+  persistQueryClientSubscribe,
+} from '@tanstack/react-query-persist-client'
 import { resetAppState } from '../resetAppState'
+import { importLegacyState } from '../importLegacyState'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from '../mmkv'
 import { useAppStore } from '../../store/appStore'
 import { useAuthStore } from '../../store/authStore'
@@ -12,6 +17,11 @@ import {
   queryPersistOptions,
 } from '../../utils/queryPersistence'
 
+const mockICloud = new Map<string, string>()
+
+jest.mock('react-native', () => ({ Platform: { OS: 'ios' } }))
+// accountUtils imports this native module, which jest cannot parse
+jest.mock('bcrypt-react-native', () => ({}))
 jest.mock('react-native-mmkv', () => ({
   createMMKV: jest.requireActual(
     'react-native-mmkv/lib/createMMKV/createMockMMKV',
@@ -23,9 +33,11 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
     '@react-native-async-storage/async-storage/jest/async-storage-mock',
   ),
 }))
-jest.mock('react-native', () => ({ Platform: { OS: 'ios' } }))
-jest.mock('expo-secure-store', () => ({}))
-jest.mock('../../../modules/icloud-kvs', () => ({}))
+jest.mock('../../../modules/icloud-kvs', () => ({
+  getICloudKVSString: (key: string) => mockICloud.get(key) ?? null,
+  removeICloudKVSKeys: (keys: string[]) =>
+    keys.forEach((key) => mockICloud.delete(key)),
+}))
 
 // Old redux-persist keys: the root config and its three nested configs
 const LEGACY_PERSIST_KEYS = [
@@ -36,6 +48,37 @@ const LEGACY_PERSIST_KEYS = [
 ]
 
 const solanaAddress = 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4'
+const heliumAddress = '13BnsQ6hHjfvJXYxwpWeMaD5Ep5nN1b4BPRJy4AqBkDq3mTF8Sk'
+
+const cloudAccounts = {
+  [heliumAddress]: {
+    alias: 'Main',
+    address: heliumAddress,
+    solanaAddress,
+    netType: 0,
+  },
+}
+
+// What the old cloudStorage.ts wrote for the five cloud keys
+const legacyCloudItems: Array<[string, string]> = [
+  [
+    'accounts',
+    JSON.stringify({
+      [heliumAddress]: { alias: 'Main', address: heliumAddress, netType: 0 },
+    }),
+  ],
+  ['contacts', JSON.stringify([])],
+  ['lastViewedNotifications', (1700000000).toString()],
+  ['visibleTokens', JSON.stringify({})],
+  ['defaultAccountAddress', heliumAddress],
+]
+// react-native-icloudstore put this prefix on every iCloud key
+const ICLOUD_PREFIX = '@com.manicakes.iCloudStorage/'
+
+beforeEach(() => {
+  mockICloud.clear()
+  Platform.OS = 'ios'
+})
 
 describe('resetAppState', () => {
   it('leaves the import-done marker as the only stored key', async () => {
@@ -49,6 +92,7 @@ describe('resetAppState', () => {
     useBrowserStore.getState().addFavorite(solanaAddress, 'https://jup.ag')
     useBrowserStore.getState().addRecent(solanaAddress, 'https://jup.ag')
     useCloudStore.setState({
+      accounts: cloudAccounts,
       defaultAccountAddress: solanaAddress,
       lastViewedNotifications: 1700000000,
     })
@@ -81,5 +125,83 @@ describe('resetAppState', () => {
     expect(await AsyncStorage.multiGet(LEGACY_PERSIST_KEYS)).toEqual(
       LEGACY_PERSIST_KEYS.map((key) => [key, null]),
     )
+  })
+
+  it('leaves no query cache when a save follows the reset', async () => {
+    jest.useFakeTimers()
+    // What PersistQueryClientProvider runs: a throttled save on each change
+    const unsubscribe = persistQueryClientSubscribe({
+      queryClient,
+      ...queryPersistOptions,
+    })
+    mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
+    useCloudStore.setState({
+      accounts: cloudAccounts,
+    })
+    queryClient.setQueryData(['collectables', 'devnet', solanaAddress], {})
+    await jest.advanceTimersByTimeAsync(1_001)
+    expect(mmkv.contains(QUERY_CACHE_KEY)).toBe(true)
+
+    await resetAppState()
+    // NftList renders once more with the old account and refetches it
+    queryClient.setQueryData(['collectables', 'devnet', solanaAddress], {
+      collectables: {},
+      collectablesWithMeta: {},
+    })
+    await jest.advanceTimersByTimeAsync(1_001)
+
+    expect(mmkv.getAllKeys()).toEqual([LEGACY_IMPORT_DONE_KEY])
+    unsubscribe()
+    queryClient.clear()
+    jest.useRealTimers()
+  })
+
+  it('removes the iCloud keys, so a reinstall imports no signed-out wallet', async () => {
+    mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
+    legacyCloudItems.forEach(([key, value]) =>
+      mockICloud.set(`${ICLOUD_PREFIX}${key}`, value),
+    )
+    mockICloud.set('otherKey', 'kept')
+
+    await resetAppState()
+
+    expect([...mockICloud.entries()]).toEqual([['otherKey', 'kept']])
+
+    // A reinstall or a new device starts with empty MMKV and runs the import
+    mmkv.clearAll()
+    await importLegacyState()
+
+    expect(useCloudStore.getState()).toEqual({})
+    expect(mmkv.getAllKeys()).toEqual([LEGACY_IMPORT_DONE_KEY])
+  })
+
+  it('removes the five cloud keys from AsyncStorage on Android', async () => {
+    Platform.OS = 'android'
+    mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
+    await AsyncStorage.multiSet([...legacyCloudItems, ['persist:solana', '{}']])
+
+    await resetAppState()
+
+    expect(await AsyncStorage.getAllKeys()).toEqual([])
+  })
+
+  it('clears the state when the old Redux keys cannot be removed', async () => {
+    const multiRemove = jest
+      .spyOn(AsyncStorage, 'multiRemove')
+      .mockRejectedValueOnce(new Error('disk error'))
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
+    useAuthStore.setState({ apiToken: 'token' })
+    useCloudStore.setState({ defaultAccountAddress: solanaAddress })
+    queryClient.setQueryData(['balance'], 1)
+
+    await expect(resetAppState()).resolves.toBeUndefined()
+
+    expect(mmkv.getAllKeys()).toEqual([LEGACY_IMPORT_DONE_KEY])
+    expect(useAuthStore.getState()).toEqual({})
+    expect(useCloudStore.getState()).toEqual({})
+    expect(queryClient.getQueryCache().getAll()).toEqual([])
+    multiRemove.mockRestore()
+    warn.mockRestore()
   })
 })

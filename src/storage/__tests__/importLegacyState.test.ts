@@ -3,6 +3,7 @@ import type { CSAccount, CSAccounts, CSToken } from '../cloudStorage'
 
 const mockPlatform = { OS: 'ios' }
 const mockICloud = new Map<string, string>()
+let mockICloudError: Error | undefined
 
 jest.mock('react-native', () => ({ Platform: mockPlatform }))
 jest.mock('react-native-mmkv', () => ({
@@ -26,16 +27,12 @@ jest.mock('expo-secure-store', () => {
   }
 })
 jest.mock('../../../modules/icloud-kvs', () => ({
-  getICloudKVSString: (key: string) => mockICloud.get(key) ?? null,
+  getICloudKVSString: (key: string) => {
+    if (mockICloudError) throw mockICloudError
+    return mockICloud.get(key) ?? null
+  },
 }))
 
-// Old redux-persist keys: the root config and its three nested configs
-const LEGACY_PERSIST_KEYS = [
-  'persist:root',
-  'persist:solana',
-  'persist:balances',
-  'persist:notifications',
-]
 // react-native-icloudstore put this prefix on every iCloud key
 const ICLOUD_PREFIX = '@com.manicakes.iCloudStorage/'
 
@@ -112,6 +109,7 @@ const load = () => ({
 beforeEach(() => {
   jest.resetModules()
   mockICloud.clear()
+  mockICloudError = undefined
   mockPlatform.OS = 'ios'
 })
 
@@ -141,12 +139,11 @@ describe('importLegacyState', () => {
       visibleTokens,
       defaultAccountAddress: account.address,
     })
-    expect(await m.SecureStore.getItemAsync('walletApiToken')).toBe(
-      'legacy-api-token',
-    )
-    expect(await m.AsyncStorage.multiGet(LEGACY_PERSIST_KEYS)).toEqual(
-      LEGACY_PERSIST_KEYS.map((key) => [key, null]),
-    )
+    expect(await m.SecureStore.getItemAsync('walletApiToken')).toBeNull()
+    expect(await m.AsyncStorage.getItem('persist:root')).toBeNull()
+    expect(await m.AsyncStorage.getItem('persist:balances')).toBeNull()
+    expect(await m.AsyncStorage.getItem('persist:notifications')).toBeNull()
+    expect(await m.AsyncStorage.getItem('persist:solana')).toBeNull()
     expect(m.mmkv.getBoolean(m.LEGACY_IMPORT_DONE_KEY)).toBe(true)
     expect(m.mmkv.getAllKeys().sort()).toEqual(
       ['app', 'browser', 'cloud', m.LEGACY_IMPORT_DONE_KEY].sort(),
@@ -195,5 +192,110 @@ describe('importLegacyState', () => {
     expect(m.useAppStore.getState().showBanner).toBe(true)
     expect(m.useBrowserStore.getState().byAccount).toEqual({})
     expect(m.useCloudStore.getState()).toEqual({})
+  })
+
+  it('skips an unreadable cloud value and imports the rest', async () => {
+    const m = load()
+    await writeLegacyReduxState(m.AsyncStorage, legacyRedux)
+    legacyCloudItems.forEach(([key, value]) =>
+      mockICloud.set(`${ICLOUD_PREFIX}${key}`, value),
+    )
+    mockICloud.set(`${ICLOUD_PREFIX}accounts`, '{not json')
+
+    await m.importLegacyState()
+
+    expect(m.useCloudStore.getState().accounts).toBeUndefined()
+    expect(m.useCloudStore.getState()).toEqual({
+      contacts: [contact],
+      lastViewedNotifications: 1700000000,
+      visibleTokens,
+      defaultAccountAddress: account.address,
+    })
+    expect(m.useAppStore.getState().cluster).toBe('devnet')
+    expect(m.mmkv.getBoolean(m.LEGACY_IMPORT_DONE_KEY)).toBe(true)
+  })
+
+  it('skips an unreadable persist:root and imports the cloud keys', async () => {
+    const m = load()
+    await m.AsyncStorage.setItem('persist:root', '{not json')
+    legacyCloudItems.forEach(([key, value]) =>
+      mockICloud.set(`${ICLOUD_PREFIX}${key}`, value),
+    )
+
+    await m.importLegacyState()
+
+    expect(m.useAppStore.getState().cluster).toBeUndefined()
+    expect(m.useAppStore.getState().showBanner).toBe(true)
+    expect(m.useCloudStore.getState()).toEqual({
+      accounts,
+      contacts: [contact],
+      lastViewedNotifications: 1700000000,
+      visibleTokens,
+      defaultAccountAddress: account.address,
+    })
+    expect(m.mmkv.getBoolean(m.LEGACY_IMPORT_DONE_KEY)).toBe(true)
+  })
+
+  it('skips an unreadable slice inside a valid persist:root', async () => {
+    const m = load()
+    await m.AsyncStorage.setItem(
+      'persist:root',
+      JSON.stringify({
+        app: '{not json',
+        browser: JSON.stringify(browser),
+        _persist: JSON.stringify({ version: 1, rehydrated: true }),
+      }),
+    )
+    legacyCloudItems.forEach(([key, value]) =>
+      mockICloud.set(`${ICLOUD_PREFIX}${key}`, value),
+    )
+
+    await m.importLegacyState()
+
+    expect(m.useAppStore.getState().cluster).toBeUndefined()
+    expect(m.useAppStore.getState().showBanner).toBe(true)
+    expect(m.useBrowserStore.getState().byAccount).toEqual(browser)
+    expect(m.useCloudStore.getState()).toEqual({
+      accounts,
+      contacts: [contact],
+      lastViewedNotifications: 1700000000,
+      visibleTokens,
+      defaultAccountAddress: account.address,
+    })
+    expect(m.mmkv.getBoolean(m.LEGACY_IMPORT_DONE_KEY)).toBe(true)
+  })
+
+  it('keeps the default showBanner when the old app slice lacks it', async () => {
+    const m = load()
+    await writeLegacyReduxState(m.AsyncStorage, {
+      ...legacyRedux,
+      app: { cluster: 'devnet' },
+    })
+
+    await m.importLegacyState()
+
+    expect(m.useAppStore.getState().cluster).toBe('devnet')
+    expect(m.useAppStore.getState().showBanner).toBe(true)
+  })
+
+  it('retries a failed import on the next call', async () => {
+    const m = load()
+    await writeLegacyReduxState(m.AsyncStorage, legacyRedux)
+    legacyCloudItems.forEach(([key, value]) =>
+      mockICloud.set(`${ICLOUD_PREFIX}${key}`, value),
+    )
+    mockICloudError = new Error('ICloudKVS native module is not linked')
+
+    await expect(m.importLegacyState()).rejects.toThrow(
+      'ICloudKVS native module is not linked',
+    )
+    expect(m.mmkv.getBoolean(m.LEGACY_IMPORT_DONE_KEY)).toBeUndefined()
+    expect(await m.AsyncStorage.getItem('persist:root')).not.toBeNull()
+
+    mockICloudError = undefined
+    await m.importLegacyState()
+
+    expect(m.useCloudStore.getState().accounts).toEqual(accounts)
+    expect(m.mmkv.getBoolean(m.LEGACY_IMPORT_DONE_KEY)).toBe(true)
   })
 })

@@ -5,7 +5,7 @@
 // ("Unsupported output format: undefined").
 import './src/polyfill'
 import { ThemeProvider } from '@shopify/restyle'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { AppRegistry } from 'react-native'
 import 'react-native-gesture-handler'
@@ -16,9 +16,9 @@ import App from './src/App'
 import { GlobalError } from './src/components/GlobalError'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
-import { importLegacyState } from './src/storage/importLegacyState'
 import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
+import { LegacyImportGate, resetAfterError } from './src/store/persistence'
 import { darkThemeColors, theme } from './src/theme/theme'
 import './src/utils/i18n'
 
@@ -59,18 +59,6 @@ function fallbackRender(props) {
   )
 }
 
-// Renders nothing until the first-launch import has filled the stores
-// eslint-disable-next-line react/prop-types
-const LegacyImportGate = ({ children }) => {
-  const [imported, setImported] = useState(false)
-  useEffect(() => {
-    importLegacyState()
-      .catch((e) => console.error('Legacy state import failed', e))
-      .finally(() => setImported(true))
-  }, [])
-  return imported ? children : null
-}
-
 const render = () => {
   return (
     <ThemeProvider
@@ -79,7 +67,7 @@ const render = () => {
         colors: darkThemeColors,
       }}
     >
-      <ErrorBoundary fallbackRender={fallbackRender}>
+      <ErrorBoundary fallbackRender={fallbackRender} onReset={resetAfterError}>
         <LegacyImportGate>
           <LanguageProvider>
             <AppStorageProvider>

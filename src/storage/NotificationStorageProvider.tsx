@@ -17,6 +17,7 @@ import {
 } from '../features/notifications/notificationTypes'
 import {
   markNotificationViewed,
+  NOTIFICATIONS_REFETCH_INTERVAL_MS,
   notificationsQuery,
 } from '../features/notifications/notificationsQuery'
 import { useAccountStorage } from './AccountStorageProvider'
@@ -29,7 +30,6 @@ const useNotificationStorageHook = () => {
     useState<Notification>()
   const [openedNotification, setOpenedNotification] = useState<OSNotification>()
   const [unreadLists, setUnreadLists] = useState<string[]>([])
-  const [includeAllAccounts, setIncludeAllAccounts] = useState(false)
   const { currentAccount, sortedAccounts } = useAccountStorage()
 
   useEffect(() => {
@@ -56,20 +56,23 @@ const useNotificationStorageHook = () => {
 
   const resources = uniq([
     ...currentResources,
-    ...(includeAllAccounts
-      ? (without(
-          sortedAccounts.map(({ solanaAddress }) => solanaAddress),
-          undefined,
-        ) as string[])
-      : []),
+    ...(without(
+      sortedAccounts.map(({ solanaAddress }) => solanaAddress),
+      undefined,
+    ) as string[]),
   ])
 
-  // Outside QueryClientProvider, so the client is passed in.
+  // Outside QueryClientProvider, so the client is passed in. Every account
+  // fetches at launch, so the home unread dot covers all wallets. Only the
+  // current resources poll; other accounts refetch on updateAllNotifications.
   const notificationQueries = useQueries(
     {
-      queries: resources.map((r) =>
-        notificationsQuery(r, currentAccount?.solanaAddress),
-      ),
+      queries: resources.map((r) => ({
+        ...notificationsQuery(r, currentAccount?.solanaAddress),
+        refetchInterval: currentResources.includes(r)
+          ? NOTIFICATIONS_REFETCH_INTERVAL_MS
+          : false,
+      })),
     },
     queryClient,
   )
@@ -87,7 +90,6 @@ const useNotificationStorageHook = () => {
   )
 
   const updateAllNotifications = useCallback(() => {
-    setIncludeAllAccounts(true)
     queryClient.invalidateQueries({ queryKey: ['notifications'] })
   }, [])
 

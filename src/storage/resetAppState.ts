@@ -5,7 +5,10 @@ import { useAuthStore } from '../store/authStore'
 import { useBrowserStore } from '../store/browserStore'
 import { useCloudStore } from '../store/cloudStore'
 import { queryClient } from '../utils/queryClient'
-import { LEGACY_PERSIST_KEYS } from './importLegacyState'
+import {
+  LEGACY_PERSIST_KEYS,
+  removeLegacyCloudItems,
+} from './importLegacyState'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from './mmkv'
 
 const resetStore = <T>(store: StoreApi<T>) =>
@@ -13,9 +16,11 @@ const resetStore = <T>(store: StoreApi<T>) =>
 
 /**
  * Clears all app state on sign-out. Keeps only the import-done marker, so the
- * old Redux and cloud data is not imported again.
+ * old Redux and cloud data is not imported again on this device. Removes the
+ * old cloud keys, so a reinstall or a new device does not import them either.
  */
 export const resetAppState = async () => {
+  await removeLegacyCloudItems()
   resetStore(useAppStore)
   resetStore(useAuthStore)
   resetStore(useBrowserStore)
@@ -26,6 +31,8 @@ export const resetAppState = async () => {
     .filter((key) => key !== LEGACY_IMPORT_DONE_KEY)
     .forEach((key) => mmkv.remove(key))
   queryClient.clear()
-  // Old Redux state left behind by a failed import
-  await AsyncStorage.multiRemove(LEGACY_PERSIST_KEYS)
+  // A device that ran the import before it dropped these keys still has them
+  await AsyncStorage.multiRemove(LEGACY_PERSIST_KEYS).catch((error) =>
+    console.warn('Could not remove the old Redux state', error),
+  )
 }

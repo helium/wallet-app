@@ -14,7 +14,10 @@ import {
   updateSolBalance,
   updateTokenBalance,
 } from '../../../utils/balances'
-import { createQueryClient } from '../../../utils/queryClient'
+import {
+  createQueryClient,
+  removePersistedQueries,
+} from '../../../utils/queryClient'
 
 export type Outcome = 'fulfilled' | 'rejected'
 
@@ -73,8 +76,16 @@ const entriesUnder = <T>(
     .filter((entry): entry is [readonly unknown[], T] => !!entry[1])
     .map(([key, data]) => [key[prefix.length] as string, data] as const)
 
+// Each port's client keeps gcTime timers, which keep Jest open until cleared
+const clients: ReturnType<typeof createQueryClient>[] = []
+
+export const clearBalancesPorts = () => {
+  clients.splice(0).forEach((client) => client.clear())
+}
+
 export const tanstackBalancesPort = (): BalancesPort => {
   const client = createQueryClient()
+  clients.push(client)
 
   return {
     syncTokenAccounts: (args) => outcome(syncTokenAccounts(client, args)),
@@ -94,7 +105,7 @@ export const tanstackBalancesPort = (): BalancesPort => {
       ),
     updateSolBalance: (args) => updateSolBalance(client, args),
     updateTokenBalance: (args) => updateTokenBalance(client, args),
-    purge: () => client.clear(),
+    purge: () => removePersistedQueries(client),
     readTokenPrices: (currency) =>
       outcome(
         client.fetchQuery({
