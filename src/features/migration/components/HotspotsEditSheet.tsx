@@ -1,4 +1,5 @@
 import { BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet'
+import { Checkbox } from '@ui/Checkbox'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
 import { Text } from '@ui/Text'
@@ -6,7 +7,6 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
-import WorldCheckbox from './WorldCheckbox'
 
 type Props = {
   ref?: React.Ref<BottomSheetModal>
@@ -31,9 +31,11 @@ const HotspotRow = ({
     feedback="opacity"
     className="flex-row items-center px-6 py-3"
   >
-    <View className="mr-4">
-      <WorldCheckbox checked={isSelected} />
-    </View>
+    <Checkbox
+      checked={isSelected}
+      onChange={() => onToggle(entityKey)}
+      className="mr-4"
+    />
     <View className="flex-1">
       <Text className="font-medium">{name}</Text>
       <Text size="xs" className="text-muted-foreground">

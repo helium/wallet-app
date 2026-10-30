@@ -1,4 +1,5 @@
 import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { Checkbox } from '@ui/Checkbox'
 import { Input } from '@ui/Input'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
@@ -10,7 +11,6 @@ import { View } from 'react-native'
 import { useTokenDisplay } from '../hooks/useTokenDisplay'
 import { WSOL_MINT } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
-import WorldCheckbox from './WorldCheckbox'
 
 type Props = {
   ref?: React.Ref<BottomSheetModal>
@@ -41,9 +41,11 @@ const TokenRow: FC<{
         feedback="opacity"
         className="flex-row items-center px-6 py-3"
       >
-        <View className="mr-4">
-          <WorldCheckbox checked={isSelected} />
-        </View>
+        <Checkbox
+          checked={isSelected}
+          onChange={(next) => onChange(next ? token.maxUi : '0')}
+          className="mr-4"
+        />
         <TokenIcon size={32} img={image} />
         <View className="ml-2 flex-1">
           <Text className="font-medium">{label}</Text>
@@ -61,7 +63,7 @@ const TokenRow: FC<{
     <View className="flex-row items-center px-6 py-3">
       {/* Spacer matching the checkbox column so the SOL row's icon/label
           stay aligned with the toggle rows above. */}
-      <View className="mr-4 w-[22px]" />
+      <View className="mr-4 w-4" />
       <TokenIcon size={32} img={image} />
       <View className="ml-2 flex-1">
         <Text className="font-medium">{label}</Text>
