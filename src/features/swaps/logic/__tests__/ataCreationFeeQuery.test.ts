@@ -1,4 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
 import { ataCreationFeeQuery } from '../ataCreationFeeQuery'
 
 jest.mock('../../../../utils/solanaUtils', () => ({
@@ -10,6 +11,7 @@ const base = {
   connection: connection('https://rpc-a'),
   solanaAddress: 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4',
   mint: new PublicKey('hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux'),
+  solBalance: new BN(1_000_000),
 }
 
 describe('ataCreationFeeQuery', () => {
@@ -29,6 +31,7 @@ describe('ataCreationFeeQuery', () => {
       'output mint',
       { mint: new PublicKey('dcuc8Amr83Wz27ZkQ2K9NS6r8zRpf1J6cvArEBDZDmm') },
     ],
+    ['SOL balance', { solBalance: new BN(2_000_000) }],
   ])('keys a changed %s apart', (_, change) => {
     expect(ataCreationFeeQuery({ ...base, ...change }).queryKey).not.toEqual(
       ataCreationFeeQuery(base).queryKey,

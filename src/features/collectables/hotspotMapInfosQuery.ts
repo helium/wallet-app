@@ -103,4 +103,7 @@ export const hotspotMapInfosQuery = ({
         )
     },
     enabled: enabled && !!anchorProvider,
+    // The map shows a failed read at once, as it did before; three retries
+    // would hold the loader for about 7 s first
+    retry: false,
   })

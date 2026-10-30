@@ -22,7 +22,7 @@ export const transferCollectableFeeQuery = ({
     queryKey: [
       'transferCollectableFee',
       anchorProvider?.connection.rpcEndpoint,
-      anchorProvider?.publicKey.toBase58(),
+      anchorProvider?.publicKey?.toBase58(),
       solanaAddress,
       heliumAddress,
       (collectable as Collectable).address || (collectable as CompressedNFT).id,

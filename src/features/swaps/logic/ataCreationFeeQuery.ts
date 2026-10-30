@@ -1,4 +1,5 @@
 import { Connection, PublicKey } from '@solana/web3.js'
+import BN from 'bn.js'
 import { queryOptions } from '@tanstack/react-query'
 import { getAtaAccountCreationFee } from '../../../utils/solanaUtils'
 
@@ -8,10 +9,12 @@ export const ataCreationFeeQuery = ({
   connection,
   solanaAddress,
   mint,
+  solBalance,
 }: {
   connection?: Connection
   solanaAddress?: string
   mint: PublicKey
+  solBalance?: BN
 }) =>
   queryOptions({
     queryKey: [
@@ -19,6 +22,8 @@ export const ataCreationFeeQuery = ({
       connection?.rpcEndpoint,
       solanaAddress,
       mint.toBase58(),
+      // A swap that opens the account also spends SOL, so a new balance re-reads the fee
+      solBalance?.toString(),
     ],
     queryFn: () =>
       getAtaAccountCreationFee({

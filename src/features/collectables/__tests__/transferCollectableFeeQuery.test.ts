@@ -73,6 +73,22 @@ describe('transferCollectableFeeQuery', () => {
     ).toBe(false)
   })
 
+  it('waits for an account with no Solana address', () => {
+    const anchorProvider = {
+      connection: { rpcEndpoint: 'https://rpc-a' },
+      publicKey: undefined,
+    } as unknown as AnchorProvider
+    const build = () =>
+      transferCollectableFeeQuery({
+        ...base,
+        anchorProvider,
+        solanaAddress: undefined,
+      })
+
+    expect(build).not.toThrow()
+    expect(build().enabled).toBe(false)
+  })
+
   it('fails the read when the balance read fails', async () => {
     jest
       .mocked(createTransferCollectableMessage)

@@ -128,6 +128,7 @@ const SwapScreen = () => {
       connection,
       solanaAddress: currentAccount?.solanaAddress,
       mint: outputMint,
+      solBalance,
     }),
   )
   const solFee = useMemo(
@@ -137,7 +138,7 @@ const SwapScreen = () => {
   // Unknown until the fee for this output mint and the balance have loaded
   const hasInsufficientBalance = useMemo(() => {
     if (!ataFee || !solBalance) return undefined
-    return solFee.gt(solBalance) || solBalance.lt(new BN(5000))
+    return solFee.gt(solBalance) || solBalance.lt(SOL_TXN_FEE)
   }, [ataFee, solBalance, solFee])
 
   const inputMintAcc = useMint(inputMint)?.info

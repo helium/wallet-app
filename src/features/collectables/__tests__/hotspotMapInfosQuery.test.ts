@@ -57,4 +57,8 @@ describe('hotspotMapInfosQuery', () => {
       hotspotMapInfosQuery({ ...base, anchorProvider: undefined }).enabled,
     ).toBe(false)
   })
+
+  it('shows a failed read at once', () => {
+    expect(hotspotMapInfosQuery(base).retry).toBe(false)
+  })
 })
