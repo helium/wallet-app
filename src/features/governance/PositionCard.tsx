@@ -481,19 +481,18 @@ export const PositionCard = ({
   }
 
   // used for actions that run right after clicking the action button
-  useEffect(() => {
-    const run = async () => {
-      if (pendingAction !== null) {
-        await {
-          relinquish: handleRelinquishVotes,
-          flipLockupKind: handleFlipPositionLockupKind,
-          undelegate: handleUndelegateTokens,
-          close: handleClosePosition,
-        }[pendingAction.action]?.()
-      }
+  const runPendingAction = useEffectEvent(async () => {
+    if (pendingAction !== null) {
+      await {
+        relinquish: handleRelinquishVotes,
+        flipLockupKind: handleFlipPositionLockupKind,
+        undelegate: handleUndelegateTokens,
+        close: handleClosePosition,
+      }[pendingAction.action]?.()
     }
-    run().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+  useEffect(() => {
+    runPendingAction().catch((e) => console.error(e))
   }, [pendingAction])
 
   const govNavigation = useNavigation<GovernanceNavigationProp>()

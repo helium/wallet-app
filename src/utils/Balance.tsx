@@ -283,7 +283,8 @@ const useBalanceHook = () => {
   // tokenInfo is undefined until the token query has data. We store
   // the last value in `balanceInfo` and keep it while cluster and
   // solanaAddress stay the same. If cluster or solanaAddress change,
-  // we clear `balanceInfo`
+  // we reset `balanceInfo` to the new tokenInfo, which is the cached
+  // value for the new account or undefined when there is none
   const rawSolAddress = currentAccount?.solanaAddress
   const [prevTokenInfo, setPrevTokenInfo] = useState(tokenInfo)
   const [prevCluster, setPrevCluster] = useState<typeof cluster>()
@@ -297,7 +298,11 @@ const useBalanceHook = () => {
     if (prevSolAddress !== solanaAddress) setPrevSolAddress(solanaAddress)
     if (prevCluster !== cluster) setPrevCluster(cluster)
     if (prevTokenInfo !== tokenInfo) setPrevTokenInfo(tokenInfo)
-    if (balanceInfo !== undefined) setBalanceInfo(undefined)
+    if (balanceInfo !== tokenInfo) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setBalanceInfo(tokenInfo)
+    }
   } else if (prevTokenInfo !== tokenInfo) {
     setPrevTokenInfo(tokenInfo)
     if (tokenInfo) {

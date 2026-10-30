@@ -6,7 +6,14 @@ import { Addressable, TokenBurnV1 } from '@helium/transactions'
 import useAlert from '@hooks/useAlert'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useColors } from '@theme/themeHooks'
-import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, Linking } from 'react-native'
 import { useDebouncedCallback } from 'use-debounce'
@@ -77,24 +84,23 @@ const DappLoginScreen = () => {
   const { showOKAlert } = useAlert()
   const hasRequestedPair = useRef(false)
 
-  useEffect(() => {
-    const run = async () => {
-      if (params.uri.includes('wc:') && !hasRequestedPair.current) {
-        hasRequestedPair.current = true
-        try {
-          await pairClient(params.uri)
-        } catch (error) {
-          await showOKAlert({
-            title: t('dappLogin.error', {
-              appName: sessionProposal?.params.proposer.metadata.name,
-            }),
-            message: (error as Error).toString(),
-          })
-        }
+  const requestPair = useEffectEvent(async () => {
+    if (params.uri.includes('wc:') && !hasRequestedPair.current) {
+      hasRequestedPair.current = true
+      try {
+        await pairClient(params.uri)
+      } catch (error) {
+        await showOKAlert({
+          title: t('dappLogin.error', {
+            appName: sessionProposal?.params.proposer.metadata.name,
+          }),
+          message: (error as Error).toString(),
+        })
       }
     }
-    run().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+  useEffect(() => {
+    requestPair().catch((e) => console.error(e))
   }, [pairClient, params.callback, params.uri])
 
   const goBack = useCallback(async () => {
@@ -142,38 +148,37 @@ const DappLoginScreen = () => {
     }
   }, [approvePair, currentAddress, sessionProposal, showOKAlert, t])
 
-  useEffect(() => {
-    const run = async () => {
-      if (!currentAccount?.address || !loginRequest) return
+  const loginWithBurnTxn = useEffectEvent(async () => {
+    if (!currentAccount?.address || !loginRequest) return
 
-      const { signedTxn } = await makeBurnTxn({
-        payerB58: currentAccount.address,
+    const { signedTxn } = await makeBurnTxn({
+      payerB58: currentAccount.address,
+    })
+
+    if (!signedTxn) return
+
+    try {
+      await login({
+        txn: signedTxn.toString(),
+        address: currentAccount.address,
       })
-
-      if (!signedTxn) return
-
-      try {
-        await login({
-          txn: signedTxn.toString(),
-          address: currentAccount.address,
-        })
-      } catch (error) {
-        await showOKAlert({
-          title: t('dappLogin.error', {
-            appName: sessionProposal?.params.proposer.metadata.name,
-          }),
-          message: (error as Error).toString(),
-        })
-      }
-
-      await goBack()
-
-      if (params.callback && (await Linking.canOpenURL(params.callback))) {
-        await Linking.openURL(params.callback)
-      }
+    } catch (error) {
+      await showOKAlert({
+        title: t('dappLogin.error', {
+          appName: sessionProposal?.params.proposer.metadata.name,
+        }),
+        message: (error as Error).toString(),
+      })
     }
-    run().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    await goBack()
+
+    if (params.callback && (await Linking.canOpenURL(params.callback))) {
+      await Linking.openURL(params.callback)
+    }
+  })
+  useEffect(() => {
+    loginWithBurnTxn().catch((e) => console.error(e))
   }, [currentAccount?.address, loginRequest])
 
   const checkTimeoutError = useCallback(async () => {

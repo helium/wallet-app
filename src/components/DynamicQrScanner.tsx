@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useEffectEvent, useState } from 'react'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
 import { Linking, Platform, StyleSheet } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
@@ -28,34 +28,32 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     )
   }, [])
 
-  useEffect(() => {
-    if (hasPermission !== false) return
+  const askToOpenSettings = useEffectEvent(async () => {
+    // if permission is not granted, show alert to open settings
+    const decision = await showOKCancelAlert({
+      title: t('qrScanner.deniedAlert.title'),
+      message: t('qrScanner.deniedAlert.message'),
+      ok: t('qrScanner.deniedAlert.ok'),
+    })
 
-    const askToOpenSettings = async () => {
-      // if permission is not granted, show alert to open settings
-      const decision = await showOKCancelAlert({
-        title: t('qrScanner.deniedAlert.title'),
-        message: t('qrScanner.deniedAlert.message'),
-        ok: t('qrScanner.deniedAlert.ok'),
-      })
-
-      // if user clicks ok, open settings
-      if (decision) {
-        if (Platform.OS === 'ios') {
-          void Linking.openURL('app-settings:')
-        } else {
-          void Linking.openSettings()
-        }
-      }
-
-      // if user clicks cancel, go back to the previous screen
-      if (decision === false) {
-        navigation.goBack()
+    // if user clicks ok, open settings
+    if (decision) {
+      if (Platform.OS === 'ios') {
+        void Linking.openURL('app-settings:')
+      } else {
+        void Linking.openSettings()
       }
     }
 
+    // if user clicks cancel, go back to the previous screen
+    if (decision === false) {
+      navigation.goBack()
+    }
+  })
+  useEffect(() => {
+    if (hasPermission !== false) return
+
     askToOpenSettings().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasPermission, navigation, showOKCancelAlert])
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {

@@ -31,7 +31,6 @@ jest.mock('expo', () => ({
       : null,
 }))
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: String }) }))
-jest.mock('react-async-hook', () => ({ useAsync: () => undefined }))
 jest.mock('@react-navigation/native', () => {
   const navigation = { canGoBack: () => false }
   const route = { params: {} }

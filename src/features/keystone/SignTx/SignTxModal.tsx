@@ -33,26 +33,25 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
     })
   }, [])
 
-  useEffect(() => {
-    const run = async () => {
-      if (hasPermission !== false) return
+  const askToOpenSettings = useEffectEvent(async () => {
+    if (hasPermission !== false) return
 
-      const decision = await showOKCancelAlert({
-        title: t('qrScanner.deniedAlert.title'),
-        message: t('qrScanner.deniedAlert.message'),
-        ok: t('qrScanner.deniedAlert.ok'),
-      })
+    const decision = await showOKCancelAlert({
+      title: t('qrScanner.deniedAlert.title'),
+      message: t('qrScanner.deniedAlert.message'),
+      ok: t('qrScanner.deniedAlert.ok'),
+    })
 
-      if (decision) {
-        if (Platform.OS === 'ios') {
-          void Linking.openURL('app-settings:')
-        } else {
-          void Linking.openSettings()
-        }
+    if (decision) {
+      if (Platform.OS === 'ios') {
+        void Linking.openURL('app-settings:')
+      } else {
+        void Linking.openSettings()
       }
     }
-    run().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+  useEffect(() => {
+    askToOpenSettings().catch((e) => console.error(e))
   }, [hasPermission, showOKCancelAlert])
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {

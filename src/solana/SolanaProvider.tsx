@@ -303,7 +303,6 @@ const useSolanaHook = () => {
           connection.getAccountInfoAndContext.bind(connection)
 
         // Anchor uses this call on .fetch and .fetchNullable even though it doesn't actually need the context. Add caching.
-        // eslint-disable-next-line react-hooks/immutability -- monkey-patches the shared connection once (guarded by connection.wrapped) so Anchor reads go through the account cache
         connection.getAccountInfoAndContext = async (
           publicKey: PublicKey,
           com?: Commitment,

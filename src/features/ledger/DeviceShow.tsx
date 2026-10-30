@@ -1,4 +1,11 @@
-import React, { useCallback, memo, useState, useMemo, useEffect } from 'react'
+import React, {
+  useCallback,
+  memo,
+  useState,
+  useMemo,
+  useEffect,
+  useEffectEvent,
+} from 'react'
 import { ActivityIndicator, Image, SectionList } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -259,23 +266,22 @@ const DeviceShow = () => {
     [existingLedgerAccounts, isScanning, ledgerAccounts, newLedgerAccounts, t],
   )
 
-  useEffect(() => {
-    const run = async () => {
-      try {
-        await updateLedgerAccounts(ledgerDevice)
-      } catch (error) {
-        // in this case, user is likely not on Helium app
+  const loadLedgerAccounts = useEffectEvent(async () => {
+    try {
+      await updateLedgerAccounts(ledgerDevice)
+    } catch (error) {
+      // in this case, user is likely not on Helium app
 
-        console.error(error)
-        navigation.navigate(
-          'DeviceScan',
-          { error: error as Error },
-          { pop: true },
-        )
-      }
+      console.error(error)
+      navigation.navigate(
+        'DeviceScan',
+        { error: error as Error },
+        { pop: true },
+      )
     }
-    run().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+  useEffect(() => {
+    loadLedgerAccounts().catch((e) => console.error(e))
   }, [])
 
   const handleNext = useCallback(async () => {

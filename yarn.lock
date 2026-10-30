@@ -14576,7 +14576,6 @@ __metadata:
     qs: "npm:^6.14.0"
     query-string: "npm:^9.1.1"
     react: "npm:19.3.0"
-    react-async-hook: "npm:4.0.0"
     react-error-boundary: "npm:4.0.13"
     react-i18next: "npm:17.1.9"
     react-native: "npm:0.88.1"
@@ -19730,7 +19729,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-async-hook@npm:4.0.0, react-async-hook@npm:^4.0.0":
+"react-async-hook@npm:^4.0.0":
   version: 4.0.0
   resolution: "react-async-hook@npm:4.0.0"
   peerDependencies:

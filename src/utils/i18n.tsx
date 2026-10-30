@@ -1,7 +1,7 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import * as RNLocalize from 'react-native-localize'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import en from '../locales/en'
 
@@ -65,10 +65,10 @@ export const useLanguage = () => {
     setLanguage(l || phoneLang)
   }, [changeLanguage])
 
+  const loadSavedLanguage = useEffectEvent(() => initLanguage())
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reads the saved language once at start
-    initLanguage().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadSavedLanguage().catch((e) => console.error(e))
   }, [])
 
   return { language, changeLanguage }

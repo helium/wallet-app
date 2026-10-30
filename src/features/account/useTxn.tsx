@@ -22,7 +22,13 @@ import {
   fromUnixTime,
 } from 'date-fns'
 import { startCase } from 'lodash'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Activity } from '../../types/activity'
 import shortLocale from '../../utils/formatDistance'
@@ -330,35 +336,35 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
     amountTitle: '',
   })
 
+  const loadDetails = useEffectEvent(async (isCurrent: () => boolean) => {
+    const fee = await getFee()
+    const paymentsReceived = await getPaymentsReceived()
+    const paymentsSent = await getPaymentsSent()
+    const amount = getAmount()
+    const amountTitle = await getAmountTitle()
+    if (!isCurrent()) return
+
+    setDetails({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+      feePayer: item?.feePayer!,
+      icon: listIcon,
+      title,
+      time,
+      color,
+      fee,
+      paymentsReceived,
+      paymentsSent,
+      amount,
+      amountTitle,
+    })
+  })
   useEffect(() => {
     let current = true
-    const loadDetails = async () => {
-      const fee = await getFee()
-      const paymentsReceived = await getPaymentsReceived()
-      const paymentsSent = await getPaymentsSent()
-      const amount = getAmount()
-      const amountTitle = await getAmountTitle()
-      if (!current) return
-
-      setDetails({
-        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-        feePayer: item?.feePayer!,
-        icon: listIcon,
-        title,
-        time,
-        color,
-        fee,
-        paymentsReceived,
-        paymentsSent,
-        amount,
-        amountTitle,
-      })
-    }
-    loadDetails().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sets the details after the async fee and payment lookups resolve
+    loadDetails(() => current).catch((e) => console.error(e))
     return () => {
       current = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     color,
     getAmount,

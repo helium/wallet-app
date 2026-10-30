@@ -27,7 +27,14 @@ import * as web3 from '@solana/web3.js'
 import { Connection, PublicKey } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { get, last } from 'lodash'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getKeypair, getSolanaKeypair } from '../../storage/secureStorage'
 import { submitSolana } from '../../utils/solanaUtils'
@@ -456,49 +463,47 @@ const useSolTxns = ({
     [anchorProvider, decode],
   )
 
-  useEffect(() => {
-    const run = async () => {
-      if (handledDeepLink.current === deepLinkPath || !deepLinkPath) {
-        return
-      }
-
-      handledDeepLink.current = deepLinkPath
-
-      if (solanaTransactions) {
-        const txns = solanaTransactions
-          .split(',')
-          .map((t) =>
-            web3.VersionedTransaction.deserialize(Buffer.from(t, 'base64')),
-          )
-
-        const handledTxns = (
-          await Promise.all(txns.map(handleTransaction))
-        ).filter(truthy)
-        const nextRecord = {} as Record<ValidTxn, Txn>
-        handledTxns.forEach(({ info, txn }) => {
-          info.forEach((i) => {
-            if (i) {
-              const name = i.name as ValidTxn
-              if (ValidTxnKeys.includes(name)) {
-                nextRecord[name] = { transaction: txn, ...i }
-              }
-            }
-          })
-        })
-
-        setTransactions(nextRecord)
-      }
-
-      if (configMsgStr) {
-        const configMessage = Uint8Array.from(
-          Buffer.from(configMsgStr, 'base64'),
-        )
-        const message = Message.decode(configMessage)
-        setConfigMsg(message)
-      }
+  const handleDeepLinkTxns = useEffectEvent(async () => {
+    if (handledDeepLink.current === deepLinkPath || !deepLinkPath) {
+      return
     }
-    run().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    handledDeepLink.current = deepLinkPath
+
+    if (solanaTransactions) {
+      const txns = solanaTransactions
+        .split(',')
+        .map((t) =>
+          web3.VersionedTransaction.deserialize(Buffer.from(t, 'base64')),
+        )
+
+      const handledTxns = (
+        await Promise.all(txns.map(handleTransaction))
+      ).filter(truthy)
+      const nextRecord = {} as Record<ValidTxn, Txn>
+      handledTxns.forEach(({ info, txn }) => {
+        info.forEach((i) => {
+          if (i) {
+            const name = i.name as ValidTxn
+            if (ValidTxnKeys.includes(name)) {
+              nextRecord[name] = { transaction: txn, ...i }
+            }
+          }
+        })
+      })
+
+      setTransactions(nextRecord)
+    }
+
+    if (configMsgStr) {
+      const configMessage = Uint8Array.from(Buffer.from(configMsgStr, 'base64'))
+      const message = Message.decode(configMessage)
+      setConfigMsg(message)
+    }
+  })
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sets the decoded transactions after the async decode of the deep link
+    handleDeepLinkTxns().catch((e) => console.error(e))
   }, [solanaTransactions])
 
   const gatewayAddress = useMemo(() => {

@@ -15,6 +15,7 @@ import React, {
   memo,
   useCallback,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -154,27 +155,26 @@ const AccountsScreen = () => {
   }, [navigation, openedNotification, locked])
 
   // Hook that is used for helium balance widget.
-  useEffect(() => {
-    const updateWidget = async () => {
-      if (Platform.OS === 'ios') {
-        const defaultAccount = sortedAccounts.find(
-          (account: CSAccount) => account.address === defaultAccountAddress,
-        )
+  const updateWidget = useEffectEvent(async () => {
+    if (Platform.OS === 'ios') {
+      const defaultAccount = sortedAccounts.find(
+        (account: CSAccount) => account.address === defaultAccountAddress,
+      )
 
-        await SharedGroupPreferences.setItem(
-          'heliumWalletWidgetKey',
-          {
-            defaultAccountAddress: defaultAccount?.solanaAddress,
-            defaultAccountAlias: defaultAccount?.alias,
-            currencyType: currency,
-            cluster,
-          },
-          widgetGroup,
-        )
-      }
+      await SharedGroupPreferences.setItem(
+        'heliumWalletWidgetKey',
+        {
+          defaultAccountAddress: defaultAccount?.solanaAddress,
+          defaultAccountAlias: defaultAccount?.alias,
+          currencyType: currency,
+          cluster,
+        },
+        widgetGroup,
+      )
     }
+  })
+  useEffect(() => {
     updateWidget().catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultAccountAddress, sortedAccounts])
 
   const toggleWalletsVisible = useCallback(() => {
