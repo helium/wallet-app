@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { KeystoneAccountType } from './SelectKeystoneAccountsScreen'
 
 export type KeystoneStackParamList = {
@@ -7,4 +7,5 @@ export type KeystoneStackParamList = {
   KeystoneAccountAssignScreen: undefined
 }
 
-export type KeystoneNavigationProp = StackNavigationProp<KeystoneStackParamList>
+export type KeystoneNavigationProp =
+  NativeStackNavigationProp<KeystoneStackParamList>

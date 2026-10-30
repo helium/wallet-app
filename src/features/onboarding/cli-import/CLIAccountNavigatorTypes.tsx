@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type EncyptedAccountRouteParam = {
   address: string
@@ -18,4 +18,4 @@ export type CLIAccountStackParamList = {
 }
 
 export type CLIAccountNavigationProp =
-  StackNavigationProp<CLIAccountStackParamList>
+  NativeStackNavigationProp<CLIAccountStackParamList>

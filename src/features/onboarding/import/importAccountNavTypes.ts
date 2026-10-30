@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { RouteAccount } from '../create/createAccountNavTypes'
 
 export type ImportAccountStackParamList = {
@@ -22,4 +22,4 @@ export type ImportAccountStackParamList = {
 }
 
 export type ImportAccountNavigationProp =
-  StackNavigationProp<ImportAccountStackParamList>
+  NativeStackNavigationProp<ImportAccountStackParamList>

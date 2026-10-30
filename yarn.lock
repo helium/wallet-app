@@ -6565,24 +6565,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/stack@npm:7.12.1":
-  version: 7.12.1
-  resolution: "@react-navigation/stack@npm:7.12.1"
-  dependencies:
-    "@react-navigation/elements": "npm:^2.9.45"
-    color: "npm:^4.2.3"
-    use-latest-callback: "npm:^0.2.4"
-  peerDependencies:
-    "@react-navigation/native": ^7.5.1
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-gesture-handler: ">= 2.0.0"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: 10/0da665c2b8de96e771c1fdef9819706e871cbccb2d32fe91edd573d5237a2cac4db4b29627d8118952e8aaa4b0400fd486ff3e30ec3ac4bf63dd3abe6ee47519
-  languageName: node
-  linkType: hard
-
 "@reduxjs/toolkit@npm:1.9.1":
   version: 1.9.1
   resolution: "@reduxjs/toolkit@npm:1.9.1"
@@ -14641,7 +14623,6 @@ __metadata:
     "@react-navigation/material-top-tabs": "npm:7.8.1"
     "@react-navigation/native": "npm:7.5.1"
     "@react-navigation/native-stack": "npm:7.21.0"
-    "@react-navigation/stack": "npm:7.12.1"
     "@reduxjs/toolkit": "npm:1.9.1"
     "@shopify/restyle": "npm:2.4.5"
     "@solana/spl-account-compression": "npm:0.1.4"

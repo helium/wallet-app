@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Notification } from '../../utils/walletApiV2'
 
 export const WALLET_UPDATES_ITEM = 'wallet-update'
@@ -11,4 +11,4 @@ export type NotificationsListStackParamList = {
 }
 
 export type NotificationsListNavigationProp =
-  StackNavigationProp<NotificationsListStackParamList>
+  NativeStackNavigationProp<NotificationsListStackParamList>

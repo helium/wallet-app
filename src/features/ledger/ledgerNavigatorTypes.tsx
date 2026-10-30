@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { LedgerDevice } from '../../storage/cloudStorage'
 
 export type LedgerNavigatorStackParamList = {
@@ -10,4 +10,4 @@ export type LedgerNavigatorStackParamList = {
 }
 
 export type LedgerNavigatorNavigationProp =
-  StackNavigationProp<LedgerNavigatorStackParamList>
+  NativeStackNavigationProp<LedgerNavigatorStackParamList>

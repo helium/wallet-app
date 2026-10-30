@@ -1,8 +1,8 @@
 import { PortalHost } from '@gorhom/portal'
 import {
-  StackNavigationOptions,
-  createStackNavigator,
-} from '@react-navigation/stack'
+  NativeStackNavigationOptions,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import React, { memo } from 'react'
 import AssignProxyScreen from './AssignProxyScreen'
@@ -14,11 +14,13 @@ import RevokeProxyScreen from './RevokeProxyScreen'
 import ProxyScreen from './ProxyScreen'
 import ProxiesScreen from './ProxiesScreen'
 
-const GovernanceStack = createStackNavigator()
-const screenOptions: StackNavigationOptions = {
+const GovernanceStack = createNativeStackNavigator()
+// Peer views switch in place; detail screens push with the platform animation.
+const screenOptions: NativeStackNavigationOptions = {
   headerShown: false,
   animation: 'none',
 }
+const detailOptions: NativeStackNavigationOptions = { animation: 'default' }
 
 const GovernanceStackScreen = () => {
   const { voteTutorialShown } = useAppStorage()
@@ -47,15 +49,22 @@ const GovernanceStackScreen = () => {
         <GovernanceStack.Screen
           name="ProposalScreen"
           component={ProposalScreen}
+          options={detailOptions}
         />
-        <GovernanceStack.Screen name="ProxyScreen" component={ProxyScreen} />
+        <GovernanceStack.Screen
+          name="ProxyScreen"
+          component={ProxyScreen}
+          options={detailOptions}
+        />
         <GovernanceStack.Screen
           name="AssignProxyScreen"
           component={AssignProxyScreen}
+          options={detailOptions}
         />
         <GovernanceStack.Screen
           name="RevokeProxyScreen"
           component={RevokeProxyScreen}
+          options={detailOptions}
         />
       </GovernanceStack.Navigator>
       <PortalHost name="GovernancePortalHost" />

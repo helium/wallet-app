@@ -5,9 +5,9 @@ import {
 } from '@hooks/useDerivationAccounts'
 import { useNavigation } from '@react-navigation/native'
 import {
-  StackNavigationOptions,
-  createStackNavigator,
-} from '@react-navigation/stack'
+  NativeStackNavigationOptions,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
@@ -39,14 +39,14 @@ import {
   TabBarNavigationProp,
 } from './rootTypes'
 
-const screenOptions = { headerShown: false } as StackNavigationOptions
+const screenOptions = { headerShown: false } as NativeStackNavigationOptions
 
 const RootNavigator = () => {
   const navigation = useNavigation<
     RootNavigationProp & HomeNavigationProp & TabBarNavigationProp
   >()
   const colors = useColors()
-  const RootStack = createStackNavigator<RootStackParamList>()
+  const RootStack = createNativeStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const dispatch = useAppDispatch()
   const { setOnboardingData, onboardingData } = useOnboarding()

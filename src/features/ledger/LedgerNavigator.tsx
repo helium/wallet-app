@@ -1,5 +1,5 @@
 import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
+import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { Platform } from 'react-native'
 import DeviceScan from './DeviceScan'
 import DeviceShow from './DeviceShow'
@@ -7,7 +7,7 @@ import PairSuccess from './PairSuccess'
 import DeviceChooseType from './DeviceChooseType'
 import DeviceScanUsb from './DeviceScanUsb'
 
-const LedgerStack = createStackNavigator()
+const LedgerStack = createNativeStackNavigator()
 
 const LedgerNavigator = () => {
   return (

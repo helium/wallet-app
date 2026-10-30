@@ -11,6 +11,7 @@ import { useColors, usePaddingStyle } from '@theme/themeHooks'
 import { upperCase } from 'lodash'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import useHaptic from '@hooks/useHaptic'
+import useSecureWindow from '@hooks/useSecureWindow'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
 import PassphraseAutocomplete from '../import/PassphraseAutocomplete'
 
@@ -42,6 +43,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
   onForgotWords,
   mnemonic,
 }) => {
+  useSecureWindow()
   const { triggerImpact } = useHaptic()
   const [wordIndex, setWordIndex] = useState(0)
   const [shakeAnim] = useState(() => new Animated.Value(0))

@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type OnboardingStackParamList = {
   Intro: undefined
@@ -13,6 +13,6 @@ export type OnboardingStackParamList = {
 }
 
 export type OnboardingNavigationProp =
-  StackNavigationProp<OnboardingStackParamList>
+  NativeStackNavigationProp<OnboardingStackParamList>
 
 export type OnboardingOpt = 'import' | 'create' | 'ledger' | 'keystone'

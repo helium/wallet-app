@@ -1,8 +1,7 @@
 import {
-  StackNavigationOptions,
-  TransitionPresets,
-  createStackNavigator,
-} from '@react-navigation/stack'
+  NativeStackNavigationOptions,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack'
 import React, { memo, useMemo } from 'react'
 import LedgerNavigator from '../ledger/LedgerNavigator'
 import CreateImportAccountScreen from './CreateImportAccountScreen'
@@ -12,22 +11,23 @@ import ImportPrivateKey from './import/ImportPrivateKey'
 import { OnboardingStackParamList } from './onboardingTypes'
 import KeystoneNavigator from '../keystone/KeystoneNavigator'
 
-const OnboardingStack = createStackNavigator<OnboardingStackParamList>()
+const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>()
 
 const OnboardingNavigator = () => {
   const screenOptions = useMemo(
     () =>
       ({
         headerShown: false,
-      }) as StackNavigationOptions,
+      }) as NativeStackNavigationOptions,
     [],
   )
   const subScreenOptions = useMemo(
     () =>
       ({
         headerShown: false,
-        ...TransitionPresets.ModalPresentationIOS,
-      }) as StackNavigationOptions,
+        presentation: 'modal',
+        animation: 'slide_from_bottom',
+      }) as NativeStackNavigationOptions,
     [],
   )
   return (

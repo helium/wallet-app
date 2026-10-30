@@ -1,4 +1,4 @@
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 export type MultiAccountStackParamList = {
   AccountImportStartScreen: undefined | { inline?: boolean }
@@ -7,4 +7,4 @@ export type MultiAccountStackParamList = {
 }
 
 export type MultiAccountNavigationProp =
-  StackNavigationProp<MultiAccountStackParamList>
+  NativeStackNavigationProp<MultiAccountStackParamList>

@@ -2,11 +2,14 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import ConfirmPinView from '@components/ConfirmPinView'
 import useAlert from '@hooks/useAlert'
 import usePrevious from '@hooks/usePrevious'
+import useSecureWindow from '@hooks/useSecureWindow'
 import * as LocalAuthentication from 'expo-local-authentication'
 import React, { memo, useCallback, useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
+import { Platform } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
+import { FullWindowOverlay } from 'react-native-screens'
 import { FADE_IN_STATE, FADE_OUT_STATE } from '@theme/motion'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
@@ -24,6 +27,7 @@ const LockScreen = ({ children }: Props) => {
   const { pin, authInterval, locked, updateLocked } = useAppStorage()
   const prevLocked = usePrevious(locked)
   const { showOKCancelAlert } = useAlert()
+  useSecureWindow(!!locked)
 
   useEffect(() => {
     if (locked === prevLocked || !prevLocked) return
@@ -97,30 +101,39 @@ const LockScreen = ({ children }: Props) => {
     await localAuth()
   }, [handleSuccess, locked])
 
+  const overlay = (
+    <ReAnimatedBox
+      entering={FADE_IN_STATE}
+      exiting={FADE_OUT_STATE}
+      zIndex={9999}
+      top={0}
+      bottom={0}
+      left={0}
+      right={0}
+      position="absolute"
+    >
+      <ConfirmPinView
+        originalPin={pin?.value || ''}
+        title={t('auth.title')}
+        subtitle={t('auth.enterCurrent')}
+        pinSuccess={() => void handleSuccess().catch(console.error)}
+        onCancel={() => void handleSignOut().catch(console.error)}
+        clearable
+      />
+    </ReAnimatedBox>
+  )
+
   return (
     <>
       {children}
-      {!!locked && (
-        <ReAnimatedBox
-          entering={FADE_IN_STATE}
-          exiting={FADE_OUT_STATE}
-          zIndex={9999}
-          top={0}
-          bottom={0}
-          left={0}
-          right={0}
-          position="absolute"
-        >
-          <ConfirmPinView
-            originalPin={pin?.value || ''}
-            title={t('auth.title')}
-            subtitle={t('auth.enterCurrent')}
-            pinSuccess={() => void handleSuccess().catch(console.error)}
-            onCancel={() => void handleSignOut().catch(console.error)}
-            clearable
-          />
-        </ReAnimatedBox>
-      )}
+      {/* iOS draws the root view under native modal routes; FullWindowOverlay
+          draws above the modals presented before it mounts */}
+      {!!locked &&
+        (Platform.OS === 'ios' ? (
+          <FullWindowOverlay>{overlay}</FullWindowOverlay>
+        ) : (
+          overlay
+        ))}
     </>
   )
 }

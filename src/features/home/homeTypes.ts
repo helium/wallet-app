@@ -1,5 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native'
-import { StackNavigationProp } from '@react-navigation/stack'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { RouteAccount } from '../onboarding/create/createAccountNavTypes'
 import { SettingsStackParamList } from '../settings/settingsTypes'
 
@@ -55,4 +55,4 @@ export type HomeStackParamList = {
   VoteNavigator: undefined
 }
 
-export type HomeNavigationProp = StackNavigationProp<HomeStackParamList>
+export type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>

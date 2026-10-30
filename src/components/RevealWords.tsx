@@ -11,6 +11,7 @@ import { useColors, useSpacing } from '@theme/themeHooks'
 import CopyAddress from '@assets/images/copyAddress.svg'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useCopyText from '@hooks/useCopyText'
+import useSecureWindow from '@hooks/useSecureWindow'
 import { FadeIn, ReduceMotion } from 'react-native-reanimated'
 
 const DELAYED_FADE_IN = FadeIn.duration(DUR.enter)
@@ -27,6 +28,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   const spacing = useSpacing()
   const { secondaryText } = useColors()
   const copyText = useCopyText()
+  useSecureWindow()
 
   const handleCopySeedPhrase = useCallback(() => {
     copyText({

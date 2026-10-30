@@ -1,5 +1,6 @@
-import React, { useEffect, memo, useMemo, useState } from 'react'
+import React, { useEffect, memo, useMemo, useRef, useState } from 'react'
 import { Animated, ImageStyle, Image, Platform } from 'react-native'
+import { FullWindowOverlay } from 'react-native-screens'
 import Box from '@components/Box'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)
@@ -13,25 +14,26 @@ const SecurityScreen = ({ visible }: Props) => {
     setPrevVisible(visible)
     if (visible) setMounted(true)
   }
+  const visibleRef = useRef(visible)
 
   useEffect(() => {
-    if (mounted) {
+    visibleRef.current = visible
+    if (visible) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 500,
         useNativeDriver: true,
       }).start()
+      return
     }
-  }, [fadeAnim, mounted])
-
-  useEffect(() => {
-    if (!visible) {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setMounted(false))
-    }
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      // the app can leave again during the fade-out; keep the cover then
+      if (finished && !visibleRef.current) setMounted(false)
+    })
   }, [fadeAnim, visible])
 
   const style = useMemo(
@@ -45,27 +47,34 @@ const SecurityScreen = ({ visible }: Props) => {
   )
 
   if (Platform.OS === 'android' || !mounted) {
-    // android ui doesn't update after "background" is detected in RN.
-    // We're using WindowManager.LayoutParams.FLAG_SECURE in
-    // MainActivity.java to hide the view.
+    // android ui doesn't update after "background" is detected in RN, so no
+    // cover renders here. FLAG_SECURE (useSecureWindow) is on while a screen
+    // that shows a seed phrase or key is mounted. A native stack keeps a
+    // covered screen mounted, so the flag stays on until that screen pops
+    // (for onboarding, until the create flow ends). Other screens show in
+    // recents.
 
     return null
   }
 
+  // iOS draws the root view under native modal routes; FullWindowOverlay
+  // draws above the modals presented before it mounts
   return (
-    <Box
-      position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      backgroundColor="primaryBackground"
-    >
-      <AnimatedImage
-        style={style}
-        source={require('../../assets/images/SplashScreen.png')}
-      />
-    </Box>
+    <FullWindowOverlay>
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        backgroundColor="primaryBackground"
+      >
+        <AnimatedImage
+          style={style}
+          source={require('../../assets/images/SplashScreen.png')}
+        />
+      </Box>
+    </FullWindowOverlay>
   )
 }
 
