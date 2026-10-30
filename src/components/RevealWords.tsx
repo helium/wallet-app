@@ -6,12 +6,17 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
 import { FlatList } from 'react-native'
+import { DUR } from '@theme/motion'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import CopyAddress from '@assets/images/copyAddress.svg'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
-import { FadeIn } from 'react-native-reanimated'
+import { FadeIn, ReduceMotion } from 'react-native-reanimated'
+
+const DELAYED_FADE_IN = FadeIn.duration(DUR.enter)
+  .delay(300)
+  .reduceMotion(ReduceMotion.Never)
 
 type Props = {
   mnemonic: string[]
@@ -117,7 +122,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   }, [handleCopySeedPhrase, secondaryText, t, onDone])
 
   return (
-    <ReAnimatedBox flex={1} entering={FadeIn.delay(300)}>
+    <ReAnimatedBox flex={1} entering={DELAYED_FADE_IN}>
       {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
       {/* @ts-ignore */}
       <FlatList

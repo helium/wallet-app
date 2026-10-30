@@ -48,6 +48,10 @@ describe('motion tokens', () => {
     expect(SPRING.sheet.duration).toBeLessThanOrEqual(300)
   })
 
+  it('stops a sheet at its rest position, with no overshoot', () => {
+    expect(SPRING.sheet.overshootClamping).toBe(true)
+  })
+
   it('makes every spring follow the OS reduced motion setting', () => {
     Object.values(SPRING).forEach((spring) =>
       expect(spring.reduceMotion).toBe(ReduceMotion.System),

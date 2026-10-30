@@ -3,6 +3,7 @@ import { ScrollView, View } from 'react-native'
 import InfoWarning from '@assets/images/customWarning.svg'
 import { useTranslation } from 'react-i18next'
 import Animated, {
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -46,8 +47,10 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
     let animVal = animValue.get()
 
     if (animValue.get() === 0) {
-      animVal = withTiming(animValue.get(), { duration: 300 }, () =>
-        scheduleOnRN(animationCompleted),
+      animVal = withTiming(
+        animValue.get(),
+        { duration: 300, reduceMotion: ReduceMotion.Never },
+        () => scheduleOnRN(animationCompleted),
       )
     }
     return {

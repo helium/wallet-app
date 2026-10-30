@@ -23,6 +23,7 @@ import { RouteProp, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { useModal } from '@storage/ModalsProvider'
 import globalStyles from '@theme/globalStyles'
+import { DUR } from '@theme/motion'
 import { useColors } from '@theme/themeHooks'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -30,6 +31,7 @@ import { useTranslation } from 'react-i18next'
 import { Platform, ScrollView, View } from 'react-native'
 import Animated, {
   FadeIn,
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
@@ -49,7 +51,9 @@ import {
 import TxnListItem from './TxnListItem'
 import useSolanaActivityList from './useSolanaActivityList'
 
-const delayedAnimation = FadeIn.delay(300)
+const delayedAnimation = FadeIn.duration(DUR.enter)
+  .delay(300)
+  .reduceMotion(ReduceMotion.Never)
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
 

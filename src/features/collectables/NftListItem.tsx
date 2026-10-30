@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { Image } from 'react-native'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { useBorderRadii } from '@theme/themeHooks'
 import CircleLoader from '@components/CircleLoader'
 import { ReAnimatedBox } from '@components/AnimatedBox'
@@ -86,7 +86,11 @@ const NftListItem = ({
 
 export const NFTSkeleton = () => {
   return (
-    <ReAnimatedBox style={{ width: '50%' }} entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox
+      style={{ width: '50%' }}
+      entering={FADE_IN}
+      exiting={FADE_OUT}
+    >
       <TouchableOpacityBox
         marginHorizontal="s"
         marginVertical="s"
