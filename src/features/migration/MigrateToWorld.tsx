@@ -1,3 +1,4 @@
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -408,10 +409,15 @@ const MigrateToWorld = () => {
     }
   }
 
+  // The edit sheets portal to the nearest BottomSheetModalProvider. This one
+  // keeps them inside the app's providers (the App-root one sits outside
+  // SolanaProvider and NavigationContainer).
   return (
-    <SafeArea edges={EDGES} className="flex-1 bg-card">
-      {render()}
-    </SafeArea>
+    <BottomSheetModalProvider>
+      <SafeArea edges={EDGES} className="flex-1 bg-card">
+        {render()}
+      </SafeArea>
+    </BottomSheetModalProvider>
   )
 }
 

@@ -7,6 +7,7 @@ import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
@@ -65,6 +66,11 @@ async function migrateWallet(
   }
 }
 
+const BackHeader = () => {
+  const navigation = useNavigation()
+  return <StepBackHeader onBack={navigation.goBack} />
+}
+
 // StepBackHeader carries the top inset when it shows, so the safe area then
 // skips the top edge.
 const Wrapper = ({
@@ -74,13 +80,12 @@ const Wrapper = ({
   hideBack: boolean
   children: ReactNode
 }) => {
-  const navigation = useNavigation()
   return (
     <SafeArea
       edges={hideBack ? undefined : ['bottom', 'left', 'right']}
       className="flex-1"
     >
-      {hideBack ? null : <StepBackHeader onBack={navigation.goBack} />}
+      {hideBack ? null : <BackHeader />}
       <View className="flex-1 items-center justify-center p-4">{children}</View>
     </SafeArea>
   )
@@ -215,7 +220,7 @@ const SolanaMigration = ({
   }
 
   return (
-    <View className={`flex-1 bg-background ${className ?? ''}`}>
+    <View className={twMerge('flex-1 bg-background', className)}>
       <Wrapper hideBack={hideBack}>
         <View className="grow items-center justify-center">
           <View className="shadow-lg">

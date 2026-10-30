@@ -165,7 +165,7 @@ const AssetSelectionStep: FC<{
 
         {leftBehindCount > 0 && (
           <View className="mt-1 rounded-[12px] bg-warning-100 p-4">
-            <Text size="xs" className="text-warning-500">
+            <Text size="xs" className="text-foreground">
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,
               })}{' '}
