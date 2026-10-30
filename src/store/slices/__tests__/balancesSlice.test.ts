@@ -130,9 +130,10 @@ const providerFor = (connection: unknown) =>
 const accountFor = (owner: PublicKey) =>
   ({ solanaAddress: owner.toBase58() } as CSAccount)
 
-// The sync guard is module state: one in-flight flag shared by all wallets,
-// and a 5s cooldown on the last-synced cluster+wallet key. Each test starts a
-// minute after the last so no cooldown carries over.
+// The sync guard is module state: one sync in flight across all wallets, the
+// syncs of other wallets waiting their turn, and a 5s cooldown on the
+// last-synced cluster+wallet key. Each test starts a minute after the last so
+// no cooldown carries over.
 let now = 0
 beforeEach(() => {
   now += 60_000
@@ -322,25 +323,162 @@ describe('syncTokenAccounts', () => {
     expect(connection.getTokenAccountsByOwner).toHaveBeenCalledTimes(2)
   })
 
-  it('rejects a sync of another wallet while one is in flight', async () => {
+  // A connection whose token account read waits until `release` is called
+  const hangingConnection = (
+    connection: ReturnType<typeof fakeConnection>['connection'],
+  ) => {
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const getTokenAccounts = connection.getTokenAccountsByOwner
+    return {
+      release,
+      connection: {
+        ...connection,
+        getTokenAccountsByOwner: jest.fn(async () => {
+          await gate
+          return getTokenAccounts()
+        }),
+      },
+    }
+  }
+
+  it('queues a sync of another wallet while one is in flight and runs it when that one ends', async () => {
     const ownerA = Keypair.generate().publicKey
     const ownerB = Keypair.generate().publicKey
-    const a = fakeConnection({
-      owner: ownerA,
-      lamports: 1000,
+    const a = hangingConnection(
+      fakeConnection({
+        owner: ownerA,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection,
+    )
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
       holdings: [],
       decimalsByMint: {},
     })
-    let releaseA: () => void = () => {}
-    const gateA = new Promise<void>((resolve) => {
-      releaseA = resolve
+    const port = makePort()
+
+    const syncA = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerA),
+      anchorProvider: providerFor(a.connection),
     })
-    const getTokenAccountsA = a.connection.getTokenAccountsByOwner
-    const hangingA = {
+    const syncB = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerB),
+      anchorProvider: providerFor(b.connection),
+    })
+    await Promise.resolve()
+
+    expect(b.connection.getTokenAccountsByOwner).not.toHaveBeenCalled()
+    expect(port.tokensOf('mainnet-beta', ownerB.toBase58())).toBeUndefined()
+
+    a.release()
+
+    expect(await syncA).toBe('fulfilled')
+    expect(await syncB).toBe('fulfilled')
+    expect(port.tokensOf('mainnet-beta', ownerA.toBase58())?.sol).toEqual({
+      tokenAccount: ownerA.toBase58(),
+      balance: 1000,
+    })
+    expect(port.tokensOf('mainnet-beta', ownerB.toBase58())?.sol).toEqual({
+      tokenAccount: ownerB.toBase58(),
+      balance: 2000,
+    })
+    expect(port.isSyncing()).toBe(false)
+  })
+
+  it('collapses repeat syncs of a waiting wallet into one', async () => {
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const a = hangingConnection(
+      fakeConnection({
+        owner: ownerA,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection,
+    )
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const port = makePort()
+    const syncB = () =>
+      port.syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(ownerB),
+        anchorProvider: providerFor(b.connection),
+      })
+
+    const syncA = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerA),
+      anchorProvider: providerFor(a.connection),
+    })
+    const firstB = syncB()
+    const secondB = syncB()
+    a.release()
+
+    expect(await Promise.all([syncA, firstB, secondB])).toEqual([
+      'fulfilled',
+      'fulfilled',
+      'fulfilled',
+    ])
+    expect(b.connection.getTokenAccountsByOwner).toHaveBeenCalledTimes(1)
+  })
+
+  it('rejects a sync of the wallet in flight and fetches it once', async () => {
+    const owner = Keypair.generate().publicKey
+    const a = hangingConnection(
+      fakeConnection({
+        owner,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection,
+    )
+    const port = makePort()
+    const sync = () =>
+      port.syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(owner),
+        anchorProvider: providerFor(a.connection),
+      })
+
+    const first = sync()
+    const second = await sync()
+
+    expect(second).toBe('rejected')
+
+    a.release()
+
+    expect(await first).toBe('fulfilled')
+    expect(a.connection.getTokenAccountsByOwner).toHaveBeenCalledTimes(1)
+  })
+
+  it('runs a waiting sync when the sync before it fails', async () => {
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const a = hangingConnection(
+      fakeConnection({
+        owner: ownerA,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection,
+    )
+    const failingA = {
       ...a.connection,
-      getTokenAccountsByOwner: jest.fn(async () => {
-        await gateA
-        return getTokenAccountsA()
+      getAccountInfo: jest.fn(async () => {
+        throw new Error('rpc down')
       }),
     }
     const b = fakeConnection({
@@ -354,24 +492,20 @@ describe('syncTokenAccounts', () => {
     const syncA = port.syncTokenAccounts({
       cluster: 'mainnet-beta',
       acct: accountFor(ownerA),
-      anchorProvider: providerFor(hangingA),
+      anchorProvider: providerFor(failingA),
     })
-    const syncB = await port.syncTokenAccounts({
+    const syncB = port.syncTokenAccounts({
       cluster: 'mainnet-beta',
       acct: accountFor(ownerB),
       anchorProvider: providerFor(b.connection),
     })
+    a.release()
 
-    expect(syncB).toBe('rejected')
-    expect(port.tokensOf('mainnet-beta', ownerB.toBase58())).toBeUndefined()
-
-    releaseA()
-    const resultA = await syncA
-
-    expect(resultA).toBe('fulfilled')
-    expect(port.tokensOf('mainnet-beta', ownerA.toBase58())?.sol).toEqual({
-      tokenAccount: ownerA.toBase58(),
-      balance: 1000,
+    expect(await syncA).toBe('rejected')
+    expect(await syncB).toBe('fulfilled')
+    expect(port.tokensOf('mainnet-beta', ownerB.toBase58())?.sol).toEqual({
+      tokenAccount: ownerB.toBase58(),
+      balance: 2000,
     })
   })
 

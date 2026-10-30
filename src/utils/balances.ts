@@ -144,8 +144,16 @@ export const tokenAccountsQueryOptions = ({
 // Global sync guard to prevent overlapping syncs from ANY source
 const balancesSyncGuard = new SyncGuard()
 
-// Rejects when a sync of any wallet is in flight, or this wallet synced on
-// this cluster in the last 5 seconds; the stored balances stay as they are
+// The sync key in flight, the syncs of other wallets waiting for it to end
+// (one per key), and the last sync in line, which the next waiter follows
+let syncingKey: string | undefined
+const waitingSyncs = new Map<string, Promise<Tokens>>()
+let lastSync: Promise<unknown> = Promise.resolve()
+
+// A sync of another wallet waits for the one in flight to end; a repeat of a
+// waiting wallet shares its sync. Rejects when this wallet's sync is in
+// flight, or this wallet synced on this cluster in the last 5 seconds; the
+// stored balances stay as they are
 export const syncTokenAccounts = async (
   queryClient: QueryClient,
   {
@@ -160,27 +168,53 @@ export const syncTokenAccounts = async (
 ): Promise<Tokens> => {
   if (!acct?.solanaAddress) throw new Error('No solana account found')
 
-  const syncKey = `${cluster}-${acct.solanaAddress}`
+  const { solanaAddress } = acct
+  const syncKey = `${cluster}-${solanaAddress}`
 
-  // Check if sync can proceed
-  if (!balancesSyncGuard.canSync(syncKey)) {
+  const waiting = waitingSyncs.get(syncKey)
+  if (waiting) return waiting
+
+  if (syncingKey === syncKey) {
     throw new Error('Sync already in progress or cooldown active')
   }
 
-  balancesSyncGuard.startSync(syncKey)
+  const sync = async () => {
+    waitingSyncs.delete(syncKey)
 
-  try {
-    return await queryClient.fetchQuery({
-      ...tokenAccountsQueryOptions({
-        cluster,
-        solanaAddress: acct.solanaAddress,
-        anchorProvider,
-      }),
-      staleTime: 0,
-    })
-  } finally {
-    balancesSyncGuard.endSync()
+    // Check if sync can proceed
+    if (!balancesSyncGuard.canSync(syncKey)) {
+      throw new Error('Sync already in progress or cooldown active')
+    }
+
+    balancesSyncGuard.startSync(syncKey)
+    syncingKey = syncKey
+
+    try {
+      return await queryClient.fetchQuery({
+        ...tokenAccountsQueryOptions({
+          cluster,
+          solanaAddress,
+          anchorProvider,
+        }),
+        staleTime: 0,
+      })
+    } finally {
+      balancesSyncGuard.endSync()
+      syncingKey = undefined
+    }
   }
+
+  // A waiting sync keeps the line busy between one sync's end and its start
+  if (syncingKey || waitingSyncs.size) {
+    const queued = lastSync.then(sync, sync)
+    waitingSyncs.set(syncKey, queued)
+    lastSync = queued
+    return queued
+  }
+
+  const running = sync()
+  lastSync = running
+  return running
 }
 
 // Replaces the SOL balance of a wallet that has synced
