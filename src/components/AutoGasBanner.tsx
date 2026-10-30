@@ -151,7 +151,7 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   })
   useEffect(() => {
     let current = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- shows the loader for the swap this effect starts, as useAsync did
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- shows the loader for the swap this effect starts
     setLoading(true)
     setError(undefined)
     swapForGas()

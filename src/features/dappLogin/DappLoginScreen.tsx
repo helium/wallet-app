@@ -85,15 +85,15 @@ const DappLoginScreen = () => {
   const hasRequestedPair = useRef(false)
 
   const requestPair = useEffectEvent(async () => {
-    if (params.uri.includes('wc:') && !hasRequestedPair.current) {
+    const { uri } = params
+    const appName = sessionProposal?.params.proposer.metadata.name
+    if (uri.includes('wc:') && !hasRequestedPair.current) {
       hasRequestedPair.current = true
       try {
-        await pairClient(params.uri)
+        await pairClient(uri)
       } catch (error) {
         await showOKAlert({
-          title: t('dappLogin.error', {
-            appName: sessionProposal?.params.proposer.metadata.name,
-          }),
+          title: t('dappLogin.error', { appName }),
           message: (error as Error).toString(),
         })
       }
@@ -149,32 +149,28 @@ const DappLoginScreen = () => {
   }, [approvePair, currentAddress, sessionProposal, showOKAlert, t])
 
   const loginWithBurnTxn = useEffectEvent(async () => {
-    if (!currentAccount?.address || !loginRequest) return
+    const address = currentAccount?.address
+    const appName = sessionProposal?.params.proposer.metadata.name
+    const { callback } = params
+    if (!address || !loginRequest) return
 
-    const { signedTxn } = await makeBurnTxn({
-      payerB58: currentAccount.address,
-    })
+    const { signedTxn } = await makeBurnTxn({ payerB58: address })
 
     if (!signedTxn) return
 
     try {
-      await login({
-        txn: signedTxn.toString(),
-        address: currentAccount.address,
-      })
+      await login({ txn: signedTxn.toString(), address })
     } catch (error) {
       await showOKAlert({
-        title: t('dappLogin.error', {
-          appName: sessionProposal?.params.proposer.metadata.name,
-        }),
+        title: t('dappLogin.error', { appName }),
         message: (error as Error).toString(),
       })
     }
 
     await goBack()
 
-    if (params.callback && (await Linking.canOpenURL(params.callback))) {
-      await Linking.openURL(params.callback)
+    if (callback && (await Linking.canOpenURL(callback))) {
+      await Linking.openURL(callback)
     }
   })
   useEffect(() => {

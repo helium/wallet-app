@@ -86,7 +86,7 @@ jest.mock('../../../storage/secureStorage', () => ({
 // unmounted after each test: the secure window count spans renders
 const mounted: TestRenderer.ReactTestRenderer[] = []
 
-// async act flushes the useAsync effects
+// async act flushes the effects' secure storage and local auth promises
 const render = async () => {
   let renderer: TestRenderer.ReactTestRenderer | undefined
   await act(async () => {
