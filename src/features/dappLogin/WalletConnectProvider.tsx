@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useRef,
   useState,
 } from 'react'
 import '@walletconnect/react-native-compat'
@@ -30,6 +31,8 @@ const useWalletConnectHook = () => {
   const [loginRequest, setLoginRequest] =
     useState<SignClientTypes.EventArguments['session_request']>()
   const [approvalRequest, setApprovalRequest] = useState<{ topic: string }>()
+  const signClientInit = useRef<Promise<SignClient> | undefined>(undefined)
+  const pairingTopicRef = useRef<string | undefined>(undefined)
 
   const pairClient = useCallback(
     async (uri: string): Promise<PairingTypes.Struct | void> => {
@@ -38,41 +41,86 @@ const useWalletConnectHook = () => {
       try {
         let client = signClient
         if (!client) {
-          Logger.breadcrumb('Begin Initialize Client', breadcrumbOpts)
+          if (!signClientInit.current) {
+            Logger.breadcrumb('Begin Initialize Client', breadcrumbOpts)
 
-          client = await SignClient.init({
-            projectId: Config.WALLET_CONNECT_PROJECT_ID,
-            relayUrl: 'wss://relay.walletconnect.com',
-            metadata: {
-              name: 'Helium Wallet',
-              description: 'Helium Wallet',
-              url: Config.WALLET_CONNECT_METADATA_URL,
-              icons: [],
-            },
-          })
+            signClientInit.current = SignClient.init({
+              projectId: Config.WALLET_CONNECT_PROJECT_ID,
+              relayUrl: 'wss://relay.walletconnect.com',
+              metadata: {
+                name: 'Helium Wallet',
+                description: 'Helium Wallet',
+                url: Config.WALLET_CONNECT_METADATA_URL,
+                icons: [],
+              },
+            })
+              .then((nextClient) => {
+                Logger.breadcrumb('Client initialized', breadcrumbOpts)
 
-          Logger.breadcrumb('Client initialized', breadcrumbOpts)
+                setSignClient(nextClient)
 
-          setSignClient(client)
+                nextClient.on('session_proposal', async (proposal) => {
+                  Logger.breadcrumb('Session proposal created', breadcrumbOpts)
+                  setSessionProposal(proposal)
+                  setConnectionState('proposal')
+                })
 
-          client.on('session_proposal', async (proposal) => {
-            Logger.breadcrumb('Session proposal created', breadcrumbOpts)
-            setSessionProposal(proposal)
-            setConnectionState('proposal')
-          })
+                nextClient.on('session_request', async (loginReqEvent) => {
+                  if (loginReqEvent.params.request.method !== 'personal_sign')
+                    return
 
-          client.on('session_request', async (loginReqEvent) => {
-            if (loginReqEvent.params.request.method !== 'personal_sign') return
+                  const session = nextClient.session.getAll({
+                    topic: loginReqEvent.topic,
+                  })[0]
+                  if (!session) return
 
-            Logger.breadcrumb('Login request event created', breadcrumbOpts)
-            setLoginRequest(loginReqEvent)
-          })
+                  if (session.pairingTopic !== pairingTopicRef.current) {
+                    Logger.breadcrumb(
+                      'Rejected login request from another pairing',
+                      breadcrumbOpts,
+                    )
+                    try {
+                      await nextClient.respond({
+                        topic: loginReqEvent.topic,
+                        response: {
+                          id: loginReqEvent.id,
+                          jsonrpc: '2.0',
+                          error: { code: 5000, message: 'User rejected.' },
+                        },
+                      })
+                    } catch (err) {
+                      Logger.breadcrumb(
+                        'Reject login request from another pairing - fail',
+                        breadcrumbOpts,
+                      )
+                      Logger.error(err)
+                    }
+                    return
+                  }
+
+                  Logger.breadcrumb(
+                    'Login request event created',
+                    breadcrumbOpts,
+                  )
+                  setLoginRequest(loginReqEvent)
+                })
+
+                return nextClient
+              })
+              .catch((err) => {
+                signClientInit.current = undefined
+                throw err
+              })
+          }
+
+          client = await signClientInit.current
         } else {
           Logger.breadcrumb('Client already initialized', breadcrumbOpts)
         }
 
         Logger.breadcrumb('client.pair - begin', breadcrumbOpts)
         const pairResponse = await client.pair({ uri })
+        pairingTopicRef.current = pairResponse.topic
         Logger.breadcrumb('client.pair - success', breadcrumbOpts)
         return pairResponse
       } catch (err) {
@@ -179,17 +227,22 @@ const useWalletConnectHook = () => {
       if (signClient) {
         if (loginRequest?.topic || approvalRequest?.topic) {
           Logger.breadcrumb('disconnect wallet client - begin', breadcrumbOpts)
-          await signClient.disconnect({
-            topic: loginRequest?.topic || approvalRequest?.topic || '',
-            reason: {
-              code: 1,
-              message: 'finished',
-            },
-          })
-          Logger.breadcrumb(
-            'disconnect wallet client - success',
-            breadcrumbOpts,
-          )
+          try {
+            await signClient.disconnect({
+              topic: loginRequest?.topic || approvalRequest?.topic || '',
+              reason: {
+                code: 1,
+                message: 'finished',
+              },
+            })
+            Logger.breadcrumb(
+              'disconnect wallet client - success',
+              breadcrumbOpts,
+            )
+          } catch (err) {
+            Logger.breadcrumb('disconnect wallet client - fail', breadcrumbOpts)
+            Logger.error(err)
+          }
         } else if (
           sessionProposal?.id &&
           connectionState !== 'undetermined' &&
@@ -201,7 +254,6 @@ const useWalletConnectHook = () => {
           })
         }
       }
-      setSignClient(undefined)
       setSessionProposal(undefined)
       setLoginRequest(undefined)
       setApprovalRequest(undefined)
