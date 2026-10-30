@@ -84,7 +84,7 @@ const ActivityDetailsScreen = () => {
   const colors = useColors()
   const { t, i18n } = useTranslation()
   const createExplorerUrl = useCreateExplorerUrl()
-  const copyText = useCopyText()
+  const copyText = useCopyText({ haptic: false })
 
   const { transaction } = route.params
 

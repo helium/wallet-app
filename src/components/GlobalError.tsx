@@ -16,7 +16,7 @@ export const GlobalError = ({
   resetErrorBoundary: () => void
 }) => {
   const { t } = useTranslation()
-  const copyText = useCopyText()
+  const copyText = useCopyText({ haptic: false })
   const text = `${error.message}\n${error.stack}`
   const handleCopyError = useCallback(() => {
     copyText({

@@ -12,7 +12,7 @@ import Text from './Text'
 import Box from './Box'
 
 const CopyAddressPill = ({ ...rest }: BoxProps<Theme>) => {
-  const copyText = useCopyText()
+  const copyText = useCopyText({ haptic: false })
   const { currentAccount } = useAccountStorage()
   const spacing = useSpacing()
   const { secondaryText } = useColors()

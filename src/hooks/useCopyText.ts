@@ -4,7 +4,9 @@ import Clipboard from '@react-native-clipboard/clipboard'
 import Toast from 'react-native-simple-toast'
 import useHaptic from './useHaptic'
 
-export default () => {
+// A caller whose pressable already fires a haptic passes haptic: false, so
+// one press fires one haptic.
+export default ({ haptic = true }: { haptic?: boolean } = {}) => {
   const { triggerNavHaptic } = useHaptic()
   const { t } = useTranslation()
 
@@ -27,8 +29,8 @@ export default () => {
       Clipboard.setString(copyText)
       const toastMessage = message ?? copyText
       showToast(toastMessage)
-      triggerNavHaptic()
+      if (haptic) triggerNavHaptic()
     },
-    [showToast, triggerNavHaptic],
+    [haptic, showToast, triggerNavHaptic],
   )
 }
