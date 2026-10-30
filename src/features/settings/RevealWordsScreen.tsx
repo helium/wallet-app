@@ -1,6 +1,5 @@
-import React, { memo, useMemo, useState } from 'react'
+import React, { memo, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAsync } from 'react-async-hook'
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import Box from '@components/Box'
@@ -15,10 +14,13 @@ const RevealWordsScreen = () => {
   const navigation = useNavigation()
   const [mnemonic, setMnemonic] = useState<string[]>()
 
-  useAsync(async () => {
-    if (!currentAccount?.address) return
-    const secureAccount = await getSecureAccount(currentAccount.address)
-    setMnemonic(secureAccount?.mnemonic)
+  useEffect(() => {
+    const run = async () => {
+      if (!currentAccount?.address) return
+      const secureAccount = await getSecureAccount(currentAccount.address)
+      setMnemonic(secureAccount?.mnemonic)
+    }
+    run().catch((e) => console.error(e))
   }, [currentAccount?.address])
 
   const ListHeaderComponent = useMemo(() => {

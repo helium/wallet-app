@@ -13,12 +13,11 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
 import { useColors } from '@theme/themeHooks'
+import { useMutation } from '@tanstack/react-query'
 import * as bip39 from 'bip39'
 import React, { memo, useCallback, useEffect, useRef } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
-import { useSelector } from 'react-redux'
 import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
@@ -30,9 +29,7 @@ import ImportPrivateKey from '../features/onboarding/import/ImportPrivateKey'
 import PaymentScreen from '../features/payment/PaymentScreen'
 import LinkWallet from '../features/txnDelegation/LinkWallet'
 import SignHotspot from '../features/txnDelegation/SignHotspot'
-import { RootState } from '../store/rootReducer'
-import { appSlice } from '../store/slices/appSlice'
-import { useAppDispatch } from '../store/store'
+import { useAppStore } from '../store/appStore'
 import TabBarNavigator from './TabBarNavigator'
 import {
   RootNavigationProp,
@@ -53,7 +50,6 @@ const RootNavigator = () => {
   const colors = useColors()
   const RootStack = createNativeStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
-  const dispatch = useAppDispatch()
   const { setOnboardingData, onboardingData } = useOnboarding()
   const { currentAccount, accounts } = useAccountStorage()
 
@@ -72,76 +68,75 @@ const RootNavigator = () => {
     )
   }, [navigation])
 
-  const { execute: handleAddSub } = useAsyncCallback(async (acc: CSAccount) => {
-    try {
-      if (!currentAccount || !acc?.derivationPath) {
-        throw new Error('Missing seed or derivation path')
-      }
-      const storage = await getSecureAccount(currentAccount.address)
-      const seed = bip39.mnemonicToSeedSync(
-        storage?.mnemonic?.join(' ') || '',
-        '',
-      )
-      const currentPath = acc.derivationPath
-      const takenAddresses = new Set(
-        Object.values(accounts || {}).map((a) => a.solanaAddress),
-      )
-      let currentAccountNum =
-        currentPath === HELIUM_DERIVATION
-          ? 0
-          : Number(currentPath.split('/')[3].replace("'", '')) + 1
-      let derivationPath = solanaDerivation(currentAccountNum, 0)
-      let keypair = await keypairFromSeed(seed, derivationPath)
-      while (
-        currentAccountNum < 100 &&
-        (!keypair || takenAddresses.has(keypair.publicKey.toBase58()))
-      ) {
-        currentAccountNum += 1
-        derivationPath = solanaDerivation(currentAccountNum, 0)
-        keypair = await keypairFromSeed(seed, derivationPath)
-      }
-      if (currentAccountNum >= 100) {
-        throw new Error('More than 100 accounts are not supported')
-      }
-      if (keypair) {
-        const words = (await getSecureAccount(acc.address))?.mnemonic
-        setOnboardingData({
-          ...onboardingData,
-          words,
-          paths: [
+  const { mutate: handleAddSub } = useMutation({
+    mutationFn: async (acc: CSAccount) => {
+      try {
+        if (!currentAccount || !acc?.derivationPath) {
+          throw new Error('Missing seed or derivation path')
+        }
+        const storage = await getSecureAccount(currentAccount.address)
+        const seed = bip39.mnemonicToSeedSync(
+          storage?.mnemonic?.join(' ') || '',
+          '',
+        )
+        const currentPath = acc.derivationPath
+        const takenAddresses = new Set(
+          Object.values(accounts || {}).map((a) => a.solanaAddress),
+        )
+        let currentAccountNum =
+          currentPath === HELIUM_DERIVATION
+            ? 0
+            : Number(currentPath.split('/')[3].replace("'", '')) + 1
+        let derivationPath = solanaDerivation(currentAccountNum, 0)
+        let keypair = await keypairFromSeed(seed, derivationPath)
+        while (
+          currentAccountNum < 100 &&
+          (!keypair || takenAddresses.has(keypair.publicKey.toBase58()))
+        ) {
+          currentAccountNum += 1
+          derivationPath = solanaDerivation(currentAccountNum, 0)
+          keypair = await keypairFromSeed(seed, derivationPath)
+        }
+        if (currentAccountNum >= 100) {
+          throw new Error('More than 100 accounts are not supported')
+        }
+        if (keypair) {
+          const words = (await getSecureAccount(acc.address))?.mnemonic
+          setOnboardingData({
+            ...onboardingData,
+            words,
+            paths: [
+              {
+                derivationPath,
+                keypair,
+              },
+            ],
+          })
+          navigation.navigate(
+            'TabBarNavigator',
             {
-              derivationPath,
-              keypair,
-            },
-          ],
-        })
-        navigation.navigate(
-          'TabBarNavigator',
-          {
-            screen: 'Home',
-            params: {
-              screen: 'AccountAssignScreen',
+              screen: 'Home',
               params: {
-                words,
+                screen: 'AccountAssignScreen',
+                params: {
+                  words,
+                },
               },
             },
-          },
-          { pop: true },
-        )
-        connectedWalletsRef.current?.hide()
+            { pop: true },
+          )
+          connectedWalletsRef.current?.hide()
+        }
+      } catch (e) {
+        Toast.show((e as Error).message || String(e), Toast.SHORT)
       }
-    } catch (e) {
-      Toast.show((e as Error).message || String(e), Toast.SHORT)
-    }
+    },
   })
 
-  const showConnectedWallets = useSelector(
-    (state: RootState) => state.app.showConnectedWallets,
+  const showConnectedWallets = useAppStore(
+    (state) => state.showConnectedWallets,
   )
-
-  const onClose = useCallback(() => {
-    dispatch(appSlice.actions.toggleConnectedWallets())
-  }, [dispatch])
+  const onClose = useAppStore((state) => state.toggleConnectedWallets)
 
   useEffect(() => {
     if (showConnectedWallets) {
@@ -154,7 +149,7 @@ const RootNavigator = () => {
       onAddNew={handleAddNew}
       ref={connectedWalletsRef}
       onClose={onClose}
-      onAddSub={(acc) => void handleAddSub(acc).catch(console.error)}
+      onAddSub={(acc) => handleAddSub(acc)}
     >
       <RootStack.Navigator
         screenOptions={screenOptions}

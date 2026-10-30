@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import { ActivityIndicator, Alert, Platform } from 'react-native'
-import { useAsync } from 'react-async-hook'
+import { ActivityIndicator, Alert } from 'react-native'
 import useAlert from '@hooks/useAlert'
 import { useColors } from '@theme/themeHooks'
 import Box from '@components/Box'
@@ -11,6 +10,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp } from './settingsTypes'
+import { withICloudSignOutWarning } from './signOutWarning'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 
@@ -27,10 +27,13 @@ const ConfirmSignoutScreen = () => {
 
   const [mnemonic, setMnemonic] = useState<string[]>()
 
-  useAsync(async () => {
-    if (!currentAccount || !currentAccount.address) return
-    const secureAccount = await getSecureAccount(currentAccount.address)
-    setMnemonic(secureAccount?.mnemonic)
+  useEffect(() => {
+    const run = async () => {
+      if (!currentAccount || !currentAccount.address) return
+      const secureAccount = await getSecureAccount(currentAccount.address)
+      setMnemonic(secureAccount?.mnemonic)
+    }
+    run().catch((e) => console.error(e))
   }, [currentAccount])
 
   const isPinRequired = useMemo(
@@ -47,23 +50,22 @@ const ConfirmSignoutScreen = () => {
       currentAddress &&
       savedAccountAddresses.length === 1 &&
       savedAccountAddresses.includes(currentAddress)
-    const iCloudMessage =
-      Platform.OS === 'ios'
-        ? t('settings.sections.account.signOutAlert.iCloudMessage')
-        : ''
-
     Alert.alert(
       t('settings.sections.account.signOutAlert.title', {
         alias: currentAccount?.alias,
       }),
-      t(
-        `settings.sections.account.signOutAlert.${
-          isLastAccount ? 'bodyLastAccount' : 'body'
-        }`,
-        {
-          alias: currentAccount?.alias,
-        },
-      ) + iCloudMessage,
+      withICloudSignOutWarning(
+        t,
+        t(
+          `settings.sections.account.signOutAlert.${
+            isLastAccount ? 'bodyLastAccount' : 'body'
+          }`,
+          {
+            alias: currentAccount?.alias,
+          },
+        ),
+        isLastAccount ? 'allWallets' : 'oneWallet',
+      ),
       [
         {
           text: t('generic.cancel'),

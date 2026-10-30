@@ -27,8 +27,6 @@ import HotspotCompressedListItem from './HotspotCompressedListItem'
 import { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 
-export const DEFAULT_PAGE_AMOUNT = 20
-
 type AutomationSchedule = 'daily' | 'weekly' | 'monthly' | undefined
 
 function RewardItem({
@@ -91,12 +89,11 @@ const HotspotList = () => {
     totalHotspots,
   } = useHotspots()
 
-  const pageAmount = 20
   const handleOnEndReached = useCallback(() => {
     if (!fetchingMore && isFocused && !onEndReached) {
-      fetchMore(pageAmount)
+      fetchMore()
     }
-  }, [fetchingMore, isFocused, fetchMore, pageAmount, onEndReached])
+  }, [fetchingMore, isFocused, fetchMore, onEndReached])
 
   const handleNavigateToHotspot = useCallback(
     (hotspot: HotspotWithPendingRewards) => {
@@ -240,10 +237,6 @@ const HotspotList = () => {
     [fetchingMore],
   )
 
-  const handleRefresh = useCallback(() => {
-    refresh(pageAmount)
-  }, [pageAmount, refresh])
-
   useEffect(() => {
     return navigation.addListener('focus', () => {
       refresh()
@@ -264,7 +257,7 @@ const HotspotList = () => {
           <RefreshControl
             enabled
             refreshing={loadingHotspots}
-            onRefresh={handleRefresh}
+            onRefresh={refresh}
             title=""
             tintColor={primaryText}
           />

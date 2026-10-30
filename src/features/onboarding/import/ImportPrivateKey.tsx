@@ -13,8 +13,7 @@ import { decryptPasswordProtectedData, extractEd25519Seed } from '@utils/crypto'
 import * as Logger from '@utils/logger'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
-import React, { memo, useCallback, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import React, { memo, useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
@@ -122,8 +121,11 @@ const ImportPrivateKey = () => {
     [createAccount, encodedKey, password, t],
   )
 
-  useAsync(async () => {
-    await decodePrivateKey()
+  useEffect(() => {
+    const run = async () => {
+      await decodePrivateKey()
+    }
+    run().catch((e) => console.error(e))
   }, [decodePrivateKey])
 
   const onBack = useCallback(() => {

@@ -8,7 +8,7 @@ import { usePositions } from '@helium/voter-stake-registry-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import BN from 'bn.js'
 import React, { createContext, ReactNode, useContext, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useQuery } from '@tanstack/react-query'
 import { useSolana } from '../solana/SolanaProvider'
 
 interface DeprecatedTokensContextState {
@@ -53,10 +53,16 @@ export const DeprecatedTokensProvider: React.FC<{
   const { anchorProvider } = useSolana()
 
   // Batch fetch position keys for both IOT and MOBILE to reduce RPC calls
-  const { result: positionKeysData, loading: loadingPositionKeys } =
-    useAsync(async () => {
+  const { data: positionKeysData, isLoading: loadingPositionKeys } = useQuery({
+    queryKey: [
+      'deprecatedTokensPositionKeys',
+      wallet?.toBase58(),
+      anchorProvider?.connection.rpcEndpoint,
+    ],
+    enabled: !!wallet && !!anchorProvider?.connection,
+    queryFn: async () => {
       if (!wallet || !anchorProvider?.connection) {
-        return undefined
+        return null
       }
 
       try {
@@ -83,9 +89,10 @@ export const DeprecatedTokensProvider: React.FC<{
           '[DeprecatedTokensProvider] Position keys batch fetch error:',
           error,
         )
-        return undefined
+        return null
       }
-    }, [wallet, anchorProvider?.connection])
+    },
+  })
 
   // Extract individual results for compatibility
   const iotPositionKeys = positionKeysData?.iotPositionKeys

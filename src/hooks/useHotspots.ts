@@ -1,17 +1,221 @@
+import { AnchorProvider } from '@anchor-lang/core'
+import { Cluster, PublicKey } from '@solana/web3.js'
+import {
+  InfiniteData,
+  QueryClient,
+  infiniteQueryOptions,
+  queryOptions,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import BN from 'bn.js'
-import { useCallback, useEffect, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useCallback, useMemo } from 'react'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
-import { RootState } from '../store/rootReducer'
-import {
-  fetchAllHotspots,
-  fetchHotspots,
-  hotspotsSlice,
-} from '../store/slices/hotspotsSlice'
-import { useAppDispatch } from '../store/store'
 import { CompressedNFT, HotspotWithPendingRewards } from '../types/solana'
 import { Mints } from '../utils/constants'
+import { PersistedQueryRoot } from '../utils/queryClient'
+import * as solUtils from '../utils/solanaUtils'
+
+const DEFAULT_PAGE_AMOUNT = 20
+
+type HotspotsQueryArgs = {
+  cluster: Cluster
+  solanaAddress: string
+  anchorProvider: AnchorProvider | undefined
+}
+
+type HotspotsPage = {
+  items: CompressedNFT[]
+  grandTotal: number | undefined
+  metadata: Awaited<ReturnType<typeof solUtils.getCompressedNFTMetadata>>
+  rewards: Awaited<ReturnType<typeof solUtils.getHotspotPendingRewards>>
+  recipients: Awaited<ReturnType<typeof solUtils.getHotspotRecipients>>
+}
+
+type AllHotspots = {
+  hotspots: CompressedNFT[]
+  recipients: HotspotsPage['recipients']
+}
+
+const isLastPage = (page: HotspotsPage) =>
+  page.items.length < DEFAULT_PAGE_AMOUNT
+
+const requireAnchorProvider = (anchorProvider: AnchorProvider | undefined) => {
+  if (!anchorProvider) throw new Error('Solana connection missing')
+  return anchorProvider
+}
+
+export const hotspotsQueryOptions = ({
+  cluster,
+  solanaAddress,
+  anchorProvider,
+}: HotspotsQueryArgs) =>
+  infiniteQueryOptions({
+    queryKey: ['hotspots', cluster, solanaAddress] as [
+      PersistedQueryRoot,
+      Cluster,
+      string,
+    ],
+    queryFn: async ({ pageParam }): Promise<HotspotsPage> => {
+      const provider = requireAnchorProvider(anchorProvider)
+      const fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+        new PublicKey(solanaAddress),
+        provider,
+        pageParam + 1,
+        DEFAULT_PAGE_AMOUNT,
+      )
+
+      // Batch the metadata, rewards, and recipients calls in parallel
+      const [metadata, rewards, recipients] = await Promise.all([
+        solUtils.getCompressedNFTMetadata(fetchedHotspots.items),
+        solUtils.getHotspotPendingRewards(provider, fetchedHotspots.items),
+        solUtils.getHotspotRecipients(provider, fetchedHotspots.items),
+      ])
+
+      return {
+        items: fetchedHotspots.items,
+        grandTotal: fetchedHotspots.grandTotal,
+        metadata,
+        rewards,
+        recipients,
+      }
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      isLastPage(lastPage) ? undefined : allPages.length,
+  })
+
+// Every hotspot of the wallet without metadata or rewards, for the map
+export const allHotspotsQueryOptions = ({
+  cluster,
+  solanaAddress,
+  anchorProvider,
+}: HotspotsQueryArgs) =>
+  queryOptions({
+    queryKey: ['hotspots', cluster, solanaAddress, 'all'] as [
+      PersistedQueryRoot,
+      Cluster,
+      string,
+      'all',
+    ],
+    queryFn: async (): Promise<AllHotspots> => {
+      const provider = requireAnchorProvider(anchorProvider)
+      const pubKey = new PublicKey(solanaAddress)
+
+      let pageNumber = 1
+      let fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+        pubKey,
+        provider,
+        pageNumber,
+        1000,
+      )
+
+      const hotspots: CompressedNFT[] = fetchedHotspots.items ?? []
+
+      while (
+        hotspots.length < (fetchedHotspots.grandTotal ?? fetchedHotspots.total)
+      ) {
+        // eslint-disable-next-line no-plusplus
+        pageNumber++
+        fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
+          pubKey,
+          provider,
+          pageNumber,
+          1000,
+        )
+
+        hotspots.push(...(fetchedHotspots.items ?? []))
+      }
+
+      const recipients = await solUtils.getHotspotRecipients(provider, hotspots)
+
+      return { hotspots, recipients }
+    },
+  })
+
+// Fetch the first page again and drop the later pages and the full list, so
+// the list starts over from the top
+export const refreshHotspots = async (
+  queryClient: QueryClient,
+  args: HotspotsQueryArgs & { anchorProvider: AnchorProvider },
+) => {
+  const options = hotspotsQueryOptions(args)
+  // Cancel a next page in flight, or it writes the old pages back
+  await queryClient.cancelQueries({ queryKey: options.queryKey, exact: true })
+  queryClient.setQueryData(
+    options.queryKey,
+    (data) =>
+      data && {
+        pages: data.pages.slice(0, 1),
+        pageParams: data.pageParams.slice(0, 1),
+      },
+  )
+  void queryClient.resetQueries({
+    queryKey: allHotspotsQueryOptions(args).queryKey,
+    exact: true,
+  })
+  return queryClient.prefetchInfiniteQuery({ ...options, staleTime: 0 })
+}
+
+export const selectHotspots = (
+  pagesData: InfiniteData<HotspotsPage> | undefined,
+  allHotspots: AllHotspots | undefined,
+  allHotspotsFailed: boolean,
+  pagesFailed: boolean,
+) => {
+  const pages = pagesData?.pages || []
+  const hotspotsById = new Map<string, CompressedNFT>()
+  pages
+    .flatMap((page) => page.items)
+    .concat(allHotspots?.hotspots || [])
+    .forEach((hotspot) => hotspotsById.set(hotspot.id, hotspot))
+
+  const metadataById = Object.fromEntries(
+    pages.flatMap((page) => page.metadata).map((m) => [m.id, m.metadata]),
+  )
+  const rewardsById = Object.fromEntries(
+    pages.flatMap((page) => page.rewards).map((r) => [r.id, r.pendingRewards]),
+  )
+  const recipientsById = Object.fromEntries(
+    pages
+      .flatMap((page) => page.recipients)
+      .concat(allHotspots?.recipients || [])
+      .map((r) => [r.id, r.recipients]),
+  )
+
+  const hotspots = [...hotspotsById.values()]
+  const hotspotsWithMeta = hotspots.map((hotspot) => ({
+    ...hotspot,
+    pendingRewards: { ...(rewardsById[hotspot.id] || {}) },
+    rewardRecipients: { ...(recipientsById[hotspot.id] || {}) },
+    content: {
+      ...hotspot.content,
+      metadata: {
+        ...hotspot.content.metadata,
+        ...(metadataById[hotspot.id] || {}),
+      },
+    },
+  }))
+
+  const lastPage = pages[pages.length - 1]
+  if (allHotspots) {
+    return {
+      hotspots,
+      hotspotsWithMeta,
+      totalHotspots: allHotspots.hotspots.length,
+      onEndReached: true,
+    }
+  }
+  return {
+    hotspots,
+    hotspotsWithMeta,
+    totalHotspots: lastPage?.grandTotal,
+    onEndReached:
+      allHotspotsFailed || (lastPage ? isLastPage(lastPage) : !pagesFailed),
+  }
+}
 
 const useHotspots = (): {
   totalHotspots: number | undefined
@@ -21,164 +225,68 @@ const useHotspots = (): {
   hotspots: CompressedNFT[]
   hotspotsWithMeta: HotspotWithPendingRewards[]
   loading: boolean
-  refresh: (limit?: number) => void
-  fetchMore: (limit?: number) => void
+  refresh: () => void
+  fetchMore: () => void
   fetchAll: () => void
   fetchingMore: boolean
   onEndReached: boolean
 } => {
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
-  const hotspotsState = useSelector(
-    (state: RootState) => state.hotspots[cluster] || {},
+  const solanaAddress = currentAccount?.solanaAddress
+  const args = { cluster, solanaAddress: solanaAddress || '', anchorProvider }
+
+  // Screens fetch on demand through refresh, fetchMore and fetchAll
+  const {
+    data: pagesData,
+    isFetching,
+    isFetchingNextPage,
+    isError: pagesFailed,
+    fetchNextPage,
+  } = useInfiniteQuery({ ...hotspotsQueryOptions(args), enabled: false })
+  const {
+    data: allHotspots,
+    isFetching: fetchingAll,
+    isError: allHotspotsFailed,
+    refetch: refetchAll,
+  } = useQuery({ ...allHotspotsQueryOptions(args), enabled: false })
+
+  const loading = (isFetching && !isFetchingNextPage) || fetchingAll
+
+  const { hotspots, hotspotsWithMeta, totalHotspots, onEndReached } = useMemo(
+    () =>
+      selectHotspots(pagesData, allHotspots, allHotspotsFailed, pagesFailed),
+    [pagesData, allHotspots, allHotspotsFailed, pagesFailed],
   )
 
-  const hotspots = useMemo(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !hotspotsState[currentAccount?.solanaAddress]
-    )
-      return []
-
-    return Object.values(
-      hotspotsState[currentAccount?.solanaAddress].hotspotsById || {},
-    )
-  }, [currentAccount?.solanaAddress, hotspotsState])
-
-  const hotspotsWithMeta = useMemo(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !hotspotsState[currentAccount?.solanaAddress]
-    )
-      return []
-
-    return Object.values(
-      hotspotsState[currentAccount?.solanaAddress].hotspotsById || {},
-    ).map((hotspot) => ({
-      ...hotspot,
-      pendingRewards: {
-        ...(hotspotsState[currentAccount?.solanaAddress as string]
-          .hotspotsRewardsById[hotspot.id] || {}),
-      },
-      rewardRecipients: {
-        ...((hotspotsState[currentAccount?.solanaAddress as string]
-          .hotspotsRecipientsById || {})[hotspot.id] || {}),
-      },
-      content: {
-        ...hotspot.content,
-        metadata: {
-          ...hotspot.content.metadata,
-          ...(hotspotsState[currentAccount?.solanaAddress as string]
-            .hotspotsMetadataById[hotspot.id] || {}),
-        },
-      },
-    }))
-  }, [currentAccount?.solanaAddress, hotspotsState])
-
-  const page = useMemo(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !hotspotsState[currentAccount?.solanaAddress]
-    )
-      return 0
-    return hotspotsState[currentAccount?.solanaAddress].page
-  }, [currentAccount?.solanaAddress, hotspotsState])
-
-  const totalHotspots = useMemo(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !hotspotsState[currentAccount?.solanaAddress]
-    )
-      return undefined
-    return hotspotsState[currentAccount?.solanaAddress].totalHotspots
-  }, [currentAccount?.solanaAddress, hotspotsState])
-
-  const onEndReached = useMemo(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !hotspotsState[currentAccount?.solanaAddress]
-    )
-      return true
-    return hotspotsState[currentAccount?.solanaAddress].onEndReached
-  }, [currentAccount?.solanaAddress, hotspotsState])
-
-  useEffect(() => {
-    if (!currentAccount?.solanaAddress) return
-    // Reset loading on mount
-    dispatch(
-      hotspotsSlice.actions.resetLoading({ acct: currentAccount, cluster }),
-    )
-  }, [cluster, currentAccount, dispatch])
-
-  const refresh = useCallback(
-    (limit?) => {
-      if (!anchorProvider || !currentAccount?.solanaAddress) {
-        return
-      }
-
-      void dispatch(
-        fetchHotspots({
-          anchorProvider,
-          account: currentAccount,
-          cluster,
-          limit,
-        }),
-      )
-    },
-    [anchorProvider, cluster, currentAccount, dispatch],
-  )
-
-  const fetchingMore = useMemo(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !hotspotsState[currentAccount?.solanaAddress]
-    )
-      return false
-
-    return hotspotsState[currentAccount?.solanaAddress].fetchingMore
-  }, [currentAccount?.solanaAddress, hotspotsState])
-
-  const fetchMore = useCallback(
-    (limit?) => {
-      if (
-        !currentAccount?.solanaAddress ||
-        !anchorProvider ||
-        hotspotsState[currentAccount?.solanaAddress].loading
-      ) {
-        return
-      }
-
-      void dispatch(
-        fetchHotspots({
-          anchorProvider,
-          cluster,
-          account: currentAccount,
-          page,
-          limit,
-        }),
-      )
-    },
-    [currentAccount, anchorProvider, hotspotsState, cluster, dispatch, page],
-  )
-
-  const fetchAll = useCallback(() => {
-    if (
-      !currentAccount?.solanaAddress ||
-      !anchorProvider ||
-      hotspotsState[currentAccount?.solanaAddress].loading
-    ) {
+  const refresh = useCallback(() => {
+    if (!anchorProvider || !solanaAddress) {
       return
     }
 
-    void dispatch(
-      fetchAllHotspots({
-        anchorProvider,
-        cluster,
-        account: currentAccount,
-      }),
-    )
-  }, [currentAccount, anchorProvider, hotspotsState, cluster, dispatch])
+    void refreshHotspots(queryClient, {
+      cluster,
+      solanaAddress,
+      anchorProvider,
+    })
+  }, [anchorProvider, cluster, queryClient, solanaAddress])
+
+  const fetchMore = useCallback(() => {
+    if (!solanaAddress || !anchorProvider || loading) {
+      return
+    }
+
+    void fetchNextPage({ cancelRefetch: false })
+  }, [solanaAddress, anchorProvider, loading, fetchNextPage])
+
+  const fetchAll = useCallback(() => {
+    if (!solanaAddress || !anchorProvider || loading) {
+      return
+    }
+
+    void refetchAll({ cancelRefetch: false })
+  }, [solanaAddress, anchorProvider, loading, refetchAll])
 
   const pendingIotRewards = useMemo(
     () =>
@@ -212,26 +320,6 @@ const useHotspots = (): {
     [hotspotsWithMeta],
   )
 
-  if (
-    !currentAccount?.solanaAddress ||
-    !hotspotsState[currentAccount?.solanaAddress]
-  ) {
-    return {
-      totalHotspots,
-      pendingIotRewards,
-      pendingMobileRewards,
-      pendingHntRewards,
-      loading: false,
-      hotspots: [],
-      hotspotsWithMeta: [],
-      refresh,
-      fetchAll,
-      fetchMore,
-      fetchingMore,
-      onEndReached,
-    }
-  }
-
   return {
     totalHotspots,
     pendingIotRewards,
@@ -239,11 +327,11 @@ const useHotspots = (): {
     pendingHntRewards,
     hotspots,
     hotspotsWithMeta,
-    loading: hotspotsState[currentAccount?.solanaAddress].loading,
+    loading,
     refresh,
     fetchMore,
     fetchAll,
-    fetchingMore,
+    fetchingMore: isFetchingNextPage,
     onEndReached,
   }
 }

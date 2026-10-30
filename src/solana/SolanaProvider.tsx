@@ -25,9 +25,9 @@ import React, {
   useEffect,
   useMemo,
   useRef,
+  useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
-import { useSelector } from 'react-redux'
+import { useQuery } from '@tanstack/react-query'
 import KeystoneModal, {
   KeystoneModalRef,
 } from '../features/keystone/KeystoneModal'
@@ -35,9 +35,7 @@ import LedgerModal, { LedgerModalRef } from '../features/ledger/LedgerModal'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { CSAccount } from '../storage/cloudStorage'
 import { checkSecureAccount, getSolanaKeypair } from '../storage/secureStorage'
-import { RootState } from '../store/rootReducer'
-import { appSlice } from '../store/slices/appSlice'
-import { useAppDispatch } from '../store/store'
+import { useAppStore } from '../store/appStore'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
@@ -48,10 +46,7 @@ const useSolanaHook = () => {
   'use no memo'
 
   const { currentAccount, secureAccountsVersion } = useAccountStorage()
-  const dispatch = useAppDispatch()
-  const cluster = useSelector(
-    (state: RootState) => state.app.cluster || 'mainnet-beta',
-  )
+  const cluster = useAppStore((state) => state.cluster || 'mainnet-beta')
   const ledgerModalRef = useRef<LedgerModalRef | null>(null)
   const keystoneModalRef = useRef<KeystoneModalRef | null>(null)
   const connection: WrappedConnection | undefined = useMemo(() => {
@@ -62,14 +57,16 @@ const useSolanaHook = () => {
     () => currentAccount?.address,
     [currentAccount?.address],
   )
-  const { result: secureAcct } = useAsync(
-    async (addr: string | undefined, _secureAccountsVersion: number) => {
-      if (addr) {
-        return getSolanaKeypair(addr)
-      }
-    },
-    [address, secureAccountsVersion],
-  )
+  const { data: secureAcctOrNull } = useQuery({
+    queryKey: ['solanaKeypair', address, secureAccountsVersion],
+    enabled: !!address,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    queryFn: async () => (await getSolanaKeypair(address!)) ?? null,
+    retry: false,
+    // A secret: drop it from the cache once no screen uses it
+    gcTime: 0,
+  })
+  const secureAcct = secureAcctOrNull ?? undefined
 
   const accountSigners = useCallback(
     (account: CSAccount): AccountSigners => ({
@@ -182,151 +179,166 @@ const useSolanaHook = () => {
     signTxn,
   ])
 
-  const { result: cache } = useAsync(async () => {
-    if (!connection || !cluster) return
+  // Not a query: the cache is a live resource that the effect below closes
+  const [cache, setCache] = useState<AccountFetchCache>()
+  useEffect(() => {
+    let cancelled = false
+    const createCache = async () => {
+      // eslint-disable-next-line react-hooks/immutability -- the cache monkey-patches the shared connection once, see getAccountInfoAndContext below
+      if (!connection || !cluster) return undefined
 
-    const asyncCache = new AsyncAccountCache(`accounts-${cluster}`)
-    try {
-      await asyncCache.init()
-    } catch (e) {
-      console.error('Failed to init cache', e)
-    }
-    const c = new AccountFetchCache({
-      connection,
-      delay: 100,
-      commitment: 'confirmed',
-      missingRefetchDelay: 60 * 1000,
-      extendConnection: true,
-      cache: asyncCache,
-    })
-    // Async fetch the cache accounts to check for changes and update account fetch cache
-    void (async () => {
+      const asyncCache = new AsyncAccountCache(`accounts-${cluster}`)
       try {
-        const keys = asyncCache.keys().map((k) => new PublicKey(k))
-        if (keys.length === 0) return
+        await asyncCache.init()
+      } catch (e) {
+        console.error('Failed to init cache', e)
+      }
+      const c = new AccountFetchCache({
+        connection,
+        delay: 100,
+        commitment: 'confirmed',
+        missingRefetchDelay: 60 * 1000,
+        extendConnection: true,
+        cache: asyncCache,
+      })
+      // Async fetch the cache accounts to check for changes and update account fetch cache
+      void (async () => {
+        try {
+          const keys = asyncCache.keys().map((k) => new PublicKey(k))
+          if (keys.length === 0) return
 
-        const nonWrappedConnection = new Connection(connection.rpcEndpoint)
+          const nonWrappedConnection = new Connection(connection.rpcEndpoint)
 
-        // Get current slot and last checked slot
-        const currentSlot = await nonWrappedConnection.getSlot('confirmed')
-        const lastCheckedSlot = await getLastCheckedSlot(asyncCache.cacheKey)
+          // Get current slot and last checked slot
+          const currentSlot = await nonWrappedConnection.getSlot('confirmed')
+          const lastCheckedSlot = await getLastCheckedSlot(asyncCache.cacheKey)
 
-        // Make direct RPC calls in chunks
-        const responses = await Promise.all(
-          chunks(keys, 100).map(async (keyChunk) => {
-            const keyStrings = keyChunk.map((k) => k.toBase58())
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore - accessing private method for direct RPC call
-            const response = await nonWrappedConnection._rpcRequest(
-              'getMultipleAccounts',
-              [
-                keyStrings,
-                {
-                  encoding: 'base64',
-                  changedSinceSlot: lastCheckedSlot,
-                  commitment: 'confirmed',
-                },
-              ],
-            )
-            return { response, keys: keyChunk }
-          }),
-        )
+          // Make direct RPC calls in chunks
+          const responses = await Promise.all(
+            chunks(keys, 100).map(async (keyChunk) => {
+              const keyStrings = keyChunk.map((k) => k.toBase58())
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore - accessing private method for direct RPC call
+              const response = await nonWrappedConnection._rpcRequest(
+                'getMultipleAccounts',
+                [
+                  keyStrings,
+                  {
+                    encoding: 'base64',
+                    changedSinceSlot: lastCheckedSlot,
+                    commitment: 'confirmed',
+                  },
+                ],
+              )
+              return { response, keys: keyChunk }
+            }),
+          )
 
-        // Process each response
-        responses.forEach(({ response, keys: keyChunk }) => {
-          if (response.error) {
-            console.error('RPC error:', response.error)
-            return
-          }
-
-          const accounts = response.result.value
-          accounts.forEach((acc: unknown, index: number) => {
-            const key = keyChunk[index]
-
-            // Check if the account response has a status field indicating it's unchanged
-            if (
-              acc &&
-              typeof acc === 'object' &&
-              (acc as { status?: string }).status === 'unchanged'
-            ) {
-              // Account is unchanged, skip cache update
+          // Process each response
+          responses.forEach(({ response, keys: keyChunk }) => {
+            if (response.error) {
+              console.error('RPC error:', response.error)
               return
             }
 
-            if (acc && typeof acc === 'object' && 'data' in acc) {
-              const accData = acc as {
-                data: [string, string]
-                executable: boolean
-                lamports: number
-                owner: string
-                rentEpoch: number
-              }
-              // Account has changed or is new, check if we need to update cache
-              const currentCached = c.get(key)
-              const accountInfo = {
-                data: Buffer.from(accData.data[0], 'base64'),
-                executable: accData.executable,
-                lamports: accData.lamports,
-                owner: new PublicKey(accData.owner),
-                rentEpoch: accData.rentEpoch,
-              }
+            const accounts = response.result.value
+            accounts.forEach((acc: unknown, index: number) => {
+              const key = keyChunk[index]
 
+              // Check if the account response has a status field indicating it's unchanged
               if (
-                !currentCached?.account.data.equals(accountInfo.data) ||
-                currentCached?.account.lamports !== accountInfo.lamports ||
-                !currentCached?.account.owner.equals(accountInfo.owner)
+                acc &&
+                typeof acc === 'object' &&
+                (acc as { status?: string }).status === 'unchanged'
               ) {
-                void c.updateCacheAndRaiseUpdated(key.toBase58(), {
-                  pubkey: key,
-                  account: accountInfo,
-                })
+                // Account is unchanged, skip cache update
+                return
               }
-            } else if (c.get(key)) {
-              // Account existed and now doesn't
-              void c.updateCacheAndRaiseUpdated(key.toBase58(), null)
-            }
+
+              if (acc && typeof acc === 'object' && 'data' in acc) {
+                const accData = acc as {
+                  data: [string, string]
+                  executable: boolean
+                  lamports: number
+                  owner: string
+                  rentEpoch: number
+                }
+                // Account has changed or is new, check if we need to update cache
+                const currentCached = c.get(key)
+                const accountInfo = {
+                  data: Buffer.from(accData.data[0], 'base64'),
+                  executable: accData.executable,
+                  lamports: accData.lamports,
+                  owner: new PublicKey(accData.owner),
+                  rentEpoch: accData.rentEpoch,
+                }
+
+                if (
+                  !currentCached?.account.data.equals(accountInfo.data) ||
+                  currentCached?.account.lamports !== accountInfo.lamports ||
+                  !currentCached?.account.owner.equals(accountInfo.owner)
+                ) {
+                  void c.updateCacheAndRaiseUpdated(key.toBase58(), {
+                    pubkey: key,
+                    account: accountInfo,
+                  })
+                }
+              } else if (c.get(key)) {
+                // Account existed and now doesn't
+                void c.updateCacheAndRaiseUpdated(key.toBase58(), null)
+              }
+            })
           })
-        })
 
-        // Store the current slot as the last checked slot for next time
-        await saveCacheThenSlot(asyncCache, currentSlot)
-      } catch (e) {
-        console.error('Failed to fetch accounts', e)
-      }
-    })()
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (!connection.wrapped) {
-      const oldGetAccountinfoAndContext =
-        connection.getAccountInfoAndContext.bind(connection)
-
-      // Anchor uses this call on .fetch and .fetchNullable even though it doesn't actually need the context. Add caching.
-      // eslint-disable-next-line react-hooks/immutability -- monkey-patches the shared connection once (guarded by connection.wrapped) so Anchor reads go through the account cache
-      connection.getAccountInfoAndContext = async (
-        publicKey: PublicKey,
-        com?: Commitment,
-      ): Promise<RpcResponseAndContext<AccountInfo<Buffer> | null>> => {
-        if (
-          (com || connection.commitment) === 'confirmed' ||
-          typeof (com || connection.commitment) === 'undefined'
-        ) {
-          const [result, dispose] = await c.searchAndWatch(publicKey)
-          setTimeout(dispose, 30 * 1000) // cache for 30s
-          return {
-            value: result?.account || null,
-            context: {
-              slot: 0,
-            },
-          }
+          // Store the current slot as the last checked slot for next time
+          await saveCacheThenSlot(asyncCache, currentSlot)
+        } catch (e) {
+          console.error('Failed to fetch accounts', e)
         }
-        return oldGetAccountinfoAndContext!(publicKey, com)
-      }
+      })()
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      connection.wrapped = true
-    }
+      if (!connection.wrapped) {
+        const oldGetAccountinfoAndContext =
+          connection.getAccountInfoAndContext.bind(connection)
 
-    return c
+        // Anchor uses this call on .fetch and .fetchNullable even though it doesn't actually need the context. Add caching.
+        // eslint-disable-next-line react-hooks/immutability -- monkey-patches the shared connection once (guarded by connection.wrapped) so Anchor reads go through the account cache
+        connection.getAccountInfoAndContext = async (
+          publicKey: PublicKey,
+          com?: Commitment,
+        ): Promise<RpcResponseAndContext<AccountInfo<Buffer> | null>> => {
+          if (
+            (com || connection.commitment) === 'confirmed' ||
+            typeof (com || connection.commitment) === 'undefined'
+          ) {
+            const [result, dispose] = await c.searchAndWatch(publicKey)
+            setTimeout(dispose, 30 * 1000) // cache for 30s
+            return {
+              value: result?.account || null,
+              context: {
+                slot: 0,
+              },
+            }
+          }
+          return oldGetAccountinfoAndContext!(publicKey, com)
+        }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        connection.wrapped = true
+      }
+
+      return c
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- drops the old cache while the cache for the new connection loads
+    setCache(undefined)
+    void createCache().then((c) => {
+      // Like the old useAsync, keep only the result for the current inputs
+      if (!cancelled) setCache(c)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [connection, cluster])
   useEffect(() => {
     // Don't sub to hnt or dc they change a bunch
@@ -336,12 +348,7 @@ const useSolanaHook = () => {
     return () => cache?.close()
   }, [cache])
 
-  const updateCluster = useCallback(
-    (nextCluster: Cluster) => {
-      dispatch(appSlice.actions.setCluster(nextCluster))
-    },
-    [dispatch],
-  )
+  const updateCluster = useAppStore((state) => state.setCluster)
 
   return {
     anchorProvider,

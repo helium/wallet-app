@@ -31,7 +31,6 @@ const FADE_USE = /\bFade(?:In|Out)\b(?:(\})|((?:\s*\.\w+\([^)]*\))+))?/g
 const OPACITY_TIMING_FILES = [
   'src/features/request/RequestScreen.tsx',
   'src/components/SecretKeyWarningScreen.tsx',
-  'src/components/TreasuryWarningScreen.tsx',
   'src/components/SplashScreen.tsx',
 ]
 

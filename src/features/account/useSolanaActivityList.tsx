@@ -1,14 +1,20 @@
-import { DC_MINT } from '@helium/spl-utils'
 import { PublicKey } from '@solana/web3.js'
-import { onLogs, removeAccountChangeListener } from '@utils/solanaUtils'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  getTransactions,
+  onLogs,
+  removeAccountChangeListener,
+} from '@utils/solanaUtils'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CSAccount } from '../../storage/cloudStorage'
-import { RootState } from '../../store/rootReducer'
-import { getTxns } from '../../store/slices/solanaSlice'
-import { useAppDispatch } from '../../store/store'
 import { FilterType } from './AccountActivityFilter'
+import {
+  FetchActivity,
+  filterActivity,
+  solanaActivityQuery,
+  updateActivityHead,
+} from './logic/solanaActivity'
 
 export default ({
   account,
@@ -21,12 +27,24 @@ export default ({
 }) => {
   const mintStr = mint.toBase58()
   const [now, setNow] = useState(new Date())
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const { anchorProvider } = useSolana()
-  const solanaActivity = useSelector(
-    (state: RootState) => state.solana.activity,
-  )
-  const accountSubscriptionId = useRef<number | null>(null)
+  const address = account?.solanaAddress
+  const fetchActivity: FetchActivity = (options) => {
+    if (!anchorProvider || !address) throw new Error('No solana account found')
+    return getTransactions(anchorProvider, address, mintStr, options)
+  }
+  const query = solanaActivityQuery({ address, mint: mintStr, fetchActivity })
+  const {
+    data: pages,
+    error,
+    isFetching: loading,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery({
+    ...query,
+    enabled: !!address && !!anchorProvider,
+  })
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -38,88 +56,34 @@ export default ({
   useEffect(() => {
     if (!account?.address || !anchorProvider) return
 
-    void dispatch(
-      getTxns({
-        account,
-        mint: mintStr,
-        requestType: 'start_fresh',
-        anchorProvider,
-      }),
-    )
-
     const subId = onLogs(
       anchorProvider,
       anchorProvider.publicKey.toBase58(),
       () => {
-        void dispatch(
-          getTxns({
-            account,
-            mint: mintStr,
-            requestType: 'update_head',
-            anchorProvider,
-          }),
-        )
+        updateActivityHead(queryClient, query, fetchActivity).catch(() => {
+          // getTransactions logs the error; the list keeps what it has
+        })
       },
     )
 
-    if (accountSubscriptionId.current !== null) {
-      void removeAccountChangeListener(
-        anchorProvider,
-        accountSubscriptionId.current,
-      )
+    return () => {
+      void removeAccountChangeListener(anchorProvider, subId)
     }
-    accountSubscriptionId.current = subId
-  }, [account, dispatch, filter, mintStr, anchorProvider])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account, mintStr, anchorProvider, queryClient])
 
   const requestMore = useCallback(() => {
-    if (!account?.address || !anchorProvider) return
-
-    void dispatch(
-      getTxns({
-        account,
-        mint: mintStr,
-        requestType: 'fetch_more',
-        anchorProvider,
-      }),
-    )
-  }, [account, dispatch, anchorProvider, mintStr])
+    if (hasNextPage) void fetchNextPage()
+  }, [hasNextPage, fetchNextPage])
 
   const data = useMemo(() => {
-    if (!account?.solanaAddress || !solanaActivity.data[account.solanaAddress])
-      return []
-
-    if (
-      mintStr === DC_MINT.toBase58() &&
-      (filter === 'delegate' || filter === 'mint')
-    ) {
-      return solanaActivity.data[account.solanaAddress][filter][mintStr]
-    }
-
-    if (filter !== 'in' && filter !== 'out' && filter !== 'all') return []
-    if (filter === 'in' || filter === 'out') {
-      const payments =
-        solanaActivity.data[account.solanaAddress]?.payment[mintStr]
-      return payments?.filter((txn) =>
-        txn.payments?.some((payment) =>
-          payment.mint === mintStr &&
-          payment.owner === account?.solanaAddress &&
-          filter === 'out'
-            ? payment.amount < 0
-            : payment.amount > 0,
-        ),
-      )
-    }
-
-    return solanaActivity.data[account.solanaAddress][filter][mintStr]
-  }, [account?.solanaAddress, solanaActivity.data, mintStr, filter])
-
-  const loading = useMemo(() => {
-    return solanaActivity.loading
-  }, [solanaActivity.loading])
-
-  const error = useMemo(() => {
-    return solanaActivity.error
-  }, [solanaActivity.error])
+    if (!account?.solanaAddress || !pages) return []
+    return filterActivity(pages.pages.flat(), {
+      filter,
+      mint: mintStr,
+      owner: account.solanaAddress,
+    })
+  }, [account?.solanaAddress, pages, mintStr, filter])
 
   return {
     data,

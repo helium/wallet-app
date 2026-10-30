@@ -3,9 +3,9 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Cluster, PublicKey } from '@solana/web3.js'
 import { Intervals } from '../features/settings/useAuthIntervals'
@@ -74,84 +74,95 @@ const useAppStorageHook = () => {
 
   const [sessionKey, setSessionKey] = useState('')
 
-  useAsync(async () => {
-    // TODO: When performing an account restore pin will not be restored.
-    // Find a way to detect when a restore happens and prompt user for a new pin
-    try {
-      const nextAutoGasManagementToken = await getSecureItem(
-        'autoGasManagementToken',
-      )
-      const nextPin = await getSecureItem('pin')
-      const nextPinForPayment = await getSecureItem('pinForPayment')
-      const nextAuthInterval = await getSecureItem('authInterval')
-      const nextLocked = await getSecureItem('locked')
-      const nextCurrency = await getSecureItem('currency')
-      const nextConvertToCurrency = await getSecureItem('convertToCurrency')
-      const nextEnableTestnet = await getSecureItem('enableTestnet')
-      const nextEnableHaptic = await getSecureItem('enableHaptic')
-      const nextExplorer = await getSecureItem('explorer')
-      const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
-      const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
-      const [nextDeprecatedTokensDismissedStr, nextMigrateToWorldDismissedStr] =
-        await Promise.all([
+  useEffect(() => {
+    const restore = async () => {
+      // TODO: When performing an account restore pin will not be restored.
+      // Find a way to detect when a restore happens and prompt user for a new pin
+      try {
+        const nextAutoGasManagementToken = await getSecureItem(
+          'autoGasManagementToken',
+        )
+        const nextPin = await getSecureItem('pin')
+        const nextPinForPayment = await getSecureItem('pinForPayment')
+        const nextAuthInterval = await getSecureItem('authInterval')
+        const nextLocked = await getSecureItem('locked')
+        const nextCurrency = await getSecureItem('currency')
+        const nextConvertToCurrency = await getSecureItem('convertToCurrency')
+        const nextEnableTestnet = await getSecureItem('enableTestnet')
+        const nextEnableHaptic = await getSecureItem('enableHaptic')
+        const nextExplorer = await getSecureItem('explorer')
+        const nextDAppShown = await AsyncStorage.getItem(DAPP_TUTORIAL_SHOWN)
+        const nextVoteShown = await AsyncStorage.getItem(VOTE_TUTORIAL_SHOWN)
+        const [
+          nextDeprecatedTokensDismissedStr,
+          nextMigrateToWorldDismissedStr,
+        ] = await Promise.all([
           AsyncStorage.getItem(DEPRECATED_TOKENS_DISMISSED),
           AsyncStorage.getItem(MIGRATE_TO_WORLD_DISMISSED),
         ])
-      const nextDeprecatedTokensDismissed = nextDeprecatedTokensDismissedStr
-        ? JSON.parse(nextDeprecatedTokensDismissedStr)
-        : {}
-      const nextMigrateToWorldDismissed = nextMigrateToWorldDismissedStr
-        ? JSON.parse(nextMigrateToWorldDismissedStr)
-        : {}
-      const nextShowNumericChange = await getSecureItem('showNumericChange')
-      const nextDoneSolanaMigration = await getSecureItem(
-        SecureStorageKeys.DONE_SOLANA_MIGRATION,
-      )
-      const nextSessionKey = await getSecureItem(SecureStorageKeys.SESSION_KEY)
+        const nextDeprecatedTokensDismissed = nextDeprecatedTokensDismissedStr
+          ? JSON.parse(nextDeprecatedTokensDismissedStr)
+          : {}
+        const nextMigrateToWorldDismissed = nextMigrateToWorldDismissedStr
+          ? JSON.parse(nextMigrateToWorldDismissedStr)
+          : {}
+        const nextShowNumericChange = await getSecureItem('showNumericChange')
+        const nextDoneSolanaMigration = await getSecureItem(
+          SecureStorageKeys.DONE_SOLANA_MIGRATION,
+        )
+        const nextSessionKey = await getSecureItem(
+          SecureStorageKeys.SESSION_KEY,
+        )
 
-      setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
-      setRequirePinForPayment(nextPinForPayment === 'true')
+        setPin({ value: nextPin || '', status: nextPin ? 'restored' : 'off' })
+        setRequirePinForPayment(nextPinForPayment === 'true')
 
-      // Always lock when app is freshly started
-      if (nextPin) {
-        if (locked === undefined) {
-          setLocked(true)
+        // Always lock when app is freshly started
+        if (nextPin) {
+          if (locked === undefined) {
+            setLocked(true)
+          } else {
+            setLocked(nextLocked === 'true')
+          }
         } else {
-          setLocked(nextLocked === 'true')
+          setLocked(false)
         }
-      } else {
-        setLocked(false)
-      }
 
-      setAutoGasManagementToken(
-        nextAutoGasManagementToken
-          ? new PublicKey(nextAutoGasManagementToken)
-          : undefined,
-      )
-      setCurrency(nextCurrency || 'USD')
-      setConvertToCurrency(nextConvertToCurrency === 'true')
-      setExplorer(nextExplorer || undefined)
-      setEnableHaptic(nextEnableHaptic === 'true')
-      setEnableTestnet(nextEnableTestnet === 'true')
-      setDAppTutorialShown(
-        JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
-      )
-      setVoteTutorialShown(nextVoteShown === 'true')
-      setDeprecatedTokensDismissed(nextDeprecatedTokensDismissed)
-      setMigrateToWorldDismissed(nextMigrateToWorldDismissed)
-      setShowNumericChange(nextShowNumericChange === 'true')
-      setSessionKey(nextSessionKey || '')
-      setDoneSolanaMigration(
-        JSON.parse(nextDoneSolanaMigration || '{}') as Record<string, string[]>,
-      )
+        setAutoGasManagementToken(
+          nextAutoGasManagementToken
+            ? new PublicKey(nextAutoGasManagementToken)
+            : undefined,
+        )
+        setCurrency(nextCurrency || 'USD')
+        setConvertToCurrency(nextConvertToCurrency === 'true')
+        setExplorer(nextExplorer || undefined)
+        setEnableHaptic(nextEnableHaptic === 'true')
+        setEnableTestnet(nextEnableTestnet === 'true')
+        setDAppTutorialShown(
+          JSON.parse(nextDAppShown || '{}') as Record<string, boolean>,
+        )
+        setVoteTutorialShown(nextVoteShown === 'true')
+        setDeprecatedTokensDismissed(nextDeprecatedTokensDismissed)
+        setMigrateToWorldDismissed(nextMigrateToWorldDismissed)
+        setShowNumericChange(nextShowNumericChange === 'true')
+        setSessionKey(nextSessionKey || '')
+        setDoneSolanaMigration(
+          JSON.parse(nextDoneSolanaMigration || '{}') as Record<
+            string,
+            string[]
+          >,
+        )
 
-      if (nextAuthInterval) {
-        setAuthInterval(Number.parseInt(nextAuthInterval, 10))
+        if (nextAuthInterval) {
+          setAuthInterval(Number.parseInt(nextAuthInterval, 10))
+        }
+      } catch (e) {
+        console.error(e)
+        setPin({ value: '', status: 'off' })
       }
-    } catch (e) {
-      console.error(e)
-      setPin({ value: '', status: 'off' })
     }
+    void restore()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateAutoGasManagementToken = useCallback(

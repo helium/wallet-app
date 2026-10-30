@@ -8,7 +8,7 @@ import { BlockchainApiProvider } from '@storage/BlockchainApiProvider'
 import { JupiterProvider } from '@storage/JupiterProvider'
 import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import globalStyles from '@theme/globalStyles'
 import { createAppTheme, darkThemeColors, lightThemeColors } from '@theme/theme'
 import { useColorScheme } from '@theme/themeHooks'
@@ -47,6 +47,8 @@ import { GovernanceProvider } from './storage/GovernanceProvider'
 import { useNotificationStorage } from './storage/NotificationStorageProvider'
 import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
+import { queryClient } from './utils/queryClient'
+import { queryPersistOptions } from './utils/queryPersistence'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -105,10 +107,11 @@ const App = () => {
     }
   })
 
-  const queryClient = React.useMemo(() => new QueryClient(), [])
-
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={queryPersistOptions}
+    >
       <GestureHandlerRootView style={globalStyles.container}>
         <KeyboardProvider>
           <SafeAreaProvider>
@@ -196,7 +199,7 @@ const App = () => {
           </SafeAreaProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   )
 }
 

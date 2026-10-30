@@ -529,10 +529,6 @@ export default {
       'No route found on Jupiter from source token to target token. Please select another token.',
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
-    understood: 'Understood',
-    treasurySwapWarningTitle: 'Treasury Swap Warning',
-    treasurySwapWarningBody:
-      'Please be advised that the subDAO treasury has only been active for a few days since the Solana migration. Swapping subtokens to HNT may be affected by a limited HNT supply in the subDAO treasury and may not reflect up-to-date prices. Please proceed with caution.',
     addRecipient: 'Add Recipient',
   },
   secretKeyWarningScreen: {
@@ -1120,6 +1116,8 @@ export default {
             'You are removing your only wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
           iCloudMessage:
             '\n\nAny device using the same iCloud account will also be signed out.',
+          iCloudMessageOneWallet:
+            '\n\nThis wallet will also be removed from any device using the same iCloud account.',
           title: 'Remove {{alias}}?',
         },
         title: '{{alias}} Wallet Settings',

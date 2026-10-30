@@ -19,21 +19,17 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import { Platform, View } from 'react-native'
 import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
-import { useSelector } from 'react-redux'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { checkSecureAccount } from '../../storage/secureStorage'
-import { RootState } from '../../store/rootReducer'
-import { appSlice } from '../../store/slices/appSlice'
-import { useAppDispatch } from '../../store/store'
+import { useAppStore } from '../../store/appStore'
 import { AccountBalance } from '../../types/balance'
 import { useBalance } from '../../utils/Balance'
 import StatusBanner from '../StatusPage/StatusBanner'
@@ -69,10 +65,12 @@ const AccountsScreen = () => {
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const topHeaderRef = useRef<View>(null)
   const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
-  const dispatch = useAppDispatch()
   const { triggerImpact } = useHaptic()
   const colors = useColors()
-  const { showBanner } = useSelector((state: RootState) => state.app)
+  const showBanner = useAppStore((state) => state.showBanner)
+  const toggleConnectedWallets = useAppStore(
+    (state) => state.toggleConnectedWallets,
+  )
   const { isHealthy } = useSolanaHealth()
 
   const actualTop = useMemo(() => {
@@ -124,7 +122,7 @@ const AccountsScreen = () => {
   }, [rootNav, sortedAccounts.length])
 
   const showChart = useMemo(() => {
-    return balanceHistory?.length >= 2
+    return (balanceHistory?.length ?? 0) >= 2
   }, [balanceHistory])
 
   const chartValues = useMemo(() => {
@@ -156,30 +154,34 @@ const AccountsScreen = () => {
   }, [navigation, openedNotification, locked])
 
   // Hook that is used for helium balance widget.
-  useAsync(async () => {
-    if (Platform.OS === 'ios') {
-      const defaultAccount = sortedAccounts.find(
-        (account: CSAccount) => account.address === defaultAccountAddress,
-      )
+  useEffect(() => {
+    const updateWidget = async () => {
+      if (Platform.OS === 'ios') {
+        const defaultAccount = sortedAccounts.find(
+          (account: CSAccount) => account.address === defaultAccountAddress,
+        )
 
-      await SharedGroupPreferences.setItem(
-        'heliumWalletWidgetKey',
-        {
-          defaultAccountAddress: defaultAccount?.solanaAddress,
-          defaultAccountAlias: defaultAccount?.alias,
-          currencyType: currency,
-          cluster,
-        },
-        widgetGroup,
-      )
+        await SharedGroupPreferences.setItem(
+          'heliumWalletWidgetKey',
+          {
+            defaultAccountAddress: defaultAccount?.solanaAddress,
+            defaultAccountAlias: defaultAccount?.alias,
+            currencyType: currency,
+            cluster,
+          },
+          widgetGroup,
+        )
+      }
     }
+    updateWidget().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultAccountAddress, sortedAccounts])
 
   const toggleWalletsVisible = useCallback(() => {
     triggerImpact('light')
-    dispatch(appSlice.actions.toggleConnectedWallets())
+    toggleConnectedWallets()
     setSelectedBalance(undefined)
-  }, [dispatch, triggerImpact])
+  }, [toggleConnectedWallets, triggerImpact])
 
   const handleBalanceHistorySelected = useCallback(
     (accountBalance?: AccountBalance) => {

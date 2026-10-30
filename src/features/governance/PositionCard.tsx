@@ -64,7 +64,6 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
@@ -482,15 +481,19 @@ export const PositionCard = ({
   }
 
   // used for actions that run right after clicking the action button
-  useAsync(async () => {
-    if (pendingAction !== null) {
-      await {
-        relinquish: handleRelinquishVotes,
-        flipLockupKind: handleFlipPositionLockupKind,
-        undelegate: handleUndelegateTokens,
-        close: handleClosePosition,
-      }[pendingAction.action]?.()
+  useEffect(() => {
+    const run = async () => {
+      if (pendingAction !== null) {
+        await {
+          relinquish: handleRelinquishVotes,
+          flipLockupKind: handleFlipPositionLockupKind,
+          undelegate: handleUndelegateTokens,
+          close: handleClosePosition,
+        }[pendingAction.action]?.()
+      }
     }
+    run().catch((e) => console.error(e))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAction])
 
   const govNavigation = useNavigation<GovernanceNavigationProp>()

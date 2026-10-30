@@ -7,7 +7,6 @@ import ContentColumn from '@components/ContentColumn'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import { useColors } from '@theme/themeHooks'
-import { useDispatch } from 'react-redux'
 import { useGovernance } from '@storage/GovernanceProvider'
 import GovernanceNavigator from '../features/governance/GovernanceNavigator'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -17,7 +16,7 @@ import HomeNavigator from '../features/home/HomeNavigator'
 import CollectablesNavigator from '../features/collectables/CollectablesNavigator'
 import ActivityNavigator from '../features/activity/ActivityNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
-import { appSlice } from '../store/slices/appSlice'
+import { useAppStore } from '../store/appStore'
 import { useSolana } from '../solana/SolanaProvider'
 
 const Tab = createNativeBottomTabNavigator()
@@ -27,11 +26,11 @@ const Tab = createNativeBottomTabNavigator()
 const DOT_BADGE = Platform.select({ ios: ' ', default: '' })
 
 const TabBarNavigator = () => {
-  const dispatch = useDispatch()
   const colors = useColors()
   const { triggerImpact } = useHaptic()
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { hasUnseenProposals } = useGovernance()
+  const setShowBanner = useAppStore((state) => state.setShowBanner)
 
   const { doneSolanaMigration, manualMigration } = useAppStorage()
   const { cluster, updateCluster } = useSolana()
@@ -39,8 +38,8 @@ const TabBarNavigator = () => {
   const { anchorProvider } = useSolana()
 
   useEffect(() => {
-    dispatch(appSlice.actions.setShowBanner(cluster === 'devnet'))
-  }, [dispatch, cluster])
+    setShowBanner(cluster === 'devnet')
+  }, [setShowBanner, cluster])
 
   // Switch to mainnet-beta if migration is complete & user hasn't already migrated
   useEffect(() => {

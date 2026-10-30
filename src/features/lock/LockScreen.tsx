@@ -5,7 +5,6 @@ import usePrevious from '@hooks/usePrevious'
 import useSecureWindow from '@hooks/useSecureWindow'
 import * as LocalAuthentication from 'expo-local-authentication'
 import React, { memo, useCallback, useEffect } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
@@ -18,6 +17,7 @@ import {
   getSecureItem,
   storeSecureItem,
 } from '../../storage/secureStorage'
+import { withICloudSignOutWarning } from '../settings/signOutWarning'
 
 type Props = { children: React.ReactNode }
 const LockScreen = ({ children }: Props) => {
@@ -44,31 +44,34 @@ const LockScreen = ({ children }: Props) => {
   }, [authInterval, locked, pin, prevLocked])
 
   // handle app state changes
-  useAsync(async () => {
-    if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
+  useEffect(() => {
+    const run = async () => {
+      if (locked || !pin || pin?.status === 'off' || !hasAccounts) return
 
-    if (appState === 'background' || appState === 'inactive') {
-      await storeSecureItem('lastIdle', Date.now().toString())
-      return
+      if (appState === 'background' || appState === 'inactive') {
+        await storeSecureItem('lastIdle', Date.now().toString())
+        return
+      }
+
+      const lastIdleString = await getSecureItem('lastIdle')
+
+      if (!lastIdleString) return
+
+      const lastIdle = Number.parseInt(lastIdleString, 10)
+      const isActive = appState === 'active'
+      const now = Date.now()
+      const expiration = now - authInterval
+      const lastIdleExpired = lastIdle && expiration > lastIdle
+
+      // pin is required and last idle is past user interval, lock the screen
+      const shouldLock = isActive && lastIdleExpired
+
+      if (shouldLock) {
+        await deleteSecureItem('lastIdle')
+        await updateLocked(true)
+      }
     }
-
-    const lastIdleString = await getSecureItem('lastIdle')
-
-    if (!lastIdleString) return
-
-    const lastIdle = Number.parseInt(lastIdleString, 10)
-    const isActive = appState === 'active'
-    const now = Date.now()
-    const expiration = now - authInterval
-    const lastIdleExpired = lastIdle && expiration > lastIdle
-
-    // pin is required and last idle is past user interval, lock the screen
-    const shouldLock = isActive && lastIdleExpired
-
-    if (shouldLock) {
-      await deleteSecureItem('lastIdle')
-      await updateLocked(true)
-    }
+    run().catch((e) => console.error(e))
   }, [appState, pin, authInterval, updateLocked, locked, hasAccounts])
 
   const handleSuccess = useCallback(async () => {
@@ -78,7 +81,11 @@ const LockScreen = ({ children }: Props) => {
   const handleSignOut = useCallback(async () => {
     const decision = await showOKCancelAlert({
       title: t('auth.signOutAlert.title'),
-      message: t('auth.signOutAlert.body'),
+      message: withICloudSignOutWarning(
+        t,
+        t('auth.signOutAlert.body'),
+        'allWallets',
+      ),
     })
     if (decision) {
       await signOut()
@@ -86,19 +93,22 @@ const LockScreen = ({ children }: Props) => {
     }
   }, [updateLocked, showOKCancelAlert, signOut, t])
 
-  useAsync(async () => {
-    if (!locked) return
+  useEffect(() => {
+    const run = async () => {
+      if (!locked) return
 
-    const localAuth = async () => {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync()
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync()
-      if (!isEnrolled || !hasHardware) return
+      const localAuth = async () => {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync()
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync()
+        if (!isEnrolled || !hasHardware) return
 
-      const { success } = await LocalAuthentication.authenticateAsync()
-      if (success) await handleSuccess()
+        const { success } = await LocalAuthentication.authenticateAsync()
+        if (success) await handleSuccess()
+      }
+
+      await localAuth()
     }
-
-    await localAuth()
+    run().catch((e) => console.error(e))
   }, [handleSuccess, locked])
 
   const overlay = (

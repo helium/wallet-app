@@ -6,18 +6,16 @@ import {
   useSafeAreaInsets,
   initialWindowMetrics,
 } from 'react-native-safe-area-context'
-import { useDispatch, useSelector } from 'react-redux'
 import InfoWarning from '@assets/images/warning.svg'
 import CloseCircle from '@assets/images/closeCircleFilled.svg'
 import { BoxProps } from '@shopify/restyle'
 import { Theme } from '@theme/theme'
 import { LayoutChangeEvent } from 'react-native'
 import useSolanaHealth from '@hooks/useSolanaHealth'
-import { RootState } from '../store/rootReducer'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 import Text from './Text'
-import { appSlice } from '../store/slices/appSlice'
+import { useAppStore } from '../store/appStore'
 import TouchableOpacityBox from './TouchableOpacityBox'
 
 const MIN_HEIGHT = 52
@@ -33,11 +31,11 @@ type BannerProps = {
 } & BoxProps<Theme>
 
 const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
-  const dispatch = useDispatch()
   const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const { top } = useSafeAreaInsets()
   const { t } = useTranslation()
-  const { showBanner } = useSelector((state: RootState) => state.app)
+  const showBanner = useAppStore((state) => state.showBanner)
+  const setShowBanner = useAppStore((state) => state.setShowBanner)
   const { healthMessage } = useSolanaHealth()
 
   const bannerTopMargin = useMemo(() => {
@@ -63,8 +61,8 @@ const Banner = ({ type, onLayout, ...rest }: BannerProps) => {
   }, [showBanner, bannerTopMargin])
 
   const handleBannerClose = useCallback(() => {
-    dispatch(appSlice.actions.setShowBanner(false))
-  }, [dispatch])
+    setShowBanner(false)
+  }, [setShowBanner])
 
   return (
     <ReAnimatedBox

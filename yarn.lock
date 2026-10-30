@@ -2062,7 +2062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.20.0, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.20.0, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.25.0":
   version: 7.28.2
   resolution: "@babel/runtime@npm:7.28.2"
   checksum: 10/a0965fbdd6aaa40709290923bbe05e1c4314021f0cef608eb1d69f04f717c41829e50a53d79c4a0f461512b4be9b3c0190dc19387b219bcdaacdd793b2fe1b8a
@@ -6572,26 +6572,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@reduxjs/toolkit@npm:1.9.1":
-  version: 1.9.1
-  resolution: "@reduxjs/toolkit@npm:1.9.1"
-  dependencies:
-    immer: "npm:^9.0.16"
-    redux: "npm:^4.2.0"
-    redux-thunk: "npm:^2.4.2"
-    reselect: "npm:^4.1.7"
-  peerDependencies:
-    react: ^16.9.0 || ^17.0.0 || ^18
-    react-redux: ^7.2.1 || ^8.0.2
-  peerDependenciesMeta:
-    react:
-      optional: true
-    react-redux:
-      optional: true
-  checksum: 10/7a9fcdd714aed061509052aa9a6c10dd46d6040d921a13071c473192fcea37c3f9574c2bf0c5b1015b8f5f5dc3ddce7f3cb0fb4b10ffa087afb463815a3230a6
-  languageName: node
-  linkType: hard
-
 "@scure/base@npm:1.2.6, @scure/base@npm:^1.2.4, @scure/base@npm:~1.2.5":
   version: 1.2.6
   resolution: "@scure/base@npm:1.2.6"
@@ -8316,10 +8296,41 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-async-storage-persister@npm:5.101.4":
+  version: 5.101.4
+  resolution: "@tanstack/query-async-storage-persister@npm:5.101.4"
+  dependencies:
+    "@tanstack/query-core": "npm:5.101.4"
+    "@tanstack/query-persist-client-core": "npm:5.101.4"
+  checksum: 10/85aedd7241bef22156b98d5798c7661ee15c22fb0f97aa47d1da4eb6c6b23ce74c2724e1322285c52ddee2d3af1237087402479bc444e8d753f66c2f8f1b4bad
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.101.4":
   version: 5.101.4
   resolution: "@tanstack/query-core@npm:5.101.4"
   checksum: 10/df86031035ac9a5cf54efece85718b90e93fca62068a44a176da232b6dd49b27168840f2da18c64a0eb25d171bc3fb1aab417db4643025cd194ff887833bd73f
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-persist-client-core@npm:5.101.4":
+  version: 5.101.4
+  resolution: "@tanstack/query-persist-client-core@npm:5.101.4"
+  dependencies:
+    "@tanstack/query-core": "npm:5.101.4"
+  checksum: 10/f98deefbec974ee20183f5d0067deb688248096a185261b8c74695cfecaf897020a5dc1606477767a084c29ec5b68201bbcae2624d4c5a097770c5d8831131d4
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query-persist-client@npm:5.101.4":
+  version: 5.101.4
+  resolution: "@tanstack/react-query-persist-client@npm:5.101.4"
+  dependencies:
+    "@tanstack/query-persist-client-core": "npm:5.101.4"
+  peerDependencies:
+    "@tanstack/react-query": ^5.101.4
+    react: ^18 || ^19
+  checksum: 10/33baa318b96692958bca3b905c9e16114ed04d327c37b3cbd92a3103a124adf4e818f68beac5b40f1348c5a1f8204541f1fa964b3ace19394609ec83950adfe4
   languageName: node
   linkType: hard
 
@@ -8523,17 +8534,6 @@ __metadata:
   version: 7946.0.16
   resolution: "@types/geojson@npm:7946.0.16"
   checksum: 10/34d07421bdd60e7b99fa265441d17ac6e9aef48e3ce22d04324127d0de1daf7fbaa0bd3be1cece2092eb6995f21da84afa5231e24621a2910ff7340bc98f496f
-  languageName: node
-  linkType: hard
-
-"@types/hoist-non-react-statics@npm:^3.3.1":
-  version: 3.3.7
-  resolution: "@types/hoist-non-react-statics@npm:3.3.7"
-  dependencies:
-    hoist-non-react-statics: "npm:^3.3.0"
-  peerDependencies:
-    "@types/react": "*"
-  checksum: 10/13f610572c073970b3f43cc446396974fed786fee6eac2d6fd4b0ca5c985f13e79d4a0de58af4e5b4c68470d808567c3a14108d98edb7d526d4d46c8ec851ed1
   languageName: node
   linkType: hard
 
@@ -8769,13 +8769,6 @@ __metadata:
   version: 1.4.3
   resolution: "@types/tinycolor2@npm:1.4.3"
   checksum: 10/abfdf558c42ea69a8cd19ec291f8a16574914db18f0c6bdf16bf69c00e28b430161336de1a5833d43ba8963ccc3fec792c490156676eae228956e03c01774e11
-  languageName: node
-  linkType: hard
-
-"@types/use-sync-external-store@npm:^0.0.3":
-  version: 0.0.3
-  resolution: "@types/use-sync-external-store@npm:0.0.3"
-  checksum: 10/161ddb8eec5dbe7279ac971531217e9af6b99f7783213566d2b502e2e2378ea19cf5e5ea4595039d730aa79d3d35c6567d48599f69773a02ffcff1776ec2a44e
   languageName: node
   linkType: hard
 
@@ -14494,14 +14487,15 @@ __metadata:
     "@react-navigation/material-top-tabs": "npm:7.8.1"
     "@react-navigation/native": "npm:7.5.1"
     "@react-navigation/native-stack": "npm:7.21.0"
-    "@reduxjs/toolkit": "npm:1.9.1"
     "@shopify/restyle": "npm:2.4.5"
     "@solana/spl-account-compression": "npm:0.1.4"
     "@solana/spl-token": "npm:0.3.6"
     "@solana/wallet-adapter-react": "npm:0.15.33"
     "@solana/wallet-standard-features": "npm:1.0.0"
     "@solana/web3.js": "npm:1.99.0"
+    "@tanstack/query-async-storage-persister": "npm:5.101.4"
     "@tanstack/react-query": "npm:5.101.4"
+    "@tanstack/react-query-persist-client": "npm:5.101.4"
     "@turf/helpers": "npm:6.5.0"
     "@types/bn.js": "npm:5.1.1"
     "@types/jest": "npm:30.0.0"
@@ -14594,13 +14588,14 @@ __metadata:
     react-native-device-info: "npm:8.7.1"
     react-native-gesture-handler: "npm:~3.3.0"
     react-native-get-random-values: "npm:2.0.0"
-    react-native-icloudstore: "npm:0.9.0"
     react-native-keyboard-controller: "npm:1.22.7"
     react-native-level-fs: "npm:3.0.1"
     react-native-localize: "npm:2.2.3"
     react-native-mail: "npm:6.1.1"
     react-native-markdown-display: "npm:7.0.2"
+    react-native-mmkv: "npm:4.3.2"
     react-native-navigation-bar-color: "npm:2.0.2"
+    react-native-nitro-modules: "npm:0.37.1"
     react-native-onesignal: "npm:5.5.15"
     react-native-os: "npm:1.2.6"
     react-native-pager-view: "npm:9.0.7"
@@ -14623,11 +14618,8 @@ __metadata:
     react-native-video: "npm:6.19.3"
     react-native-webview: "npm:14.0.1"
     react-native-worklets: "npm:0.13.0"
-    react-redux: "npm:8.0.4"
     react-test-renderer: "npm:19.3.0"
     reactotron-react-native: "npm:^5.1.3"
-    reactotron-redux: "npm:^3.1.9"
-    redux-persist: "npm:6.0.0"
     rn-swipe-button: "npm:^3.0.1"
     rxjs: "npm:7.5.6"
     stream: "npm:^0.0.3"
@@ -14642,6 +14634,7 @@ __metadata:
     use-debounce: "npm:^10.0.4"
     viem: "npm:^2.47.5"
     web-streams-polyfill: "npm:^4.2.0"
+    zustand: "npm:^5.0.4"
   languageName: unknown
   linkType: soft
 
@@ -14708,15 +14701,6 @@ __metadata:
     minimalistic-assert: "npm:^1.0.0"
     minimalistic-crypto-utils: "npm:^1.0.1"
   checksum: 10/0298a1445b8029a69b713d918ecaa84a1d9f614f5857e0c6e1ca517abfa1357216987b2ee08cc6cc73ba82a6c6ddf2ff11b9717a653530ef03be599d4699b836
-  languageName: node
-  linkType: hard
-
-"hoist-non-react-statics@npm:^3.3.0, hoist-non-react-statics@npm:^3.3.2":
-  version: 3.3.2
-  resolution: "hoist-non-react-statics@npm:3.3.2"
-  dependencies:
-    react-is: "npm:^16.7.0"
-  checksum: 10/1acbe85f33e5a39f90c822ad4d28b24daeb60f71c545279431dc98c312cd28a54f8d64788e477fe21dc502b0e3cf58589ebe5c1ad22af27245370391c2d24ea6
   languageName: node
   linkType: hard
 
@@ -14870,13 +14854,6 @@ __metadata:
   version: 7.0.14
   resolution: "ignore@npm:7.0.14"
   checksum: 10/47ed87f5943d538b5320a8aff31e09e5b7a87505fbddf254f86604f222486b0fa36993269acab5697d5b707d336d0c26b8fb24b0adb2ddbea0aa7ce225757458
-  languageName: node
-  linkType: hard
-
-"immer@npm:^9.0.16":
-  version: 9.0.21
-  resolution: "immer@npm:9.0.21"
-  checksum: 10/8455d6b4dc8abfe40f06eeec9bcc944d147c81279424c0f927a4d4905ae34e5af19ab6da60bcc700c14f51c452867d7089b3b9236f5a9a2248e39b4a09ee89de
   languageName: node
   linkType: hard
 
@@ -17835,13 +17812,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"microdiff@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "microdiff@npm:1.5.0"
-  checksum: 10/ec1ee39b744e0f5140c9d1bcc05e25d2b2c6f6777bda2cbe59627af8aa0da5d8c98cfa5bbd610571b72b6db9e6cf3d120e24782a9870be611ea4fed69ca7bfbf
-  languageName: node
-  linkType: hard
-
 "micromatch@npm:^4.0.2, micromatch@npm:^4.0.4, micromatch@npm:^4.0.8":
   version: 4.0.8
   resolution: "micromatch@npm:4.0.8"
@@ -19828,7 +19798,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16.13.1, react-is@npm:^16.7.0":
+"react-is@npm:^16.13.1":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
@@ -19944,13 +19914,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-icloudstore@npm:0.9.0":
-  version: 0.9.0
-  resolution: "react-native-icloudstore@npm:0.9.0"
-  checksum: 10/89b09b8a4b06408557d293bfd1b6bf30a46d0256d2b8b9898c406f6afe9cb57ccdaf2f7bb5376a18ebdf770599bc77a2b116ae9bda900059f9d66fe759e73074
-  languageName: node
-  linkType: hard
-
 "react-native-is-edge-to-edge@npm:^1.2.1, react-native-is-edge-to-edge@npm:^1.3.1":
   version: 1.3.1
   resolution: "react-native-is-edge-to-edge@npm:1.3.1"
@@ -20025,10 +19988,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-mmkv@npm:4.3.2":
+  version: 4.3.2
+  resolution: "react-native-mmkv@npm:4.3.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: "*"
+  checksum: 10/200eac3939d89cc2182851a2cf7c2bfda519f78c870ed962b70c2873924d77a17e18eb3ecbe817670b01bdc6848eb2c093b4defc79c1aac0f3f0bee3d5408cdb
+  languageName: node
+  linkType: hard
+
 "react-native-navigation-bar-color@npm:2.0.2":
   version: 2.0.2
   resolution: "react-native-navigation-bar-color@npm:2.0.2"
   checksum: 10/752095e0225c16cdce5882a886c1f075ebf8998066fec1976d8610c144606e78dc20a7339fcda14caa98a4a4f77b583274781b53f3f1a0d49165af21e0f807a5
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-modules@npm:0.37.1":
+  version: 0.37.1
+  resolution: "react-native-nitro-modules@npm:0.37.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10/eba28d88427c2b3a113d4bf992c4c2bf6ca79cec65e72e7f84fc675b6d5c482d0a1e3db92dc5ca349c8ebd284cbb5263846ecd4edc8f0993568bca2880a83dba
   languageName: node
   linkType: hard
 
@@ -20369,38 +20353,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-redux@npm:8.0.4":
-  version: 8.0.4
-  resolution: "react-redux@npm:8.0.4"
-  dependencies:
-    "@babel/runtime": "npm:^7.12.1"
-    "@types/hoist-non-react-statics": "npm:^3.3.1"
-    "@types/use-sync-external-store": "npm:^0.0.3"
-    hoist-non-react-statics: "npm:^3.3.2"
-    react-is: "npm:^18.0.0"
-    use-sync-external-store: "npm:^1.0.0"
-  peerDependencies:
-    "@types/react": ^16.8 || ^17.0 || ^18.0
-    "@types/react-dom": ^16.8 || ^17.0 || ^18.0
-    react: ^16.8 || ^17.0 || ^18.0
-    react-dom: ^16.8 || ^17.0 || ^18.0
-    react-native: ">=0.59"
-    redux: ^4
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    "@types/react-dom":
-      optional: true
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-    redux:
-      optional: true
-  checksum: 10/513ace2be3291eed528f9272d03b9502ed2d0fdd8d60b5a0f222600c3561a41f348b09d1a6419c306d344a9751be53497d28c5e7713cb162882d890fa99d0159
-  languageName: node
-  linkType: hard
-
 "react-refresh@npm:^0.14.0, react-refresh@npm:^0.14.2":
   version: 0.14.2
   resolution: "react-refresh@npm:0.14.2"
@@ -20459,18 +20411,6 @@ __metadata:
   peerDependencies:
     react-native: ">=0.40.0"
   checksum: 10/4eb6c00a4b84cc96a38285375532e8f7b81c49580c54510bce52ed1e1e59be0a16406c27f2e1b7db06467ca6892486e096cb76b64d06cbe702fa99668f6e608c
-  languageName: node
-  linkType: hard
-
-"reactotron-redux@npm:^3.1.9":
-  version: 3.2.0
-  resolution: "reactotron-redux@npm:3.2.0"
-  dependencies:
-    microdiff: "npm:^1.5.0"
-  peerDependencies:
-    reactotron-core-client: "*"
-    redux: ">=4.0.0"
-  checksum: 10/66be32977e047f4dbba514d8355aef2f5fa358095e8f344adaef556b88b3e60fdb71600c4b4c2405591c599e535bdeb38220bd319955505e590045db9419bd43
   languageName: node
   linkType: hard
 
@@ -20555,33 +20495,6 @@ __metadata:
   version: 1.0.0
   resolution: "real-require@npm:1.0.0"
   checksum: 10/ac2ae7681e20c92be45a5f49110414af1576c7b4512869c2260076a69fc7c336335ef354f466a3be92e779c55b8df0b0043d191797d82d7f18e6310958e5a890
-  languageName: node
-  linkType: hard
-
-"redux-persist@npm:6.0.0":
-  version: 6.0.0
-  resolution: "redux-persist@npm:6.0.0"
-  peerDependencies:
-    redux: ">4.0.0"
-  checksum: 10/d3bf03fe8fc90f08985b88419eb32a21f727db2cfc93b486a8267b3884a22c665916a3dce1fd80e9e7d8180a849e5dc614b53e09e0a6803855899d7b3e652242
-  languageName: node
-  linkType: hard
-
-"redux-thunk@npm:^2.4.2":
-  version: 2.4.2
-  resolution: "redux-thunk@npm:2.4.2"
-  peerDependencies:
-    redux: ^4
-  checksum: 10/9bcb1193835128ecebf1e1a1b1a37bc15e8dfbdf6b6ee1b5566dd4c8e4ca05a81175f0c6dda34ab47f87053cd13b74d9f881d59446691d7b192831852b5d7a72
-  languageName: node
-  linkType: hard
-
-"redux@npm:^4.2.0":
-  version: 4.2.1
-  resolution: "redux@npm:4.2.1"
-  dependencies:
-    "@babel/runtime": "npm:^7.9.2"
-  checksum: 10/371e4833b671193303a7dea7803c8fdc8e0d566740c78f580e0a3b77b4161da25037626900a2205a5d616117fa6ad09a4232e5a110bd437186b5c6355a041750
   languageName: node
   linkType: hard
 
@@ -23026,15 +22939,6 @@ __metadata:
   peerDependencies:
     react: ">=16.8"
   checksum: 10/67a245bf91b23ef0d2d2c8a52845da62e006867bd9d93a99ca4d2f859101fcd54c7afd4f5a3b8bb5d24283f516e7e41bd8226250ee39affc33bd1cfd622a5cfb
-  languageName: node
-  linkType: hard
-
-"use-sync-external-store@npm:^1.0.0":
-  version: 1.5.0
-  resolution: "use-sync-external-store@npm:1.5.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10/ddae7c4572511f7f641d6977bd0725340aa7dbeda8250418b54c1a57ec285083d96cf50d1a1acbd6cf729f7a87071b2302c6fbd29310432bf1b21a961a313279
   languageName: node
   linkType: hard
 

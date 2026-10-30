@@ -9,6 +9,7 @@ import {
 } from '@helium/spl-utils'
 import { Connection, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import React, {
   ReactNode,
@@ -20,17 +21,13 @@ import React, {
   useMemo,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
-import { useSelector } from 'react-redux'
 import usePrevious from '../hooks/usePrevious'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { RootState } from '../store/rootReducer'
-import { syncTokenAccounts } from '../store/slices/balancesSlice'
-import { useAppDispatch } from '../store/store'
 import { AccountBalance, BalanceInfo, TokenAccount } from '../types/balance'
 import StoreAtaBalance from './StoreAtaBalance'
+import { syncTokenAccounts, tokenAccountsQueryOptions } from './balances'
 import { useLanguage } from './i18n'
 import {
   ORACLE_FETCH_TIMEOUT,
@@ -56,36 +53,41 @@ const useBalanceHook = () => {
     () => currentAccount?.solanaAddress || '',
     [currentAccount],
   )
-  const allBalances = useSelector((state: RootState) => state.balances.balances)
+  // Only syncTokenAccounts fetches; this reads the cache
+  const { data: tokens } = useQuery({
+    ...tokenAccountsQueryOptions({ cluster, solanaAddress, anchorProvider }),
+    enabled: false,
+  })
 
   const { currency: currencyRaw, locked } = useAppStorage()
 
   const currency = useMemo(() => currencyRaw?.toLowerCase(), [currencyRaw])
 
-  const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
 
   // Use anchorProvider.connection instead of anchorProvider to prevent unnecessary re-syncs
   // when the provider object reference changes but the connection hasn't
   const providerConnection = anchorProvider?.connection
   const syncTokens = useEffectEvent(() => {
     if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
-    void dispatch(
-      syncTokenAccounts({ cluster, acct: currentAccount, anchorProvider }),
-    )
+    syncTokenAccounts(queryClient, {
+      cluster,
+      acct: currentAccount,
+      anchorProvider,
+    }).catch(() => {
+      // The sync guard skipped it or the RPC failed; the last balances stay
+    })
   })
   useEffect(() => {
     syncTokens()
-  }, [providerConnection, cluster, currentAccount, dispatch, locked])
+  }, [providerConnection, cluster, currentAccount, queryClient, locked])
 
   const tokenAccounts = useMemo(() => {
     if (!cluster || !anchorProvider || !anchorProvider.publicKey)
       return undefined
 
-    return (
-      allBalances?.[cluster]?.[anchorProvider.publicKey.toBase58() as string]
-        ?.atas || []
-    )
-  }, [cluster, anchorProvider, allBalances])
+    return tokens?.atas || []
+  }, [cluster, anchorProvider, tokens])
 
   const [oraclePrice, setOraclePrice] = useState<OraclePrice>()
   const [oraclePriceError, setOraclePriceError] = useState<Error>()
@@ -217,15 +219,16 @@ const useBalanceHook = () => {
   )
 
   const { language } = useLanguage()
-  const { result: tokenInfo } = useAsync(async () => {
-    const balancesForCluster = allBalances[cluster]
-    const accountBalancesForCluster = balancesForCluster[solanaAddress]
+  // Memoized: the effect below keys on its identity
+  const tokenInfo = useMemo(() => {
+    // No token data yet: fresh install, cleared cache, or new account
+    if (!tokens?.atas) return undefined
 
-    const atas = accountBalancesForCluster?.atas.filter(
+    const atas = tokens.atas.filter(
       (ata) => !!ata.tokenAccount,
     ) as Required<TokenAccount>[]
 
-    const solToken = accountBalancesForCluster?.sol
+    const solToken = tokens.sol
 
     const solBalance = solToken?.balance || 0
     const solPrice = tokenPrices?.solana?.[currency] || 0
@@ -265,22 +268,22 @@ const useBalanceHook = () => {
       formattedSolValue,
       formattedTotal,
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    allBalances,
+    tokens,
     cluster,
     currency,
     getBalance,
     hntToDcPrice,
+    language,
     solanaAddress,
     tokenPrices,
   ])
 
-  // The useAsync does not support stale-while-revalidate, so when
-  // it re-renders, the previous result value clears. We're storing
-  // the value in `balanceInfo`. We keep the previous value when
-  // cluster and solanaAddress stay the same until a new value
-  // is available. If cluster or solanaAddress change, we clear
-  // `balanceInfo`
+  // tokenInfo is undefined until the token query has data. We store
+  // the last value in `balanceInfo` and keep it while cluster and
+  // solanaAddress stay the same. If cluster or solanaAddress change,
+  // we clear `balanceInfo`
   const rawSolAddress = currentAccount?.solanaAddress
   const [prevTokenInfo, setPrevTokenInfo] = useState(tokenInfo)
   const [prevCluster, setPrevCluster] = useState<typeof cluster>()

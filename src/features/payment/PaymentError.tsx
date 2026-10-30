@@ -6,7 +6,6 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
-import { SerializedError } from '@reduxjs/toolkit'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { parseTransactionError } from '@utils/solanaUtils'
@@ -21,7 +20,7 @@ type Props = {
   totalBalance: BN
   feeTokenBalance?: BN
   payments: Payment[]
-  error?: Error | SerializedError
+  error?: Error
   // Undefined when the app cannot tell what landed: close only.
   onRetry?: () => void
 }

@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import CloseCircle from '@assets/images/CloseCircle.svg'
 import { useNavigation } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import FadeInOut from '@components/FadeInOut'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -20,7 +21,6 @@ import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Text from '@components/Text'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
-import { useAsync } from 'react-async-hook'
 import { BrowserNavigationProp } from './browserTypes'
 import BrowserListItem from './BrowserListItem'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -39,10 +39,10 @@ const BrowserScreen = () => {
   const { favorites, recents, addRecent } = useBrowser()
   const { t } = useTranslation()
 
-  const { result: recommendedDappsData } = useAsync(
-    () => getRecommendedDapps(),
-    [],
-  )
+  const { data: recommendedDappsData } = useQuery({
+    queryKey: ['recommendedDapps'],
+    queryFn: getRecommendedDapps,
+  })
 
   const SectionData = useMemo((): {
     title: string

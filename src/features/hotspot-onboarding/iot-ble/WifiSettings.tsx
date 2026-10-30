@@ -5,8 +5,8 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useHotspotBle } from '@helium/react-native-sdk'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useMutation } from '@tanstack/react-query'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert, SectionList } from 'react-native'
 import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
@@ -38,16 +38,18 @@ const WifiSettings = () => {
   }, [isConnected])
 
   const {
-    execute: handleRefresh,
-    loading: refreshing,
+    mutate: handleRefresh,
+    isPending: refreshing,
     error,
-  } = useAsyncCallback(async () => {
-    if (!connected) return
+  } = useMutation({
+    mutationFn: async () => {
+      if (!connected) return
 
-    const configured = await readWifiNetworks(true)
-    setConfiguredNetworks(configured)
-    const available = await readWifiNetworks(false)
-    setNetworks(available)
+      const configured = await readWifiNetworks(true)
+      setConfiguredNetworks(configured)
+      const available = await readWifiNetworks(false)
+      setNetworks(available)
+    },
   })
 
   // Refresh on network change or on load
@@ -171,7 +173,7 @@ const WifiSettings = () => {
         keyExtractor={keyExtractor}
         renderSectionHeader={renderSectionHeader}
         refreshing={refreshing}
-        onRefresh={() => void handleRefresh().catch(console.error)}
+        onRefresh={() => handleRefresh()}
       />
       <ButtonPressable
         marginTop="l"

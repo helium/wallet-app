@@ -15,10 +15,10 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import TextTransform from '@components/TextTransform'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
+import { LAMPORTS_PER_SOL } from '@solana/web3.js'
+import { useQuery } from '@tanstack/react-query'
 import { useColors, useSpacing } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import {
   KeyboardAvoidingView,
@@ -37,11 +37,11 @@ import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { useContentWidth } from '../../utils/layout'
 import * as Logger from '../../utils/logger'
-import { createTransferCollectableMessage } from '../../utils/solanaUtils'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { transferCollectableFeeQuery } from './transferCollectableFeeQuery'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -65,11 +65,7 @@ const TransferCollectableScreen = () => {
   const [recipient, setRecipient] = useState('')
   const [recipientName, setRecipientName] = useState('')
   const [hasError, setHasError] = useState(false)
-  const [networkError, setNetworkError] = useState<undefined | string>()
-  const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
-    undefined | boolean
-  >()
-  const [solFee, setSolFee] = useState<number | undefined>(undefined)
+  const [transferError, setTransferError] = useState<undefined | string>()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
   const addressBookRef = useRef<AddressBookRef>(null)
@@ -88,38 +84,19 @@ const TransferCollectableScreen = () => {
 
   const { submitCollectable } = useSubmitTxn()
 
-  useAsync(async () => {
-    if (!currentAccount?.solanaAddress || !anchorProvider?.connection) return
-
-    const { connection } = anchorProvider
-
-    try {
-      const { message } = await createTransferCollectableMessage(
-        anchorProvider,
-        currentAccount?.solanaAddress,
-        currentAccount?.address || '',
-        collectable,
-        currentAccount?.solanaAddress,
-      )
-
-      const response = await connection.getFeeForMessage(
-        message,
-        'singleGossip',
-      )
-
-      if (!response?.value) return
-
-      setSolFee(response.value / LAMPORTS_PER_SOL)
-
-      const balance = await connection.getBalance(
-        new PublicKey(currentAccount?.solanaAddress),
-      )
-      setHasInsufficientBalance(response.value > balance)
-    } catch (error) {
-      Logger.error(error)
-      setNetworkError((error as Error).message)
-    }
-  }, [])
+  const { data: feeData, error: feeError } = useQuery(
+    transferCollectableFeeQuery({
+      anchorProvider,
+      solanaAddress: currentAccount?.solanaAddress,
+      heliumAddress: currentAccount?.address || '',
+      collectable,
+    }),
+  )
+  const solFee = feeData ? feeData.feeLamports / LAMPORTS_PER_SOL : undefined
+  const hasInsufficientBalance = feeData
+    ? feeData.feeLamports > feeData.balanceLamports
+    : undefined
+  const networkError = transferError || feeError?.message
 
   const handleInfoPress = useCallback(() => {
     if (metadata) {
@@ -172,7 +149,7 @@ const TransferCollectableScreen = () => {
     } catch (error) {
       setTransferring(false)
       Logger.error(error)
-      setNetworkError((error as Error).message)
+      setTransferError((error as Error).message)
     }
   }, [collectable, navigation, recipient, submitCollectable])
 

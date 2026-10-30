@@ -16,8 +16,8 @@ import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
+import { useQuery } from '@tanstack/react-query'
 import React, { useCallback, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -86,22 +86,22 @@ export const ProposalCard = ({
         ))
 
   const proposalUri = useMemo(() => proposal?.uri, [proposal])
-  const {
-    error: descError,
-    loading: descLoading,
-    result: desc,
-  } = useAsync(async () => {
-    if (proposalUri) {
-      // Force HTTPS for security - convert any HTTP URLs to HTTPS
-      const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
-      const { data } = await axios.get(secureUri)
-      const htmlContent = markdownParser.render(data)
-      const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
-      return firstParagraphMatch
-        ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
-        : t('gov.proposals.noDescription')
-    }
-  }, [proposalUri])
+  const { isLoading: descLoading, data: desc } = useQuery({
+    queryKey: ['proposalDescription', proposalUri],
+    queryFn: async () => {
+      if (proposalUri) {
+        // Force HTTPS for security - convert any HTTP URLs to HTTPS
+        const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
+        const { data } = await axios.get(secureUri)
+        const htmlContent = markdownParser.render(data)
+        const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
+        return firstParagraphMatch
+          ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
+          : null
+      }
+      return null
+    },
+  })
 
   const votingResults = useMemo(() => {
     const totalVotes: BN = [...(proposal?.choices || [])].reduce(
@@ -201,7 +201,7 @@ export const ProposalCard = ({
               color="surfaceSecondaryText"
               numberOfLines={2}
             >
-              {!descError && desc ? desc : t('gov.proposals.noDescription')}
+              {desc || t('gov.proposals.noDescription')}
             </Text>
           )}
         </Box>

@@ -1,7 +1,7 @@
 import { useAppStorage } from '@storage/AppStorageProvider'
+import { useQuery } from '@tanstack/react-query'
 import { getExplorers, Explorer } from '@utils/walletApiV2'
 import { useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 
 export function useExplorer(): {
   current: Explorer | undefined
@@ -12,10 +12,10 @@ export function useExplorer(): {
   const { updateExplorer, explorer } = useAppStorage()
   // Randomize the order of items in the available array
   // to not bias explorers
-  const { result: available, loading } = useAsync(
-    async () => (await getExplorers()).sort(() => Math.random() - 0.5),
-    [],
-  )
+  const { data: available, isLoading: loading } = useQuery({
+    queryKey: ['explorers'],
+    queryFn: async () => (await getExplorers()).sort(() => Math.random() - 0.5),
+  })
   const current = useMemo(
     () => available?.find((a) => a.value === explorer),
     [available, explorer],

@@ -5,8 +5,8 @@ import CircleLoader from '@components/CircleLoader'
 import Text from '@components/Text'
 import { DiagnosticInfo, useHotspotBle } from '@helium/react-native-sdk'
 import { useNavigation } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
 import React, { useCallback, useState } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native'
 import type { HotspotBleNavProp } from './navTypes'
@@ -18,15 +18,14 @@ const Diagnostics = () => {
   const { getDiagnosticInfo } = useHotspotBle()
   const [callNum, setCallNum] = useState(0)
   const { t } = useTranslation()
-  const { loading, result: diagnosticInfo } = useAsync(
-    async (
-      getDiagnosticInfoFn: () => Promise<DiagnosticInfo>,
-      _callIdx: number,
-    ) => {
-      return getDiagnosticInfoFn()
-    },
-    [getDiagnosticInfo, callNum],
-  )
+  const { isLoading: loading, data: diagnosticInfo } = useQuery({
+    queryKey: ['hotspotDiagnostics', callNum],
+    queryFn: (): Promise<DiagnosticInfo> => getDiagnosticInfo(),
+    // A device read: never retry, and drop it on unmount so the next hotspot
+    // does not see this one's result
+    retry: false,
+    gcTime: 0,
+  })
 
   const handleSetDiagnostics = useCallback(() => {
     setCallNum((n) => n + 1)

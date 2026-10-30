@@ -169,7 +169,6 @@ jest.mock(
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
-jest.mock('@hooks/useDisappear', () => () => undefined, { virtual: true })
 jest.mock(
   '@hooks/useMetaplexMetadata',
   () => ({ useMetaplexMetadata: () => ({ symbol: 'SOL' }) }),
@@ -229,12 +228,6 @@ jest.mock('../../../solana/SolanaProvider', () => ({
 }))
 jest.mock('../../../storage/AccountStorageProvider', () => ({
   useAccountStorage: () => mockAccountStorage,
-}))
-jest.mock('../../../store/slices/solanaSlice', () => ({
-  solanaSlice: { actions: { resetPayment: () => ({ type: 'resetPayment' }) } },
-}))
-jest.mock('../../../store/store', () => ({
-  useAppDispatch: () => () => undefined,
 }))
 jest.mock('../../../utils/accountUtils', () => ({
   accountNetType: () => 0,

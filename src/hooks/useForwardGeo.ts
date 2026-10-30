@@ -1,11 +1,15 @@
+import { useMutation } from '@tanstack/react-query'
 import axios from 'axios'
-import { useAsyncCallback } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 
 export const useForwardGeo = () => {
   const { t } = useTranslation()
-  const { error, loading, execute } = useAsyncCallback(
-    async (searchText: string) => {
+  const {
+    error,
+    isPending: loading,
+    mutateAsync: execute,
+  } = useMutation({
+    mutationFn: async (searchText: string) => {
       if (!searchText) return
 
       const response = await axios.get(
@@ -18,7 +22,7 @@ export const useForwardGeo = () => {
 
       return response.data.features[0].geometry?.coordinates as [number, number]
     },
-  )
+  })
 
   return { error, loading, execute }
 }

@@ -43,7 +43,7 @@ export type HoldingsClassification = {
   leftBehindMints: string[] // mints the wallet holds (nonzero) but cannot migrate
 }
 
-// Redux `balances.tokenPrices`: price key -> currency code -> price.
+// Token prices query data: price key -> currency code -> price.
 export type PriceMap = Readonly<
   Record<string, Record<string, number> | undefined>
 >

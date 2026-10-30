@@ -13,10 +13,10 @@ import { useColors } from '@theme/themeHooks'
 import React, { useCallback, useMemo } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { RootState } from '../../store/rootReducer'
+import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
+import { useAppStore } from '../../store/appStore'
 import { HomeNavigationProp } from '../home/homeTypes'
 
 type Props = {
@@ -28,12 +28,10 @@ const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const { cluster } = useSolana()
-  const { showBanner } = useSelector((state: RootState) => state.app)
+  const showBanner = useAppStore((state) => state.showBanner)
   const { isHealthy } = useSolanaHealth()
 
-  const notificationsByResource = useSelector(
-    (appState: RootState) => appState.notifications.notifications,
-  )
+  const { notificationsByResource } = useNotificationStorage()
 
   const hasUnreadNotifications = useMemo(() => {
     const allNotifs = Object.keys(notificationsByResource).flatMap(

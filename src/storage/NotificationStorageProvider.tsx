@@ -3,41 +3,32 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
-  useEffectEvent,
   useMemo,
   useState,
 } from 'react'
 import { OSNotification } from 'react-native-onesignal'
 import { heliumAddressToSolAddress } from '@helium/spl-utils'
-import { useSelector } from 'react-redux'
-import { orderBy, without } from 'lodash'
+import { useMutation, useQueries } from '@tanstack/react-query'
+import { orderBy, uniq, without } from 'lodash'
 import {
   HELIUM_UPDATES_ITEM,
   WALLET_UPDATES_ITEM,
 } from '../features/notifications/notificationTypes'
-import { useAppDispatch } from '../store/store'
-import { getNotifications } from '../store/slices/notificationsSlice'
-import usePrevious from '../hooks/usePrevious'
-import { RootState } from '../store/rootReducer'
+import {
+  markNotificationViewed,
+  NOTIFICATIONS_REFETCH_INTERVAL_MS,
+  notificationsQuery,
+} from '../features/notifications/notificationsQuery'
 import { useAccountStorage } from './AccountStorageProvider'
-import { Notification } from '../utils/walletApiV2'
-import { SyncGuard } from '../utils/syncGuard'
-
-// Global notification sync guard to prevent overlapping requests
-const notificationSyncGuard = new SyncGuard()
+import { Notification, postNotificationRead } from '../utils/walletApiV2'
+import { queryClient } from '../utils/queryClient'
 
 const useNotificationStorageHook = () => {
   const [selectedList, setSelectedList] = useState<string>()
-  const prevSelectedList = usePrevious(selectedList)
   const [selectedNotification, setSelectedNotification] =
     useState<Notification>()
   const [openedNotification, setOpenedNotification] = useState<OSNotification>()
   const [unreadLists, setUnreadLists] = useState<string[]>([])
-  const dispatch = useAppDispatch()
-  const notificationsByResource = useSelector(
-    (appState: RootState) => appState.notifications.notifications,
-  )
   const { currentAccount, sortedAccounts } = useAccountStorage()
 
   const [prevAddress, setPrevAddress] = useState<string>()
@@ -56,11 +47,6 @@ const useNotificationStorageHook = () => {
     }
   }, [selectedList])
 
-  const notifications = useMemo(() => {
-    const unsorted = notificationsByResource[apiResource || ''] || []
-    return orderBy(unsorted, [(n) => new Date(n.createdAt)], ['desc'])
-  }, [notificationsByResource, apiResource])
-
   const currentResources = useMemo(() => {
     const all = [WALLET_UPDATES_ITEM, HELIUM_UPDATES_ITEM]
     if (apiResource && !all.includes(apiResource)) {
@@ -70,93 +56,59 @@ const useNotificationStorageHook = () => {
     return all
   }, [apiResource])
 
-  const updateNotifications = useCallback(() => {
-    if (prevSelectedList === selectedList) return
-
-    const syncKey = `${currentAccount?.solanaAddress}-${selectedList}`
-
-    // Check if sync can proceed
-    if (!notificationSyncGuard.canSync(syncKey)) {
-      return
-    }
-
-    notificationSyncGuard.startSync(syncKey)
-
-    // Batch all notification requests with a small delay between each
-    currentResources.forEach((r, index) => {
-      setTimeout(() => {
-        void dispatch(
-          getNotifications({
-            resource: r,
-            wallet: currentAccount?.solanaAddress,
-          }),
-        ).finally(() => {
-          // Only reset sync flag after the last request
-          if (index === currentResources.length - 1) {
-            notificationSyncGuard.endSync()
-          }
-        })
-      }, index * 200) // 200ms between each request
-    })
-  }, [
-    currentAccount?.solanaAddress,
-    currentResources,
-    dispatch,
-    prevSelectedList,
-    selectedList,
+  const resources = uniq([
+    ...currentResources,
+    ...(without(
+      sortedAccounts.map(({ solanaAddress }) => solanaAddress),
+      undefined,
+    ) as string[]),
   ])
 
-  const updateAllNotifications = useCallback(() => {
-    const syncKey = `all-${currentAccount?.solanaAddress}`
+  // Outside QueryClientProvider, so the client is passed in. Every account
+  // fetches at launch, so the home unread dot covers all wallets. Only the
+  // current resources poll; other accounts refetch on updateAllNotifications.
+  const notificationQueries = useQueries(
+    {
+      queries: resources.map((r) => ({
+        ...notificationsQuery(r, currentAccount?.solanaAddress),
+        refetchInterval: currentResources.includes(r)
+          ? NOTIFICATIONS_REFETCH_INTERVAL_MS
+          : false,
+      })),
+    },
+    queryClient,
+  )
 
-    // Check if sync can proceed
-    if (!notificationSyncGuard.canSync(syncKey)) {
-      return
-    }
-
-    const all = without(
-      [
-        ...sortedAccounts.map(({ solanaAddress }) => solanaAddress),
-        HELIUM_UPDATES_ITEM,
-        WALLET_UPDATES_ITEM,
-      ],
-      undefined,
-    ) as string[]
-
-    notificationSyncGuard.startSync(syncKey)
-
-    // Batch all notification requests with delays
-    all.forEach((r, index) => {
-      setTimeout(() => {
-        void dispatch(
-          getNotifications({
-            resource: r,
-            wallet: currentAccount?.solanaAddress,
-          }),
-        ).finally(() => {
-          // Only reset sync flag after the last request
-          if (index === all.length - 1) {
-            notificationSyncGuard.endSync()
-          }
-        })
-      }, index * 300) // 300ms between each request for bulk updates
-    })
-  }, [currentAccount?.solanaAddress, dispatch, sortedAccounts])
-
-  const onUpdateNotifications = useEffectEvent(() => {
-    updateNotifications()
+  const notificationsByResource: Record<string, Notification[]> = {}
+  resources.forEach((r, i) => {
+    const { data } = notificationQueries[i]
+    if (data) notificationsByResource[r] = data
   })
 
-  useEffect(() => {
-    onUpdateNotifications()
-  }, [selectedList])
+  const notifications = orderBy(
+    notificationsByResource[apiResource] || [],
+    [(n) => new Date(n.createdAt)],
+    ['desc'],
+  )
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      onUpdateNotifications()
-    }, 60000 * 5) // Every 5 mins
-    return () => clearInterval(interval)
+  const updateAllNotifications = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: ['notifications'] })
   }, [])
+
+  const { mutate: markNotificationRead } = useMutation(
+    {
+      mutationFn: ({ id, resource }: { id: number; resource: string }) =>
+        postNotificationRead({ id, resource, accounts: sortedAccounts }),
+      onSuccess: (_, { id, resource }) =>
+        markNotificationViewed(
+          queryClient,
+          resource,
+          id,
+          new Date().toISOString(),
+        ),
+    },
+    queryClient,
+  )
 
   const updateSelectedList = useCallback(
     (nextSelectedList: string) => {
@@ -176,6 +128,7 @@ const useNotificationStorageHook = () => {
   return {
     apiResource,
     markListUnread,
+    markNotificationRead,
     notifications,
     notificationsByResource,
     openedNotification,
@@ -193,6 +146,7 @@ const initialState = {
   apiResource: '',
   lastViewedTimestamp: undefined,
   markListUnread: () => undefined,
+  markNotificationRead: () => undefined,
   notifications: [],
   notificationsByResource: {},
   onNotificationsClosed: async () => undefined,

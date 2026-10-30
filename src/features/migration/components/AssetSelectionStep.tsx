@@ -3,12 +3,12 @@ import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { useAppStorage } from '@storage/AppStorageProvider'
+import { useQuery } from '@tanstack/react-query'
 import { numberFormat } from '@utils/Balance'
+import { tokenPricesQueryOptions } from '@utils/balances'
 import { useLanguage } from '@utils/i18n'
 import React, { FC, useCallback, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../../store/rootReducer'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
 import { estimateFiat } from '../logic/fiat'
 import { SelectableToken } from '../logic/types'
@@ -98,9 +98,13 @@ const AssetSelectionStep: FC<{
   const { t } = useTranslation()
   const { currency } = useAppStorage()
   const { language } = useLanguage()
-  // Read prices straight from the store — BalanceProvider already polls, so a
+  const cur = currency?.toLowerCase()
+  // Read prices straight from the cache — BalanceProvider already polls, so a
   // second app-wide interval just for this subtitle would be redundant.
-  const tokenPrices = useSelector((s: RootState) => s.balances.tokenPrices)
+  const { data: tokenPrices } = useQuery({
+    ...tokenPricesQueryOptions(cur || ''),
+    enabled: false,
+  })
   const hotspotsRef = useRef<BottomSheet>(null)
   const tokensRef = useRef<BottomSheet>(null)
 
@@ -140,7 +144,6 @@ const AssetSelectionStep: FC<{
   // Approximate value of the selected token amounts over the mints we have a
   // price for, plus how many selected tokens we cannot price. Omitted entirely
   // until prices load, and when nothing is selected.
-  const cur = currency?.toLowerCase()
   const tokensUsd = useMemo(() => {
     if (!cur || !tokenPrices) return undefined
     const { total, unpricedCount } = estimateFiat({

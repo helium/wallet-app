@@ -8,12 +8,12 @@ import useAlert from '@hooks/useAlert'
 import { useAppVersion } from '@hooks/useDevice'
 import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
 import { Cluster } from '@solana/web3.js'
 import { useHitSlop, useSpacing } from '@theme/themeHooks'
 import React, { memo, useCallback, useMemo } from 'react'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, Platform, SectionList } from 'react-native'
+import { Alert, Linking, SectionList } from 'react-native'
 import deviceInfo from 'react-native-device-info'
 import { SvgUri } from 'react-native-svg'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
@@ -27,12 +27,13 @@ import {
   checkSecureAccount,
   getSecureAccount,
 } from '../../storage/secureStorage'
-import { persistor } from '../../store/persistence'
 import { SUPPORTED_LANGUAGUES } from '../../utils/i18n'
+import { queryClient } from '../../utils/queryClient'
 import SUPPORTED_CURRENCIES from '../../utils/supportedCurrencies'
 import { HomeNavigationProp } from '../home/homeTypes'
 import SettingsListItem, { SettingsListItemType } from './SettingsListItem'
 import { SettingsNavigationProp } from './settingsTypes'
+import { withICloudSignOutWarning } from './signOutWarning'
 import useAuthIntervals from './useAuthIntervals'
 
 const Settings = () => {
@@ -96,12 +97,17 @@ const Settings = () => {
     [],
   )
 
-  const { result: hasWords } = useAsync(async () => {
-    if (!currentAccount?.address) return false
+  const { data: hasWords } = useQuery({
+    queryKey: ['hasWords', currentAccount?.address],
+    queryFn: async () => {
+      if (!currentAccount?.address) return false
 
-    const secureAccount = await getSecureAccount(currentAccount.address)
-    return !!secureAccount?.mnemonic
-  }, [currentAccount?.address])
+      const secureAccount = await getSecureAccount(currentAccount.address)
+      return !!secureAccount?.mnemonic
+    },
+    retry: false,
+    staleTime: 0,
+  })
 
   const handleIntervalSelected = useCallback(
     async (value: string | number) => {
@@ -207,23 +213,22 @@ const Settings = () => {
         currentAddress &&
         savedAccountAddresses.length === 1 &&
         savedAccountAddresses.includes(currentAddress)
-      const iCloudMessage =
-        Platform.OS === 'ios'
-          ? t('settings.sections.account.signOutAlert.iCloudMessage')
-          : ''
-
       Alert.alert(
         t('settings.sections.account.signOutAlert.title', {
           alias: currentAccount?.alias,
         }),
-        t(
-          `settings.sections.account.signOutAlert.${
-            isLastAccount ? 'bodyLastAccount' : 'body'
-          }`,
-          {
-            alias: currentAccount?.alias,
-          },
-        ) + iCloudMessage,
+        withICloudSignOutWarning(
+          t,
+          t(
+            `settings.sections.account.signOutAlert.${
+              isLastAccount ? 'bodyLastAccount' : 'body'
+            }`,
+            {
+              alias: currentAccount?.alias,
+            },
+          ),
+          isLastAccount ? 'allWallets' : 'oneWallet',
+        ),
         [
           {
             text: t('generic.cancel'),
@@ -402,15 +407,14 @@ const Settings = () => {
               {
                 text: t('generic.clear'),
                 style: 'destructive',
-                onPress: () =>
-                  void (async () => {
-                    await persistor.purge()
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
-                    Object.keys(cache?.genericCache.cache).forEach((key) => {
-                      cache?.delete(key)
-                    })
-                  })(),
+                onPress: () => {
+                  queryClient.clear()
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  Object.keys(cache?.genericCache.cache).forEach((key) => {
+                    cache?.delete(key)
+                  })
+                },
               },
             ],
           )

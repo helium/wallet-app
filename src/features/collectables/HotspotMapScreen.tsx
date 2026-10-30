@@ -14,30 +14,14 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import {
-  decodeEntityKey,
-  init,
-  iotInfoKey,
-  keyToAssetForAsset,
-  mobileInfoKey,
-} from '@helium/helium-entity-manager-sdk'
-import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
-import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
-import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import * as MapLibreRN from '@maplibre/maplibre-react-native'
 import { GeoJSONSource } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import { Polygon, feature, featureCollection } from '@turf/helpers'
-import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
-import {
-  getCachedIotInfos,
-  getCachedKeyToAssets,
-  getCachedMobileInfos,
-  toAsset,
-} from '@utils/solanaUtils'
 import { BN } from 'bn.js'
 import { cellToBoundary, latLngToCell } from 'h3-js'
 import React, {
@@ -49,7 +33,6 @@ import React, {
   useState,
 } from 'react'
 import { useSheetMargins } from '@components/ContentColumn'
-import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { Alert } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
@@ -63,6 +46,7 @@ import {
   CollectableStackParamList,
 } from './collectablesTypes'
 import { FADE_OUT_STATE } from '@theme/motion'
+import { HexInfoBuckets, hotspotMapInfosQuery } from './hotspotMapInfosQuery'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 type OnPress = NonNullable<
@@ -70,6 +54,7 @@ type OnPress = NonNullable<
 >
 
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
+const NO_HEX_INFO_BUCKETS: HexInfoBuckets = {}
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
@@ -89,10 +74,6 @@ const HotspotMapScreen = () => {
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
     route.params?.network || 'IOT',
   )
-  const [loadingInfos, setLoadingInfos] = useState(false)
-  const [hexInfoBuckets, setHexInfoBuckets] = useState<{
-    [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
-  }>({})
   const [activeHex, setActiveHex] = useState<string>()
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
@@ -133,85 +114,19 @@ const HotspotMapScreen = () => {
 
   // - fetch infos by networkType for all hotspots
   // - setUp hexInfoBuckets
-  useAsync(async () => {
-    if (onEndReached && anchorProvider) {
-      setLoadingInfos(true)
-      const hemProgram = await init(anchorProvider)
+  const {
+    data: hexInfoBuckets = NO_HEX_INFO_BUCKETS,
+    isLoading: loadingInfos,
+  } = useQuery(
+    hotspotMapInfosQuery({
+      anchorProvider,
+      networkType,
+      hotspots,
+      enabled: onEndReached,
+    }),
+  )
 
-      const infos = (
-        await Promise.all(
-          chunks(hotspots, 100).map(async (chunk) => {
-            const keyToAssetKeys = chunk.map((h) =>
-              keyToAssetForAsset(toAsset(h)),
-            )
-
-            const ktaAccs = await getCachedKeyToAssets(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              hemProgram as any,
-              keyToAssetKeys,
-            )
-
-            const entityKeys = ktaAccs
-              .map((kta) => {
-                return decodeEntityKey(kta.entityKey, kta.keySerialization)
-              })
-              .filter(truthy)
-
-            const infoKeys = entityKeys.map((ek) => {
-              const keys = {
-                IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
-                MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-              }
-
-              return keys[networkType]
-            })
-
-            if (networkType === 'IOT') {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              return getCachedIotInfos(hemProgram as any, infoKeys)
-            }
-
-            if (networkType === 'MOBILE') {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              return getCachedMobileInfos(hemProgram as any, infoKeys)
-            }
-          }),
-        )
-      ).flat()
-
-      const infoBuckets = infos
-        .filter((info) => info && truthy(info.location))
-        .reduce(
-          (acc, info) => ({
-            ...acc,
-            ...(info?.location
-              ? {
-                  [info.location.toString()]: [
-                    ...(acc[info.location.toString()] || []),
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    info as any,
-                  ],
-                }
-              : {}),
-          }),
-          {} as {
-            [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
-          },
-        )
-
-      setHexInfoBuckets(infoBuckets)
-      setLoadingInfos(false)
-    }
-  }, [
-    onEndReached,
-    anchorProvider,
-    networkType,
-    hotspots,
-    setLoadingInfos,
-    setHexInfoBuckets,
-  ])
-
-  useAsync(async () => {
+  useEffect(() => {
     // if hotspot is provided, check if it's IOT or MOBILE
     // scope networkType to the hotspot's network type
     if (hotspot) {
@@ -220,6 +135,7 @@ const HotspotMapScreen = () => {
           return infos.some((info) => info?.asset.toBase58() === hotspot.id)
         }) || [DEFAULT_HEX]
 
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- selects the hex of the given hotspot once the map infos load
         setActiveHex(hex)
         if (hex !== DEFAULT_HEX) {
           setActiveHotspotIndex(
@@ -230,6 +146,7 @@ const HotspotMapScreen = () => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchorProvider, onEndReached, loadingInfos, hotspot])
 
   // - show bottom sheet when activeHex is set
@@ -242,46 +159,49 @@ const HotspotMapScreen = () => {
   }, [loadingInfos, activeHex, hotspot, legendVisible, bottomSheetRef])
 
   // - center the map on the active hex
-  useAsync(async () => {
-    if (
-      activeHex &&
-      activeHex !== DEFAULT_HEX &&
-      mapRef?.current &&
-      bottomSheetHeight
-    ) {
-      const cords = parseH3BNLocation(new BN(activeHex)).reverse()
+  useEffect(() => {
+    const centerOnHex = async () => {
+      if (
+        activeHex &&
+        activeHex !== DEFAULT_HEX &&
+        mapRef?.current &&
+        bottomSheetHeight
+      ) {
+        const cords = parseH3BNLocation(new BN(activeHex)).reverse()
 
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      const zoomLevel = await mapRef.current.getZoom()
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        const zoomLevel = await mapRef.current.getZoom()
 
-      // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
-      // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
-      const centeringShift = bottomSheetHeight / 4
+        // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
+        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
+        const centeringShift = bottomSheetHeight / 4
 
-      // Convert the latitude to radians for more accurate calculations
-      const latitudeRadians = (cords[1] * Math.PI) / 180
+        // Convert the latitude to radians for more accurate calculations
+        const latitudeRadians = (cords[1] * Math.PI) / 180
 
-      // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
-      // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
-      const metersPerPixel =
-        (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
-        (256 * 2 ** zoomLevel)
+        // Calculate the number of meters per pixel at the current latitude and zoom level. This uses the Earth's
+        // radius in meters and accounts for the zoom level to approximate how much geographic space each pixel covers.
+        const metersPerPixel =
+          (Math.cos(latitudeRadians) * 2 * Math.PI * 6378137) /
+          (256 * 2 ** zoomLevel)
 
-      // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
-      const pixelShift = centeringShift
+        // Calculate the shift in pixels needed to adjust the map's center based on the bottom sheet's height
+        const pixelShift = centeringShift
 
-      // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
-      const degreeShift = (pixelShift * metersPerPixel) / 111319.9
+        // Convert the pixel shift into a latitude degree shift, using the average meter per degree at the equator.
+        const degreeShift = (pixelShift * metersPerPixel) / 111319.9
 
-      // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
-      // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
-      // viewable area above the bottom sheet.
-      void cameraRef.current?.setStop({
-        center: [cords[0], cords[1] - degreeShift],
-        duration: 200,
-        easing: 'ease',
-      })
+        // Adjust the map's center coordinate by subtracting the degree shift from the latitude. This effectively
+        // moves the map's center up to account for the bottom sheet, ensuring the hexagon is centered in the
+        // viewable area above the bottom sheet.
+        void cameraRef.current?.setStop({
+          center: [cords[0], cords[1] - degreeShift],
+          duration: 200,
+          easing: 'ease',
+        })
+      }
     }
+    centerOnHex().catch((e) => console.error(e))
   }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
 
   const iconSize = useMemo(() => 0.17 * (zoomLevel / MAX_MAP_ZOOM), [zoomLevel])

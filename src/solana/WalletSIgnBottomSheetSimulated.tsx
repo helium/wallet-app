@@ -19,21 +19,18 @@ import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useRentExempt } from '@hooks/useRentExempt'
 import { DAO_KEY } from '@utils/constants'
-import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useAsync } from 'react-async-hook'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
+import { fetchCanopyBlacklist } from './canopyBlacklist'
 import { useSolana } from './SolanaProvider'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-
-const WELL_KNOWN_CANOPY_URL = 'https://entities.nft.helium.io/v2/merkles'
-let wellKnownCanopyCache: Record<string, number> | undefined
 
 type IWalletSignBottomSheetSimulatedProps = WalletSignOpts & {
   onCancel: () => void
@@ -62,37 +59,45 @@ export const WalletSignBottomSheetSimulated = ({
   const [feesExpanded, setFeesExpanded] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const { result: accountBlacklist } = useAsync(async () => {
-    if (!wellKnownCanopyCache)
-      wellKnownCanopyCache = await (await axios.get(WELL_KNOWN_CANOPY_URL)).data
-
-    if (wellKnownCanopyCache) {
-      return new Set(Object.keys(wellKnownCanopyCache))
-    }
-
-    return new Set([])
-  }, [])
+  const { data: accountBlacklist } = useQuery({
+    queryKey: ['wellKnownCanopyBlacklist'],
+    queryFn: fetchCanopyBlacklist,
+  })
 
   const {
-    result: simulationResults,
+    data: simulationResults,
     error,
-    loading,
-  } = useAsync(async () => {
-    if (connection && wallet && serializedTxs && accountBlacklist) {
-      return sus({
-        connection,
-        wallet,
-        serializedTransactions: serializedTxs,
-        checkCNfts: true,
-        cluster,
-        extraSearchAssetParams: {
-          creatorVerified: true,
-          creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
-        },
-        accountBlacklist,
-      })
-    }
-  }, [cluster, connection, wallet, accountBlacklist, serializedTxs])
+    isLoading: loading,
+  } = useQuery({
+    queryKey: [
+      'walletSignSimulation',
+      cluster,
+      wallet?.toBase58(),
+      serializedTxs?.map((tx) => tx.toString('base64')),
+    ],
+    enabled: !!connection && !!wallet && !!serializedTxs && !!accountBlacklist,
+    // A failed simulation fails the same way again; show it at once
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    queryFn: async () => {
+      if (connection && wallet && serializedTxs && accountBlacklist) {
+        return sus({
+          connection,
+          wallet,
+          serializedTransactions: serializedTxs,
+          checkCNfts: true,
+          cluster,
+          extraSearchAssetParams: {
+            creatorVerified: true,
+            creatorAddress: entityCreatorKey(DAO_KEY)[0].toBase58(),
+          },
+          accountBlacklist,
+        })
+      }
+      return null
+    },
+  })
 
   const [currentTxs, hasMore] = useMemo(() => {
     if (!simulationResults) return [[], false]
@@ -124,8 +129,11 @@ export const WalletSignBottomSheetSimulated = ({
   )
 
   const estimatedTotalSol = useMemo(
-    () => (loading ? '...' : humanReadable(new BN(estimatedTotalLamports), 9)),
-    [estimatedTotalLamports, loading],
+    () =>
+      loading || !simulationResults
+        ? '...'
+        : humanReadable(new BN(estimatedTotalLamports), 9),
+    [estimatedTotalLamports, loading, simulationResults],
   )
 
   const estimatedTotalBaseFee = useMemo(

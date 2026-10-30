@@ -10,6 +10,8 @@ module.exports = {
       { configFile: false, presets: ['module:@react-native/babel-preset'] },
     ],
   },
-  // @noble/ed25519 ships ESM only
-  transformIgnorePatterns: ['node_modules/(?!@noble/ed25519/)'],
+  // @noble/ed25519 and react-native-mmkv ship ESM only
+  transformIgnorePatterns: [
+    'node_modules/(?!(@noble/ed25519|react-native-mmkv)/)',
+  ],
 }

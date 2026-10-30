@@ -12,9 +12,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useAsync } from 'react-async-hook'
-import { authSlice } from '../store/slices/authSlice'
-import { useAppDispatch } from '../store/store'
+import { useAuthStore } from '../store/authStore'
 import {
   accountNetType,
   AccountNetTypeOpt,
@@ -27,7 +25,6 @@ import {
   getCloudDefaultAccountAddress,
   restoreAccounts,
   setCloudDefaultAccountAddress,
-  signoutCloudStorage,
   sortAccounts,
   updateCloudAccounts,
   updateCloudContacts,
@@ -36,7 +33,9 @@ import {
   accountSolanaAddress,
   contactSolanaAddress,
 } from './accountSolanaAddress'
+import { subscribeCloudItemChanges } from './importLegacyState'
 import { removeAccountTag, tagAccount } from './oneSignalStorage'
+import { resetAppState } from './resetAppState'
 import {
   deleteSecureAccount,
   SecureAccount,
@@ -62,14 +61,13 @@ const useAccountStorageHook = () => {
 
   const solanaAccountsUpdateComplete = useRef(false)
   const solanaContactsUpdateComplete = useRef(false)
-  const dispatch = useAppDispatch()
   const currentAppState = useAppState()
 
   const updateApiToken = useCallback(async () => {
     const apiToken = await makeApiToken(currentAccount?.address)
     await storeSecureItem('walletApiToken', apiToken)
-    dispatch(authSlice.actions.setApiToken(apiToken))
-  }, [currentAccount, dispatch])
+    useAuthStore.setState({ apiToken })
+  }, [currentAccount])
 
   useEffect(() => {
     if (currentAppState === 'active') {
@@ -81,7 +79,25 @@ const useAccountStorageHook = () => {
     return currentAccount?.solanaAddress
   }, [currentAccount])
 
-  const { result: restoredAccounts } = useAsync(restoreAccounts, [])
+  // Runs on mount and when another device on the Apple ID changes the shared
+  // list, not when sign-out clears the query cache: the restore also migrates
+  // and writes accounts. Only the latest run's result is applied.
+  const [restoredAccounts, setRestoredAccounts] =
+    useState<Awaited<ReturnType<typeof restoreAccounts>>>()
+  const restoreRun = useRef(0)
+  const reloadAccounts = useCallback(() => {
+    restoreRun.current += 1
+    const run = restoreRun.current
+    restoreAccounts()
+      .then((result) => {
+        if (run === restoreRun.current) setRestoredAccounts(result)
+      })
+      .catch((e) => console.error(e))
+  }, [])
+  useEffect(reloadAccounts, [reloadAccounts])
+
+  // Another device on the Apple ID changed the shared list
+  useEffect(() => subscribeCloudItemChanges(reloadAccounts), [reloadAccounts])
 
   const restored = useMemo(() => accounts !== undefined, [accounts])
 
@@ -166,25 +182,33 @@ const useAccountStorageHook = () => {
     setPrevRestoredAccounts(restoredAccounts)
     if (restoredAccounts) {
       setAccounts(restoredAccounts.csAccounts)
-      setCurrentAccount(restoredAccounts.current)
+      // A reload keeps the open wallet while the list still holds it
+      setCurrentAccount(
+        (current) =>
+          (current && restoredAccounts.csAccounts[current.address]) ||
+          restoredAccounts.current,
+      )
       setContacts(restoredAccounts.contacts)
     }
   }
 
-  useAsync(async () => {
+  useEffect(() => {
     if (!accounts || Object.values(accounts)?.length === 0) return
 
-    const restoredAddress = await getCloudDefaultAccountAddress()
-    if (!restoredAddress) {
-      // set default account to first in list
-      const firstAccount = Object.values(accounts)[0]
-      const firstAddress = firstAccount.address
-      await setCloudDefaultAccountAddress(firstAddress)
-      setDefaultAccountAddress(firstAddress)
-    } else {
-      // restore default account
-      setDefaultAccountAddress(restoredAddress)
+    const restoreDefaultAccount = async () => {
+      const restoredAddress = await getCloudDefaultAccountAddress()
+      if (!restoredAddress) {
+        // set default account to first in list
+        const firstAccount = Object.values(accounts)[0]
+        const firstAddress = firstAccount.address
+        await setCloudDefaultAccountAddress(firstAddress)
+        setDefaultAccountAddress(firstAddress)
+      } else {
+        // restore default account
+        setDefaultAccountAddress(restoredAddress)
+      }
     }
+    restoreDefaultAccount().catch((e) => console.error(e))
   }, [accounts])
 
   const sortedAccountsForNetType = useCallback(
@@ -411,9 +435,10 @@ const useAccountStorageHook = () => {
           ...signoutSecureStore(
             sortedAccounts.map(({ address: addr }) => addr),
           ),
-          signoutCloudStorage(),
           updateDefaultAccountAddress(undefined),
         ])
+        // After the writes above, so none of them lands in the cleared state
+        await resetAppState()
         setAccounts({})
         setContacts([])
         setCurrentAccount(undefined)
