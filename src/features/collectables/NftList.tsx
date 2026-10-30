@@ -1,16 +1,18 @@
-import React, { useCallback, useMemo, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { times } from 'lodash'
 import { FlatList } from 'react-native-gesture-handler'
-import { RefreshControl } from 'react-native'
-import Box from '@components/Box'
+import { RefreshControl, View } from 'react-native'
 import useCollectables from '@hooks/useCollectables'
-import { useColors, useSpacing } from '@theme/themeHooks'
 import { useNavigation } from '@react-navigation/native'
+import { useCSSVariable } from 'uniwind'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 
+const CONTENT_CONTAINER_STYLE = { marginTop: 16 }
+
+const COLUMN_WRAPPER_STYLE = { flexDirection: 'row' } as const
+
 const NftList = () => {
-  const spacing = useSpacing()
   const navigation = useNavigation<CollectableNavigationProp>()
 
   const {
@@ -19,7 +21,7 @@ const NftList = () => {
     loading: loadingCollectables,
     refresh,
   } = useCollectables()
-  const { primaryText } = useColors()
+  const foreground = useCSSVariable('--color-foreground') as string | undefined
 
   useEffect(() => {
     return navigation.addListener('focus', () => {
@@ -27,48 +29,30 @@ const NftList = () => {
     })
   }, [navigation, refresh])
 
-  const flatListItems = useMemo(() => {
-    return collectablesWithMeta ? Object.keys(collectablesWithMeta) : []
-  }, [collectablesWithMeta])
+  const flatListItems = collectablesWithMeta
+    ? Object.keys(collectablesWithMeta)
+    : []
 
-  const renderItem = useCallback(
-    ({ item: token }: { item: string }) => {
-      return (
-        <NFTListItem
-          item={collectablesWithMeta[token][0]?.content?.metadata?.symbol}
-          collectables={collectablesWithMeta[token]}
-        />
-      )
-    },
-    [collectablesWithMeta],
+  const renderItem = ({ item: token }: { item: string }) => (
+    <NFTListItem
+      item={collectablesWithMeta[token][0]?.content?.metadata?.symbol}
+      collectables={collectablesWithMeta[token]}
+    />
   )
 
-  const renderEmptyComponent = useCallback(() => {
+  const renderEmptyComponent = () => {
     if (!loadingCollectables) return null
 
-    if (loadingCollectables) {
-      return (
-        <Box flex={1} flexDirection="row">
-          {times(Object.keys(collectables || []).length).map((i) => (
-            <NFTSkeleton key={i} />
-          ))}
-        </Box>
-      )
-    }
+    return (
+      <View className="flex-1 flex-row">
+        {times(Object.keys(collectables || []).length).map((i) => (
+          <NFTSkeleton key={i} />
+        ))}
+      </View>
+    )
+  }
 
-    return null
-  }, [collectables, loadingCollectables])
-
-  const keyExtractor = useCallback((item: string) => {
-    return item
-  }, [])
-
-  const contentContainerStyle = useMemo(
-    () => ({
-      marginTop: spacing.m,
-    }),
-    [spacing.m],
-  )
+  const keyExtractor = (item: string) => item
 
   return (
     <FlatList
@@ -81,13 +65,11 @@ const NftList = () => {
           refreshing={loadingCollectables}
           onRefresh={refresh}
           title=""
-          tintColor={primaryText}
+          tintColor={foreground}
         />
       }
-      columnWrapperStyle={{
-        flexDirection: 'row',
-      }}
-      contentContainerStyle={contentContainerStyle}
+      columnWrapperStyle={COLUMN_WRAPPER_STYLE}
+      contentContainerStyle={CONTENT_CONTAINER_STYLE}
       renderItem={renderItem}
       ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}

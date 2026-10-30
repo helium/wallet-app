@@ -33,6 +33,8 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/collectables/**',
+  'src/features/addressBook/AddressBookSelector.tsx',
 ]
 
 module.exports = [

@@ -1,14 +1,11 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { Image } from 'react-native'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { Image, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { useBorderRadii } from '@theme/themeHooks'
-import CircleLoader from '@components/CircleLoader'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import useHaptic from '@hooks/useHaptic'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { useCollectableHeight } from '../../utils/layout'
 import { Collectable } from '../../types/solana'
 import { CollectableNavigationProp } from './collectablesTypes'
@@ -20,95 +17,59 @@ const NftListItem = ({
   item: string
   collectables: Collectable[]
 }) => {
-  const { lm } = useBorderRadii()
   const collectableHeight = useCollectableHeight()
   const { json } = collectables[0]
   const navigation = useNavigation<CollectableNavigationProp>()
-  const { triggerImpact } = useHaptic()
 
-  const handleCollectableNavigation = useCallback(
-    (collection: Collectable[]) => () => {
-      if (collection.length > 1) {
-        triggerImpact('light')
-        navigation.navigate('CollectionScreen', {
-          collection,
-        })
-      } else if (json) {
-        triggerImpact('light')
-        navigation.navigate('NftDetailsScreen', {
-          collectable: collection[0],
-        })
-      }
-    },
-    [navigation, triggerImpact, json],
-  )
+  const handleCollectableNavigation = (collection: Collectable[]) => () => {
+    if (collection.length > 1) {
+      navigation.navigate('CollectionScreen', {
+        collection,
+      })
+    } else if (json) {
+      navigation.navigate('NftDetailsScreen', {
+        collectable: collection[0],
+      })
+    }
+  }
 
   return (
-    <ReAnimatedBox style={{ width: '50%' }}>
-      <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
-        alignItems="center"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xxl"
+    <Animated.View className="w-1/2">
+      <PressableScale
+        feedback="opacity"
+        className="m-2 items-center rounded-[16px] bg-secondary"
         onPress={handleCollectableNavigation(collectables)}
       >
         <Image
-          borderRadius={lm}
-          style={{ height: collectableHeight, width: '100%' }}
+          className="w-full rounded-lg"
+          style={{ height: collectableHeight }}
           source={{
             uri: json?.image || '',
             cache: 'force-cache',
           }}
         />
-        <Box
-          padding="s"
-          position="absolute"
-          justifyContent="center"
-          alignItems="center"
-          backgroundColor="white"
-          borderRadius="round"
-          bottom={20}
-          right={16}
-          flexDirection="row"
-        >
-          <Text variant="subtitle4" color="black" marginRight="xs">
-            {item}
-          </Text>
-          <Text variant="body2" color="secondaryText">
-            {collectables?.length}
-          </Text>
-        </Box>
-      </TouchableOpacityBox>
-    </ReAnimatedBox>
+        <View className="absolute bottom-5 right-4 flex-row items-center justify-center rounded-full bg-background p-2">
+          <Text className="mr-1 font-medium">{item}</Text>
+          <Text className="text-muted-foreground">{collectables?.length}</Text>
+        </View>
+      </PressableScale>
+    </Animated.View>
   )
 }
 
 export const NFTSkeleton = () => {
   const collectableHeight = useCollectableHeight()
   return (
-    <ReAnimatedBox
-      style={{ width: '50%' }}
-      entering={FADE_IN}
-      exiting={FADE_OUT}
-    >
-      <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
-        alignItems="center"
-      >
-        <Box
-          backgroundColor="surface"
-          borderRadius="xl"
-          height={collectableHeight}
-          width="100%"
-          justifyContent="center"
-          alignItems="center"
+    <Animated.View className="w-1/2" entering={FADE_IN} exiting={FADE_OUT}>
+      <View className="m-2 items-center">
+        <View
+          className="w-full items-center justify-center rounded-[16px] bg-secondary"
+          style={{ height: collectableHeight }}
         >
-          <CircleLoader loaderSize={80} />
-        </Box>
-      </TouchableOpacityBox>
-    </ReAnimatedBox>
+          <Spinner size="large" />
+        </View>
+      </View>
+    </Animated.View>
   )
 }
 

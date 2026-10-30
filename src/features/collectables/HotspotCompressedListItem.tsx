@@ -1,212 +1,139 @@
-import IotSymbol from '@assets/images/iotSymbol.svg'
-import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import HntSymbol from '@assets/images/hnt.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import IotSymbolSvg from '@assets/images/iotSymbol.svg'
+import MobileSymbolSvg from '@assets/images/mobileSymbol.svg'
+import HntSymbolSvg from '@assets/images/hnt.svg'
 import { useMint } from '@helium/helium-react-hooks'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
-import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
-import React, { useMemo } from 'react'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import React from 'react'
+import { Image, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useTranslation } from 'react-i18next'
+import { withUniwind } from 'uniwind'
 import { HotspotWithPendingRewards } from '../../types/solana'
 import { Mints } from '../../utils/constants'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 
+const HntSymbol = withUniwind(HntSymbolSvg)
+const MobileSymbol = withUniwind(MobileSymbolSvg)
+const IotSymbol = withUniwind(IotSymbolSvg)
+
 export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards
   onPress: (hotspot: HotspotWithPendingRewards) => void
-} & BoxProps<Theme>
+  className?: string
+}
+
+const pendingRewardsString = (
+  hotspot: HotspotWithPendingRewards,
+  mint: string,
+  decimals: number,
+) => {
+  if (!hotspot.pendingRewards) return
+  const num = toNumber(new BN(hotspot.pendingRewards[mint]), decimals)
+  return formatLargeNumber(new BigNumber(num))
+}
 
 const HotspotListItem = ({
   hotspot,
   onPress,
-  ...rest
+  className,
 }: HotspotListItemProps) => {
   const {
     content: { metadata },
   } = hotspot
   const { t } = useTranslation()
-  const colors = useColors()
   const wallet = useCurrentWallet()
-  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
   const streetAddress = useHotspotAddress(hotspot)
 
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
   const { info: hntMint } = useMint(HNT_MINT)
-  const pendingIotRewards = useMemo(
-    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
-    [hotspot],
+
+  const pendingIotRewards =
+    hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT])
+  const pendingMobileRewards =
+    hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE])
+  const pendingHntRewards =
+    hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT])
+
+  const pendingIotRewardsString = pendingRewardsString(
+    hotspot,
+    Mints.IOT,
+    iotMint?.decimals || 6,
+  )
+  const pendingMobileRewardsString = pendingRewardsString(
+    hotspot,
+    Mints.MOBILE,
+    mobileMint?.decimals || 6,
+  )
+  const pendingHntRewardsString = pendingRewardsString(
+    hotspot,
+    Mints.HNT,
+    hntMint?.decimals || 8,
   )
 
-  const pendingIotRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.IOT]),
-      iotMint?.decimals || 6,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, iotMint])
+  const eccCompact = metadata?.attributes?.length
+    ? metadata.attributes.find(
+        (attr: { trait_type?: string; value?: string }) =>
+          attr?.trait_type === 'ecc_compact',
+      )?.value
+    : undefined
 
-  const pendingMobileRewards = useMemo(
-    () =>
-      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE]),
-    [hotspot.pendingRewards],
-  )
+  const hasIotRewards = pendingIotRewards && pendingIotRewards.gt(new BN(0))
+  const hasMobileRewards =
+    pendingMobileRewards && pendingMobileRewards.gt(new BN(0))
+  const hasHntRewards = pendingHntRewards && pendingHntRewards.gt(new BN(0))
 
-  const pendingHntRewards = useMemo(
-    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT]),
-    [hotspot.pendingRewards],
-  )
+  const isOtherRecipient = (destination?: PublicKey) =>
+    destination &&
+    wallet &&
+    !new PublicKey(destination).equals(wallet) &&
+    !new PublicKey(destination).equals(PublicKey.default)
 
-  const pendingMobileRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.MOBILE]),
-      mobileMint?.decimals || 6,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, mobileMint])
-
-  const pendingHntRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.HNT]),
-      hntMint?.decimals || 8,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, hntMint])
-
-  const eccCompact = useMemo(() => {
-    if (!metadata || !metadata?.attributes?.length) {
-      return undefined
-    }
-
-    return metadata.attributes.find(
-      (attr: { trait_type?: string; value?: string }) =>
-        attr?.trait_type === 'ecc_compact',
-    )?.value
-  }, [metadata])
-
-  const hasIotRewards = useMemo(
-    () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
-    [pendingIotRewards],
-  )
-  const hasMobileRewards = useMemo(
-    () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
-    [pendingMobileRewards],
-  )
-  const hasHntRewards = useMemo(
-    () => pendingHntRewards && pendingHntRewards.gt(new BN(0)),
-    [pendingHntRewards],
-  )
-
-  const mobileRecipient = useMemo(
-    () => hotspot?.rewardRecipients?.[Mints.MOBILE],
-    [hotspot],
-  )
-
-  const iotRecipient = useMemo(
-    () => hotspot?.rewardRecipients?.[Mints.IOT],
-    [hotspot],
-  )
-
-  const hntRecipient = useMemo(
-    () => hotspot?.rewardRecipients?.[Mints.HNT],
-    [hotspot],
-  )
-
-  const hasIotRecipient = useMemo(
-    () =>
-      iotRecipient?.destination &&
-      wallet &&
-      !new PublicKey(iotRecipient.destination).equals(wallet) &&
-      !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
-    [iotRecipient, wallet],
-  )
-
-  const hasMobileRecipient = useMemo(
-    () =>
-      mobileRecipient?.destination &&
-      wallet &&
-      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
-      !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
-    [mobileRecipient, wallet],
-  )
-
-  const hasHntRecipient = useMemo(
-    () =>
-      hntRecipient?.destination &&
-      wallet &&
-      !new PublicKey(hntRecipient.destination).equals(wallet) &&
-      !new PublicKey(hntRecipient.destination).equals(PublicKey.default),
-    [hntRecipient, wallet],
-  )
-
-  const hasRecipientSet = useMemo(
-    () => hasIotRecipient || hasMobileRecipient || hasHntRecipient,
-    [hasIotRecipient, hasMobileRecipient, hasHntRecipient],
-  )
+  const hasRecipientSet =
+    isOtherRecipient(hotspot?.rewardRecipients?.[Mints.IOT]?.destination) ||
+    isOtherRecipient(hotspot?.rewardRecipients?.[Mints.MOBILE]?.destination) ||
+    isOtherRecipient(hotspot?.rewardRecipients?.[Mints.HNT]?.destination)
 
   return (
-    <ReAnimatedBox
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      position="relative"
-      {...rest}
+    <Animated.View
+      className={twMerge('relative rounded-[12px] bg-secondary', className)}
     >
-      <TouchableOpacityBox
-        flex={1}
-        padding="ms"
-        paddingTop="s"
+      <PressableScale
+        feedback="opacity"
+        className="flex-1 p-3 pt-2"
         onPress={() => onPress(hotspot)}
       >
         {hasRecipientSet && (
-          <Box flexDirection="row" alignItems="center">
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
-              borderRadius="m"
-              paddingVertical="sx"
-              paddingLeft="s"
-              paddingRight="s"
-              style={{
-                ...flamecoOpaque,
-              }}
-            >
-              <Text variant="body3Medium" color="flamenco">
+          <View className="flex-row items-center">
+            <View className="flex-row items-center justify-between rounded-md bg-warning-100 px-2 py-1.5">
+              <Text size="xs" className="font-medium text-foreground">
                 {t('changeRewardsRecipientScreen.set')}
               </Text>
-            </Box>
-          </Box>
+            </View>
+          </View>
         )}
-        <Box flex={1} flexDirection="row" alignItems="center">
-          <ImageBox
-            borderRadius="lm"
-            height={72}
-            width={62}
+        <View className="flex-1 flex-row items-center">
+          <Image
+            className="h-[72px] w-[62px] rounded-lg"
             source={{
               uri: metadata?.image,
               cache: 'force-cache',
             }}
           />
-          <Box marginLeft="ms" flex={1}>
+          <View className="ml-3 flex-1">
             {metadata?.name && (
               <Text
-                textAlign="left"
-                variant="subtitle2"
+                size="lg"
+                className="text-left font-medium"
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
@@ -215,81 +142,60 @@ const HotspotListItem = ({
             )}
 
             {streetAddress && (
-              <Text variant="body2" numberOfLines={1} adjustsFontSizeToFit>
+              <Text numberOfLines={1} adjustsFontSizeToFit>
                 {streetAddress}
               </Text>
             )}
             <Text
-              variant="subtitle3"
-              color="secondaryText"
+              size="base"
+              className="font-medium text-muted-foreground"
               numberOfLines={1}
               adjustsFontSizeToFit
             >
               {eccCompact ? ellipsizeAddress(eccCompact) : ''}
             </Text>
-          </Box>
-          <Box marginLeft="ms">
+          </View>
+          <View className="ml-3">
             {!!hasHntRewards && (
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                backgroundColor="hntDarkBlue"
-                borderRadius="m"
-                paddingVertical="xs"
-                paddingLeft="xs"
-                paddingRight="s"
-                marginBottom="xs"
-              >
-                <HntSymbol color={colors.hntBlue} width={20} height={20} />
-                <Text variant="body3Medium" marginLeft="xs" color="hntBlue">
-                  {pendingHntRewardsString}
-                </Text>
-              </Box>
-            )}
-            {!!hasMobileRewards && (
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                backgroundColor="mobileDarkBlue"
-                borderRadius="m"
-                paddingVertical="xs"
-                paddingLeft="xs"
-                paddingRight="s"
-                marginBottom="xs"
-              >
-                <MobileSymbol
-                  color={colors.mobileBlue}
+              <View className="mb-1 flex-row items-center justify-between rounded-md bg-blue-dark-50 py-1 pl-1 pr-2">
+                <HntSymbol
+                  colorClassName="accent-blue-dark-500"
                   width={20}
                   height={20}
                 />
-                <Text variant="body3Medium" marginLeft="xs" color="mobileBlue">
+                <Text size="xs" className="ml-1 font-medium text-blue-dark-500">
+                  {pendingHntRewardsString}
+                </Text>
+              </View>
+            )}
+            {!!hasMobileRewards && (
+              <View className="mb-1 flex-row items-center justify-between rounded-md bg-purple-50 py-1 pl-1 pr-2">
+                <MobileSymbol
+                  colorClassName="accent-purple-700"
+                  width={20}
+                  height={20}
+                />
+                <Text size="xs" className="ml-1 font-medium text-purple-700">
                   {pendingMobileRewardsString}
                 </Text>
-              </Box>
+              </View>
             )}
             {!!hasIotRewards && (
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-                backgroundColor="iotDarkGreen"
-                borderRadius="m"
-                paddingVertical="xs"
-                paddingLeft="xs"
-                paddingRight="s"
-              >
-                <IotSymbol color={colors.iotGreen} width={20} height={20} />
-                <Text variant="body3Medium" marginLeft="xs" color="iotGreen">
+              <View className="flex-row items-center justify-between rounded-md bg-success-50 py-1 pl-1 pr-2">
+                <IotSymbol
+                  colorClassName="accent-success-700"
+                  width={20}
+                  height={20}
+                />
+                <Text size="xs" className="ml-1 font-medium text-success-700">
                   {pendingIotRewardsString}
                 </Text>
-              </Box>
+              </View>
             )}
-          </Box>
-        </Box>
-      </TouchableOpacityBox>
-    </ReAnimatedBox>
+          </View>
+        </View>
+      </PressableScale>
+    </Animated.View>
   )
 }
 
