@@ -21,6 +21,7 @@ import React, {
   useEffect,
   useEffectEvent,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -85,69 +86,79 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   // Signs and submits a swap, so it runs as an effect, not as a cached query
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error>()
+  const swapInFlight = useRef<Promise<void> | undefined>(undefined)
   const swapForGas = useEffectEvent(async () => {
-    if (
-      needsSwap &&
-      autoGasManagementToken &&
-      anchorProvider &&
-      typeof decimals !== 'undefined' &&
-      walletSignBottomSheetRef
-    ) {
-      // Check balance again, sometimes token balance change comes thru before sol change and we
-      // get a duplicate request
-      const cachelessConn = new Connection(
-        anchorProvider.connection.rpcEndpoint,
-        'confirmed',
-      )
-      const balance = (
-        await cachelessConn.getAccountInfo(anchorProvider?.wallet.publicKey)
-      )?.lamports
-      if (balance && balance > MIN_BALANCE_THRESHOLD) {
-        return
-      }
-      const estimates: { [key: string]: string } = (
-        await axios.get(`${baseUrl}/estimates`)
-      ).data
-
-      const estimate = new BN(estimates[autoGasManagementToken.toBase58()])
-      if ((tokenBalance || 0) > estimate.toNumber()) {
-        setAmount(toNumber(estimate, decimals))
-
-        const txRaw = (
-          await axios.post(`${baseUrl}/fees`, {
-            wallet: anchorProvider.publicKey.toBase58(),
-            mint: autoGasManagementToken,
-          })
+    const runSwap = async () => {
+      if (
+        needsSwap &&
+        autoGasManagementToken &&
+        anchorProvider &&
+        typeof decimals !== 'undefined' &&
+        walletSignBottomSheetRef
+      ) {
+        // Check balance again, sometimes token balance change comes thru before sol change and we
+        // get a duplicate request
+        const cachelessConn = new Connection(
+          anchorProvider.connection.rpcEndpoint,
+          'confirmed',
+        )
+        const balance = (
+          await cachelessConn.getAccountInfo(anchorProvider?.wallet.publicKey)
+        )?.lamports
+        if (balance && balance > MIN_BALANCE_THRESHOLD) {
+          return
+        }
+        const estimates: { [key: string]: string } = (
+          await axios.get(`${baseUrl}/estimates`)
         ).data
 
-        const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
-        const serializedTx = Buffer.from(tx.serialize())
-        const decision = await walletSignBottomSheetRef.show({
-          type: WalletStandardMessageTypes.signTransaction,
-          url: '',
-          message: t('transactions.autoGasConvert', { symbol }),
-          serializedTxs: [serializedTx],
-          header: t('transactions.autoGasConvertHeader'),
-        })
-        if (decision) {
-          const walletAddress = anchorProvider.wallet.publicKey.toBase58()
-          const mintAddress = autoGasManagementToken.toBase58()
-          const paramsHash = hashTagParams({
-            wallet: walletAddress,
-            mint: mintAddress,
-            amount: amount || 0,
-          })
-          const tag = `auto-gas-${paramsHash}`
-          const transactionData = toTransactionData([tx], {
-            tag,
-            metadata: { type: 'swap', description: 'Auto Gas Conversion' },
-          })
-          await submitAndAwait({ transactionData })
-        }
-      }
+        const estimate = new BN(estimates[autoGasManagementToken.toBase58()])
+        if ((tokenBalance || 0) > estimate.toNumber()) {
+          const swapAmount = toNumber(estimate, decimals)
+          setAmount(swapAmount)
 
-      setAmount(undefined)
+          const txRaw = (
+            await axios.post(`${baseUrl}/fees`, {
+              wallet: anchorProvider.publicKey.toBase58(),
+              mint: autoGasManagementToken,
+            })
+          ).data
+
+          const tx = VersionedTransaction.deserialize(Buffer.from(txRaw))
+          const serializedTx = Buffer.from(tx.serialize())
+          const decision = await walletSignBottomSheetRef.show({
+            type: WalletStandardMessageTypes.signTransaction,
+            url: '',
+            message: t('transactions.autoGasConvert', { symbol }),
+            serializedTxs: [serializedTx],
+            header: t('transactions.autoGasConvertHeader'),
+          })
+          if (decision) {
+            const walletAddress = anchorProvider.wallet.publicKey.toBase58()
+            const mintAddress = autoGasManagementToken.toBase58()
+            const paramsHash = hashTagParams({
+              wallet: walletAddress,
+              mint: mintAddress,
+              amount: swapAmount,
+            })
+            const tag = `auto-gas-${paramsHash}`
+            const transactionData = toTransactionData([tx], {
+              tag,
+              metadata: { type: 'swap', description: 'Auto Gas Conversion' },
+            })
+            await submitAndAwait({ transactionData })
+          }
+        }
+
+        setAmount(undefined)
+      }
     }
+    if (swapInFlight.current) return swapInFlight.current
+    const run = runSwap().finally(() => {
+      swapInFlight.current = undefined
+    })
+    swapInFlight.current = run
+    return run
   })
   useEffect(() => {
     let current = true

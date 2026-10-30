@@ -25,7 +25,8 @@ const transformAppCode = (relativePath: string, code: string) =>
   })?.code ?? ''
 
 // Files the compiler once skipped. A lint suppression or a broken Rule of
-// React makes the compiler leave a file as written, with no error.
+// React makes the compiler leave that function as written, with no build
+// error. Sibling functions in the file still compile.
 const COMPILED_FILES = [
   'src/features/governance/PositionCard.tsx',
   'src/features/ledger/DeviceShow.tsx',
@@ -40,10 +41,17 @@ const COMPILED_FILES = [
   'src/utils/i18n.tsx',
 ]
 
+// Event kinds the compiler logs when it leaves a function as written.
+const SKIP_EVENTS = ['CompileError', 'CompileSkip', 'PipelineError']
+
+type CompilerEvent = { kind: string; fnLoc?: unknown; detail?: unknown }
+
 // Only the compiler and TS syntax: the rest of the app config needs Metro.
+// The logger records each function the compiler skips.
 const compileAppFile = (relativePath: string) => {
   const filename = path.join(ROOT, relativePath)
-  return (
+  const skipped: CompilerEvent[] = []
+  const code =
     transformSync(fs.readFileSync(filename, 'utf8'), {
       cwd: ROOT,
       filename,
@@ -55,6 +63,11 @@ const compileAppFile = (relativePath: string) => {
           {
             panicThreshold: 'none',
             sources: [path.join(ROOT, 'src') + path.sep],
+            logger: {
+              logEvent: (_filename: string | null, event: CompilerEvent) => {
+                if (SKIP_EVENTS.includes(event.kind)) skipped.push(event)
+              },
+            },
           },
         ],
         [
@@ -63,7 +76,7 @@ const compileAppFile = (relativePath: string) => {
         ],
       ],
     })?.code ?? ''
-  )
+  return { code, skipped }
 }
 
 describe('React Compiler in the app Babel config', () => {
@@ -81,7 +94,9 @@ describe('React Compiler in the app Babel config', () => {
 })
 
 describe('React Compiler on app files', () => {
-  it.each(COMPILED_FILES)('compiles %s', (relativePath) => {
-    expect(compileAppFile(relativePath)).toContain('react/compiler-runtime')
+  it.each(COMPILED_FILES)('compiles every function in %s', (relativePath) => {
+    const { code, skipped } = compileAppFile(relativePath)
+    expect(skipped).toEqual([])
+    expect(code).toContain('react/compiler-runtime')
   })
 })
