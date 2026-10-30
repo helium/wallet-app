@@ -147,8 +147,11 @@ describe('withHeliumNative', () => {
     )
   })
 
-  it('rejects a styles file with no AppTheme style', async () => {
-    await expect(runStylesMod({ style: [] })).rejects.toThrow(
+  it.each([
+    ['an empty style list', { style: [] }],
+    ['no style list', {}],
+  ])('rejects a styles file with %s', async (_label, resources) => {
+    await expect(runStylesMod(resources)).rejects.toThrow(
       'withHeliumNative: styles.xml has no AppTheme style',
     )
   })

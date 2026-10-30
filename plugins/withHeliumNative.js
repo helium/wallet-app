@@ -102,7 +102,7 @@ const withHeliumManifest = (config) =>
     return cfg
   })
 
-// The refresh is light only, so native chrome (dialogs, pickers, keyboards)
+// The refresh is light only, so native chrome (dialogs, pickers)
 // stays light even over legacy dark screens until they migrate. The template's
 // DayNight theme would follow the system dark mode.
 const withLightAppTheme = (config) =>

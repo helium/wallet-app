@@ -26,6 +26,25 @@ describe('textClassName', () => {
     },
   )
 
+  it('replaces the default weight with a caller font family', () => {
+    const classes = textClassName(undefined, 'font-mono').split(' ')
+    expect(classes).toContain('font-mono')
+    expect(classes).not.toContain('font-normal')
+  })
+
+  it('lets a later caller weight replace an earlier caller font family', () => {
+    const classes = textClassName(undefined, 'font-mono font-bold').split(' ')
+    expect(classes).toContain('font-bold')
+    expect(classes).not.toContain('font-mono')
+  })
+
+  it('keeps a caller line height placed before a caller size', () => {
+    const classes = textClassName(undefined, 'leading-6 text-lg').split(' ')
+    expect(classes).toContain('leading-6')
+    expect(classes).toContain('text-lg')
+    expect(classes).not.toContain('text-sm')
+  })
+
   it('maps the size prop to its size class', () => {
     expect(textClassName('lg')).toBe('font-normal text-foreground text-lg')
   })
