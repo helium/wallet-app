@@ -2062,7 +2062,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.14.5, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.17.2, @babel/runtime@npm:^7.20.0, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.12.1, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.20.0, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.25.0, @babel/runtime@npm:^7.9.2":
   version: 7.28.2
   resolution: "@babel/runtime@npm:7.28.2"
   checksum: 10/a0965fbdd6aaa40709290923bbe05e1c4314021f0cef608eb1d69f04f717c41829e50a53d79c4a0f461512b4be9b3c0190dc19387b219bcdaacdd793b2fe1b8a
@@ -14723,7 +14723,7 @@ __metadata:
     fuse.js: "npm:6.6.2"
     h3-js: "npm:4.1.0"
     husky: "npm:7.0.4"
-    i18next: "npm:21.9.1"
+    i18next: "npm:26.5.11"
     jest: "npm:~30.5.2"
     lodash: "npm:4.17.21"
     long: "npm:5.2.0"
@@ -14741,7 +14741,7 @@ __metadata:
     react: "npm:19.3.0"
     react-async-hook: "npm:4.0.0"
     react-error-boundary: "npm:4.0.13"
-    react-i18next: "npm:11.18.4"
+    react-i18next: "npm:17.1.9"
     react-native: "npm:0.88.1"
     react-native-appstate-hook: "npm:1.0.6"
     react-native-ble-plx: "npm:3.4.0"
@@ -14894,12 +14894,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"html-parse-stringify@npm:^3.0.1":
-  version: 3.0.1
-  resolution: "html-parse-stringify@npm:3.0.1"
-  dependencies:
-    void-elements: "npm:3.1.0"
-  checksum: 10/8743b76cc50e46d1956c1ad879d18eb9613b0d2d81e24686d633f9f69bb26b84676f64a926973de793cca479997017a63219278476d617b6c42d68246d7c07fe
+"html-parse-stringify@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "html-parse-stringify@npm:4.0.1"
+  checksum: 10/c30ce1fbc81c32c87808d8a527519a7524c73499b223cf2002e9fddd49ecf98626ee8c13bb011a3cc283803831d67fdb75ae9f566666d05c915e460d5b5016cc
   languageName: node
   linkType: hard
 
@@ -14968,12 +14966,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next@npm:21.9.1":
-  version: 21.9.1
-  resolution: "i18next@npm:21.9.1"
-  dependencies:
-    "@babel/runtime": "npm:^7.17.2"
-  checksum: 10/e1f1f6498c9b47dca1a872ca4fe80fb469ae166ae6526a7fdc7ff010241200ebc3896c90884aa147a01bcca5d399483b5a381dea36c79de9955faff8e074aa87
+"i18next@npm:26.5.11":
+  version: 26.5.11
+  resolution: "i18next@npm:26.5.11"
+  peerDependencies:
+    typescript: ^5 || ^6 || ^7
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 10/613c219e7312fdb5e0763d596251c8af5fdf922dc575e31a244819a0914db658f9e3f89a10f2707c19ad11bb8d352d72f00c947c8f09b4bb2d12a553fcc993b0
   languageName: node
   linkType: hard
 
@@ -20054,21 +20055,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-i18next@npm:11.18.4":
-  version: 11.18.4
-  resolution: "react-i18next@npm:11.18.4"
+"react-i18next@npm:17.1.9":
+  version: 17.1.9
+  resolution: "react-i18next@npm:17.1.9"
   dependencies:
-    "@babel/runtime": "npm:^7.14.5"
-    html-parse-stringify: "npm:^3.0.1"
+    "@babel/runtime": "npm:^7.29.7"
+    html-parse-stringify: "npm:^4.0.1"
+    use-sync-external-store: "npm:^1.6.0"
   peerDependencies:
-    i18next: ">= 19.0.0"
+    i18next: ">= 26.2.0"
     react: ">= 16.8.0"
+    typescript: ^5 || ^6 || ^7
   peerDependenciesMeta:
     react-dom:
       optional: true
     react-native:
       optional: true
-  checksum: 10/ffdc0373bcf9c54285cd908c0db8927f6af16feaa14e5e1d9dd1fc75f89cb0b96befe532b2df1a723182c3c5bb34bc0e126b95b8c690571d4d7ab4eea6f214a9
+    typescript:
+      optional: true
+  checksum: 10/8e1f309c94ea5917f57103417ba183ae2bc30820cb664a8ff7089cc0b3cc20257f313b863f2e9f4e805fe583d2b2ffc7d38652f279057d5efbe4ecfcc13ffb52
   languageName: node
   linkType: hard
 
@@ -23317,7 +23322,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"use-sync-external-store@npm:^1.5.0":
+"use-sync-external-store@npm:^1.5.0, use-sync-external-store@npm:^1.6.0":
   version: 1.7.0
   resolution: "use-sync-external-store@npm:1.7.0"
   peerDependencies:
@@ -23477,13 +23482,6 @@ __metadata:
   version: 1.0.1
   resolution: "vlq@npm:1.0.1"
   checksum: 10/0f4270cb3c498077a7ddd343e07ea164ac65cf05f3efd4332948fcb3d48e655538558e3fcdca7c78bb3c6790e0ef43c953efc7d9256c50415c3a5313f1e4192c
-  languageName: node
-  linkType: hard
-
-"void-elements@npm:3.1.0":
-  version: 3.1.0
-  resolution: "void-elements@npm:3.1.0"
-  checksum: 10/0390f818107fa8fce55bb0a5c3f661056001c1d5a2a48c28d582d4d847347c2ab5b7f8272314cac58acf62345126b6b09bea623a185935f6b1c3bbce0dfd7f7f
   languageName: node
   linkType: hard
 

@@ -42,7 +42,6 @@ export const SUPPORTED_LANGUAGUES = [
 ] as { label: string; value: LangType }[]
 
 void i18n.use(initReactI18next).init({
-  compatibilityJSON: 'v3',
   resources: {
     en: { translation: en },
   },
