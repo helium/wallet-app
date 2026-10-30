@@ -6,8 +6,10 @@ import * as LocalAuthentication from 'expo-local-authentication'
 import React, { memo, useCallback, useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
+import { Platform } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import { FadeIn, FadeOutDown } from 'react-native-reanimated'
+import { FullWindowOverlay } from 'react-native-screens'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import {
@@ -97,30 +99,39 @@ const LockScreen = ({ children }: Props) => {
     await localAuth()
   }, [handleSuccess, locked])
 
+  const overlay = (
+    <ReAnimatedBox
+      entering={FadeIn}
+      exiting={FadeOutDown}
+      zIndex={9999}
+      top={0}
+      bottom={0}
+      left={0}
+      right={0}
+      position="absolute"
+    >
+      <ConfirmPinView
+        originalPin={pin?.value || ''}
+        title={t('auth.title')}
+        subtitle={t('auth.enterCurrent')}
+        pinSuccess={handleSuccess}
+        onCancel={handleSignOut}
+        clearable
+      />
+    </ReAnimatedBox>
+  )
+
   return (
     <>
       {children}
-      {!!locked && (
-        <ReAnimatedBox
-          entering={FadeIn}
-          exiting={FadeOutDown}
-          zIndex={9999}
-          top={0}
-          bottom={0}
-          left={0}
-          right={0}
-          position="absolute"
-        >
-          <ConfirmPinView
-            originalPin={pin?.value || ''}
-            title={t('auth.title')}
-            subtitle={t('auth.enterCurrent')}
-            pinSuccess={handleSuccess}
-            onCancel={handleSignOut}
-            clearable
-          />
-        </ReAnimatedBox>
-      )}
+      {/* iOS draws the root view under native modal routes; FullWindowOverlay
+          draws above them */}
+      {!!locked &&
+        (Platform.OS === 'ios' ? (
+          <FullWindowOverlay>{overlay}</FullWindowOverlay>
+        ) : (
+          overlay
+        ))}
     </>
   )
 }

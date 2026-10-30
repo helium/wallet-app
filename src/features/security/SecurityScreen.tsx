@@ -1,5 +1,6 @@
 import React, { useEffect, memo, useRef, useMemo, useState } from 'react'
 import { Animated, ImageStyle, Image, Platform } from 'react-native'
+import { FullWindowOverlay } from 'react-native-screens'
 import Box from '@components/Box'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)
@@ -58,20 +59,24 @@ const SecurityScreen = ({ visible }: Props) => {
     return null
   }
 
+  // iOS draws the root view under native modal routes; FullWindowOverlay
+  // draws above them
   return (
-    <Box
-      position="absolute"
-      top={0}
-      left={0}
-      right={0}
-      bottom={0}
-      backgroundColor="primaryBackground"
-    >
-      <AnimatedImage
-        style={style}
-        source={require('../../assets/images/SplashScreen.png')}
-      />
-    </Box>
+    <FullWindowOverlay>
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        backgroundColor="primaryBackground"
+      >
+        <AnimatedImage
+          style={style}
+          source={require('../../assets/images/SplashScreen.png')}
+        />
+      </Box>
+    </FullWindowOverlay>
   )
 }
 
