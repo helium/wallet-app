@@ -166,6 +166,64 @@ describe('paymentTransactions', () => {
     })
   })
 
+  it('retries every payment when every transaction of a lookup-table batch failed', () => {
+    const lookupTable = new AddressLookupTableAccount({
+      key: Keypair.generate().publicKey,
+      state: {
+        deactivationSlot: BigInt('18446744073709551615'),
+        lastExtendedSlot: 0,
+        lastExtendedSlotStartIndex: 0,
+        addresses: [bob],
+      },
+    })
+    const first = signed([sol(alice, 1)])
+    const second = signed([sol(bob, 2)], [lookupTable])
+    const payments = [payment(alice, 1), payment(bob, 2)]
+
+    expect(
+      batchFailure(
+        'failed',
+        [
+          { signature: signatureOf(first), status: 'failed' },
+          { signature: signatureOf(second), status: 'failed' },
+        ],
+        paymentTransactions(payments, NATIVE_MINT, [first, second]),
+      ),
+    ).toEqual({
+      kind: 'retry',
+      error: new Error('Transaction failed'),
+      failed: payments,
+    })
+  })
+
+  it('offers no retry when a lookup-table batch reports no status for a transaction', () => {
+    const lookupTable = new AddressLookupTableAccount({
+      key: Keypair.generate().publicKey,
+      state: {
+        deactivationSlot: BigInt('18446744073709551615'),
+        lastExtendedSlot: 0,
+        lastExtendedSlotStartIndex: 0,
+        addresses: [bob],
+      },
+    })
+    const first = signed([sol(alice, 1)])
+    const second = signed([sol(bob, 2)], [lookupTable])
+    const payments = [payment(alice, 1), payment(bob, 2)]
+
+    expect(
+      batchFailure(
+        'failed',
+        [{ signature: signatureOf(first), status: 'failed' }],
+        paymentTransactions(payments, NATIVE_MINT, [first, second]),
+      ),
+    ).toEqual({
+      kind: 'checkActivity',
+      error: new Error(
+        'Could not confirm which transactions went through. Check your activity.',
+      ),
+    })
+  })
+
   it('offers no retry when a payment spans a transaction that loads its payee from a lookup table', () => {
     const [createCarol, transferCarol] = token(carol, 3)
     const lookupTable = new AddressLookupTableAccount({

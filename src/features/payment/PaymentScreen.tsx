@@ -343,8 +343,12 @@ const PaymentScreen = () => {
   )
 
   // What the last Retry was sending, so a Retry after it failed sends the
-  // same set and never a payment an earlier batch landed.
-  const [unsent, setUnsent] = useState<PaymentInput[]>()
+  // same set and never a payment a settled batch reported landed. A lost
+  // submit response still resends that set.
+  const [unsent, setUnsent] = useState<{
+    payments: PaymentInput[]
+    mint: PublicKey
+  }>()
 
   const allPayments = useMemo(
     () =>
@@ -382,17 +386,21 @@ const PaymentScreen = () => {
     [sent, sentWith, status, transactions],
   )
   const toRetry = useMemo(
-    () => retrySet(failure, unsent, allPayments),
+    () => retrySet(failure, unsent?.payments, allPayments),
     [failure, unsent, allPayments],
   )
+  // The mint the retried payments were sent in: the failed batch's, else the
+  // failed Retry's, else the form's.
+  const retryMint =
+    failure && sentWith ? sentWith.mint : (unsent?.mint ?? paymentState.mint)
   const handleRetry = useMemo(
     () =>
       toRetry &&
       (() => {
-        setUnsent(toRetry)
-        void submitPayments(toRetry, paymentState.mint).catch(console.error)
+        setUnsent({ payments: toRetry, mint: retryMint })
+        void submitPayments(toRetry, retryMint).catch(console.error)
       }),
-    [toRetry, submitPayments, paymentState.mint],
+    [toRetry, retryMint, submitPayments],
   )
 
   // Show the amounts actually submitted — the server-priced priority fee may

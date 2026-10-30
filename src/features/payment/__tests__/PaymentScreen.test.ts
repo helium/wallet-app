@@ -363,6 +363,39 @@ describe('PaymentScreen Retry', () => {
     ])
   })
 
+  it('retries in the mint the failed batch was sent in after the form mint changes', async () => {
+    const toAlice = signed([sol(alice, 1)])
+    const toBob = signed([sol(bob, 2)])
+    const otherMint = Keypair.generate().publicKey
+    render()
+
+    sendsAs('first', [toAlice, toBob])
+    await submit()
+
+    // A payment deep link changes the form's mint after the submit. The
+    // screen is memoised, so the batch update below is what rerenders it.
+    mockPaymentState.mint = otherMint
+    try {
+      setBatch('first', {
+        status: 'partial',
+        transactions: [
+          { signature: signatureOf(toAlice), status: 'confirmed' },
+          { signature: signatureOf(toBob), status: 'failed' },
+        ],
+      })
+
+      mockSend.mockRejectedValueOnce(new Error('Blockhash not found'))
+      await retry()
+      expect(mockSend.mock.calls[1][0].mint).toEqual(NATIVE_MINT)
+
+      mockSend.mockReturnValueOnce(new Promise(() => undefined))
+      await retry()
+      expect(mockSend.mock.calls[2][0].mint).toEqual(NATIVE_MINT)
+    } finally {
+      mockPaymentState.mint = NATIVE_MINT
+    }
+  })
+
   it('offers no Retry when a batch transaction loads accounts from a lookup table', async () => {
     const lookupTable = new AddressLookupTableAccount({
       key: Keypair.generate().publicKey,
