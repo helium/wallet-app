@@ -26,7 +26,6 @@ export const Button = ({
   ...props
 }: ButtonProps) => (
   <PressableScale
-    accessibilityRole="button"
     {...props}
     disabled={disabled}
     feedback={buttonPressFeedback(variant)}

@@ -4,7 +4,7 @@ import { twMerge } from './twMerge'
 
 // World's button variants and sizes (style guide §9.1). Web-only classes
 // (hover, focus ring, svg selectors) and the landing variants are left out.
-export const buttonVariants = cva(
+const buttonVariants = cva(
   'flex-row items-center justify-center gap-2 rounded-md',
   {
     variants: {
