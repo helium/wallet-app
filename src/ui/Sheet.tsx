@@ -48,9 +48,15 @@ const SheetHandle = () => (
 )
 
 // A token-styled gorhom modal sheet. Present and dismiss it through the ref.
-export const Sheet = ({ ref, onChange, onDismiss, ...props }: SheetProps) => {
+export const Sheet = ({
+  ref,
+  onAnimate,
+  onChange,
+  onDismiss,
+  ...props
+}: SheetProps) => {
   const innerRef = useRef<BottomSheetModal>(null)
-  useImperativeHandle(ref, () => innerRef.current as BottomSheetModal, [])
+  useImperativeHandle(ref, () => innerRef.current as BottomSheetModal)
   const { handleDismiss, setIsShowing } = useBackHandler(innerRef)
 
   const handleChange = useCallback<NonNullable<SheetProps['onChange']>>(
@@ -59,6 +65,14 @@ export const Sheet = ({ ref, onChange, onDismiss, ...props }: SheetProps) => {
       onChange?.(index, position, type)
     },
     [onChange, setIsShowing],
+  )
+
+  const handleAnimate = useCallback<NonNullable<SheetProps['onAnimate']>>(
+    (fromIndex, toIndex, fromPosition, toPosition) => {
+      if (toIndex >= 0) setIsShowing(true)
+      onAnimate?.(fromIndex, toIndex, fromPosition, toPosition)
+    },
+    [onAnimate, setIsShowing],
   )
 
   const handleSheetDismiss = useCallback(() => {
@@ -70,6 +84,7 @@ export const Sheet = ({ ref, onChange, onDismiss, ...props }: SheetProps) => {
     <BottomSheetModal
       {...props}
       ref={innerRef}
+      onAnimate={handleAnimate}
       onChange={handleChange}
       onDismiss={handleSheetDismiss}
       backdropComponent={SheetBackdrop}

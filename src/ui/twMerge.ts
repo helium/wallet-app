@@ -6,6 +6,7 @@ import { extendTailwindMerge } from 'tailwind-merge'
 export const twMerge = extendTailwindMerge({
   override: { conflictingClassGroups: { 'font-size': [] } },
   extend: {
+    theme: { shadow: ['stat-box'] },
     conflictingClassGroups: {
       'font-weight': ['font-family'],
       'font-family': ['font-weight'],

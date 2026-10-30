@@ -5,19 +5,21 @@ import { Sheet } from '../Sheet'
 const mockDismiss = jest.fn()
 const mockRemove = jest.fn()
 const mockModalProps: { current: Record<string, unknown> } = { current: {} }
+const mockHandle: { current: unknown } = { current: undefined }
 let mockBackListener: (() => boolean) | undefined
 
 // The node test runner cannot load gorhom or react-native. The modal records
-// its props and exposes the methods the back handler calls.
+// its props, exposes the methods the back handler calls, and records the
+// handle it builds on each render, as gorhom does.
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   const BottomSheetModal = ReactActual.forwardRef(
     (props: Record<string, unknown>, ref: unknown) => {
       mockModalProps.current = props
-      ReactActual.useImperativeHandle(ref, () => ({
-        dismiss: mockDismiss,
-        present: jest.fn(),
-      }))
+      ReactActual.useImperativeHandle(ref, () => {
+        mockHandle.current = { dismiss: mockDismiss, present: jest.fn() }
+        return mockHandle.current
+      })
       return null
     },
   )
@@ -46,6 +48,12 @@ jest.mock('react-native', () => ({
 ).IS_REACT_ACT_ENVIRONMENT = true
 
 type ModalCallbacks = {
+  onAnimate: (
+    fromIndex: number,
+    toIndex: number,
+    fromPosition: number,
+    toPosition: number,
+  ) => void
   onChange: (index: number, position: number, type: number) => void
   onDismiss: () => void
 }
@@ -68,6 +76,7 @@ beforeEach(() => {
   mockRemove.mockClear()
   mockBackListener = undefined
   mockModalProps.current = {}
+  mockHandle.current = undefined
 })
 
 describe('Sheet', () => {
@@ -87,6 +96,53 @@ describe('Sheet', () => {
 
     expect(pressBack()).toBe(true)
     expect(mockDismiss).toHaveBeenCalledTimes(1)
+  })
+
+  it('dismisses the sheet on Android back during the open animation', () => {
+    render(<Sheet snapPoints={['50%']} children={null} />)
+
+    act(() => {
+      modal().onAnimate(-1, 0, 800, 100)
+    })
+
+    expect(pressBack()).toBe(true)
+    expect(mockDismiss).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves Android back to the screen when a close animation starts', () => {
+    render(<Sheet snapPoints={['50%']} children={null} />)
+
+    act(() => {
+      modal().onAnimate(0, -1, 100, 800)
+    })
+
+    expect(pressBack()).toBe(false)
+    expect(mockDismiss).not.toHaveBeenCalled()
+  })
+
+  it('still calls the caller onAnimate', () => {
+    const onAnimate = jest.fn()
+    render(<Sheet snapPoints={['50%']} children={null} onAnimate={onAnimate} />)
+
+    act(() => {
+      modal().onAnimate(-1, 0, 800, 100)
+    })
+
+    expect(onAnimate).toHaveBeenCalledWith(-1, 0, 800, 100)
+  })
+
+  it('leaves Android back to the screen after the sheet closes', () => {
+    render(<Sheet snapPoints={['50%']} children={null} />)
+
+    act(() => {
+      modal().onChange(0, 100, 0)
+    })
+    act(() => {
+      modal().onChange(-1, 800, 0)
+    })
+
+    expect(pressBack()).toBe(false)
+    expect(mockDismiss).not.toHaveBeenCalled()
   })
 
   it('leaves Android back to the screen after the sheet dismisses', () => {
@@ -131,5 +187,25 @@ describe('Sheet', () => {
     render(<Sheet snapPoints={['50%']} children={null} ref={ref as never} />)
 
     expect(ref.current?.dismiss).toBe(mockDismiss)
+  })
+
+  it("gives the caller ref the modal's latest handle after a re-render", () => {
+    const ref = React.createRef<unknown>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <Sheet snapPoints={['50%']} children={null} ref={ref as never} />,
+      )
+    })
+    const firstHandle = mockHandle.current
+
+    act(() => {
+      renderer?.update(
+        <Sheet snapPoints={['80%']} children={null} ref={ref as never} />,
+      )
+    })
+
+    expect(ref.current).toBe(mockHandle.current)
+    expect(ref.current).not.toBe(firstHandle)
   })
 })

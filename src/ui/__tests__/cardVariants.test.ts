@@ -20,6 +20,18 @@ describe('cardClassName', () => {
     expect(className).not.toContain('p-4')
   })
 
+  it('lets a caller shadow replace the stat-box shadow', () => {
+    expect(cardClassName(undefined, 'shadow-none')).toBe(
+      'rounded-[15px] bg-card p-4 shadow-none',
+    )
+  })
+
+  it('keeps the stat-box shadow under a caller shadow colour', () => {
+    expect(cardClassName(undefined, 'shadow-black/10')).toBe(
+      'rounded-[15px] bg-card p-4 shadow-stat-box shadow-black/10',
+    )
+  })
+
   it('adds no trailing space without a caller className', () => {
     expect(cardClassName()).toBe(cardClassName().trimEnd())
   })
