@@ -10,13 +10,15 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
+import { useColors } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
 import React, { FC, memo, useCallback, useEffect, useRef } from 'react'
 import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { BackHandler, Platform } from 'react-native'
-import WorldButton from '../migration/components/WorldButton'
 import { RootNavigationProp } from '../../navigation/rootTypes'
-import { WORLD_SHEET, WORLD_TRACKING } from '../migration/migrationTheme'
+
+const SHEET_CORNERS = { borderTopLeftRadius: 24, borderTopRightRadius: 24 }
 
 // The Helium World announcement, reframed as a dismissable bottom-sheet card
 // instead of a full-screen takeover: the wallet keeps working, migrating is an
@@ -32,6 +34,7 @@ const MigrateToWorldCard: FC = () => {
   const rootNav = useNavigation<RootNavigationProp>()
   const sheetRef = useRef<BottomSheet>(null)
   const sheetMargins = useSheetMargins()
+  const colors = useColors()
 
   // Once a close has been requested the card is on its way out; the back
   // handler must stop consuming presses or it swallows them on whatever screen
@@ -100,8 +103,11 @@ const MigrateToWorldCard: FC = () => {
       style={sheetMargins}
       enableDynamicSizing
       enablePanDownToClose
-      backgroundStyle={WORLD_SHEET.cardBackground}
-      handleIndicatorStyle={WORLD_SHEET.handle}
+      backgroundStyle={{
+        ...SHEET_CORNERS,
+        backgroundColor: colors.worldSurface,
+      }}
+      handleIndicatorStyle={{ backgroundColor: colors.worldInkFaint }}
       backdropComponent={renderBackdrop}
       onClose={handleClosed}
     >
@@ -123,7 +129,7 @@ const MigrateToWorldCard: FC = () => {
           <Text
             variant="h3"
             color="worldInk"
-            letterSpacing={WORLD_TRACKING.hero}
+            letterSpacing={-0.5}
             marginTop="s"
           >
             {t('migrateToWorldModal.welcome.title')}
@@ -149,20 +155,24 @@ const MigrateToWorldCard: FC = () => {
               {t('migrateToWorldModal.welcome.keepsWorking')}
             </Text>
           </Box>
-          <WorldButton
-            variant="primary"
-            title={t('migrateToWorldModal.welcome.next')}
+          <Button
+            variant="cta"
+            size="lg"
+            className="mt-6 w-full"
             onPress={handleGetStarted}
             testID="MigrateToWorld.GetStarted"
-            marginTop="l"
-          />
-          <WorldButton
+          >
+            {t('migrateToWorldModal.welcome.next')}
+          </Button>
+          <Button
             variant="ghost"
-            title={t('migrateToWorldModal.dismiss')}
+            size="lg"
+            className="mt-2 w-full"
             onPress={handleNotNow}
             testID="MigrateToWorld.NotNow"
-            marginTop="s"
-          />
+          >
+            {t('migrateToWorldModal.dismiss')}
+          </Button>
           <Text
             variant="body3"
             color="worldInkFaint"

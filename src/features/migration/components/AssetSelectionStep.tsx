@@ -1,22 +1,23 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BottomSheet from '@gorhom/bottom-sheet'
+import { BottomSheetModal } from '@gorhom/bottom-sheet'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useQuery } from '@tanstack/react-query'
 import { numberFormat } from '@utils/Balance'
 import { tokenPricesQueryOptions } from '@utils/balances'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { useLanguage } from '@utils/i18n'
-import React, { FC, useCallback, useMemo, useRef, useState } from 'react'
+import { ChevronRight } from 'lucide-react-native'
+import React, { FC, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
 import { estimateFiat } from '../logic/fiat'
 import { SelectableToken } from '../logic/types'
-import { WORLD_TRACKING } from '../migrationTheme'
 import HotspotsEditSheet from './HotspotsEditSheet'
 import StepBackHeader from './StepBackHeader'
 import TokensEditSheet from './TokensEditSheet'
-import WorldButton from './WorldButton'
 import WorldLoader from './WorldLoader'
 
 export type AssetSelection = {
@@ -24,7 +25,7 @@ export type AssetSelection = {
   tokenAmounts: Record<string, string>
 }
 
-const CHEVRON_RIGHT_STYLE = { transform: [{ rotate: '45deg' }] }
+const EditIcon = withUniwind(ChevronRight)
 
 // The whole card is the tap target (the old 12pt "Edit" label alone was far
 // below a 44pt target); the trailing Edit affordance is decorative.
@@ -36,54 +37,30 @@ const SummaryCard: FC<{
 }> = ({ count, label, sub, onEdit }) => {
   const { t } = useTranslation()
   return (
-    <TouchableOpacityBox
+    <PressableScale
       onPress={onEdit}
-      backgroundColor="worldSurfaceAlt"
-      borderRadius="xl"
-      borderWidth={1}
-      borderColor="worldBorder"
-      paddingHorizontal="l"
-      paddingVertical="m"
-      marginBottom="s"
-      flexDirection="row"
-      alignItems="center"
+      className="mb-2 flex-row items-center rounded-[20px] border border-border bg-secondary px-6 py-4"
     >
-      <Box
-        width={40}
-        height={40}
-        borderRadius="round"
-        backgroundColor="worldAccentBg"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Text variant="body1Bold" color="worldPurple">
+      <View className="size-10 items-center justify-center rounded-full bg-purple-50">
+        <Text size="base" className="font-bold text-purple-700">
           {count}
         </Text>
-      </Box>
-      <Box flex={1} marginLeft="m">
-        <Text variant="body2Medium" color="worldInk">
-          {label}
-        </Text>
+      </View>
+      <View className="ml-4 flex-1">
+        <Text className="font-medium">{label}</Text>
         {sub ? (
-          <Text variant="body3" color="worldSecondaryInk" marginTop="xxs">
+          <Text size="xs" className="mt-0.5 text-muted-foreground">
             {sub}
           </Text>
         ) : null}
-      </Box>
-      <Box flexDirection="row" alignItems="center">
-        <Text variant="body3Medium" color="worldPurple" marginRight="xs">
+      </View>
+      <View className="flex-row items-center gap-1">
+        <Text size="xs" className="font-medium text-purple-700">
           {t('migrateToWorld.selectAssets.edit')}
         </Text>
-        <Box
-          width={7}
-          height={7}
-          borderTopWidth={1.5}
-          borderRightWidth={1.5}
-          borderColor="worldPurple"
-          style={CHEVRON_RIGHT_STYLE}
-        />
-      </Box>
-    </TouchableOpacityBox>
+        <EditIcon size={14} colorClassName="accent-purple-700" />
+      </View>
+    </PressableScale>
   )
 }
 
@@ -105,8 +82,8 @@ const AssetSelectionStep: FC<{
     ...tokenPricesQueryOptions(cur || ''),
     enabled: false,
   })
-  const hotspotsRef = useRef<BottomSheet>(null)
-  const tokensRef = useRef<BottomSheet>(null)
+  const hotspotsRef = useRef<BottomSheetModal>(null)
+  const tokensRef = useRef<BottomSheetModal>(null)
 
   const [hotspotKeys, setHotspotKeys] = useState<Set<string>>(new Set())
   const [tokenAmounts, setTokenAmounts] = useState<Record<string, string>>({})
@@ -123,18 +100,13 @@ const AssetSelectionStep: FC<{
     setPrimed(true)
   }
 
-  // Stable identity so HotspotsEditSheet's memoized rows don't re-render on
-  // every parent render (e.g. price-poll ticks).
-  const toggleHotspot = useCallback(
-    (key: string) =>
-      setHotspotKeys((prev) => {
-        const next = new Set(prev)
-        if (next.has(key)) next.delete(key)
-        else next.add(key)
-        return next
-      }),
-    [],
-  )
+  const toggleHotspot = (key: string) =>
+    setHotspotKeys((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
 
   const activeTokenCount = tokens.filter((tk) => {
     const a = tokenAmounts[tk.mint]
@@ -144,7 +116,7 @@ const AssetSelectionStep: FC<{
   // Approximate value of the selected token amounts over the mints we have a
   // price for, plus how many selected tokens we cannot price. Omitted entirely
   // until prices load, and when nothing is selected.
-  const tokensUsd = useMemo(() => {
+  const tokensUsd = (() => {
     if (!cur || !tokenPrices) return undefined
     const { total, unpricedCount } = estimateFiat({
       tokens,
@@ -160,7 +132,7 @@ const AssetSelectionStep: FC<{
           unpriced: unpricedCount,
         })
       : t('migrateToWorld.selectAssets.approxValue', { value })
-  }, [tokens, tokenAmounts, tokenPrices, cur, language, t])
+  })()
 
   const canReview = hotspotKeys.size > 0 || activeTokenCount > 0
 
@@ -169,62 +141,51 @@ const AssetSelectionStep: FC<{
   }
 
   return (
-    <Box flex={1}>
+    <View className="flex-1">
       <StepBackHeader onBack={onBack} />
-      <Box flex={1} paddingHorizontal="l">
-        <Text
-          variant="h4"
-          color="worldInk"
-          letterSpacing={WORLD_TRACKING.title}
-        >
+      <View className="flex-1 px-6">
+        <Text size="xl" className="tracking-tight">
           {t('migrateToWorld.selectAssets.readyTitle')}
         </Text>
-        <Text
-          variant="body2"
-          color="worldSecondaryInk"
-          marginTop="xs"
-          marginBottom="l"
-        >
+        <Text className="mb-6 mt-1 text-muted-foreground">
           {t('migrateToWorld.selectAssets.readyBody')}
         </Text>
 
         <SummaryCard
           count={hotspotKeys.size}
           label={t('migrateToWorld.selectAssets.hotspots')}
-          onEdit={() => hotspotsRef.current?.expand()}
+          onEdit={() => hotspotsRef.current?.present()}
         />
         <SummaryCard
           count={activeTokenCount}
           label={t('migrateToWorld.selectAssets.tokens')}
           sub={tokensUsd}
-          onEdit={() => tokensRef.current?.expand()}
+          onEdit={() => tokensRef.current?.present()}
         />
 
         {leftBehindCount > 0 && (
-          <Box
-            borderRadius="l"
-            padding="m"
-            marginTop="xs"
-            backgroundColor="worldWarnBg"
-          >
-            <Text variant="body3" color="worldWarnInk">
+          <View className="mt-1 rounded-[12px] bg-warning-100 p-4">
+            <Text size="xs" className="text-warning-500">
               {t('migrateToWorld.selectAssets.leftBehind', {
                 count: leftBehindCount,
               })}{' '}
               {t('migrateToWorld.selectAssets.leftBehindHint')}
             </Text>
-          </Box>
+          </View>
         )}
 
-        <Box flex={1} />
-        <WorldButton
+        <View className="flex-1" />
+        <Button
+          variant="cta"
+          size="lg"
+          className="mb-6 w-full"
           testID="MigrateSelect.Review"
-          title={t('migrateToWorld.selectAssets.review')}
           onPress={() => onReview({ hotspotKeys, tokenAmounts })}
           disabled={!canReview}
-          marginBottom="l"
-        />
-      </Box>
+        >
+          {t('migrateToWorld.selectAssets.review')}
+        </Button>
+      </View>
 
       <HotspotsEditSheet
         ref={hotspotsRef}
@@ -238,7 +199,7 @@ const AssetSelectionStep: FC<{
         amounts={tokenAmounts}
         onCommit={setTokenAmounts}
       />
-    </Box>
+    </View>
   )
 }
 

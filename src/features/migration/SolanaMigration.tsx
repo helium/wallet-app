@@ -1,23 +1,21 @@
-import AccountIcon from '@components/AccountIcon'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
 import { fullApiContract } from '@helium/blockchain-api'
 import { ContractRouterClient } from '@orpc/contract'
-import { BoxProps } from '@shopify/restyle'
+import { useNavigation } from '@react-navigation/native'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useQueryClient } from '@tanstack/react-query'
-import { Theme } from '@theme/theme'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Config from '@utils/config'
+import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
 import 'text-encoding-polyfill'
 import { refreshHotspots } from '../../hooks/useHotspots'
@@ -26,6 +24,9 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { useBlockchainApi } from '../../storage/BlockchainApiProvider'
 import * as Logger from '../../utils/logger'
+import StepBackHeader from './components/StepBackHeader'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 async function migrateWallet(
   client: ContractRouterClient<typeof fullApiContract>,
@@ -64,6 +65,8 @@ async function migrateWallet(
   }
 }
 
+// StepBackHeader carries the top inset when it shows, so the safe area then
+// skips the top edge.
 const Wrapper = ({
   hideBack,
   children,
@@ -71,25 +74,27 @@ const Wrapper = ({
   hideBack: boolean
   children: ReactNode
 }) => {
-  const boxProps = {
-    backgroundColor: 'transparent',
-    flex: 1,
-    padding: 'm',
-    alignItems: 'center',
-    justifyContent: 'center',
-  } as BoxProps<Theme>
-
-  if (hideBack) {
-    return <SafeAreaBox {...boxProps}>{children}</SafeAreaBox>
-  }
-  return <BackScreen {...boxProps}>{children}</BackScreen>
+  const navigation = useNavigation()
+  return (
+    <SafeArea
+      edges={hideBack ? undefined : ['bottom', 'left', 'right']}
+      className="flex-1"
+    >
+      {hideBack ? null : <StepBackHeader onBack={navigation.goBack} />}
+      <View className="flex-1 items-center justify-center p-4">{children}</View>
+    </SafeArea>
+  )
 }
 
 const SolanaMigration = ({
   manual = false,
   hideBack = true,
-  ...props
-}: BoxProps<Theme> & { hideBack?: boolean; manual?: boolean }) => {
+  className,
+}: {
+  hideBack?: boolean
+  manual?: boolean
+  className?: string
+}) => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider } = useSolana()
   const client = useBlockchainApi()
@@ -210,18 +215,12 @@ const SolanaMigration = ({
   }
 
   return (
-    <ReAnimatedBox flex={1} backgroundColor="secondaryBackground" {...props}>
+    <View className={`flex-1 bg-background ${className ?? ''}`}>
       <Wrapper hideBack={hideBack}>
-        <Box flexGrow={1} justifyContent="center" alignItems="center">
-          <Box
-            shadowColor="black"
-            shadowOpacity={0.4}
-            shadowOffset={{ width: 0, height: 10 }}
-            shadowRadius={10}
-            elevation={12}
-          >
+        <View className="grow items-center justify-center">
+          <View className="shadow-lg">
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
-          </Box>
+          </View>
           {!error && !migrationError && !loading && (
             <Animated.View
               style={{ alignItems: 'center' }}
@@ -229,20 +228,16 @@ const SolanaMigration = ({
               exiting={FADE_OUT}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
+                size="4xl"
+                className="mt-8 font-medium"
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migrationComplete')}
               </Text>
               <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
+                className="mt-8 text-center text-muted-foreground"
                 numberOfLines={2}
-                textAlign="center"
                 adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migrationComplete2')}
@@ -256,20 +251,12 @@ const SolanaMigration = ({
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-                textAlign="center"
-              >
+              <Text size="4xl" className="mt-8 text-center font-medium">
                 {t('solanaMigrationScreen.error')}
               </Text>
               <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
+                className="mt-8 text-center text-muted-foreground"
                 numberOfLines={2}
-                textAlign="center"
               >
                 {error?.message || migrationError}
               </Text>
@@ -283,92 +270,60 @@ const SolanaMigration = ({
               exiting={FADE_OUT}
             >
               <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-                textAlign="center"
+                size="4xl"
+                className="mt-8 text-center font-medium"
                 numberOfLines={2}
                 adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migrating')}
               </Text>
               <Text
-                variant="body0"
-                color="grey600"
-                textAlign="center"
-                marginBottom="m"
-                marginTop="s"
+                size="xl"
+                className="mb-4 mt-2 text-center text-muted-foreground"
                 numberOfLines={2}
                 adjustsFontSizeToFit
               >
                 {t('solanaMigrationScreen.migratingBody')}
               </Text>
-              <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
-                <IndeterminateProgressBar paddingHorizontal="l" />
-              </Box>
+              <Spinner size="large" className="mt-4" />
               {total > 200 && (
                 <Text
-                  variant="body0"
-                  color="grey600"
-                  textAlign="center"
-                  marginBottom="m"
-                  marginTop="s"
+                  size="xl"
+                  className="mb-4 mt-2 text-center text-muted-foreground"
                 >
                   {progress} / {total}
                 </Text>
               )}
             </Animated.View>
           )}
-        </Box>
+        </View>
 
         {(error || migrationError) && (
-          <Box
-            flexDirection="row"
-            marginBottom="l"
-            marginHorizontal="m"
-            position="absolute"
-            bottom={0}
-            left={0}
-            right={0}
-            alignItems="flex-end"
-            justifyContent="center"
-          >
+          <View className="absolute inset-x-0 bottom-0 mx-4 mb-6 flex-row items-end justify-center gap-4">
             {retry > 0 && (
-              <ButtonPressable
-                flex={1}
-                marginStart="m"
-                marginBottom="m"
-                height={65}
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacity={0.1}
-                backgroundColorOpacityPressed={0.05}
-                titleColorPressedOpacity={0.3}
-                title={t('solanaMigrationScreen.migrateLater')}
-                titleColor="white"
+              <Button
+                variant="secondary"
+                size="lg"
+                className="flex-1"
                 onPress={() =>
                   void handleManualMigration().catch(console.error)
                 }
-              />
+              >
+                {t('solanaMigrationScreen.migrateLater')}
+              </Button>
             )}
-            <ButtonPressable
-              flex={1}
-              marginStart="m"
-              marginBottom="m"
-              height={65}
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacity={0.1}
-              backgroundColorOpacityPressed={0.05}
-              titleColorPressedOpacity={0.3}
-              title={t('solanaMigrationScreen.retry')}
-              titleColor="white"
+            <Button
+              variant="secondary"
+              size="lg"
+              className="flex-1"
               onPress={handleUpdateRetry}
-            />
-          </Box>
+            >
+              {t('solanaMigrationScreen.retry')}
+            </Button>
+          </View>
         )}
       </Wrapper>
-    </ReAnimatedBox>
+    </View>
   )
 }
 

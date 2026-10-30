@@ -1,44 +1,28 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking, ScrollView } from 'react-native'
+import { Linking, ScrollView, View } from 'react-native'
 import { WORLD_URL } from '../constants'
-import { WORLD_TRACKING } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
-import WorldButton from './WorldButton'
 
 // Guided, branched instructions to connect an existing external wallet as the
 // World destination via World Explorer's wallet-standard / SIWS connect model.
 // No keys are exported and no funds move here — the user just signs in with a
 // wallet they already control. Hardware-wallet users are routed here too.
 // A numbered instruction row: a small World-purple numeral badge + the step
-// text, in the secondary World-Light body styling used across this screen.
+// text, in the secondary body styling used across this screen.
 const StepRow: FC<{ index: number; text: string }> = ({ index, text }) => (
-  <Box flexDirection="row" marginTop="m" alignItems="flex-start">
-    <Box
-      width={24}
-      height={24}
-      borderRadius="round"
-      backgroundColor="worldAccentBg"
-      alignItems="center"
-      justifyContent="center"
-      marginRight="s"
-    >
-      <Text variant="body3Bold" color="worldPurple">
+  <View className="mt-4 flex-row items-start">
+    <View className="mr-2 size-6 items-center justify-center rounded-full bg-purple-50">
+      <Text size="xs" className="font-bold text-purple-700">
         {index}
       </Text>
-    </Box>
-    <Text
-      variant="body2"
-      color="worldSecondaryInk"
-      lineHeight={22}
-      flex={1}
-      marginTop="xxs"
-    >
+    </View>
+    <Text className="mt-0.5 flex-1 leading-[22px] text-muted-foreground">
       {text}
     </Text>
-  </Box>
+  </View>
 )
 
 // A titled instruction card grouping one connection route's steps.
@@ -46,19 +30,12 @@ const StepCard: FC<{ title: string; children: ReactNode }> = ({
   title,
   children,
 }) => (
-  <Box
-    backgroundColor="worldSurfaceAlt"
-    borderWidth={1}
-    borderColor="worldBorder"
-    borderRadius="xl"
-    padding="l"
-    marginTop="m"
-  >
-    <Text variant="subtitle2" color="worldInk">
+  <View className="mt-4 rounded-[20px] border border-border bg-secondary p-6">
+    <Text size="lg" className="font-medium">
       {title}
     </Text>
     {children}
-  </Box>
+  </View>
 )
 
 const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
@@ -80,26 +57,17 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
   ]
 
   return (
-    <Box flex={1}>
+    <View className="flex-1">
       <StepBackHeader onBack={onBack} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerClassName="pb-8"
       >
-        <Box paddingHorizontal="l">
-          <Text
-            variant="h4"
-            color="worldInk"
-            letterSpacing={WORLD_TRACKING.title}
-          >
+        <View className="px-6">
+          <Text size="xl" className="tracking-tight">
             {t('migrateToWorld.connect.title')}
           </Text>
-          <Text
-            variant="body2"
-            color="worldSecondaryInk"
-            marginTop="xs"
-            lineHeight={22}
-          >
+          <Text className="mt-1 leading-[22px] text-muted-foreground">
             {t('migrateToWorld.connect.reassurance')}
           </Text>
 
@@ -114,23 +82,29 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
               <StepRow key={step} index={i + 1} text={step} />
             ))}
           </StepCard>
-        </Box>
+        </View>
       </ScrollView>
-      <Box paddingHorizontal="l" paddingBottom="l">
-        <WorldButton
-          title={t('migrateToWorld.connect.openWorld')}
+      <View className="px-6 pb-6">
+        <Button
+          variant="cta"
+          size="lg"
+          className="w-full"
           onPress={() => void Linking.openURL(WORLD_URL).catch(console.error)}
-        />
+        >
+          {t('migrateToWorld.connect.openWorld')}
+        </Button>
         {onDismiss ? (
-          <WorldButton
+          <Button
             variant="ghost"
-            title={t('migrateToWorld.intro.later')}
+            size="lg"
+            className="mt-2 w-full"
             onPress={onDismiss}
-            marginTop="s"
-          />
+          >
+            {t('migrateToWorld.intro.later')}
+          </Button>
         ) : null}
-      </Box>
-    </Box>
+      </View>
+    </View>
   )
 }
 

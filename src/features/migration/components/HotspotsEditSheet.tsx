@@ -1,120 +1,71 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetFlatList,
-} from '@gorhom/bottom-sheet'
-import React, { forwardRef, memo, useCallback } from 'react'
+import { BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet'
+import { PressableScale } from '@ui/PressableScale'
+import { Sheet } from '@ui/Sheet'
+import { Text } from '@ui/Text'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { ListRenderItem } from 'react-native'
+import { View } from 'react-native'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
-import { WORLD_SHEET, WORLD_TRACKING } from '../migrationTheme'
 import WorldCheckbox from './WorldCheckbox'
 
 type Props = {
+  ref?: React.Ref<BottomSheetModal>
   hotspots: MigratableHotspot[]
   selected: Set<string>
   onToggle: (entityKey: string) => void
 }
 
-// Memoized with primitive props so a toggle (or any parent re-render, e.g. a
-// price-poll tick) only re-renders the rows whose selection actually changed.
-const HotspotRow = memo(
-  ({
-    entityKey,
-    name,
-    type,
-    deviceType,
-    isSelected,
-    onToggle,
-  }: MigratableHotspot & {
-    isSelected: boolean
-    onToggle: (entityKey: string) => void
-  }) => {
-    const handlePress = useCallback(
-      () => onToggle(entityKey),
-      [onToggle, entityKey],
-    )
-    return (
-      <TouchableOpacityBox
-        onPress={handlePress}
-        flexDirection="row"
-        alignItems="center"
-        paddingHorizontal="l"
-        paddingVertical="ms"
-      >
-        <Box marginRight="m">
-          <WorldCheckbox checked={isSelected} />
-        </Box>
-        <Box flex={1}>
-          <Text variant="body2Medium" color="worldInk">
-            {name}
-          </Text>
-          <Text variant="body3" color="worldSecondaryInk">
-            {type} · {deviceType}
-          </Text>
-        </Box>
-      </TouchableOpacityBox>
-    )
-  },
-)
-HotspotRow.displayName = 'HotspotRow'
-
-const HotspotsEditSheet = forwardRef<BottomSheet, Props>(
-  ({ hotspots, selected, onToggle }, ref) => {
-    const { t } = useTranslation()
-    const renderItem = useCallback<ListRenderItem<MigratableHotspot>>(
-      ({ item }) => (
-        <HotspotRow
-          {...item}
-          isSelected={selected.has(item.entityKey)}
-          onToggle={onToggle}
-        />
-      ),
-      [selected, onToggle],
-    )
-    const renderBackdrop = useCallback(
-      (props: BottomSheetBackdropProps) => (
-        <BottomSheetBackdrop
-          {...props}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-        />
-      ),
-      [],
-    )
-    return (
-      <BottomSheet
-        ref={ref}
-        index={-1}
-        snapPoints={['70%']}
-        enablePanDownToClose
-        backgroundStyle={WORLD_SHEET.background}
-        handleIndicatorStyle={WORLD_SHEET.handle}
-        backdropComponent={renderBackdrop}
-      >
-        <Box paddingHorizontal="l" paddingBottom="s">
-          <Text
-            variant="h4"
-            color="worldInk"
-            letterSpacing={WORLD_TRACKING.title}
-          >
-            {t('migrateToWorld.selectAssets.hotspots')}
-          </Text>
-        </Box>
-        <BottomSheetFlatList<MigratableHotspot>
-          contentInsetAdjustmentBehavior="automatic"
-          data={hotspots}
-          keyExtractor={(h) => h.entityKey}
-          renderItem={renderItem}
-        />
-      </BottomSheet>
-    )
-  },
+const HotspotRow = ({
+  entityKey,
+  name,
+  type,
+  deviceType,
+  isSelected,
+  onToggle,
+}: MigratableHotspot & {
+  isSelected: boolean
+  onToggle: (entityKey: string) => void
+}) => (
+  <PressableScale
+    onPress={() => onToggle(entityKey)}
+    feedback="opacity"
+    className="flex-row items-center px-6 py-3"
+  >
+    <View className="mr-4">
+      <WorldCheckbox checked={isSelected} />
+    </View>
+    <View className="flex-1">
+      <Text className="font-medium">{name}</Text>
+      <Text size="xs" className="text-muted-foreground">
+        {type} · {deviceType}
+      </Text>
+    </View>
+  </PressableScale>
 )
 
-HotspotsEditSheet.displayName = 'HotspotsEditSheet'
+const HotspotsEditSheet = ({ ref, hotspots, selected, onToggle }: Props) => {
+  const { t } = useTranslation()
+  return (
+    <Sheet ref={ref} snapPoints={['70%']} enablePanDownToClose>
+      <View className="px-6 pb-2">
+        <Text size="xl" className="tracking-tight">
+          {t('migrateToWorld.selectAssets.hotspots')}
+        </Text>
+      </View>
+      <BottomSheetFlatList<MigratableHotspot>
+        contentInsetAdjustmentBehavior="automatic"
+        data={hotspots}
+        keyExtractor={(h) => h.entityKey}
+        renderItem={({ item }) => (
+          <HotspotRow
+            {...item}
+            isSelected={selected.has(item.entityKey)}
+            onToggle={onToggle}
+          />
+        )}
+      />
+    </Sheet>
+  )
+}
 
 export default HotspotsEditSheet

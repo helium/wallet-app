@@ -1,10 +1,9 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { WORLD_TRACKING } from '../migrationTheme'
-import WorldButton from './WorldButton'
 
 // The single path-choice screen for the migration flow: pick the managed email
 // route or connect a wallet you already control. This is the only "welcome" the
@@ -17,75 +16,58 @@ const IntroStep: FC<{
   const { t } = useTranslation()
   const { top } = useSafeAreaInsets()
   return (
-    <Box
-      flex={1}
-      justifyContent="space-between"
-      paddingHorizontal="l"
-      paddingBottom="l"
+    <View
+      className="flex-1 justify-between px-6 pb-6"
       style={{ paddingTop: top }}
     >
-      <Box flex={1} justifyContent="center">
-        <Text
-          variant="h3"
-          color="worldInk"
-          letterSpacing={WORLD_TRACKING.hero}
-          textAlign="center"
-        >
+      <View className="flex-1 justify-center">
+        <Text size="2xl" className="text-center tracking-tight">
           {t('migrateToWorldModal.choosePath.title')}
         </Text>
-        <Text
-          variant="body2"
-          color="worldSecondaryInk"
-          textAlign="center"
-          marginTop="s"
-        >
+        <Text className="mt-2 text-center text-muted-foreground">
           {t('migrateToWorldModal.choosePath.subtitle')}
         </Text>
 
-        <Box marginTop="xl">
-          <WorldButton
-            variant="primary"
-            title={t('migrateToWorldModal.choosePath.emailTitle')}
+        <View className="mt-8">
+          <Button
+            variant="cta"
+            size="lg"
+            className="w-full"
             onPress={onContinue}
             testID="MigrateIntro.Email"
-          />
+          >
+            {t('migrateToWorldModal.choosePath.emailTitle')}
+          </Button>
           <Text
-            variant="body3"
-            lineHeight={16}
-            color="worldSecondaryInk"
-            textAlign="center"
-            marginTop="s"
-            paddingHorizontal="l"
+            size="xs"
+            className="mt-2 px-6 text-center text-muted-foreground"
           >
             {t('migrateToWorldModal.choosePath.emailBody')}
           </Text>
-        </Box>
+        </View>
 
-        <Box marginTop="l">
-          <WorldButton
+        <View className="mt-6">
+          <Button
             variant="outline"
-            title={t('migrateToWorldModal.choosePath.selfCustodyTitle')}
+            size="lg"
+            className="w-full"
             onPress={onUseOwnWallet}
-          />
+          >
+            {t('migrateToWorldModal.choosePath.selfCustodyTitle')}
+          </Button>
           <Text
-            variant="body3"
-            lineHeight={16}
-            color="worldSecondaryInk"
-            textAlign="center"
-            marginTop="s"
-            paddingHorizontal="l"
+            size="xs"
+            className="mt-2 px-6 text-center text-muted-foreground"
           >
             {t('migrateToWorldModal.choosePath.selfCustodyBody')}
           </Text>
-        </Box>
-      </Box>
+        </View>
+      </View>
 
-      <WorldButton
-        variant="ghost"
-        title={t('migrateToWorld.intro.later')}
-        onPress={onDismiss}
-      />
-    </Box>
+      <Button variant="ghost" size="lg" className="w-full" onPress={onDismiss}>
+        {t('migrateToWorld.intro.later')}
+      </Button>
+    </View>
   )
 }
 

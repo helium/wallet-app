@@ -1,4 +1,3 @@
-import SafeAreaBox from '@components/SafeAreaBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -11,7 +10,8 @@ import React, {
   useState,
 } from 'react'
 import { Linking } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useTranslation } from 'react-i18next'
 import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo'
 import * as Logger from '@utils/logger'
@@ -38,6 +38,12 @@ import { shouldShowSupport } from './logic/retry'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
 
+const SafeArea = withUniwind(SafeAreaView)
+
+// Bottom-only so the asset sheets (and their dimming backdrop) fill the full
+// screen height — the steps' own headers carry the top safe-area inset.
+const EDGES: Edge[] = ['bottom']
+
 // The tokens the user chose to migrate (nonzero amount), each paired with its
 // resolved SelectableToken when we can find it. Shared by the input builder and
 // the review summary so both walk the selection identically.
@@ -59,9 +65,6 @@ const MigrateToWorld = () => {
 
   const { t } = useTranslation()
   const navigation = useNavigation()
-  // Bottom-only so the asset sheets (and their dimming backdrop) fill the full
-  // screen height — the steps' own headers carry the top safe-area inset.
-  const edges = useMemo(() => ['bottom'] as Edge[], [])
   const wallet = useCurrentWallet()
   const sourceWallet = wallet?.toBase58()
 
@@ -406,9 +409,9 @@ const MigrateToWorld = () => {
   }
 
   return (
-    <SafeAreaBox edges={edges} flex={1} backgroundColor="worldSurface">
+    <SafeArea edges={EDGES} className="flex-1 bg-card">
       {render()}
-    </SafeAreaBox>
+    </SafeArea>
   )
 }
 

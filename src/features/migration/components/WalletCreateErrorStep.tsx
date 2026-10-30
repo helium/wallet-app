@@ -1,4 +1,4 @@
-import Text from '@components/Text'
+import { Text } from '@ui/Text'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
@@ -32,12 +32,7 @@ const WalletCreateErrorStep: FC<{
       dismissTitle={t('migrateToWorld.intro.later')}
     >
       {showSupport ? (
-        <Text
-          variant="body3"
-          color="worldSecondaryInk"
-          textAlign="center"
-          marginTop="m"
-        >
+        <Text size="xs" className="mt-4 text-center text-muted-foreground">
           {t('migrateToWorld.createWallet.supportBody')}
         </Text>
       ) : null}

@@ -1,10 +1,9 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import React, { FC, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { WORLD_TRACKING } from '../migrationTheme'
-import WorldButton from './WorldButton'
 
 // Shared centered layout for the terminal outcome screens (success / pending /
 // partial / nothing-to-migrate / wallet-create-error): an optional icon, a
@@ -46,62 +45,49 @@ const OutcomeStep: FC<{
   const { t } = useTranslation()
   const { top } = useSafeAreaInsets()
   return (
-    <Box
-      flex={1}
-      justifyContent="center"
-      paddingHorizontal="l"
-      style={{ paddingTop: top }}
-    >
-      {icon ? (
-        <Box alignItems="center" marginBottom="l">
-          {icon}
-        </Box>
-      ) : null}
-      <Text
-        variant="h3"
-        color="worldInk"
-        letterSpacing={WORLD_TRACKING.hero}
-        textAlign="center"
-      >
+    <View className="flex-1 justify-center px-6" style={{ paddingTop: top }}>
+      {icon ? <View className="mb-6 items-center">{icon}</View> : null}
+      <Text size="2xl" className="text-center tracking-tight">
         {title}
       </Text>
-      <Text
-        variant="body2"
-        color="worldSecondaryInk"
-        lineHeight={22}
-        textAlign="center"
-        marginTop="m"
-      >
+      <Text className="mt-4 text-center leading-[22px] text-muted-foreground">
         {body}
       </Text>
       {children}
       {error ? (
-        <Text variant="body3" color="error" textAlign="center" marginTop="l">
+        <Text size="xs" className="mt-6 text-center text-destructive">
           {error}
         </Text>
       ) : null}
-      <WorldButton
-        title={primaryTitle}
+      <Button
+        variant="cta"
+        size="lg"
+        className="mb-4 mt-6 w-full"
         onPress={onPrimary}
-        marginTop="l"
-        marginBottom="m"
-      />
+      >
+        {primaryTitle}
+      </Button>
       {secondaryAction ? (
-        <WorldButton
+        <Button
           variant="secondary"
-          title={secondaryAction.title}
+          size="lg"
+          className="mb-4 w-full"
           onPress={secondaryAction.onPress}
-          marginBottom="m"
-        />
+        >
+          {secondaryAction.title}
+        </Button>
       ) : null}
       {onDismiss ? (
-        <WorldButton
+        <Button
           variant="ghost"
-          title={dismissTitle ?? t('migrateToWorldModal.dismiss')}
+          size="lg"
+          className="w-full"
           onPress={onDismiss}
-        />
+        >
+          {dismissTitle ?? t('migrateToWorldModal.dismiss')}
+        </Button>
       ) : null}
-    </Box>
+    </View>
   )
 }
 

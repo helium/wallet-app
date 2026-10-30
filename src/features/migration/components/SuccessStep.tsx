@@ -1,11 +1,13 @@
-import Checkmark from '@assets/images/checkmark.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { useColors } from '@theme/themeHooks'
+import { Text } from '@ui/Text'
 import { shortenAddress } from '@utils/formatting'
+import { CircleCheck } from 'lucide-react-native'
 import React, { FC } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import OutcomeStep from './OutcomeStep'
+
+const SuccessIcon = withUniwind(CircleCheck)
 
 const SuccessStep: FC<{
   destinationWallet: string
@@ -13,7 +15,6 @@ const SuccessStep: FC<{
   onDone: () => void
 }> = ({ destinationWallet, onGoToWorld, onDone }) => {
   const { t } = useTranslation()
-  const colors = useColors()
   return (
     <OutcomeStep
       title={t('migrateToWorld.success.title')}
@@ -22,24 +23,15 @@ const SuccessStep: FC<{
       onPrimary={onGoToWorld}
       onDismiss={onDone}
       dismissTitle={t('migrateToWorld.nothingToMigrate.done')}
-      icon={<Checkmark color={colors.worldSuccess} width={56} height={56} />}
+      icon={<SuccessIcon size={56} colorClassName="accent-success-700" />}
     >
-      <Box
-        alignSelf="center"
-        backgroundColor="worldSurfaceAlt"
-        borderWidth={1}
-        borderColor="worldBorder"
-        borderRadius="round"
-        paddingHorizontal="m"
-        paddingVertical="s"
-        marginTop="m"
-      >
-        <Text variant="body3Medium" color="worldInk">
+      <View className="mt-4 self-center rounded-full border border-border bg-secondary px-4 py-2">
+        <Text size="xs" className="font-medium">
           {t('migrateToWorld.success.wallet', {
             address: shortenAddress(destinationWallet, 6),
           })}
         </Text>
-      </Box>
+      </View>
     </OutcomeStep>
   )
 }

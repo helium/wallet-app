@@ -29,7 +29,11 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
-const migratedFiles = ['src/ui/**', 'src/features/uiGallery/**']
+const migratedFiles = [
+  'src/ui/**',
+  'src/features/uiGallery/**',
+  'src/features/migration/**',
+]
 
 module.exports = [
   {

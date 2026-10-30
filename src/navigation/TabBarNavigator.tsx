@@ -72,13 +72,7 @@ const TabBarNavigator = () => {
         !doneSolanaMigration[cluster]?.includes(currentAccount.solanaAddress) &&
         !manualMigration[cluster]?.includes(currentAccount.solanaAddress) && (
           <Portal>
-            <SolanaMigration
-              position="absolute"
-              top={0}
-              left={0}
-              right={0}
-              bottom={0}
-            />
+            <SolanaMigration className="absolute inset-0" />
           </Portal>
         )}
       <Tab.Navigator

@@ -1,16 +1,16 @@
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { useLinkEmail, useLoginWithEmail, usePrivy } from '@privy-io/expo'
 import * as Logger from '@utils/logger'
-import React, { FC, useCallback, useEffect, useState } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TextInput } from 'react-native'
+import { View } from 'react-native'
 import { resendBackoffSeconds } from '../logic/retry'
-import { WORLD, WORLD_INPUT, WORLD_TRACKING } from '../migrationTheme'
 import StepBackHeader from './StepBackHeader'
-import WorldButton from './WorldButton'
 import WorldLoader from './WorldLoader'
 
 // Shared email → OTP login. Uses link-email when a Privy user already exists,
@@ -63,32 +63,29 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
     return () => clearTimeout(id)
   }, [secondsLeft])
 
-  const sendCodeFor = useCallback(
-    async (count: number) => {
-      if (!email) return
-      try {
-        setError(undefined)
-        if (user) await linkSendCode({ email })
-        else await loginSendCode({ email })
-        setCodeSent(true)
-        setResendCount(count)
-        setSecondsLeft(resendBackoffSeconds(count))
-      } catch (err) {
-        Logger.error(err)
-        setError((err as Error).message)
-      }
-    },
-    [email, user, linkSendCode, loginSendCode],
-  )
+  const sendCodeFor = async (count: number) => {
+    if (!email) return
+    try {
+      setError(undefined)
+      if (user) await linkSendCode({ email })
+      else await loginSendCode({ email })
+      setCodeSent(true)
+      setResendCount(count)
+      setSecondsLeft(resendBackoffSeconds(count))
+    } catch (err) {
+      Logger.error(err)
+      setError((err as Error).message)
+    }
+  }
 
-  const handleSend = useCallback(() => sendCodeFor(0), [sendCodeFor])
+  const handleSend = () => sendCodeFor(0)
 
-  const handleResend = useCallback(() => {
+  const handleResend = () => {
     if (secondsLeft > 0) return
     void sendCodeFor(resendCount + 1)
-  }, [secondsLeft, resendCount, sendCodeFor])
+  }
 
-  const handleVerify = useCallback(async () => {
+  const handleVerify = async () => {
     if (!code) return
     try {
       setError(undefined)
@@ -101,7 +98,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
       setCompleting(false)
       setError((err as Error).message)
     }
-  }, [code, user, linkWithCode, loginWithCode, onSuccess])
+  }
 
   if (!isReady || completing || hasLinkedEmail) {
     return (
@@ -116,85 +113,68 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
   }
 
   return (
-    <Box flex={1}>
+    <View className="flex-1">
       <StepBackHeader onBack={onBack} />
-      <Box flex={1} paddingHorizontal="l">
-        <Text
-          variant="h4"
-          color="worldInk"
-          letterSpacing={WORLD_TRACKING.title}
-        >
+      <View className="flex-1 px-6">
+        <Text size="xl" className="tracking-tight">
           {t('migrateToWorld.linkEmail.title')}
         </Text>
-        <Text
-          variant="body2"
-          color="worldSecondaryInk"
-          lineHeight={22}
-          marginTop="xs"
-        >
+        <Text className="mt-1 leading-[22px] text-muted-foreground">
           {t('migrateToWorld.linkEmail.body')}
         </Text>
         {error ? (
-          <Text variant="body3" color="error" marginTop="m">
+          <Text size="xs" className="mt-4 text-destructive">
             {error}
           </Text>
         ) : null}
-        <Box marginTop="l">
-          <Box
-            backgroundColor="worldSurfaceAlt"
-            borderWidth={1}
-            borderColor="worldBorder"
-            borderRadius="l"
-            paddingHorizontal="m"
-          >
-            <TextInput
-              testID="MigrateLogin.Input"
-              value={codeSent ? code : email}
-              onChangeText={codeSent ? setCode : setEmail}
-              placeholder={
-                codeSent
-                  ? t('migrateToWorld.linkEmail.codePlaceholder')
-                  : t('migrateToWorld.linkEmail.emailPlaceholder')
-              }
-              placeholderTextColor={WORLD.inkFaint}
-              style={WORLD_INPUT}
-              keyboardType={codeSent ? 'number-pad' : 'email-address'}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </Box>
-          <WorldButton
-            testID={codeSent ? 'MigrateLogin.Verify' : 'MigrateLogin.SendCode'}
-            title={
+        <View className="mt-6">
+          <Input
+            variant="form"
+            testID="MigrateLogin.Input"
+            value={codeSent ? code : email}
+            onChangeText={codeSent ? setCode : setEmail}
+            placeholder={
               codeSent
-                ? t('migrateToWorld.linkEmail.verify')
-                : t('migrateToWorld.linkEmail.button')
+                ? t('migrateToWorld.linkEmail.codePlaceholder')
+                : t('migrateToWorld.linkEmail.emailPlaceholder')
             }
+            keyboardType={codeSent ? 'number-pad' : 'email-address'}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Button
+            variant="cta"
+            size="lg"
+            className="mt-4 w-full"
+            testID={codeSent ? 'MigrateLogin.Verify' : 'MigrateLogin.SendCode'}
             onPress={() =>
               void (codeSent ? handleVerify : handleSend)().catch(console.error)
             }
             disabled={codeSent ? !code || verifying : !email || sending}
-            marginTop="m"
-            LeadingComponent={
-              sending || verifying ? (
-                // The button is disabled while in flight, which paints the
-                // worldSurfaceAlt disabled background — a white spinner would
-                // be invisible on it.
-                <CircleLoader loaderSize={20} color="worldPurple" />
-              ) : undefined
-            }
-          />
+          >
+            {sending || verifying ? (
+              <Spinner size="small" colorClassName="accent-white" />
+            ) : null}
+            <Text className={buttonTextVariants({ variant: 'cta' })}>
+              {codeSent
+                ? t('migrateToWorld.linkEmail.verify')
+                : t('migrateToWorld.linkEmail.button')}
+            </Text>
+          </Button>
           {codeSent && (
-            <TouchableOpacityBox
+            <PressableScale
               onPress={handleResend}
               disabled={secondsLeft > 0 || sending}
-              marginTop="s"
-              padding="s"
-              alignItems="center"
+              feedback="opacity"
+              className="mt-2 items-center p-2"
             >
               <Text
-                variant="body3Medium"
-                color={secondsLeft > 0 ? 'worldInkFaint' : 'worldPurple'}
+                size="xs"
+                className={
+                  secondsLeft > 0
+                    ? 'font-medium text-muted-foreground'
+                    : 'font-medium text-purple-700'
+                }
               >
                 {secondsLeft > 0
                   ? t('migrateToWorld.linkEmail.resendIn', {
@@ -202,26 +182,25 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
                     })
                   : t('migrateToWorld.linkEmail.resend')}
               </Text>
-            </TouchableOpacityBox>
+            </PressableScale>
           )}
           {codeSent && (
-            <TouchableOpacityBox
+            <PressableScale
               onPress={() => {
                 setCodeSent(false)
                 setCode('')
               }}
-              marginTop="xs"
-              padding="s"
-              alignItems="center"
+              feedback="opacity"
+              className="mt-1 items-center p-2"
             >
-              <Text variant="body3Medium" color="worldPurple">
+              <Text size="xs" className="font-medium text-purple-700">
                 {t('migrateToWorld.linkEmail.differentEmail')}
               </Text>
-            </TouchableOpacityBox>
+            </PressableScale>
           )}
-        </Box>
-      </Box>
-    </Box>
+        </View>
+      </View>
+    </View>
   )
 }
 

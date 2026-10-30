@@ -1,27 +1,19 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BottomSheet, {
-  BottomSheetBackdrop,
-  BottomSheetBackdropProps,
-  BottomSheetScrollView,
-} from '@gorhom/bottom-sheet'
-import React, { FC, forwardRef, useCallback, useState } from 'react'
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Sheet } from '@ui/Sheet'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
+import React, { FC, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TextInput } from 'react-native'
+import { View } from 'react-native'
 import { useTokenDisplay } from '../hooks/useTokenDisplay'
 import { WSOL_MINT } from '../logic/mints'
 import { SelectableToken } from '../logic/types'
-import {
-  WORLD,
-  WORLD_INPUT,
-  WORLD_SHEET,
-  WORLD_TRACKING,
-} from '../migrationTheme'
 import WorldCheckbox from './WorldCheckbox'
 
 type Props = {
+  ref?: React.Ref<BottomSheetModal>
   tokens: SelectableToken[]
   amounts: Record<string, string>
   onCommit: (amounts: Record<string, string>) => void
@@ -44,152 +36,102 @@ const TokenRow: FC<{
   if (!isSol) {
     const isSelected = value !== '' && value !== '0'
     return (
-      <TouchableOpacityBox
+      <PressableScale
         onPress={() => onChange(isSelected ? '0' : token.maxUi)}
-        flexDirection="row"
-        alignItems="center"
-        paddingHorizontal="l"
-        paddingVertical="ms"
+        feedback="opacity"
+        className="flex-row items-center px-6 py-3"
       >
-        <Box marginRight="m">
+        <View className="mr-4">
           <WorldCheckbox checked={isSelected} />
-        </Box>
+        </View>
         <TokenIcon size={32} img={image} />
-        <Box flex={1} marginLeft="s">
-          <Text variant="body2Medium" color="worldInk">
-            {label}
-          </Text>
-          <Text variant="body3" color="worldSecondaryInk" marginTop="xxs">
+        <View className="ml-2 flex-1">
+          <Text className="font-medium">{label}</Text>
+          <Text size="xs" className="mt-0.5 text-muted-foreground">
             {t('migrateToWorld.selectAssets.balance', {
               amount: token.maxUi,
             })}
           </Text>
-        </Box>
-      </TouchableOpacityBox>
+        </View>
+      </PressableScale>
     )
   }
 
   return (
-    <Box
-      flexDirection="row"
-      alignItems="center"
-      paddingHorizontal="l"
-      paddingVertical="ms"
-    >
+    <View className="flex-row items-center px-6 py-3">
       {/* Spacer matching the checkbox column so the SOL row's icon/label
           stay aligned with the toggle rows above. */}
-      <Box width={22} marginRight="m" />
+      <View className="mr-4 w-[22px]" />
       <TokenIcon size={32} img={image} />
-      <Box flex={1} marginLeft="s">
-        <Text variant="body2Medium" color="worldInk">
-          {label}
-        </Text>
-        <TouchableOpacityBox
+      <View className="ml-2 flex-1">
+        <Text className="font-medium">{label}</Text>
+        <PressableScale
           onPress={onMax}
-          flexDirection="row"
-          marginTop="xxs"
+          feedback="opacity"
+          className="mt-0.5 flex-row gap-1"
         >
-          <Text variant="body3" color="worldSecondaryInk">
+          <Text size="xs" className="text-muted-foreground">
             {t('migrateToWorld.selectAssets.balance', { amount: token.maxUi })}
           </Text>
-          <Text variant="body3Bold" color="worldPurple" marginLeft="xs">
+          <Text size="xs" className="font-bold text-purple-700">
             {t('migrateToWorld.selectAssets.max')}
           </Text>
-        </TouchableOpacityBox>
-      </Box>
-      <Box
-        backgroundColor="worldSurface"
-        borderRadius="l"
-        borderWidth={1}
-        borderColor="worldBorder"
-        paddingHorizontal="m"
-        minWidth={110}
-      >
-        <TextInput
-          value={value}
-          onChangeText={onChange}
-          placeholder="0"
-          placeholderTextColor={WORLD.inkFaint}
-          keyboardType="decimal-pad"
-          textAlign="right"
-          style={WORLD_INPUT}
-        />
-      </Box>
-    </Box>
+        </PressableScale>
+      </View>
+      <Input
+        value={value}
+        onChangeText={onChange}
+        placeholder="0"
+        keyboardType="decimal-pad"
+        textAlign="right"
+        className="h-12 w-auto min-w-[110px]"
+      />
+    </View>
   )
 }
 
-const TokensEditSheet = forwardRef<BottomSheet, Props>(
-  ({ tokens, amounts, onCommit }, ref) => {
-    const { t } = useTranslation()
-    // Edit against a local draft so keystrokes don't re-render the whole
-    // selection step (and both sheets) per keypress. Re-seed from the committed
-    // values whenever the sheet opens; push the draft back to the parent on
-    // close. The sheet occludes the Review button while open, so Review can only
-    // be tapped after a commit.
-    const [draft, setDraft] = useState(amounts)
+const TokensEditSheet = ({ ref, tokens, amounts, onCommit }: Props) => {
+  const { t } = useTranslation()
+  // Edit against a local draft so keystrokes don't re-render the whole
+  // selection step (and both sheets) per keypress. Re-seed from the committed
+  // values whenever the sheet opens; push the draft back to the parent on
+  // dismiss. The sheet occludes the Review button while open, so Review can
+  // only be tapped after a commit.
+  const [draft, setDraft] = useState(amounts)
 
-    const handleChange = useCallback(
-      (index: number) => {
+  const setAmount = (mint: string, ui: string) =>
+    setDraft((prev) => ({ ...prev, [mint]: ui }))
+  const setMax = (tk: SelectableToken) =>
+    setDraft((prev) => ({ ...prev, [tk.mint]: tk.maxUi }))
+
+  return (
+    <Sheet
+      ref={ref}
+      snapPoints={['70%']}
+      enablePanDownToClose
+      onChange={(index) => {
         if (index >= 0) setDraft(amounts)
-      },
-      [amounts],
-    )
-    const handleClose = useCallback(() => onCommit(draft), [onCommit, draft])
-
-    const setAmount = (mint: string, ui: string) =>
-      setDraft((prev) => ({ ...prev, [mint]: ui }))
-    const setMax = (tk: SelectableToken) =>
-      setDraft((prev) => ({ ...prev, [tk.mint]: tk.maxUi }))
-
-    const renderBackdrop = useCallback(
-      (props: BottomSheetBackdropProps) => (
-        <BottomSheetBackdrop
-          {...props}
-          appearsOnIndex={0}
-          disappearsOnIndex={-1}
-        />
-      ),
-      [],
-    )
-
-    return (
-      <BottomSheet
-        ref={ref}
-        index={-1}
-        snapPoints={['70%']}
-        enablePanDownToClose
-        backgroundStyle={WORLD_SHEET.background}
-        handleIndicatorStyle={WORLD_SHEET.handle}
-        backdropComponent={renderBackdrop}
-        onChange={handleChange}
-        onClose={handleClose}
-      >
-        <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
-          <Box paddingHorizontal="l" paddingBottom="s">
-            <Text
-              variant="h4"
-              color="worldInk"
-              letterSpacing={WORLD_TRACKING.title}
-            >
-              {t('migrateToWorld.selectAssets.tokens')}
-            </Text>
-          </Box>
-          {tokens.map((tk) => (
-            <TokenRow
-              key={tk.mint}
-              token={tk}
-              value={draft[tk.mint] ?? ''}
-              onChange={(v) => setAmount(tk.mint, v)}
-              onMax={() => setMax(tk)}
-            />
-          ))}
-        </BottomSheetScrollView>
-      </BottomSheet>
-    )
-  },
-)
-
-TokensEditSheet.displayName = 'TokensEditSheet'
+      }}
+      onDismiss={() => onCommit(draft)}
+    >
+      <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
+        <View className="px-6 pb-2">
+          <Text size="xl" className="tracking-tight">
+            {t('migrateToWorld.selectAssets.tokens')}
+          </Text>
+        </View>
+        {tokens.map((tk) => (
+          <TokenRow
+            key={tk.mint}
+            token={tk}
+            value={draft[tk.mint] ?? ''}
+            onChange={(v) => setAmount(tk.mint, v)}
+            onMax={() => setMax(tk)}
+          />
+        ))}
+      </BottomSheetScrollView>
+    </Sheet>
+  )
+}
 
 export default TokensEditSheet
