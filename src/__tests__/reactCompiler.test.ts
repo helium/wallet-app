@@ -48,11 +48,11 @@ type CompilerEvent = { kind: string; fnLoc?: unknown; detail?: unknown }
 
 // Only the compiler and TS syntax: the rest of the app config needs Metro.
 // The logger records each function the compiler skips.
-const compileAppFile = (relativePath: string) => {
+const compileAppSource = (relativePath: string, source: string) => {
   const filename = path.join(ROOT, relativePath)
   const skipped: CompilerEvent[] = []
   const code =
-    transformSync(fs.readFileSync(filename, 'utf8'), {
+    transformSync(source, {
       cwd: ROOT,
       filename,
       babelrc: false,
@@ -79,6 +79,26 @@ const compileAppFile = (relativePath: string) => {
   return { code, skipped }
 }
 
+const compileAppFile = (relativePath: string) =>
+  compileAppSource(
+    relativePath,
+    fs.readFileSync(path.join(ROOT, relativePath), 'utf8'),
+  )
+
+// A lint suppression makes the compiler leave the component as written.
+const SUPPRESSED_COMPONENT = `
+import React, { useEffect } from 'react'
+import { Text } from 'react-native'
+
+export const Ticker = ({ name, onTick }: { name: string; onTick: (n: string) => void }) => {
+  useEffect(() => {
+    onTick(name)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  return <Text>{name}</Text>
+}
+`
+
 describe('React Compiler in the app Babel config', () => {
   it('memoizes components under src/', () => {
     expect(
@@ -98,5 +118,13 @@ describe('React Compiler on app files', () => {
     const { code, skipped } = compileAppFile(relativePath)
     expect(skipped).toEqual([])
     expect(code).toContain('react/compiler-runtime')
+  })
+
+  it('records a function skipped for a lint suppression', () => {
+    const { skipped } = compileAppSource(
+      'src/components/Ticker.tsx',
+      SUPPRESSED_COMPONENT,
+    )
+    expect(skipped).not.toEqual([])
   })
 })

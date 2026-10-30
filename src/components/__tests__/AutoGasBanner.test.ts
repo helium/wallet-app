@@ -180,6 +180,26 @@ describe('AutoGasBanner', () => {
     expect(visible()).toBe(false)
   })
 
+  it('starts a new swap after the first one submits', async () => {
+    await render()
+    expect(mockShow).toHaveBeenCalledTimes(1)
+    expect(mockPost).toHaveBeenCalledTimes(1)
+
+    resolveSubmit()
+    await flush()
+
+    // SOL stays low (the mocked lamports), so a token balance change must
+    // start a second swap.
+    mockTokenBalance = 900
+    await act(async () => {
+      renderer?.update(React.createElement(Banner))
+    })
+    await flush()
+
+    expect(mockShow).toHaveBeenCalledTimes(2)
+    expect(mockPost).toHaveBeenCalledTimes(2)
+  })
+
   it('hashes the tag with the amount of this swap', async () => {
     await render()
     expect(mockHashTagParams).toHaveBeenCalledTimes(1)
