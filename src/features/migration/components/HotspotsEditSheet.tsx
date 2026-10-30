@@ -28,11 +28,15 @@ const HotspotRow = ({
 }) => (
   <PressableScale
     onPress={() => onToggle(entityKey)}
+    accessibilityRole="checkbox"
+    accessibilityState={{ checked: isSelected }}
     feedback="opacity"
     className="flex-row items-center px-6 py-3"
   >
     <Checkbox
       checked={isSelected}
+      accessible={false}
+      importantForAccessibility="no"
       onChange={() => onToggle(entityKey)}
       className="mr-4"
     />

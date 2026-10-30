@@ -38,11 +38,15 @@ const TokenRow: FC<{
     return (
       <PressableScale
         onPress={() => onChange(isSelected ? '0' : token.maxUi)}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: isSelected }}
         feedback="opacity"
         className="flex-row items-center px-6 py-3"
       >
         <Checkbox
           checked={isSelected}
+          accessible={false}
+          importantForAccessibility="no"
           onChange={(next) => onChange(next ? token.maxUi : '0')}
           className="mr-4"
         />

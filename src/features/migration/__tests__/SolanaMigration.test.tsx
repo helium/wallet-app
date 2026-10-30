@@ -138,4 +138,18 @@ describe('SolanaMigration', () => {
     })
     expect(mockGoBack).toHaveBeenCalledTimes(1)
   })
+
+  it('lets a caller className replace the default background', async () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    await act(async () => {
+      renderer = TestRenderer.create(
+        <SolanaMigration hideBack className="bg-card" />,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+
+    expect(
+      renderer.root.findAllByType('View' as never)[0].props.className,
+    ).toBe('flex-1 bg-card')
+  })
 })
