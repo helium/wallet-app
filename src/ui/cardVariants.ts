@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { twMerge } from './twMerge'
 
 // World's dashboard card and PanelCard (style guide §9.3). Dashboard cards
 // have no border; the stat-box shadow sets them off the off-white canvas.
@@ -17,3 +18,6 @@ export const cardVariants = cva('', {
 export type CardVariant = NonNullable<
   VariantProps<typeof cardVariants>['variant']
 >
+
+export const cardClassName = (variant?: CardVariant, className?: string) =>
+  twMerge(cardVariants({ variant }), className)

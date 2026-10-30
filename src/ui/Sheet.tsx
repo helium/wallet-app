@@ -5,8 +5,9 @@ import {
   BottomSheetModal,
   type BottomSheetModalProps,
 } from '@gorhom/bottom-sheet'
+import useBackHandler from '@hooks/useBackHandler'
 import { SHEET_TIMING } from '@theme/motion'
-import React from 'react'
+import React, { useCallback, useImperativeHandle, useRef } from 'react'
 import { View } from 'react-native'
 
 export type SheetProps = Omit<
@@ -35,18 +36,46 @@ const SheetBackground = ({ style }: BottomSheetBackgroundProps) => (
 )
 
 const SheetHandle = () => (
-  <View className="h-4 items-center justify-center">
+  <View
+    accessible
+    accessibilityRole="adjustable"
+    accessibilityLabel="Bottom sheet handle"
+    accessibilityHint="Drag up or down to extend or minimize the bottom sheet"
+    className="h-4 items-center justify-center"
+  >
     <View className="h-1 w-9 rounded-full bg-foreground/20" />
   </View>
 )
 
 // A token-styled gorhom modal sheet. Present and dismiss it through the ref.
-export const Sheet = (props: SheetProps) => (
-  <BottomSheetModal
-    {...props}
-    backdropComponent={SheetBackdrop}
-    backgroundComponent={SheetBackground}
-    handleComponent={SheetHandle}
-    animationConfigs={SHEET_TIMING}
-  />
-)
+export const Sheet = ({ ref, onChange, onDismiss, ...props }: SheetProps) => {
+  const innerRef = useRef<BottomSheetModal>(null)
+  useImperativeHandle(ref, () => innerRef.current as BottomSheetModal, [])
+  const { handleDismiss, setIsShowing } = useBackHandler(innerRef)
+
+  const handleChange = useCallback<NonNullable<SheetProps['onChange']>>(
+    (index, position, type) => {
+      setIsShowing(index >= 0)
+      onChange?.(index, position, type)
+    },
+    [onChange, setIsShowing],
+  )
+
+  const handleSheetDismiss = useCallback(() => {
+    handleDismiss()
+    onDismiss?.()
+  }, [handleDismiss, onDismiss])
+
+  return (
+    <BottomSheetModal
+      {...props}
+      ref={innerRef}
+      onChange={handleChange}
+      onDismiss={handleSheetDismiss}
+      backdropComponent={SheetBackdrop}
+      backgroundComponent={SheetBackground}
+      handleComponent={SheetHandle}
+      animationConfigs={SHEET_TIMING}
+    />
+  )
+}

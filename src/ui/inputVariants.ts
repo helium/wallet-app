@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { twMerge } from './twMerge'
 
 // World's text inputs (style guide §9.2). `py-0` drops the Android default
 // padding so the text stays centred in the fixed height. The focus ring is a
@@ -22,3 +23,6 @@ export const inputVariants = cva(
 export type InputVariant = NonNullable<
   VariantProps<typeof inputVariants>['variant']
 >
+
+export const inputClassName = (variant?: InputVariant, className?: string) =>
+  twMerge(inputVariants({ variant }), className)

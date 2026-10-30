@@ -743,6 +743,7 @@ export default {
     and: 'and',
     back: 'Back',
     cancel: 'Cancel',
+    close: 'Close',
     save: 'Save',
     swap: 'Swap',
     clear: 'Clear',

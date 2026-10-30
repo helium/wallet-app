@@ -1,7 +1,7 @@
 import { getMaxFontSizeMultiplier } from '@utils/layout'
 import React from 'react'
 import { TextInput } from 'react-native'
-import { type InputVariant, inputVariants } from './inputVariants'
+import { type InputVariant, inputClassName } from './inputVariants'
 
 export type InputProps = React.ComponentPropsWithRef<typeof TextInput> & {
   variant?: InputVariant
@@ -14,6 +14,6 @@ export const Input = ({ variant, className, ...props }: InputProps) => (
     maxFontSizeMultiplier={getMaxFontSizeMultiplier()}
     placeholderTextColorClassName="accent-muted-foreground"
     {...props}
-    className={`${inputVariants({ variant })} ${className ?? ''}`}
+    className={inputClassName(variant, className)}
   />
 )

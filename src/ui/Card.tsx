@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, type ViewProps } from 'react-native'
-import { type CardVariant, cardVariants } from './cardVariants'
+import { type CardVariant, cardClassName } from './cardVariants'
 
 export type CardProps = ViewProps & {
   variant?: CardVariant
@@ -8,8 +8,5 @@ export type CardProps = ViewProps & {
 
 // World's card surface. Use it only where the layout already shows a card.
 export const Card = ({ variant, className, ...props }: CardProps) => (
-  <View
-    {...props}
-    className={`${cardVariants({ variant })} ${className ?? ''}`}
-  />
+  <View {...props} className={cardClassName(variant, className)} />
 )

@@ -86,7 +86,7 @@ const HeliumActionSheet = forwardRef(
       setData(propsData)
     }, [propsData])
 
-    const handlePresentModalPress = useCallback(async () => {
+    const handlePresentModalPress = useCallback(() => {
       sheetRef.current?.present()
     }, [])
 
@@ -166,6 +166,8 @@ const HeliumActionSheet = forwardRef(
           </Text>
           <TouchableOpacityBox
             onPress={handleClose}
+            accessibilityRole="button"
+            accessibilityLabel={t('generic.close')}
             height={50}
             justifyContent="center"
             paddingHorizontal="m"
@@ -175,7 +177,7 @@ const HeliumActionSheet = forwardRef(
           </TouchableOpacityBox>
         </Box>
       )
-    }, [colors.secondaryText, handleClose, title])
+    }, [colors.secondaryText, handleClose, t, title])
 
     const footer = useMemo(() => {
       return (
@@ -213,7 +215,7 @@ const HeliumActionSheet = forwardRef(
     const displayText = useMemo(() => {
       return (
         <TouchableOpacityBox
-          onPress={() => void handlePresentModalPress().catch(console.error)}
+          onPress={handlePresentModalPress}
           flexDirection="row"
           alignItems="center"
           justifyContent="flex-end"
