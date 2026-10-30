@@ -3,6 +3,7 @@ import {
   type ButtonSize,
   type ButtonVariant,
   buttonClassName,
+  buttonPressFeedback,
   buttonTextVariants,
 } from './buttonVariants'
 import { isTextLabel } from './isTextLabel'
@@ -28,6 +29,7 @@ export const Button = ({
     accessibilityRole="button"
     {...props}
     disabled={disabled}
+    feedback={buttonPressFeedback(variant)}
     className={buttonClassName({ variant, size, disabled }, className)}
   >
     {isTextLabel(children) ? (

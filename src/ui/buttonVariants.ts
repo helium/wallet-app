@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import type { PressFeedback } from './pressStyle'
 import { twMerge } from './twMerge'
 
 // World's button variants and sizes (style guide §9.1). Web-only classes
@@ -67,3 +68,7 @@ export const buttonClassName = (
   }: { variant?: ButtonVariant; size?: ButtonSize; disabled?: boolean | null },
   className?: string,
 ) => twMerge(buttonVariants({ variant, size, disabled }), className)
+
+// Links keep opacity feedback; every other variant scales.
+export const buttonPressFeedback = (variant?: ButtonVariant): PressFeedback =>
+  variant === 'link' ? 'opacity' : 'scale'

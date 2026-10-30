@@ -3,7 +3,7 @@ import { useReducedMotion } from '@theme/motion'
 import React, { useState } from 'react'
 import { Pressable, type PressableProps } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { pressStyle, pressWithHaptic } from './pressStyle'
+import { type PressFeedback, pressStyle, pressWithHaptic } from './pressStyle'
 
 export type PressableScaleProps = Omit<
   PressableProps,
@@ -11,6 +11,7 @@ export type PressableScaleProps = Omit<
 > & {
   className?: string
   children: React.ReactNode
+  feedback?: PressFeedback
 }
 
 // The press primitive for buttons, FABs and cards. `className` styles the
@@ -22,6 +23,7 @@ export const PressableScale = ({
   onPress,
   onPressIn,
   onPressOut,
+  feedback,
   ...props
 }: PressableScaleProps) => {
   const [pressed, setPressed] = useState(false)
@@ -45,7 +47,12 @@ export const PressableScale = ({
     >
       <Animated.View
         className={className}
-        style={pressStyle({ pressed, reducedMotion, disabled: !!disabled })}
+        style={pressStyle({
+          pressed,
+          reducedMotion,
+          disabled: !!disabled,
+          feedback,
+        })}
       >
         {children}
       </Animated.View>

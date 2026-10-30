@@ -1,4 +1,8 @@
-import { buttonClassName, buttonTextVariants } from '../buttonVariants'
+import {
+  buttonClassName,
+  buttonPressFeedback,
+  buttonTextVariants,
+} from '../buttonVariants'
 
 const BASE = 'flex-row items-center justify-center gap-2 rounded-md'
 
@@ -62,5 +66,23 @@ describe('buttonTextVariants', () => {
     ['cta', 'text-white'],
   ] as const)('maps variant %s to %s in 14px medium', (variant, textClass) => {
     expect(buttonTextVariants({ variant })).toBe(`font-medium ${textClass}`)
+  })
+})
+
+describe('buttonPressFeedback', () => {
+  it('fades a link, since links keep opacity feedback', () => {
+    expect(buttonPressFeedback('link')).toBe('opacity')
+  })
+
+  it.each([
+    [undefined],
+    ['default'],
+    ['destructive'],
+    ['outline'],
+    ['secondary'],
+    ['ghost'],
+    ['cta'],
+  ] as const)('scales variant %s', (variant) => {
+    expect(buttonPressFeedback(variant)).toBe('scale')
   })
 })

@@ -86,6 +86,48 @@ describe('pressStyle', () => {
     })
   })
 
+  it('fades instead of scaling for opacity feedback, with or without reduced motion', () => {
+    for (const reducedMotion of [false, true]) {
+      expect(
+        pressStyle({
+          pressed: true,
+          reducedMotion,
+          disabled: false,
+          feedback: 'opacity',
+        }),
+      ).toEqual({
+        transitionProperty: 'opacity',
+        transitionDuration: 120,
+        transitionTimingFunction: EASE_OUT,
+        opacity: 0.7,
+      })
+    }
+    expect(
+      pressStyle({
+        pressed: false,
+        reducedMotion: false,
+        disabled: false,
+        feedback: 'opacity',
+      }),
+    ).toEqual({
+      transitionProperty: 'opacity',
+      transitionDuration: 120,
+      transitionTimingFunction: EASE_OUT,
+      opacity: 1,
+    })
+  })
+
+  it('sets no opacity for disabled opacity feedback, so the dim class holds', () => {
+    expect(
+      pressStyle({
+        pressed: true,
+        reducedMotion: false,
+        disabled: true,
+        feedback: 'opacity',
+      }),
+    ).not.toHaveProperty('opacity')
+  })
+
   it('passes Reanimated an easing object, not a CSS string', () => {
     expect(
       typeof pressStyle({
