@@ -6,6 +6,7 @@ import Text from '@components/Text'
 import TextInput from '@components/TextInput'
 import { Mnemonic } from '@helium/crypto-react-native'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
+import useSecureWindow from '@hooks/useSecureWindow'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import { decryptPasswordProtectedData, extractEd25519Seed } from '@utils/crypto'
@@ -27,6 +28,7 @@ import { OnboardingStackParamList } from '../onboardingTypes'
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
 const ImportPrivateKey = () => {
+  useSecureWindow()
   const { hasAccounts, accounts } = useAccountStorage()
   const navigation = useNavigation<RootNavigationProp>()
   const route = useRoute<Route>()

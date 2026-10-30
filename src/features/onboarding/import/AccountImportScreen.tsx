@@ -3,6 +3,7 @@ import Box from '@components/Box'
 import Text from '@components/Text'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useAlert from '@hooks/useAlert'
+import useSecureWindow from '@hooks/useSecureWindow'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Color } from '@theme/theme'
 import { useColors, usePaddingStyle } from '@theme/themeHooks'
@@ -42,6 +43,7 @@ const accentColors = [
 
 type Route = RouteProp<ImportAccountStackParamList, 'AccountImportScreen'>
 const AccountImportScreen = () => {
+  useSecureWindow()
   const { setOnboardingData, reset } = useOnboarding()
   const { restoreSecureAccounts, hasAccounts, accounts } = useAccountStorage()
   const navigation = useNavigation<ImportAccountNavigationProp>()

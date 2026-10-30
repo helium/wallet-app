@@ -63,8 +63,11 @@ const SecurityScreen = ({ visible }: Props) => {
 
   if (Platform.OS === 'android' || !mounted) {
     // android ui doesn't update after "background" is detected in RN, so no
-    // cover renders here. FLAG_SECURE (useSecureWindow) hides the secret
-    // screens; the rest of the app shows in recents.
+    // cover renders here. FLAG_SECURE (useSecureWindow) is on while a screen
+    // that shows a seed phrase or key is mounted. A native stack keeps a
+    // covered screen mounted, so the flag stays on until that screen pops
+    // (for onboarding, until the create flow ends). Other screens show in
+    // recents.
 
     return null
   }

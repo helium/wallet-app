@@ -8,13 +8,14 @@ declare const globalThis: { IS_REACT_ACT_ENVIRONMENT: boolean }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mockPlatform = { OS: 'android' }
-const mockSetSecure = jest.fn()
+const mockSetSecure = jest.fn((_secure: boolean) => Promise.resolve())
 
 // read at render time: the import of the screen runs before mockPlatform is set
 jest.mock('react-native', () => ({
   Platform: {
+    // undefined at import: useSecureWindow reads it before mockPlatform is set
     get OS() {
-      return mockPlatform.OS
+      return mockPlatform?.OS
     },
   },
 }))

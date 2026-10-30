@@ -9,19 +9,22 @@ declare const globalThis: { IS_REACT_ACT_ENVIRONMENT: boolean }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mockPlatform = { OS: 'android' }
-const mockSetSecure = jest.fn()
+const mockSetSecure = jest.fn((_secure: boolean) => Promise.resolve())
+// a build without the native module; undefined while the imports run
+const mockBuild = { withoutNativeModule: false }
 
 jest.mock('react-native', () => ({
   Platform: {
+    // undefined at import: useSecureWindow reads it before mockPlatform is set
     get OS() {
-      return mockPlatform.OS
+      return mockPlatform?.OS
     },
   },
 }))
 // the hook looks the module up at import, before mockSetSecure is set
 jest.mock('expo', () => ({
   requireOptionalNativeModule: (name: string) =>
-    name === 'SecureWindow'
+    name === 'SecureWindow' && !mockBuild?.withoutNativeModule
       ? { setSecure: (secure: boolean) => mockSetSecure(secure) }
       : null,
 }))
@@ -41,9 +44,17 @@ const mount = (props: { active?: boolean } = {}) => {
 }
 
 describe('useSecureWindow', () => {
+  let warn: jest.SpyInstance
+
   beforeEach(() => {
     mockPlatform.OS = 'android'
+    mockBuild.withoutNativeModule = false
     mockSetSecure.mockClear()
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  })
+
+  afterEach(() => {
+    warn.mockRestore()
   })
 
   it('sets the flag at mount and clears it at unmount on Android', () => {
@@ -78,5 +89,47 @@ describe('useSecureWindow', () => {
     const renderer = mount()
     act(() => renderer.unmount())
     expect(mockSetSecure).not.toHaveBeenCalled()
+  })
+
+  it('warns once and does nothing on Android without the native module', () => {
+    mockBuild.withoutNativeModule = true
+    jest.isolateModules(() => {
+      // a fresh registry runs the import-time lookup again; React and the
+      // renderer come from the same registry as the hook
+      const IsolatedReact = jest.requireActual('react')
+      const Isolated = jest.requireActual('react-test-renderer')
+      const isolatedHook = jest.requireActual('../useSecureWindow').default
+      const IsolatedHolder = () => {
+        isolatedHook()
+        return null
+      }
+      let renderer: TestRenderer.ReactTestRenderer | undefined
+      Isolated.act(() => {
+        renderer = Isolated.create(IsolatedReact.createElement(IsolatedHolder))
+      })
+      Isolated.act(() => renderer?.unmount())
+    })
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0][0]).toMatch(
+      /SecureWindow native module is missing/,
+    )
+    expect(mockSetSecure).not.toHaveBeenCalled()
+  })
+
+  it('logs a failed setSecure instead of leaving the rejection unhandled', async () => {
+    const unhandled: unknown[] = []
+    const onUnhandled = (reason: unknown) => unhandled.push(reason)
+    process.on('unhandledRejection', onUnhandled)
+    const failure = new Error('MissingActivity')
+    mockSetSecure.mockImplementationOnce(() => Promise.reject(failure))
+    try {
+      const renderer = mount()
+      act(() => renderer.unmount())
+      await new Promise((resolve) => setImmediate(resolve))
+    } finally {
+      process.off('unhandledRejection', onUnhandled)
+    }
+    expect(unhandled).toEqual([])
+    expect(warn).toHaveBeenCalledWith(expect.any(String), failure)
   })
 })
