@@ -24,6 +24,7 @@ const CopyAddress = ({ address, ...boxProps }: Props) => {
       t('generic.copied', {
         target: ellipsizeAddress(address),
       }),
+      Toast.SHORT,
     )
   }, [address, t])
 

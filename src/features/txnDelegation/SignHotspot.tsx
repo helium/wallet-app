@@ -125,10 +125,10 @@ const SignHotspot = () => {
         throw new Error('')
       }
 
-      Toast.show(t('generic.submitSuccess'))
+      Toast.show(t('generic.submitSuccess'), Toast.SHORT)
     } catch (e) {
       Logger.error(e)
-      Toast.show(t('generic.somethingWentWrong'))
+      Toast.show(t('generic.somethingWentWrong'), Toast.SHORT)
     }
 
     navigation.goBack()

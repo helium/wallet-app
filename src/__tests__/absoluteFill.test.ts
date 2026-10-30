@@ -3,32 +3,50 @@ import path from 'path'
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..')
 
-// Files our patches change from StyleSheet.absoluteFillObject, which RN 0.85
-// no longer exports, to StyleSheet.absoluteFill.
-const PATCHED_FILES = [
-  'node_modules/@gorhom/bottom-sheet/src/components/bottomSheet/BottomSheet.tsx',
-  'node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackdrop/styles.ts',
-  'node_modules/@gorhom/bottom-sheet/src/components/bottomSheetBackground/styles.ts',
-  'node_modules/@gorhom/bottom-sheet/src/components/bottomSheetHostingContainer/styles.ts',
-  'node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheet/BottomSheet.js',
-  'node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackdrop/styles.js',
-  'node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetBackground/styles.js',
-  'node_modules/@gorhom/bottom-sheet/lib/module/components/bottomSheetHostingContainer/styles.js',
-  'node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheet/BottomSheet.js',
-  'node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackdrop/styles.js',
-  'node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetBackground/styles.js',
-  'node_modules/@gorhom/bottom-sheet/lib/commonjs/components/bottomSheetHostingContainer/styles.js',
-  'node_modules/react-native-video/src/Video.tsx',
-  'node_modules/react-native-video/lib/Video.js',
+// RN 0.85 no longer exports StyleSheet.absoluteFillObject. A library that
+// spreads it gets undefined and loses its full-bleed layout.
+const FILL_PACKAGES = [
+  'node_modules/@gorhom/bottom-sheet',
+  'node_modules/react-native-video',
 ]
 
-describe('patched StyleSheet fill', () => {
-  it.each(PATCHED_FILES)(
-    'uses absoluteFill, which RN 0.85 still exports, in %s',
+// Files patches/@gorhom+bottom-sheet+5.2.14.patch changes.
+const SPRING_CONFIG_FILES = [
+  'node_modules/@gorhom/bottom-sheet/src/constants.ts',
+  'node_modules/@gorhom/bottom-sheet/lib/module/constants.js',
+  'node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js',
+  'node_modules/@gorhom/bottom-sheet/src/utilities/getKeyboardAnimationConfigs.ts',
+  'node_modules/@gorhom/bottom-sheet/lib/module/utilities/getKeyboardAnimationConfigs.js',
+  'node_modules/@gorhom/bottom-sheet/lib/commonjs/utilities/getKeyboardAnimationConfigs.js',
+]
+
+const sourceFiles = (dir: string): string[] =>
+  fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(dir, entry.name)
+    if (entry.isDirectory()) return sourceFiles(entryPath)
+    return /\.(js|ts|tsx)$/.test(entry.name) ? [entryPath] : []
+  })
+
+describe('StyleSheet fill in native UI libraries', () => {
+  it.each(FILL_PACKAGES)('%s never reads absoluteFillObject', (pkg) => {
+    const files = ['src', 'lib'].flatMap((folder) =>
+      sourceFiles(path.join(PROJECT_ROOT, pkg, folder)),
+    )
+    const readers = files.filter((file) =>
+      fs.readFileSync(file, 'utf8').includes('absoluteFillObject'),
+    )
+
+    expect(files.length).toBeGreaterThan(0)
+    expect(readers).toEqual([])
+  })
+})
+
+describe('iOS bottom sheet spring', () => {
+  it.each(SPRING_CONFIG_FILES)(
+    'stops near the Reanimated 3 rest point in %s',
     (file) => {
       const source = fs.readFileSync(path.join(PROJECT_ROOT, file), 'utf8')
-      expect(source).not.toContain('absoluteFillObject')
-      expect(source).toContain('absoluteFill')
+      expect(source).toContain('energyThreshold: 3e-6')
     },
   )
 })

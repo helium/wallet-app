@@ -252,7 +252,7 @@ const PaymentScreen = () => {
       const acctsForNetType = sortedAccountsForNetType(networkType)
       if (!acctsForNetType.length) {
         // They don't have an account that can handle a payment for this network type
-        Toast.show(t('payment.netTypeQrError'))
+        Toast.show(t('payment.netTypeQrError'), Toast.SHORT)
         navBack()
         return
       }

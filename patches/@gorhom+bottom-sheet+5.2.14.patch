@@ -1,0 +1,86 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
+index bee71b4..d620318 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/constants.js
+@@ -82,7 +82,9 @@ const ANIMATION_CONFIGS = exports.ANIMATION_CONFIGS = _reactNative.Platform.sele
+     mass: 3,
+     overshootClamping: true,
+     restDisplacementThreshold: 10,
+-    restSpeedThreshold: 10
++    restSpeedThreshold: 10,
++    // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++    energyThreshold: 3e-6
+   }
+ });
+ const SCROLLABLE_DECELERATION_RATE_MAPPER = exports.SCROLLABLE_DECELERATION_RATE_MAPPER = {
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/utilities/getKeyboardAnimationConfigs.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/utilities/getKeyboardAnimationConfigs.js
+index d6c51b3..dc3307a 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/utilities/getKeyboardAnimationConfigs.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/utilities/getKeyboardAnimationConfigs.js
+@@ -36,7 +36,9 @@ const getKeyboardAnimationConfigs = (easing, duration) => {
+         mass: 3,
+         overshootClamping: true,
+         restDisplacementThreshold: 10,
+-        restSpeedThreshold: 10
++        restSpeedThreshold: 10,
++        // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++        energyThreshold: 3e-6
+       };
+   }
+ };
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/constants.js b/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
+index f000e8b..ededa88 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/constants.js
+@@ -78,7 +78,9 @@ const ANIMATION_CONFIGS = Platform.select({
+     mass: 3,
+     overshootClamping: true,
+     restDisplacementThreshold: 10,
+-    restSpeedThreshold: 10
++    restSpeedThreshold: 10,
++    // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++    energyThreshold: 3e-6
+   }
+ });
+ const SCROLLABLE_DECELERATION_RATE_MAPPER = {
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/utilities/getKeyboardAnimationConfigs.js b/node_modules/@gorhom/bottom-sheet/lib/module/utilities/getKeyboardAnimationConfigs.js
+index 135aefc..fd91f9b 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/utilities/getKeyboardAnimationConfigs.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/utilities/getKeyboardAnimationConfigs.js
+@@ -32,7 +32,9 @@ export const getKeyboardAnimationConfigs = (easing, duration) => {
+         mass: 3,
+         overshootClamping: true,
+         restDisplacementThreshold: 10,
+-        restSpeedThreshold: 10
++        restSpeedThreshold: 10,
++        // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++        energyThreshold: 3e-6
+       };
+   }
+ };
+diff --git a/node_modules/@gorhom/bottom-sheet/src/constants.ts b/node_modules/@gorhom/bottom-sheet/src/constants.ts
+index 8d9c3a9..ba4e812 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/constants.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/constants.ts
+@@ -80,6 +80,8 @@ const ANIMATION_CONFIGS = Platform.select<TimingConfig | SpringConfig>({
+     overshootClamping: true,
+     restDisplacementThreshold: 10,
+     restSpeedThreshold: 10,
++    // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++    energyThreshold: 3e-6,
+   },
+ });
+ 
+diff --git a/node_modules/@gorhom/bottom-sheet/src/utilities/getKeyboardAnimationConfigs.ts b/node_modules/@gorhom/bottom-sheet/src/utilities/getKeyboardAnimationConfigs.ts
+index 1310347..afebbca 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/utilities/getKeyboardAnimationConfigs.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/utilities/getKeyboardAnimationConfigs.ts
+@@ -39,6 +39,8 @@ export const getKeyboardAnimationConfigs = (
+         overshootClamping: true,
+         restDisplacementThreshold: 10,
+         restSpeedThreshold: 10,
++        // Reanimated 4 ignores the rest thresholds; 3e-6 stops this spring where they did (~0.5 s, under 1 px from rest).
++        energyThreshold: 3e-6,
+       };
+   }
+ };

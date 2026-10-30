@@ -168,6 +168,7 @@ const RequestScreen = () => {
       t('request.copied', {
         target: link,
       }),
+      Toast.SHORT,
     )
   }, [link, t])
 

@@ -12,18 +12,19 @@ import {
 
 const Map: React.FC<
   PropsWithChildren<{
-    map?: React.RefObject<MapLibreRN.MapViewRef | null>
+    map?: React.RefObject<MapLibreRN.MapRef | null>
     camera?: React.RefObject<MapLibreRN.CameraRef | null>
-    onUserLocationUpdate?: (userLocation: MapLibreRN.Location) => void
     centerCoordinate?: Position
-    mapProps?: Omit<React.ComponentProps<typeof MapLibreRN.MapView>, 'children'>
+    mapProps?: Omit<
+      React.ComponentProps<typeof MapLibreRN.Map>,
+      'children' | 'mapStyle'
+    >
     cameraProps?: React.ComponentProps<typeof MapLibreRN.Camera>
   }>
 > = ({
   children,
   map,
   camera,
-  onUserLocationUpdate,
   centerCoordinate,
   mapProps = {},
   cameraProps = {},
@@ -45,34 +46,34 @@ const Map: React.FC<
   )
 
   return (
-    <MapLibreRN.MapView
+    <MapLibreRN.Map
       ref={map}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       style={MAP_CONTAINER_STYLE}
-      logoEnabled={false}
-      pitchEnabled={false}
-      attributionEnabled={false}
-      rotateEnabled={false}
+      logo={false}
+      touchPitch={false}
+      attribution={false}
+      touchRotate={false}
       mapStyle={mapStyle}
       {...mapProps}
     >
       <MapLibreRN.Camera
         ref={camera}
-        defaultSettings={{
-          ...INITIAL_MAP_VIEW_STATE,
-          centerCoordinate:
-            centerCoordinate || INITIAL_MAP_VIEW_STATE.centerCoordinate,
+        initialViewState={{
+          center: (centerCoordinate ||
+            INITIAL_MAP_VIEW_STATE.centerCoordinate) as MapLibreRN.LngLat,
+          zoom: INITIAL_MAP_VIEW_STATE.zoomLevel,
         }}
-        minZoomLevel={MIN_MAP_ZOOM}
-        maxZoomLevel={MAX_MAP_ZOOM}
+        minZoom={MIN_MAP_ZOOM}
+        maxZoom={MAX_MAP_ZOOM}
         {...cameraProps}
-        animationDuration={2000}
-        animationMode="easeTo"
+        duration={2000}
+        easing="ease"
       />
-      <MapLibreRN.UserLocation onUpdate={onUserLocationUpdate} />
+      <MapLibreRN.UserLocation />
       {children}
-    </MapLibreRN.MapView>
+    </MapLibreRN.Map>
   )
 }
 
