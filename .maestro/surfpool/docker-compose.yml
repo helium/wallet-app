@@ -1,0 +1,50 @@
+# Local blockchain-api for the Maestro chain flows. It reads and writes
+# against the surfpool mainnet fork on the host (port 8899), not mainnet.
+# scripts/maestro-surfpool.sh starts this file. See .maestro/README.md.
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: helium
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  blockchain-api:
+    image: public.ecr.aws/v0j6k5v6/blockchain-api:0.3.15
+    platform: linux/amd64
+    ports:
+      - '127.0.0.1:3000:3000'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      PG_USER: postgres
+      PG_PASSWORD: postgres
+      PG_NAME: helium
+      PG_HOST: postgres
+      PG_PORT: '5432'
+      SOLANA_RPC_URL: http://host.docker.internal:8899
+      SOLANA_CLUSTER: mainnet
+      # Swap quotes (flow 04) call Jupiter. A placeholder key starts the
+      # server, but quotes then fail.
+      JUPITER_API_KEY: ${JUPITER_API_KEY:-unset}
+      # Optional DAS endpoint for asset reads that surfpool does not serve.
+      ASSET_ENDPOINT: ${ASSET_ENDPOINT:-}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/rpc/health/check',{method:'POST',headers:{'content-type':'application/json'},body:'{}'}).then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"
+      interval: 3s
+      timeout: 5s
+      retries: 60
+    depends_on:
+      postgres:
+        condition: service_healthy

@@ -1,0 +1,138 @@
+name: Maestro
+on: [pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+env:
+  # The v1.5.0 release, the surfpool that helium-program-library CI pins.
+  SURFPOOL_VERSION: 1.5.0
+  SURFPOOL_SHA256: 5b20a3b46e60c4f819af7b4da5c3ea211f76041710617841cc23247d15887ddc
+  MAESTRO_VERSION: 2.12.0
+  MAESTRO_SHA256: a6044a84542f522f434c5dc3d609e60c7446d423f3ed1b2ae513f5c48663ec5e
+
+jobs:
+  # Runs the Maestro suite on an Android emulator against a local surfpool
+  # mainnet fork and blockchain-api. See .maestro/README.md.
+  android:
+    # Fork PRs get empty secrets, so run only on same-repo PRs and manual runs.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install modules
+        run: yarn
+
+      - name: Install surfpool
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/surfpool.tar.gz" \
+            "https://github.com/solana-foundation/surfpool/releases/download/v$SURFPOOL_VERSION/surfpool-linux-x64.tar.gz"
+          echo "$SURFPOOL_SHA256  $RUNNER_TEMP/surfpool.tar.gz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/surfpool"
+          tar -xzf "$RUNNER_TEMP/surfpool.tar.gz" -C "$RUNNER_TEMP/surfpool"
+          echo "$RUNNER_TEMP/surfpool" >> "$GITHUB_PATH"
+      - name: Install Maestro
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/maestro.zip" \
+            "https://github.com/mobile-dev-inc/maestro/releases/download/cli-$MAESTRO_VERSION/maestro.zip"
+          echo "$MAESTRO_SHA256  $RUNNER_TEMP/maestro.zip" | sha256sum -c -
+          unzip -q "$RUNNER_TEMP/maestro.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Write .env
+        env:
+          DOT_ENV: ${{ secrets.DOT_ENV }}
+        run: printf '%s\n' "$DOT_ENV" > .env
+
+      # A dev bundle reads the .env files over the shell, and reads
+      # .env.development.local last. So the fork URLs go there and into every later step.
+      - name: Point the app at the fork
+        run: scripts/maestro-surfpool.sh env | sed 's/^export //' | tee .env.development.local >> "$GITHUB_ENV"
+
+      # Firebase config is not in the repo; the google-services plugin needs a
+      # file whose package_name matches the applicationId.
+      - name: Write stub google-services.json
+        run: >-
+          echo '{"project_info":{"project_number":"000000000000","project_id":"ci-stub","storage_bucket":"ci-stub.appspot.com"},
+          "client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000",
+          "android_client_info":{"package_name":"com.helium.wallet.app"}},
+          "api_key":[{"current_key":"ci-stub"}]}],"configuration_version":"1"}'
+          > "$RUNNER_TEMP/google-services.json"
+
+      - name: Generate native project
+        run: >-
+          GOOGLE_SERVICES_JSON="$RUNNER_TEMP/google-services.json"
+          npx expo prebuild --clean --platform android --no-install
+
+      - name: Build debug APK
+        run: |
+          cd android
+          ./gradlew assembleDebug -PreactNativeArchitectures=x86_64
+
+      - name: Start surfpool and blockchain-api, seed the fixture wallet
+        env:
+          JUPITER_API_KEY: ${{ secrets.JUPITER_API_KEY }}
+          ASSET_ENDPOINT: ${{ secrets.ASSET_ENDPOINT }}
+        run: |
+          scripts/maestro-surfpool.sh > "$RUNNER_TEMP/maestro.env"
+          source "$RUNNER_TEMP/maestro.env"
+          echo "MAESTRO_FIXTURE_SEED=$MAESTRO_FIXTURE_SEED" >> "$GITHUB_ENV"
+          echo "MAESTRO_RECIPIENT=$MAESTRO_RECIPIENT" >> "$GITHUB_ENV"
+
+      # A debug build loads its bundle from Metro. Build it once here so the
+      # first flow does not time out on the cold bundle.
+      - name: Start Metro
+        run: |
+          yarn start > "$RUNNER_TEMP/metro.log" 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8081/status && break
+            sleep 2
+          done
+          curl -sSf -o /dev/null \
+            'http://127.0.0.1:8081/index.bundle?platform=android&dev=true'
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # The emulator reaches surfpool (8899) and blockchain-api (3000) on the
+      # runner only through adb reverse. It reaches Metro at 10.0.2.2:8081.
+      - name: Run Maestro
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          MAESTRO_PRIVY_TEST_EMAIL: ${{ secrets.MAESTRO_PRIVY_TEST_EMAIL }}
+          MAESTRO_PRIVY_TEST_OTP: ${{ secrets.MAESTRO_PRIVY_TEST_OTP }}
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: |
+            adb reverse tcp:8899 tcp:8899
+            adb reverse tcp:3000 tcp:3000
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            maestro test .maestro
+
+      # Do not upload the Maestro output directory. Each flow's commands.json
+      # records every MAESTRO_* variable in plaintext, the Privy test
+      # credentials included, and the repo's artifacts are public.
+      - name: Upload logs
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-logs
+          path: |
+            .maestro/surfpool/surfpool.log
+            ${{ runner.temp }}/metro.log
+          retention-days: 7
