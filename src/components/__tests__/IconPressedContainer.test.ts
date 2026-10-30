@@ -12,6 +12,9 @@ jest.mock(
     virtual: true,
   },
 )
+jest.mock('@theme/motion', () => ({ SPRING: { settle: {} } }), {
+  virtual: true,
+})
 
 // The node test runner cannot load react-native or Reanimated. Pressable and
 // the animated box only need to pass their props through.
