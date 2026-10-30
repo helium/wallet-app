@@ -1,12 +1,12 @@
 import React from 'react'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { ReAnimatedBox } from './AnimatedBox'
 import Box from './Box'
 import CircleLoader from './CircleLoader'
 
 export const CardSkeleton: React.FC<{ height: number }> = ({ height }) => {
   return (
-    <ReAnimatedBox entering={FadeIn} exiting={FadeOut}>
+    <ReAnimatedBox entering={FADE_IN} exiting={FADE_OUT}>
       <Box
         backgroundColor="surfaceSecondary"
         borderRadius="l"

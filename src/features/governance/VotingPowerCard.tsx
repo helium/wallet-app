@@ -10,13 +10,13 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { Theme } from '@theme/theme'
 import { useColors } from '@theme/themeHooks'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 
 interface IVotingPowerCardProps extends BoxProps<Theme> {
   onPress?: (mint: PublicKey) => Promise<void>
@@ -241,8 +241,8 @@ export const VotingPowerCard = ({
       <ReAnimatedBox
         backgroundColor="surfaceSecondary"
         borderRadius="l"
-        entering={FadeIn}
-        exiting={FadeOut}
+        entering={FADE_IN}
+        exiting={FADE_OUT}
         {...boxProps}
       >
         <TouchableOpacityBox
