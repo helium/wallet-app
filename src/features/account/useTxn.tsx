@@ -325,12 +325,14 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
   })
 
   useEffect(() => {
+    let current = true
     const loadDetails = async () => {
       const fee = await getFee()
       const paymentsReceived = await getPaymentsReceived()
       const paymentsSent = await getPaymentsSent()
       const amount = await getAmount()
       const amountTitle = await getAmountTitle()
+      if (!current) return
 
       setDetails({
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
@@ -347,6 +349,9 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
       })
     }
     loadDetails().catch((e) => console.error(e))
+    return () => {
+      current = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     color,

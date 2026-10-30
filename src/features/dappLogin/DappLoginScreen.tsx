@@ -93,7 +93,7 @@ const DappLoginScreen = () => {
         }
       }
     }
-    run()
+    run().catch((e) => console.error(e))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pairClient, params.callback, params.uri])
 

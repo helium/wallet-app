@@ -65,10 +65,17 @@ export const WalletSignBottomSheetSimulated = ({
   const { data: accountBlacklist } = useQuery({
     queryKey: ['wellKnownCanopyBlacklist'],
     queryFn: async () => {
-      if (!wellKnownCanopyCache)
-        wellKnownCanopyCache = await (
-          await axios.get(WELL_KNOWN_CANOPY_URL)
-        ).data
+      if (!wellKnownCanopyCache) {
+        try {
+          wellKnownCanopyCache = await (
+            await axios.get(WELL_KNOWN_CANOPY_URL)
+          ).data
+        } catch (e) {
+          // Simulate without the blacklist rather than not at all
+          console.warn('Could not fetch the canopy blacklist', e)
+          return new Set<string>()
+        }
+      }
 
       if (wellKnownCanopyCache) {
         return new Set(Object.keys(wellKnownCanopyCache))
@@ -92,6 +99,8 @@ export const WalletSignBottomSheetSimulated = ({
     enabled: !!connection && !!wallet && !!serializedTxs && !!accountBlacklist,
     // A failed simulation fails the same way again; show it at once
     retry: false,
+    staleTime: 0,
+    gcTime: 0,
     queryFn: async () => {
       if (connection && wallet && serializedTxs && accountBlacklist) {
         return sus({

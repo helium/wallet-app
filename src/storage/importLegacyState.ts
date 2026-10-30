@@ -12,9 +12,11 @@ import { BrowserDetails, useBrowserStore } from '../store/browserStore'
 import { CloudState, useCloudStore } from '../store/cloudStore'
 import { LEGACY_IMPORT_DONE_KEY, mmkv } from './mmkv'
 
-// The old redux-persist root key and its three nested persist configs
+// The old redux-persist root key, its three nested persist configs, and
+// the root key that refresh builds wrote
 export const LEGACY_PERSIST_KEYS = [
   'persist:root',
+  'persist:root.v2',
   'persist:solana',
   'persist:balances',
   'persist:notifications',

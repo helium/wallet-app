@@ -219,11 +219,14 @@ const useBalanceHook = () => {
   const { language } = useLanguage()
   // Memoized: the effect below keys on its identity
   const tokenInfo = useMemo(() => {
-    const atas = tokens?.atas.filter(
+    // No token data yet: fresh install, cleared cache, or new account
+    if (!tokens?.atas) return undefined
+
+    const atas = tokens.atas.filter(
       (ata) => !!ata.tokenAccount,
     ) as Required<TokenAccount>[]
 
-    const solToken = tokens?.sol
+    const solToken = tokens.sol
 
     const solBalance = solToken?.balance || 0
     const solPrice = tokenPrices?.solana?.[currency] || 0
@@ -270,16 +273,15 @@ const useBalanceHook = () => {
     currency,
     getBalance,
     hntToDcPrice,
+    language,
     solanaAddress,
     tokenPrices,
   ])
 
-  // The old useAsync did not support stale-while-revalidate, so when
-  // it re-renders, the previous result value clears. We're storing
-  // the value in `balanceInfo`. We keep the previous value when
-  // cluster and solanaAddress stay the same until a new value
-  // is available. If cluster or solanaAddress change, we clear
-  // `balanceInfo`
+  // tokenInfo is undefined until the token query has data. We store
+  // the last value in `balanceInfo` and keep it while cluster and
+  // solanaAddress stay the same. If cluster or solanaAddress change,
+  // we clear `balanceInfo`
   useEffect(() => {
     const shouldClear =
       prevSolAddress !== solanaAddress || prevCluster !== cluster

@@ -106,6 +106,7 @@ const Settings = () => {
       return !!secureAccount?.mnemonic
     },
     retry: false,
+    staleTime: 0,
   })
 
   const handleIntervalSelected = useCallback(

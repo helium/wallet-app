@@ -267,7 +267,7 @@ const DeviceShow = () => {
         navigation.navigate('DeviceScan', { error: error as Error })
       }
     }
-    run()
+    run().catch((e) => console.error(e))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

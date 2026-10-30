@@ -31,7 +31,8 @@ export const resetAppState = async () => {
     .filter((key) => key !== LEGACY_IMPORT_DONE_KEY)
     .forEach((key) => mmkv.remove(key))
   queryClient.clear()
-  // A device that ran the import before it dropped these keys still has them
+  // Old Redux keys survive on a device that imported before they were dropped,
+  // and refresh builds wrote persist:root.v2
   await AsyncStorage.multiRemove(LEGACY_PERSIST_KEYS).catch((error) =>
     console.warn('Could not remove the old Redux state', error),
   )

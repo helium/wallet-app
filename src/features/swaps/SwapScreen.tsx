@@ -233,6 +233,7 @@ const SwapScreen = () => {
   }, [])
 
   useEffect(() => {
+    let current = true
     const run = async () => {
       if (
         !currentAccount?.solanaAddress ||
@@ -250,6 +251,7 @@ const SwapScreen = () => {
         mint: outputMint,
       })
       fee = fee.add(ataFee)
+      if (!current) return
 
       setSolFee(fee)
 
@@ -258,6 +260,9 @@ const SwapScreen = () => {
       )
     }
     run().catch((e) => console.error(e))
+    return () => {
+      current = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     anchorProvider,

@@ -142,74 +142,82 @@ const HotspotMapScreen = () => {
   // - fetch infos by networkType for all hotspots
   // - setUp hexInfoBuckets
   useEffect(() => {
+    let current = true
     const loadInfos = async () => {
       if (onEndReached && anchorProvider) {
         setLoadingInfos(true)
-        const hemProgram = await init(anchorProvider)
+        try {
+          const hemProgram = await init(anchorProvider)
 
-        const infos = (
-          await Promise.all(
-            chunks(hotspots, 100).map(async (chunk) => {
-              const keyToAssetKeys = chunk.map((h) =>
-                keyToAssetForAsset(toAsset(h)),
-              )
+          const infos = (
+            await Promise.all(
+              chunks(hotspots, 100).map(async (chunk) => {
+                const keyToAssetKeys = chunk.map((h) =>
+                  keyToAssetForAsset(toAsset(h)),
+                )
 
-              const ktaAccs = await getCachedKeyToAssets(
-                hemProgram as any,
-                keyToAssetKeys,
-              )
+                const ktaAccs = await getCachedKeyToAssets(
+                  hemProgram as any,
+                  keyToAssetKeys,
+                )
 
-              const entityKeys = ktaAccs
-                .map((kta) => {
-                  return decodeEntityKey(kta.entityKey, kta.keySerialization)
+                const entityKeys = ktaAccs
+                  .map((kta) => {
+                    return decodeEntityKey(kta.entityKey, kta.keySerialization)
+                  })
+                  .filter(truthy)
+
+                const infoKeys = entityKeys.map((ek) => {
+                  const keys = {
+                    IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
+                    MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
+                  }
+
+                  return keys[networkType]
                 })
-                .filter(truthy)
 
-              const infoKeys = entityKeys.map((ek) => {
-                const keys = {
-                  IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
-                  MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
+                if (networkType === 'IOT') {
+                  return getCachedIotInfos(hemProgram as any, infoKeys)
                 }
 
-                return keys[networkType]
-              })
+                if (networkType === 'MOBILE') {
+                  return getCachedMobileInfos(hemProgram as any, infoKeys)
+                }
+              }),
+            )
+          ).flat()
 
-              if (networkType === 'IOT') {
-                return getCachedIotInfos(hemProgram as any, infoKeys)
-              }
+          const infoBuckets = infos
+            .filter((info) => info && truthy(info.location))
+            .reduce(
+              (acc, info) => ({
+                ...acc,
+                ...(info?.location
+                  ? {
+                      [info.location.toString()]: [
+                        ...(acc[info.location.toString()] || []),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        info as any,
+                      ],
+                    }
+                  : {}),
+              }),
+              {} as {
+                [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
+              },
+            )
 
-              if (networkType === 'MOBILE') {
-                return getCachedMobileInfos(hemProgram as any, infoKeys)
-              }
-            }),
-          )
-        ).flat()
-
-        const infoBuckets = infos
-          .filter((info) => info && truthy(info.location))
-          .reduce(
-            (acc, info) => ({
-              ...acc,
-              ...(info?.location
-                ? {
-                    [info.location.toString()]: [
-                      ...(acc[info.location.toString()] || []),
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      info as any,
-                    ],
-                  }
-                : {}),
-            }),
-            {} as {
-              [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
-            },
-          )
-
-        setHexInfoBuckets(infoBuckets)
-        setLoadingInfos(false)
+          if (!current) return
+          setHexInfoBuckets(infoBuckets)
+        } finally {
+          if (current) setLoadingInfos(false)
+        }
       }
     }
     loadInfos().catch((e) => console.error(e))
+    return () => {
+      current = false
+    }
   }, [
     onEndReached,
     anchorProvider,

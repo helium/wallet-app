@@ -84,11 +84,7 @@ export const ProposalCard = ({
         ))
 
   const proposalUri = useMemo(() => proposal?.uri, [proposal])
-  const {
-    error: descError,
-    isLoading: descLoading,
-    data: desc,
-  } = useQuery({
+  const { isLoading: descLoading, data: desc } = useQuery({
     queryKey: ['proposalDescription', proposalUri],
     queryFn: async () => {
       if (proposalUri) {
@@ -99,7 +95,7 @@ export const ProposalCard = ({
         const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
         return firstParagraphMatch
           ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
-          : t('gov.proposals.noDescription')
+          : null
       }
       return null
     },
@@ -200,7 +196,7 @@ export const ProposalCard = ({
               color="surfaceSecondaryText"
               numberOfLines={2}
             >
-              {!descError && desc ? desc : t('gov.proposals.noDescription')}
+              {desc || t('gov.proposals.noDescription')}
             </Text>
           )}
         </Box>

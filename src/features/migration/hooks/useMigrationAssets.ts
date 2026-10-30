@@ -43,6 +43,8 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
       return hotspots as MigratableHotspot[]
     },
     enabled: !!sourceWallet,
+    staleTime: 0,
+    gcTime: 0,
   })
 
   // The migratable set is the wallet's own view of what it holds — no token

@@ -23,6 +23,8 @@ export const useHotspotWithMetaAndRewards = (hotspot: CompressedNFT) => {
       return getHotspotWithRewards(new PublicKey(assetId), anchorProvider)
     },
     enabled: !!assetId && !!anchorProvider,
+    staleTime: 0,
+    gcTime: 0,
   })
 
   return {

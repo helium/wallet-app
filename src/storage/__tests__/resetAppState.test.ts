@@ -39,9 +39,11 @@ jest.mock('../../../modules/icloud-kvs', () => ({
     keys.forEach((key) => mockICloud.delete(key)),
 }))
 
-// Old redux-persist keys: the root config and its three nested configs
+// Old redux-persist keys: the root config, its three nested configs, and
+// the refresh-build root key
 const LEGACY_PERSIST_KEYS = [
   'persist:root',
+  'persist:root.v2',
   'persist:solana',
   'persist:balances',
   'persist:notifications',
