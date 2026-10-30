@@ -174,6 +174,26 @@ describe('resetAppState', () => {
 
     await resetAppState()
 
-    expect(await AsyncStorage.getAllKeys()).toEqual(['persist:solana'])
+    expect(await AsyncStorage.getAllKeys()).toEqual([])
+  })
+
+  it('clears the state when the old solana key cannot be removed', async () => {
+    const removeItem = jest
+      .spyOn(AsyncStorage, 'removeItem')
+      .mockRejectedValueOnce(new Error('disk error'))
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    mmkv.set(LEGACY_IMPORT_DONE_KEY, true)
+    useAuthStore.setState({ apiToken: 'token' })
+    useCloudStore.setState({ defaultAccountAddress: solanaAddress })
+    queryClient.setQueryData(['balance'], 1)
+
+    await expect(resetAppState()).resolves.toBeUndefined()
+
+    expect(mmkv.getAllKeys()).toEqual([LEGACY_IMPORT_DONE_KEY])
+    expect(useAuthStore.getState()).toEqual({})
+    expect(useCloudStore.getState()).toEqual({})
+    expect(queryClient.getQueryCache().getAll()).toEqual([])
+    removeItem.mockRestore()
+    warn.mockRestore()
   })
 })
