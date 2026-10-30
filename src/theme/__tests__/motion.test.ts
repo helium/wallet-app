@@ -22,6 +22,13 @@ jest.mock('react-native-reanimated', () => {
   return {
     ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
     Easing: { bezier: () => ({ factory: () => (t: number) => t }) },
+    cubicBezier: (x1: number, y1: number, x2: number, y2: number) => ({
+      name: 'cubicBezier',
+      x1,
+      y1,
+      x2,
+      y2,
+    }),
     FadeIn: builder('in'),
     FadeOut: builder('out'),
     useReducedMotion: () => false,

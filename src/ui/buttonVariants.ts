@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { twMerge } from './twMerge'
 
 // World's button variants and sizes (style guide §9.1). Web-only classes
 // (hover, focus ring, svg selectors) and the landing variants are left out.
@@ -57,3 +58,12 @@ export type ButtonVariant = NonNullable<
 export type ButtonSize = NonNullable<
   VariantProps<typeof buttonVariants>['size']
 >
+
+export const buttonClassName = (
+  {
+    variant,
+    size,
+    disabled,
+  }: { variant?: ButtonVariant; size?: ButtonSize; disabled?: boolean | null },
+  className?: string,
+) => twMerge(buttonVariants({ variant, size, disabled }), className)

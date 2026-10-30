@@ -3,7 +3,7 @@ import { useReducedMotion } from '@theme/motion'
 import React, { useState } from 'react'
 import { Pressable, type PressableProps } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { pressStyle } from './pressStyle'
+import { pressStyle, pressWithHaptic } from './pressStyle'
 
 export type PressableScaleProps = Omit<
   PressableProps,
@@ -18,6 +18,7 @@ export type PressableScaleProps = Omit<
 export const PressableScale = ({
   className,
   children,
+  disabled,
   onPress,
   onPressIn,
   onPressOut,
@@ -31,14 +32,8 @@ export const PressableScale = ({
     <Pressable
       pressRetentionOffset={16}
       {...props}
-      onPress={
-        onPress
-          ? (event) => {
-              triggerImpact('light')
-              onPress(event)
-            }
-          : undefined
-      }
+      disabled={disabled}
+      onPress={pressWithHaptic(onPress, () => triggerImpact('light'))}
       onPressIn={(event) => {
         setPressed(true)
         onPressIn?.(event)
@@ -50,7 +45,7 @@ export const PressableScale = ({
     >
       <Animated.View
         className={className}
-        style={pressStyle({ pressed, reducedMotion })}
+        style={pressStyle({ pressed, reducedMotion, disabled: !!disabled })}
       >
         {children}
       </Animated.View>

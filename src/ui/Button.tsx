@@ -2,9 +2,10 @@ import React from 'react'
 import {
   type ButtonSize,
   type ButtonVariant,
+  buttonClassName,
   buttonTextVariants,
-  buttonVariants,
 } from './buttonVariants'
+import { isTextLabel } from './isTextLabel'
 import { PressableScale, type PressableScaleProps } from './PressableScale'
 import { Text } from './Text'
 
@@ -13,8 +14,8 @@ export type ButtonProps = PressableScaleProps & {
   size?: ButtonSize
 }
 
-// World's Button on the press primitive. A string child renders as the
-// variant's label; other children render as given.
+// World's Button on the press primitive. A text child (strings and numbers)
+// renders as the variant's label; other children render as given.
 export const Button = ({
   variant,
   size,
@@ -24,11 +25,12 @@ export const Button = ({
   ...props
 }: ButtonProps) => (
   <PressableScale
+    accessibilityRole="button"
     {...props}
     disabled={disabled}
-    className={`${buttonVariants({ variant, size, disabled })} ${className ?? ''}`}
+    className={buttonClassName({ variant, size, disabled }, className)}
   >
-    {typeof children === 'string' ? (
+    {isTextLabel(children) ? (
       <Text className={buttonTextVariants({ variant })}>{children}</Text>
     ) : (
       children
