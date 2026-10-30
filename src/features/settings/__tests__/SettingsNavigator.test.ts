@@ -12,11 +12,7 @@ jest.mock(
   () => ({ useOpacity: () => ({ backgroundStyle: {} }) }),
   { virtual: true },
 )
-jest.mock(
-  '@components/SecretKeyWarningScreen',
-  () => 'SecretKeyWarningScreen',
-  { virtual: true },
-)
+jest.mock('../SecretKeyWarningScreen', () => 'SecretKeyWarningScreen')
 jest.mock('../../migration/SolanaMigration', () => 'SolanaMigration')
 jest.mock('../../migration/MigrateToWorld', () => 'MigrateToWorld')
 jest.mock('../AutoGasManager', () => 'AutoGasManager')

@@ -1,39 +1,41 @@
-import ShareAddress from '@assets/images/shareAddress.svg'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import CopyAddress from '@components/CopyAddress'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
+import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Spacing } from '@theme/theme'
-import { useSpacing } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { ellipsizeAddress } from '@utils/accountUtils'
-import React, { memo, useCallback, useMemo, useRef } from 'react'
+import { Copy, Share as ShareIcon } from 'lucide-react-native'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform } from 'react-native'
+import { Platform, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Share, { ShareOptions } from 'react-native-share'
+import { withUniwind } from 'uniwind'
+import SettingsBackHeader from './SettingsBackHeader'
+
+const CopyIcon = withUniwind(Copy)
+const ShareLucide = withUniwind(ShareIcon)
 
 const QR_CONTAINER_SIZE = 225
+const QR_PADDING = 24
 
 const ShareAddressScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { triggerNavHaptic } = useHaptic()
-  const spacing = useSpacing()
-  const padding = useMemo(() => 'l' as Spacing, [])
+  const navigation = useNavigation()
+  const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
   const copyText = useCopyText()
 
-  const address = useMemo(() => {
-    return currentAccount?.solanaAddress
-  }, [currentAccount])
+  const address = currentAccount?.solanaAddress
 
-  const handleShare = useCallback(async () => {
+  const handleShare = () => {
     if (!address) return
 
     qrRef.current?.toDataURL((imgData) => {
@@ -71,87 +73,67 @@ const ShareAddressScreen = () => {
       triggerNavHaptic()
       void Share.open(options)
     })
-  }, [address, triggerNavHaptic])
+  }
 
   if (!currentAccount || !address) return null
 
+  const copyAddress = () =>
+    copyText({
+      message: ellipsizeAddress(address),
+      copyText: address,
+    })
+
   return (
-    <BackScreen>
-      <Box flex={1}>
-        <Box
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          marginBottom="xxxl"
-        >
-          <Text
-            variant="h2"
-            color="primaryText"
-            textAlign="center"
-            marginBottom="s"
-          >
-            {currentAccount.alias}
+    <View className="flex-1 bg-background" style={{ paddingBottom: bottom }}>
+      <SettingsBackHeader onBack={navigation.goBack} />
+      <View className="mb-15 flex-1 items-center justify-center px-6">
+        <Text size="3xl" className="mb-2 text-center font-semibold">
+          {currentAccount.alias}
+        </Text>
+        <PressableScale feedback="opacity" onPress={copyAddress}>
+          <Text size="lg" className="mb-10 text-center text-muted-foreground">
+            {ellipsizeAddress(address)}
           </Text>
-          <TouchableOpacityBox
-            onPress={() =>
-              copyText({
-                message: ellipsizeAddress(address),
-                copyText: address,
-              })
-            }
-          >
-            <Text
-              variant="h4"
-              color="secondaryText"
-              textAlign="center"
-              marginBottom="xxl"
-            >
-              {ellipsizeAddress(address)}
-            </Text>
-          </TouchableOpacityBox>
-          <Box
-            height={QR_CONTAINER_SIZE}
-            width={QR_CONTAINER_SIZE}
-            backgroundColor="white"
-            padding={padding}
-            borderRadius="xxl"
-          >
-            <QRCode
-              size={QR_CONTAINER_SIZE - 2 * spacing[padding]}
-              value={address}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              getRef={qrRef}
-            />
-          </Box>
-        </Box>
-        <Box width="100%" flexDirection="row">
-          <CopyAddress address={address} flex={1} />
-          <TouchableOpacityBox
-            flexDirection="row"
-            padding="m"
-            backgroundColor="purple500"
-            borderRadius="round"
-            onPress={() => void handleShare().catch(console.error)}
-            flex={1}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <ShareAddress />
-            <Text
-              marginLeft="s"
-              variant="body1"
-              fontSize={17}
-              color="primaryText"
-              fontWeight="500"
-            >
-              {t('generic.share')}
-            </Text>
-          </TouchableOpacityBox>
-        </Box>
-      </Box>
-    </BackScreen>
+        </PressableScale>
+        <View
+          className="rounded-[24px] bg-white"
+          style={{
+            height: QR_CONTAINER_SIZE,
+            width: QR_CONTAINER_SIZE,
+            padding: QR_PADDING,
+          }}
+        >
+          <QRCode
+            size={QR_CONTAINER_SIZE - 2 * QR_PADDING}
+            value={address}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            getRef={qrRef}
+          />
+        </View>
+      </View>
+      <View className="mx-6 mb-4 flex-row gap-3">
+        <Button
+          variant="secondary"
+          size="lg"
+          className="flex-1 flex-row gap-2"
+          onPress={copyAddress}
+        >
+          <CopyIcon size={16} colorClassName="accent-foreground" />
+          <Text className="font-medium">{t('generic.copy')}</Text>
+        </Button>
+        <Button
+          variant="cta"
+          size="lg"
+          className="flex-1 flex-row gap-2"
+          onPress={handleShare}
+        >
+          <ShareLucide size={16} colorClassName="accent-white" />
+          <Text className="font-medium text-white">{t('generic.share')}</Text>
+        </Button>
+      </View>
+    </View>
   )
 }
 
-export default memo(ShareAddressScreen)
+export default ShareAddressScreen

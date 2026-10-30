@@ -1,22 +1,21 @@
-import React, { memo, useCallback, useMemo, useRef } from 'react'
-import { Linking, Platform, Switch, useWindowDimensions } from 'react-native'
-import CarotRight from '@assets/images/carot-right.svg'
-import LinkImg from '@assets/images/link.svg'
-import { HeliumActionSheetItemType } from '@components/HeliumActionSheetItem'
-import Text, { TextProps } from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { Color } from '@theme/theme'
-import HeliumActionSheet, {
-  HeliumActionSheetRef,
-} from '@components/HeliumActionSheet'
-import Box from '@components/Box'
-import { useColors } from '@theme/themeHooks'
+import type { BottomSheetModal } from '@gorhom/bottom-sheet'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import sleep from '@utils/sleep'
+import { ChevronRight, Link } from 'lucide-react-native'
+import React, { useRef } from 'react'
+import { Linking, Platform, Switch, View } from 'react-native'
+import { withUniwind } from 'uniwind'
+import SettingsSelectSheet, { SelectItem } from './SettingsSelectSheet'
+
+const ChevronIcon = withUniwind(ChevronRight)
+const LinkIcon = withUniwind(Link)
 
 export type SelectProps = {
   onDonePress?: () => void
   onValueSelect: (value: string | number, index: number) => void | Promise<void>
-  items: HeliumActionSheetItemType[]
+  items: SelectItem[]
 }
 
 export type SettingsListItemType = {
@@ -56,10 +55,8 @@ const SettingsListItem = ({
   item: SettingsListItemType
   isTop?: boolean
 }) => {
-  const actionSheetRef = useRef<HeliumActionSheetRef>(null)
-  const colors = useColors()
-  const isAndroid = useMemo(() => Platform.OS === 'android', [])
-  const { height } = useWindowDimensions()
+  const sheetRef = useRef<BottomSheetModal>(null)
+  const isAndroid = Platform.OS === 'android'
 
   const handlePress = () => {
     if (openUrl) {
@@ -71,131 +68,92 @@ const SettingsListItem = ({
     }
 
     if (select) {
-      actionSheetRef.current?.show()
+      sheetRef.current?.present()
     }
   }
 
-  const trackColor = useMemo(
-    () => ({ false: colors.grey900, true: colors.greenBright500 }),
-    [colors],
-  )
+  let textClassName = 'text-foreground'
+  if (destructive && !disabled) textClassName = 'text-destructive'
+  if (destructive && disabled) textClassName = 'text-destructive/60'
+  if (!destructive && disabled) textClassName = 'text-muted-foreground'
 
-  const thumbColor = useMemo(() => {
-    if (isAndroid) {
-      return colors.primaryText
-    }
-    return colors.primaryBackground
-  }, [colors.primaryBackground, colors.primaryText, isAndroid])
+  const handleSelect = async (
+    itemValue: string | number,
+    itemIndex: number,
+  ) => {
+    // Need to wait a little bit to avoid a glitch with the animation
+    await sleep(100)
 
-  const actionSheetTextProps = useMemo(
-    () =>
-      ({
-        variant: 'regular',
-        fontSize: 16,
-        color: 'surfaceSecondaryText',
-      }) as TextProps,
-    [],
-  )
-
-  const switchStyle = useMemo(
-    () =>
-      isAndroid
-        ? undefined
-        : {
-            transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
-            marginRight: -8,
-          },
-    [isAndroid],
-  )
-
-  let textColor: Color = 'primaryText'
-  if (destructive && !disabled) textColor = 'red300'
-  if (destructive && disabled) textColor = 'red400'
-  if (!destructive && disabled) textColor = 'grey400'
-
-  const handleSelect = useCallback(
-    async (itemValue: string | number, itemIndex: number) => {
-      // Need to wait a little bit to avoid a glitch with the animation
-      await sleep(100)
-
-      void select?.onValueSelect(itemValue, itemIndex)
-    },
-    [select],
-  )
+    void select?.onValueSelect(itemValue, itemIndex)
+  }
 
   return (
-    <TouchableOpacityBox
+    <PressableScale
       testID={testID}
-      flexDirection="row"
-      justifyContent="space-between"
-      alignItems="center"
-      minHeight={56}
-      paddingHorizontal="l"
-      marginBottom="xxxs"
+      feedback="opacity"
       onPress={handlePress}
       disabled={disabled || !(onPress || openUrl || select)}
-      borderBottomColor="black"
-      borderBottomWidth={1}
-      borderTopColor="black"
-      borderTopWidth={isTop ? 1 : 0}
+      className={twMerge(
+        'mb-px min-h-14 flex-row items-center justify-between border-b border-border px-6',
+        isTop && 'border-t',
+      )}
     >
       {renderModal && renderModal()}
-      <Box flexDirection="column" paddingVertical="xs">
-        <Text
-          variant="body3"
-          color="surfaceSecondaryText"
-          marginBottom="xxs"
-          visible={label !== undefined}
-        >
-          {label}
-        </Text>
-        <Text variant="body1" color={textColor}>
+      <View className="flex-col py-1">
+        {label !== undefined && (
+          <Text size="xs" className="mb-0.5 text-muted-foreground">
+            {label}
+          </Text>
+        )}
+        <Text size="base" className={textClassName}>
           {title}
         </Text>
-        <Text
-          variant="body3"
-          color="surfaceSecondaryText"
-          marginBottom="xxs"
-          visible={helperText !== undefined}
-        >
-          {helperText}
-        </Text>
-      </Box>
+        {helperText !== undefined && (
+          <Text size="xs" className="mb-0.5 text-muted-foreground">
+            {helperText}
+          </Text>
+        )}
+      </View>
       {!onToggle && !select && onPress && (
-        <CarotRight color={colors.surfaceSecondaryText} />
+        <ChevronIcon size={16} colorClassName="accent-muted-foreground" />
       )}
-      {openUrl && <LinkImg color={colors.surfaceSecondaryText} />}
+      {openUrl && (
+        <LinkIcon size={16} colorClassName="accent-muted-foreground" />
+      )}
       {onToggle && (
         <Switch
-          style={switchStyle}
+          style={
+            isAndroid
+              ? undefined
+              : {
+                  transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+                  marginRight: -8,
+                }
+          }
           value={value as boolean}
           onValueChange={onToggle}
-          trackColor={trackColor}
-          thumbColor={thumbColor}
+          trackColorOnClassName="accent-purple-500"
+          trackColorOffClassName="accent-secondary"
+          thumbColorClassName="accent-white"
           disabled={disabled}
         />
       )}
       {select && (
-        <HeliumActionSheet
-          ref={actionSheetRef}
-          data={select.items}
+        <SettingsSelectSheet
+          ref={sheetRef}
+          title={title}
+          items={select.items}
           selectedValue={value as string}
           onValueSelected={(itemValue, itemIndex) =>
             void handleSelect(itemValue, itemIndex).catch(console.error)
           }
-          title={title}
-          textProps={actionSheetTextProps}
-          iconVariant="none"
-          maxModalHeight={Math.round(height * 0.8)}
         />
       )}
       {staticText && (
-        <Text fontWeight="bold" color="surfaceSecondaryText">
-          {value}
-        </Text>
+        <Text className="font-bold text-muted-foreground">{value}</Text>
       )}
-    </TouchableOpacityBox>
+    </PressableScale>
   )
 }
 
-export default memo(SettingsListItem)
+export default SettingsListItem

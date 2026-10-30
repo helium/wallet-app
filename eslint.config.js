@@ -33,6 +33,10 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/settings/**',
+  'src/features/security/**',
+  'src/features/lock/**',
+  'src/features/StatusPage/**',
 ]
 
 module.exports = [

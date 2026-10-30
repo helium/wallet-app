@@ -1,27 +1,32 @@
-import React, { memo, useCallback, useState } from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useTranslation } from 'react-i18next'
-import Box from '@components/Box'
-import TextInput from '@components/TextInput'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import FabButton from '@components/FabButton'
-import { useSpacing } from '@theme/themeHooks'
-import AccountIcon from '@components/AccountIcon'
-import BackScreen from '@components/BackScreen'
-import Text from '@components/Text'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { Text } from '@ui/Text'
+import { ArrowRight } from 'lucide-react-native'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { KeyboardAvoidingView, Platform, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import SettingsBackHeader from './SettingsBackHeader'
 import { SettingsNavigationProp } from './settingsTypes'
+
+const ArrowIcon = withUniwind(ArrowRight)
+const StyledKeyboardAvoidingView = withUniwind(KeyboardAvoidingView)
+
+// the back header (top inset + its row) sits above the avoiding view
+const HEADER_OFFSET = 56
 
 const UpdateAliasScreen = () => {
   const navigation = useNavigation<SettingsNavigationProp>()
   const [alias, setAlias] = useState('')
   const insets = useSafeAreaInsets()
-  const spacing = useSpacing()
   const { upsertAccount, hasAccounts, currentAccount } = useAccountStorage()
   const { t } = useTranslation()
 
-  const handlePress = useCallback(async () => {
+  const handlePress = async () => {
     if (hasAccounts && currentAccount?.address) {
       try {
         await upsertAccount({ ...currentAccount, alias })
@@ -30,67 +35,50 @@ const UpdateAliasScreen = () => {
         console.error(e)
       }
     }
-  }, [hasAccounts, upsertAccount, currentAccount, alias, navigation])
+  }
 
   return (
-    <BackScreen
-      backgroundColor="primaryBackground"
-      flex={1}
-      paddingHorizontal="xl"
+    <View
+      className="flex-1 bg-background"
+      style={{ paddingBottom: insets.bottom }}
     >
-      <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.xxxl + spacing.xxl}
+      <SettingsBackHeader onBack={navigation.goBack} />
+      <StyledKeyboardAvoidingView
+        keyboardVerticalOffset={insets.top + HEADER_OFFSET}
         behavior={Platform.OS === 'android' ? 'height' : 'padding'}
-        style={styles.container}
+        className="w-full flex-1 items-center px-8"
       >
-        <Box alignItems="center" flex={1}>
-          <Text variant="h1" textAlign="center" fontSize={44} lineHeight={44}>
-            {t('accountAssign.title')}
-          </Text>
-          <Box
-            backgroundColor="transparent10"
-            borderRadius="xl"
-            padding="m"
-            width="100%"
-            marginTop="xl"
-            flexDirection="row"
-          >
-            <AccountIcon size={40} address={currentAccount?.address || ''} />
-            <TextInput
-              textColor="primaryText"
-              textInputProps={{
-                onChangeText: setAlias,
-                value: alias,
-                placeholder: currentAccount?.alias,
-                autoCorrect: false,
-                autoComplete: 'off',
-                autoCapitalize: 'words',
-              }}
-              fontSize={24}
-              marginLeft="m"
-              marginRight="xl"
-            />
-          </Box>
-
-          <Box flex={1} />
-
-          <FabButton
-            onPress={() => void handlePress().catch(console.error)}
-            icon="arrowRight"
-            disabled={!alias}
-            backgroundColor="primaryText"
-            iconColor="primary"
-            backgroundColorPressed="surfaceContrast"
-            backgroundColorOpacityPressed={0.1}
+        <Text size="4xl" className="text-center font-semibold">
+          {t('accountAssign.title')}
+        </Text>
+        <View className="mt-8 w-full flex-row items-center gap-4 rounded-[16px] bg-secondary p-4">
+          <AccountIcon size={40} address={currentAccount?.address || ''} />
+          <Input
+            className="h-12 w-auto flex-1 border-0 px-0 text-2xl shadow-none"
+            onChangeText={setAlias}
+            value={alias}
+            placeholder={currentAccount?.alias}
+            autoCorrect={false}
+            autoComplete="off"
+            autoCapitalize="words"
           />
-        </Box>
-      </KeyboardAvoidingView>
-    </BackScreen>
+        </View>
+
+        <View className="flex-1" />
+
+        <Button
+          variant="cta"
+          size="icon"
+          className="mb-4 size-16 rounded-full"
+          accessibilityLabel={t('generic.next')}
+          disabled={!alias}
+          onPress={() => void handlePress().catch(console.error)}
+        >
+          <ArrowIcon size={24} colorClassName="accent-white" />
+        </Button>
+      </StyledKeyboardAvoidingView>
+    </View>
   )
 }
 
-const styles = StyleSheet.create({
-  container: { width: '100%', flex: 1 },
-})
-
-export default memo(UpdateAliasScreen)
+export default UpdateAliasScreen

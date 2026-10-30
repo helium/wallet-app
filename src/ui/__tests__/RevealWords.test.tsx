@@ -1,0 +1,102 @@
+import React from 'react'
+import TestRenderer, { act } from 'react-test-renderer'
+import { RevealWords } from '../RevealWords'
+
+const mockCopyText = jest.fn()
+const mockUseSecureWindow = jest.fn()
+
+jest.mock('@hooks/useCopyText', () => () => mockCopyText, { virtual: true })
+jest.mock('@hooks/useSecureWindow', () => () => mockUseSecureWindow(), {
+  virtual: true,
+})
+jest.mock('@theme/motion', () => ({ DUR: { enter: 200 } }), { virtual: true })
+jest.mock('@utils/layout', () => ({ getMaxFontSizeMultiplier: () => 1.5 }), {
+  virtual: true,
+})
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}))
+jest.mock('../Button', () => ({ Button: 'Button' }))
+jest.mock('../PressableScale', () => ({ PressableScale: 'PressableScale' }))
+// The node test runner cannot load react-native. The list renders every row
+// and its footer.
+jest.mock('react-native', () => {
+  const ReactActual = jest.requireActual('react')
+  return {
+    View: 'View',
+    Text: 'Text',
+    useWindowDimensions: () => ({ width: 390, height: 844 }),
+    FlatList: ({
+      data,
+      renderItem,
+      ListFooterComponent,
+    }: {
+      data: string[]
+      renderItem: (info: { item: string; index: number }) => React.ReactNode
+      ListFooterComponent: React.ReactNode
+    }) =>
+      ReactActual.createElement(
+        'FlatList',
+        null,
+        data.map((item, index) =>
+          ReactActual.createElement(
+            ReactActual.Fragment,
+            { key: item },
+            renderItem({ item, index }),
+          ),
+        ),
+        ListFooterComponent,
+      ),
+  }
+})
+jest.mock('react-native-reanimated', () => {
+  const chain = { delay: () => chain, reduceMotion: () => chain }
+  return {
+    __esModule: true,
+    default: { View: 'Animated.View' },
+    FadeIn: { duration: () => chain },
+    ReduceMotion: { Never: 'never' },
+  }
+})
+jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
+jest.mock('lucide-react-native', () => ({ Copy: 'Copy' }))
+
+;(
+  globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+).IS_REACT_ACT_ENVIRONMENT = true
+
+describe('RevealWords', () => {
+  it('numbers the words in upper case and copies them on request', () => {
+    const onDone = jest.fn()
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(
+        <RevealWords mnemonic={['apple', 'banana']} onDone={onDone} />,
+      )
+    })
+    const { root } = renderer
+
+    // Maestro reads the words by these IDs.
+    const word = (i: number) =>
+      root.find((n) => n.props.testID === `RevealWords.Word.${i}`).props
+        .children
+    expect(word(0)).toBe('APPLE')
+    expect(word(1)).toBe('BANANA')
+    expect(mockUseSecureWindow).toHaveBeenCalled()
+
+    act(() => {
+      root.findByType('PressableScale' as never).props.onPress()
+    })
+    expect(mockCopyText).toHaveBeenCalledWith({
+      message: 'generic.copiedSeedPhrase',
+      copyText: 'apple banana',
+    })
+
+    const next = root.findByType('Button' as never)
+    expect(next.props.testID).toBe('RevealWords.Next')
+    act(() => {
+      next.props.onPress()
+    })
+    expect(onDone).toHaveBeenCalledTimes(1)
+  })
+})
