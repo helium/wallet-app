@@ -25,6 +25,7 @@ import BN from 'bn.js'
 import bs58 from 'bs58'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
+import type useSubmitTxn from '../../../hooks/useSubmitTxn'
 import type { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
 import PaymentScreen from '../PaymentScreen'
 import type usePaymentsReducer from '../usePaymentsReducer'
@@ -33,16 +34,14 @@ type Batch = {
   status: BatchStatus
   transactions: { signature: string; status: BatchStatus }[]
 }
-type Send = (variables: {
-  payments: { payee: string; balanceAmount: BN; max?: boolean }[]
-  mint: PublicKey
-}) => Promise<{
-  batchId: string
-  payments: { payee: string; balanceAmount: BN; max?: boolean }[]
-  transactions: VersionedTransaction[]
-}>
+// The fake send takes and returns what the real payment mutation does.
+type PaymentMutation = ReturnType<typeof useSubmitTxn>['paymentMutation']
+type SendVariables = NonNullable<PaymentMutation['variables']>
 
-const mockSend = jest.fn<ReturnType<Send>, Parameters<Send>>()
+const mockSend = jest.fn<
+  Promise<NonNullable<PaymentMutation['data']>>,
+  [SendVariables]
+>()
 const mockBatchStore = {
   batches: {} as Record<string, Batch>,
   listeners: new Set<() => void>(),
@@ -86,10 +85,8 @@ jest.mock('../../../hooks/useSubmitTxn', () => {
     const paymentMutation = useMutation({ mutationFn: mockSend })
     return {
       paymentMutation,
-      submitPayment: (
-        payments: Parameters<Send>[0]['payments'],
-        mint: PublicKey,
-      ) => paymentMutation.mutateAsync({ payments, mint }),
+      submitPayment: (payments: SendVariables['payments'], mint: PublicKey) =>
+        paymentMutation.mutateAsync({ payments, mint }),
     }
   }
 })

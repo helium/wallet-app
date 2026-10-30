@@ -14,6 +14,7 @@ import {
 } from '@tanstack/react-query'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
+import type useSubmitTxn from '../../../hooks/useSubmitTxn'
 import type { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
 import BurnScreen from '../BurnScreen'
 
@@ -21,14 +22,15 @@ type Batch = {
   status: BatchStatus
   transactions: { signature: string; status: BatchStatus }[]
 }
-type Delegate = (variables: {
-  delegateAddress: string
-  amount: number
-  mint: PublicKey
-  memo?: string
-}) => Promise<string>
+// The fake delegate takes and returns what the real delegate mutation does.
+type DelegateMutation = ReturnType<
+  typeof useSubmitTxn
+>['delegateDataCreditsMutation']
 
-const mockDelegate = jest.fn<ReturnType<Delegate>, Parameters<Delegate>>()
+const mockDelegate = jest.fn<
+  Promise<NonNullable<DelegateMutation['data']>>,
+  [NonNullable<DelegateMutation['variables']>]
+>()
 const mockBatchStore = {
   batches: {} as Record<string, Batch>,
   listeners: new Set<() => void>(),
