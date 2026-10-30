@@ -7,10 +7,10 @@ import {
 } from 'react-native-reanimated'
 
 // Motion values for new and touched code. withTiming stays at or under 300ms
-// (actual time). New springs use the SPRING presets; the older inline spring
-// configs (ButtonPressAnimation, ProgressBar, NavBar, TabBar,
-// HeliumBottomSheet, IconPressedContainer) have not moved yet. Their duration
-// is perceived time, capped at 400 (settle, snap) and 300 (sheet). Reduced
+// (actual time). Every spring uses a SPRING preset; no spring config lives
+// outside this module. Their duration is perceived time, capped at 400
+// (settle, snap) and 300 (sheet). A sheet stops at rest, with no overshoot,
+// so a bottom-anchored sheet never lifts off the screen edge. Reduced
 // motion follows the OS: fades always run (the FADE_* builders and opacity
 // timings use ReduceMotion.Never); translate, scale, stagger and overshoot
 // drop.
@@ -47,6 +47,7 @@ export const SPRING = {
   sheet: {
     duration: 300,
     dampingRatio: 0.8,
+    overshootClamping: true,
     reduceMotion: ReduceMotion.System,
   },
 }

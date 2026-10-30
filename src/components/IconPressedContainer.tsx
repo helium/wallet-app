@@ -8,13 +8,10 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native'
-import {
-  Reanimated3DefaultSpringConfig,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated'
+import { useAnimatedStyle, withSpring } from 'react-native-reanimated'
 import useHaptic from '@hooks/useHaptic'
 import { Theme } from '@theme/theme'
+import { SPRING } from '@theme/motion'
 import { ReAnimatedBox } from './AnimatedBox'
 
 export const ICON_CONTAINER_SIZE = 44
@@ -64,7 +61,7 @@ const IconPressedContainer = ({
     return {
       opacity: withSpring(
         iconPressed ? activeOpacity : idleOpacity,
-        Reanimated3DefaultSpringConfig,
+        SPRING.settle,
       ),
     }
   })
