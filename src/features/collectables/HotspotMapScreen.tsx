@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable no-restricted-properties */
 import BackArrow from '@assets/images/backArrow.svg'
 import Hex from '@assets/images/hex.svg'
 import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
@@ -63,8 +61,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
-import { FadeOut } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_OUT_STATE } from '@theme/motion'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 type OnPress = NonNullable<
@@ -424,7 +421,7 @@ const HotspotMapScreen = () => {
         >
           <ReAnimatedBlurBox
             visible={debouncedIsLoading}
-            exiting={FadeOut.duration(DUR.state)}
+            exiting={FADE_OUT_STATE}
             position="absolute"
             flex={1}
             width="100%"

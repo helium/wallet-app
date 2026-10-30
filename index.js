@@ -16,7 +16,6 @@ import { Provider as ReduxProvider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import App from './src/App'
 import { GlobalError } from './src/components/GlobalError'
-import UiGalleryScreen from './src/features/uiGallery/UiGalleryScreen'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
@@ -50,7 +49,6 @@ if (typeof global !== 'undefined' && global.addEventListener) {
   })
 }
 
-// eslint-disable-next-line no-undef
 if (__DEV__) {
   import('./ReactotronConfig')
 }
@@ -95,7 +93,11 @@ const render = () => {
   )
 }
 
-// EXPO_PUBLIC_UI_GALLERY=1 at bundle time shows the dev UI gallery.
+// The dev UI gallery loads only when EXPO_PUBLIC_UI_GALLERY=1 is set at bundle
+// time. Release builds inline the flag and fold the branch, so they drop the
+// gallery module.
 AppRegistry.registerComponent('main', () =>
-  process.env.EXPO_PUBLIC_UI_GALLERY === '1' ? UiGalleryScreen : render,
+  process.env.EXPO_PUBLIC_UI_GALLERY === '1'
+    ? require('./src/features/uiGallery/UiGalleryScreen').default
+    : render,
 )

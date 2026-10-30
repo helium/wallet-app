@@ -3,7 +3,7 @@ process.env.TZ = 'America/Denver'
 
 module.exports = {
   testEnvironment: 'node',
-  testMatch: ['**/src/**/__tests__/**/*.test.ts'],
+  testMatch: ['**/src/**/__tests__/**/*.test.{ts,tsx}'],
   transform: {
     '^.+\\.[jt]sx?$': [
       'babel-jest',

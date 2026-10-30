@@ -75,7 +75,6 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
       }
       return (
         <PositionCard
-          // eslint-disable-next-line react/no-array-index-key
           key={`${p.pubkey.toBase58()}-${p.amountDepositedNative.toString()}-${idx}`}
           position={p}
           marginTop={idx > 0 ? 'm' : 'none'}

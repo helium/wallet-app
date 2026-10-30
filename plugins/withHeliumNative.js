@@ -24,15 +24,26 @@ const POD_POST_INSTALL = `
     end
 `
 
+const POD_POST_INSTALL_ANCHOR = 'post_install do |installer|'
+
+const addPodPostInstall = (contents) => {
+  if (contents.includes('ONLY_ACTIVE_ARCH')) {
+    return contents
+  }
+  if (!contents.includes(POD_POST_INSTALL_ANCHOR)) {
+    throw new Error(
+      'withHeliumNative: Podfile has no "post_install do |installer|" block',
+    )
+  }
+  return contents.replace(
+    POD_POST_INSTALL_ANCHOR,
+    `${POD_POST_INSTALL_ANCHOR}${POD_POST_INSTALL}`,
+  )
+}
+
 const withPodPostInstall = (config) =>
   withPodfile(config, (cfg) => {
-    const anchor = 'post_install do |installer|'
-    if (!cfg.modResults.contents.includes('ONLY_ACTIVE_ARCH')) {
-      cfg.modResults.contents = cfg.modResults.contents.replace(
-        anchor,
-        `${anchor}${POD_POST_INSTALL}`,
-      )
-    }
+    cfg.modResults.contents = addPodPostInstall(cfg.modResults.contents)
     return cfg
   })
 
@@ -91,13 +102,17 @@ const withHeliumManifest = (config) =>
     return cfg
   })
 
-// The app is light only. The template's DayNight theme would follow the
-// system dark mode in native chrome (dialogs, pickers).
+// The refresh is light only, so native chrome (dialogs, pickers)
+// stays light even over legacy dark screens until they migrate. The template's
+// DayNight theme would follow the system dark mode.
 const withLightAppTheme = (config) =>
   withAndroidStyles(config, (cfg) => {
-    const appTheme = cfg.modResults.resources.style.find(
+    const appTheme = cfg.modResults.resources.style?.find(
       (style) => style.$.name === 'AppTheme',
     )
+    if (!appTheme) {
+      throw new Error('withHeliumNative: styles.xml has no AppTheme style')
+    }
     appTheme.$.parent = 'Theme.AppCompat.Light.NoActionBar'
     return cfg
   })
@@ -106,3 +121,5 @@ module.exports = (config) =>
   withLightAppTheme(
     withHeliumManifest(withHeliumGradleProperties(withPodPostInstall(config))),
   )
+
+module.exports.addPodPostInstall = addPodPostInstall

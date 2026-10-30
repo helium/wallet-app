@@ -171,7 +171,6 @@ export const useDerivationAccounts = ({ mnemonic }: { mnemonic?: string }) => {
                       const url = `${
                         Config.MIGRATION_SERVER_URL
                       }/migrate/${keypair.publicKey.toBase58()}`
-                      // eslint-disable-next-line no-await-in-loop
                       const { transactions } = (await axios.get(url)).data
                       needsMigrated = transactions.length > 0
                     }

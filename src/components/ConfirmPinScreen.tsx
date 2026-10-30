@@ -63,7 +63,7 @@ const ConfirmPinScreen = () => {
       originalPin={pin.value}
       title={title}
       subtitle={subtitle}
-      pinSuccess={pinSuccess}
+      pinSuccess={() => void pinSuccess().catch(console.error)}
       onCancel={navigation.goBack}
     />
   )

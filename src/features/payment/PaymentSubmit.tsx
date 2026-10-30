@@ -4,7 +4,7 @@ import { SerializedError } from '@reduxjs/toolkit'
 import { PublicKey } from '@solana/web3.js'
 import globalStyles from '@theme/globalStyles'
 import BN from 'bn.js'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import { submitStage } from './logic/submitStage'
 import PaymentError from './PaymentError'
@@ -20,7 +20,7 @@ type Props = {
   totalBalance: BN
   feeTokenBalance?: BN
   payments?: Payment[]
-  onRetry: () => void
+  onRetry?: () => void
   onSuccess: () => void
   actionTitle: string
 }
@@ -41,12 +41,17 @@ const PaymentSubmit = ({
   const [error, setError] = useState<Error | SerializedError>()
   const [succeeded, setSucceeded] = useState(false)
 
-  const handleRetry = useCallback(() => {
-    setError(undefined)
-    setSucceeded(false)
+  const handleRetry = useMemo(
+    () =>
+      onRetry &&
+      (() => {
+        setError(undefined)
+        setSucceeded(false)
 
-    onRetry()
-  }, [onRetry])
+        onRetry()
+      }),
+    [onRetry],
+  )
 
   if (!loading && submitLoading) {
     setLoading(true)
@@ -67,37 +72,39 @@ const PaymentSubmit = ({
 
   const body = useMemo(() => {
     const stage = submitStage({ succeeded, hasError: !!submitError })
-    if (stage === 'loading') {
-      return <PaymentSubmitLoading />
-    }
-    if (stage === 'success') {
-      return (
-        <FadeInOut style={globalStyles.container}>
-          <PaymentSuccess
-            mint={mint}
-            totalBalance={totalBalance}
-            feeTokenBalance={feeTokenBalance}
-            payments={payments}
-            onSuccess={onSuccess}
-            actionTitle={actionTitle}
-          />
-        </FadeInOut>
-      )
-    }
-
-    if (submitError) {
-      return (
-        <FadeInOut style={globalStyles.container}>
-          <PaymentError
-            mint={mint}
-            totalBalance={totalBalance}
-            feeTokenBalance={feeTokenBalance}
-            payments={payments}
-            error={submitError}
-            onRetry={handleRetry}
-          />
-        </FadeInOut>
-      )
+    switch (stage) {
+      case 'loading':
+        return <PaymentSubmitLoading />
+      case 'success':
+        return (
+          <FadeInOut style={globalStyles.container}>
+            <PaymentSuccess
+              mint={mint}
+              totalBalance={totalBalance}
+              feeTokenBalance={feeTokenBalance}
+              payments={payments}
+              onSuccess={onSuccess}
+              actionTitle={actionTitle}
+            />
+          </FadeInOut>
+        )
+      case 'error':
+        return (
+          <FadeInOut style={globalStyles.container}>
+            <PaymentError
+              mint={mint}
+              totalBalance={totalBalance}
+              feeTokenBalance={feeTokenBalance}
+              payments={payments}
+              error={submitError}
+              onRetry={handleRetry}
+            />
+          </FadeInOut>
+        )
+      default: {
+        const _exhaustive: never = stage
+        return _exhaustive
+      }
     }
   }, [
     actionTitle,

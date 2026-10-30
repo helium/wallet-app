@@ -10,7 +10,6 @@ const BackgroundFill = ({ opacity, backgroundColor, ...boxProps }: Props) => (
     backgroundColor={backgroundColor || 'error'}
     opacity={opacity || 0.4}
     style={StyleSheet.absoluteFill}
-    // eslint-disable-next-line react/jsx-props-no-spreading
     {...boxProps}
   />
 )

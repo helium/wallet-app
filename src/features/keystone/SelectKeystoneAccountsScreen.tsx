@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 import React, { useCallback, useEffect, useState } from 'react'
 import Box from '@components/Box'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -122,7 +121,6 @@ const SelectKeystoneAccountsScreen = () => {
   }, [connection, derivationAccounts])
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: KeystoneAccountType; index: number }) => {
       const onSelect = () => {
         setSelected((prev) => {

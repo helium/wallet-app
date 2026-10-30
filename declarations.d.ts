@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable max-classes-per-file */
 declare module '*.svg' {
   import { SvgProps } from 'react-native-svg'
 

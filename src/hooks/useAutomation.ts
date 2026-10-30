@@ -266,7 +266,6 @@ export function useFundingEstimate(duration: number | string | undefined) {
     if (!duration) return 0
     const parsed =
       typeof duration === 'string' ? parseInt(duration, 10) : duration
-    // eslint-disable-next-line no-restricted-globals
     return isNaN(parsed) ? 0 : parsed
   }, [duration])
 

@@ -213,7 +213,6 @@ const AccountImportScreen = () => {
   )
 
   const renderItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ index, item: w }: { item: string | null; index: number }) => {
       return (
         <TouchableOpacityBox
@@ -285,7 +284,7 @@ const AccountImportScreen = () => {
           onSelectWord={handleSelectWord}
           wordIdx={wordIndex}
           totalWords={wordCount}
-          onSubmit={handleNext}
+          onSubmit={() => void handleNext().catch(console.error)}
           accentKey={getAccent(wordIndex).key}
           accentValue={getAccent(wordIndex).value}
           onPaste={handleOnPaste}

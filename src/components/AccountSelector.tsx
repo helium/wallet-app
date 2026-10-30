@@ -101,7 +101,6 @@ const AccountSelector = forwardRef(
     }, [colors.secondaryText])
 
     const renderFlatlistItem = useCallback(
-      // eslint-disable-next-line react/no-unused-prop-types
       ({ item: account }: { item: CSAccount; index: number }) => {
         return (
           <AccountListItem
@@ -119,7 +118,6 @@ const AccountSelector = forwardRef(
         <BottomSheetBackdrop
           disappearsOnIndex={-1}
           appearsOnIndex={0}
-          // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         />
       ),

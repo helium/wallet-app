@@ -73,8 +73,7 @@ import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
 import { swapRoute } from './logic/swapRoute'
 import { SwapNavigationProp } from './swapTypes'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
@@ -85,6 +84,7 @@ enum SelectorMode {
 }
 
 const SwapScreen = () => {
+  // Opt out: compiler does not support throw inside try/catch, see handleSwapTokens
   'use no memo'
 
   const { t } = useTranslation()
@@ -298,7 +298,10 @@ const SwapScreen = () => {
         <Text variant="h4" color="white" flex={1} textAlign="center">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox paddingEnd="m" onPress={refresh}>
+        <TouchableOpacityBox
+          paddingEnd="m"
+          onPress={() => void refresh().catch(console.error)}
+        >
           <Refresh width={16} height={16} />
         </TouchableOpacityBox>
       </Box>
@@ -737,7 +740,9 @@ const SwapScreen = () => {
         <HNTKeyboard
           ref={hntKeyboardRef}
           allowOverdraft={selectorMode === SelectorMode.youReceive}
-          onConfirmBalance={onConfirmBalance}
+          onConfirmBalance={(confirmation) =>
+            void onConfirmBalance(confirmation).catch(console.error)
+          }
           mint={selectorMode === SelectorMode.youPay ? inputMint : outputMint}
           networkFee={SOL_TXN_FEE}
           // Ensure that we keep at least 0.02 sol
@@ -897,7 +902,7 @@ const SwapScreen = () => {
                     }
                     titleColorPressedOpacity={0.3}
                     title={swapping ? '' : t('swapsScreen.swapTokens')}
-                    onPress={handleSwapTokens}
+                    onPress={() => void handleSwapTokens().catch(console.error)}
                     testID="Swap.Submit"
                     TrailingComponent={
                       swapping ? (
@@ -955,7 +960,7 @@ const SwapScreen = () => {
                 />
               )}
               <ReAnimatedBlurBox
-                entering={FadeIn.duration(DUR.enter)}
+                entering={FADE_IN}
                 position="absolute"
                 height="100%"
                 width="100%"

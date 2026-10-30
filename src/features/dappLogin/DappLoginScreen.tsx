@@ -198,7 +198,7 @@ const DappLoginScreen = () => {
       return (
         <DappConnect
           onApprove={handleAllowLogin}
-          onDeny={handleDeny}
+          onDeny={() => void handleDeny().catch(console.error)}
           appName={sessionProposal.params.proposer.metadata.name}
         />
       )
@@ -206,9 +206,9 @@ const DappLoginScreen = () => {
 
     return (
       <DappAccount
-        onLogin={handleLogin}
+        onLogin={() => void handleLogin().catch(console.error)}
         appName={sessionProposal.params.proposer.metadata.name}
-        onCancel={goBack}
+        onCancel={() => void goBack().catch(console.error)}
         loading={connectionState !== 'allowed'}
       />
     )
@@ -229,7 +229,7 @@ const DappLoginScreen = () => {
       flex={1}
     >
       <TouchableOpacityBox
-        onPress={goBack}
+        onPress={() => void goBack().catch(console.error)}
         alignSelf="flex-end"
         justifyContent="center"
         paddingHorizontal="m"

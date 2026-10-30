@@ -83,10 +83,7 @@ const CountdownTimer = forwardRef(
     if (!visible) return null
 
     return (
-      <Box
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...boxProps}
-      >
+      <Box {...boxProps}>
         <Box
           paddingVertical="xxs"
           paddingLeft="ms"
