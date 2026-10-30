@@ -4,7 +4,6 @@ import { persistReducer } from 'redux-persist'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import reducer from './rootReducer'
 import { name as solanaSliceName } from './slices/solanaSlice'
-import { name as notificationsSliceName } from './slices/notificationsSlice'
 import Reactotron from '../../ReactotronConfig'
 
 const enhancers: StoreEnhancer[] = []
@@ -17,7 +16,7 @@ const persistConfig = {
   key: 'root.v2',
   storage: AsyncStorage,
   version: 1,
-  blacklist: [solanaSliceName, notificationsSliceName],
+  blacklist: [solanaSliceName],
 }
 
 const persistedReducer = persistReducer(persistConfig, reducer)

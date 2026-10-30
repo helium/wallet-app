@@ -36,7 +36,7 @@ jest.mock('../../../modules/icloud-kvs', () => ({
 }))
 
 // Nested redux-persist configs that the Redux store still uses
-const NESTED_PERSIST_KEYS = ['persist:solana', 'persist:notifications']
+const NESTED_PERSIST_KEYS = ['persist:solana']
 // react-native-icloudstore put this prefix on every iCloud key
 const ICLOUD_PREFIX = '@com.manicakes.iCloudStorage/'
 
@@ -158,6 +158,7 @@ describe('importLegacyState', () => {
     expect(await m.SecureStore.getItemAsync('walletApiToken')).toBeNull()
     expect(await m.AsyncStorage.getItem('persist:root')).toBeNull()
     expect(await m.AsyncStorage.getItem('persist:balances')).toBeNull()
+    expect(await m.AsyncStorage.getItem('persist:notifications')).toBeNull()
     expect(await m.AsyncStorage.multiGet(NESTED_PERSIST_KEYS)).toEqual(
       NESTED_PERSIST_KEYS.map((key) => [key, '{}']),
     )
