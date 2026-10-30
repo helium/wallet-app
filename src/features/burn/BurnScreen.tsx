@@ -60,6 +60,7 @@ import {
 } from '../../utils/accountUtils'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+import { batchSubmitError } from '../payment/logic/batchSubmitError'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
@@ -529,10 +530,7 @@ const BurnScreen = () => {
               submitLoading={isSubmitting}
               submitSucceeded={status === 'confirmed'}
               submitError={
-                delegateDataCreditsMutation.error ||
-                (batchId && status === 'failed'
-                  ? new Error('Transaction failed')
-                  : undefined)
+                delegateDataCreditsMutation.error || batchSubmitError(status)
               }
               totalBalance={amountBalance}
               feeTokenBalance={FEE}

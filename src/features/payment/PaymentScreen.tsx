@@ -70,6 +70,7 @@ import {
   HomeStackParamList,
   PaymentRouteParam,
 } from '../home/homeTypes'
+import { batchSubmitError } from './logic/batchSubmitError'
 import PaymentCard from './PaymentCard'
 import PaymentItem from './PaymentItem'
 import PaymentSubmit from './PaymentSubmit'
@@ -866,12 +867,7 @@ const PaymentScreen = () => {
         mint={mint}
         submitLoading={isSubmitting}
         submitSucceeded={status === 'confirmed'}
-        submitError={
-          paymentMutation.error ||
-          (batchId && status === 'failed'
-            ? new Error('Transaction failed')
-            : undefined)
-        }
+        submitError={paymentMutation.error || batchSubmitError(status)}
         totalBalance={submittedTotal}
         payments={submittedPayments}
         feeTokenBalance={paymentState.networkFee}
