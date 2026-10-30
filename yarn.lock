@@ -15354,6 +15354,7 @@ __metadata:
     snakecase-keys: "npm:5.4.2"
     stream: "npm:^0.0.3"
     stream-browserify: "npm:^3.0.0"
+    tailwind-merge: "npm:3.3.1"
     tailwindcss: "npm:4.3.3"
     text-encoding-polyfill: "npm:^0.6.7"
     tinycolor2: "npm:^1.6.0"
@@ -23488,6 +23489,13 @@ __metadata:
   version: 1.0.0
   resolution: "tagged-tag@npm:1.0.0"
   checksum: 10/e37653df3e495daa7ea7790cb161b810b00075bba2e4d6c93fb06a709e747e3ae9da11a120d0489833203926511b39e038a2affbd9d279cfb7a2f3fcccd30b5d
+  languageName: node
+  linkType: hard
+
+"tailwind-merge@npm:3.3.1":
+  version: 3.3.1
+  resolution: "tailwind-merge@npm:3.3.1"
+  checksum: 10/ad97f0763afdfdce785b8de50bc546951bb3cc803ab4f809cb10d654d9b7e28b0d19dead70ab9070edf479af68622a5f6ba16a21584fa8c21236855709dc648f
   languageName: node
   linkType: hard
 

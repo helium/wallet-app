@@ -102,13 +102,17 @@ const withHeliumManifest = (config) =>
     return cfg
   })
 
-// The app is light only. The template's DayNight theme would follow the
-// system dark mode in native chrome (dialogs, pickers).
+// The refresh is light only, so native chrome (dialogs, pickers, keyboards)
+// stays light even over legacy dark screens until they migrate. The template's
+// DayNight theme would follow the system dark mode.
 const withLightAppTheme = (config) =>
   withAndroidStyles(config, (cfg) => {
-    const appTheme = cfg.modResults.resources.style.find(
+    const appTheme = cfg.modResults.resources.style?.find(
       (style) => style.$.name === 'AppTheme',
     )
+    if (!appTheme) {
+      throw new Error('withHeliumNative: styles.xml has no AppTheme style')
+    }
     appTheme.$.parent = 'Theme.AppCompat.Light.NoActionBar'
     return cfg
   })

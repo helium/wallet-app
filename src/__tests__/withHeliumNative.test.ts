@@ -108,4 +108,48 @@ describe('withHeliumNative', () => {
       value: String(buildProperties[1].android.compileSdkVersion),
     })
   })
+
+  const runStylesMod = (resources: unknown) => {
+    const config = withHeliumNative({
+      name: 'x',
+      slug: 'x',
+      ios: {},
+      android: {},
+    })
+    return config.mods.android.styles({
+      ...config,
+      modResults: { resources },
+      modRequest: {
+        nextMod: async (c: unknown) => c,
+        platform: 'android',
+        modName: 'styles',
+        projectRoot: '/tmp',
+        platformProjectRoot: '/tmp/android',
+        introspect: false,
+      },
+    })
+  }
+
+  it('sets the AppTheme parent to the light theme through the styles mod', async () => {
+    const result = await runStylesMod({
+      style: [
+        {
+          $: {
+            name: 'AppTheme',
+            parent: 'Theme.AppCompat.DayNight.NoActionBar',
+          },
+          item: [],
+        },
+      ],
+    })
+    expect(result.modResults.resources.style[0].$.parent).toBe(
+      'Theme.AppCompat.Light.NoActionBar',
+    )
+  })
+
+  it('rejects a styles file with no AppTheme style', async () => {
+    await expect(runStylesMod({ style: [] })).rejects.toThrow(
+      'withHeliumNative: styles.xml has no AppTheme style',
+    )
+  })
 })

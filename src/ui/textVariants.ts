@@ -1,4 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
+import { twMerge } from 'tailwind-merge'
 
 // World's type scale (style guide §2.3). Weight is a plain class
 // (`font-medium`): global.css maps each weight class to its Figtree file.
@@ -21,3 +22,6 @@ export const textVariants = cva('font-normal text-foreground', {
 })
 
 export type TextSize = NonNullable<VariantProps<typeof textVariants>['size']>
+
+export const textClassName = (size?: TextSize, className?: string) =>
+  twMerge(textVariants({ size }), className)
