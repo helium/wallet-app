@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -38,6 +39,7 @@ const useEnrichedTransactions = (): {
   const [onEndReached, setOnEndReached] = useState<boolean>(false)
   const [hasNewTransactions, setHasNewTransactions] = useState(false)
   const accountSubscriptionId = useRef<number | undefined>(undefined)
+  const activeKeyRef = useRef('')
   const firstSig = useMemo(
     () => (transactions[0] ? transactions[0].signature : ''),
     [transactions],
@@ -53,15 +55,21 @@ const useEnrichedTransactions = (): {
     }
   }, [transactions, cluster, currentAccount])
 
+  useLayoutEffect(() => {
+    activeKeyRef.current = `${cluster}-${currentAccount?.solanaAddress}`
+  }, [cluster, currentAccount])
+
   // Reset new transactions when account changes. Maybe we add this all into a slice?
   const [prevAccount, setPrevAccount] = useState(currentAccount)
-  // Clear the list on account or cluster switch, so the persist effect does
-  // not write the old list under the new storage key
+  // The reset below and the key check after each await keep the old
+  // account's list out of the new account's storage key
   if (prevAccount !== currentAccount) {
     setPrevAccount(currentAccount)
     setTransactions([])
     setOldestTransaction('')
     setOnEndReached(false)
+    setLoading(false)
+    setFetchingMore(false)
     if (currentAccount?.solanaAddress) {
       setHasNewTransactions(false)
     }
@@ -72,18 +80,22 @@ const useEnrichedTransactions = (): {
     setTransactions([])
     setOldestTransaction('')
     setOnEndReached(false)
+    setLoading(false)
+    setFetchingMore(false)
   }
 
   const refresh = useCallback(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider) {
       return
     }
+    const key = `${cluster}-${currentAccount?.solanaAddress}`
     setLoading(true)
     const fetchTransactions = await getAllTransactions(
       currentAccount?.solanaAddress,
       anchorProvider,
       cluster,
     )
+    if (key !== activeKeyRef.current) return
     setTransactions(fetchTransactions)
     setOldestTransaction(
       fetchTransactions.length > 0
@@ -104,6 +116,7 @@ const useEnrichedTransactions = (): {
       return
     }
 
+    const key = `${cluster}-${currentAccount?.solanaAddress}`
     setFetchingMore(true)
     const fetchTransactions = await getAllTransactions(
       currentAccount?.solanaAddress,
@@ -111,6 +124,7 @@ const useEnrichedTransactions = (): {
       cluster,
       oldestTransaction,
     )
+    if (key !== activeKeyRef.current) return
 
     if (fetchTransactions.length !== 0) {
       setTransactions((t) => [...t, ...fetchTransactions])
@@ -137,6 +151,7 @@ const useEnrichedTransactions = (): {
       return
     }
 
+    const key = `${cluster}-${currentAccount?.solanaAddress}`
     const fetchTransactions = await getAllTransactions(
       currentAccount?.solanaAddress,
       anchorProvider,
@@ -144,6 +159,7 @@ const useEnrichedTransactions = (): {
       undefined,
       firstSig,
     )
+    if (key !== activeKeyRef.current) return
 
     if (fetchTransactions.length !== 0) {
       setTransactions((t) => [...fetchTransactions, ...t])
@@ -173,8 +189,10 @@ const useEnrichedTransactions = (): {
 
     const loadTransactionsFromStorage = async () => {
       try {
+        const key = `${cluster}-${currentAccount?.solanaAddress}`
         const storageKey = `txs-${cluster}-${currentAccount?.solanaAddress}`
         const storedTransactions = await AsyncStorage.getItem(storageKey)
+        if (key !== activeKeyRef.current) return
         if (storedTransactions && storedTransactions.length > 0) {
           const parsedTransactions = JSON.parse(storedTransactions)
           setTransactions(parsedTransactions)
