@@ -34,8 +34,7 @@ import { Platform } from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 const DeprecatedTokensModal: FC = () => {
   'use no memo'
@@ -213,7 +212,6 @@ const DeprecatedTokensModal: FC = () => {
       // Step 1: Close all positions (both IOT and MOBILE) if any exist
       if (hasStaked) {
         // Close IOT positions
-        // eslint-disable-next-line no-restricted-syntax
         for (const position of iotPositions || []) {
           await closePosition({
             position: {
@@ -233,7 +231,6 @@ const DeprecatedTokensModal: FC = () => {
         }
 
         // Close MOBILE positions
-        // eslint-disable-next-line no-restricted-syntax
         for (const position of mobilePositions || []) {
           await closePosition({
             position: {
@@ -424,7 +421,7 @@ const DeprecatedTokensModal: FC = () => {
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeIn.duration(DUR.enter)}
+        entering={FADE_IN}
         position="absolute"
         height="100%"
         width="100%"
@@ -634,7 +631,7 @@ const DeprecatedTokensModal: FC = () => {
                     ? t('deprecatedTokensModal.unstakeAndSwap')
                     : t('deprecatedTokensModal.swapNow')
                 }
-                onPress={handleSwapAll}
+                onPress={() => void handleSwapAll().catch(console.error)}
                 marginBottom="m"
                 disabled={!hasAnyTokens}
               />

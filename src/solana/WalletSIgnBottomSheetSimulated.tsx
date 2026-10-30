@@ -378,7 +378,6 @@ export const WalletSignBottomSheetSimulated = ({
                   <>
                     {currentTxs.map((tx, idx) => (
                       <WalletSignBottomSheetTransaction
-                        // eslint-disable-next-line react/no-array-index-key
                         key={`transaction-${idx}`}
                         transaction={tx}
                         transactionIdx={idx}

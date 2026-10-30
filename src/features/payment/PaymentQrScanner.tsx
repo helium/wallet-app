@@ -45,6 +45,12 @@ const PaymentQrScanner = () => {
     [navigation, showOKAlert, t, triggerNotification],
   )
 
-  return <QrScanner onBarCodeScanned={handleBarCodeScanned} />
+  return (
+    <QrScanner
+      onBarCodeScanned={(data) =>
+        void handleBarCodeScanned(data).catch(console.error)
+      }
+    />
+  )
 }
 export default PaymentQrScanner

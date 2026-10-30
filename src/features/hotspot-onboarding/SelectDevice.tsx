@@ -25,7 +25,6 @@ const SelectOnboardableDevice = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingNavProp>()
   const renderItem = React.useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: OnboardableDevice; index: number }) => {
       return (
         <TouchableOpacityBox

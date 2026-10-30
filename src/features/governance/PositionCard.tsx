@@ -66,7 +66,6 @@ import React, {
 } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
-import { FadeIn, FadeOut } from 'react-native-reanimated'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
@@ -419,7 +418,6 @@ export const PositionCard = ({
           symbol,
           targetAmount: humanReadable(
             targetPosition.amountDepositedNative,
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             mintAcc!.decimals,
           ),
         }),
@@ -560,7 +558,7 @@ export const PositionCard = ({
             <ListItem
               key="undelegate"
               title={t('gov.positions.undelegate')}
-              onPress={async () => {
+              onPress={() => {
                 setActionsOpen(false)
                 // undelegate has to claim every unclaimed epoch first, which
                 // fails on-chain while any of them is still awaiting issuance
@@ -613,7 +611,7 @@ export const PositionCard = ({
               <ListItem
                 key="close"
                 title={t('gov.positions.close')}
-                onPress={async () => {
+                onPress={() => {
                   setActionsOpen(false)
                   if (hasActiveVotes) {
                     void showOKAlert({
@@ -682,7 +680,7 @@ export const PositionCard = ({
                           ? t('gov.transactions.unpauseLockup')
                           : t('gov.transactions.pauseLockup')
                       }
-                      onPress={async () => {
+                      onPress={() => {
                         setActionsOpen(false)
                         if (hasActiveVotes) {
                           void showOKAlert({
@@ -737,8 +735,7 @@ export const PositionCard = ({
   const { knownProxy } = useKnownProxy(position?.proxy?.nextVoter)
 
   const delegatedSubDaoMetadata = position.delegatedSubDao
-    ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      subDaos?.find((sd) => sd.pubkey.equals(position.delegatedSubDao!))
+    ? subDaos?.find((sd) => sd.pubkey.equals(position.delegatedSubDao!))
         ?.dntMetadata
     : null
 
@@ -817,8 +814,6 @@ export const PositionCard = ({
           <ReAnimatedBox
             backgroundColor="surfaceSecondary"
             borderRadius="l"
-            entering={FadeIn}
-            exiting={FadeOut}
             {...boxProps}
           >
             <TouchableOpacityBox

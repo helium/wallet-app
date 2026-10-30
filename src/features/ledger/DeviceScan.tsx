@@ -85,7 +85,6 @@ const DeviceScan = () => {
         disappearsOnIndex={-1}
         appearsOnIndex={0}
         opacity={0.8}
-        // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       />
     ),
@@ -197,7 +196,7 @@ const DeviceScan = () => {
             data={devices}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
-            onRefresh={startScan}
+            onRefresh={() => void startScan().catch(console.error)}
             refreshing={refreshing}
           />
         </Box>

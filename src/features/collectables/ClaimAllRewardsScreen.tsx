@@ -190,7 +190,7 @@ const ClaimAllRewardsScreen = () => {
             }
             titleColor="white"
             marginHorizontal="l"
-            onPress={onClaimRewards}
+            onPress={() => void onClaimRewards().catch(console.error)}
             disabled={redeeming}
             TrailingComponent={
               redeeming ? (

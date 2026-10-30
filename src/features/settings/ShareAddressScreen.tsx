@@ -132,7 +132,7 @@ const ShareAddressScreen = () => {
             padding="m"
             backgroundColor="purple500"
             borderRadius="round"
-            onPress={handleShare}
+            onPress={() => void handleShare().catch(console.error)}
             flex={1}
             alignItems="center"
             justifyContent="center"

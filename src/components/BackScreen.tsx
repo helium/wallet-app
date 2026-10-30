@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { useNavigation } from '@react-navigation/native'
 import { BoxProps } from '@shopify/restyle'
 import React, { memo, useMemo } from 'react'

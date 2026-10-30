@@ -149,7 +149,7 @@ const RootNavigator = () => {
       onAddNew={handleAddNew}
       ref={connectedWalletsRef}
       onClose={onClose}
-      onAddSub={handleAddSub}
+      onAddSub={(acc) => void handleAddSub(acc).catch(console.error)}
     >
       <RootStack.Navigator screenOptions={screenOptions}>
         <RootStack.Screen

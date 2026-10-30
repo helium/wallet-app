@@ -125,7 +125,6 @@ const Settings = () => {
       })
     } else {
       navigation.push('AddGatewayBle', {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onboardingAddress: address!,
         createGatewayTx,
         network: 'IOT',
@@ -143,7 +142,6 @@ const Settings = () => {
   ])
 
   const renderItem = React.useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item, index }: { item: Option; index: number }) => {
       return (
         <TouchableOpacityBox
@@ -208,7 +206,7 @@ const Settings = () => {
           backgroundColor="white"
           disabled={loading || !!error || !address}
           title={iotInfo ? t('generic.done') : t('generic.next')}
-          onPress={navNext}
+          onPress={() => void navNext().catch(console.error)}
         />
       )}
     </BackScreen>

@@ -167,7 +167,11 @@ const WalletSignBottomSheetTransaction = ({
               alignItems="center"
               mb="xxs"
               ml="s"
-              onPress={() => Linking.openURL(transaction.explorerLink)}
+              onPress={() =>
+                void Linking.openURL(transaction.explorerLink).catch(
+                  console.error,
+                )
+              }
             >
               <ExternalLink />
             </TouchableOpacityBox>
@@ -179,7 +183,6 @@ const WalletSignBottomSheetTransaction = ({
           <Box mt="s">
             {nonAccountWarnings.map((warning, idx) => (
               <WarningBox
-                // eslint-disable-next-line react/no-array-index-key
                 key={warning.shortMessage + idx}
                 header={warning.shortMessage}
                 body={warning.message}

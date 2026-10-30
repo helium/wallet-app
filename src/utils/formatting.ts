@@ -52,7 +52,6 @@ export const precision = (a: number) => {
   let p = 0
   while (Math.round(a * e) / e !== a) {
     e *= 10
-    // eslint-disable-next-line no-plusplus
     p++
   }
   return p

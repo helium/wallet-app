@@ -332,7 +332,11 @@ const ChangeRewardsRecipientScreen = () => {
                                   paddingVertical="sx"
                                   borderRadius="m"
                                   backgroundColor="black700"
-                                  onPress={handleRemoveRecipient}
+                                  onPress={() =>
+                                    void handleRemoveRecipient().catch(
+                                      console.error,
+                                    )
+                                  }
                                 >
                                   {removing ? (
                                     <CircleLoader
@@ -390,7 +394,11 @@ const ChangeRewardsRecipientScreen = () => {
                                     paddingVertical="sx"
                                     borderRadius="m"
                                     backgroundColor="black700"
-                                    onPress={handleRemoveRecipient}
+                                    onPress={() =>
+                                      void handleRemoveRecipient().catch(
+                                        console.error,
+                                      )
+                                    }
                                   >
                                     {removing ? (
                                       <CircleLoader
@@ -446,7 +454,11 @@ const ChangeRewardsRecipientScreen = () => {
                                     paddingVertical="sx"
                                     borderRadius="m"
                                     backgroundColor="black700"
-                                    onPress={handleRemoveRecipient}
+                                    onPress={() =>
+                                      void handleRemoveRecipient().catch(
+                                        console.error,
+                                      )
+                                    }
                                   >
                                     {removing ? (
                                       <CircleLoader
@@ -505,7 +517,11 @@ const ChangeRewardsRecipientScreen = () => {
                                     paddingVertical="sx"
                                     borderRadius="m"
                                     backgroundColor="black700"
-                                    onPress={handleRemoveRecipient}
+                                    onPress={() =>
+                                      void handleRemoveRecipient().catch(
+                                        console.error,
+                                      )
+                                    }
                                   >
                                     {removing ? (
                                       <CircleLoader

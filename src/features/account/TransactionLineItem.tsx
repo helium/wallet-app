@@ -133,7 +133,9 @@ const TransactionLineItem = ({
         <TouchableOpacityBox
           hitSlop={copyHitSlop}
           onPress={handleCopy(bodyText)}
-          onLongPress={handleLongPress(bodyText)}
+          onLongPress={() =>
+            void handleLongPress(bodyText)().catch(console.error)
+          }
           disabled={!isAddress && !navTo}
           minWidth={30}
           maxWidth="90%"

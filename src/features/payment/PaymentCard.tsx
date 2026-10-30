@@ -113,7 +113,7 @@ const PaymentCard = ({
                 justifyContent="center"
                 alignItems="center"
                 testID="PaymentCard.Pay"
-                onPress={handlePayPressed}
+                onPress={() => void handlePayPressed().catch(console.error)}
                 disabled={disabled}
                 borderRadius="round"
                 flexDirection="row"

@@ -101,7 +101,6 @@ export default () => {
 
       const requestTransfer = (pmts: typeof payments) =>
         client.tokens.multiTransfer({
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           walletAddress: currentAccount.solanaAddress!,
           mint: mint.toBase58(),
           recipients: pmts.map((payment) => ({
@@ -120,7 +119,6 @@ export default () => {
       const requestTransferShavingMax = async () => {
         let shavedPayments = payments
         for (let attempt = 0; ; attempt += 1) {
-          // eslint-disable-next-line no-await-in-loop
           const { error, data } = await safe(requestTransfer(shavedPayments))
           if (!error) {
             return {
@@ -183,11 +181,21 @@ export default () => {
         combinedTxnData,
       )
 
+      const transactions = signedTxnData.transactions.map((tx) =>
+        VersionedTransaction.deserialize(
+          Buffer.from(tx.serializedTransaction, 'base64'),
+        ),
+      )
       const { batchId } = await client.transactions.submit(signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
-      // any max-send shave.
-      return { batchId, payments: effectivePayments }
+      // any max-send shave, and the signed transactions so a failed batch can
+      // tell which payments landed.
+      return {
+        batchId,
+        payments: effectivePayments,
+        transactions,
+      }
     },
   })
 
@@ -593,7 +601,6 @@ export default () => {
           network,
         })
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const { transactionData } = response
 
@@ -883,7 +890,6 @@ export default () => {
         gateway: entityKey,
         // Onboarding record isn't actually used or needed, but if we don't
         // do this, the sdk will throw an error
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onboardingRecord: {
           maker: {
             address: currentAccount.address,

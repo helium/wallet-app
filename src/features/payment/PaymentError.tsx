@@ -22,7 +22,8 @@ type Props = {
   feeTokenBalance?: BN
   payments: Payment[]
   error?: Error | SerializedError
-  onRetry: () => void
+  // Undefined when the app cannot tell what landed: close only.
+  onRetry?: () => void
 }
 
 const PaymentError = ({
@@ -95,25 +96,27 @@ const PaymentError = ({
               {t('generic.cancel')}
             </Text>
           </TouchableOpacityBox>
-          <TouchableOpacityBox
-            flex={1}
-            minHeight={66}
-            backgroundColor="secondary"
-            justifyContent="center"
-            alignItems="center"
-            borderRadius="round"
-            onPress={onRetry}
-            flexDirection="row"
-          >
-            <Text
-              marginLeft="s"
-              variant="subtitle1"
-              textAlign="center"
-              color="primaryText"
+          {onRetry && (
+            <TouchableOpacityBox
+              flex={1}
+              minHeight={66}
+              backgroundColor="secondary"
+              justifyContent="center"
+              alignItems="center"
+              borderRadius="round"
+              onPress={onRetry}
+              flexDirection="row"
             >
-              {t('generic.retry')}
-            </Text>
-          </TouchableOpacityBox>
+              <Text
+                marginLeft="s"
+                variant="subtitle1"
+                textAlign="center"
+                color="primaryText"
+              >
+                {t('generic.retry')}
+              </Text>
+            </TouchableOpacityBox>
+          )}
         </Box>
       </Box>
     </Box>

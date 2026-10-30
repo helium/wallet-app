@@ -11,7 +11,6 @@ import { hashTagParams } from '../utils/transactionUtils'
 type BlockchainApiClient = ReturnType<typeof useBlockchainApi>
 type GovernanceClient = BlockchainApiClient['governance']
 type GovernanceMethod = keyof GovernanceClient
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ApiInput<M extends GovernanceMethod> = Parameters<GovernanceClient[M]>[0]
 type ApiParams<M extends GovernanceMethod> = Omit<ApiInput<M>, 'walletAddress'>
 

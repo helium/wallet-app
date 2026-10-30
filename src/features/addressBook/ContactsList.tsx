@@ -43,7 +43,6 @@ const ContactsList = ({
   )
 
   const renderFlatlistItem = useCallback(
-    // eslint-disable-next-line react/no-unused-prop-types
     ({ item: account }: { item: CSAccount; index: number }) => {
       return (
         <AccountListItem

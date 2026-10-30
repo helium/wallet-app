@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import Search from '@assets/images/search.svg'
 import { BoxProps } from '@shopify/restyle'
 import { BorderRadii, Color, Spacing, Theme } from '@theme/theme'

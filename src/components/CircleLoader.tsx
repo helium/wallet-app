@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { memo, useRef, useEffect, useState } from 'react'
 import { Animated, Easing } from 'react-native'
 import { BoxProps } from '@shopify/restyle'

@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { forwardRef, Ref, useMemo } from 'react'
 import {
   createRestyleComponent,

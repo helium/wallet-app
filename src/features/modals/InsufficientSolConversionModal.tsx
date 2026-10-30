@@ -22,8 +22,7 @@ import { Platform } from 'react-native'
 import { Switch } from 'react-native-gesture-handler'
 import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
-import { FadeIn } from 'react-native-reanimated'
-import { DUR } from '@theme/motion'
+import { FADE_IN } from '@theme/motion'
 
 const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()
@@ -173,7 +172,7 @@ const InsufficientSolConversionModal: FC = () => {
         />
       )}
       <ReAnimatedBlurBox
-        entering={FadeIn.duration(DUR.enter)}
+        entering={FADE_IN}
         position="absolute"
         zIndex={9999}
         height="100%"
@@ -324,7 +323,7 @@ const InsufficientSolConversionModal: FC = () => {
                 titleColor="white"
                 title={t('generic.cancel')}
                 disabled={loading}
-                onPress={handleCancel}
+                onPress={() => void handleCancel().catch(console.error)}
               />
               {hasAtLeastOne && (
                 <ButtonPressable
@@ -338,7 +337,7 @@ const InsufficientSolConversionModal: FC = () => {
                   disabled={!inputMint}
                   titleColorPressedOpacity={0.3}
                   title={swapping ? '' : t('generic.swap')}
-                  onPress={handleSwapTokens}
+                  onPress={() => void handleSwapTokens().catch(console.error)}
                   TrailingComponent={
                     swapping ? (
                       <CircleLoader loaderSize={20} color="black" />
