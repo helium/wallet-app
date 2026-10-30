@@ -18,6 +18,10 @@ describe('isTextLabel', () => {
     expect(isTextLabel(['Send', false, null])).toBe(true)
   })
 
+  it('accepts an array with an undefined hole', () => {
+    expect(isTextLabel(['Send ', undefined])).toBe(true)
+  })
+
   it('rejects a React element', () => {
     const element = { type: 'View', props: {} } as unknown as React.ReactNode
     expect(isTextLabel(element)).toBe(false)

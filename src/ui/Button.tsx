@@ -25,7 +25,6 @@ export const Button = ({
   ...props
 }: ButtonProps) => (
   <PressableScale
-    accessibilityRole="button"
     {...props}
     disabled={disabled}
     className={buttonClassName({ variant, size, disabled }, className)}

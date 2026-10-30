@@ -30,6 +30,7 @@ export const PressableScale = ({
 
   return (
     <Pressable
+      accessibilityRole="button"
       pressRetentionOffset={16}
       {...props}
       disabled={disabled}
