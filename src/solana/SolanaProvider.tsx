@@ -44,6 +44,7 @@ import { AsyncAccountCache } from './AsyncAccountCache'
 import { getLastCheckedSlot, saveCacheThenSlot } from './lastCheckedSlot'
 
 const useSolanaHook = () => {
+  // Opt out: compiler cannot lower getters in object literals, see anchorWallet's get publicKey
   'use no memo'
 
   const { currentAccount, secureAccountsVersion } = useAccountStorage()

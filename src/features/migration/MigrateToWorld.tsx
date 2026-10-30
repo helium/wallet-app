@@ -54,6 +54,7 @@ const selectedTokens = (
     }))
 
 const MigrateToWorld = () => {
+  // Opt out: compiler cannot lower try/finally, see createWallet
   'use no memo'
 
   const { t } = useTranslation()

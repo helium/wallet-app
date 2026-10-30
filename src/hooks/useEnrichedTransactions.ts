@@ -55,11 +55,23 @@ const useEnrichedTransactions = (): {
 
   // Reset new transactions when account changes. Maybe we add this all into a slice?
   const [prevAccount, setPrevAccount] = useState(currentAccount)
+  // Clear the list on account or cluster switch, so the persist effect does
+  // not write the old list under the new storage key
   if (prevAccount !== currentAccount) {
     setPrevAccount(currentAccount)
+    setTransactions([])
+    setOldestTransaction('')
+    setOnEndReached(false)
     if (currentAccount?.solanaAddress) {
       setHasNewTransactions(false)
     }
+  }
+  const [prevCluster, setPrevCluster] = useState(cluster)
+  if (prevCluster !== cluster) {
+    setPrevCluster(cluster)
+    setTransactions([])
+    setOldestTransaction('')
+    setOnEndReached(false)
   }
 
   const refresh = useCallback(async () => {

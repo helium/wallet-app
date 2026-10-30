@@ -84,6 +84,7 @@ enum SelectorMode {
 }
 
 const SwapScreen = () => {
+  // Opt out: compiler does not support throw inside try/catch, see handleSwapTokens
   'use no memo'
 
   const { t } = useTranslation()

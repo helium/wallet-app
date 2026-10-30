@@ -118,6 +118,7 @@ type PaymentInput = Parameters<
 
 type Route = RouteProp<HomeStackParamList, 'PaymentScreen'>
 const PaymentScreen = () => {
+  // Opt out: compiler cannot destructure context variables, see handleEditAddress
   'use no memo'
 
   const route = useRoute<Route>()

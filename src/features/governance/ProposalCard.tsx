@@ -16,11 +16,12 @@ import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useAsync } from 'react-async-hook'
 import { useTranslation } from 'react-i18next'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import useNowAfter from '@hooks/useNowAfter'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 import { ProposalTags } from './ProposalTags'
@@ -111,7 +112,7 @@ export const ProposalCard = ({
     return { totalVotes }
   }, [proposal])
 
-  const [now] = useState(() => Date.now())
+  const now = useNowAfter(endTs?.toNumber())
   const completed = endTs && endTs.toNumber() <= now / 1000
   const isLoading = descLoading
   const handleOnPress = useCallback(async () => {

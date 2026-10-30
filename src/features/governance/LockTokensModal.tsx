@@ -129,7 +129,7 @@ export const LockTokensModal = ({
   const [step, setStep] = useState<1 | 2>(1)
   const [showLockupKindInfo, setShowLockupKindInfo] = useState<boolean>(false)
   const [showCustomDuration, setShowCustomDuration] = useState<boolean>(false)
-  const [pickedSubDaoPk, setSelectedSubDaoPk] = useState<PublicKey | null>(null)
+  const [pickedSubDaoPk, setPickedSubDaoPk] = useState<PublicKey | null>(null)
   const [transactionError, setTransactionError] = useState()
   const { loading, result: subDaos } = useSubDaos()
   const hntKeyboardRef = useRef<HNTKeyboardRef>(null)
@@ -765,9 +765,7 @@ export const LockTokensModal = ({
                                 backgroundColor={
                                   isSelected ? 'surfaceSecondary' : 'black500'
                                 }
-                                onPress={() =>
-                                  setSelectedSubDaoPk(subDao.pubkey)
-                                }
+                                onPress={() => setPickedSubDaoPk(subDao.pubkey)}
                               >
                                 <Box
                                   flexDirection="row"

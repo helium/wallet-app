@@ -97,6 +97,8 @@ export const PositionCard = ({
   const { delegations, refetch: refetchDelegations } = usePositionDelegations()
   const delegation = delegations[position.mint.toBase58()]
   const [actionsOpen, setActionsOpen] = useState(false)
+  // An object, not the bare action: a repeat tap of the same action gets a new
+  // identity, so the effect re-runs
   const [pendingAction, setPendingAction] = useState<null | {
     action: 'undelegate' | 'relinquish' | 'flipLockupKind' | 'close'
   }>(null)

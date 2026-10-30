@@ -22,6 +22,7 @@ import {
   useVoteMutation,
   useRelinquishVoteMutation,
 } from '@hooks/useGovernanceMutations'
+import useNowAfter from '@hooks/useNowAfter'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
@@ -227,7 +228,7 @@ export const ProposalScreen = () => {
           )?.offsetFromStartTs?.offset ?? new BN(0),
         ))
 
-  const [now] = useState(() => Date.now())
+  const now = useNowAfter(endTs?.toNumber())
   const completed = endTs && endTs.toNumber() <= now / 1000
   const noVotingPower = !loading && (!votingPower || votingPower.isZero())
   const voted = !voteMutPending && didVote?.some((n) => n)

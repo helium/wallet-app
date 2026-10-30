@@ -66,6 +66,8 @@ const QR_CONTAINER_SIZE = 220
 
 type RequestType = 'qr' | 'link'
 const RequestScreen = () => {
+  // Opt out: the isEditing effect sets state on purpose, see the
+  // set-state-in-effect note above setIsEditing
   'use no memo'
 
   const { visibleTokens } = useVisibleTokens()

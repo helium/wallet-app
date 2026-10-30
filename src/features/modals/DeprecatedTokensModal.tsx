@@ -37,6 +37,7 @@ import * as Logger from '../../utils/logger'
 import { FADE_IN } from '@theme/motion'
 
 const DeprecatedTokensModal: FC = () => {
+  // Opt out: compiler cannot lower try/finally or throw inside try/catch, see calculateEstimatedHnt and handleSwapAll
   'use no memo'
 
   const { t } = useTranslation()
