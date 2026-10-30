@@ -53,7 +53,11 @@ import {
 } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import QRCode from 'react-native-qrcode-svg'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated'
 import Share, { ShareOptions } from 'react-native-share'
 import Toast from 'react-native-simple-toast'
 import { useDebounce } from 'use-debounce'
@@ -129,7 +133,10 @@ const RequestScreen = () => {
 
   const qrStyle = useAnimatedStyle(() => {
     const opac = requestType === 'qr' && !!qrLink && !keyboardShown ? 1 : 0
-    const animVal = withTiming(opac, { duration: 300 })
+    const animVal = withTiming(opac, {
+      duration: 300,
+      reduceMotion: ReduceMotion.Never,
+    })
     return {
       opacity: animVal,
       position: 'absolute',
