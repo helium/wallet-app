@@ -10,6 +10,7 @@ import TextTransform from '@components/TextTransform'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import CopyAddress from '@components/CopyAddress'
 import useAlert from '@hooks/useAlert'
+import useSecureWindow from '@hooks/useSecureWindow'
 import { getSecureAccount } from '../../storage/secureStorage'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 
@@ -20,6 +21,7 @@ const RevealPrivateKeyScreen = () => {
   const [privateKey, setPrivateKey] = useState<string>()
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()
+  useSecureWindow()
 
   useAsync(async () => {
     // don't remove key from secure store until they press reveal

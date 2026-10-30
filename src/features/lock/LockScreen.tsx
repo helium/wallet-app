@@ -2,6 +2,7 @@ import { ReAnimatedBox } from '@components/AnimatedBox'
 import ConfirmPinView from '@components/ConfirmPinView'
 import useAlert from '@hooks/useAlert'
 import usePrevious from '@hooks/usePrevious'
+import useSecureWindow from '@hooks/useSecureWindow'
 import * as LocalAuthentication from 'expo-local-authentication'
 import React, { memo, useCallback, useEffect } from 'react'
 import { useAsync } from 'react-async-hook'
@@ -26,6 +27,7 @@ const LockScreen = ({ children }: Props) => {
   const { pin, authInterval, locked, updateLocked } = useAppStorage()
   const prevLocked = usePrevious(locked)
   const { showOKCancelAlert } = useAlert()
+  useSecureWindow(!!locked)
 
   useEffect(() => {
     if (locked === prevLocked || !prevLocked) return

@@ -63,8 +63,8 @@ const SecurityScreen = ({ visible }: Props) => {
 
   if (Platform.OS === 'android' || !mounted) {
     // android ui doesn't update after "background" is detected in RN, so no
-    // cover renders here. Nothing sets FLAG_SECURE at present, so Android
-    // shows the app in recents.
+    // cover renders here. FLAG_SECURE (useSecureWindow) hides the secret
+    // screens; the rest of the app shows in recents.
 
     return null
   }

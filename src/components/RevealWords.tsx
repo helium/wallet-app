@@ -11,6 +11,7 @@ import CopyAddress from '@assets/images/copyAddress.svg'
 import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useCopyText from '@hooks/useCopyText'
 import useHaptic from '@hooks/useHaptic'
+import useSecureWindow from '@hooks/useSecureWindow'
 import { FadeIn } from 'react-native-reanimated'
 
 type Props = {
@@ -24,6 +25,7 @@ const RevealWords = ({ mnemonic, onDone, ListHeaderComponent }: Props) => {
   const { secondaryText } = useColors()
   const copyText = useCopyText()
   const { triggerImpact } = useHaptic()
+  useSecureWindow()
 
   const handleCopySeedPhrase = useCallback(() => {
     triggerImpact('light')

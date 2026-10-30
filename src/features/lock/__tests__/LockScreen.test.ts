@@ -9,6 +9,7 @@ declare const globalThis: { IS_REACT_ACT_ENVIRONMENT: boolean }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mockPlatform = { OS: 'ios' }
+const mockSetSecure = jest.fn()
 // stable values: LockScreen's effects depend on them
 const mockStorage = {
   pin: { status: 'on', value: '1234' },
@@ -24,6 +25,18 @@ jest.mock('react-native', () => ({
       return mockPlatform.OS
     },
   },
+}))
+// the real hook, with the native SecureWindow module mocked
+jest.mock(
+  '@hooks/useSecureWindow',
+  () => jest.requireActual('../../../hooks/useSecureWindow'),
+  { virtual: true },
+)
+jest.mock('expo', () => ({
+  requireOptionalNativeModule: (name: string) =>
+    name === 'SecureWindow'
+      ? { setSecure: (secure: boolean) => mockSetSecure(secure) }
+      : null,
 }))
 jest.mock('react-native-screens', () => ({
   FullWindowOverlay: 'FullWindowOverlay',
@@ -67,6 +80,9 @@ jest.mock('../../../storage/secureStorage', () => ({
   storeSecureItem: jest.fn(),
 }))
 
+// unmounted after each test: the secure window count spans renders
+const mounted: TestRenderer.ReactTestRenderer[] = []
+
 // async act flushes the useAsync effects
 const render = async () => {
   let renderer: TestRenderer.ReactTestRenderer | undefined
@@ -76,6 +92,7 @@ const render = async () => {
     )
   })
   if (!renderer) throw new Error('render failed')
+  mounted.push(renderer)
   return renderer
 }
 
@@ -83,6 +100,11 @@ describe('LockScreen overlay', () => {
   beforeEach(() => {
     mockPlatform.OS = 'ios'
     mockStorage.locked = true
+    mockSetSecure.mockClear()
+  })
+
+  afterEach(() => {
+    act(() => mounted.splice(0).forEach((renderer) => renderer.unmount()))
   })
 
   it('draws the PIN pad inside FullWindowOverlay on iOS', async () => {
@@ -115,4 +137,32 @@ describe('LockScreen overlay', () => {
       expect(root.findAllByType('App' as never)).toHaveLength(1)
     },
   )
+
+  it('hides the app from capture on Android while locked', async () => {
+    mockPlatform.OS = 'android'
+    const renderer = await render()
+    expect(mockSetSecure.mock.calls).toEqual([[true]])
+    mockStorage.locked = false
+    await act(async () => {
+      renderer.update(
+        React.createElement(LockScreen, null, React.createElement('App')),
+      )
+    })
+    expect(mockSetSecure.mock.calls).toEqual([[true], [false]])
+    act(() => renderer.unmount())
+    expect(mockSetSecure.mock.calls).toEqual([[true], [false]])
+  })
+
+  it('clears the flag when the locked screen unmounts on Android', async () => {
+    mockPlatform.OS = 'android'
+    const renderer = await render()
+    act(() => renderer.unmount())
+    expect(mockSetSecure.mock.calls).toEqual([[true], [false]])
+  })
+
+  it('sets no flag on iOS', async () => {
+    const renderer = await render()
+    act(() => renderer.unmount())
+    expect(mockSetSecure).not.toHaveBeenCalled()
+  })
 })
