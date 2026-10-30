@@ -19,21 +19,18 @@ import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useRentExempt } from '@hooks/useRentExempt'
 import { DAO_KEY } from '@utils/constants'
-import axios from 'axios'
 import BN from 'bn.js'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ScrollView } from 'react-native-gesture-handler'
+import { fetchCanopyBlacklist } from './canopyBlacklist'
 import { useSolana } from './SolanaProvider'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
 import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
-
-const WELL_KNOWN_CANOPY_URL = 'https://entities.nft.helium.io/v2/merkles'
-let wellKnownCanopyCache: Record<string, number> | undefined
 
 type IWalletSignBottomSheetSimulatedProps = WalletSignOpts & {
   onCancel: () => void
@@ -64,25 +61,7 @@ export const WalletSignBottomSheetSimulated = ({
 
   const { data: accountBlacklist } = useQuery({
     queryKey: ['wellKnownCanopyBlacklist'],
-    queryFn: async () => {
-      if (!wellKnownCanopyCache) {
-        try {
-          wellKnownCanopyCache = await (
-            await axios.get(WELL_KNOWN_CANOPY_URL)
-          ).data
-        } catch (e) {
-          // Simulate without the blacklist rather than not at all
-          console.warn('Could not fetch the canopy blacklist', e)
-          return new Set<string>()
-        }
-      }
-
-      if (wellKnownCanopyCache) {
-        return new Set(Object.keys(wellKnownCanopyCache))
-      }
-
-      return new Set([])
-    },
+    queryFn: fetchCanopyBlacklist,
   })
 
   const {
@@ -150,8 +129,11 @@ export const WalletSignBottomSheetSimulated = ({
   )
 
   const estimatedTotalSol = useMemo(
-    () => (loading ? '...' : humanReadable(new BN(estimatedTotalLamports), 9)),
-    [estimatedTotalLamports, loading],
+    () =>
+      loading || !simulationResults
+        ? '...'
+        : humanReadable(new BN(estimatedTotalLamports), 9),
+    [estimatedTotalLamports, loading, simulationResults],
   )
 
   const estimatedTotalBaseFee = useMemo(

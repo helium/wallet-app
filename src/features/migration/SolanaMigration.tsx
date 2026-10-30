@@ -117,7 +117,13 @@ const SolanaMigration = ({
         return
       // eslint-disable-next-line no-console
       try {
-        await migrateWallet(client, currentAccount?.solanaAddress, onProgress)
+        await migrateWallet(
+          client,
+          currentAccount?.solanaAddress,
+          (p: number, tot: number) => {
+            if (current) onProgress(p, tot)
+          },
+        )
 
         if (!manual) {
           await updateDoneSolanaMigration({
@@ -133,7 +139,7 @@ const SolanaMigration = ({
         })
       } catch (e) {
         Logger.error(e)
-        setMigrationError((e as Error).message)
+        if (current) setMigrationError((e as Error).message)
       }
     }
     // Ignore a run that a newer one replaced, as useAsync did

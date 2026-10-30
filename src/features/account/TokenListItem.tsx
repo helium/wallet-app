@@ -221,6 +221,7 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
     ],
     queryFn: async () => (args ? getPositionKeysForOwner(args) : null),
     enabled: !!args && !useContextPositions,
+    staleTime: 0,
   })
 
   const { accounts: fetchedPositions, loading: loadingFetchedPositions } =

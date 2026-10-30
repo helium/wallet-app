@@ -135,7 +135,7 @@ export const ProposalScreen = () => {
   })
 
   const transactionError = useMemo(() => {
-    if (markdownErr) {
+    if (markdownErr && !markdown) {
       return markdownErr.message || t('gov.errors.markdown')
     }
 
@@ -148,7 +148,7 @@ export const ProposalScreen = () => {
     }
 
     return undefined
-  }, [t, voteError, relinquishError, markdownErr])
+  }, [t, voteError, relinquishError, markdownErr, markdown])
 
   const showError = useMemo(() => {
     if (transactionError) return transactionError
