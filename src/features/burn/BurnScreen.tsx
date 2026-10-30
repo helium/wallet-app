@@ -61,6 +61,7 @@ import {
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 import { batchFailure } from '../payment/logic/batchFailure'
+import { retrySet } from '../payment/logic/retrySet'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
@@ -550,9 +551,9 @@ const BurnScreen = () => {
               totalBalance={amountBalance}
               feeTokenBalance={FEE}
               onRetry={
-                batchFailed?.kind === 'checkActivity'
-                  ? undefined
-                  : () => void handleSubmit().catch(console.error)
+                retrySet(batchFailed, undefined, ['delegate'])
+                  ? () => void handleSubmit().catch(console.error)
+                  : undefined
               }
               onSuccess={navigation.popToTop}
               actionTitle={t('generic.ok')}

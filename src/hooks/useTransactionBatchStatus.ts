@@ -66,10 +66,7 @@ export function useTransactionBatchesStatus(batchIds: string[] | null) {
 
   return {
     status,
-    signatures:
-      data?.flatMap(
-        (batch) => batch.transactions?.map((t) => t.signature) ?? [],
-      ) ?? [],
+    signatures: transactions.map((t) => t.signature),
     transactions,
     error,
     isLoading,

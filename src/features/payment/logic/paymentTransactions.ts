@@ -6,14 +6,19 @@ import { SentItem } from './batchFailure'
 // Each payment with the signed transactions that touch the account it pays:
 // the payee for SOL, else the payee's token account. The server's merged
 // transaction metadata names one recipient only, so the transactions
-// themselves are read. A payee loaded from a lookup table touches no
-// transaction, which batchFailure treats as unknown.
+// themselves are read. A transaction that uses a lookup table may load any
+// payee from it, so a batch with one marks every payment unknown (no
+// signatures), which batchFailure treats as no Retry.
 export const paymentTransactions = <P extends { payee: string }>(
   payments: P[],
   mint: PublicKey,
   transactions: VersionedTransaction[],
-): SentItem<P>[] =>
-  payments.map((payment) => {
+): SentItem<P>[] => {
+  const usesLookupTable = transactions.some(
+    (tx) => tx.message.addressTableLookups.length > 0,
+  )
+  return payments.map((payment) => {
+    if (usesLookupTable) return { item: payment, signatures: [] }
     const payee = new PublicKey(payment.payee)
     const destination = mint.equals(NATIVE_MINT)
       ? payee
@@ -27,3 +32,4 @@ export const paymentTransactions = <P extends { payee: string }>(
         .map((tx) => bs58.encode(tx.signatures[0])),
     }
   })
+}

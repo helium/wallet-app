@@ -165,4 +165,36 @@ describe('paymentTransactions', () => {
       ),
     })
   })
+
+  it('offers no retry when a payment spans a transaction that loads its payee from a lookup table', () => {
+    const [createCarol, transferCarol] = token(carol, 3)
+    const lookupTable = new AddressLookupTableAccount({
+      key: Keypair.generate().publicKey,
+      state: {
+        deactivationSlot: BigInt('18446744073709551615'),
+        lastExtendedSlot: 0,
+        lastExtendedSlotStartIndex: 0,
+        addresses: [getAssociatedTokenAddressSync(mint, carol, true)],
+      },
+    })
+    const third = signed([createCarol])
+    const fourth = signed([transferCarol], [lookupTable])
+    const payments = [payment(carol, 3)]
+
+    expect(
+      batchFailure(
+        'partial',
+        [
+          { signature: signatureOf(third), status: 'failed' },
+          { signature: signatureOf(fourth), status: 'confirmed' },
+        ],
+        paymentTransactions(payments, mint, [third, fourth]),
+      ),
+    ).toEqual({
+      kind: 'checkActivity',
+      error: new Error(
+        'Could not confirm which transactions went through. Check your activity.',
+      ),
+    })
+  })
 })

@@ -23,7 +23,6 @@ jest.mock('react-native', () => ({
   StyleSheet: { create: <T>(styles: T) => styles },
 }))
 jest.mock('react-native-reanimated', () => ({
-  Reanimated3DefaultSpringConfig: {},
   useAnimatedStyle: () => ({}),
   withSpring: (value: number) => value,
 }))

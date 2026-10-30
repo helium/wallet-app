@@ -181,6 +181,11 @@ export default () => {
         combinedTxnData,
       )
 
+      const transactions = signedTxnData.transactions.map((tx) =>
+        VersionedTransaction.deserialize(
+          Buffer.from(tx.serializedTransaction, 'base64'),
+        ),
+      )
       const { batchId } = await client.transactions.submit(signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
@@ -189,11 +194,7 @@ export default () => {
       return {
         batchId,
         payments: effectivePayments,
-        transactions: signedTxnData.transactions.map((tx) =>
-          VersionedTransaction.deserialize(
-            Buffer.from(tx.serializedTransaction, 'base64'),
-          ),
-        ),
+        transactions,
       }
     },
   })
