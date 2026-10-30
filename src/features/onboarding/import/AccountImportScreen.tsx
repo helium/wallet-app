@@ -10,7 +10,7 @@ import { upperCase } from 'lodash'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
   mnemonicDeriver,
@@ -251,8 +251,8 @@ const AccountImportScreen = () => {
         <Close color={colors.primaryText} height={16} width={16} />
       </TouchableOpacityBox>
       <KeyboardAwareScrollView
-        extraScrollHeight={80}
-        enableOnAndroid
+        extraKeyboardSpace={80}
+        bottomOffset={155}
         keyboardShouldPersistTaps="always"
       >
         <Text

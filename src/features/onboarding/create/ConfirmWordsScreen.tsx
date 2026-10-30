@@ -9,7 +9,7 @@ import CloseButton from '@components/CloseButton'
 import { Color } from '@theme/theme'
 import { useColors, usePaddingStyle } from '@theme/themeHooks'
 import { upperCase } from 'lodash'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import useHaptic from '@hooks/useHaptic'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
 import PassphraseAutocomplete from '../import/PassphraseAutocomplete'
@@ -196,8 +196,8 @@ const ConfirmWordsScreen: React.FC<Props> = ({
         <CloseButton onPress={onClose} />
       </Box>
       <KeyboardAwareScrollView
-        extraScrollHeight={80}
-        enableOnAndroid
+        extraKeyboardSpace={80}
+        bottomOffset={155}
         keyboardShouldPersistTaps="always"
       >
         <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>

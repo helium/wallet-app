@@ -51,7 +51,7 @@ import {
   LayoutChangeEvent,
   Platform,
 } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import QRCode from 'react-native-qrcode-svg'
 import Animated, {
   ReduceMotion,
@@ -267,7 +267,7 @@ const RequestScreen = () => {
               onItemSelected={handleRequestTypePress}
               marginVertical="l"
             />
-            <KeyboardAwareScrollView enableOnAndroid>
+            <KeyboardAwareScrollView bottomOffset={75}>
               <Box marginHorizontal="l">
                 <Box
                   height={QR_CONTAINER_SIZE}

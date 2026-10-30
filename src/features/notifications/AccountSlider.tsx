@@ -1,7 +1,8 @@
-import React, { memo, useCallback, useMemo, useRef } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
 import WalletUpdate from '@assets/images/walletUpdateIcon.svg'
 import HeliumUpdate from '@assets/images/heliumUpdateIcon.svg'
-import { Carousel } from 'react-native-snap-carousel'
+import { Carousel, CarouselRef } from 'react-native-reanimated-carousel'
+import { Extrapolation, interpolate } from 'react-native-reanimated'
 import { StyleSheet } from 'react-native'
 import { useAsync } from 'react-async-hook'
 import AccountIcon from '@components/AccountIcon'
@@ -13,8 +14,27 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import { HELIUM_UPDATES_ITEM, WALLET_UPDATES_ITEM } from './notificationTypes'
 import { isValidAccountHash } from '../../utils/accountUtils'
 
+const ITEM_WIDTH = 72
+const SLIDER_WIDTH = wp(100)
+const ITEM_OFFSET_X = 7
+
+// Centers the active item and dims the others.
+const itemAnimation = (value: number) => {
+  'worklet'
+
+  return {
+    transform: [
+      {
+        translateX:
+          value * ITEM_WIDTH + (SLIDER_WIDTH - ITEM_WIDTH) / 2 + ITEM_OFFSET_X,
+      },
+    ],
+    opacity: interpolate(value, [-1, 0, 1], [0.7, 1, 0.7], Extrapolation.CLAMP),
+  }
+}
+
 const AccountSlider = () => {
-  const carouselRef = useRef<Carousel<string | null>>(null)
+  const carouselRef = useRef<CarouselRef>(null)
   const {
     selectedList,
     updateSelectedList,
@@ -73,7 +93,7 @@ const AccountSlider = () => {
   ])
 
   const onIconSelected = useCallback((index: number) => {
-    carouselRef?.current?.snapToItem(index)
+    carouselRef?.current?.scrollTo({ index, animated: true })
   }, [])
 
   const onSnap = useCallback(
@@ -83,7 +103,12 @@ const AccountSlider = () => {
     [data, updateSelectedList],
   )
 
-  const sliderWidth = useMemo(() => wp(100), [])
+  // Re-centre when the selection changes after mount; defaultIndex is read once.
+  useEffect(() => {
+    const index = selectedList ? data.indexOf(selectedList) : -1
+    if (index < 0 || index === carouselRef.current?.getCurrentIndex()) return
+    carouselRef.current?.scrollTo({ index, animated: true })
+  }, [data, selectedList])
 
   const renderItem = useCallback(
     ({ index, item }) => {
@@ -111,16 +136,16 @@ const AccountSlider = () => {
     <Box marginBottom="l" marginTop="m">
       <Carousel
         ref={carouselRef}
-        firstItem={selectedList ? data.indexOf(selectedList) : 0}
+        defaultIndex={Math.max(
+          0,
+          selectedList ? data.indexOf(selectedList) : 0,
+        )}
         onSnapToItem={(index) => void onSnap(index).catch(console.error)}
-        layout="default"
-        containerCustomStyle={styles.carouselContainer}
-        vertical={false}
+        style={styles.carouselContainer}
         data={data}
         renderItem={renderItem}
-        sliderWidth={sliderWidth}
-        itemWidth={72}
-        inactiveSlideScale={1}
+        itemSize={ITEM_WIDTH}
+        itemAnimation={itemAnimation}
         keyExtractor={keyExtractor}
       />
     </Box>
@@ -128,7 +153,7 @@ const AccountSlider = () => {
 }
 
 const styles = StyleSheet.create({
-  carouselContainer: { paddingLeft: 7 },
+  carouselContainer: { width: SLIDER_WIDTH, height: 64 },
 })
 
 export default memo(AccountSlider)

@@ -47,7 +47,7 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Keyboard, Platform } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
@@ -837,8 +837,8 @@ const PaymentScreen = () => {
                 </Box>
 
                 <KeyboardAwareScrollView
-                  enableOnAndroid
-                  enableResetScrollToCoords={false}
+                  bottomOffset={75}
+                  disableScrollOnKeyboardHide
                   keyboardShouldPersistTaps="always"
                 >
                   <AccountButton

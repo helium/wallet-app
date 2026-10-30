@@ -1,8 +1,10 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback, useMemo, useRef, useState } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { StyleSheet } from 'react-native'
+import { useSharedValue } from 'react-native-reanimated'
 import { Edge } from 'react-native-safe-area-context'
-import { Carousel, Pagination } from 'react-native-snap-carousel'
+import { Carousel, Pagination } from 'react-native-reanimated-carousel'
 import Box from '@components/Box'
 import ImageBox from '@components/ImageBox'
 import SafeAreaBox from '@components/SafeAreaBox'
@@ -10,7 +12,7 @@ import Text from '@components/Text'
 import TextTransform from '@components/TextTransform'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { Spacing } from '@theme/theme'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { useColors } from '@theme/themeHooks'
 import { wp } from '@utils/layout'
 import ButtonPressable from '@components/ButtonPressable'
 import { ReAnimatedBox } from '@components/AnimatedBox'
@@ -51,10 +53,8 @@ const slides: Array<CarouselItem> = [
 ]
 const DAppTutorial = () => {
   const { t } = useTranslation()
-  const carouselRef = useRef<Carousel<CarouselItem>>(null)
-  const [slideIndex, setSlideIndex] = useState(0)
+  const progress = useSharedValue(0)
   const [viewedSlides, setViewedSlides] = useState(false)
-  const spacing = useSpacing()
   const colors = useColors()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { setDAppTutorialCompleted } = useAppStorage()
@@ -67,7 +67,6 @@ const DAppTutorial = () => {
   }, [navigation, setDAppTutorialCompleted, cluster])
 
   const onSnapToItem = useCallback((index: number) => {
-    setSlideIndex(index)
     if (index === slides.length - 1) {
       setViewedSlides(true)
     }
@@ -105,17 +104,6 @@ const DAppTutorial = () => {
     [t],
   )
 
-  const dotStyle = useMemo(
-    () => ({
-      width: 6,
-      height: 6,
-      borderRadius: 3,
-      marginHorizontal: spacing.s,
-      backgroundColor: colors.white,
-    }),
-    [colors.white, spacing.s],
-  )
-
   return (
     <ReAnimatedBox flex={1}>
       <SafeAreaBox flex={1} edges={edges}>
@@ -129,23 +117,23 @@ const DAppTutorial = () => {
           </Text>
         </Box>
         <Carousel
-          style={{ backgroundColor: 'blue' }}
-          ref={carouselRef}
-          layout="default"
-          vertical={false}
+          style={styles.carousel}
+          contentContainerStyle={styles.carouselContent}
           data={slides}
           renderItem={renderCarouselItem}
-          sliderWidth={wp(100)}
-          itemWidth={wp(90)}
+          progress={progress}
           onSnapToItem={onSnapToItem}
         />
         <Box>
           <Pagination
-            dotsLength={slides.length}
-            activeDotIndex={slideIndex}
-            dotStyle={dotStyle}
-            inactiveDotOpacity={0.4}
-            inactiveDotScale={1}
+            count={slides.length}
+            progress={progress}
+            dotStyle={{ ...styles.dot, backgroundColor: colors.white }}
+            activeDotStyle={{
+              ...styles.activeDot,
+              backgroundColor: colors.white,
+            }}
+            containerStyle={styles.pagination}
           />
 
           <ButtonPressable
@@ -167,5 +155,18 @@ const DAppTutorial = () => {
     </ReAnimatedBox>
   )
 }
+
+const styles = StyleSheet.create({
+  carousel: {
+    flex: 1,
+    width: wp(90),
+    alignSelf: 'center',
+    overflow: 'visible',
+  },
+  carouselContent: { overflow: 'visible' },
+  dot: { width: 6, height: 6, borderRadius: 3, opacity: 0.4 },
+  activeDot: { opacity: 1 },
+  pagination: { paddingVertical: 30, justifyContent: 'center', gap: 16 },
+})
 
 export default memo(DAppTutorial)
