@@ -1,43 +1,38 @@
 import { WrappedConnection } from '@utils/WrappedConnection'
-import { useEffect, useMemo, useState } from 'react'
+import { queryOptions, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
 import { getCurrentTPS } from '../utils/solanaUtils'
 
-let lastUpdated = 0
-function doTimeout() {
-  // Re-do every 5 minutes
-  if (new Date().valueOf() - lastUpdated > 60 * 1000 * 5) {
-    cachedHealthByEndpoint = {}
-    cachedTps = {}
-    lastUpdated = new Date().valueOf()
-  }
-}
-let cachedHealthByEndpoint: Record<string, Promise<any>> = {}
-async function getCachedHealth(connection: WrappedConnection): Promise<any> {
-  doTimeout()
-  if (!cachedHealthByEndpoint[connection.rpcEndpoint]) {
-    cachedHealthByEndpoint[connection.rpcEndpoint] = connection.getHealth()
-  }
+// Health and TPS drive a warning banner, not data anything signs, so each
+// endpoint is probed at most once every 5 minutes
+const HEALTH_STALE_TIME_MS = 5 * 60_000
 
-  return (await cachedHealthByEndpoint[connection.rpcEndpoint]).result
-}
+export const solanaHealthQuery = (connection?: WrappedConnection) =>
+  queryOptions({
+    queryKey: ['solanaHealth', connection?.rpcEndpoint],
+    queryFn: async (): Promise<string | null> => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const health = await connection!.getHealth()
+      if (!health) throw new Error('getHealth failed')
+      return health.result ?? null
+    },
+    staleTime: HEALTH_STALE_TIME_MS,
+    enabled: !!connection,
+  })
 
-let cachedTps: Record<string, Promise<any>> = {}
-async function getCachedTPS(connection: WrappedConnection): Promise<any> {
-  doTimeout()
-  if (!cachedTps[connection.rpcEndpoint]) {
-    cachedTps[connection.rpcEndpoint] = getCurrentTPS(connection)
-  }
-
-  return cachedTps[connection.rpcEndpoint]
-}
+export const solanaTpsQuery = (connection?: WrappedConnection) =>
+  queryOptions({
+    queryKey: ['solanaTps', connection?.rpcEndpoint],
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    queryFn: () => getCurrentTPS(connection!),
+    staleTime: HEALTH_STALE_TIME_MS,
+    enabled: !!connection,
+  })
 
 const useSolanaHealth = () => {
   const { anchorProvider } = useSolana()
-  const [isHealthy, setIsHealthy] = useState(true)
-  const [slowTps, setSlowTps] = useState<number | undefined>()
-
   const { t } = useTranslation()
 
   const connection = useMemo(() => {
@@ -45,25 +40,13 @@ const useSolanaHealth = () => {
     return anchorProvider.connection as WrappedConnection
   }, [anchorProvider])
 
-  useEffect(() => {
-    if (!connection) return
-    getCachedHealth(connection)
-      .then(({ result: health }) => setIsHealthy(health === 'ok'))
-      .catch((e) => console.error(e))
-  }, [connection])
+  const { data: health } = useQuery(solanaHealthQuery(connection))
+  const { data: tps } = useQuery(solanaTpsQuery(connection))
 
-  useEffect(() => {
-    if (!connection) return
-    getCachedTPS(connection)
-      .then((currentTps) => {
-        // If the current tps is less than or equal to 2000, we consider it unhealthy
-        if (currentTps <= 2000) {
-          setIsHealthy(false)
-          setSlowTps(currentTps)
-        }
-      })
-      .catch((e) => console.error(e))
-  }, [connection])
+  // If the current tps is less than or equal to 2000, we consider it unhealthy
+  const slowTps = tps !== undefined && tps <= 2000 ? tps : undefined
+  const isHealthy =
+    (health === undefined || health === 'ok') && slowTps === undefined
 
   const healthMessage = useMemo(() => {
     if (isHealthy) return t('generic.solanaHealthy')

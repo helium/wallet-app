@@ -17,30 +17,14 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import {
-  decodeEntityKey,
-  init,
-  iotInfoKey,
-  keyToAssetForAsset,
-  mobileInfoKey,
-} from '@helium/helium-entity-manager-sdk'
-import { chunks, truthy } from '@helium/spl-utils'
 import useHotspots from '@hooks/useHotspots'
-import { IotHotspotInfoV0 } from '@hooks/useIotInfo'
-import { MobileHotspotInfoV0 } from '@hooks/useMobileInfo'
 import * as MapLibreRN from '@maplibre/maplibre-react-native'
 import { ShapeSource } from '@maplibre/maplibre-react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { useQuery } from '@tanstack/react-query'
 import { useBackgroundStyle, useColors } from '@theme/themeHooks'
 import { Polygon, feature, featureCollection } from '@turf/helpers'
-import { IOT_CONFIG_KEY, MOBILE_CONFIG_KEY } from '@utils/constants'
 import { parseH3BNLocation } from '@utils/h3'
-import {
-  getCachedIotInfos,
-  getCachedKeyToAssets,
-  getCachedMobileInfos,
-  toAsset,
-} from '@utils/solanaUtils'
 import { BN } from 'bn.js'
 import { cellToBoundary, latLngToCell } from 'h3-js'
 import React, {
@@ -63,6 +47,7 @@ import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import { HexInfoBuckets, hotspotMapInfosQuery } from './hotspotMapInfosQuery'
 
 type Route = RouteProp<CollectableStackParamList, 'HotspotMapScreen'>
 type OnPress = NonNullable<
@@ -70,6 +55,7 @@ type OnPress = NonNullable<
 >
 
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
+const NO_HEX_INFO_BUCKETS: HexInfoBuckets = {}
 const HotspotMapScreen = () => {
   const { t } = useTranslation()
   const { anchorProvider } = useSolana()
@@ -88,10 +74,6 @@ const HotspotMapScreen = () => {
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
     route.params?.network || 'IOT',
   )
-  const [loadingInfos, setLoadingInfos] = useState(false)
-  const [hexInfoBuckets, setHexInfoBuckets] = useState<{
-    [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
-  }>({})
   const [activeHex, setActiveHex] = useState<string>()
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
@@ -141,91 +123,17 @@ const HotspotMapScreen = () => {
 
   // - fetch infos by networkType for all hotspots
   // - setUp hexInfoBuckets
-  useEffect(() => {
-    let current = true
-    const loadInfos = async () => {
-      if (onEndReached && anchorProvider) {
-        setLoadingInfos(true)
-        try {
-          const hemProgram = await init(anchorProvider)
-
-          const infos = (
-            await Promise.all(
-              chunks(hotspots, 100).map(async (chunk) => {
-                const keyToAssetKeys = chunk.map((h) =>
-                  keyToAssetForAsset(toAsset(h)),
-                )
-
-                const ktaAccs = await getCachedKeyToAssets(
-                  hemProgram as any,
-                  keyToAssetKeys,
-                )
-
-                const entityKeys = ktaAccs
-                  .map((kta) => {
-                    return decodeEntityKey(kta.entityKey, kta.keySerialization)
-                  })
-                  .filter(truthy)
-
-                const infoKeys = entityKeys.map((ek) => {
-                  const keys = {
-                    IOT: iotInfoKey(IOT_CONFIG_KEY, ek)[0],
-                    MOBILE: mobileInfoKey(MOBILE_CONFIG_KEY, ek)[0],
-                  }
-
-                  return keys[networkType]
-                })
-
-                if (networkType === 'IOT') {
-                  return getCachedIotInfos(hemProgram as any, infoKeys)
-                }
-
-                if (networkType === 'MOBILE') {
-                  return getCachedMobileInfos(hemProgram as any, infoKeys)
-                }
-              }),
-            )
-          ).flat()
-
-          const infoBuckets = infos
-            .filter((info) => info && truthy(info.location))
-            .reduce(
-              (acc, info) => ({
-                ...acc,
-                ...(info?.location
-                  ? {
-                      [info.location.toString()]: [
-                        ...(acc[info.location.toString()] || []),
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        info as any,
-                      ],
-                    }
-                  : {}),
-              }),
-              {} as {
-                [key: string]: IotHotspotInfoV0[] | MobileHotspotInfoV0[]
-              },
-            )
-
-          if (!current) return
-          setHexInfoBuckets(infoBuckets)
-        } finally {
-          if (current) setLoadingInfos(false)
-        }
-      }
-    }
-    loadInfos().catch((e) => console.error(e))
-    return () => {
-      current = false
-    }
-  }, [
-    onEndReached,
-    anchorProvider,
-    networkType,
-    hotspots,
-    setLoadingInfos,
-    setHexInfoBuckets,
-  ])
+  const {
+    data: hexInfoBuckets = NO_HEX_INFO_BUCKETS,
+    isLoading: loadingInfos,
+  } = useQuery(
+    hotspotMapInfosQuery({
+      anchorProvider,
+      networkType,
+      hotspots,
+      enabled: onEndReached,
+    }),
+  )
 
   useEffect(() => {
     // if hotspot is provided, check if it's IOT or MOBILE

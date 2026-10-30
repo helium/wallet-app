@@ -45,11 +45,8 @@ import { CSAccount } from '@storage/cloudStorage'
 import { useColors, useHitSlop } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
-import {
-  TXN_FEE_IN_LAMPORTS,
-  getAtaAccountCreationFee,
-  humanReadable,
-} from '@utils/solanaUtils'
+import { TXN_FEE_IN_LAMPORTS, humanReadable } from '@utils/solanaUtils'
+import { useQuery } from '@tanstack/react-query'
 import BN from 'bn.js'
 import React, {
   memo,
@@ -71,6 +68,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
+import { ataCreationFeeQuery } from './logic/ataCreationFeeQuery'
 import { swapRoute } from './logic/swapRoute'
 import { SwapNavigationProp } from './swapTypes'
 
@@ -85,7 +83,7 @@ enum SelectorMode {
 const SwapScreen = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
-  const { isDevnet, anchorProvider, connection } = useSolana()
+  const { isDevnet, connection } = useSolana()
   const wallet = useCurrentWallet()
   const colors = useColors()
   const navigation = useNavigation<SwapNavigationProp>()
@@ -101,10 +99,6 @@ const SwapScreen = () => {
   const [slippageBps, setSlippageBps] = useState<number>(50)
   const [slippageInfoVisible, setSlippageInfoVisible] = useState(false)
   const [routeNotFound, setRouteNotFound] = useState(false)
-  const [solFee, setSolFee] = useState<BN>(SOL_TXN_FEE)
-  const [hasInsufficientBalance, setHasInsufficientBalance] = useState<
-    undefined | boolean
-  >()
   const [networkError, setNetworkError] = useState<undefined | string>()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const inputMintBalance = useBN(useOwnedAmount(wallet, inputMint).amount)
@@ -128,6 +122,23 @@ const SwapScreen = () => {
     inputMint,
     inputAmount,
   )
+
+  const { data: ataFee } = useQuery(
+    ataCreationFeeQuery({
+      connection,
+      solanaAddress: currentAccount?.solanaAddress,
+      mint: outputMint,
+    }),
+  )
+  const solFee = useMemo(
+    () => (ataFee ? SOL_TXN_FEE.add(ataFee) : SOL_TXN_FEE),
+    [ataFee],
+  )
+  // Unknown until the fee for this output mint and the balance have loaded
+  const hasInsufficientBalance = useMemo(() => {
+    if (!ataFee || !solBalance) return undefined
+    return solFee.gt(solBalance) || solBalance.lt(new BN(5000))
+  }, [ataFee, solBalance, solFee])
 
   const inputMintAcc = useMint(inputMint)?.info
   const outputMintAcc = useMint(outputMint)?.info
@@ -225,52 +236,11 @@ const SwapScreen = () => {
     setPriceImpact(0)
     setInputMint(MOBILE_MINT)
     setOutputMint(HNT_MINT)
-    setSolFee(SOL_TXN_FEE)
     setRecipient('')
     setRecipientOpen(false)
     setSelectorMode(SelectorMode.youPay)
     setNetworkError(undefined)
   }, [])
-
-  useEffect(() => {
-    let current = true
-    const run = async () => {
-      if (
-        !currentAccount?.solanaAddress ||
-        !anchorProvider ||
-        !connection ||
-        !solBalance
-      )
-        return
-
-      let fee = new BN(TXN_FEE_IN_LAMPORTS)
-
-      const ataFee = await getAtaAccountCreationFee({
-        solanaAddress: currentAccount.solanaAddress,
-        connection,
-        mint: outputMint,
-      })
-      fee = fee.add(ataFee)
-      if (!current) return
-
-      setSolFee(fee)
-
-      setHasInsufficientBalance(
-        fee.gt(solBalance || new BN(0)) || solBalance?.lt(new BN(5000)),
-      )
-    }
-    run().catch((e) => console.error(e))
-    return () => {
-      current = false
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    anchorProvider,
-    currentAccount?.solanaAddress,
-    solBalance,
-    inputMint,
-    outputMint,
-  ])
 
   const handleClose = useCallback(() => {
     navigation.goBack()
