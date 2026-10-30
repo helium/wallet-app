@@ -27,9 +27,7 @@ describe('textClassName', () => {
   )
 
   it('maps the size prop to its size class', () => {
-    const classes = textClassName('lg').split(' ')
-    expect(classes).toContain('text-lg')
-    expect(classes).not.toContain('text-sm')
+    expect(textClassName('lg')).toBe('font-normal text-foreground text-lg')
   })
 
   it('keeps every default beside a non-conflicting caller class', () => {
