@@ -1,12 +1,3 @@
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { Portal } from '@gorhom/portal'
 import {
   SubDaoWithMeta,
   useDataBurnSplit,
@@ -14,15 +5,20 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
+import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform, ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { ScrollView, View } from 'react-native'
 import { SplitBar } from './SplitBar'
 import { AutomationFeesWidget } from './components/AutomationFeesWidget'
-import { FADE_IN } from '@theme/motion'
+import { GovernanceModal } from './components/GovernanceModal'
 
 export const DelegateTokensModal = ({
   onClose,
@@ -47,7 +43,6 @@ export const DelegateTokensModal = ({
   const { loading, error, result: subDaos } = useSubDaos()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [transactionError, setTransactionError] = useState()
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const { voteService } = useGovernance()
   const { data: revData } = useDataBurnSplit({
     voteService,
@@ -130,219 +125,143 @@ export const DelegateTokensModal = ({
   }, [transactionError])
 
   return (
-    <Portal hostName="GovernancePortalHost">
-      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
-      {Platform.OS === 'android' && (
-        <Box
-          position="absolute"
-          zIndex={0}
-          left={0}
-          top={0}
-          height="100%"
-          width="100%"
-          backgroundColor="black"
-        />
-      )}
-      <ReAnimatedBlurBox
-        entering={FADE_IN}
-        position="absolute"
-        height="100%"
-        width="100%"
-        tint="dark"
-        intensity={80}
-      >
-        <BackScreen
-          hideBack
-          edges={backEdges}
-          onClose={handleOnClose}
-          backgroundColor="transparent"
-          flex={1}
-          padding="m"
-          marginHorizontal="s"
-        >
-          <ScrollView
-            contentInsetAdjustmentBehavior="automatic"
-            style={{ height: '100%' }}
-          >
-            <Box flexGrow={1} justifyContent="center">
-              {!loading && (
-                <>
-                  <Text
-                    textAlign="left"
-                    variant="subtitle2"
-                    adjustsFontSizeToFit
-                  >
-                    {t('gov.transactions.delegatePosition')}
-                  </Text>
-                  <Text
-                    variant="subtitle4"
-                    color="secondaryText"
-                    marginBottom="s"
-                  >
-                    {t('gov.positions.selectSubDao')}
-                  </Text>
-                  <Box borderRadius="l" backgroundColor="black900" padding="ms">
-                    <Text variant="body3">
-                      {t('gov.positions.delegateBlurb')}
-                    </Text>
-                  </Box>
+    <GovernanceModal onClose={handleOnClose}>
+      <ScrollView contentInsetAdjustmentBehavior="automatic" className="h-full">
+        <View className="grow justify-center">
+          {!loading && (
+            <>
+              <Text size="xl" className="font-semibold" adjustsFontSizeToFit>
+                {t('gov.transactions.delegatePosition')}
+              </Text>
+              <Text className="mb-2 text-muted-foreground">
+                {t('gov.positions.selectSubDao')}
+              </Text>
+              <View className="rounded-[12px] bg-card p-3">
+                <Text size="xs">{t('gov.positions.delegateBlurb')}</Text>
+              </View>
 
-                  {!revLoading &&
-                    !delegationLoading &&
-                    mobileDataUsageRev &&
-                    iotDataUsageRev &&
-                    mobileDelegationPercentage &&
-                    iotDelegationPercentage && (
-                      <Box marginTop="l" marginBottom="l">
-                        <SplitBar
-                          title={t('gov.automation.networkRevenue')}
-                          leftValue={`$${humanReadable(
-                            new BN(mobileDataUsageRev.toFixed(0)),
-                            0,
-                          )}`}
-                          rightValue={`$${humanReadable(
-                            new BN(iotDataUsageRev.toFixed(0)),
-                            0,
-                          )}`}
-                          leftPercentage={mobileDataUsagePercentage}
-                          rightPercentage={iotDataUsagePercentage}
-                          leftColor="mobileBlue"
-                          rightColor="iotGreen"
-                          leftLabel="Mobile"
-                          rightLabel="IoT"
-                        />
-                        <Box marginTop="s">
-                          <SplitBar
-                            title={t('gov.automation.delegationSplit')}
-                            leftValue={`${
-                              mobileDelegationPercentage?.toFixed(1) || '0.0'
-                            }%`}
-                            rightValue={`${
-                              iotDelegationPercentage?.toFixed(1) || '0.0'
-                            }%`}
-                            leftPercentage={mobileDelegationPercentage || 0}
-                            rightPercentage={iotDelegationPercentage || 0}
-                            leftColor="mobileBlue"
-                            rightColor="iotGreen"
-                            leftLabel="Mobile"
-                            rightLabel="IOT"
-                          />
-                        </Box>
-                      </Box>
+              {!revLoading &&
+                !delegationLoading &&
+                mobileDataUsageRev &&
+                iotDataUsageRev &&
+                mobileDelegationPercentage &&
+                iotDelegationPercentage && (
+                  <View className="my-6">
+                    <SplitBar
+                      title={t('gov.automation.networkRevenue')}
+                      leftValue={`$${humanReadable(
+                        new BN(mobileDataUsageRev.toFixed(0)),
+                        0,
+                      )}`}
+                      rightValue={`$${humanReadable(
+                        new BN(iotDataUsageRev.toFixed(0)),
+                        0,
+                      )}`}
+                      leftPercentage={mobileDataUsagePercentage}
+                      rightPercentage={iotDataUsagePercentage}
+                      leftColor="mobile"
+                      rightColor="iot"
+                      leftLabel="Mobile"
+                      rightLabel="IoT"
+                    />
+                    <View className="mt-2">
+                      <SplitBar
+                        title={t('gov.automation.delegationSplit')}
+                        leftValue={`${
+                          mobileDelegationPercentage?.toFixed(1) || '0.0'
+                        }%`}
+                        rightValue={`${
+                          iotDelegationPercentage?.toFixed(1) || '0.0'
+                        }%`}
+                        leftPercentage={mobileDelegationPercentage || 0}
+                        rightPercentage={iotDelegationPercentage || 0}
+                        leftColor="mobile"
+                        rightColor="iot"
+                        leftLabel="Mobile"
+                        rightLabel="IOT"
+                      />
+                    </View>
+                  </View>
+                )}
+            </>
+          )}
+          {loading && (
+            <View className="items-center justify-center">
+              <Spinner size="small" />
+              <Text className="mt-3 text-muted-foreground">
+                {t('gov.positions.fetchingSubDaos')}
+              </Text>
+            </View>
+          )}
+          <View>
+            {subDaos
+              ?.sort((a, b) =>
+                b.dntMetadata.name.localeCompare(a.dntMetadata.name),
+              )
+              .map((subDao, idx) => {
+                const isSelected = selectedSubDao?.pubkey.equals(subDao.pubkey)
+
+                return (
+                  <PressableScale
+                    key={subDao.pubkey.toString()}
+                    testID="DelegateTokens.SubDao"
+                    feedback="opacity"
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isSelected }}
+                    className={twMerge(
+                      'rounded-[12px] border-2 border-transparent bg-secondary',
+                      idx > 0 && 'mt-4',
+                      isSelected && 'border-foreground bg-card',
                     )}
-                </>
-              )}
-              {loading && (
-                <Box justifyContent="center" alignItems="center">
-                  <CircleLoader loaderSize={20} />
-                  <Text
-                    variant="subtitle4"
-                    color="secondaryText"
-                    marginTop="ms"
+                    onPress={() => setSubDao(subDao)}
                   >
-                    {t('gov.positions.fetchingSubDaos')}
-                  </Text>
-                </Box>
-              )}
-              <Box>
-                {subDaos
-                  ?.sort((a, b) =>
-                    b.dntMetadata.name.localeCompare(a.dntMetadata.name),
-                  )
-                  .map((subDao, idx) => {
-                    const isSelected = selectedSubDao?.pubkey.equals(
-                      subDao.pubkey,
-                    )
-
-                    return (
-                      <TouchableOpacityBox
-                        key={subDao.pubkey.toString()}
-                        testID="DelegateTokens.SubDao"
-                        borderRadius="l"
-                        marginTop={idx > 0 ? 'm' : 'none'}
-                        backgroundColor={
-                          isSelected ? 'secondaryBackground' : 'secondary'
-                        }
-                        borderWidth={isSelected ? 2 : 0}
-                        borderColor="white"
-                        onPress={() => setSubDao(subDao)}
-                      >
-                        <Box
-                          flexDirection="row"
-                          padding="ms"
-                          alignItems="center"
-                        >
-                          <Box
-                            borderColor="black"
-                            borderWidth={2}
-                            borderRadius="round"
-                          >
-                            <TokenIcon
-                              size={26}
-                              img={subDao.dntMetadata.json?.image || ''}
-                            />
-                          </Box>
-                          <Text
-                            variant="subtitle3"
-                            color="primaryText"
-                            marginLeft="m"
-                          >
-                            {subDao.dntMetadata.name.replace('Helium', '')}
-                          </Text>
-                        </Box>
-                      </TouchableOpacityBox>
-                    )
-                  })}
-              </Box>
-            </Box>
-            {showError && (
-              <Box
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                paddingTop="ms"
-              >
-                <Text variant="body3Medium" color="red500">
-                  {showError}
-                </Text>
-              </Box>
+                    <View className="flex-row items-center p-3">
+                      <View className="rounded-full border-2 border-background">
+                        <TokenIcon
+                          size={26}
+                          img={subDao.dntMetadata.json?.image || ''}
+                        />
+                      </View>
+                      <Text size="base" className="ml-4 font-medium">
+                        {subDao.dntMetadata.name.replace('Helium', '')}
+                      </Text>
+                    </View>
+                  </PressableScale>
+                )
+              })}
+          </View>
+        </View>
+        {showError && (
+          <View className="flex-row items-center justify-center pt-3">
+            <Text size="xs" className="font-medium text-destructive">
+              {showError}
+            </Text>
+          </View>
+        )}
+        <AutomationFeesWidget
+          automationEnabled={automationEnabled}
+          onSetAutomationEnabled={onSetAutomationEnabled}
+          estimatedSolFee={estimatedSolFee}
+        />
+        <View className="flex-row pt-4">
+          <Button
+            variant="cta"
+            size="lg"
+            className="flex-1"
+            onPress={() => void handleSubmit().catch(console.error)}
+            testID="DelegateTokens.Submit"
+            disabled={!selectedSubDao || isSubmitting || insufficientBalance}
+          >
+            {isSubmitting ? (
+              <Spinner colorClassName="accent-white" />
+            ) : insufficientBalance ? (
+              'Insufficient SOL Balance'
+            ) : (
+              'Delegate Tokens'
             )}
-            <AutomationFeesWidget
-              automationEnabled={automationEnabled}
-              onSetAutomationEnabled={onSetAutomationEnabled}
-              estimatedSolFee={estimatedSolFee}
-            />
-            <Box flexDirection="row" paddingTop="m">
-              <ButtonPressable
-                flex={1}
-                fontSize={16}
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacityPressed={0.7}
-                backgroundColorDisabled="surfaceSecondary"
-                backgroundColorDisabledOpacity={0.9}
-                titleColorDisabled="secondaryText"
-                title={
-                  isSubmitting
-                    ? ''
-                    : insufficientBalance
-                      ? 'Insufficient SOL Balance'
-                      : 'Delegate Tokens'
-                }
-                titleColor="black"
-                onPress={() => void handleSubmit().catch(console.error)}
-                testID="DelegateTokens.Submit"
-                disabled={
-                  !selectedSubDao || isSubmitting || insufficientBalance
-                }
-                TrailingComponent={
-                  isSubmitting ? <CircleLoader color="white" /> : undefined
-                }
-              />
-            </Box>
-          </ScrollView>
-        </BackScreen>
-      </ReAnimatedBlurBox>
-    </Portal>
+          </Button>
+        </View>
+      </ScrollView>
+    </GovernanceModal>
   )
 }

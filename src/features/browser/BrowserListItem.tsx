@@ -1,34 +1,37 @@
 import React from 'react'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
-import TouchableContainer from '@components/TouchableContainer'
-import { Insets } from 'react-native'
+import { Insets, View } from 'react-native'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 
 export type ActivityListItemProps = {
   url: string
   hasDivider?: boolean
   hitSlop?: Insets
-} & TouchableOpacityBoxProps
+  onPress?: () => void
+  className?: string
+}
 
 const BrowserListItem = ({
   url,
   hasDivider,
+  className,
   ...rest
 }: ActivityListItemProps) => {
   return (
-    <TouchableContainer
-      backgroundColor="surfaceSecondary"
-      flexDirection="row"
-      padding="m"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="black"
+    <PressableScale
+      feedback="opacity"
+      className={twMerge(
+        'flex-row bg-secondary p-4',
+        hasDivider && 'border-b border-border',
+        className,
+      )}
       {...rest}
     >
-      <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
-        <Text variant="subtitle4">{url}</Text>
-      </Box>
-    </TouchableContainer>
+      <View className="ms-2 grow basis-0 justify-center">
+        <Text className="font-medium">{url}</Text>
+      </View>
+    </PressableScale>
   )
 }
 

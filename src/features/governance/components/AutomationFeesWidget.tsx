@@ -1,8 +1,6 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Text } from '@ui/Text'
 import { useTranslation } from 'react-i18next'
-import { Platform, Switch } from 'react-native'
-import { useColors } from '@theme/themeHooks'
+import { Platform, Switch, View } from 'react-native'
 import React from 'react'
 
 type Props = {
@@ -17,33 +15,18 @@ export const AutomationFeesWidget = ({
   estimatedSolFee,
 }: Props) => {
   const { t } = useTranslation()
-  const { primaryText, primaryBackground } = useColors()
 
   return (
-    <Box
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      padding="m"
-      marginTop="m"
-      marginBottom="m"
-    >
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        marginBottom="s"
-      >
-        <Box flex={1}>
-          <Text variant="body2" color="grey400">
+    <View className="my-4 rounded-[12px] bg-card p-4">
+      <View className="mb-2 flex-row items-center justify-between">
+        <View className="flex-1">
+          <Text className="text-muted-foreground">
             {t('gov.automation.enableAutomation')}
           </Text>
-        </Box>
+        </View>
         <Switch
           value={automationEnabled}
           onValueChange={onSetAutomationEnabled}
-          thumbColor={
-            Platform.OS === 'android' ? primaryText : primaryBackground
-          }
           style={
             Platform.OS === 'android'
               ? undefined
@@ -53,15 +36,15 @@ export const AutomationFeesWidget = ({
                 }
           }
         />
-      </Box>
-      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
-        <Text variant="body2" color="grey400">
+      </View>
+      <View className="mb-2 flex-row justify-between">
+        <Text className="text-muted-foreground">
           {t('gov.automation.estimatedFee')}
         </Text>
-        <Text variant="body2Medium" color="grey200">
+        <Text className="font-medium">
           {estimatedSolFee ? `${estimatedSolFee} SOL` : '-- SOL'}
         </Text>
-      </Box>
-    </Box>
+      </View>
+    </View>
   )
 }

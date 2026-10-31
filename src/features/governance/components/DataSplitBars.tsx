@@ -1,4 +1,3 @@
-import Box from '@components/Box'
 import {
   useDataBurnSplit,
   useSubDaoDelegationSplit,
@@ -6,8 +5,9 @@ import {
 import { useGovernance } from '@storage/GovernanceProvider'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { SplitBar } from '../SplitBar'
 
 export const DataSplitBars = () => {
@@ -27,42 +27,31 @@ export const DataSplitBars = () => {
     })
   const { iot: iotDelegation, mobile: mobileDelegation } = delegationData || {}
 
-  const totalDataUsage = useMemo(() => {
-    return Number(mobileDataUsageRev) + Number(iotDataUsageRev)
-  }, [mobileDataUsageRev, iotDataUsageRev])
-  const totalVetokens = useMemo(() => {
-    if (mobileDelegation && iotDelegation) {
-      return new BN(mobileDelegation).add(new BN(iotDelegation))
-    }
-  }, [mobileDelegation, iotDelegation])
+  const totalDataUsage = Number(mobileDataUsageRev) + Number(iotDataUsageRev)
+  const totalVetokens =
+    mobileDelegation && iotDelegation
+      ? new BN(mobileDelegation).add(new BN(iotDelegation))
+      : undefined
 
-  const mobileDelegationPercentage = useMemo(() => {
-    if (mobileDelegation && totalVetokens) {
-      return (
-        new BN(mobileDelegation)
+  const mobileDelegationPercentage =
+    mobileDelegation && totalVetokens
+      ? new BN(mobileDelegation)
           .mul(new BN(10000))
           .div(totalVetokens)
           .toNumber() / 100
-      )
-    }
-  }, [mobileDelegation, totalVetokens])
+      : undefined
 
-  const iotDelegationPercentage = useMemo(() => {
-    if (iotDelegation && totalVetokens) {
-      return (
-        new BN(iotDelegation).mul(new BN(10000)).div(totalVetokens).toNumber() /
+  const iotDelegationPercentage =
+    iotDelegation && totalVetokens
+      ? new BN(iotDelegation).mul(new BN(10000)).div(totalVetokens).toNumber() /
         100
-      )
-    }
-  }, [iotDelegation, totalVetokens])
+      : undefined
 
-  const mobileDataUsagePercentage = useMemo(() => {
-    return (Number(mobileDataUsageRev) / totalDataUsage) * 100
-  }, [mobileDataUsageRev, totalDataUsage])
+  const mobileDataUsagePercentage =
+    (Number(mobileDataUsageRev) / totalDataUsage) * 100
 
-  const iotDataUsagePercentage = useMemo(() => {
-    return (Number(iotDataUsageRev) / totalDataUsage) * 100
-  }, [iotDataUsageRev, totalDataUsage])
+  const iotDataUsagePercentage =
+    (Number(iotDataUsageRev) / totalDataUsage) * 100
 
   if (revLoading || delegationLoading) return null
 
@@ -76,7 +65,7 @@ export const DataSplitBars = () => {
   }
 
   return (
-    <Box marginTop="l" marginBottom="l">
+    <View className="my-6">
       <SplitBar
         title={t('gov.automation.networkRevenue')}
         leftValue={`$${humanReadable(
@@ -86,24 +75,24 @@ export const DataSplitBars = () => {
         rightValue={`$${humanReadable(new BN(iotDataUsageRev.toFixed(0)), 0)}`}
         leftPercentage={mobileDataUsagePercentage}
         rightPercentage={iotDataUsagePercentage}
-        leftColor="mobileBlue"
-        rightColor="iotGreen"
+        leftColor="mobile"
+        rightColor="iot"
         leftLabel="Mobile"
         rightLabel="IoT"
       />
-      <Box marginTop="s">
+      <View className="mt-2">
         <SplitBar
           title={t('gov.automation.delegationSplit')}
           leftValue={`${mobileDelegationPercentage?.toFixed(1) || '0.0'}%`}
           rightValue={`${iotDelegationPercentage?.toFixed(1) || '0.0'}%`}
           leftPercentage={mobileDelegationPercentage || 0}
           rightPercentage={iotDelegationPercentage || 0}
-          leftColor="mobileBlue"
-          rightColor="iotGreen"
+          leftColor="mobile"
+          rightColor="iot"
           leftLabel="Mobile"
           rightLabel="IOT"
         />
-      </Box>
-    </Box>
+      </View>
+    </View>
   )
 }

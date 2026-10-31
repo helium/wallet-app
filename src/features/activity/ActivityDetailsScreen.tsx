@@ -1,24 +1,28 @@
-import Error from '@assets/images/error.svg'
-import Receive from '@assets/images/receive.svg'
-import Send from '@assets/images/send.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import BlurActionSheet from '@components/BlurActionSheet'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import ImageBox from '@components/ImageBox'
-import ListItem from '@components/ListItem'
-import Text from '@components/Text'
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet'
 import useCopyText from '@hooks/useCopyText'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { RouteProp, useRoute } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import globalStyles from '@theme/globalStyles'
-import { useColors } from '@theme/themeHooks'
-import React, { useCallback, useMemo, useState } from 'react'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Sheet } from '@ui/Sheet'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronLeft,
+  CircleX,
+} from 'lucide-react-native'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking, ScrollView } from 'react-native'
+import { Image, ImageProps, Linking, ScrollView, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
 import { ellipsizeAddress, solAddressIsValid } from '../../utils/accountUtils'
@@ -27,74 +31,54 @@ import { ActivityStackParamList } from './activityTypes'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ScamWarningImageBox(props: any): React.ReactElement<any> {
+const SafeArea = withUniwind(SafeAreaView)
+const BackIcon = withUniwind(ChevronLeft)
+const SendIcon = withUniwind(ArrowUpRight)
+const ReceiveIcon = withUniwind(ArrowDownLeft)
+const ErrorIcon = withUniwind(CircleX)
+
+const ScamWarningImage = (props: ImageProps) => {
   const [dismissed, setDismissed] = useState(false)
   const { t } = useTranslation()
 
-  if (!dismissed) {
-    return (
-      <Box
-        width={props.width}
-        height={props.height}
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        position="relative"
-      >
-        <ImageBox {...props} blurRadius={100} />
-        <Box
-          p="s"
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          alignItems="center"
-          justifyContent="center"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          }}
-        >
-          <Text textAlign="center" variant="body1Bold" color="red500">
-            {t('activityScreen.scamWarning')}
-          </Text>
-          <ButtonPressable
-            title={t('activityScreen.showAnyway')}
-            onPress={() => setDismissed(true)}
-            borderRadius="round"
-            borderColor="red500"
-            borderWidth={1}
-            px="m"
-            titleColorDisabled="black500"
-            titleColor="red500"
-            fontWeight="500"
-            marginTop="l"
-          />
-        </Box>
-      </Box>
-    )
-  }
+  if (dismissed) return <Image {...props} />
 
-  return <ImageBox {...props} />
+  return (
+    <View className="relative items-center justify-center">
+      <Image {...props} blurRadius={100} />
+      <View className="absolute inset-0 items-center justify-center rounded-[35px] bg-primary/50 p-2">
+        <Text size="base" className="text-center font-bold text-destructive">
+          {t('activityScreen.scamWarning')}
+        </Text>
+        <Button
+          variant="outline"
+          size="lg"
+          className="mt-6"
+          onPress={() => setDismissed(true)}
+        >
+          {t('activityScreen.showAnyway')}
+        </Button>
+      </View>
+    </View>
+  )
 }
 
 const ActivityDetailsScreen = () => {
   const route = useRoute<Route>()
-  const colors = useColors()
+  const navigation = useNavigation()
   const { t, i18n } = useTranslation()
   const createExplorerUrl = useCreateExplorerUrl()
   const copyText = useCopyText({ haptic: false })
+  const wallet = useCurrentWallet()
+  const optionsRef = useRef<BottomSheetModal>(null)
 
   const { transaction } = route.params
+  const enrichedTx = transaction as EnrichedTransaction
+  const confirmedSig = transaction as ConfirmedSignatureInfo
 
-  const [optionsOpen, setOptionsOpen] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<string>('')
 
-  const dateLabel = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-
+  const dateLabel = (() => {
     const date = new Date()
 
     if (enrichedTx.timestamp) {
@@ -117,15 +101,11 @@ const ActivityDetailsScreen = () => {
     }`
 
     return `${formattedString} | ${time}`
-  }, [transaction])
+  })()
 
-  const wallet = useCurrentWallet()
-  const activityImage = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-
+  const activityImage = (() => {
     if (enrichedTx.transactionError || confirmedSig.err) {
-      return <Error color={colors.error} width={150} height={150} />
+      return <ErrorIcon size={150} colorClassName="accent-destructive" />
     }
     const userSignedTransaction =
       wallet && enrichedTx.signers?.includes(wallet.toBase58())
@@ -137,28 +117,19 @@ const ActivityDetailsScreen = () => {
 
       if (!nft?.metadata.image) {
         return (
-          <Box
-            backgroundColor="surface"
-            borderRadius="xl"
-            width={250}
-            height={250}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <CircleLoader loaderSize={80} />
-          </Box>
+          <View className="size-[250px] items-center justify-center rounded-[20px] bg-card">
+            <Spinner size="large" />
+          </View>
         )
       }
 
       return (
-        <ScamWarningImageBox
+        <ScamWarningImage
           source={{
             uri: nft?.metadata?.image || '',
             cache: 'force-cache',
           }}
-          width={250}
-          height={250}
-          borderRadius="xxl"
+          className="size-[250px] rounded-[35px]"
         />
       )
     }
@@ -168,37 +139,29 @@ const ActivityDetailsScreen = () => {
       tokenTransfers[0].tokenMetadata?.json?.image
     ) {
       return (
-        <ImageBox
+        <Image
           source={{
             uri: tokenTransfers[0].tokenMetadata.json.image,
             cache: 'force-cache',
           }}
-          width={250}
-          height={250}
-          borderRadius="xxl"
+          className="size-[250px] rounded-[35px]"
         />
       )
     }
 
     return userSignedTransaction ? (
-      <Send color={colors.blue500} width={150} height={150} />
+      <SendIcon size={150} colorClassName="accent-blue-dark-500" />
     ) : (
-      <Receive color={colors.green500} width={150} height={150} />
+      <ReceiveIcon size={150} colorClassName="accent-success-500" />
     )
-  }, [colors, transaction, wallet])
+  })()
 
-  const onAddressItemPress = useCallback(
-    (address: string) => () => {
-      setSelectedAddress(address)
-      setOptionsOpen(true)
-    },
-    [],
-  )
+  const onAddressItemPress = (address: string) => () => {
+    setSelectedAddress(address)
+    optionsRef.current?.present()
+  }
 
-  const AccountAddressListItems = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-
+  const accountAddressListItems = (() => {
     if (confirmedSig.err || !enrichedTx.type) {
       return null
     }
@@ -221,13 +184,11 @@ const ActivityDetailsScreen = () => {
     }
 
     return (
-      <Box marginTop="l" flex={1} width="100%" justifyContent="center">
+      <View className="mt-6 w-full flex-1 justify-center">
         {fromAccount && (
           <AddressActivityItem
             accountAddress={fromAccount}
-            marginHorizontal="l"
-            marginBottom="xs"
-            borderRadius="xl"
+            className="mx-6 mb-1"
             showBubbleArrow
             onMenuPress={onAddressItemPress(fromAccount)}
           />
@@ -235,19 +196,15 @@ const ActivityDetailsScreen = () => {
         {toAccount && (
           <AddressActivityItem
             accountAddress={toAccount}
-            marginHorizontal="l"
-            borderRadius="xl"
+            className="mx-6"
             onMenuPress={onAddressItemPress(toAccount)}
           />
         )}
-      </Box>
+      </View>
     )
-  }, [onAddressItemPress, transaction])
+  })()
 
-  const title = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-
+  const title = (() => {
     if (enrichedTx.transactionError || confirmedSig.err) {
       return t('activityScreen.transactionFailed')
     }
@@ -256,12 +213,9 @@ const ActivityDetailsScreen = () => {
     return i18n.exists(txnKey)
       ? t(`activityScreen.enrichedTransactionTypes.${enrichedTx.type}`)
       : t('activityScreen.enrichedTransactionTypes.UNKNOWN')
-  }, [i18n, t, transaction])
+  })()
 
-  const description = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-
+  const description = (() => {
     if (enrichedTx.events?.compressed?.length) {
       const { symbol } = enrichedTx.events.compressed[0].metadata
       const count = enrichedTx.events.compressed.length
@@ -299,106 +253,95 @@ const ActivityDetailsScreen = () => {
     }
 
     return t('activityScreen.transactionSuccessful')
-  }, [t, transaction])
+  })()
 
-  const handleOpenExplorer = useCallback(async () => {
+  const handleOpenExplorer = async () => {
     const url = createExplorerUrl('txn', transaction.signature)
     await Linking.openURL(url)
-  }, [createExplorerUrl, transaction.signature])
+  }
 
-  const toggleActionSheet = useCallback(
-    (open) => () => {
-      setOptionsOpen(open)
-    },
-    [],
-  )
-
-  const handleCopyAddress = useCallback(() => {
+  const handleCopyAddress = () => {
     if (!selectedAddress) return
     copyText({
       message: ellipsizeAddress(selectedAddress),
       copyText: selectedAddress,
     })
-    setOptionsOpen(false)
-  }, [copyText, selectedAddress])
-
-  const accountOptions = useCallback(
-    () => (
-      <>
-        <ListItem
-          key="copyAddress"
-          title={t('settings.sections.account.copyAddress')}
-          onPress={handleCopyAddress}
-          selected={false}
-          hasPressedState={false}
-        />
-      </>
-    ),
-    [handleCopyAddress, t],
-  )
+    optionsRef.current?.dismiss()
+  }
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: 'center',
-        }}
-      >
-        <BackScreen
-          title={t('activityScreen.activityDetails')}
-          flex={1}
-          headerTopMargin="m"
-        >
-          <Box alignItems="center" justifyContent="center" flex={1}>
-            <Box justifyContent="center" alignItems="center" marginTop="m">
-              {activityImage}
-              <Text
-                variant="h1Medium"
-                marginTop="m"
-                marginBottom="s"
-                textAlign="center"
+    // The sheet portals to the nearest provider; this one keeps it inside
+    // the screen and the app providers above it.
+    <BottomSheetModalProvider>
+      <View className="flex-1 bg-background">
+        {/* No automatic content insets: the SafeArea already pads the
+            page, and automatic insets make it scroll. */}
+        <ScrollView contentContainerClassName="grow justify-center">
+          <SafeArea className="flex-1">
+            <View className="mt-4 flex-row items-center px-7">
+              <View className="absolute inset-0 items-center justify-center">
+                <Text size="xl" className="font-medium">
+                  {t('activityScreen.activityDetails')}
+                </Text>
+              </View>
+              <PressableScale
+                onPress={navigation.goBack}
+                hitSlop={24}
+                feedback="opacity"
+                accessibilityLabel={t('generic.back')}
+                className="py-2"
               >
-                {title}
-              </Text>
-              <Text
-                variant="subtitle3"
-                color="offWhite"
-                marginBottom="s"
-                textAlign="center"
-              >
-                {description}
-              </Text>
-              <Text variant="body3" textAlign="center" color="secondaryText">
-                {dateLabel}
-              </Text>
-            </Box>
-            {AccountAddressListItems}
-            <Box width="100%">
-              <ButtonPressable
-                marginTop="xl"
-                marginHorizontal="m"
-                borderRadius="round"
-                backgroundColor="white"
-                titleColorDisabled="grey600"
-                backgroundColorDisabled="white"
-                backgroundColorDisabledOpacity={0.1}
-                title={t('activityScreen.viewOnExplorer')}
-                titleColor="black"
+                <BackIcon size={24} colorClassName="accent-foreground" />
+              </PressableScale>
+            </View>
+            <View className="flex-1 items-center justify-center p-7">
+              <View className="mt-4 items-center justify-center">
+                {activityImage}
+                <Text size="4xl" className="mb-2 mt-4 text-center font-medium">
+                  {title}
+                </Text>
+                <Text
+                  size="base"
+                  className="mb-2 text-center font-medium text-muted-foreground"
+                >
+                  {description}
+                </Text>
+                <Text size="xs" className="text-center text-muted-foreground">
+                  {dateLabel}
+                </Text>
+              </View>
+              {accountAddressListItems}
+              <Button
+                variant="cta"
+                size="lg"
+                className="mt-8 w-full"
                 onPress={() => void handleOpenExplorer().catch(console.error)}
-              />
-            </Box>
-          </Box>
-          <BlurActionSheet
-            title={t('collectablesScreen.transferActions')}
-            open={optionsOpen}
-            onClose={toggleActionSheet(false)}
-          >
-            {accountOptions()}
-          </BlurActionSheet>
-        </BackScreen>
-      </ScrollView>
-    </ReAnimatedBox>
+              >
+                {t('activityScreen.viewOnExplorer')}
+              </Button>
+            </View>
+          </SafeArea>
+        </ScrollView>
+        <Sheet ref={optionsRef} enablePanDownToClose>
+          <BottomSheetView>
+            <SafeArea edges={['bottom']} className="pb-4">
+              <Text size="xl" className="px-6 pb-2 tracking-tight">
+                {t('collectablesScreen.transferActions')}
+              </Text>
+              <PressableScale
+                onPress={handleCopyAddress}
+                feedback="opacity"
+                className="px-6 py-4"
+              >
+                <Text size="base">
+                  {t('settings.sections.account.copyAddress')}
+                </Text>
+              </PressableScale>
+            </SafeArea>
+          </BottomSheetView>
+        </Sheet>
+      </View>
+    </BottomSheetModalProvider>
   )
 }
 

@@ -1,12 +1,17 @@
-import React, { memo, useMemo, useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import Box from '@components/Box'
-import BackScreen from '@components/BackScreen'
-import TextTransform from '@components/TextTransform'
 import { getSecureAccount } from '@storage/secureStorage'
-import RevealWords from '@components/RevealWords'
+import { RevealWords } from '@ui/RevealWords'
+import { Text } from '@ui/Text'
+import React, { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import SettingsBackHeader from './SettingsBackHeader'
+
+const SUBTITLE_COMPONENTS = {
+  secondaryText: <Text size="base" className="text-muted-foreground" />,
+  red500: <Text size="base" className="text-destructive" />,
+}
 
 const RevealWordsScreen = () => {
   const { currentAccount } = useAccountStorage()
@@ -23,46 +28,33 @@ const RevealWordsScreen = () => {
     run().catch((e) => console.error(e))
   }, [currentAccount?.address])
 
-  const ListHeaderComponent = useMemo(() => {
-    return (
-      <Box
-        backgroundColor="red500Transparent10"
-        borderRadius="l"
-        padding="l"
-        marginBottom="l"
-        marginTop="s"
-      >
-        <TextTransform
-          textAlign="center"
-          variant="body1"
-          maxFontSizeMultiplier={1}
-          i18nKey="settings.revealWords.subtitle"
-          values={{ numWords: mnemonic?.length }}
-        />
-      </Box>
-    )
-  }, [mnemonic?.length])
-
   return (
-    <BackScreen
-      rootBackgroundColor="black"
-      backgroundColor="black"
-      flex={1}
-      title={
-        mnemonic?.length
-          ? t('settings.revealWords.title', { numWords: mnemonic.length })
-          : ''
-      }
-      edges={[]}
-      padding="none"
-    >
+    <View className="flex-1 bg-black">
+      <SettingsBackHeader
+        onBack={navigation.goBack}
+        title={
+          mnemonic?.length
+            ? t('settings.revealWords.title', { numWords: mnemonic.length })
+            : ''
+        }
+      />
       <RevealWords
         mnemonic={mnemonic || []}
-        ListHeaderComponent={ListHeaderComponent}
+        ListHeaderComponent={
+          <View className="mb-6 mt-2 rounded-[12px] bg-destructive/10 p-6">
+            <Text size="base" className="text-center" maxFontSizeMultiplier={1}>
+              <Trans
+                i18nKey="settings.revealWords.subtitle"
+                components={SUBTITLE_COMPONENTS}
+                values={{ numWords: mnemonic?.length }}
+              />
+            </Text>
+          </View>
+        }
         onDone={navigation.goBack}
       />
-    </BackScreen>
+    </View>
   )
 }
 
-export default memo(RevealWordsScreen)
+export default RevealWordsScreen
