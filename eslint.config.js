@@ -57,16 +57,22 @@ const migratedLegacyImports = {
     },
   ],
 }
-const migratedFiles = [
-  'src/ui/**',
-  'src/features/uiGallery/**',
+// @ui and its gallery never depend on legacy code: the full ban, with no
+// shared composites.
+const strictFiles = [
   'src/features/migration/**',
+  'src/features/uiGallery/**',
+  'src/ui/**',
+]
+// Reskinned features may still import the shared composites. One entry per
+// line, sorted.
+const migratedFiles = [
   'src/features/addressBook/**',
   'src/features/browser/**',
-  'src/features/dappLogin/**',
-  'src/features/txnDelegation/**',
-  'src/features/request/**',
   'src/features/burn/**',
+  'src/features/dappLogin/**',
+  'src/features/request/**',
+  'src/features/txnDelegation/**',
 ]
 
 module.exports = [
@@ -153,6 +159,12 @@ module.exports = [
     files: migratedFiles,
     rules: {
       'no-restricted-imports': ['error', migratedLegacyImports],
+    },
+  },
+  {
+    files: strictFiles,
+    rules: {
+      'no-restricted-imports': ['error', legacyImports],
     },
   },
   {

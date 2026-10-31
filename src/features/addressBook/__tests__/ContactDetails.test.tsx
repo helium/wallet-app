@@ -4,13 +4,15 @@ import ContactDetails from '../ContactDetails'
 
 const mockEditContact = jest.fn(() => Promise.resolve())
 const mockGoBack = jest.fn()
+const mockDeleteContact = jest.fn(() => Promise.resolve())
+const mockShowOKCancelAlert = jest.fn(() => Promise.resolve(true))
 
 // The providers hand out stable values, as the real ones do.
 jest.mock('../../../storage/AccountStorageProvider', () => {
   const accountStorage = {
     addContact: jest.fn(),
     editContact: (...args: unknown[]) => mockEditContact(...(args as [])),
-    deleteContact: jest.fn(),
+    deleteContact: (...args: unknown[]) => mockDeleteContact(...(args as [])),
   }
   return { useAccountStorage: () => accountStorage }
 })
@@ -31,9 +33,14 @@ jest.mock('@react-navigation/native', () => {
 jest.mock('@react-native-community/hooks', () => ({
   useKeyboard: () => ({ keyboardShown: false }),
 }))
-jest.mock('@hooks/useAlert', () => () => ({ showOKCancelAlert: jest.fn() }), {
-  virtual: true,
-})
+jest.mock(
+  '@hooks/useAlert',
+  () => () => ({
+    showOKCancelAlert: (...args: unknown[]) =>
+      mockShowOKCancelAlert(...(args as [])),
+  }),
+  { virtual: true },
+)
 jest.mock(
   '@utils/accountUtils',
   () => ({
@@ -93,17 +100,20 @@ const renderEdit = async () => {
   })
   if (!renderer) throw new Error('render failed')
   const { root } = renderer
-  const saveButton = () =>
+  const button = (label: string) =>
     root
       .findAllByType('Button' as never)
-      .find((b) => b.props.children === 'editContact.save')
+      .find((b) => b.props.children === label)
+  const saveButton = () => button('editContact.save')
+  const deleteButton = () => button('editContact.delete')
   const inputs = () => root.findAllByType('Input' as never)
-  return { saveButton, inputs }
+  return { saveButton, deleteButton, inputs }
 }
 
 describe('ContactDetails edit', () => {
   beforeEach(() => {
     mockEditContact.mockClear()
+    mockDeleteContact.mockClear()
   })
 
   it('disables Save while the contact is unchanged', async () => {
@@ -126,5 +136,16 @@ describe('ContactDetails edit', () => {
       alias: 'Alice',
       netType: 'mainnet',
     })
+  })
+
+  it('deletes the stored contact after the address field changes', async () => {
+    const { deleteButton, inputs } = await renderEdit()
+    await act(async () => {
+      inputs()[0].props.onChangeText('sol-new')
+    })
+    await act(async () => {
+      await deleteButton()?.props.onPress()
+    })
+    expect(mockDeleteContact).toHaveBeenCalledWith('sol-old')
   })
 })

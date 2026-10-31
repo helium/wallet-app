@@ -138,7 +138,7 @@ const ContactDetails = ({ action, contact }: Props) => {
       message: t('editContact.deleteConfirmMessage', { alias: nickname }),
     })
     if (decision) {
-      void deleteContact(address)
+      void deleteContact(contact?.solanaAddress || address)
       addressBookNav.goBack()
     }
   }

@@ -53,6 +53,18 @@ describe('legacy import ban', () => {
     ).toEqual([ERROR])
   })
 
+  it.each(['src/ui', 'src/features/uiGallery', 'src/features/migration'])(
+    'rejects a shared composite in %s',
+    async (dir) => {
+      expect(
+        await restrictedImportHits(
+          `${dir}/X.tsx`,
+          "import HNTKeyboard from '@components/HNTKeyboard'",
+        ),
+      ).toEqual([ERROR])
+    },
+  )
+
   const featuresMigratedWithSharedComposites = [
     'addressBook',
     'browser',
