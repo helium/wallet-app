@@ -5,10 +5,10 @@
 #   eval "$(scripts/maestro-surfpool.sh)"     # seed the fixture wallet
 #   scripts/app-store-screenshots.sh <path/to/Helium Wallet.app> [out-dir]
 #
-# Each set gets a new simulator with a clean status bar, light appearance and
-# the en_US locale. The Maestro flows in .maestro/screenshots open each screen,
-# and simctl captures it. The script checks each file against Apple's size.
-# The Duo boots folded and simctl cannot unfold it, so the script stops and
+# Each device gets a new simulator with a clean status bar, light appearance
+# and the en_US locale. The Maestro flows in .maestro/screenshots open each
+# screen, and simctl captures it. The script checks each file against Apple's
+# size and alpha rules. The Duo boots folded and simctl cannot unfold it, so the script stops and
 # asks you to unfold it before the inner set. See .maestro/README.md.
 set -euo pipefail
 
@@ -62,8 +62,14 @@ prepare() {
   UDID="$udid"
 }
 
+# awk reads all of the sips output, so pipefail sees no SIGPIPE, as it can
+# with grep -q.
+has_alpha() {
+  [ "$(sips -g hasAlpha "$1" | awk '/hasAlpha:/ {print $2}')" = yes ]
+}
+
 # Opens each screen and captures it from display $3 (empty: the main
-# display). Fails when a file is not $4 x $5 pixels.
+# display). Fails when a file is not $4 x $5 pixels or keeps an alpha channel.
 capture() {
   local udid="$1" set="$2" display="$3" width="$4" height="$5"
   local screen file size
@@ -74,10 +80,14 @@ capture() {
     xcrun simctl io "$udid" screenshot --type=png \
       ${display:+--display="$display"} "$file" >&2
     # Apple rejects PNGs with an alpha channel. A JPEG round trip drops it.
-    if sips -g hasAlpha "$file" | grep -q 'hasAlpha: yes'; then
+    if has_alpha "$file"; then
       sips -s format jpeg -s formatOptions best "$file" --out "$file.jpg" >/dev/null
       sips -s format png "$file.jpg" --out "$file" >/dev/null
       rm -f "$file.jpg"
+    fi
+    if has_alpha "$file"; then
+      log "$file still has an alpha channel, which Apple rejects"
+      exit 1
     fi
     size="$(sips -g pixelWidth -g pixelHeight "$file" |
       awk '/pixelWidth/ {w = $2} /pixelHeight/ {h = $2} END {print w "x" h}')"

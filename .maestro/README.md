@@ -133,10 +133,11 @@ at once, with no sign sheet, so the flow never taps it.
 ## App Store screenshots
 
 `scripts/app-store-screenshots.sh` captures every screenshot set that App
-Store Connect needs. Each set gets a new simulator. The script imports the
-fixture wallet with flow 02, opens each screen with a flow in
-`.maestro/screenshots/`, and captures it with `xcrun simctl io`. The wallet
-holds only the throwaway fixture seed, so no real keys or funds show.
+Store Connect needs. Each device gets a new simulator (the two iPhone Duo sets
+share one). The script imports the fixture wallet with flow 02, opens each
+screen with a flow in `.maestro/screenshots/`, and captures it with
+`xcrun simctl io`. The wallet holds only the throwaway fixture seed, so no
+real keys or funds show.
 
 | Set                          | Simulator             | Size      |
 | ---------------------------- | --------------------- | --------- |
