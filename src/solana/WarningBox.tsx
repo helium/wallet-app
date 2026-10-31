@@ -1,7 +1,10 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Text } from '@ui/Text'
+import { TriangleAlert } from 'lucide-react-native'
 import React from 'react'
-import Alert from '@assets/images/alert.svg'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
+
+const AlertIcon = withUniwind(TriangleAlert)
 
 export const WarningBox = ({
   header,
@@ -11,25 +14,18 @@ export const WarningBox = ({
   body: string
 }) => {
   return (
-    <Box
-      p="s"
-      mb="s"
-      backgroundColor="black650"
-      borderRadius="l"
-      flexDirection="column"
-      alignItems="stretch"
-    >
-      <Box flexDirection="row" alignItems="center" mb="xs">
-        <Box marginRight="xs">
-          <Alert width={16} height={16} color="matchaRed500" />
-        </Box>
-        <Text variant="body3Bold" color="white">
+    <View className="mb-2 flex-col items-stretch rounded-[12px] bg-card p-2">
+      <View className="mb-1 flex-row items-center">
+        <View className="mr-1">
+          <AlertIcon size={16} colorClassName="accent-destructive" />
+        </View>
+        <Text size="xs" className="font-bold">
           {header}
         </Text>
-      </Box>
-      <Text variant="body3" color="grey50">
+      </View>
+      <Text size="xs" className="text-muted-foreground">
         {body}
       </Text>
-    </Box>
+    </View>
   )
 }

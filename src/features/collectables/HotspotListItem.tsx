@@ -1,37 +1,57 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { BoxProps } from '@shopify/restyle'
-import IotSymbol from '@assets/images/iotSymbol.svg'
-import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import HntSymbol from '@assets/images/hnt.svg'
+import IotSymbolSvg from '@assets/images/iotSymbol.svg'
+import MobileSymbolSvg from '@assets/images/mobileSymbol.svg'
+import HntSymbolSvg from '@assets/images/hnt.svg'
 import BN from 'bn.js'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Box from '@components/Box'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import ImageBox from '@components/ImageBox'
-import { Theme } from '@theme/theme'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useMint } from '@helium/helium-react-hooks'
 import BigNumber from 'bignumber.js'
-import { useColors } from '@theme/themeHooks'
+import { Image, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { withUniwind } from 'uniwind'
 import { removeDashAndCapitalize } from '../../utils/hotspotNftsUtils'
 import { useCollectableHeight } from '../../utils/layout'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import { Mints } from '../../utils/constants'
 import { HotspotWithPendingRewards } from '../../types/solana'
 
+const HntSymbol = withUniwind(HntSymbolSvg)
+const MobileSymbol = withUniwind(MobileSymbolSvg)
+const IotSymbol = withUniwind(IotSymbolSvg)
+
+const PILL_SHADOW = {
+  shadowRadius: 6,
+  shadowColor: 'black',
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.3,
+  elevation: 2,
+}
+
 export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards
   onPress: (hotspot: HotspotWithPendingRewards) => void
-} & BoxProps<Theme>
+  className?: string
+}
+
+const pendingRewardsString = (
+  hotspot: HotspotWithPendingRewards,
+  mint: string,
+  decimals: number,
+) => {
+  if (!hotspot.pendingRewards) return
+  const num = toNumber(new BN(hotspot.pendingRewards[mint]), decimals)
+  return formatLargeNumber(new BigNumber(num))
+}
 
 const HotspotListItem = ({
   hotspot,
   onPress,
-  ...rest
+  className,
 }: HotspotListItemProps) => {
-  const colors = useColors()
   const collectableHeight = useCollectableHeight()
   const {
     content: { metadata },
@@ -40,168 +60,93 @@ const HotspotListItem = ({
   const { info: iotMint } = useMint(IOT_MINT)
   const { info: mobileMint } = useMint(MOBILE_MINT)
   const { info: hntMint } = useMint(HNT_MINT)
-  const pendingIotRewards = useMemo(
-    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT]),
-    [hotspot.pendingRewards],
-  )
-  const pendingIotRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.IOT]),
-      iotMint?.decimals || 6,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [iotMint, hotspot])
 
-  const pendingMobileRewards = useMemo(
-    () =>
-      hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE]),
-    [hotspot.pendingRewards],
+  const pendingIotRewards =
+    hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT])
+  const pendingMobileRewards =
+    hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.MOBILE])
+  const pendingHntRewards =
+    hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT])
+
+  const pendingIotRewardsString = pendingRewardsString(
+    hotspot,
+    Mints.IOT,
+    iotMint?.decimals || 6,
   )
-  const pendingHntRewards = useMemo(
-    () => hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.HNT]),
-    [hotspot.pendingRewards],
+  const pendingMobileRewardsString = pendingRewardsString(
+    hotspot,
+    Mints.MOBILE,
+    mobileMint?.decimals || 6,
+  )
+  const pendingHntRewardsString = pendingRewardsString(
+    hotspot,
+    Mints.HNT,
+    hntMint?.decimals || 8,
   )
 
-  const pendingMobileRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.MOBILE]),
-      mobileMint?.decimals || 6,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, mobileMint])
-
-  const pendingHntRewardsString = useMemo(() => {
-    if (!hotspot.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspot.pendingRewards[Mints.HNT]),
-      hntMint?.decimals || 8,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspot, hntMint])
-
-  const hasIotRewards = useMemo(
-    () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
-    [pendingIotRewards],
-  )
-  const hasMobileRewards = useMemo(
-    () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
-    [pendingMobileRewards],
-  )
-  const hasHntRewards = useMemo(
-    () => pendingHntRewards && pendingHntRewards.gt(new BN(0)),
-    [pendingHntRewards],
-  )
+  const hasIotRewards = pendingIotRewards && pendingIotRewards.gt(new BN(0))
+  const hasMobileRewards =
+    pendingMobileRewards && pendingMobileRewards.gt(new BN(0))
+  const hasHntRewards = pendingHntRewards && pendingHntRewards.gt(new BN(0))
 
   return (
-    <ReAnimatedBox
-      style={{ width: '50%', justifyContent: 'flex-start' }}
+    <Animated.View
+      className={twMerge('w-1/2 justify-start', className)}
       entering={FADE_IN}
       exiting={FADE_OUT}
-      {...rest}
     >
-      <TouchableOpacityBox
-        marginHorizontal="s"
-        marginVertical="s"
-        alignItems="center"
-        backgroundColor="surfaceSecondary"
-        borderRadius="xxl"
+      <PressableScale
+        feedback="opacity"
+        className="m-2 items-center rounded-[16px] bg-secondary"
         onPress={() => onPress(hotspot)}
       >
-        <ImageBox
-          borderRadius="lm"
-          height={collectableHeight}
-          width="100%"
+        <Image
+          className="w-full rounded-lg"
+          style={{ height: collectableHeight }}
           source={{
             uri: metadata?.image,
             cache: 'force-cache',
           }}
         />
         {!!hasHntRewards && (
-          <Box
-            justifyContent="center"
-            alignItems="center"
-            backgroundColor="white"
-            borderRadius="xl"
-            position="absolute"
-            top={20}
-            right={16}
-            flexDirection="row"
-            shadowRadius={6}
-            shadowColor="black"
-            shadowOffset={{
-              width: 0,
-              height: 3,
-            }}
-            shadowOpacity={0.3}
-            elevation={2}
+          <View
+            className="absolute right-4 top-5 flex-row items-center justify-center rounded-xl bg-background"
+            style={PILL_SHADOW}
           >
-            <Text variant="body2Medium" marginEnd="xs" color="black">
-              {pendingHntRewardsString}
-            </Text>
-            <HntSymbol color={colors.hntBlue} />
-          </Box>
+            <Text className="me-1 font-medium">{pendingHntRewardsString}</Text>
+            <HntSymbol colorClassName="accent-blue-dark-500" />
+          </View>
         )}
         {!!hasMobileRewards && (
-          <Box
-            justifyContent="center"
-            alignItems="center"
-            backgroundColor="white"
-            borderRadius="xl"
-            padding="xs"
-            position="absolute"
-            top={20}
-            right={16}
-            flexDirection="row"
-            shadowRadius={6}
-            shadowColor="black"
-            shadowOffset={{
-              width: 0,
-              height: 3,
-            }}
-            shadowOpacity={0.3}
-            elevation={2}
+          <View
+            className="absolute right-4 top-5 flex-row items-center justify-center rounded-xl bg-background p-1"
+            style={PILL_SHADOW}
           >
-            <Text variant="body2Medium" marginEnd="xs" color="black">
+            <Text className="me-1 font-medium">
               {pendingMobileRewardsString}
             </Text>
-            <MobileSymbol color={colors.mobileBlue} />
-          </Box>
+            <MobileSymbol colorClassName="accent-purple-700" />
+          </View>
         )}
         {!!hasIotRewards && (
-          <Box
-            justifyContent="center"
-            alignItems="center"
-            backgroundColor="white"
-            borderRadius="xl"
-            position="absolute"
-            top={hasMobileRewards ? 58 : 20}
-            padding="xs"
-            right={16}
-            flexDirection="row"
-            shadowRadius={6}
-            shadowColor="black"
-            shadowOffset={{
-              width: 0,
-              height: 3,
-            }}
-            shadowOpacity={0.3}
-            elevation={2}
+          <View
+            className={twMerge(
+              'absolute right-4 flex-row items-center justify-center rounded-xl bg-background p-1',
+              hasMobileRewards ? 'top-[58px]' : 'top-5',
+            )}
+            style={PILL_SHADOW}
           >
-            <Text variant="body2Medium" marginEnd="xs" color="black">
-              {pendingIotRewardsString}
-            </Text>
-            <IotSymbol color={colors.iotGreen} />
-          </Box>
+            <Text className="me-1 font-medium">{pendingIotRewardsString}</Text>
+            <IotSymbol colorClassName="accent-success-700" />
+          </View>
         )}
-      </TouchableOpacityBox>
+      </PressableScale>
       {metadata?.name && (
-        <Text textAlign="center" variant="subtitle1" marginHorizontal="m">
+        <Text size="xl" className="mx-4 text-center font-medium">
           {removeDashAndCapitalize(metadata.name)}
         </Text>
       )}
-    </ReAnimatedBox>
+    </Animated.View>
   )
 }
 

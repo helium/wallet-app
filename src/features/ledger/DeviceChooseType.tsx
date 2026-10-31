@@ -1,86 +1,68 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
 import Ledger from '@assets/images/ledger.svg'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const LedgerIcon = withUniwind(Ledger)
 
 const DeviceChooseType = () => {
   const { t } = useTranslation()
-  const { primaryText } = useColors()
   const navigation = useNavigation<LedgerNavigatorNavigationProp>()
 
-  const navNext = useCallback(
-    (type: 'usb' | 'bluetooth') => () => {
-      switch (type) {
-        case 'bluetooth':
-          navigation.navigate('DeviceScan')
-          break
-        case 'usb':
-          navigation.navigate('DeviceScanUsb')
-          break
-      }
-    },
-    [navigation],
-  )
+  const navNext = (type: 'usb' | 'bluetooth') => () => {
+    switch (type) {
+      case 'bluetooth':
+        navigation.navigate('DeviceScan')
+        break
+      case 'usb':
+        navigation.navigate('DeviceScanUsb')
+        break
+    }
+  }
 
   return (
-    <SafeAreaBox
-      flex={1}
-      backgroundColor="primaryBackground"
-      marginTop="l"
-      paddingHorizontal="xl"
-    >
-      <Text variant="h1" textAlign="center" lineHeight={38} marginVertical="xl">
+    <SafeArea className="mt-6 flex-1 bg-background px-8">
+      <Text size="4xl" className="my-8 text-center">
         {t('ledger.chooseType.title')}
       </Text>
-      <TouchableOpacityBox
+      <PressableScale
+        feedback="opacity"
         onPress={navNext('bluetooth')}
-        marginBottom="l"
-        flexDirection="row"
-        alignItems="center"
+        className="mb-6 flex-row items-center"
       >
-        <Ledger width={26} height={26} color={primaryText} />
-        <Box marginLeft="ms">
-          <Text
-            variant="subtitle1"
-            color="primaryText"
-            fontSize={21}
-            lineHeight={23}
-          >
+        <LedgerIcon width={26} height={26} colorClassName="accent-foreground" />
+        <View className="ml-3">
+          <Text size="xl" className="font-medium">
             {t('ledger.chooseType.bluetooth.title')}
           </Text>
-          <Text variant="body1" color="secondaryText">
+          <Text size="base" className="text-muted-foreground">
             {t('ledger.chooseType.bluetooth.types')}
           </Text>
-        </Box>
-      </TouchableOpacityBox>
-      <TouchableOpacityBox
+        </View>
+      </PressableScale>
+      <PressableScale
+        feedback="opacity"
         onPress={navNext('usb')}
-        marginBottom="l"
-        flexDirection="row"
-        alignItems="center"
+        className="mb-6 flex-row items-center"
       >
-        <Ledger width={26} height={26} color={primaryText} />
-        <Box marginLeft="ms">
-          <Text
-            variant="subtitle1"
-            color="primaryText"
-            fontSize={21}
-            lineHeight={23}
-          >
+        <LedgerIcon width={26} height={26} colorClassName="accent-foreground" />
+        <View className="ml-3">
+          <Text size="xl" className="font-medium">
             {t('ledger.chooseType.usb.title')}
           </Text>
-          <Text variant="body1" color="secondaryText">
+          <Text size="base" className="text-muted-foreground">
             {t('ledger.chooseType.usb.types')}
           </Text>
-        </Box>
-      </TouchableOpacityBox>
-    </SafeAreaBox>
+        </View>
+      </PressableScale>
+    </SafeArea>
   )
 }
 

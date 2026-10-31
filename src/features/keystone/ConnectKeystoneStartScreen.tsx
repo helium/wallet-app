@@ -1,53 +1,45 @@
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback } from 'react'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
+import React from 'react'
 import { t } from 'i18next'
-import { Image } from 'react-native'
+import { Image, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 const ConnectKeystoneStart = () => {
   const navigation = useNavigation<AddNewAccountNavigationProp>()
-  const handleStart = useCallback(() => {
+  const handleStart = () => {
     navigation.navigate('KeystoneNavigator')
-  }, [navigation])
+  }
   return (
-    <SafeAreaBox
-      flex={1}
-      justifyContent="center"
-      marginHorizontal="l"
-      edges={['bottom']}
-    >
-      <Box flex={1} justifyContent="center">
-        <Box alignItems="center">
+    <SafeArea className="mx-6 flex-1 justify-center" edges={['bottom']}>
+      <View className="flex-1 justify-center">
+        <View className="items-center">
           <Image
             source={require('../../assets/images/connectKeystoneLogo.png')}
           />
-          <Text variant="h0" textAlign="center" marginVertical="l">
+          <Text size="4xl" className="my-6 text-center">
             {t('keystone.connectKeystoneStart.title') as string}
           </Text>
-          <Text variant="subtitle1" textAlign="center">
+          <Text size="xl" className="text-center font-medium">
             {t('keystone.connectKeystoneStart.subtitle') as string}
           </Text>
-        </Box>
-      </Box>
-      <ButtonPressable
-        borderRadius="round"
+        </View>
+      </View>
+      <Button
+        variant="cta"
+        size="lg"
+        className="mb-6 w-full"
         onPress={handleStart}
-        backgroundColor="primaryText"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        titleColor="primary"
-        fontWeight="500"
-        title={t('keystone.connectKeystoneStart.scanQrCode')}
-        marginBottom="l"
-      />
-    </SafeAreaBox>
+      >
+        {t('keystone.connectKeystoneStart.scanQrCode')}
+      </Button>
+    </SafeArea>
   )
 }
 
-export default React.memo(ConnectKeystoneStart)
+export default ConnectKeystoneStart

@@ -1,11 +1,5 @@
 import { NetTypes as NetType } from '@helium/address'
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import React, { createContext, ReactNode, useContext, useState } from 'react'
 
 type KeystoneResolvedPath = {
   path: string
@@ -19,13 +13,8 @@ type KeystoneOnboardingData = {
 }
 
 const useKeystoneOnboardingHook = () => {
-  const initialState = useMemo(() => {
-    return {
-      accounts: [],
-    } as KeystoneOnboardingData
-  }, [])
   const [keystoneOnboardingData, setKeystoneOnboardingData] =
-    useState<KeystoneOnboardingData>(initialState)
+    useState<KeystoneOnboardingData>({ accounts: [] })
 
   return {
     keystoneOnboardingData,

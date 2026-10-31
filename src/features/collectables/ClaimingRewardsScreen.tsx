@@ -1,25 +1,28 @@
-import BackArrow from '@assets/images/backArrow.svg'
-import AccountIcon from '@components/AccountIcon'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { parseTransactionError } from '@utils/solanaUtils'
-import React, { memo, useCallback } from 'react'
+import { ChevronLeft } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
+import { withUniwind } from 'uniwind'
 import { useTransactionBatchesStatus } from '../../hooks/useTransactionBatchStatus'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CollectableStackParamList } from './collectablesTypes'
+
+const BackIcon = withUniwind(ChevronLeft)
 
 const ClaimingRewardsScreen = () => {
   const route =
@@ -43,52 +46,37 @@ const ClaimingRewardsScreen = () => {
     status === 'partial'
   const isConfirmed = status === 'confirmed'
   const isPending = isLoading || status === 'pending'
-  const onReturn = useCallback(() => {
+  const onReturn = () => {
     // Reset Collectables stack to first screen
     navigation.reset({
       index: 0,
       routes: [{ name: 'Collectables' }],
     })
-  }, [navigation])
+  }
 
   if (!currentAccount) {
     return null
   }
 
   return (
-    <ReAnimatedBox flex={1} backgroundColor="black">
-      <Box
-        backgroundColor="transparent"
-        flex={1}
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Box flexGrow={1} justifyContent="center" alignItems="center">
-          <Box
-            padding="m"
-            shadowColor="black"
-            shadowOpacity={0.4}
-            shadowOffset={{ width: 0, height: 10 }}
-            shadowRadius={10}
-            elevation={12}
-          >
+    <Animated.View className="flex-1 bg-background">
+      <View className="flex-1 items-center justify-center">
+        <View className="grow items-center justify-center">
+          <View className="p-4 shadow-lg">
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
-          </Box>
+          </View>
           {isConfirmed && (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Text variant="h1Medium" color="white" marginTop="xl">
+              <Text size="4xl" className="mt-8 font-medium">
                 {t('collectablesScreen.claimComplete')}
               </Text>
               <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
+                className="mt-8 text-center text-muted-foreground"
                 numberOfLines={2}
-                textAlign="center"
               >
                 {t('collectablesScreen.claimCompleteBody')}
               </Text>
@@ -97,107 +85,81 @@ const ClaimingRewardsScreen = () => {
 
           {hasError ? (
             <Animated.View
-              style={{
-                alignItems: 'center',
-              }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Box padding="m">
-                <Text variant="h2Medium" color="white" textAlign="center">
+              <View className="p-4">
+                <Text size="3xl" className="text-center font-medium">
                   {t('collectablesScreen.rewardsError')}
                 </Text>
                 <Text
-                  variant="body2"
-                  color="secondaryText"
-                  marginTop="m"
+                  className="mt-4 text-center text-muted-foreground"
                   numberOfLines={2}
-                  textAlign="center"
                 >
                   {parseTransactionError(
                     solBalance,
                     batchError?.message || 'Transaction failed',
                   )}
                 </Text>
-              </Box>
+              </View>
             </Animated.View>
           ) : null}
 
           {!route.params?.batchIds?.length ? (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Box padding="m">
-                <Text
-                  textAlign="center"
-                  variant="h1Medium"
-                  color="white"
-                  marginTop="xl"
-                >
+              <View className="p-4">
+                <Text size="4xl" className="mt-8 text-center font-medium">
                   {t('collectablesScreen.rewardsError')}
                 </Text>
-              </Box>
+              </View>
             </Animated.View>
           ) : null}
 
           {isPending ? (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Box paddingHorizontal="m" mb="m">
-                <Text variant="h2Medium" color="white" textAlign="center">
+              <View className="mb-4 px-4">
+                <Text size="3xl" className="text-center font-medium">
                   {t('collectablesScreen.claimingRewards')}
                 </Text>
                 <Text
-                  variant="body1"
-                  color="grey50"
-                  textAlign="center"
-                  marginTop="s"
+                  size="base"
+                  className="mt-2 text-center text-muted-foreground"
                 >
                   {t('collectablesScreen.claimingRewardsBody')}
                 </Text>
-              </Box>
+              </View>
 
-              <Box
-                height={240}
-                flexDirection="row"
-                marginHorizontal="xxl"
-                marginTop="m"
-              >
-                <IndeterminateProgressBar paddingHorizontal="l" />
-              </Box>
+              <View className="mx-12 mt-4">
+                <Spinner size="large" />
+              </View>
             </Animated.View>
           ) : null}
-        </Box>
-        <Box
-          width="100%"
-          justifyContent="flex-end"
-          style={{ marginBottom: bottom }}
-        >
-          <ButtonPressable
-            marginHorizontal="m"
-            marginBottom="m"
-            height={65}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacity={0.1}
-            backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
-            title={t('collectablesScreen.returnToCollectables')}
-            titleColor="white"
+        </View>
+        <View className="w-full justify-end" style={{ marginBottom: bottom }}>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="mx-4 mb-4"
             onPress={onReturn}
-            LeadingComponent={
-              <BackArrow width={16} height={15} color="white" />
-            }
-          />
-        </Box>
-      </Box>
-    </ReAnimatedBox>
+          >
+            <BackIcon size={16} colorClassName="accent-secondary-foreground" />
+            <Text className={buttonTextVariants({ variant: 'secondary' })}>
+              {t('collectablesScreen.returnToCollectables')}
+            </Text>
+          </Button>
+        </View>
+      </View>
+    </Animated.View>
   )
 }
 
-export default memo(ClaimingRewardsScreen)
+export default ClaimingRewardsScreen

@@ -1,15 +1,16 @@
 import Send from '@assets/images/send.svg'
-import Box from '@components/Box'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
+import { Card } from '@ui/Card'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React from 'react'
+import { View } from 'react-native'
 
 interface IPaymentPreviewProps {
   payments: {
@@ -25,35 +26,26 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
   const { symbol, json } = useMetaplexMetadata(mint)
 
   return (
-    <Box
-      backgroundColor="surface"
-      borderRadius="l"
-      mt="m"
-      px="m"
-      py="ms"
-      gap="s"
-    >
+    <Card className="mt-4 gap-2 px-4 py-3">
       {payments.map(({ payee, balanceAmount }, index) => (
-        <Box
+        <View
           key={`payment-${index}`}
-          justifyContent="space-between"
-          flexDirection="row"
-          alignItems="center"
+          className="flex-row items-center justify-between"
         >
-          <Box flexDirection="row" alignItems="center" gap="xs">
+          <View className="flex-row items-center gap-1">
             {json?.image ? <TokenIcon img={json.image} size={30} /> : null}
-            <Text variant="body1">{symbol}</Text>
-            <Text variant="body4">{ellipsizeAddress(payee)}</Text>
-          </Box>
-          <Box flexDirection="row" alignItems="center">
+            <Text size="base">{symbol}</Text>
+            <Text className="text-[10px]">{ellipsizeAddress(payee)}</Text>
+          </View>
+          <View className="flex-row items-center">
             <Pill
               text={humanReadable(balanceAmount, decimals)}
               Icon={Send}
               color="blue"
             />
-          </Box>
-        </Box>
+          </View>
+        </View>
       ))}
-    </Box>
+    </Card>
   )
 }

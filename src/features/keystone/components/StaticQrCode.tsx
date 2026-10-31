@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import QRCode from 'react-native-qrcode-svg'
 import { UR, UREncoder } from '@ngraveio/bc-ur'
-import Box from './Box'
+import { View } from 'react-native'
 
 const QR_CONTAINER_SIZE = 300
 const MAX_FRAGMENT_CAPACITY = 200
@@ -17,14 +17,14 @@ const StaticQrCode = ({ size, data, ecl, quietZone }: StaticQrCodeProps) => {
   const qrCodeQuietZone = quietZone ?? 20
   const qrCodeEcl = ecl ?? 'L'
   return (
-    <Box justifyContent="center" alignItems="center">
+    <View className="items-center justify-center">
       <QRCode
         quietZone={qrCodeQuietZone}
         size={Math.max(0, qrCodeSize)}
         value={data}
         ecl={qrCodeEcl}
       />
-    </Box>
+    </View>
   )
 }
 

@@ -1,9 +1,9 @@
 import Send from '@assets/images/send.svg'
-import Box from '@components/Box'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
-import React, { useMemo } from 'react'
-import ImageBox from '@components/ImageBox'
+import { Card } from '@ui/Card'
+import { Text } from '@ui/Text'
+import React from 'react'
+import { Image, View } from 'react-native'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { Collectable, CompressedNFT, isCompressedNFT } from '../types/solana'
 
@@ -16,55 +16,35 @@ export const CollectablePreview = ({
   collectable,
   payee,
 }: ICollectablePreviewProps) => {
-  const metadata = useMemo(() => {
-    if (isCompressedNFT(collectable)) {
-      return collectable.content.metadata
-    }
-
-    return collectable.metadata
-  }, [collectable])
+  const metadata = isCompressedNFT(collectable)
+    ? collectable.content.metadata
+    : collectable.metadata
 
   return (
-    <Box
-      backgroundColor="surface"
-      borderRadius="l"
-      mt="m"
-      px="m"
-      py="ms"
-      gap="s"
-    >
-      <Box
-        justifyContent="space-between"
-        flexDirection="row"
-        alignContent="center"
-      >
-        <Box flexDirection="row" alignItems="center" gap="xs">
+    <Card className="mt-4 gap-2 px-4 py-3">
+      <View className="flex-row content-center justify-between">
+        <View className="flex-row items-center gap-1">
           {metadata && (
-            <Box
-              shadowColor="black"
-              shadowOpacity={0.4}
-              shadowOffset={{ width: 0, height: 10 }}
-              shadowRadius={10}
-              elevation={12}
-            >
-              <ImageBox
-                backgroundColor={metadata.image ? 'black' : 'surfaceSecondary'}
-                height={40}
-                width={40}
+            <View className="shadow-stat-box">
+              <Image
+                className={
+                  metadata.image
+                    ? 'size-10 rounded-md bg-primary'
+                    : 'size-10 rounded-md bg-secondary'
+                }
                 source={{
                   uri: metadata?.image,
                   cache: 'force-cache',
                 }}
-                borderRadius="m"
               />
-            </Box>
+            </View>
           )}
-          <Text variant="body4">{ellipsizeAddress(payee)}</Text>
-        </Box>
-        <Box flexDirection="row" alignItems="center">
+          <Text className="text-[10px]">{ellipsizeAddress(payee)}</Text>
+        </View>
+        <View className="flex-row items-center">
           <Pill Icon={Send} color="blue" />
-        </Box>
-      </Box>
-    </Box>
+        </View>
+      </View>
+    </Card>
   )
 }

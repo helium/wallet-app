@@ -1,23 +1,24 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import Ledger from '@assets/images/ledger.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
-import { useColors } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { RootNavigationProp } from '../../navigation/rootTypes'
+
+const LedgerIcon = withUniwind(Ledger)
 
 const PairSuccess = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<LedgerNavigatorNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
-  const { primaryText } = useColors()
   const { hasAccounts } = useAccountStorage()
 
-  const next = useCallback(() => {
+  const next = () => {
     if (hasAccounts) {
       rootNav.reset({
         index: 0,
@@ -30,36 +31,32 @@ const PairSuccess = () => {
     } else {
       navigation.navigate('DeviceScan', undefined, { pop: true })
     }
-  }, [hasAccounts, rootNav, navigation])
+  }
 
   return (
-    <Box
-      flex={1}
-      backgroundColor="primaryBackground"
-      marginTop="l"
-      paddingHorizontal="l"
-    >
-      <Box flex={1} justifyContent="center">
-        <Box alignItems="center">
-          <Ledger width={62} height={62} color={primaryText} />
-          <Text variant="h1" marginVertical="l">
+    <View className="mt-6 flex-1 bg-background px-6">
+      <View className="flex-1 justify-center">
+        <View className="items-center">
+          <LedgerIcon
+            width={62}
+            height={62}
+            colorClassName="accent-foreground"
+          />
+          <Text size="4xl" className="my-6">
             {t('ledger.success.title')}
           </Text>
-          <Text variant="subtitle1" color="secondaryText" textAlign="center">
+          <Text
+            size="xl"
+            className="text-center font-medium text-muted-foreground"
+          >
             {t('ledger.success.subtitle')}
           </Text>
-        </Box>
-      </Box>
-      <ButtonPressable
-        borderRadius="round"
-        backgroundColor="blueBright500"
-        backgroundColorOpacityPressed={0.8}
-        onPress={next}
-        title={t('ledger.success.next')}
-        titleColor="black900"
-        marginBottom="m"
-      />
-    </Box>
+        </View>
+      </View>
+      <Button variant="cta" size="lg" className="mb-4 w-full" onPress={next}>
+        {t('ledger.success.next')}
+      </Button>
+    </View>
   )
 }
 

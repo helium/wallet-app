@@ -1,23 +1,24 @@
-import React, { useState, useMemo, useCallback, memo } from 'react'
-import BackScreen from '@components/BackScreen'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
+import React, { useState } from 'react'
 import useSubmitTxn from '@hooks/useSubmitTxn'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Button } from '@ui/Button'
+import { Card } from '@ui/Card'
+import { Input } from '@ui/Input'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { useTranslation } from 'react-i18next'
 import {
   KeyboardAvoidingView,
   Keyboard,
   TouchableWithoutFeedback,
+  View,
 } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
-import { Edge } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import BackHeader from './components/BackHeader'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -25,7 +26,8 @@ import {
 import { parseH3BNLocation } from '../../utils/h3'
 import * as Logger from '../../utils/logger'
 
-const BUTTON_HEIGHT = 65
+const SafeArea = withUniwind(SafeAreaView)
+
 type Route = RouteProp<CollectableStackParamList, 'AntennaSetupScreen'>
 const AntennaSetupScreen = () => {
   const { t } = useTranslation()
@@ -34,8 +36,6 @@ const AntennaSetupScreen = () => {
   const { collectable } = route.params
   const entityKey = useEntityKey(collectable)
   const iotInfoAcc = useIotInfo(entityKey)
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const [hasSetDefaults, setHasSetDefaults] = useState(false)
   const [gain, setGain] = useState<string>()
   const [elevation, setElevation] = useState<string>()
@@ -43,13 +43,9 @@ const AntennaSetupScreen = () => {
   const [transactionError, setTransactionError] = useState<string>()
   const { submitUpdateEntityInfo } = useSubmitTxn()
 
-  const iotLocation = useMemo(() => {
-    if (!iotInfoAcc?.info?.location) {
-      return undefined
-    }
-
-    return parseH3BNLocation(iotInfoAcc.info.location).reverse()
-  }, [iotInfoAcc])
+  const iotLocation = iotInfoAcc?.info?.location
+    ? parseH3BNLocation(iotInfoAcc.info.location).reverse()
+    : undefined
 
   if (!hasSetDefaults && iotInfoAcc?.info) {
     if (iotInfoAcc?.info?.gain) {
@@ -63,7 +59,7 @@ const AntennaSetupScreen = () => {
     setHasSetDefaults(true)
   }
 
-  const handleUpdateElevGain = useCallback(async () => {
+  const handleUpdateElevGain = async () => {
     if (iotLocation && entityKey) {
       setTransactionError(undefined)
       setUpdating(true)
@@ -83,122 +79,82 @@ const AntennaSetupScreen = () => {
         setTransactionError((error as Error).message)
       }
     }
-  }, [
-    iotLocation,
-    entityKey,
-    elevation,
-    gain,
-    setUpdating,
-    setTransactionError,
-    submitUpdateEntityInfo,
-    nav,
-  ])
-
-  const showError = useMemo(() => {
-    if (transactionError) return transactionError
-  }, [transactionError])
+  }
 
   return (
-    <ReAnimatedBox flex={1}>
-      <BackScreen
-        headerTopMargin="l"
-        padding="none"
-        title={t('antennaSetupScreen.title')}
-        edges={backEdges}
-      >
+    <Animated.View className="flex-1">
+      <SafeArea className="flex-1" edges={['top']}>
+        <BackHeader title={t('antennaSetupScreen.title')} className="mt-6" />
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-            <SafeAreaBox
-              edges={safeEdges}
-              backgroundColor="transparent"
-              flex={1}
-              padding="m"
-              marginHorizontal="s"
-              marginVertical="xs"
+          <KeyboardAvoidingView className="flex-1" behavior="padding">
+            <SafeArea
+              edges={['bottom']}
+              className="mx-2 my-1 flex-1 bg-transparent p-4"
             >
-              <Box flexGrow={1} justifyContent="center">
-                <Text textAlign="left" variant="subtitle2" adjustsFontSizeToFit>
+              <View className="grow justify-center">
+                <Text
+                  size="lg"
+                  className="text-left font-medium"
+                  adjustsFontSizeToFit
+                >
                   {t('antennaSetupScreen.antennaSetup')}
                 </Text>
-                <Text
-                  variant="subtitle4"
-                  color="secondaryText"
-                  marginBottom="m"
-                >
+                <Text className="mb-4 font-medium text-muted-foreground">
                   {t('antennaSetupScreen.antennaSetupDescription')}
                 </Text>
-                <Box
-                  width="100%"
-                  backgroundColor="secondary"
-                  borderRadius="l"
-                  paddingVertical="xs"
-                >
-                  <TextInput
-                    variant="transparent"
-                    floatingLabel={`${t('antennaSetupScreen.gainPlaceholder')}`}
-                    textInputProps={{
-                      placeholder: t('antennaSetupScreen.gainPlaceholder'),
-                      onChangeText: setGain,
-                      value: gain,
-                      keyboardType: 'decimal-pad',
-                    }}
-                  />
-                  <Box height={1} width="100%" backgroundColor="black200" />
-                  <TextInput
-                    variant="transparent"
-                    floatingLabel={`${t(
-                      'antennaSetupScreen.elevationPlaceholder',
-                    )}`}
-                    textInputProps={{
-                      placeholder: t('antennaSetupScreen.elevationPlaceholder'),
-                      onChangeText: setElevation,
-                      value: elevation,
-                      keyboardType: 'decimal-pad',
-                    }}
-                  />
-                </Box>
-              </Box>
-              <Box
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                marginVertical="s"
-                minHeight={40}
-              >
-                {showError && (
-                  <Text variant="body3Medium" color="red500">
-                    {showError}
+                <Card variant="panel" className="w-full gap-3">
+                  <View className="gap-1">
+                    <Text size="xs" className="text-muted-foreground">
+                      {t('antennaSetupScreen.gainPlaceholder')}
+                    </Text>
+                    <Input
+                      variant="form"
+                      placeholder={t('antennaSetupScreen.gainPlaceholder')}
+                      onChangeText={setGain}
+                      value={gain}
+                      keyboardType="decimal-pad"
+                    />
+                  </View>
+                  <View className="gap-1">
+                    <Text size="xs" className="text-muted-foreground">
+                      {t('antennaSetupScreen.elevationPlaceholder')}
+                    </Text>
+                    <Input
+                      variant="form"
+                      placeholder={t('antennaSetupScreen.elevationPlaceholder')}
+                      onChangeText={setElevation}
+                      value={elevation}
+                      keyboardType="decimal-pad"
+                    />
+                  </View>
+                </Card>
+              </View>
+              <View className="my-2 min-h-10 flex-row items-center justify-center">
+                {transactionError && (
+                  <Text size="xs" className="font-medium text-destructive">
+                    {transactionError}
                   </Text>
                 )}
-              </Box>
-              <Box>
-                <ButtonPressable
-                  height={BUTTON_HEIGHT}
-                  flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="white"
-                  backgroundColorDisabledOpacity={0.0}
-                  titleColorDisabled="grey600"
-                  title={updating ? '' : t('antennaSetupScreen.submit')}
-                  titleColor="black"
-                  onPress={() =>
-                    void handleUpdateElevGain().catch(console.error)
-                  }
-                  TrailingComponent={
-                    updating ? (
-                      <CircleLoader loaderSize={20} color="black" />
-                    ) : undefined
-                  }
-                />
-              </Box>
-            </SafeAreaBox>
+              </View>
+              <Button
+                variant="cta"
+                size="lg"
+                className="w-full"
+                disabled={updating}
+                onPress={() => void handleUpdateElevGain().catch(console.error)}
+              >
+                {updating ? (
+                  <Spinner colorClassName="accent-white" />
+                ) : (
+                  t('antennaSetupScreen.submit')
+                )}
+              </Button>
+            </SafeArea>
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
-      </BackScreen>
-    </ReAnimatedBox>
+      </SafeArea>
+    </Animated.View>
   )
 }
 
-export default memo(AntennaSetupScreen)
+export default AntennaSetupScreen

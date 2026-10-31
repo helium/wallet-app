@@ -1,7 +1,7 @@
-import React, { useCallback, useState, useRef, useMemo, useEffect } from 'react'
+import React, { useCallback, useState, useRef, useEffect } from 'react'
 import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
-import { FlatList, LayoutChangeEvent } from 'react-native'
+import { FlatList, LayoutChangeEvent, View } from 'react-native'
 import { Device } from 'react-native-ble-plx'
 import {
   RouteProp,
@@ -9,20 +9,20 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native'
-import CarotRight from '@assets/images/carot-right.svg'
+import { ChevronRight } from 'lucide-react-native'
+import { useResolveClassNames, withUniwind } from 'uniwind'
 import LedgerCircle from '@assets/images/ledger-circle.svg'
 import Ledger from '@assets/images/ledger.svg'
 import {
   BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import BackButton from '@components/BackButton'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import useBackHandler from '@hooks/useBackHandler'
 import useLedgerDeviceScan from '@hooks/useLedgerDeviceScan'
 import LedgerConnectSteps from './LedgerConnectSteps'
@@ -31,14 +31,26 @@ import {
   LedgerNavigatorStackParamList,
 } from './ledgerNavigatorTypes'
 
+const ChevronRightIcon = withUniwind(ChevronRight)
+const LedgerIcon = withUniwind(Ledger)
+const LedgerCircleIcon = withUniwind(LedgerCircle)
+
+const ScanBackdrop = (props: BottomSheetBackdropProps) => (
+  <BottomSheetBackdrop
+    disappearsOnIndex={-1}
+    appearsOnIndex={0}
+    opacity={0.8}
+    {...props}
+  />
+)
+
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceScan'>
 const DeviceScan = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<LedgerNavigatorNavigationProp>()
   const route = useRoute<Route>()
-  const { primaryText } = useColors()
 
-  const { backgroundStyle } = useOpacity('secondary', 1)
+  const backgroundStyle = useResolveClassNames('bg-secondary')
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const sheetMargins = useSheetMargins()
   const [contentHeight, setContentHeight] = useState(0)
@@ -73,31 +85,17 @@ const DeviceScan = () => {
     }, [startScan, stopScan]),
   )
 
-  const snapPoints = useMemo(() => {
-    let maxHeight: number | string = '90%'
-    if (contentHeight > 0) {
-      maxHeight = contentHeight
-    }
-    return [maxHeight]
-  }, [contentHeight])
+  let maxHeight: number | string = '90%'
+  if (contentHeight > 0) {
+    maxHeight = contentHeight
+  }
+  const snapPoints = [maxHeight]
 
-  const renderBackdrop = useCallback(
-    (props) => (
-      <BottomSheetBackdrop
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.8}
-        {...props}
-      />
-    ),
-    [],
-  )
-
-  const clearError = useCallback(() => {
+  const clearError = () => {
     handleDismiss()
     setError(undefined)
     void startScan()
-  }, [handleDismiss, startScan, setError])
+  }
 
   useEffect(() => {
     if (!error) return
@@ -106,94 +104,74 @@ const DeviceScan = () => {
     setIsShowing(true)
   }, [error, setIsShowing])
 
-  const keyExtractor = useCallback((item) => item.id, [])
+  const keyExtractor = (item: Device) => item.id
 
-  const onSelectDevice = useCallback(
-    (device: Device) => () => {
-      stopScan()
-      navigation.navigate('DeviceShow', {
-        ledgerDevice: {
-          id: device.id,
-          name: device.localName || device.name || '',
-          type: 'bluetooth',
-        },
-      })
-    },
-    [navigation, stopScan],
-  )
+  const onSelectDevice = (device: Device) => () => {
+    stopScan()
+    navigation.navigate('DeviceShow', {
+      ledgerDevice: {
+        id: device.id,
+        name: device.localName || device.name || '',
+        type: 'bluetooth',
+      },
+    })
+  }
 
-  const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
+  const handleContentLayout = (e: LayoutChangeEvent) => {
     setContentHeight(e.nativeEvent.layout.height + 100)
-  }, [])
+  }
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = () => {
     bottomSheetModalRef.current?.dismiss()
-  }, [])
+  }
 
-  const renderItem = useCallback(
-    ({ item: device }) => {
-      return (
-        <TouchableOpacityBox
-          onPress={onSelectDevice(device)}
-          paddingHorizontal="s"
-          paddingVertical="m"
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Box flexDirection="row" alignItems="center">
-            <Box
-              marginRight="ms"
-              backgroundColor="secondary"
-              borderRadius="round"
-            >
-              <LedgerCircle width={40} height={40} color={primaryText} />
-            </Box>
-            <Text variant="body1" color="primaryText">
-              {device.name}
-            </Text>
-          </Box>
-          <CarotRight color={primaryText} />
-        </TouchableOpacityBox>
-      )
-    },
-    [onSelectDevice, primaryText],
-  )
+  const renderItem = ({ item: device }: { item: Device }) => {
+    return (
+      <PressableScale
+        feedback="opacity"
+        onPress={onSelectDevice(device)}
+        className="flex-row items-center justify-between px-2 py-4"
+      >
+        <View className="flex-row items-center">
+          <View className="mr-3 rounded-full bg-secondary">
+            <LedgerCircleIcon
+              width={40}
+              height={40}
+              colorClassName="accent-foreground"
+            />
+          </View>
+          <Text size="base">{device.name}</Text>
+        </View>
+        <ChevronRightIcon colorClassName="accent-foreground" />
+      </PressableScale>
+    )
+  }
 
   return (
     <BottomSheetModalProvider>
-      <Box flex={1} backgroundColor="secondary" paddingHorizontal="l">
+      <View className="flex-1 bg-secondary px-6">
         <BackButton
           marginTop="m"
           paddingHorizontal="s"
           onPress={navigation.goBack}
         />
-        <Box
-          flex={1}
-          justifyContent="flex-end"
-          alignItems="center"
-          marginBottom="l"
-        >
-          <Ledger width={61} height={61} color={primaryText} />
-          <Text
-            variant="h1"
-            marginVertical="l"
-            textAlign="center"
-            lineHeight={38}
-          >
+        <View className="mb-6 flex-1 items-center justify-end">
+          <LedgerIcon
+            width={61}
+            height={61}
+            colorClassName="accent-foreground"
+          />
+          <Text size="4xl" className="my-6 text-center">
             {t('ledger.scan.title')}
           </Text>
           <Text
-            variant="subtitle1"
-            color="secondaryText"
-            textAlign="center"
-            fontSize={21}
-            lineHeight={23}
+            size="xl"
+            className="text-center font-medium text-muted-foreground"
           >
             {t('ledger.scan.subtitle')}
           </Text>
-        </Box>
-        <Box flex={1} marginTop="l">
+        </View>
+        <View className="mt-6 flex-1">
           <FlatList
             contentInsetAdjustmentBehavior="automatic"
             data={devices}
@@ -202,14 +180,14 @@ const DeviceScan = () => {
             onRefresh={() => void startScan().catch(console.error)}
             refreshing={refreshing}
           />
-        </Box>
-      </Box>
+        </View>
+      </View>
       <BottomSheetModal
         ref={bottomSheetModalRef}
         style={sheetMargins}
         index={0}
         snapPoints={snapPoints}
-        backdropComponent={renderBackdrop}
+        backdropComponent={ScanBackdrop}
         backgroundStyle={backgroundStyle}
         onDismiss={clearError}
       >

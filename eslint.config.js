@@ -36,11 +36,13 @@ const sharedComposites = [
   'AccountListItem',
   'AccountSelector',
   'AddressBookSelector',
+  'BackButton',
   'BackScreen',
   'BlurActionSheet',
   'CardSkeleton',
   'CloseButton',
   'ConfirmPinView',
+  'ContentColumn',
   'Dot',
   'FabButton',
   'HNTKeyboard',
@@ -54,6 +56,8 @@ const sharedComposites = [
   'TokenButton',
   'TokenPill',
   'TokenSelector',
+  'TouchableContainer',
+  'WarningPill',
 ]
 
 const migratedLegacyImports = {
@@ -84,6 +88,7 @@ const migratedFiles = [
   'src/features/addressBook/**',
   'src/features/browser/**',
   'src/features/burn/**',
+  'src/features/collectables/**',
   'src/features/dappLogin/**',
   'src/features/governance/AssignProxyScreen.tsx',
   'src/features/governance/ClaimingRewardsModal.tsx',
@@ -115,6 +120,8 @@ const migratedFiles = [
   'src/features/governance/components/**',
   'src/features/home/**',
   'src/features/hotspot-onboarding/**',
+  'src/features/keystone/**',
+  'src/features/ledger/**',
   'src/features/lock/**',
   'src/features/notifications/**',
   'src/features/payment/**',
@@ -123,6 +130,10 @@ const migratedFiles = [
   'src/features/settings/**',
   'src/features/swaps/**',
   'src/features/txnDelegation/**',
+  'src/solana/*Preview.tsx',
+  'src/solana/WalletSIgnBottomSheetSimulated.tsx',
+  'src/solana/WalletSign*',
+  'src/solana/WarningBox.tsx',
   'src/utils/parseMarkup.tsx',
 ]
 

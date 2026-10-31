@@ -1,13 +1,14 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
-import Check from '@assets/images/checkmark.svg'
-import InfoError from '@assets/images/infoError.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
+import { LayoutChangeEvent, View } from 'react-native'
+import { Check, CircleX } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import type { ScanErrorKind } from '@hooks/useLedgerDeviceScan'
+
+const CheckIcon = withUniwind(Check)
+const CircleXIcon = withUniwind(CircleX)
 
 interface LedgerConnectStepsProps {
   onLayout?: (event: LayoutChangeEvent) => void
@@ -18,28 +19,24 @@ interface LedgerConnectStepsProps {
 interface StepItemProps {
   step: string
   index: number
-  iconColor: string
 }
 
-const StepItem = memo(({ step, index, iconColor }: StepItemProps) => (
-  <Box
-    flexDirection="row"
-    marginVertical="m"
-    alignItems="center"
+const StepItem = ({ step, index }: StepItemProps) => (
+  <View
+    className="my-4 flex-row items-center"
     accessibilityRole="text"
     accessibilityLabel={`Step ${index + 1}: ${step}`}
   >
-    <Check
-      color={iconColor}
-      height={24}
-      width={24}
+    <CheckIcon
+      size={24}
+      colorClassName="accent-foreground"
       accessibilityLabel="Completed step"
     />
-    <Text variant="subtitle2" marginLeft="ms" flex={1}>
+    <Text size="lg" className="ml-3 flex-1 font-medium">
       {step}
     </Text>
-  </Box>
-))
+  </View>
+)
 
 const LedgerConnectSteps = ({
   onLayout,
@@ -47,90 +44,73 @@ const LedgerConnectSteps = ({
   errorKind,
 }: LedgerConnectStepsProps) => {
   const { t } = useTranslation()
-  const { primaryText } = useColors()
-  const steps = useMemo<string[]>(
-    () => t('ledger.connectError.steps', { returnObjects: true }) as string[],
-    [t],
-  )
+  const steps = t('ledger.connectError.steps', {
+    returnObjects: true,
+  }) as string[]
 
   // Bluetooth-off and permission errors have their own copy and no steps
   const hasSpecificCopy =
     errorKind === 'bluetoothOff' || errorKind === 'permission'
-  const translations = useMemo(
-    () => ({
-      title: hasSpecificCopy
-        ? t(`ledger.connectError.${errorKind}.title`)
-        : t('ledger.connectError.title'),
-      subtitle: hasSpecificCopy
-        ? t(`ledger.connectError.${errorKind}.subtitle`)
-        : t('ledger.connectError.subtitle'),
-      tryAgain: t('generic.tryAgain'),
-    }),
-    [errorKind, hasSpecificCopy, t],
-  )
+  const translations = {
+    title: hasSpecificCopy
+      ? t(`ledger.connectError.${errorKind}.title`)
+      : t('ledger.connectError.title'),
+    subtitle: hasSpecificCopy
+      ? t(`ledger.connectError.${errorKind}.subtitle`)
+      : t('ledger.connectError.subtitle'),
+    tryAgain: t('generic.tryAgain'),
+  }
 
-  const handleRetry = useCallback(() => {
+  const handleRetry = () => {
     onRetry()
-  }, [onRetry])
+  }
 
   return (
-    <Box
+    <View
       onLayout={onLayout}
-      marginHorizontal="l"
+      className="mx-6"
       accessibilityRole="alert"
       accessibilityLabel="Ledger connection error steps"
     >
-      <Box alignSelf="center" marginVertical="l">
-        <InfoError accessibilityLabel="Error icon" />
-      </Box>
+      <View className="my-6 self-center">
+        <CircleXIcon
+          size={64}
+          colorClassName="accent-destructive"
+          accessibilityLabel="Error icon"
+        />
+      </View>
 
-      <Text
-        variant="h1"
-        color="primaryText"
-        textAlign="center"
-        accessibilityRole="header"
-      >
+      <Text size="4xl" className="text-center" accessibilityRole="header">
         {translations.title}
       </Text>
 
       <Text
-        variant="subtitle2"
-        color="grey300"
-        textAlign="center"
-        marginBottom="m"
+        size="lg"
+        className="mb-4 text-center font-medium text-muted-foreground"
       >
         {translations.subtitle}
       </Text>
 
-      <Box marginVertical="s">
+      <View className="my-2">
         {!hasSpecificCopy &&
           steps.map((step, index) => (
-            <StepItem
-              key={step}
-              step={step}
-              index={index}
-              iconColor={primaryText}
-            />
+            <StepItem key={step} step={step} index={index} />
           ))}
-      </Box>
+      </View>
 
-      <TouchableOpacityBox
-        marginTop="s"
-        marginBottom="l"
+      <Button
+        variant="secondary"
+        size="lg"
+        className="mb-6 mt-2 w-full"
         onPress={handleRetry}
-        backgroundColor="surface"
-        padding="l"
-        borderRadius="round"
         accessibilityRole="button"
         accessibilityLabel={`${translations.tryAgain} button`}
         accessibilityHint="Double tap to retry connecting to your Ledger device"
       >
-        <Text variant="subtitle1" textAlign="center">
-          {translations.tryAgain}
-        </Text>
-      </TouchableOpacityBox>
-    </Box>
+        {translations.tryAgain}
+      </Button>
+    </View>
   )
 }
 
-export default memo(LedgerConnectSteps)
+export default LedgerConnectSteps

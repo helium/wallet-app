@@ -1,13 +1,12 @@
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
-import Surface from '@components/Surface'
-import Text from '@components/Text'
 import { toBN } from '@helium/spl-utils'
 import { LedgerAccount } from '@hooks/useLedger'
-import CheckBox from '@react-native-community/checkbox'
-import { useColors } from '@theme/themeHooks'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Checkbox } from '@ui/Checkbox'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/solanaUtils'
-import React, { memo, useCallback, useMemo } from 'react'
+import React from 'react'
+import { View } from 'react-native'
 import { ellipsizeAddress } from '../../utils/accountUtils'
 
 export enum Section {
@@ -33,64 +32,37 @@ const LedgerAccountListItem = ({
   onCheckboxToggled,
   section,
 }: LedgerAccountListItemProps) => {
-  const colors = useColors()
-
   // TODO: Add other token types once nano app supports them
   const balance = toBN(account.balance || 0, 8)
   const disabled = section.index === Section.ALREADY_LINKED
 
-  const borderTopEndRadius = useMemo(
-    () => (index === 0 ? 'xl' : 'none'),
-    [index],
-  )
-  const borderTopStartRadius = useMemo(
-    () => (index === 0 ? 'xl' : 'none'),
-    [index],
-  )
-  const borderBottomEndRadius = useMemo(
-    () => (index === section.data.length - 1 ? 'xl' : 'none'),
-    [index, section.data.length],
-  )
-  const borderBottomStartRadius = useMemo(
-    () => (index === section.data.length - 1 ? 'xl' : 'none'),
-    [index, section.data.length],
-  )
-  const hasBottomBorder = useMemo(
-    () => index !== section.data.length - 1,
-    [index, section.data.length],
-  )
+  const isFirst = index === 0
+  const isLast = index === section.data.length - 1
 
-  const handleCheckboxToggled = useCallback(
-    (value: boolean) => {
-      onCheckboxToggled(account, value)
-    },
-    [account, onCheckboxToggled],
-  )
+  const handleCheckboxToggled = (value: boolean) => {
+    onCheckboxToggled(account, value)
+  }
 
   return (
-    <Box paddingHorizontal="l">
-      <Surface
-        flexDirection="row"
-        alignItems="center"
-        padding="m"
-        opacity={disabled ? 0.5 : 1}
-        borderTopEndRadius={borderTopEndRadius}
-        borderTopStartRadius={borderTopStartRadius}
-        borderBottomEndRadius={borderBottomEndRadius}
-        borderBottomStartRadius={borderBottomStartRadius}
-        backgroundColor="secondary"
+    <View className="px-6">
+      <View
+        className={twMerge(
+          'flex-row items-center overflow-hidden bg-card p-4',
+          isFirst && 'rounded-t-[20px]',
+          isLast && 'rounded-b-[20px]',
+          disabled && 'opacity-50',
+        )}
       >
         <AccountIcon size={40} address={account.address} />
-        <Box marginRight="l" marginLeft="l" flexGrow={1}>
-          <Text variant="subtitle4" marginBottom="xxs" color="secondaryText">
+        <View className="mx-6 grow">
+          <Text className="mb-0.5 font-medium text-muted-foreground">
             {account.pathLabel} ({account.derivationPath})
           </Text>
-          <Text variant="subtitle2" marginBottom="xxs">
+          <Text size="lg" className="mb-0.5 font-medium">
             {account.alias}
           </Text>
           <Text
-            variant="body2"
-            color="secondaryText"
+            className="text-muted-foreground"
             numberOfLines={1}
             adjustsFontSizeToFit
             maxFontSizeMultiplier={1.2}
@@ -99,31 +71,18 @@ const LedgerAccountListItem = ({
               numChars: 4,
             })} | ${humanReadable(balance, 8)}`}
           </Text>
-        </Box>
-        <Box marginEnd="s">
-          <CheckBox
+        </View>
+        <View className="me-2">
+          <Checkbox
             disabled={!!disabled}
-            style={{ width: 25, height: 25 }}
-            value={isSelected || section.index === Section.ALREADY_LINKED}
-            tintColors={{
-              true: colors.purple500,
-              false: colors.surfaceSecondary,
-            }}
-            onFillColor={colors.white}
-            onCheckColor={colors.surfaceSecondary}
-            onTintColor={colors.white}
-            tintColor={colors.white}
-            onAnimationType="fill"
-            offAnimationType="fill"
-            boxType="circle"
-            lineWidth={2}
-            onValueChange={handleCheckboxToggled}
+            checked={isSelected || section.index === Section.ALREADY_LINKED}
+            onChange={handleCheckboxToggled}
           />
-        </Box>
-      </Surface>
-      {hasBottomBorder ? <Box backgroundColor="primary" height={1} /> : null}
-    </Box>
+        </View>
+      </View>
+      {!isLast ? <View className="h-px bg-background" /> : null}
+    </View>
   )
 }
 
-export default memo(LedgerAccountListItem)
+export default LedgerAccountListItem
