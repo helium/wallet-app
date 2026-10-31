@@ -1,10 +1,7 @@
 import ActiveCircle from '@assets/images/activeCircle.svg'
 import CancelledCircle from '@assets/images/cancelledCircle.svg'
-import Box from '@components/Box'
 import { CardSkeleton } from '@components/CardSkeleton'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
-import TouchableContainer from '@components/TouchableContainer'
 import { votesForWalletQuery } from '@helium/voter-stake-registry-hooks'
 import { ProposalWithVotes } from '@helium/voter-stake-registry-sdk'
 import { useProposalStatus } from '@hooks/useProposalStatus'
@@ -12,13 +9,15 @@ import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useColors } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import BN from 'bn.js'
 import { times } from 'lodash'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, RefreshControl } from 'react-native'
+import { FlatList, RefreshControl, View } from 'react-native'
+import { useCSSVariable } from 'uniwind'
 import { ProposalTags } from './ProposalTags'
 import { ProxyCardStat } from './ProxyCardStat'
 import { GovernanceNavigationProp } from './governanceTypes'
@@ -64,28 +63,21 @@ export const VoteHistory: React.FC<{
 
     if (loading) {
       return (
-        <Box flex={1} flexDirection="column">
+        <View className="flex-1 flex-col">
           {times(5).map((i) => (
             <VoteHistorySkeleton key={i} />
           ))}
-        </Box>
+        </View>
       )
     }
 
     return (
-      <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        height={HISTORY_HEIGHT}
-        width="100%"
-        justifyContent="center"
-        alignItems="center"
-        mb="m"
+      <View
+        className="mb-4 w-full items-center justify-center rounded-[12px] bg-secondary"
+        style={{ height: HISTORY_HEIGHT }}
       >
-        <Text variant="body1" color="white">
-          {t('gov.history.noneFound')}
-        </Text>
-      </Box>
+        <Text size="base">{t('gov.history.noneFound')}</Text>
+      </View>
     )
   }, [voteHistoryPages, loading, t])
 
@@ -104,7 +96,7 @@ export const VoteHistory: React.FC<{
     }
   }, [hasNextPage, fetchNextPage, loading])
 
-  const { primaryText } = useColors()
+  const foreground = useCSSVariable('--color-foreground')
 
   return (
     <FlatList
@@ -120,7 +112,7 @@ export const VoteHistory: React.FC<{
           refreshing={loading}
           onRefresh={handleRefresh}
           title=""
-          tintColor={primaryText}
+          tintColor={typeof foreground === 'string' ? foreground : undefined}
         />
       }
     />
@@ -153,22 +145,13 @@ const ProposalItem: React.FC<{
   }, [mint, navigation, proposal.address])
 
   return (
-    <TouchableContainer
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      flexDirection="column"
-      mb="m"
+    <PressableScale
+      className="mb-4 flex-col rounded-[12px] bg-secondary"
       onPress={handlePress}
     >
-      <Box
-        px="m"
-        pt="s"
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-      >
+      <View className="flex-row items-center justify-between px-4 pt-2">
         <ProposalTags tags={proposal?.tags} />
-        <Box flexDirection="row">
+        <View className="flex-row">
           {!completed ? (
             <Pill
               iconProps={{ width: 8, height: 8 }}
@@ -187,25 +170,13 @@ const ProposalItem: React.FC<{
               text={t('gov.history.cancelled')}
             />
           ) : null}
-        </Box>
-      </Box>
-      <Box
-        px="m"
-        pb="m"
-        mb="s"
-        borderBottomColor="dividerGrey"
-        borderBottomWidth={1}
-      >
-        <Text variant="body1">{proposal.name}</Text>
-      </Box>
+        </View>
+      </View>
+      <View className="mb-2 border-b border-border px-4 pb-4">
+        <Text size="base">{proposal.name}</Text>
+      </View>
       {timeExpired ? (
-        <Box
-          px="m"
-          width="100%"
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
+        <View className="w-full flex-row items-center justify-between px-4">
           <ProxyCardStat
             title={t('gov.history.completed')}
             value={new Date(
@@ -214,7 +185,7 @@ const ProposalItem: React.FC<{
           />
           <ProxyCardStat
             title={t('gov.history.result')}
-            alignItems="flex-end"
+            className="items-end"
             value={
               choices
                 ? Object.values(choices)
@@ -225,24 +196,17 @@ const ProposalItem: React.FC<{
                 : ''
             }
           />
-        </Box>
+        </View>
       ) : null}
-      <Box px="m">
+      <View className="px-4">
         {!timeExpired && (
           <ProxyCardStat
             title={t('gov.history.estTimeRemaining')}
             value={getTimeFromNowFmt(endTs || new BN(0))}
           />
         )}
-      </Box>
-      <Box
-        px="m"
-        width="100%"
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        pb="s"
-      >
+      </View>
+      <View className="w-full flex-row items-center justify-between px-4 pb-2">
         {proposal.votes[0].weight ? (
           <>
             <ProxyCardStat
@@ -251,7 +215,7 @@ const ProposalItem: React.FC<{
             />
             <ProxyCardStat
               title={t('gov.history.percentOfVote')}
-              alignItems="flex-end"
+              className="items-end"
               value={
                 // Calc with 4 decimals precision
                 proposal.votes[0].weight && !votingResults?.totalVotes.isZero()
@@ -269,17 +233,11 @@ const ProposalItem: React.FC<{
             />
           </>
         ) : (
-          <Box
-            mt="s"
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            width="100%"
-          >
+          <View className="mt-2 w-full flex-row items-center justify-center">
             <Pill color="orange" text={t('gov.history.notVoted')} />
-          </Box>
+          </View>
         )}
-      </Box>
-    </TouchableContainer>
+      </View>
+    </PressableScale>
   )
 }

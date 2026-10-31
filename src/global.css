@@ -22,3 +22,10 @@
     0 7px 14px rgba(0, 0, 0, 0.04), 0 26px 26px rgba(0, 0, 0, 0.03),
     0 59px 36px rgba(0, 0, 0, 0.02), 0 105px 42px rgba(0, 0, 0, 0.01);
 }
+
+/* Helium network brand colours (governance positions and split bars). */
+@theme {
+  --color-hnt: #2755f8;
+  --color-mobile: #009ef8;
+  --color-iot: #26ed75;
+}
