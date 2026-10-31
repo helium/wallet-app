@@ -1,8 +1,4 @@
 import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
 import { truthy } from '@helium/spl-utils'
 import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import Slider from '@react-native-community/slider'
@@ -12,8 +8,16 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import { useAssignProxiesMutation } from '@hooks/useGovernanceMutations'
 import sleep from '@utils/sleep'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { useTranslation } from 'react-i18next'
-import { FlatList, TextInput, TouchableWithoutFeedback } from 'react-native'
+import {
+  FlatList,
+  TextInput,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native'
 import { Edge } from 'react-native-safe-area-context'
 import { PositionPreview } from './PositionPreview'
 import { ProxySearch } from './ProxySearch'
@@ -98,8 +102,7 @@ export const AssignProxyScreen = () => {
     const selected = selectedPositions.has(item.pubkey.toBase58())
     return (
       <PositionPreview
-        borderWidth={selected ? 2 : 0}
-        borderColor={selected ? 'blue500' : undefined}
+        className={selected ? 'border-2 border-primary' : undefined}
         position={item}
         onPress={() => {
           setSelectedPositions((sel) => {
@@ -196,68 +199,58 @@ export const AssignProxyScreen = () => {
       title={t('gov.assignProxy.title')}
     >
       <TouchableWithoutFeedback onPress={handleBlurSearch}>
-        <Box flex={1} flexDirection="column">
-          <Box mb="m">
-            <Text variant="body2" color="white" opacity={0.5}>
+        <View className="flex-1 flex-col">
+          <View className="mb-4">
+            <Text className="text-muted-foreground">
               {t('gov.assignProxy.description')}
             </Text>
-          </Box>
+          </View>
 
-          <Box mb="m">
+          <View className="mb-4">
             <ProxySearch
               ref={proxySearchRef}
               value={proxyWallet || ''}
               onValueChange={setProxyWallet}
             />
-          </Box>
+          </View>
 
-          <Box flexDirection="row" justifyContent="space-between">
-            <Text variant="body1" color="white" opacity={0.5}>
+          <View className="flex-row justify-between">
+            <Text size="base" className="text-muted-foreground">
               {t('gov.assignProxy.assignPositions')}
             </Text>
             <Text
-              variant="body1"
-              color="white"
-              opacity={0.5}
+              size="base"
+              className="text-muted-foreground"
               onPress={handleSelectAll}
             >
               {selectedAll
                 ? t('gov.assignProxy.deSelectAll')
                 : t('gov.assignProxy.selectAll')}
             </Text>
-          </Box>
-          <Box flex={1} mb="m">
+          </View>
+          <View className="mb-4 flex-1">
             <FlatList
               contentInsetAdjustmentBehavior="automatic"
               data={selectablePositions}
               renderItem={renderPosition}
             />
-          </Box>
+          </View>
           {error && (
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-              paddingTop="ms"
-            >
-              <Text variant="body3Medium" color="red500">
+            <View className="flex-row items-center justify-center pt-3">
+              <Text className="font-medium text-destructive">
                 {error.toString()}
               </Text>
-            </Box>
+            </View>
           )}
-          <Box flexDirection="column">
-            <Box
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="space-between"
-            >
-              <Text variant="body2" color="white" opacity={0.5}>
+          <View className="flex-col">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-muted-foreground">
                 {t('gov.assignProxy.expiryDate')}
               </Text>
-              <Text variant="body3" color="secondaryText">
+              <Text size="xs" className="text-muted-foreground">
                 {selectedDays} {t('gov.assignProxy.days')}
               </Text>
-            </Box>
+            </View>
             <Slider
               value={selectedDays}
               onSlidingComplete={handleSelectedDays}
@@ -265,27 +258,22 @@ export const AssignProxyScreen = () => {
               maximumValue={maxDays}
               step={1}
             />
-          </Box>
-          <ButtonPressable
-            width="100%"
-            fontSize={16}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.9}
-            titleColorDisabled="secondaryText"
-            title={isSubmitting ? undefined : t('gov.assignProxy.title')}
-            titleColor="black"
+          </View>
+          <Button
+            size="lg"
+            className="w-full rounded-full"
             onPress={() => void handleSubmit().catch(console.error)}
             disabled={
               isSubmitting || selectedPositions.size === 0 || !proxyWallet
             }
-            TrailingComponent={
-              isSubmitting ? <CircleLoader color="white" /> : undefined
-            }
-          />
-        </Box>
+          >
+            {isSubmitting ? (
+              <Spinner colorClassName="accent-primary-foreground" />
+            ) : (
+              t('gov.assignProxy.title')
+            )}
+          </Button>
+        </View>
       </TouchableWithoutFeedback>
     </BackScreen>
   )

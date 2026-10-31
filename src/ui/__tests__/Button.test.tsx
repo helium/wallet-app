@@ -1,6 +1,5 @@
 import React from 'react'
 import { Pressable, Text as RNText } from 'react-native'
-import Animated from 'react-native-reanimated'
 import TestRenderer, { act } from 'react-test-renderer'
 import { Button } from '../Button'
 import { PressableScale } from '../PressableScale'
@@ -36,7 +35,10 @@ jest.mock('react-native-reanimated', () => {
   })
   return {
     __esModule: true,
-    default: { View: 'Animated.View' },
+    default: {
+      View: 'Animated.View',
+      createAnimatedComponent: (component: unknown) => component,
+    },
     ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
     Easing: { bezier: () => ({}) },
     cubicBezier: (x1: number, y1: number, x2: number, y2: number) => ({
@@ -80,7 +82,7 @@ const render = (element: React.ReactElement) => {
   const { root } = renderer
   return {
     pressable: () => root.findByType(Pressable),
-    box: () => root.findByType(Animated.View),
+    box: () => root.findByType(Pressable),
     labels: () => root.findAllByType(RNText),
   }
 }
@@ -135,6 +137,16 @@ describe('Button', () => {
     expect(view.box().props.className).toBe(
       'flex-row items-center justify-center gap-2 h-9 px-4 bg-destructive rounded-full',
     )
+  })
+
+  it('sizes the press target with the caller className', () => {
+    const view = render(
+      <Button onPress={jest.fn()} className="flex-1">
+        Send
+      </Button>,
+    )
+
+    expect(view.pressable().props.className).toContain('flex-1')
   })
 
   it('has the button accessibility role', () => {
@@ -199,6 +211,16 @@ describe('Button', () => {
 })
 
 describe('PressableScale', () => {
+  it('sizes the press target with the className', () => {
+    const view = render(
+      <PressableScale onPress={jest.fn()} className="flex-1 self-stretch">
+        <RNText>Card</RNText>
+      </PressableScale>,
+    )
+
+    expect(view.pressable().props.className).toBe('flex-1 self-stretch')
+  })
+
   it('has the button accessibility role', () => {
     const view = render(
       <PressableScale onPress={jest.fn()}>

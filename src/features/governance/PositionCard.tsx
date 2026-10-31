@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import type { TokenAmountOutput } from '@helium/blockchain-api'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import BlurActionSheet from '@components/BlurActionSheet'
-import Box from '@components/Box'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import ListItem from '@components/ListItem'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { TASK_QUEUE, useDelegationClaimBot } from '@helium/automation-hooks'
 import {
   useMint,
@@ -31,12 +25,14 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePositionDelegations } from '@hooks/usePositionDelegations'
 import { useNavigation } from '@react-navigation/native'
-import { BoxProps } from '@shopify/restyle'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { Theme } from '@theme/theme'
-import { useCreateOpacity } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
+import { twMerge } from '@ui/twMerge'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
 import {
   daysToSecs,
@@ -57,28 +53,24 @@ import {
   useUndelegatePositionMutation,
   useRelinquishPositionVotesMutation,
 } from '@hooks/useGovernanceMutations'
-import React, {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useState,
-} from 'react'
+import React, { useEffect, useEffectEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { TransferTokensModal } from './TransferTokensModal'
 import { GovernanceNavigationProp } from './governanceTypes'
 
-interface IPositionCardProps extends Omit<BoxProps<Theme>, 'position'> {
+interface IPositionCardProps {
   subDaos?: SubDaoWithMeta[]
   position: PositionWithMeta
+  className?: string
 }
 
 export const PositionCard = ({
   position,
   subDaos,
-  ...boxProps
+  className,
 }: IPositionCardProps) => {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
@@ -105,14 +97,10 @@ export const PositionCard = ({
   const [isExtendModalOpen, setIsExtendModalOpen] = useState(false)
   const [isSplitModalOpen, setIsSplitModalOpen] = useState(false)
   const [isDelegateModalOpen, setIsDelegateModalOpen] = useState(false)
-  const delegationClaimBotK = useMemo(
-    () =>
-      delegationClaimBotKey(
-        TASK_QUEUE,
-        delegatedPositionKey(position.pubkey)[0],
-      )[0],
-    [position.pubkey],
-  )
+  const delegationClaimBotK = delegationClaimBotKey(
+    TASK_QUEUE,
+    delegatedPositionKey(position.pubkey)[0],
+  )[0]
   const { info: delegationClaimBot } =
     useDelegationClaimBot(delegationClaimBotK)
   const [automationEnabled, setAutomationEnabled] =
@@ -196,9 +184,8 @@ export const PositionCard = ({
       prepareSplit()
     }
   }, [isSplitModalOpen])
-  const { backgroundStyle } = useCreateOpacity()
-  const organization = useMemo(() => organizationKey(network)[0], [network])
-  const transferablePositions: PositionWithMeta[] = useMemo(() => {
+  const organization = organizationKey(network)[0]
+  const getTransferablePositions = (): PositionWithMeta[] => {
     if (!unixNow || !positions || !positions.length) {
       return []
     }
@@ -230,7 +217,8 @@ export const PositionCard = ({
         lockupPeriodInDays >= positionLockupPeriodInDays
       )
     })
-  }, [position, unixNow, positions])
+  }
+  const transferablePositions = getTransferablePositions()
 
   const { lockup, isDelegated, hasGenesisMultiplier, votingMint } = position
   const { info: mintAcc } = useMint(votingMint.mint)
@@ -259,26 +247,20 @@ export const PositionCard = ({
   const maxActionableAmount = mintAcc
     ? toNumber(position.amountDepositedNative, mintAcc)
     : 0
-  const isInsufficientSol = useCallback(
-    (fee: TokenAmountOutput | null) => {
-      if (!fee || typeof solBalance === 'undefined') return false
-      return BigInt(fee.amount) > solBalance
-    },
-    [solBalance],
-  )
+  const isInsufficientSol = (fee: TokenAmountOutput | null) => {
+    if (!fee || typeof solBalance === 'undefined') return false
+    return BigInt(fee.amount) > solBalance
+  }
   const canDelegate = votingMint.mint.equals(HNT_MINT)
 
   const { info: registrar = null } = useRegistrar(position.registrar)
 
-  const handleCalcLockupMultiplier = useCallback(
-    (lockupPeriodInDays: number) =>
-      calcLockupMultiplier({
-        lockupSecs: daysToSecs(lockupPeriodInDays),
-        mint: votingMint.mint,
-        registrar,
-      }),
-    [votingMint.mint, registrar],
-  )
+  const handleCalcLockupMultiplier = (lockupPeriodInDays: number) =>
+    calcLockupMultiplier({
+      lockupSecs: daysToSecs(lockupPeriodInDays),
+      mint: votingMint.mint,
+      registrar,
+    })
 
   const handlePrepareExtend = (values: LockTokensModalFormValues) => {
     extendMutation
@@ -301,7 +283,7 @@ export const PositionCard = ({
       .catch((e) => console.warn('Fee estimate failed:', e))
   }
 
-  const transactionError = useMemo(() => {
+  const getTransactionError = () => {
     const sources: [Error | null, string][] = [
       [extendMutation.error, t('gov.errors.extendLockup')],
       [splitMutation.error, t('gov.errors.splitTokens')],
@@ -320,18 +302,8 @@ export const PositionCard = ({
     const found = sources.find(([err]) => err)
     if (!found) return undefined
     return found[0]!.message || found[1]
-  }, [
-    t,
-    isConstant,
-    extendMutation.error,
-    splitMutation.error,
-    flipMutation.error,
-    transferMutation.error,
-    closeMutation.error,
-    delegateMutation.error,
-    undelegateMutation.error,
-    relinquishMutation.error,
-  ])
+  }
+  const transactionError = getTransactionError()
 
   const handleClosePosition = async () => {
     await closeMutation.submit(
@@ -743,31 +715,18 @@ export const PositionCard = ({
         ?.dntMetadata
     : null
 
-  const isLoading = useMemo(
-    () =>
-      loadingMetadata ||
-      extendMutation.isPending ||
-      splitMutation.isPending ||
-      closeMutation.isPending ||
-      transferMutation.isPending ||
-      flipMutation.isPending ||
-      delegateMutation.isPending ||
-      undelegateMutation.isPending ||
-      relinquishMutation.isPending,
-    [
-      loadingMetadata,
-      extendMutation.isPending,
-      splitMutation.isPending,
-      closeMutation.isPending,
-      transferMutation.isPending,
-      flipMutation.isPending,
-      delegateMutation.isPending,
-      undelegateMutation.isPending,
-      relinquishMutation.isPending,
-    ],
-  )
+  const isLoading =
+    loadingMetadata ||
+    extendMutation.isPending ||
+    splitMutation.isPending ||
+    closeMutation.isPending ||
+    transferMutation.isPending ||
+    flipMutation.isPending ||
+    delegateMutation.isPending ||
+    undelegateMutation.isPending ||
+    relinquishMutation.isPending
 
-  const loadingText = useMemo(() => {
+  const getLoadingText = () => {
     if (splitMutation.isPending) return t('gov.positions.splitting')
     if (extendMutation.isPending) return t('gov.positions.extending')
     if (transferMutation.isPending) return t('gov.positions.transfering')
@@ -780,146 +739,104 @@ export const PositionCard = ({
     if (undelegateMutation.isPending) return t('gov.positions.undelegating')
     if (relinquishMutation.isPending) return t('gov.positions.relinquishing')
     return null
-  }, [
-    t,
-    isConstant,
-    splitMutation.isPending,
-    extendMutation.isPending,
-    transferMutation.isPending,
-    closeMutation.isPending,
-    flipMutation.isPending,
-    delegateMutation.isPending,
-    undelegateMutation.isPending,
-    relinquishMutation.isPending,
-  ])
+  }
+  const loadingText = getLoadingText()
+
+  const pills = [
+    {
+      show: showProxyExpiringWarning,
+      className: 'bg-warning-500',
+      label: t('gov.positions.proxyExpiringSoon'),
+    },
+    {
+      show: showProxyExpiredWarning,
+      className: 'bg-destructive',
+      label: t('gov.positions.proxyExpired'),
+    },
+    {
+      show: showDelegationExpiringWarning,
+      className: 'bg-warning-500',
+      label: t('gov.positions.delegationExpiringSoon'),
+    },
+    {
+      show: showDelegationExpiredWarning,
+      className: 'bg-destructive',
+      label: t('gov.positions.delegationExpired'),
+    },
+  ].filter((p) => p.show)
+
+  const hasProxy =
+    position.proxy && !position.proxy.nextVoter.equals(PublicKey.default)
 
   return (
     <>
       {isLoading && (
-        <Box
-          backgroundColor="surfaceSecondary"
-          borderRadius="l"
-          padding="m"
-          paddingHorizontal="xl"
-          {...boxProps}
+        <View
+          className={twMerge('rounded-[12px] bg-secondary p-4 px-8', className)}
         >
-          <Box flex={1} alignItems="center">
-            <Text variant="body2" color="primaryText">
-              {loadingText}
-            </Text>
-            <Box flex={1} marginTop="ms" width="100%">
-              <IndeterminateProgressBar height={6} />
-            </Box>
-          </Box>
-        </Box>
+          <View className="flex-1 items-center">
+            <Text>{loadingText}</Text>
+            <View className="mt-3 w-full flex-1 items-center">
+              <Spinner />
+            </View>
+          </View>
+        </View>
       )}
       {!isLoading && (
         <>
-          <ReAnimatedBox
-            backgroundColor="surfaceSecondary"
-            borderRadius="l"
-            {...boxProps}
-          >
-            <TouchableOpacityBox
+          <View className={twMerge('rounded-[12px] bg-secondary', className)}>
+            <PressableScale
               testID="PositionCard"
+              feedback="opacity"
               onPress={() => setActionsOpen(true)}
             >
-              <Box paddingHorizontal="m" paddingVertical="ms">
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  marginBottom="m"
-                >
-                  <Box flexDirection="row" alignItems="center">
+              <View className="px-4 py-3">
+                <View className="mb-4 flex-row justify-between">
+                  <View className="flex-row items-center">
                     {json?.image ? (
                       <TokenIcon size={26} img={json.image} />
                     ) : undefined}
-                    <Text
-                      variant="subtitle3"
-                      color="primaryText"
-                      marginLeft="m"
-                    >
+                    <Text size="base" className="ml-4 font-medium">
                       {`${lockedTokens} ${symbol}`}
                     </Text>
-                  </Box>
+                  </View>
                   {hasGenesisMultiplier && (
-                    <Box
-                      padding="s"
-                      paddingHorizontal="m"
-                      backgroundColor="blueBright500"
-                      borderRadius="m"
-                    >
-                      <Text variant="body3" fontSize={10} color="black">
+                    <View className="rounded-md bg-blue-dark-500 p-2 px-4">
+                      <Text className="text-[10px] text-black">
                         {t('gov.positions.landrush').toUpperCase()}
                       </Text>
-                    </Box>
+                    </View>
                   )}
-                </Box>
-                {(() => {
-                  const pills = [
-                    {
-                      show: showProxyExpiringWarning,
-                      bg: 'warning' as const,
-                      label: t('gov.positions.proxyExpiringSoon'),
-                    },
-                    {
-                      show: showProxyExpiredWarning,
-                      bg: 'error' as const,
-                      label: t('gov.positions.proxyExpired'),
-                    },
-                    {
-                      show: showDelegationExpiringWarning,
-                      bg: 'warning' as const,
-                      label: t('gov.positions.delegationExpiringSoon'),
-                    },
-                    {
-                      show: showDelegationExpiredWarning,
-                      bg: 'error' as const,
-                      label: t('gov.positions.delegationExpired'),
-                    },
-                  ].filter((p) => p.show)
-                  if (!pills.length) return null
-                  return (
-                    <Box flexDirection="row" marginBottom="s">
-                      {pills.map((p) => (
-                        <Box
-                          key={p.label}
-                          padding="s"
-                          paddingHorizontal="m"
-                          backgroundColor={p.bg}
-                          borderRadius="m"
-                          marginRight="s"
-                        >
-                          <Text variant="body3" fontSize={10} color="black">
-                            {p.label.toUpperCase()}
-                          </Text>
-                        </Box>
-                      ))}
-                    </Box>
-                  )
-                })()}
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  paddingBottom="s"
-                >
-                  <Box>
-                    <Text variant="body2" color="secondaryText">
+                </View>
+                {pills.length > 0 && (
+                  <View className="mb-2 flex-row">
+                    {pills.map((p) => (
+                      <View
+                        key={p.label}
+                        className={twMerge(
+                          'mr-2 rounded-md p-2 px-4',
+                          p.className,
+                        )}
+                      >
+                        <Text className="text-[10px] text-black">
+                          {p.label.toUpperCase()}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                <View className="flex-row justify-between pb-2">
+                  <View>
+                    <Text className="text-muted-foreground">
                       {t('gov.positions.lockupType')}
                     </Text>
-                    <Text variant="body2" color="primaryText">
-                      {lockupKindDisplay}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text
-                      variant="body2"
-                      color="secondaryText"
-                      textAlign="right"
-                    >
+                    <Text>{lockupKindDisplay}</Text>
+                  </View>
+                  <View>
+                    <Text className="text-right text-muted-foreground">
                       {t('gov.positions.voteMult')}
                     </Text>
-                    <Text variant="body2" color="primaryText" textAlign="right">
+                    <Text className="text-right">
                       {(
                         (position.votingPower.isZero()
                           ? 0
@@ -933,16 +850,16 @@ export const PositionCard = ({
                           : 1)
                       ).toFixed(2)}
                     </Text>
-                  </Box>
-                </Box>
-                <Box flexDirection="row" justifyContent="space-between">
-                  <Box>
-                    <Text variant="body2" color="secondaryText">
+                  </View>
+                </View>
+                <View className="flex-row justify-between">
+                  <View>
+                    <Text className="text-muted-foreground">
                       {isConstant
                         ? t('gov.positions.minDur')
                         : t('gov.positions.timeLeft')}
                     </Text>
-                    <Text variant="body2" color="primaryText">
+                    <Text>
                       {isConstant
                         ? getMinDurationFmt(lockup.startTs, lockup.endTs)
                         : isDelegated
@@ -951,104 +868,71 @@ export const PositionCard = ({
                             )
                           : getTimeLeftFromNowFmt(lockup.endTs)}
                     </Text>
-                  </Box>
+                  </View>
                   {hasGenesisMultiplier && (
-                    <Box>
-                      <Text
-                        variant="body2"
-                        color="secondaryText"
-                        textAlign="right"
-                      >
+                    <View>
+                      <Text className="text-right text-muted-foreground">
                         {t('gov.positions.landrush')}
                       </Text>
-                      <Text
-                        variant="body2"
-                        color="primaryText"
-                        textAlign="right"
-                      >
+                      <Text className="text-right">
                         {votingMint.genesisVotePowerMultiplier}x (
                         {getTimeLeftFromNowFmt(position.genesisEnd)})
                       </Text>
-                    </Box>
+                    </View>
                   )}
-                </Box>
-                <Box mt="s" flexDirection="row" justifyContent="space-between">
+                </View>
+                <View className="mt-2 flex-row justify-between">
                   {delegatedSubDaoMetadata ? (
-                    <Box>
-                      <Text variant="body2" color="secondaryText">
+                    <View>
+                      <Text className="text-muted-foreground">
                         {t('gov.positions.delegatedTo')}
                       </Text>
-                      <Box
-                        mt="s"
-                        flexDirection="row"
-                        justifyContent="center"
-                        alignItems="center"
-                      >
-                        <Box
-                          borderColor="black"
-                          borderWidth={2}
-                          borderRadius="round"
-                        >
+                      <View className="mt-2 flex-row items-center justify-center">
+                        <View className="rounded-full border-2 border-black">
                           <TokenIcon
                             size={18}
                             img={delegatedSubDaoMetadata.json?.image || ''}
                           />
-                        </Box>
-                        <Text
-                          variant="body2"
-                          color="primaryText"
-                          marginLeft="s"
-                        >
+                        </View>
+                        <Text className="ml-2">
                           {delegatedSubDaoMetadata.name}
                         </Text>
-                      </Box>
-                    </Box>
+                      </View>
+                    </View>
                   ) : null}
-                  {position.proxy &&
-                  !position.proxy.nextVoter.equals(PublicKey.default) ? (
-                    <Box
-                      flexDirection="column"
-                      alignItems={
-                        delegatedSubDaoMetadata ? 'flex-end' : 'flex-start'
+                  {hasProxy ? (
+                    <View
+                      className={
+                        delegatedSubDaoMetadata ? 'items-end' : 'items-start'
                       }
                     >
-                      <Text variant="body2" color="secondaryText">
+                      <Text className="text-muted-foreground">
                         {t('gov.positions.proxiedTo')}
                       </Text>
-                      <Box mt="s">
+                      <View className="mt-2">
                         <Pill
                           color="red"
                           text={
                             knownProxy?.name ||
-                            shortenAddress(position.proxy.nextVoter.toBase58())
+                            shortenAddress(position.proxy!.nextVoter.toBase58())
                           }
                         />
-                      </Box>
-                    </Box>
+                      </View>
+                    </View>
                   ) : null}
-                </Box>
-              </Box>
-            </TouchableOpacityBox>
+                </View>
+              </View>
+            </PressableScale>
             {transactionError && (
-              <Box
-                flex={1}
-                flexDirection="row"
-                width="100%"
-                height="100%"
-                justifyContent="center"
-                paddingVertical="ms"
-                borderBottomLeftRadius="l"
-                borderBottomRightRadius="l"
-                style={backgroundStyle('error', 0.1)}
-              >
-                <Box flexDirection="row" alignSelf="center" marginRight="s">
-                  <Text fontSize={10} color="error" marginLeft="s">
+              <View className="w-full flex-1 flex-row justify-center rounded-b-[12px] bg-destructive/10 py-3">
+                <View className="mr-2 flex-row self-center">
+                  <Text className="ml-2 text-[10px] text-destructive">
                     {transactionError}
                   </Text>
-                </Box>
-              </Box>
+                </View>
+              </View>
             )}
-          </ReAnimatedBox>
+          </View>
           <BlurActionSheet
             title={t('gov.positions.actionsTitle')}
             open={actionsOpen}

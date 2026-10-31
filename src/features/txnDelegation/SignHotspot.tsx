@@ -1,8 +1,3 @@
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import OnboardingClient, {
   OnboardingRecord,
   degToCompass,
@@ -14,27 +9,43 @@ import {
   verifyWalletLinkToken,
 } from '@helium/wallet-link'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useColors } from '@theme/themeHooks'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import animalHash from 'angry-purple-tiger'
 import BN from 'bn.js'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Linking } from 'react-native'
+import { Linking, View } from 'react-native'
 import Config from '@utils/config'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
+import { withUniwind } from 'uniwind'
 import {
   RootNavigationProp,
   RootStackParamList,
 } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { getKeypair } from '../../storage/secureStorage'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import * as Logger from '../../utils/logger'
 import { HomeNavigationProp } from '../home/homeTypes'
 import useSolTxns from './useSolTxns'
 
+// The hotspot app sends signed transactions; with none there is nothing to
+// submit, which the caller reports as a failure.
+const submitSignedTransactions = async (solana: {
+  hasTransactions: boolean
+  submit: () => Promise<unknown>
+}) => {
+  if (!solana.hasTransactions) throw new Error('')
+  await solana.submit()
+}
+
 const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
 const METERS_TO_FEET = 3.28084
+const SafeArea = withUniwind(SafeAreaView)
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
   const { params, ...route } = useRoute<Route>()
@@ -53,17 +64,13 @@ const SignHotspot = () => {
   const { t } = useTranslation()
   const [validated, setValidated] = useState<boolean>()
   const { accounts } = useAccountStorage()
-  const { surfaceContrastText } = useColors()
 
-  const linkInvalid = useMemo(() => {
-    return (
-      !params.addGatewayTxn &&
-      !params.assertLocationTxn &&
-      !params.transferHotspotTxn &&
-      !params.solanaTransactions &&
-      !params.configurationMessage
-    )
-  }, [params])
+  const linkInvalid =
+    !params.addGatewayTxn &&
+    !params.assertLocationTxn &&
+    !params.transferHotspotTxn &&
+    !params.solanaTransactions &&
+    !params.configurationMessage
 
   const parsedToken = useMemo(() => {
     if (!token) return
@@ -98,10 +105,7 @@ const SignHotspot = () => {
     }
   }, [callback, validated])
 
-  const gatewayAddress = useMemo(
-    () => solana.gatewayAddress,
-    [solana.gatewayAddress],
-  )
+  const { gatewayAddress } = solana
 
   useEffect(() => {
     if (!gatewayAddress) return
@@ -113,16 +117,12 @@ const SignHotspot = () => {
       })
   }, [gatewayAddress])
 
-  const submitNow = useCallback(async () => {
+  const submitNow = async () => {
     if (!parsedToken) return
 
     // submitting signed transaction from hotspot app
     try {
-      if (solana.hasTransactions) {
-        await solana.submit()
-      } else {
-        throw new Error('')
-      }
+      await submitSignedTransactions(solana)
 
       Toast.show(t('generic.submitSuccess'), Toast.SHORT)
     } catch (e) {
@@ -131,9 +131,9 @@ const SignHotspot = () => {
     }
 
     navigation.goBack()
-  }, [navigation, parsedToken, solana, t])
+  }
 
-  const handleLink = useCallback(async () => {
+  const handleLink = async () => {
     if (!parsedToken) return
 
     if (submit) {
@@ -143,38 +143,32 @@ const SignHotspot = () => {
     if (solana.hasTransactions) {
       await solana.sign(callback)
     }
-  }, [callback, parsedToken, solana, submit, submitNow])
+  }
 
-  const handleCancel = useCallback(async () => {
+  const handleCancel = async () => {
     await callback({ status: 'user_cancelled' })
-  }, [callback])
+  }
 
-  const handleError = useCallback(async () => {
+  const handleError = async () => {
     await callback({ status: 'invalid_link' })
-  }, [callback])
+  }
 
-  const name = useMemo(() => {
-    if (!gatewayAddress) return
-    return animalHash(gatewayAddress || '')
-  }, [gatewayAddress])
+  const name = gatewayAddress ? animalHash(gatewayAddress || '') : undefined
 
-  const locationData = useMemo(():
+  const locationData:
     | {
         location?: string
         elevation?: number
         gain?: number
       }
-    | undefined => {
-    return solana.assertData
-  }, [solana.assertData])
+    | undefined = solana.assertData
 
-  const transferData = useMemo((): { newOwner: string } | undefined => {
-    if (solana.transferData?.newOwner) {
-      return solana.transferData
-    }
-  }, [solana.transferData])
+  const transferData: { newOwner: string } | undefined = solana.transferData
+    ?.newOwner
+    ? solana.transferData
+    : undefined
 
-  const title = useMemo(() => {
+  const title = (() => {
     const hasIotOnboard =
       !!solana.transactions.onboardIotHotspotV0?.gatewayAddress
     const hasMobileOnboard =
@@ -202,7 +196,7 @@ const SignHotspot = () => {
     if (solana.configMsg) {
       return t('signHotspot.titleConfig')
     }
-  }, [locationData, solana.configMsg, solana.transactions, t, transferData])
+  })()
 
   useEffect(() => {
     if (!parsedToken) return
@@ -214,90 +208,71 @@ const SignHotspot = () => {
       .catch(() => {
         setValidated(false)
       })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getKeypair, parsedToken, token])
+  }, [parsedToken])
 
-  const submitLoading = useMemo(
-    () => solana.submitLoading,
-    [solana.submitLoading],
-  )
+  const { submitLoading } = solana
 
   if (linkInvalid) {
     return (
-      <SafeAreaBox backgroundColor="primaryBackground" flex={1} padding="xl">
-        <Box justifyContent="center" flex={1}>
-          <Text variant="body1" marginBottom="m">
+      <SafeArea className="flex-1 bg-background p-8">
+        <View className="flex-1 justify-center">
+          <Text size="base" className="mb-4">
             {t('signHotspot.error.title')}
           </Text>
-          <Text variant="body1">
+          <Text size="base">
             {t('signHotspot.error.subtitle', {
               maker: parsedToken?.appName || 'Maker',
             })}
           </Text>
-        </Box>
+        </View>
         {parsedToken?.callbackUrl && (
-          <Box justifyContent="flex-end" flex={1}>
-            <TouchableOpacityBox
-              minHeight={56}
-              justifyContent="center"
-              borderRadius="l"
+          <View className="flex-1 justify-end">
+            <Button
+              variant="ghost"
+              size="lg"
+              className="w-full"
               onPress={() => void handleError().catch(console.error)}
             >
-              <Text variant="body1" textAlign="center">
-                {t('signHotspot.error.takeMeBack', {
-                  maker: parsedToken?.appName || 'Maker',
-                })}
-              </Text>
-            </TouchableOpacityBox>
-          </Box>
+              {t('signHotspot.error.takeMeBack', {
+                maker: parsedToken?.appName || 'Maker',
+              })}
+            </Button>
+          </View>
         )}
-      </SafeAreaBox>
+      </SafeArea>
     )
   }
 
   return (
-    <SafeAreaBox
-      backgroundColor="primaryBackground"
-      flex={1}
-      padding="xl"
-      justifyContent="center"
-    >
+    <SafeArea className="flex-1 justify-center bg-background p-8">
       {title ? (
         <Text
-          variant="h1"
-          letterSpacing={-0.5}
-          lineHeight={42}
-          color="primaryText"
+          size="4xl"
+          className="tracking-tight"
           numberOfLines={2}
           maxFontSizeMultiplier={1.2}
         >
           {title}
         </Text>
       ) : (
-        <ActivityIndicator />
+        <Spinner />
       )}
 
-      <Box
-        backgroundColor="surfaceContrast"
-        borderRadius="l"
-        padding="l"
-        marginTop="l"
-      >
-        <Text variant="body1" color="surfaceContrastText">
+      <View className="mt-6 rounded-[12px] bg-primary p-6">
+        <Text size="base" className="text-primary-foreground">
           {t('signHotspot.name')}
         </Text>
-        <Text variant="subtitle1" color="surfaceContrastText" marginBottom="m">
+        <Text size="xl" className="mb-4 font-medium text-primary-foreground">
           {name}
         </Text>
         {locationData?.location && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text size="base" className="text-primary-foreground">
               {t('signHotspot.location')}
             </Text>
             <Text
-              variant="subtitle1"
-              color="surfaceContrastText"
-              marginBottom="m"
+              size="xl"
+              className="mb-4 font-medium text-primary-foreground"
             >
               {locationData.location}
             </Text>
@@ -305,13 +280,12 @@ const SignHotspot = () => {
         )}
         {solana.configMsg && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text size="base" className="text-primary-foreground">
               {t('signHotspot.direction')}
             </Text>
             <Text
-              variant="subtitle1"
-              color="surfaceContrastText"
-              marginBottom="m"
+              size="xl"
+              className="mb-4 font-medium text-primary-foreground"
             >
               {`${(
                 METERS_TO_FEET * solana.configMsg.height
@@ -321,48 +295,45 @@ const SignHotspot = () => {
             </Text>
           </>
         )}
-        <Box flexDirection="row">
+        <View className="flex-row">
           {locationData?.gain !== undefined && (
-            <Box marginEnd="xxl">
-              <Text variant="body1" color="surfaceContrastText">
+            <View className="me-12">
+              <Text size="base" className="text-primary-foreground">
                 {t('generic.gain')}:
               </Text>
               <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
+                size="xl"
+                className="mb-4 font-medium text-primary-foreground"
               >
                 {locationData.gain}
               </Text>
-            </Box>
+            </View>
           )}
           {locationData?.elevation !== undefined && (
-            <Box>
-              <Text variant="body1" color="surfaceContrastText">
+            <View>
+              <Text size="base" className="text-primary-foreground">
                 {t('generic.elevation')}:
               </Text>
               <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
+                size="xl"
+                className="mb-4 font-medium text-primary-foreground"
               >
                 {locationData.elevation}
               </Text>
-            </Box>
+            </View>
           )}
-        </Box>
+        </View>
         {(solana.burnAmounts?.hntFee?.gt(new BN(0)) ||
           solana.burnAmounts?.dcFee?.gt(new BN(0))) && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text size="base" className="text-primary-foreground">
               {t('signHotspot.burnAmounts')}
             </Text>
 
             {solana.burnAmounts?.dcFee?.gt(new BN(0)) && (
               <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
+                size="xl"
+                className="mb-4 font-medium text-primary-foreground"
               >
                 {solana.burnAmounts?.dcFee?.toString()}
               </Text>
@@ -370,9 +341,8 @@ const SignHotspot = () => {
 
             {solana.burnAmounts?.hntFee?.gt(new BN(0)) && (
               <Text
-                variant="subtitle1"
-                color="surfaceContrastText"
-                marginBottom="m"
+                size="xl"
+                className="mb-4 font-medium text-primary-foreground"
               >
                 {solana.burnAmounts?.hntFee?.toString()}
               </Text>
@@ -381,13 +351,12 @@ const SignHotspot = () => {
         )}
         {transferData?.newOwner && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text size="base" className="text-primary-foreground">
               {t('signHotspot.newOwner')}
             </Text>
             <Text
-              variant="subtitle1"
-              color="surfaceContrastText"
-              marginBottom="m"
+              size="xl"
+              className="mb-4 font-medium text-primary-foreground"
             >
               {transferData.newOwner}
             </Text>
@@ -395,75 +364,56 @@ const SignHotspot = () => {
         )}
         {!!parsedToken?.address && accounts?.[parsedToken.address] && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text size="base" className="text-primary-foreground">
               {t('signHotspot.owner')}
             </Text>
-            <Box flexDirection="row" alignItems="center" marginBottom="m">
+            <View className="mb-4 flex-row items-center">
               <AccountIcon size={20} address={parsedToken.address} />
               <Text
-                variant="subtitle1"
-                marginLeft="s"
-                flex={1}
-                color="surfaceContrastText"
+                size="xl"
+                className="ml-2 flex-1 font-medium text-primary-foreground"
               >
                 {formatAccountAlias(accounts[parsedToken.address])}
               </Text>
-            </Box>
+            </View>
           </>
         )}
         {!!gatewayAddress && (
           <>
-            <Text variant="body1" color="surfaceContrastText">
+            <Text size="base" className="text-primary-foreground">
               {t('generic.maker')}:
             </Text>
-            <Text variant="subtitle1" color="surfaceContrastText">
+            <Text size="xl" className="font-medium text-primary-foreground">
               {onboardingRecord?.maker.name || 'Unknown'}
             </Text>
           </>
         )}
-      </Box>
-      <Box flexDirection="row" marginTop="l">
-        <TouchableOpacityBox
-          flex={1}
-          minHeight={66}
-          justifyContent="center"
-          marginEnd="m"
-          backgroundColor="secondary"
-          borderRadius="round"
+      </View>
+      <View className="mt-6 flex-row gap-4">
+        <Button
+          variant="secondary"
+          size="lg"
+          className="flex-1"
           onPress={() => void handleCancel().catch(console.error)}
           disabled={submitLoading}
         >
-          <Text variant="subtitle1" textAlign="center" color="primaryText">
-            {t('generic.cancel')}
-          </Text>
-        </TouchableOpacityBox>
-        <TouchableOpacityBox
-          flex={1}
-          minHeight={66}
-          backgroundColor="surfaceContrast"
-          justifyContent="center"
-          borderRadius="round"
+          {t('generic.cancel')}
+        </Button>
+        <Button
+          variant="cta"
+          size="lg"
+          className="flex-1"
           onPress={() => void handleLink().catch(console.error)}
           disabled={!validated || submitLoading || !solana.hasTransactions}
-          flexDirection="row"
-          alignItems="center"
         >
-          <Text
-            variant="subtitle1"
-            textAlign="center"
-            color="surfaceContrastText"
-          >
+          <Text className={buttonTextVariants({ variant: 'cta' })}>
             {t('generic.confirm')}
           </Text>
-          {submitLoading && (
-            <Box marginLeft="s">
-              <ActivityIndicator color={surfaceContrastText} />
-            </Box>
-          )}
-        </TouchableOpacityBox>
-      </Box>
-    </SafeAreaBox>
+          {submitLoading && <Spinner colorClassName="accent-white" />}
+        </Button>
+      </View>
+    </SafeArea>
   )
 }
 
-export default memo(SignHotspot)
+export default SignHotspot

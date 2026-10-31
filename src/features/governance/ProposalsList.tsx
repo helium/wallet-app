@@ -1,18 +1,20 @@
-import BlurActionSheet from '@components/BlurActionSheet'
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import ListItem from '@components/ListItem'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { useOrganizationProposals } from '@helium/modular-governance-hooks'
 import { useNavigation } from '@react-navigation/native'
-import { BoxProps } from '@shopify/restyle'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { Theme } from '@theme/theme'
 import { getDerivedProposalState } from '@utils/governanceUtils'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { PressableScale } from '@ui/PressableScale'
+import { Sheet } from '@ui/Sheet'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import { CircleCheck } from 'lucide-react-native'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { ProposalCard } from './ProposalCard'
 import {
   GovernanceNavigationProp,
@@ -20,8 +22,19 @@ import {
   ProposalV0,
 } from './governanceTypes'
 
-type IProposalsListProps = BoxProps<Theme>
-export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
+const SafeArea = withUniwind(SafeAreaView)
+const SelectedIcon = withUniwind(CircleCheck)
+
+const FILTERS: ProposalFilter[] = [
+  'all',
+  'active',
+  'unseen',
+  'passed',
+  'failed',
+  'cancelled',
+]
+
+export const ProposalsList = ({ className }: { className?: string }) => {
   const { t } = useTranslation()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const navigation = useNavigation<GovernanceNavigationProp>()
@@ -29,7 +42,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
   const { loading: loadingProposals, accounts: proposalsWithDups } =
     useOrganizationProposals(organization)
   const [filter, setFilter] = useState<ProposalFilter>('all')
-  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filtersRef = useRef<BottomSheetModal>(null)
 
   const isLoading = useMemo(
     () => !currentAccount || loading || loadingProposals || !proposalsWithDups,
@@ -106,79 +119,27 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
 
   const handleFilterPress = (f: ProposalFilter) => () => {
     setFilter(f)
-    setFiltersOpen(false)
+    filtersRef.current?.dismiss()
   }
-
-  const filters = useCallback(
-    () => (
-      <>
-        <ListItem
-          key="all"
-          title="All"
-          onPress={handleFilterPress('all')}
-          selected={filter === 'all'}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="active"
-          title="Active"
-          onPress={handleFilterPress('active')}
-          selected={filter === 'active'}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="unseen"
-          title="Unseen"
-          onPress={handleFilterPress('unseen')}
-          selected={filter === 'unseen'}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="passed"
-          title="Passed"
-          onPress={handleFilterPress('passed')}
-          selected={filter === 'passed'}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="failed"
-          title="Failed"
-          onPress={handleFilterPress('failed')}
-          selected={filter === 'failed'}
-          hasPressedState={false}
-        />
-        <ListItem
-          key="cancelled"
-          title="Cancelled"
-          onPress={handleFilterPress('cancelled')}
-          selected={filter === 'cancelled'}
-          hasPressedState={false}
-        />
-      </>
-    ),
-    [filter],
-  )
 
   return (
     <>
-      <Box {...boxProps} flex={1}>
-        <Box flexDirection="row" justifyContent="center">
-          <TouchableOpacityBox
-            paddingVertical="lm"
-            paddingHorizontal="xxl"
-            flexDirection="row"
-            justifyContent="center"
-            onPress={() => setFiltersOpen(true)}
+      <View className={twMerge('flex-1', className)}>
+        <View className="flex-row justify-center">
+          <PressableScale
+            feedback="opacity"
+            className="flex-row justify-center px-12 py-3"
+            onPress={() => filtersRef.current?.present()}
           >
-            <Text variant="body3" color="secondaryText">
+            <Text size="sm" className="text-muted-foreground">
               {t('gov.proposals.filter', {
                 filter: filter.charAt(0).toUpperCase() + filter.slice(1),
               })}
             </Text>
-          </TouchableOpacityBox>
-        </Box>
+          </PressableScale>
+        </View>
         {isLoading ? (
-          <CircleLoader loaderSize={24} color="white" />
+          <Spinner />
         ) : (
           proposals
             ?.filter((p) => Boolean(p.info))
@@ -186,7 +147,7 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
               <ProposalCard
                 key={proposal.publicKey.toBase58()}
                 filter={filter}
-                marginTop={idx > 0 ? 'm' : 'none'}
+                className={idx > 0 ? 'mt-4' : undefined}
                 proposal={proposal.info as ProposalV0}
                 proposalKey={proposal.publicKey}
                 onPress={async (m, p) =>
@@ -198,14 +159,32 @@ export const ProposalsList = ({ ...boxProps }: IProposalsListProps) => {
               />
             ))
         )}
-      </Box>
-      <BlurActionSheet
-        title={t('gov.proposals.filterTitle')}
-        open={filtersOpen}
-        onClose={() => setFiltersOpen(false)}
-      >
-        {filters()}
-      </BlurActionSheet>
+      </View>
+      <Sheet ref={filtersRef} enablePanDownToClose>
+        <BottomSheetView>
+          <SafeArea edges={['bottom']} className="pb-4">
+            <Text size="xl" className="px-6 pb-2 tracking-tight">
+              {t('gov.proposals.filterTitle')}
+            </Text>
+            {FILTERS.map((f) => (
+              <PressableScale
+                key={f}
+                accessibilityState={{ selected: filter === f }}
+                feedback="opacity"
+                className="flex-row items-center justify-between px-6 py-4"
+                onPress={handleFilterPress(f)}
+              >
+                <Text size="base" className="font-medium">
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </Text>
+                {filter === f ? (
+                  <SelectedIcon size={20} colorClassName="accent-primary" />
+                ) : null}
+              </PressableScale>
+            ))}
+          </SafeArea>
+        </BottomSheetView>
+      </Sheet>
     </>
   )
 }

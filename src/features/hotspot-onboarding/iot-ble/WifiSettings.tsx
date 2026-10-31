@@ -1,15 +1,19 @@
-import BackScreen from '@components/BackScreen'
-import ButtonPressable from '@components/ButtonPressable'
-import FabButton from '@components/FabButton'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useHotspotBle } from '@helium/react-native-sdk'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useMutation } from '@tanstack/react-query'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Plus, X } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, SectionList } from 'react-native'
+import { Alert, SectionList, View } from 'react-native'
+import { withUniwind } from 'uniwind'
+import OnboardingScreen from '../components/OnboardingScreen'
 import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
+
+const PlusIcon = withUniwind(Plus)
+const RemoveIcon = withUniwind(X)
 
 type Section = {
   title: string
@@ -25,7 +29,7 @@ const WifiSettings = () => {
   } = useRoute<Route>()
   const navigation = useNavigation<HotspotBleNavProp>()
   const { t } = useTranslation()
-  const navNext = useCallback(() => navigation.goBack(), [navigation])
+  const navNext = () => navigation.goBack()
   const [networks, setNetworks] = useState<string[]>()
   const [configuredNetworks, setConfiguredNetworks] = useState<string[]>()
   const [connected, setConnected] = useState(false)
@@ -57,7 +61,7 @@ const WifiSettings = () => {
     void handleRefresh()
   }, [handleRefresh, networkIn, connected])
 
-  const handleNetworkSelected = useCallback(
+  const handleNetworkSelected =
     ({
       network,
       type,
@@ -65,104 +69,94 @@ const WifiSettings = () => {
       network: string
       type: 'configured' | 'available'
     }) =>
-      async () => {
-        if (type === 'available') {
-          navigation.push('WifiSetup', { network })
-        } else {
-          Alert.alert(
-            t('hotspotOnboarding.wifiSettings.title'),
-            t('hotspotOnboarding.wifiSettings.remove', { network }),
-            [
-              {
-                text: t('generic.cancel'),
-                style: 'default',
-              },
-              {
-                text: t('generic.remove'),
-                style: 'destructive',
-                onPress: () =>
-                  void (async () => {
-                    setConfiguredNetworks(
-                      configuredNetworks?.filter((n) => n !== network),
-                    )
-                    await removeConfiguredWifi(network)
-                    void readWifiNetworks(true).then(setConfiguredNetworks)
-                    void readWifiNetworks(false).then(setNetworks)
-                  })(),
-              },
-            ],
-          )
+    async () => {
+      if (type === 'available') {
+        navigation.push('WifiSetup', { network })
+      } else {
+        Alert.alert(
+          t('hotspotOnboarding.wifiSettings.title'),
+          t('hotspotOnboarding.wifiSettings.remove', { network }),
+          [
+            {
+              text: t('generic.cancel'),
+              style: 'default',
+            },
+            {
+              text: t('generic.remove'),
+              style: 'destructive',
+              onPress: () =>
+                void (async () => {
+                  setConfiguredNetworks(
+                    configuredNetworks?.filter((n) => n !== network),
+                  )
+                  await removeConfiguredWifi(network)
+                  void readWifiNetworks(true).then(setConfiguredNetworks)
+                  void readWifiNetworks(false).then(setNetworks)
+                })(),
+            },
+          ],
+        )
+      }
+    }
+
+  const renderItem = ({
+    item: network,
+    section: { type },
+  }: {
+    item: string
+    section: Section
+  }) => {
+    return (
+      <PressableScale
+        feedback="opacity"
+        className="flex-row items-center p-4"
+        onPress={() =>
+          void handleNetworkSelected({ network, type })().catch(console.error)
         }
-      },
-    [configuredNetworks, navigation, readWifiNetworks, removeConfiguredWifi, t],
-  )
+      >
+        <View className="mr-3 size-5 items-center justify-center rounded-full bg-secondary">
+          {type === 'configured' ? (
+            <RemoveIcon size={12} colorClassName="accent-foreground" />
+          ) : (
+            <PlusIcon size={12} colorClassName="accent-foreground" />
+          )}
+        </View>
+        <Text size="base" className="font-medium text-muted-foreground">
+          {network}
+        </Text>
+      </PressableScale>
+    )
+  }
 
-  const renderItem = useCallback(
-    ({
-      item: network,
-      section: { type },
-    }: {
-      item: string
-      section: Section
-    }) => {
-      return (
-        <TouchableOpacityBox
-          alignItems="center"
-          padding="m"
-          flexDirection="row"
-          onPress={() =>
-            void handleNetworkSelected({ network, type })().catch(console.error)
-          }
-        >
-          <FabButton
-            icon={type === 'configured' ? 'close' : 'add'}
-            backgroundColor="secondary"
-            iconColor="white"
-            size={20}
-            disabled
-            marginRight="ms"
-          />
-          <Text color="secondaryText" variant="body1Medium">
-            {network}
-          </Text>
-        </TouchableOpacityBox>
-      )
-    },
-    [handleNetworkSelected],
-  )
-
-  const keyExtractor = useCallback((name: string) => name, [])
+  const keyExtractor = (name: string) => name
 
   const renderSectionHeader = ({
     section: { title },
   }: {
     section: Section
   }) => (
-    <Text variant="h3Medium" color="primaryText">
+    <Text size="2xl" className="font-medium">
       {title}
     </Text>
   )
 
-  const sections = useMemo(
-    (): Section[] => [
-      {
-        data: configuredNetworks || [],
-        title: t('hotspotOnboarding.wifiSettings.configured'),
-        type: 'configured',
-      },
-      {
-        data: networks || [],
-        title: t('hotspotOnboarding.wifiSettings.available'),
-        type: 'available',
-      },
-    ],
-    [configuredNetworks, networks, t],
-  )
+  const sections: Section[] = [
+    {
+      data: configuredNetworks || [],
+      title: t('hotspotOnboarding.wifiSettings.configured'),
+      type: 'configured',
+    },
+    {
+      data: networks || [],
+      title: t('hotspotOnboarding.wifiSettings.available'),
+      type: 'available',
+    },
+  ]
 
   return (
-    <BackScreen title={t('hotspotOnboarding.wifiSettings.title')}>
+    <OnboardingScreen title={t('hotspotOnboarding.wifiSettings.title')}>
       {error && (
-        <Text variant="body1Medium" color="red500">
+        <Text size="base" className="font-medium text-destructive">
           {error.message ? error.message.toString() : error.toString()}
         </Text>
       )}
@@ -175,16 +169,10 @@ const WifiSettings = () => {
         refreshing={refreshing}
         onRefresh={() => handleRefresh()}
       />
-      <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor="black"
-        borderColor="transparent"
-        backgroundColor="white"
-        title={t('generic.done')}
-        onPress={navNext}
-      />
-    </BackScreen>
+      <Button variant="cta" size="lg" className="mt-6 w-full" onPress={navNext}>
+        {t('generic.done')}
+      </Button>
+    </OnboardingScreen>
   )
 }
 

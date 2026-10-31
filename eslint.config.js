@@ -29,12 +29,97 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
-const migratedFiles = [
-  'src/ui/**',
-  'src/features/uiGallery/**',
+// Shared legacy composites that migrated code may still import. Ticket 136
+// ports them to @ui and removes this list. One name per line, sorted.
+const sharedComposites = [
+  'AccountButton',
+  'AccountListItem',
+  'AccountSelector',
+  'AddressBookSelector',
+  'BackScreen',
+  'BlurActionSheet',
+  'CardSkeleton',
+  'CloseButton',
+  'Dot',
+  'HNTKeyboard',
+  'ListItem',
+  'Pill',
+  'QrScanner',
+  'SearchInput',
+  'SubmitButton',
+  'TabBar',
+  'TextTransform',
+  'TokenButton',
+  'TokenPill',
+  'TokenSelector',
+]
+
+const migratedLegacyImports = {
+  ...legacyImports,
+  patterns: [
+    {
+      group: [
+        '@components/*',
+        ...sharedComposites.map((name) => `!@components/${name}`),
+      ],
+      message: 'Legacy component. Use @ui.',
+    },
+  ],
+}
+// @ui and its gallery never depend on legacy code: the full ban, with no
+// shared composites.
+const strictFiles = [
   'src/features/migration/**',
+  'src/features/uiGallery/**',
+  'src/ui/**',
+]
+// Reskinned features may still import the shared composites. One entry per
+// line, sorted.
+const migratedFiles = [
+  'src/features/StatusPage/**',
+  'src/features/activity/**',
+  'src/features/addressBook/**',
+  'src/features/browser/**',
+  'src/features/burn/**',
   'src/features/collectables/**',
-  'src/features/addressBook/AddressBookSelector.tsx',
+  'src/features/dappLogin/**',
+  'src/features/governance/AssignProxyScreen.tsx',
+  'src/features/governance/ClaimingRewardsModal.tsx',
+  'src/features/governance/DelegateTokensModal.tsx',
+  'src/features/governance/GovernanceTutorialScreen.tsx',
+  'src/features/governance/GovernanceWrapper.tsx',
+  'src/features/governance/LockTokensModal.tsx',
+  'src/features/governance/Markdown.tsx',
+  'src/features/governance/PositionCard.tsx',
+  'src/features/governance/PositionPreview.tsx',
+  'src/features/governance/PositionsList.tsx',
+  'src/features/governance/PositionsScreen.tsx',
+  'src/features/governance/ProposalCard.tsx',
+  'src/features/governance/ProposalScreen.tsx',
+  'src/features/governance/ProposalTags.tsx',
+  'src/features/governance/ProposalsList.tsx',
+  'src/features/governance/ProposalsScreen.tsx',
+  'src/features/governance/ProxiesScreen.tsx',
+  'src/features/governance/ProxyCardStat.tsx',
+  'src/features/governance/ProxyScreen.tsx',
+  'src/features/governance/ProxySearch.tsx',
+  'src/features/governance/RevokeProxyScreen.tsx',
+  'src/features/governance/Select.tsx',
+  'src/features/governance/SplitBar.tsx',
+  'src/features/governance/TransferTokensModal.tsx',
+  'src/features/governance/VoteHistory.tsx',
+  'src/features/governance/VoteOption.tsx',
+  'src/features/governance/__tests__/**',
+  'src/features/governance/components/**',
+  'src/features/hotspot-onboarding/**',
+  'src/features/lock/**',
+  'src/features/notifications/**',
+  'src/features/request/**',
+  'src/features/security/**',
+  'src/features/settings/**',
+  'src/features/swaps/**',
+  'src/features/txnDelegation/**',
+  'src/utils/parseMarkup.tsx',
 ]
 
 module.exports = [
@@ -119,6 +204,12 @@ module.exports = [
   },
   {
     files: migratedFiles,
+    rules: {
+      'no-restricted-imports': ['error', migratedLegacyImports],
+    },
+  },
+  {
+    files: strictFiles,
     rules: {
       'no-restricted-imports': ['error', legacyImports],
     },

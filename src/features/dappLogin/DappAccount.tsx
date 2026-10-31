@@ -1,20 +1,22 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import Crowdspot from '@assets/images/crowdspot.svg'
 import AddDapp from '@assets/images/addDapp.svg'
 import DappEllipsis from '@assets/images/dapp-ellipsis.svg'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
-import { ActivityIndicator } from 'react-native'
 import AccountButton from '@components/AccountButton'
 import AccountSelector, {
   AccountSelectorRef,
 } from '@components/AccountSelector'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import AccountIcon from '@components/AccountIcon'
-import { useColors } from '@theme/themeHooks'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+
+const AddDappArt = withUniwind(AddDapp)
 
 type Props = {
   onLogin: () => void
@@ -31,18 +33,14 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
   } = useAccountStorage()
   const { t } = useTranslation()
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
-  const colors = useColors()
 
-  const isCrowdspot = useMemo(
-    () => appName.toLowerCase() === 'crowdspot',
-    [appName],
-  )
+  const isCrowdspot = appName.toLowerCase() === 'crowdspot'
 
-  const handleAccountButtonPress = useCallback(() => {
+  const handleAccountButtonPress = () => {
     if (!accountSelectorRef?.current) return
 
     accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)()
-  }, [])
+  }
 
   useEffect(() => {
     if (currentAccount?.netType !== NetType.MAINNET) {
@@ -54,34 +52,31 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
 
   return (
     <AccountSelector ref={accountSelectorRef}>
-      <Box flex={1}>
-        <Box flex={1} />
-        <Box
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="center"
-          marginVertical="l"
-        >
+      <View className="flex-1">
+        <View className="flex-1" />
+        <View className="my-6 flex-row items-center justify-center">
           {isCrowdspot ? (
             <Crowdspot height={70} width={70} />
           ) : (
-            <AddDapp color={colors.primaryText} height={70} width={70} />
+            <AddDappArt
+              colorClassName="accent-foreground"
+              height={70}
+              width={70}
+            />
           )}
-          <Box marginHorizontal="s">
+          <View className="mx-2">
             <DappEllipsis />
-          </Box>
+          </View>
           <AccountIcon address={currentAccount?.address} size={70} />
-        </Box>
-        <Text variant="h0" textAlign="center">
+        </View>
+        <Text size="4xl" className="text-center">
           {t('dappLogin.account.title', {
             appName,
           })}
         </Text>
         <Text
-          variant="subtitle1"
-          textAlign="center"
-          marginVertical="l"
-          color="secondaryText"
+          size="xl"
+          className="my-6 text-center font-medium text-muted-foreground"
         >
           {t('dappLogin.account.subtitle', { appName })}
         </Text>
@@ -90,50 +85,33 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
           address={currentNetworkAddress}
           onPress={handleAccountButtonPress}
         />
-        <Box flex={1.5} />
-        <Box flexDirection="row">
-          <TouchableOpacityBox
-            flex={1}
-            minHeight={66}
-            justifyContent="center"
-            marginEnd="m"
-            borderRadius="round"
-            overflow="hidden"
-            backgroundColor="secondaryIcon"
+        <View className="flex-[1.5]" />
+        <View className="flex-row gap-4">
+          <Button
+            variant="outline"
+            size="lg"
+            className="flex-1"
             onPress={onCancel}
           >
-            <Text variant="subtitle1" textAlign="center" color="primaryText">
-              {t('generic.cancel')}
-            </Text>
-          </TouchableOpacityBox>
-          <TouchableOpacityBox
-            flex={1}
-            minHeight={66}
-            backgroundColor="surfaceContrast"
-            justifyContent="center"
-            alignItems="center"
+            {t('generic.cancel')}
+          </Button>
+          <Button
+            variant="cta"
+            size="lg"
+            className="flex-1"
             onPress={onLogin}
-            borderRadius="round"
             disabled={loading}
-            flexDirection="row"
           >
             {loading ? (
-              <ActivityIndicator color={colors.surfaceContrastText} />
+              <Spinner colorClassName="accent-white" />
             ) : (
-              <Text
-                marginLeft="s"
-                variant="subtitle1"
-                textAlign="center"
-                color="secondary"
-              >
-                {t('dappLogin.login')}
-              </Text>
+              t('dappLogin.login')
             )}
-          </TouchableOpacityBox>
-        </Box>
-      </Box>
+          </Button>
+        </View>
+      </View>
     </AccountSelector>
   )
 }
 
-export default memo(DappLogin)
+export default DappLogin

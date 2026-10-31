@@ -1,19 +1,18 @@
 import Hnt from '@assets/images/hnt.svg'
 import Iot from '@assets/images/iot.svg'
 import Mobile from '@assets/images/mobile.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableContainer, {
-  ButtonPressAnimationProps,
-} from '@components/TouchableContainer'
 import { EPOCH_LENGTH } from '@helium/helium-sub-daos-sdk'
 import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { PressableScale, type PressableScaleProps } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { getMinDurationFmt, getTimeLeftFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { SvgProps } from 'react-native-svg'
 
 const NetworkSvg: React.FC<{ network: string } & SvgProps> = ({
@@ -37,8 +36,8 @@ type Props = {
 }
 
 export const PositionPreview: React.FC<
-  Props & Partial<Omit<ButtonPressAnimationProps, 'position'>>
-> = ({ position, ...boxProps }) => {
+  Props & Omit<PressableScaleProps, 'children'>
+> = ({ position, className, ...pressableProps }) => {
   const { t } = useTranslation()
   const { subDaos, network, mintAcc } = useGovernance()
   const { lockup, isDelegated, hasGenesisMultiplier, votingMint } = position
@@ -66,56 +65,54 @@ export const PositionPreview: React.FC<
   )
 
   return (
-    <TouchableContainer
-      flexDirection="row"
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      alignItems="center"
-      p="m"
-      mt="s"
-      {...boxProps}
+    <PressableScale
+      {...pressableProps}
+      className={twMerge(
+        'mt-2 flex-row items-center rounded-[12px] bg-secondary p-4',
+        className,
+      )}
     >
-      <Box mr="s">{Icon}</Box>
-      <Box flexDirection="column" justifyContent="space-around">
+      <View className="mr-2">{Icon}</View>
+      <View className="flex-col justify-around">
         {hasGenesisMultiplier && (
-          <Box flexDirection="row" alignItems="center" gap="xs">
-            <Text variant="body3" color="primaryText" textAlign="right">
+          <View className="flex-row items-center gap-1">
+            <Text size="xs" className="text-right">
               {t('gov.positions.landrush')}
             </Text>
-            <Text variant="body3" color="primaryText" textAlign="right">
+            <Text size="xs" className="text-right">
               {votingMint.genesisVotePowerMultiplier}x (
               {getTimeLeftFromNowFmt(lockup.endTs)})
             </Text>
-          </Box>
+          </View>
         )}
-        <Box flexDirection="row" alignItems="center">
-          <Text variant="body3" mr="xxs">
+        <View className="flex-row items-center">
+          <Text size="xs" className="mr-0.5">
             {amount} {network.toUpperCase()}
           </Text>
-          <Text variant="body3" mr="xxs">
+          <Text size="xs" className="mr-0.5">
             for
           </Text>
-          <Text variant="body3" mr="xxs">
+          <Text size="xs" className="mr-0.5">
             {isConstant
               ? getMinDurationFmt(lockup.startTs, lockup.endTs)
               : isDelegated
                 ? getTimeLeftFromNowFmt(lockup.endTs.add(new BN(EPOCH_LENGTH)))
                 : getTimeLeftFromNowFmt(lockup.endTs)}
           </Text>
-          <Text variant="body3" mr="xxs">
+          <Text size="xs" className="mr-0.5">
             {isConstant ? 'decaying delayed' : 'decaying'}
           </Text>
-        </Box>
+        </View>
         {subDao && (
-          <Box flexDirection="row" alignItems="center">
-            <Text mr="xs" variant="body3" color="white" opacity={0.5}>
+          <View className="flex-row items-center">
+            <Text size="xs" className="mr-1 text-muted-foreground">
               and delegated to
             </Text>
-            <Box mr="xs">{DelegatedIcon}</Box>
-            <Text variant="body3">{subDao.dntMetadata.symbol}</Text>
-          </Box>
+            <View className="mr-1">{DelegatedIcon}</View>
+            <Text size="xs">{subDao.dntMetadata.symbol}</Text>
+          </View>
         )}
-      </Box>
-    </TouchableContainer>
+      </View>
+    </PressableScale>
   )
 }

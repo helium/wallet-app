@@ -1,7 +1,20 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { Theme } from '@theme/theme'
+import { Text } from '@ui/Text'
 import React from 'react'
+import { View } from 'react-native'
+
+export type SplitBarColor = 'hnt' | 'mobile' | 'iot'
+
+// Literal class names, so Tailwind finds them.
+const barClassNames: Record<SplitBarColor, string> = {
+  hnt: 'bg-hnt',
+  mobile: 'bg-mobile',
+  iot: 'bg-iot',
+}
+const textClassNames: Record<SplitBarColor, string> = {
+  hnt: 'text-hnt',
+  mobile: 'text-mobile',
+  iot: 'text-iot',
+}
 
 type SplitBarProps = {
   title: string
@@ -9,8 +22,8 @@ type SplitBarProps = {
   rightValue: string
   leftPercentage: number
   rightPercentage: number
-  leftColor?: keyof Theme['colors']
-  rightColor?: keyof Theme['colors']
+  leftColor?: SplitBarColor
+  rightColor?: SplitBarColor
   leftLabel?: string
   rightLabel?: string
 }
@@ -21,44 +34,32 @@ export const SplitBar = ({
   rightValue,
   leftPercentage,
   rightPercentage,
-  leftColor = 'iotGreen',
-  rightColor = 'mobileBlue',
+  leftColor = 'iot',
+  rightColor = 'mobile',
   leftLabel = 'IOT',
   rightLabel = 'Mobile',
 }: SplitBarProps) => {
   return (
-    <Box>
-      <Text variant="body2" color="secondaryText" marginBottom="s">
-        {title}
-      </Text>
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        marginBottom="xxs"
-        width="100%"
-        backgroundColor="black900"
-        borderRadius="round"
-        overflow="hidden"
-      >
-        <Box
-          height={10}
-          backgroundColor={leftColor}
-          width={`${leftPercentage}%`}
+    <View>
+      <Text className="mb-2 text-muted-foreground">{title}</Text>
+      <View className="mb-0.5 w-full flex-row items-center overflow-hidden rounded-full bg-muted">
+        <View
+          className={`h-2.5 ${barClassNames[leftColor]}`}
+          style={{ width: `${leftPercentage}%` }}
         />
-        <Box
-          height={10}
-          backgroundColor={rightColor}
-          width={`${rightPercentage}%`}
+        <View
+          className={`h-2.5 ${barClassNames[rightColor]}`}
+          style={{ width: `${rightPercentage}%` }}
         />
-      </Box>
-      <Box flexDirection="row" justifyContent="space-between">
-        <Text variant="body3" color={leftColor}>
+      </View>
+      <View className="flex-row justify-between">
+        <Text size="xs" className={textClassNames[leftColor]}>
           {leftLabel}: {leftValue}
         </Text>
-        <Text variant="body3" color={rightColor}>
+        <Text size="xs" className={textClassNames[rightColor]}>
           {rightLabel}: {rightValue}
         </Text>
-      </Box>
-    </Box>
+      </View>
+    </View>
   )
 }

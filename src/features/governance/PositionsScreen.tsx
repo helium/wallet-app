@@ -1,9 +1,6 @@
 import BlurActionSheet from '@components/BlurActionSheet'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
 import Dot from '@components/Dot'
 import ListItem from '@components/ListItem'
-import Text from '@components/Text'
 import type { TokenAmountOutput } from '@helium/blockchain-api'
 import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
@@ -24,6 +21,9 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePositionDelegations } from '@hooks/usePositionDelegations'
 import { useNavigation } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { Text } from '@ui/Text'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import BN from 'bn.js'
@@ -35,6 +35,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import GovernanceWrapper from './GovernanceWrapper'
@@ -389,70 +390,51 @@ export const PositionsScreen = () => {
 
   return (
     <GovernanceWrapper selectedTab="positions">
-      <Box flexDirection="column" flex={1}>
-        <Box flex={1}>
+      <View className="flex-1">
+        <View className="flex-1">
           <PositionsList header={<VotingPowerCard marginBottom="l" />} />
-        </Box>
+        </View>
         {showError && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
-          >
-            <Text variant="body3Medium" color="red500">
-              {showError}
-            </Text>
-          </Box>
+          <View className="flex-row items-center justify-center pt-3">
+            <Text className="font-medium text-destructive">{showError}</Text>
+          </View>
         )}
-        <Box flexDirection="row" paddingTop="m">
+        <View className="flex-row pt-4">
           {HNT_MINT.equals(mint) && (
-            <Box flex={1} alignItems="center" flexDirection="row">
+            <View className="flex-1 flex-row items-center">
               {positions?.length === 0 ? (
-                <ButtonPressable
-                  height={44}
-                  fontSize={12}
-                  borderRadius="round"
-                  borderWidth={2}
-                  borderColor="white"
-                  backgroundColorOpacityPressed={0.7}
-                  title={t('gov.transactions.lockTokens')}
-                  titleColor="white"
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
                   onPress={() => setIsLockModalOpen(true)}
-                  flexDirection="row"
-                  justifyContent="center"
-                  alignItems="center"
-                  innerContainerProps={{ justifyContent: 'center' }}
-                />
+                >
+                  {t('gov.transactions.lockTokens')}
+                </Button>
               ) : (
                 <>
-                  <ButtonPressable
-                    height={44}
-                    fontSize={12}
-                    borderRadius="round"
-                    borderWidth={2}
-                    borderColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    title={t('gov.manage')}
-                    titleColor="white"
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full gap-2"
                     onPress={() => setIsManageSheetOpen(true)}
                     testID="Positions.Manage"
-                    flexDirection="row"
-                    justifyContent="center"
-                    alignItems="center"
-                    innerContainerProps={{ justifyContent: 'center' }}
-                    Icon={
-                      positionsWithRewards?.length
-                        ? () => <Dot filled color="green500" size={8} />
-                        : undefined
-                    }
-                  />
+                  >
+                    {positionsWithRewards?.length ? (
+                      <Dot filled color="green500" size={8} />
+                    ) : null}
+                    <Text
+                      className={buttonTextVariants({ variant: 'outline' })}
+                    >
+                      {t('gov.manage')}
+                    </Text>
+                  </Button>
                   <BlurActionSheet
                     title={t('gov.manage')}
                     open={isManageSheetOpen}
                     onClose={() => setIsManageSheetOpen(false)}
                   >
-                    <Box>
+                    <View>
                       {manageActions.map((action) => (
                         <ListItem
                           key={action.value}
@@ -464,13 +446,13 @@ export const PositionsScreen = () => {
                           hasDivider
                         />
                       ))}
-                    </Box>
+                    </View>
                   </BlurActionSheet>
                 </>
               )}
-            </Box>
+            </View>
           )}
-        </Box>
+        </View>
         {claimRewardsMutation.isPending && <ClaimingRewardsModal />}
         {isLockModalOpen && (
           <LockTokensModal
@@ -507,18 +489,13 @@ export const PositionsScreen = () => {
           />
         )}
         {delegateAllMutation.error && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingTop="ms"
-          >
-            <Text variant="body3Medium" color="red500">
+          <View className="flex-row items-center justify-center pt-3">
+            <Text className="font-medium text-destructive">
               {delegateAllMutation.error.message}
             </Text>
-          </Box>
+          </View>
         )}
-      </Box>
+      </View>
     </GovernanceWrapper>
   )
 }

@@ -1,19 +1,18 @@
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
 import { DiagnosticInfo, useHotspotBle } from '@helium/react-native-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
-import React, { useCallback, useState } from 'react'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
+import { ScrollView, View } from 'react-native'
+import OnboardingScreen from '../components/OnboardingScreen'
 import type { HotspotBleNavProp } from './navTypes'
 
 const Diagnostics = () => {
   const navigation = useNavigation<HotspotBleNavProp>()
-  const navNext = useCallback(() => navigation.goBack(), [navigation])
+  const navNext = () => navigation.goBack()
 
   const { getDiagnosticInfo } = useHotspotBle()
   const [callNum, setCallNum] = useState(0)
@@ -27,63 +26,47 @@ const Diagnostics = () => {
     gcTime: 0,
   })
 
-  const handleSetDiagnostics = useCallback(() => {
+  const handleSetDiagnostics = () => {
     setCallNum((n) => n + 1)
-  }, [setCallNum])
+  }
 
   return (
-    <BackScreen title={t('hotspotOnboarding.diagnostics.title')}>
+    <OnboardingScreen title={t('hotspotOnboarding.diagnostics.title')}>
       <ScrollView contentInsetAdjustmentBehavior="automatic">
         {diagnosticInfo &&
           Object.entries(diagnosticInfo).map(([key, value]) => (
-            <Box
+            <View
               key={key}
-              flexDirection="row"
-              justifyContent="space-between"
-              mb="s"
-              pb="s"
-              borderColor="grey900"
-              borderBottomWidth={1}
+              className="mb-2 flex-row justify-between border-b border-border pb-2"
             >
-              <Text variant="subtitle2" color="secondaryText">
+              <Text size="lg" className="font-medium text-muted-foreground">
                 {key}
               </Text>
-              <Text variant="subtitle2" color="secondaryText">
+              <Text size="lg" className="font-medium text-muted-foreground">
                 {JSON.stringify(value)}
               </Text>
-            </Box>
+            </View>
           ))}
         {!diagnosticInfo && !loading && (
-          <Text variant="subtitle1" color="secondaryText">
+          <Text size="xl" className="font-medium text-muted-foreground">
             {t('hotspotOnboarding.diagnostics.noneFound')}
           </Text>
         )}
       </ScrollView>
 
-      <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor="white"
-        borderColor="white"
-        borderWidth={2}
-        backgroundColor="transparent"
-        title={loading ? undefined : t('hotspotOnboarding.diagnostics.get')}
+      <Button
+        variant="outline"
+        size="lg"
+        className="mt-6 w-full"
         onPress={handleSetDiagnostics}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
         disabled={loading}
-        LeadingComponent={loading ? <CircleLoader /> : undefined}
-      />
-      <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor="black"
-        borderColor="transparent"
-        backgroundColor="white"
-        title={t('generic.done')}
-        onPress={navNext}
-      />
-    </BackScreen>
+      >
+        {loading ? <Spinner /> : t('hotspotOnboarding.diagnostics.get')}
+      </Button>
+      <Button variant="cta" size="lg" className="mt-6 w-full" onPress={navNext}>
+        {t('generic.done')}
+      </Button>
+    </OnboardingScreen>
   )
 }
 

@@ -1,150 +1,118 @@
-import LightningBolt from '@assets/images/transactions.svg'
-import Box from '@components/Box'
 import { CardSkeleton } from '@components/CardSkeleton'
-import Text from '@components/Text'
 import {
   PositionWithMeta,
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
-import { BoxProps } from '@shopify/restyle'
 import { useGovernance } from '@storage/GovernanceProvider'
-import { Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { times } from 'lodash'
-import React, { useCallback, useMemo } from 'react'
+import { Zap } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, SectionList } from 'react-native'
+import { RefreshControl, SectionList, View } from 'react-native'
+import { useCSSVariable, withUniwind } from 'uniwind'
 import { PositionCard } from './PositionCard'
 
-interface IPositionsListProps extends BoxProps<Theme> {
+const ZapIcon = withUniwind(Zap)
+
+interface IPositionsListProps {
   header?: React.ReactElement
+  className?: string
 }
 
-export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
+export const PositionsList = ({ header, className }: IPositionsListProps) => {
   const { loading: loadingGov, positions, refetch } = useGovernance()
   const { loading: loadingSubDaos, result: subDaos } = useSubDaos()
-  const colors = useColors()
+  const foreground = useCSSVariable('--color-foreground')
   const { t } = useTranslation()
 
-  const loading = useMemo(
-    () => !subDaos || loadingSubDaos || loadingGov,
-    [subDaos, loadingSubDaos, loadingGov],
-  )
+  const loading = !subDaos || loadingSubDaos || loadingGov
 
-  const sortedPositions = useMemo(
-    () =>
-      loading
-        ? []
-        : positions?.sort((a, b) => {
-            if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
-              if (b.hasGenesisMultiplier) {
-                return a.amountDepositedNative.gt(b.amountDepositedNative)
-                  ? -1
-                  : 1
-              }
-              return 0
-            }
-
-            if (a.isDelegated || b.isDelegated) {
-              if (a.isDelegated && !b.isDelegated) return -1
-              if (b.isDelegated && !a.isDelegated) return 1
-
-              return a.amountDepositedNative.gt(b.amountDepositedNative)
-                ? -1
-                : 1
-            }
-
+  const sortedPositions = loading
+    ? []
+    : positions?.sort((a, b) => {
+        if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
+          if (b.hasGenesisMultiplier) {
             return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
-          }),
-    [positions, loading],
-  )
+          }
+          return 0
+        }
 
-  const proxiedPositions = useMemo(
-    () => sortedPositions?.filter((p) => p.isProxiedToMe),
-    [sortedPositions],
-  )
-  const unProxiedPositions = useMemo(
-    () => sortedPositions?.filter((p) => !p.isProxiedToMe),
-    [sortedPositions],
-  )
+        if (a.isDelegated || b.isDelegated) {
+          if (a.isDelegated && !b.isDelegated) return -1
+          if (b.isDelegated && !a.isDelegated) return 1
 
-  const renderItem = useCallback(
-    ({ item: p, index: idx }) => {
-      if (!p.votingMint) {
-        return null
-      }
-      return (
-        <PositionCard
-          key={`${p.pubkey.toBase58()}-${p.amountDepositedNative.toString()}-${idx}`}
-          position={p}
-          marginTop={idx > 0 ? 'm' : 'none'}
-          subDaos={subDaos}
-        />
-      )
-    },
-    [subDaos],
-  )
+          return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
+        }
 
-  const keyExtractor = useCallback(
-    (item: PositionWithMeta) => item.pubkey.toBase58(),
-    [],
-  )
+        return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
+      })
 
-  const renderEmptyComponent = useCallback(() => {
+  const proxiedPositions = sortedPositions?.filter((p) => p.isProxiedToMe)
+  const unProxiedPositions = sortedPositions?.filter((p) => !p.isProxiedToMe)
+
+  const renderItem = ({
+    item: p,
+    index: idx,
+  }: {
+    item: PositionWithMeta
+    index: number
+  }) => {
+    if (!p.votingMint) {
+      return null
+    }
+    return (
+      <PositionCard
+        key={`${p.pubkey.toBase58()}-${p.amountDepositedNative.toString()}-${idx}`}
+        position={p}
+        className={idx > 0 ? 'mt-4' : undefined}
+        subDaos={subDaos}
+      />
+    )
+  }
+
+  const keyExtractor = (item: PositionWithMeta) => item.pubkey.toBase58()
+
+  const renderEmptyComponent = () => {
     if (!positions) return null
 
     if (loading) {
       return (
-        <Box flex={1} flexDirection="column">
+        <View className="flex-1">
           {times(5).map((i) => (
             <CardSkeleton height={POSITION_HEIGHT} key={i} />
           ))}
-        </Box>
+        </View>
       )
     }
 
     return (
-      <Box
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        height={POSITION_HEIGHT}
-        width="100%"
-        justifyContent="center"
-        alignItems="center"
-        mb="m"
+      <View
+        style={{ height: POSITION_HEIGHT }}
+        className="mb-4 w-full items-center justify-center rounded-[12px] bg-secondary"
       >
-        <Text variant="body1" color="white">
-          {t('gov.positions.noneFound')}
-        </Text>
-      </Box>
+        <Text size="base">{t('gov.positions.noneFound')}</Text>
+      </View>
     )
-  }, [loading, positions, t])
+  }
 
-  const SectionData = useMemo(() => {
-    return [
-      { title: 'My Positions', data: unProxiedPositions || [], icon: null },
-      { title: 'Proxied To Me', data: proxiedPositions || [], icon: null },
-    ]
-  }, [proxiedPositions, unProxiedPositions])
+  const SectionData = [
+    { title: 'My Positions', data: unProxiedPositions || [], icon: null },
+    { title: 'Proxied To Me', data: proxiedPositions || [], icon: null },
+  ]
 
-  const renderSectionHeader = useCallback(
-    ({ section: { title, icon } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="m"
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-        justifyContent="center"
-      >
-        {icon !== undefined && icon}
-        <Text variant="body3" textAlign="center" color="secondaryText">
-          {title}
-        </Text>
-      </Box>
-    ),
-    [],
+  const renderSectionHeader = ({
+    section: { title, icon },
+  }: {
+    section: { title: string; icon: React.ReactNode }
+  }) => (
+    <View className="flex-row items-center justify-center bg-background px-6 py-4">
+      {icon !== undefined && icon}
+      <Text size="xs" className="text-center text-muted-foreground">
+        {title}
+      </Text>
+    </View>
   )
 
   return (
@@ -154,39 +122,24 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
       ListHeaderComponent={
         <>
           {header}
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingVertical="lm"
-          >
-            <Text variant="body3" color="secondaryText">
+          <View className="flex-row items-center justify-center py-5">
+            <Text size="xs" className="text-muted-foreground">
               Positions
             </Text>
-          </Box>
-          <Box
-            flex={1}
-            flexDirection="row"
-            backgroundColor="surfaceSecondary"
-            alignItems="center"
-            justifyContent="center"
-            borderRadius="l"
-            padding="ms"
-            marginBottom="m"
-            paddingLeft="none"
-            {...boxProps}
+          </View>
+          <View
+            className={twMerge(
+              'mb-4 flex-1 flex-row items-center justify-center gap-3 rounded-[12px] bg-secondary p-3',
+              className,
+            )}
           >
-            <LightningBolt
-              color={colors.blueBright500}
-              height={36}
-              width={36}
-            />
-            <Box flexShrink={1}>
-              <Text variant="body2" color="secondaryText">
+            <ZapIcon size={24} colorClassName="accent-blue-dark-500" />
+            <View className="shrink">
+              <Text className="text-muted-foreground">
                 Increase your voting power by locking tokens
               </Text>
-            </Box>
-          </Box>
+            </View>
+          </View>
         </>
       }
       keyExtractor={keyExtractor}
@@ -198,7 +151,7 @@ export const PositionsList = ({ header, ...boxProps }: IPositionsListProps) => {
           refreshing={loading}
           onRefresh={refetch}
           title=""
-          tintColor={colors.primaryText}
+          tintColor={typeof foreground === 'string' ? foreground : undefined}
         />
       }
     />
