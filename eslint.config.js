@@ -29,10 +29,44 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
+
+// Shared legacy composites that migrated code may still import. Ticket 136
+// ports them to @ui and removes this list. One name per line, sorted.
+const sharedComposites = [
+  'BlurActionSheet',
+  'CardSkeleton',
+  'Dot',
+  'HNTKeyboard',
+  'ListItem',
+  'Pill',
+]
+
+const migratedLegacyImports = {
+  ...legacyImports,
+  patterns: [
+    {
+      group: [
+        '@components/*',
+        ...sharedComposites.map((name) => `!@components/${name}`),
+      ],
+      message: 'Legacy component. Use @ui.',
+    },
+  ],
+}
 const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/governance/ClaimingRewardsModal.tsx',
+  'src/features/governance/DelegateTokensModal.tsx',
+  'src/features/governance/LockTokensModal.tsx',
+  'src/features/governance/PositionCard.tsx',
+  'src/features/governance/PositionsList.tsx',
+  'src/features/governance/PositionsScreen.tsx',
+  'src/features/governance/SplitBar.tsx',
+  'src/features/governance/TransferTokensModal.tsx',
+  'src/features/governance/components/**',
+  'src/features/governance/__tests__/**',
 ]
 
 module.exports = [
@@ -118,7 +152,7 @@ module.exports = [
   {
     files: migratedFiles,
     rules: {
-      'no-restricted-imports': ['error', legacyImports],
+      'no-restricted-imports': ['error', migratedLegacyImports],
     },
   },
   {

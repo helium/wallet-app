@@ -1,86 +1,37 @@
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
-import { Portal } from '@gorhom/portal'
-import React, { useMemo } from 'react'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Box from '@components/Box'
-import { Edge } from 'react-native-safe-area-context'
-import AccountIcon from '@components/AccountIcon'
-import { useTranslation } from 'react-i18next'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Platform } from 'react-native'
-import { FADE_IN } from '@theme/motion'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Text } from '@ui/Text'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { GovernanceModal } from './components/GovernanceModal'
 
 export const ClaimingRewardsModal = () => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
-  const edges = useMemo(() => ['bottom'] as Edge[], [])
 
   return (
-    <Portal hostName="GovernancePortalHost">
-      {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
-      {Platform.OS === 'android' && (
-        <Box
-          position="absolute"
-          zIndex={0}
-          left={0}
-          top={0}
-          height="100%"
-          width="100%"
-          backgroundColor="black"
-        />
-      )}
-      <ReAnimatedBlurBox
-        entering={FADE_IN}
-        position="absolute"
-        height="100%"
-        width="100%"
-        tint="dark"
-        intensity={80}
-      >
-        <SafeAreaBox
-          edges={edges}
-          backgroundColor="transparent"
-          flex={1}
-          padding="m"
-          marginHorizontal="s"
-          marginVertical="xs"
+    <GovernanceModal edges={['bottom']}>
+      <View className="grow items-center justify-center">
+        <View className="shadow-lg">
+          <AccountIcon address={currentAccount?.solanaAddress} size={76} />
+        </View>
+        <Text
+          size="xl"
+          className="mt-4 mb-3 font-semibold"
+          adjustsFontSizeToFit
         >
-          <Box flexGrow={1} justifyContent="center" alignItems="center">
-            <Box
-              shadowColor="black"
-              shadowOpacity={0.4}
-              shadowOffset={{ width: 0, height: 10 }}
-              shadowRadius={10}
-              elevation={12}
-            >
-              <AccountIcon address={currentAccount?.solanaAddress} size={76} />
-            </Box>
-            <Text
-              textAlign="left"
-              variant="subtitle2"
-              adjustsFontSizeToFit
-              marginTop="m"
-              marginBottom="ms"
-            >
-              {t('gov.claiming.title')}
-            </Text>
-            <Box paddingHorizontal="l" marginBottom="m">
-              <Text
-                variant="subtitle4"
-                color="secondaryText"
-                marginBottom="s"
-                textAlign="center"
-              >
-                {t('gov.claiming.body')}
-              </Text>
-              <Text variant="subtitle4" color="flamenco" textAlign="center">
-                {t('gov.claiming.multiple')}
-              </Text>
-            </Box>
-          </Box>
-        </SafeAreaBox>
-      </ReAnimatedBlurBox>
-    </Portal>
+          {t('gov.claiming.title')}
+        </Text>
+        <View className="mb-4 px-6">
+          <Text className="mb-2 text-center text-muted-foreground">
+            {t('gov.claiming.body')}
+          </Text>
+          <Text className="text-center text-warning-500">
+            {t('gov.claiming.multiple')}
+          </Text>
+        </View>
+      </View>
+    </GovernanceModal>
   )
 }
