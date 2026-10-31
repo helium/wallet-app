@@ -1,10 +1,3 @@
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
 import {
   HNT_MINT,
   IOT_MINT,
@@ -24,17 +17,27 @@ import { useAppStorage } from '@storage/AppStorageProvider'
 import { useDeprecatedTokens } from '@storage/DeprecatedTokensProvider'
 import { useJupiter } from '@storage/JupiterProvider'
 import { useModal } from '@storage/ModalsProvider'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import { numberFormat } from '@utils/Balance'
 import { useLanguage } from '@utils/i18n'
 import { usePollTokenPrices } from '@utils/usePollTokenPrices'
 import BN from 'bn.js'
 import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { BlurView } from 'expo-blur'
+import { Platform, StyleSheet, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
 import { FADE_IN } from '@theme/motion'
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
+const SafeArea = withUniwind(SafeAreaView)
 
 const DeprecatedTokensModal: FC = () => {
   // Opt out: compiler cannot lower try/finally or throw inside try/catch, see calculateEstimatedHnt and handleSwapAll
@@ -410,248 +413,184 @@ const DeprecatedTokensModal: FC = () => {
   return (
     <>
       {Platform.OS === 'android' && (
-        <Box
-          position="absolute"
-          zIndex={0}
-          left={0}
-          top={0}
-          height="100%"
-          width="100%"
-          backgroundColor="black"
+        <View
+          className="absolute inset-0 z-0 bg-background"
           pointerEvents={processing ? 'box-none' : 'auto'}
         />
       )}
-      <ReAnimatedBlurBox
+      <AnimatedBlurView
         entering={FADE_IN}
-        position="absolute"
-        height="100%"
-        width="100%"
-        paddingBottom="xl"
-        tint="dark"
+        style={StyleSheet.absoluteFill}
+        tint="light"
         intensity={80}
         pointerEvents={processing ? 'box-none' : 'auto'}
       >
-        <SafeAreaBox edges={edges} flex={1}>
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="center"
-            paddingTop="s"
-            paddingHorizontal="m"
-          >
-            <Text variant="h4" color="white" flex={1} textAlign="center">
-              {t('deprecatedTokensModal.title')}
-            </Text>
-          </Box>
-          <Box paddingHorizontal="m" paddingVertical="m">
-            <Box padding="m" borderRadius="l">
-              <Text variant="body3Medium" color="white" opacity={0.6}>
-                {t('deprecatedTokensModal.body')}
+        <View className="flex-1 pb-8">
+          <SafeArea edges={edges} className="flex-1">
+            <View className="flex-row items-center justify-center px-4 pt-2">
+              <Text size="xl" className="flex-1 text-center">
+                {t('deprecatedTokensModal.title')}
               </Text>
-            </Box>
-          </Box>
-          <Box flex={1} paddingHorizontal="m" justifyContent="center">
-            {isLoadingPositions ? (
-              <Box flex={1} justifyContent="center" alignItems="center">
-                <CircleLoader loaderSize={30} color="white" />
-                <Text
-                  variant="body2Medium"
-                  color="white"
-                  marginTop="m"
-                  textAlign="center"
-                >
-                  {t('deprecatedTokensModal.loadingPositions')}
+            </View>
+            <View className="p-4">
+              <View className="rounded-[12px] p-4">
+                <Text size="xs" className="font-medium text-muted-foreground">
+                  {t('deprecatedTokensModal.body')}
                 </Text>
-              </Box>
-            ) : (
-              <>
-                <Box flex={1} justifyContent="center">
-                  {hasMobile && (
-                    <Box
-                      backgroundColor="black600"
-                      borderRadius="l"
-                      padding="m"
-                      marginBottom="s"
-                    >
-                      <Box flexDirection="row" gap="m" alignItems="center">
-                        {mobileJson?.image && (
-                          <TokenIcon img={mobileJson.image} size={30} />
-                        )}
-                        <Box flex={1}>
-                          <Text variant="body2Medium" color="white">
-                            MOBILE balance
-                          </Text>
-                        </Box>
-                        <Box alignItems="flex-end">
-                          <Text variant="body2Bold" color="white">
-                            {humanReadable(
-                              (mobileBalance || new BN(0)).add(
-                                mobileStaked || new BN(0),
-                              ),
-                              mobileDecimals || 6,
-                            )}
-                          </Text>
-                          {mobileUsdValue && (
-                            <Text variant="body3" color="white" opacity={0.7}>
-                              ~{mobileUsdValue}
-                            </Text>
+              </View>
+            </View>
+            <View className="flex-1 justify-center px-4">
+              {isLoadingPositions ? (
+                <View className="flex-1 items-center justify-center">
+                  <Spinner size="large" />
+                  <Text className="mt-4 text-center font-medium">
+                    {t('deprecatedTokensModal.loadingPositions')}
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <View className="flex-1 justify-center">
+                    {hasMobile && (
+                      <View className="mb-2 rounded-[12px] bg-secondary p-4">
+                        <View className="flex-row items-center gap-4">
+                          {mobileJson?.image && (
+                            <TokenIcon img={mobileJson.image} size={30} />
                           )}
-                        </Box>
-                      </Box>
-                    </Box>
-                  )}
-
-                  {hasIot && (
-                    <Box
-                      backgroundColor="black600"
-                      borderRadius="l"
-                      padding="m"
-                      marginBottom="s"
-                    >
-                      <Box flexDirection="row" gap="m" alignItems="center">
-                        {iotJson?.image && (
-                          <TokenIcon img={iotJson.image} size={30} />
-                        )}
-                        <Box flex={1}>
-                          <Text variant="body2Medium" color="white">
-                            IOT balance
-                          </Text>
-                        </Box>
-                        <Box alignItems="flex-end">
-                          <Text variant="body2Bold" color="white">
-                            {humanReadable(
-                              (iotBalance || new BN(0)).add(
-                                iotStaked || new BN(0),
-                              ),
-                              iotDecimals || 6,
-                            )}
-                          </Text>
-                          {iotUsdValue && (
-                            <Text variant="body3" color="white" opacity={0.7}>
-                              ~{iotUsdValue}
+                          <View className="flex-1">
+                            <Text className="font-medium">MOBILE balance</Text>
+                          </View>
+                          <View className="items-end">
+                            <Text className="font-bold">
+                              {humanReadable(
+                                (mobileBalance || new BN(0)).add(
+                                  mobileStaked || new BN(0),
+                                ),
+                                mobileDecimals || 6,
+                              )}
                             </Text>
-                          )}
-                        </Box>
-                      </Box>
-                    </Box>
-                  )}
+                            {mobileUsdValue && (
+                              <Text size="xs" className="text-muted-foreground">
+                                ~{mobileUsdValue}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    )}
 
-                  {/* Estimated HNT Preview */}
-                  <Box marginTop="m">
-                    {!loadingEstimate && estimatedHnt > 0 && (
-                      <Box
-                        borderRadius="l"
-                        padding="m"
-                        backgroundColor="black600"
-                      >
-                        <Text
-                          variant="body2Medium"
-                          color="white"
-                          textAlign="center"
-                          marginBottom="xs"
-                        >
-                          {t('deprecatedTokensModal.estimatedReceive')}
-                        </Text>
-                        <Text
-                          variant="h3"
-                          color="greenBright500"
-                          textAlign="center"
-                        >
-                          ~{estimatedHnt.toFixed(4)} HNT
-                        </Text>
-                        {estimatedUsdValue && (
+                    {hasIot && (
+                      <View className="mb-2 rounded-[12px] bg-secondary p-4">
+                        <View className="flex-row items-center gap-4">
+                          {iotJson?.image && (
+                            <TokenIcon img={iotJson.image} size={30} />
+                          )}
+                          <View className="flex-1">
+                            <Text className="font-medium">IOT balance</Text>
+                          </View>
+                          <View className="items-end">
+                            <Text className="font-bold">
+                              {humanReadable(
+                                (iotBalance || new BN(0)).add(
+                                  iotStaked || new BN(0),
+                                ),
+                                iotDecimals || 6,
+                              )}
+                            </Text>
+                            {iotUsdValue && (
+                              <Text size="xs" className="text-muted-foreground">
+                                ~{iotUsdValue}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      </View>
+                    )}
+
+                    {/* Estimated HNT Preview */}
+                    <View className="mt-4">
+                      {!loadingEstimate && estimatedHnt > 0 && (
+                        <View className="rounded-[12px] bg-secondary p-4">
+                          <Text className="mb-1 text-center font-medium">
+                            {t('deprecatedTokensModal.estimatedReceive')}
+                          </Text>
                           <Text
-                            variant="body2"
-                            color="white"
-                            opacity={0.7}
-                            textAlign="center"
-                            marginTop="xs"
+                            size="2xl"
+                            className="text-center text-success-500"
                           >
-                            ~{estimatedUsdValue}
+                            ~{estimatedHnt.toFixed(4)} HNT
                           </Text>
-                        )}
-                      </Box>
-                    )}
+                          {estimatedUsdValue && (
+                            <Text className="mt-1 text-center text-muted-foreground">
+                              ~{estimatedUsdValue}
+                            </Text>
+                          )}
+                        </View>
+                      )}
 
-                    {loadingEstimate && (
-                      <Box alignItems="center">
-                        <CircleLoader loaderSize={20} color="white" />
-                        <Text
-                          variant="body3"
-                          color="white"
-                          opacity={0.7}
-                          marginTop="xs"
-                        >
-                          {t('deprecatedTokensModal.calculatingEstimate')}
-                        </Text>
-                      </Box>
-                    )}
+                      {loadingEstimate && (
+                        <View className="items-center">
+                          <Spinner />
+                          <Text
+                            size="xs"
+                            className="mt-1 text-muted-foreground"
+                          >
+                            {t('deprecatedTokensModal.calculatingEstimate')}
+                          </Text>
+                        </View>
+                      )}
 
-                    {error && (
-                      <Box>
-                        <Text
-                          variant="body3Medium"
-                          color="red500"
-                          textAlign="center"
-                        >
-                          {error}
-                        </Text>
-                      </Box>
-                    )}
-                  </Box>
-                </Box>
+                      {error && (
+                        <View>
+                          <Text
+                            size="xs"
+                            className="text-center font-medium text-destructive"
+                          >
+                            {error}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
 
-                {processing && (
-                  <Box alignItems="center">
-                    <CircleLoader loaderSize={30} color="white" />
-                    <Text
-                      variant="body2Medium"
-                      color="white"
-                      marginTop="m"
-                      textAlign="center"
-                    >
-                      {t('deprecatedTokensModal.processing')}
-                    </Text>
-                  </Box>
-                )}
-              </>
-            )}
-          </Box>
+                  {processing && (
+                    <View className="items-center">
+                      <Spinner size="large" />
+                      <Text className="mt-4 text-center font-medium">
+                        {t('deprecatedTokensModal.processing')}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              )}
+            </View>
 
-          {!processing && !isLoadingPositions && (
-            <Box paddingHorizontal="m">
-              <ButtonPressable
-                width="100%"
-                borderRadius="round"
-                backgroundColor="white"
-                backgroundColorOpacityPressed={0.7}
-                titleColorPressedOpacity={0.3}
-                titleColor="black"
-                title={
-                  hasStaked
+            {!processing && !isLoadingPositions && (
+              <View className="px-4">
+                <Button
+                  variant="cta"
+                  size="lg"
+                  className="mb-4 w-full"
+                  onPress={() => void handleSwapAll().catch(console.error)}
+                  disabled={!hasAnyTokens}
+                >
+                  {hasStaked
                     ? t('deprecatedTokensModal.unstakeAndSwap')
-                    : t('deprecatedTokensModal.swapNow')
-                }
-                onPress={() => void handleSwapAll().catch(console.error)}
-                marginBottom="m"
-                disabled={!hasAnyTokens}
-              />
+                    : t('deprecatedTokensModal.swapNow')}
+                </Button>
 
-              <ButtonPressable
-                width="100%"
-                borderRadius="round"
-                backgroundColor="black400"
-                backgroundColorOpacityPressed={0.05}
-                titleColorPressedOpacity={0.3}
-                titleColor="white"
-                title={t('deprecatedTokensModal.remindLater')}
-                onPress={handleRemindLater}
-                marginBottom="m"
-              />
-            </Box>
-          )}
-        </SafeAreaBox>
-      </ReAnimatedBlurBox>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="mb-4 w-full"
+                  onPress={handleRemindLater}
+                >
+                  {t('deprecatedTokensModal.remindLater')}
+                </Button>
+              </View>
+            )}
+          </SafeArea>
+        </View>
+      </AnimatedBlurView>
     </>
   )
 }

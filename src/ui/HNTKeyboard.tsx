@@ -17,7 +17,6 @@ import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { NATIVE_MINT } from '@solana/spl-token'
 import type { PublicKey } from '@solana/web3.js'
 import type { CSAccount } from '@storage/cloudStorage'
-import { useSafeTopPaddingStyle } from '@theme/themeHooks'
 import { useContentColumnMargins } from '@utils/layout'
 import { decimalSeparator, groupSeparator } from '@utils/i18n'
 import { humanReadable } from '@utils/solanaUtils'
@@ -30,8 +29,8 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { type LayoutChangeEvent, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { type LayoutChangeEvent, Platform, View } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import type { Payment } from '../features/payment/PaymentItem'
 import { AccountIcon } from './AccountIcon'
@@ -113,7 +112,9 @@ export const HNTKeyboard = ({
   const [containerHeight, setContainerHeight] = useState(0)
   const [headerHeight, setHeaderHeight] = useState(0)
   const [maxEnabled, setMaxEnabled] = useState(false)
-  const containerStyle = useSafeTopPaddingStyle('android')
+  const { top } = useSafeAreaInsets()
+  const containerStyle =
+    Platform.OS === 'android' ? { paddingTop: top } : undefined
   const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
   const wallet = useCurrentWallet()
 

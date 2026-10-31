@@ -1,7 +1,6 @@
 import { IdlAccounts } from '@anchor-lang/core'
 import { Proposal } from '@helium/modular-governance-idls/lib/types/proposal'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { Color } from '@theme/theme'
 
 export type ProposalV0 = IdlAccounts<Proposal>['proposalV0']
 export type VoteChoice = IdlAccounts<Proposal>['proposalV0']['choices'][0]
@@ -32,22 +31,19 @@ export type GovernanceStackParamList = {
 export type GovernanceNavigationProp =
   NativeStackNavigationProp<GovernanceStackParamList>
 
-const voteAccentColors = [] as Color[]
-
-export default voteAccentColors
-export const VotingResultColors: Color[] = [
-  'blueRibbon',
-  'aquaMarine',
-  'purple500',
-  'blueBright500',
-  'greenBright500',
-  'orange500',
-  'persianRose',
-  'gold',
-  'electricViolet',
-  'flamenco',
-  'malachite',
-  'turquoise',
-  'white',
-  'red500',
+export const VotingResultColors = [
+  '#484CF6',
+  '#69DBB3',
+  '#B556FF',
+  '#009FF9',
+  '#27EE76',
+  '#f97316',
+  '#FF2DB7',
+  '#FFD700',
+  '#DD0FFF',
+  '#FF800B',
+  '#14D111',
+  '#2BD7E2',
+  '#FFFFFF',
+  '#E43B70',
 ]

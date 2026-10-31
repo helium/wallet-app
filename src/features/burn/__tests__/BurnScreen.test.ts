@@ -116,22 +116,13 @@ jest.mock(
   () => ({ AccountSelector: 'AccountSelector' }),
   { virtual: true },
 )
-jest.mock('@components/BackgroundFill', () => 'BackgroundFill', {
-  virtual: true,
-})
-jest.mock('@components/Box', () => 'Box', { virtual: true })
-jest.mock('@components/FadeInOut', () => 'FadeInOut', { virtual: true })
 jest.mock('@ui/SubmitButton', () => ({ SubmitButton: 'SubmitButton' }), {
   virtual: true,
 })
-jest.mock('@components/Text', () => 'Text', { virtual: true })
 jest.mock('@ui/TokenButton', () => ({ TokenButton: 'TokenButton' }), {
   virtual: true,
 })
 jest.mock('@ui/TokenSelector', () => ({ TokenSelector: 'TokenSelector' }), {
-  virtual: true,
-})
-jest.mock('@components/TouchableOpacityBox', () => 'TouchableOpacityBox', {
   virtual: true,
 })
 jest.mock(
@@ -183,9 +174,6 @@ jest.mock(
   () => ({ useMetaplexMetadata: () => ({ symbol: 'IOT' }) }),
   { virtual: true },
 )
-jest.mock('@theme/themeHooks', () => ({ useHitSlop: () => undefined }), {
-  virtual: true,
-})
 jest.mock('@theme/globalStyles', () => ({ container: {} }), { virtual: true })
 jest.mock(
   '@utils/solanaUtils',

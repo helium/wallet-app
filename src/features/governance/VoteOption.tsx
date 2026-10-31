@@ -1,6 +1,5 @@
 import { useKnownProxy } from '@helium/voter-stake-registry-hooks'
 import { PublicKey } from '@solana/web3.js'
-import { lightThemeColors } from '@theme/theme'
 import { PressableScale } from '@ui/PressableScale'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
@@ -11,8 +10,7 @@ import { View } from 'react-native'
 import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
 
 // Each choice keeps its fixed data colour, so it is a JS value, not a token.
-export const votingResultColor = (index: number) =>
-  lightThemeColors[VotingResultColors[index] as keyof typeof lightThemeColors]
+export const votingResultColor = (index: number) => VotingResultColors[index]
 
 export const VoteOption = ({
   option,

@@ -5,21 +5,19 @@
 // ("Unsupported output format: undefined").
 import './src/polyfill'
 import './src/global.css'
-import { ThemeProvider } from '@shopify/restyle'
 import React from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { AppRegistry, useWindowDimensions } from 'react-native'
+import { AppRegistry } from 'react-native'
 import 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'react-native-url-polyfill/auto'
 import App from './src/App'
-import { GlobalError } from './src/components/GlobalError'
+import { GlobalError } from './src/ui/GlobalError'
 import AccountStorageProvider from './src/storage/AccountStorageProvider'
 import AppStorageProvider from './src/storage/AppStorageProvider'
 import LanguageProvider from './src/storage/LanguageProvider'
 import NotificationStorageProvider from './src/storage/NotificationStorageProvider'
 import { LegacyImportGate, resetAfterError } from './src/store/persistence'
-import { createAppTheme, darkThemeColors } from './src/theme/theme'
 import './src/utils/i18n'
 
 const originalHandler = global.ErrorUtils?.getGlobalHandler?.()
@@ -59,28 +57,20 @@ function fallbackRender(props) {
 }
 
 const Root = () => {
-  const window = useWindowDimensions()
   return (
-    <ThemeProvider
-      theme={{
-        ...createAppTheme(window),
-        colors: darkThemeColors,
-      }}
-    >
-      <ErrorBoundary fallbackRender={fallbackRender} onReset={resetAfterError}>
-        <LegacyImportGate>
-          <LanguageProvider>
-            <AppStorageProvider>
-              <AccountStorageProvider>
-                <NotificationStorageProvider>
-                  <App />
-                </NotificationStorageProvider>
-              </AccountStorageProvider>
-            </AppStorageProvider>
-          </LanguageProvider>
-        </LegacyImportGate>
-      </ErrorBoundary>
-    </ThemeProvider>
+    <ErrorBoundary fallbackRender={fallbackRender} onReset={resetAfterError}>
+      <LegacyImportGate>
+        <LanguageProvider>
+          <AppStorageProvider>
+            <AccountStorageProvider>
+              <NotificationStorageProvider>
+                <App />
+              </NotificationStorageProvider>
+            </AccountStorageProvider>
+          </AppStorageProvider>
+        </LanguageProvider>
+      </LegacyImportGate>
+    </ErrorBoundary>
   )
 }
 

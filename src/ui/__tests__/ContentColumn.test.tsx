@@ -1,6 +1,10 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
-import { ContentColumn, useSheetMargins } from '../ContentColumn'
+import {
+  ContentColumn,
+  contentColumnLayout,
+  useSheetMargins,
+} from '../ContentColumn'
 
 const columnMargins = { marginLeft: 117, marginRight: 117 }
 
@@ -62,5 +66,15 @@ describe('ContentColumn', () => {
       </ContentColumn>,
     )
     expect(probe(root).props.style).toBeUndefined()
+  })
+})
+
+describe('contentColumnLayout', () => {
+  it('holds a navigator screen in the content column', () => {
+    const { root } = create(contentColumnLayout({ children: <>screen</> }))
+    const column = root.findByType(View)
+
+    expect(column.props.style).toEqual([columnMargins, undefined])
+    expect(column.props.children).toEqual(<>screen</>)
   })
 })

@@ -78,9 +78,6 @@ jest.mock('@assets/images/keystoneLogo.svg', () => 'KeystoneLogo', {
   virtual: true,
 })
 jest.mock('@theme/motion', () => ({ SPRING: {} }), { virtual: true })
-jest.mock('@theme/themeHooks', () => ({ useHitSlop: () => undefined }), {
-  virtual: true,
-})
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('react-native-qrcode-svg', () => 'QRCode')

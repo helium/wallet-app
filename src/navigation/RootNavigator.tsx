@@ -8,16 +8,16 @@ import {
   NativeStackNavigationOptions,
   createNativeStackNavigator,
 } from '@react-navigation/native-stack'
-import { contentColumnLayout } from '@components/ContentColumn'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { CSAccount } from '@storage/cloudStorage'
 import { getSecureAccount } from '@storage/secureStorage'
-import { useColors } from '@theme/themeHooks'
 import { useMutation } from '@tanstack/react-query'
 import * as bip39 from 'bip39'
 import React, { memo, useCallback, useEffect, useRef } from 'react'
 import changeNavigationBarColor from 'react-native-navigation-bar-color'
 import Toast from 'react-native-simple-toast'
+import { useCSSVariable } from 'uniwind'
+import { contentColumnLayout } from '../ui/ContentColumn'
 import ConnectedWallets, {
   ConnectedWalletsRef,
 } from '../features/account/ConnectedWallets'
@@ -47,15 +47,15 @@ const RootNavigator = () => {
   const navigation = useNavigation<
     RootNavigationProp & HomeNavigationProp & TabBarNavigationProp
   >()
-  const colors = useColors()
+  const background = useCSSVariable('--color-background')
   const RootStack = createNativeStackNavigator<RootStackParamList>()
   const connectedWalletsRef = useRef<ConnectedWalletsRef>(null)
   const { setOnboardingData, onboardingData } = useOnboarding()
   const { currentAccount, accounts } = useAccountStorage()
 
   useEffect(() => {
-    changeNavigationBarColor(colors.primaryBackground, true, false)
-  }, [colors.primaryBackground])
+    changeNavigationBarColor(String(background), true, false)
+  }, [background])
 
   const handleAddNew = useCallback(() => {
     navigation.navigate(

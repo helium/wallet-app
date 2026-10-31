@@ -12,7 +12,6 @@ import { withUniwind } from 'uniwind'
 import EventEmitter from 'events'
 
 import { CloseButton } from '@ui/CloseButton'
-import { useHitSlop } from '@theme/themeHooks'
 import { AnimatedQrCode } from '../components/StaticQrCode'
 import ProgressBar from '../components/ProgressBar'
 import { CameraScannerLayout } from '../components/CameraScannerLayout'
@@ -156,7 +155,7 @@ const ScanTxQrcodeScreen = ({
     }
   }, [isUnexpectedQrCode])
 
-  const hitSlop = useHitSlop('l')
+  const hitSlop = { top: 24, bottom: 24, left: 24, right: 24 }
   return (
     <SafeArea className="flex-1" edges={['bottom']}>
       {openQrCodeScanner && (

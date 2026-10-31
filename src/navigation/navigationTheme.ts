@@ -1,15 +1,11 @@
 import { DarkTheme, Theme } from '@react-navigation/native'
-import { darkThemeColors, lightThemeColors } from '../theme/theme'
 
 // Native tabs and native-stack headers read `dark` for the iOS interface style
-export const navigationTheme = (colorScheme: 'dark' | 'light'): Theme => ({
+export const navigationTheme = (background: string): Theme => ({
   ...DarkTheme,
-  dark: colorScheme !== 'light',
+  dark: true,
   colors: {
     ...DarkTheme.colors,
-    background:
-      colorScheme === 'light'
-        ? lightThemeColors.primaryBackground
-        : darkThemeColors.primaryBackground,
+    background,
   },
 })

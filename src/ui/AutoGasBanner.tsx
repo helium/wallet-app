@@ -1,5 +1,3 @@
-import CloseCircle from '@assets/images/closeCircleFilled.svg'
-import Warning from '@assets/images/warning.svg'
 import {
   useMint,
   useOwnedAmount,
@@ -8,47 +6,41 @@ import {
 import { toNumber } from '@helium/spl-utils'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useSubmitAndAwait } from '@hooks/useSubmitAndAwait'
-import { BoxProps } from '@shopify/restyle'
 import { Connection, VersionedTransaction } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
-import { Theme } from '@theme/theme'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import axios from 'axios'
 import BN from 'bn.js'
-import React, {
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { CircleX, TriangleAlert } from 'lucide-react-native'
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, View } from 'react-native'
 import Config from '@utils/config'
-import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import {
   initialWindowMetrics,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import { useAppStore } from '../store/appStore'
-import { ReAnimatedBox } from './AnimatedBox'
-import Box from './Box'
-import CircleLoader from './CircleLoader'
-import Text from './Text'
-import TouchableOpacityBox from './TouchableOpacityBox'
+import { PressableScale } from './PressableScale'
+import { Spinner } from './Spinner'
+import { Text } from './Text'
+import { twMerge } from './twMerge'
 
-const MIN_HEIGHT = 52
+const WarningIcon = withUniwind(TriangleAlert)
+const CloseIcon = withUniwind(CircleX)
 
 type BannerProps = {
   onLayout?: (event: LayoutChangeEvent) => void
-} & BoxProps<Theme>
+  className?: string
+}
 
-const Banner = ({ onLayout, ...rest }: BannerProps) => {
+const Banner = ({ onLayout, className }: BannerProps) => {
   const setShowBanner = useAppStore((state) => state.setShowBanner)
   const { top } = useSafeAreaInsets()
   const { t } = useTranslation()
@@ -62,23 +54,16 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
   const decimals = useMint(autoGasManagementToken)?.info?.decimals
   const { walletSignBottomSheetRef } = useWalletSign()
   const { submitAndAwait } = useSubmitAndAwait()
-  const needsSwap = useMemo(
-    () =>
-      autoGasManagementToken &&
-      anchorProvider &&
-      typeof decimals !== 'undefined' &&
-      solBalance &&
-      solBalance <= MIN_BALANCE_THRESHOLD,
-    [solBalance, autoGasManagementToken, anchorProvider, decimals],
-  )
-  const baseUrl = useMemo(() => {
-    let url = Config.TOKENS_TO_RENT_SERVICE_DEVNET_URL
-    if (cluster === 'mainnet-beta') {
-      url = Config.TOKENS_TO_RENT_SERVICE_URL
-    }
-
-    return url
-  }, [cluster])
+  const needsSwap =
+    autoGasManagementToken &&
+    anchorProvider &&
+    typeof decimals !== 'undefined' &&
+    solBalance &&
+    solBalance <= MIN_BALANCE_THRESHOLD
+  const baseUrl =
+    cluster === 'mainnet-beta'
+      ? Config.TOKENS_TO_RENT_SERVICE_URL
+      : Config.TOKENS_TO_RENT_SERVICE_DEVNET_URL
   const { amount: tokenBalance } = useOwnedAmount(
     anchorProvider?.wallet.publicKey,
     autoGasManagementToken,
@@ -183,16 +168,12 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
     t,
     baseUrl,
   ])
-  const swapping = useMemo(
-    () => Boolean(autoGasManagementToken && needsSwap && loading),
-    [autoGasManagementToken, needsSwap, loading],
-  )
+  const swapping = Boolean(autoGasManagementToken && needsSwap && loading)
 
-  const bannerTopMargin = useMemo(() => {
-    return top === 0 && initialWindowMetrics?.insets
+  const bannerTopMargin =
+    top === 0 && initialWindowMetrics?.insets
       ? initialWindowMetrics?.insets.top
       : top
-  }, [top])
 
   const bannerAnimatedStyles = useAnimatedStyle(() => {
     // Animate margin
@@ -202,38 +183,23 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
     }
   }, [bannerTopMargin])
 
-  const handleBannerClose = useCallback(() => {
-    setShowBanner(false)
-  }, [setShowBanner])
-
   return (
-    <ReAnimatedBox
-      visible={swapping}
-      backgroundColor="black650"
+    <Animated.View
+      className={twMerge('bg-primary', !swapping && 'hidden', className)}
       style={bannerAnimatedStyles}
       onLayout={onLayout}
-      {...rest}
     >
-      <Box
-        minHeight={MIN_HEIGHT}
-        padding="s"
-        paddingHorizontal="m"
-        flexDirection="row"
-        alignItems="center"
-      >
-        <Box>
+      <View className="min-h-[52px] flex-row items-center px-4 py-2">
+        <View>
           {error ? (
-            <Warning width={24} height={24} />
+            <WarningIcon size={24} colorClassName="accent-warning-500" />
           ) : (
-            <CircleLoader loaderSize={24} />
+            <Spinner colorClassName="accent-primary-foreground" />
           )}
-        </Box>
+        </View>
         <Text
-          variant="body2"
-          marginStart="s"
-          flex={1}
+          className="ms-2 flex-1 text-center text-primary-foreground"
           adjustsFontSizeToFit
-          textAlign="center"
         >
           {error
             ? `Auto Gas Error: ${error.toString()}`
@@ -242,11 +208,11 @@ const Banner = ({ onLayout, ...rest }: BannerProps) => {
                 amount,
               })}
         </Text>
-        <TouchableOpacityBox onPress={handleBannerClose}>
-          <CloseCircle width={24} height={24} />
-        </TouchableOpacityBox>
-      </Box>
-    </ReAnimatedBox>
+        <PressableScale feedback="opacity" onPress={() => setShowBanner(false)}>
+          <CloseIcon size={24} colorClassName="accent-primary-foreground" />
+        </PressableScale>
+      </View>
+    </Animated.View>
   )
 }
 

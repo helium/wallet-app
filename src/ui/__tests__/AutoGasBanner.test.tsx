@@ -35,10 +35,6 @@ const mockPost = jest.fn((_url: string, _body: unknown) =>
 )
 const mockT = (key: string) => key
 
-jest.mock('@assets/images/closeCircleFilled.svg', () => 'CloseCircle', {
-  virtual: true,
-})
-jest.mock('@assets/images/warning.svg', () => 'Warning', { virtual: true })
 jest.mock('@helium/helium-react-hooks', () => ({
   useMint: () => ({ info: { decimals: 6 } }),
   useOwnedAmount: () => ({ amount: mockTokenBalance }),
@@ -92,9 +88,19 @@ jest.mock('axios', () => ({
   post: (url: string, body: unknown) => mockPost(url, body),
 }))
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: mockT }) }))
+// The node test runner cannot load react-native, Reanimated, uniwind or
+// lucide. The host components render as named elements.
+jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: { View: 'Animated.View' },
   useAnimatedStyle: () => ({}),
   withTiming: (v: number) => v,
+}))
+jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
+jest.mock('lucide-react-native', () => ({
+  CircleX: 'CircleX',
+  TriangleAlert: 'TriangleAlert',
 }))
 jest.mock('react-native-safe-area-context', () => ({
   initialWindowMetrics: null,
@@ -115,11 +121,9 @@ jest.mock('../../solana/walletSignBottomSheetTypes', () => ({
 jest.mock('../../store/appStore', () => ({
   useAppStore: () => jest.fn(),
 }))
-jest.mock('../AnimatedBox', () => ({ ReAnimatedBox: 'ReAnimatedBox' }))
-jest.mock('../Box', () => 'Box')
-jest.mock('../CircleLoader', () => 'CircleLoader')
-jest.mock('../Text', () => 'Text')
-jest.mock('../TouchableOpacityBox', () => 'TouchableOpacityBox')
+jest.mock('../PressableScale', () => ({ PressableScale: 'PressableScale' }))
+jest.mock('../Spinner', () => ({ Spinner: 'Spinner' }))
+jest.mock('../Text', () => ({ Text: 'Text' }))
 
 const flush = () => act(async () => {})
 
@@ -164,20 +168,21 @@ describe('AutoGasBanner', () => {
 
   it('keeps the swapping banner up until the first swap submits', async () => {
     await render()
-    const visible = () =>
-      renderer?.root.findByType('ReAnimatedBox' as never).props.visible
-    expect(visible()).toBe(true)
+    // The banner hides with `display: none` (`hidden`) once no swap runs.
+    const className = () =>
+      renderer?.root.findByType('Animated.View' as never).props.className
+    expect(className()).not.toContain('hidden')
 
     mockTokenBalance = 900
     await act(async () => {
       renderer?.update(React.createElement(Banner))
     })
     await flush()
-    expect(visible()).toBe(true)
+    expect(className()).not.toContain('hidden')
 
     resolveSubmit()
     await flush()
-    expect(visible()).toBe(false)
+    expect(className()).toContain('hidden')
   })
 
   it('starts a new swap after the first one submits', async () => {

@@ -2,11 +2,10 @@ import React, { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable'
 import { SafeAreaView } from 'react-native-screens/experimental'
+import { useCSSVariable } from 'uniwind'
 import { Portal } from '@gorhom/portal'
-import ContentColumn from '@components/ContentColumn'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
-import { useColors } from '@theme/themeHooks'
 import { useGovernance } from '@storage/GovernanceProvider'
 import GovernanceNavigator from '../features/governance/GovernanceNavigator'
 import { useAppStorage } from '../storage/AppStorageProvider'
@@ -18,6 +17,7 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useAppStore } from '../store/appStore'
 import { useSolana } from '../solana/SolanaProvider'
+import { ContentColumn } from '../ui/ContentColumn'
 
 const Tab = createNativeBottomTabNavigator()
 
@@ -26,7 +26,12 @@ const Tab = createNativeBottomTabNavigator()
 const DOT_BADGE = Platform.select({ ios: ' ', default: '' })
 
 const TabBarNavigator = () => {
-  const colors = useColors()
+  const [active, inactive, tabBar, badge] = useCSSVariable([
+    '--color-primary-foreground',
+    '--color-muted-foreground',
+    '--color-primary',
+    '--color-success-500',
+  ]).map(String)
   const { triggerImpact } = useHaptic()
   const { hasNewTransactions, resetNewTransactions } = useEnrichedTransactions()
   const { hasUnseenProposals } = useGovernance()
@@ -79,10 +84,10 @@ const TabBarNavigator = () => {
         screenOptions={{
           headerShown: false,
           lazy: true,
-          tabBarActiveTintColor: colors.white,
-          tabBarInactiveTintColor: colors.secondaryText,
-          tabBarStyle: { backgroundColor: colors.black },
-          tabBarBadgeStyle: { backgroundColor: colors.malachite },
+          tabBarActiveTintColor: active,
+          tabBarInactiveTintColor: inactive,
+          tabBarStyle: { backgroundColor: tabBar },
+          tabBarBadgeStyle: { backgroundColor: badge },
         }}
         // Native tabs draw screens under the tab bar. Pad them clear of it.
         screenLayout={({ children }) => (

@@ -1,6 +1,3 @@
-import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
@@ -10,15 +7,18 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useNavigation } from '@react-navigation/native'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
-import { useColors } from '@theme/themeHooks'
 import { Button } from '@ui/Button'
+import { useSheetMargins } from '@ui/ContentColumn'
+import { SheetBackground, SheetHandle } from '@ui/Sheet'
+import { Text } from '@ui/Text'
 import React, { FC, memo, useCallback, useEffect, useRef } from 'react'
-import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
-import { BackHandler, Platform } from 'react-native'
+import { BackHandler, Platform, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 
-const SHEET_CORNERS = { borderTopLeftRadius: 24, borderTopRightRadius: 24 }
+const SafeArea = withUniwind(SafeAreaView)
 
 // The Helium World announcement, reframed as a dismissable bottom-sheet card
 // instead of a full-screen takeover: the wallet keeps working, migrating is an
@@ -34,7 +34,6 @@ const MigrateToWorldCard: FC = () => {
   const rootNav = useNavigation<RootNavigationProp>()
   const sheetRef = useRef<BottomSheet>(null)
   const sheetMargins = useSheetMargins()
-  const colors = useColors()
 
   // Once a close has been requested the card is on its way out; the back
   // handler must stop consuming presses or it swallows them on whatever screen
@@ -103,58 +102,30 @@ const MigrateToWorldCard: FC = () => {
       style={sheetMargins}
       enableDynamicSizing
       enablePanDownToClose
-      backgroundStyle={{
-        ...SHEET_CORNERS,
-        backgroundColor: colors.worldSurface,
-      }}
-      handleIndicatorStyle={{ backgroundColor: colors.worldInkFaint }}
+      backgroundComponent={SheetBackground}
+      handleComponent={SheetHandle}
       backdropComponent={renderBackdrop}
       onClose={handleClosed}
     >
       <BottomSheetView>
-        <SafeAreaBox
-          edges={['bottom']}
-          paddingHorizontal="l"
-          paddingTop="s"
-          paddingBottom="m"
-        >
+        <SafeArea edges={['bottom']} className="px-6 pb-4 pt-2">
           <Text
-            variant="body3Medium"
-            color="worldPurple"
-            textTransform="uppercase"
-            letterSpacing={1.5}
+            size="xs"
+            className="font-medium uppercase tracking-[1.5px] text-purple-700"
           >
             {t('migrateToWorldModal.welcome.eyebrow')}
           </Text>
-          <Text
-            variant="h3"
-            color="worldInk"
-            letterSpacing={-0.5}
-            marginTop="s"
-          >
+          <Text size="2xl" className="mt-2 tracking-[-0.5px]">
             {t('migrateToWorldModal.welcome.title')}
           </Text>
-          <Text
-            variant="body2"
-            color="worldSecondaryInk"
-            lineHeight={22}
-            marginTop="m"
-          >
+          <Text className="mt-4 leading-[22px] text-muted-foreground">
             {t('migrateToWorldModal.welcome.body')}
           </Text>
-          <Box
-            backgroundColor="worldSurfaceAlt"
-            borderWidth={1}
-            borderColor="worldBorder"
-            borderRadius="l"
-            paddingHorizontal="m"
-            paddingVertical="ms"
-            marginTop="m"
-          >
-            <Text variant="body3" color="worldSecondaryInk" lineHeight={17}>
+          <View className="mt-4 rounded-[12px] border border-border bg-secondary px-4 py-3">
+            <Text size="xs" className="leading-[17px] text-muted-foreground">
               {t('migrateToWorldModal.welcome.keepsWorking')}
             </Text>
-          </Box>
+          </View>
           <Button
             variant="cta"
             size="lg"
@@ -173,15 +144,10 @@ const MigrateToWorldCard: FC = () => {
           >
             {t('migrateToWorldModal.dismiss')}
           </Button>
-          <Text
-            variant="body3"
-            color="worldInkFaint"
-            textAlign="center"
-            marginTop="s"
-          >
+          <Text size="xs" className="mt-2 text-center text-muted-foreground">
             {t('migrateToWorldModal.findInSettings')}
           </Text>
-        </SafeAreaBox>
+        </SafeArea>
       </BottomSheetView>
     </BottomSheet>
   )

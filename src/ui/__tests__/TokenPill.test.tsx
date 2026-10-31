@@ -63,4 +63,24 @@ describe('TokenPill', () => {
 
     expect(byType(renderer, 'ChevronDown')).toHaveLength(1)
   })
+
+  it('marks the active pill with the primary border', () => {
+    const renderer = create(
+      <TokenPill mint={mint} isActive onPress={jest.fn()} />,
+    )
+
+    expect(byType(renderer, 'PressableScale')[0].props.className).toContain(
+      'border-primary',
+    )
+  })
+
+  it('dims and disables the pill when isDisabled is set', () => {
+    const renderer = create(
+      <TokenPill mint={mint} isDisabled onPress={jest.fn()} />,
+    )
+    const pressable = byType(renderer, 'PressableScale')[0]
+
+    expect(pressable.props.disabled).toBe(true)
+    expect(byType(renderer, 'View')[0].props.className).toContain('opacity-50')
+  })
 })

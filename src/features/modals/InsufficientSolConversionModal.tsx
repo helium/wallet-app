@@ -1,10 +1,3 @@
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TokenPill from '@components/TokenPill'
 import { useMint } from '@helium/helium-react-hooks'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
 import { useEcosystemTokenSolConvert } from '@hooks/useEcosystemTokensSolConvert'
@@ -14,15 +7,28 @@ import { PublicKey } from '@solana/web3.js'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useModal } from '@storage/ModalsProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenPill } from '@ui/TokenPill'
 import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import React, { FC, memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform } from 'react-native'
-import { Switch } from 'react-native-gesture-handler'
-import { Edge } from 'react-native-safe-area-context'
+import { BlurView } from 'expo-blur'
+import { Platform, StyleSheet, Switch, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { FADE_IN } from '@theme/motion'
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
+const SafeArea = withUniwind(SafeAreaView)
+
+const styles = StyleSheet.create({
+  overlay: { zIndex: 9999 },
+})
 
 const InsufficientSolConversionModal: FC = () => {
   const { t } = useTranslation()
@@ -161,194 +167,135 @@ const InsufficientSolConversionModal: FC = () => {
     <>
       {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
       {Platform.OS === 'android' && (
-        <Box
-          position="absolute"
-          zIndex={0}
-          left={0}
-          top={0}
-          height="100%"
-          width="100%"
-          backgroundColor="black"
-        />
+        <View className="absolute inset-0 z-0 bg-background" />
       )}
-      <ReAnimatedBlurBox
+      <AnimatedBlurView
         entering={FADE_IN}
-        position="absolute"
-        zIndex={9999}
-        height="100%"
-        width="100%"
-        paddingBottom="xl"
-        tint="dark"
+        style={[StyleSheet.absoluteFill, styles.overlay]}
+        tint="light"
         intensity={80}
       >
-        <SafeAreaBox edges={edges} flex={1}>
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="center"
-            paddingTop="s"
-            paddingHorizontal="m"
-          >
-            <Text variant="h4" color="white" flex={1} textAlign="center">
-              {t('insufficientSolConversionModal.title')}
-            </Text>
-          </Box>
-          <Box flex={1} paddingHorizontal="m" marginTop="l">
-            <Text
-              variant="body1Medium"
-              color="white"
-              opacity={0.6}
-              textAlign="center"
-            >
-              {t('insufficientSolConversionModal.body')}
-            </Text>
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              marginTop="xxl"
-            >
-              {validInputMints.map((mint) => (
-                <TokenPill
-                  key={mint.toBase58()}
-                  mint={mint}
-                  isActive={inputMint?.equals(mint)}
-                  isDisabled={!hasEnoughForSolByMint[mint.toBase58()]}
-                  onPress={onMintSelect(mint)}
-                />
-              ))}
-            </Box>
-            <Box flex={1} marginTop="xxl" alignItems="center">
-              {loading && <CircleLoader loaderSize={30} color="white" />}
-              {!loading && !hasAtLeastOne && (
-                <Box
-                  justifyContent="center"
-                  alignItems="center"
-                  marginTop="xxl"
-                >
-                  <Text variant="body2Medium" color="white" textAlign="center">
-                    {t('insufficientSolConversionModal.noBalance')}
-                  </Text>
-                </Box>
-              )}
-              {!loading && hasAtLeastOne && (
-                <>
-                  <Box
-                    justifyContent="center"
-                    alignItems="center"
-                    marginTop="xxl"
-                  >
-                    <Text
-                      variant="body3"
-                      color="white"
-                      opacity={0.6}
-                      marginBottom="xs"
-                    >
-                      {t('swapsScreen.youPay')}
-                    </Text>
-                    <Box flexDirection="row">
-                      <Text marginEnd="s" variant="h4">
-                        {inputAmount}
-                      </Text>
-                      <Text variant="h4" color="white" opacity={0.6}>
-                        {symbol}
-                      </Text>
-                    </Box>
-                  </Box>
-                  <Box
-                    marginTop="xxl"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <Text
-                      variant="body3"
-                      color="white"
-                      opacity={0.6}
-                      marginBottom="xs"
-                    >
-                      {t('swapsScreen.youReceive')}
-                    </Text>
-                    <Box flexDirection="row">
-                      <Text marginEnd="s" variant="h4">
-                        ~0.02
-                      </Text>
-                      <Text variant="h4" color="white" opacity={0.6}>
-                        SOL
-                      </Text>
-                    </Box>
-                  </Box>
-                  <Text
-                    opacity={submitError || solConvertError ? 100 : 0}
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    marginBottom="l"
-                    color="red500"
-                  >
-                    {showError}
-                  </Text>
-                </>
-              )}
-            </Box>
-          </Box>
-          <Box
-            flexDirection="row"
-            paddingHorizontal="m"
-            marginBottom="l"
-            marginTop="xxl"
-            alignItems="center"
-          >
-            <Switch
-              value={useAuto}
-              trackColor={{ false: 'secondaryText', true: 'blueBright500' }}
-              thumbColor="primaryBackground"
-              onValueChange={() => setUseAuto((ua) => !ua)}
-            />
-            <Box flex={1}>
-              <Text ml="m" color="white">
-                {t('insufficientSolConversionModal.useAuto')}
+        <View className="flex-1 pb-8">
+          <SafeArea edges={edges} className="flex-1">
+            <View className="flex-row items-center justify-center px-4 pt-2">
+              <Text size="xl" className="flex-1 text-center">
+                {t('insufficientSolConversionModal.title')}
               </Text>
-            </Box>
-          </Box>
-          {!loading && (
-            <Box
-              flexDirection="row"
-              marginHorizontal="m"
-              justifyContent="space-between"
-            >
-              <ButtonPressable
-                width={hasAtLeastOne ? '48%' : '100%'}
-                borderRadius="round"
-                backgroundColor="black400"
-                backgroundColorOpacityPressed={0.05}
-                titleColorPressedOpacity={0.3}
-                titleColor="white"
-                title={t('generic.cancel')}
-                disabled={loading}
-                onPress={() => void handleCancel().catch(console.error)}
+            </View>
+            <View className="mt-6 flex-1 px-4">
+              <Text
+                size="base"
+                className="text-center font-medium text-muted-foreground"
+              >
+                {t('insufficientSolConversionModal.body')}
+              </Text>
+              <View className="mt-12 flex-row justify-between">
+                {validInputMints.map((mint) => (
+                  <TokenPill
+                    key={mint.toBase58()}
+                    mint={mint}
+                    isActive={inputMint?.equals(mint)}
+                    isDisabled={!hasEnoughForSolByMint[mint.toBase58()]}
+                    onPress={onMintSelect(mint)}
+                  />
+                ))}
+              </View>
+              <View className="mt-12 flex-1 items-center">
+                {loading && <Spinner size="large" />}
+                {!loading && !hasAtLeastOne && (
+                  <View className="mt-12 items-center justify-center">
+                    <Text className="text-center font-medium">
+                      {t('insufficientSolConversionModal.noBalance')}
+                    </Text>
+                  </View>
+                )}
+                {!loading && hasAtLeastOne && (
+                  <>
+                    <View className="mt-12 items-center justify-center">
+                      <Text size="xs" className="mb-1 text-muted-foreground">
+                        {t('swapsScreen.youPay')}
+                      </Text>
+                      <View className="flex-row">
+                        <Text size="xl" className="me-2">
+                          {inputAmount}
+                        </Text>
+                        <Text size="xl" className="text-muted-foreground">
+                          {symbol}
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="mt-12 items-center justify-center">
+                      <Text size="xs" className="mb-1 text-muted-foreground">
+                        {t('swapsScreen.youReceive')}
+                      </Text>
+                      <View className="flex-row">
+                        <Text size="xl" className="me-2">
+                          ~0.02
+                        </Text>
+                        <Text size="xl" className="text-muted-foreground">
+                          SOL
+                        </Text>
+                      </View>
+                    </View>
+                    <Text
+                      size="xs"
+                      className={
+                        submitError || solConvertError
+                          ? 'mx-4 mb-6 font-medium text-destructive'
+                          : 'mx-4 mb-6 font-medium text-destructive opacity-0'
+                      }
+                    >
+                      {showError}
+                    </Text>
+                  </>
+                )}
+              </View>
+            </View>
+            <View className="mb-6 mt-12 flex-row items-center px-4">
+              <Switch
+                value={useAuto}
+                trackColorOnClassName="accent-purple-500"
+                trackColorOffClassName="accent-secondary"
+                thumbColorClassName="accent-white"
+                onValueChange={() => setUseAuto((ua) => !ua)}
               />
-              {hasAtLeastOne && (
-                <ButtonPressable
-                  width="48%"
-                  borderRadius="round"
-                  backgroundColor="white"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="secondaryBackground"
-                  titleColorDisabled="secondaryText"
-                  titleColor="black"
-                  disabled={!inputMint}
-                  titleColorPressedOpacity={0.3}
-                  title={swapping ? '' : t('generic.swap')}
-                  onPress={() => void handleSwapTokens().catch(console.error)}
-                  TrailingComponent={
-                    swapping ? (
-                      <CircleLoader loaderSize={20} color="black" />
-                    ) : undefined
-                  }
-                />
-              )}
-            </Box>
-          )}
-        </SafeAreaBox>
-      </ReAnimatedBlurBox>
+              <View className="flex-1">
+                <Text className="ml-4">
+                  {t('insufficientSolConversionModal.useAuto')}
+                </Text>
+              </View>
+            </View>
+            {!loading && (
+              <View className="mx-4 flex-row justify-between gap-3">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="flex-1"
+                  disabled={loading}
+                  onPress={() => void handleCancel().catch(console.error)}
+                >
+                  {t('generic.cancel')}
+                </Button>
+                {hasAtLeastOne && (
+                  <Button
+                    variant="cta"
+                    size="lg"
+                    className="flex-1"
+                    disabled={!inputMint}
+                    onPress={() => void handleSwapTokens().catch(console.error)}
+                  >
+                    {swapping ? (
+                      <Spinner colorClassName="accent-white" />
+                    ) : (
+                      t('generic.swap')
+                    )}
+                  </Button>
+                )}
+              </View>
+            )}
+          </SafeArea>
+        </View>
+      </AnimatedBlurView>
     </>
   )
 }

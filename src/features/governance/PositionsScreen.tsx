@@ -392,7 +392,7 @@ export const PositionsScreen = () => {
     <GovernanceWrapper selectedTab="positions">
       <View className="flex-1">
         <View className="flex-1">
-          <PositionsList header={<VotingPowerCard marginBottom="l" />} />
+          <PositionsList header={<VotingPowerCard className="mb-6" />} />
         </View>
         {showError && (
           <View className="flex-row items-center justify-center pt-3">

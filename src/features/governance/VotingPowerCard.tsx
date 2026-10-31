@@ -1,85 +1,71 @@
-import LightningBolt from '@assets/images/transactions.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import FadeInOut from '@components/FadeInOut'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback } from 'react'
+import { Zap } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { withUniwind } from 'uniwind'
 
-interface IVotingPowerCardProps extends BoxProps<Theme> {
+const ZapIcon = withUniwind(Zap)
+
+interface IVotingPowerCardProps {
   onPress?: (mint: PublicKey) => Promise<void>
+  className?: string
 }
 
-export const VotingPowerCardSkeleton = (boxProps: BoxProps<Theme>) => {
+export const VotingPowerCardSkeleton = ({
+  className,
+}: {
+  className?: string
+}) => {
   const { t } = useTranslation()
   const { mint } = useGovernance()
   const { symbol } = useMetaplexMetadata(mint)
 
   return (
-    <FadeInOut>
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        padding="m"
-        {...boxProps}
+    <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
+      <View
+        className={twMerge(
+          'flex-row justify-between rounded-[12px] bg-secondary p-4',
+          className,
+        )}
       >
-        <Box flex={1}>
-          <Text variant="body1" color="secondaryText">
+        <View className="flex-1">
+          <Text size="base" className="text-muted-foreground">
             {t('gov.votingPower.title')}
           </Text>
-          <Box
-            width={70}
-            height={16}
-            marginTop="xs"
-            backgroundColor="surface"
-          />
-        </Box>
-        <Box flex={1} alignItems="flex-end">
-          <Text variant="body1" color="secondaryText" textAlign="right">
+          <View className="mt-1 h-4 w-[70px] bg-card" />
+        </View>
+        <View className="flex-1 items-end">
+          <Text size="base" className="text-right text-muted-foreground">
             {t('gov.votingPower.locked', { symbol })}
           </Text>
-          <Box
-            width={70}
-            height={16}
-            marginTop="xs"
-            backgroundColor="surface"
-          />
-        </Box>
-      </Box>
-      <Box
-        flex={1}
-        borderTopColor="primaryBackground"
-        borderTopWidth={2}
-        paddingVertical="m"
-        paddingHorizontal="m"
-      >
-        <Box width={320} height={16} backgroundColor="surface" />
-      </Box>
-    </FadeInOut>
+          <View className="mt-1 h-4 w-[70px] bg-card" />
+        </View>
+      </View>
+      <View className="flex-1 border-t-2 border-background p-4">
+        <View className="h-4 w-80 bg-card" />
+      </View>
+    </Animated.View>
   )
 }
 
 export const VotingPowerCard = ({
   onPress,
-  ...boxProps
+  className,
 }: IVotingPowerCardProps) => {
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
-  const colors = useColors()
   const {
     loading,
     mint,
@@ -92,9 +78,9 @@ export const VotingPowerCard = ({
   const { amount: ownedAmount } = useOwnedAmount(wallet, mint)
   const { symbol } = useMetaplexMetadata(mint)
 
-  const handleOnPress = useCallback(async () => {
+  const handleOnPress = async () => {
     if (onPress) await onPress(mint)
-  }, [onPress, mint])
+  }
 
   const noVotingPower = !loading && (!votingPower || votingPower.isZero())
   const hasProxiedVotingPower =
@@ -105,58 +91,47 @@ export const VotingPowerCard = ({
 
     return (
       <>
-        <Box padding="m">
+        <View className="p-4">
           {!compact && (
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              marginBottom="m"
-            >
-              <Text variant="subtitle1" color="primaryText">
+            <View className="mb-4 flex-row justify-between">
+              <Text size="xl" className="font-medium">
                 {t('gov.votingPower.yourPower')}
               </Text>
-              <Text variant="subtitle1" color="primaryText">
+              <Text size="xl" className="font-medium">
                 &gt;
               </Text>
-            </Box>
+            </View>
           )}
           {!compact && noVotingPower && (
-            <Box flexDirection="row" alignItems="center">
-              <Text variant="body1" color="primaryText">
-                {t('gov.votingPower.noPower')}
-              </Text>
-            </Box>
+            <View className="flex-row items-center">
+              <Text size="base">{t('gov.votingPower.noPower')}</Text>
+            </View>
           )}
           {((!compact && !noVotingPower) || compact) && (
-            <Box
-              gap="xs"
-              flexDirection="column"
-              justifyContent="center"
-              alignItems="stretch"
-            >
+            <View className="flex-col items-stretch justify-center gap-1">
               {hasProxiedVotingPower && (
-                <Box flexDirection="row" justifyContent="space-between">
-                  <Text variant="body1" color="secondaryText">
+                <View className="flex-row justify-between">
+                  <Text size="base" className="text-muted-foreground">
                     {t('gov.votingPower.proxiedPower')}
                   </Text>
-                  <Box flexDirection="row" alignItems="center">
-                    <Text variant="body1" color="primaryText">
+                  <View className="flex-row items-center">
+                    <Text size="base">
                       {mintAcc &&
                         humanReadable(
                           proxiedVotingPower || new BN(0),
                           mintAcc.decimals,
                         )}
                     </Text>
-                  </Box>
-                </Box>
+                  </View>
+                </View>
               )}
-              <Box flexDirection="row" justifyContent="space-between">
-                <Box flex={1}>
-                  <Text variant="body1" color="secondaryText">
+              <View className="flex-row justify-between">
+                <View className="flex-1">
+                  <Text size="base" className="text-muted-foreground">
                     {t('gov.votingPower.title')}
                   </Text>
-                  <Box flexDirection="row" alignItems="center">
-                    <Text variant="body1" color="primaryText">
+                  <View className="flex-row items-center">
+                    <Text size="base">
                       {mintAcc &&
                         humanReadable(
                           myVotingPower || new BN(0),
@@ -167,20 +142,12 @@ export const VotingPowerCard = ({
                       myVotingPower &&
                       !amountLocked.isZero() &&
                       !myVotingPower.isZero() && (
-                        <Box
-                          flexDirection="row"
-                          justifyContent="center"
-                          alignItems="center"
-                          borderRadius="m"
-                          paddingHorizontal="s"
-                          paddingLeft="s"
-                        >
-                          <LightningBolt
-                            color={colors.blueBright500}
-                            width={20}
-                            height={20}
+                        <View className="flex-row items-center justify-center rounded-md px-2">
+                          <ZapIcon
+                            size={20}
+                            colorClassName="accent-blue-dark-500"
                           />
-                          <Text variant="body3" color="primaryText">
+                          <Text size="xs">
                             {`${
                               myVotingPower &&
                               amountLocked &&
@@ -194,33 +161,31 @@ export const VotingPowerCard = ({
                               )
                             }x`}
                           </Text>
-                        </Box>
+                        </View>
                       )}
-                  </Box>
-                </Box>
-                <Box flex={1}>
-                  <Text variant="body1" color="secondaryText" textAlign="right">
+                  </View>
+                </View>
+                <View className="flex-1">
+                  <Text
+                    size="base"
+                    className="text-right text-muted-foreground"
+                  >
                     {t('gov.votingPower.locked', { symbol })}
                   </Text>
-                  <Text variant="body1" color="primaryText" textAlign="right">
+                  <Text size="base" className="text-right">
                     {mintAcc &&
                       humanReadable(
                         amountLocked || new BN(0),
                         mintAcc.decimals,
                       )}
                   </Text>
-                </Box>
-              </Box>
-            </Box>
+                </View>
+              </View>
+            </View>
           )}
-        </Box>
-        <Box
-          borderTopColor="primaryBackground"
-          borderTopWidth={2}
-          paddingVertical="ms"
-          paddingHorizontal="m"
-        >
-          <Text variant="body2" color="secondaryText">
+        </View>
+        <View className="border-t-2 border-background px-4 py-3">
+          <Text className="text-muted-foreground">
             {t('gov.votingPower.youHave', {
               amount:
                 mintAcc &&
@@ -231,35 +196,30 @@ export const VotingPowerCard = ({
               symbol,
             })}
           </Text>
-        </Box>
+        </View>
       </>
     )
   }
 
   if (onPress)
     return (
-      <ReAnimatedBox
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
+      <Animated.View
         entering={FADE_IN}
         exiting={FADE_OUT}
-        {...boxProps}
+        className={twMerge('rounded-[12px] bg-secondary', className)}
       >
-        <TouchableOpacityBox
+        <PressableScale
+          feedback="opacity"
           onPress={() => void handleOnPress().catch(console.error)}
         >
           {renderCard(false)}
-        </TouchableOpacityBox>
-      </ReAnimatedBox>
+        </PressableScale>
+      </Animated.View>
     )
 
   return (
-    <ReAnimatedBox
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      {...boxProps}
-    >
+    <View className={twMerge('rounded-[12px] bg-secondary', className)}>
       {renderCard(true)}
-    </ReAnimatedBox>
+    </View>
   )
 }

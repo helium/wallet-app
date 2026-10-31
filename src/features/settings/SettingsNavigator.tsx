@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '@theme/themeHooks'
 import React, { memo } from 'react'
+import { useResolveClassNames } from 'uniwind'
 import SolanaMigration from '../migration/SolanaMigration'
 import MigrateToWorldScreen from '../migration/MigrateToWorld'
 import AutoGasManager from './AutoGasManager'
@@ -37,7 +37,7 @@ const RevealPrivateKeyWrapper = () => {
 }
 
 const SettingsNavigator = () => {
-  const { backgroundStyle } = useOpacity('primaryBackground', 0.98)
+  const backgroundStyle = useResolveClassNames('bg-background/98')
   return (
     <SettingsStack.Navigator
       screenOptions={{

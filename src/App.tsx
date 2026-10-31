@@ -1,20 +1,16 @@
-import AutoGasBanner from '@components/AutoGasBanner'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalHost, PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { NavigationContainer } from '@react-navigation/native'
-import { ThemeProvider } from '@shopify/restyle'
 import { BlockchainApiProvider } from '@storage/BlockchainApiProvider'
 import { JupiterProvider } from '@storage/JupiterProvider'
 import { ModalProvider } from '@storage/ModalsProvider'
 import TokensProvider from '@storage/TokensProvider'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import globalStyles from '@theme/globalStyles'
-import { createAppTheme, darkThemeColors, lightThemeColors } from '@theme/theme'
-import { useColorScheme } from '@theme/themeHooks'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
-import { LogBox, useWindowDimensions } from 'react-native'
+import { LogBox, StatusBar } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from '@utils/config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -22,8 +18,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller'
 import { OneSignal } from 'react-native-onesignal'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import NetworkAwareStatusBar from './components/NetworkAwareStatusBar'
-import SplashScreen from './components/SplashScreen'
+import { useCSSVariable } from 'uniwind'
 import WalletConnectProvider from './features/dappLogin/WalletConnectProvider'
 import KeystoneOnboardingProvider from './features/keystone/KeystoneOnboardingProvider'
 import LockScreen from './features/lock/LockScreen'
@@ -49,6 +44,8 @@ import { BalanceProvider } from './utils/Balance'
 import { useDeepLinking } from './utils/linking'
 import { queryClient } from './utils/queryClient'
 import { queryPersistOptions } from './utils/queryPersistence'
+import AutoGasBanner from './ui/AutoGasBanner'
+import SplashScreen from './ui/SplashScreen'
 
 SplashLib.preventAutoHideAsync().catch(() => {
   /* reloading the app might trigger some race conditions, ignore them */
@@ -80,17 +77,11 @@ const App = () => {
 
   const linking = useDeepLinking()
 
-  const colorScheme = useColorScheme()
-  const { width, height } = useWindowDimensions()
-  const colorAdaptedTheme = useMemo(
-    () => ({
-      ...createAppTheme({ width, height }),
-      colors: colorScheme === 'light' ? lightThemeColors : darkThemeColors,
-    }),
-    [colorScheme, width, height],
+  const background = useCSSVariable('--color-background')
+  const navTheme = useMemo(
+    () => navigationTheme(String(background)),
+    [background],
   )
-
-  const navTheme = useMemo(() => navigationTheme(colorScheme), [colorScheme])
 
   useMount(() => {
     // init OneSignal
@@ -115,34 +106,33 @@ const App = () => {
       <GestureHandlerRootView style={globalStyles.container}>
         <KeyboardProvider>
           <SafeAreaProvider>
-            <ThemeProvider theme={colorAdaptedTheme}>
-              <PortalProvider>
-                <BottomSheetModalProvider>
-                  <SolanaProvider>
-                    <BlockchainApiProvider>
-                      <SplashScreen>
-                        <WalletOnboardingProvider
-                          baseUrl={Config.ONBOARDING_API_URL}
-                        >
-                          <KeystoneOnboardingProvider>
-                            <WalletConnectProvider>
-                              <HotspotOnboardingProvider
-                                baseUrl={Config.ONBOARDING_API_URL}
-                              >
-                                <LockScreen>
-                                  {accountsRestored && (
-                                    <>
-                                      <NavigationContainer
-                                        theme={navTheme}
-                                        linking={linking}
-                                        ref={navigationRef}
-                                      >
-                                        <BalanceProvider>
-                                          <TokensProvider>
-                                            <ModalProvider>
-                                              <WalletSignProvider>
-                                                <GovernanceProvider>
-                                                  {/* One Privy provider for the
+            <PortalProvider>
+              <BottomSheetModalProvider>
+                <SolanaProvider>
+                  <BlockchainApiProvider>
+                    <SplashScreen>
+                      <WalletOnboardingProvider
+                        baseUrl={Config.ONBOARDING_API_URL}
+                      >
+                        <KeystoneOnboardingProvider>
+                          <WalletConnectProvider>
+                            <HotspotOnboardingProvider
+                              baseUrl={Config.ONBOARDING_API_URL}
+                            >
+                              <LockScreen>
+                                {accountsRestored && (
+                                  <>
+                                    <NavigationContainer
+                                      theme={navTheme}
+                                      linking={linking}
+                                      ref={navigationRef}
+                                    >
+                                      <BalanceProvider>
+                                        <TokensProvider>
+                                          <ModalProvider>
+                                            <WalletSignProvider>
+                                              <GovernanceProvider>
+                                                {/* One Privy provider for the
                                                     whole subtree so the embedded
                                                     -wallet WebView bridge stays
                                                     warm across the modal →
@@ -151,51 +141,53 @@ const App = () => {
                                                     cold bridge on navigation and
                                                     races "proxy not initialized".
                                                 */}
-                                                  <PrivyAppProvider>
-                                                    <AutoGasBanner />
-                                                    <NetworkAwareStatusBar />
-                                                    <RootNavigator />
+                                                <PrivyAppProvider>
+                                                  <AutoGasBanner />
+                                                  <StatusBar
+                                                    animated
+                                                    barStyle="light-content"
+                                                  />
+                                                  <RootNavigator />
 
-                                                    {/* place app specific modals here */}
-                                                    <InsufficientSolConversionModal />
-                                                    <MigrateToWorldModal />
-                                                    <MigrateToWorldCheck />
-                                                    <JupiterProvider>
-                                                      <DeprecatedTokensProvider>
-                                                        <DeprecatedTokensModal />
-                                                        <DeprecatedTokensCheck />
-                                                      </DeprecatedTokensProvider>
-                                                    </JupiterProvider>
-                                                  </PrivyAppProvider>
-                                                </GovernanceProvider>
-                                              </WalletSignProvider>
-                                            </ModalProvider>
-                                          </TokensProvider>
-                                        </BalanceProvider>
-                                      </NavigationContainer>
-                                      <SecurityScreen
-                                        visible={
-                                          appState !== 'active' &&
-                                          appState !== 'unknown'
-                                        }
-                                      />
-                                    </>
-                                  )}
-                                </LockScreen>
-                              </HotspotOnboardingProvider>
-                            </WalletConnectProvider>
-                          </KeystoneOnboardingProvider>
-                        </WalletOnboardingProvider>
-                      </SplashScreen>
-                    </BlockchainApiProvider>
-                  </SolanaProvider>
-                  {/* BottomSheetModalProvider wraps its children in its own
+                                                  {/* place app specific modals here */}
+                                                  <InsufficientSolConversionModal />
+                                                  <MigrateToWorldModal />
+                                                  <MigrateToWorldCheck />
+                                                  <JupiterProvider>
+                                                    <DeprecatedTokensProvider>
+                                                      <DeprecatedTokensModal />
+                                                      <DeprecatedTokensCheck />
+                                                    </DeprecatedTokensProvider>
+                                                  </JupiterProvider>
+                                                </PrivyAppProvider>
+                                              </GovernanceProvider>
+                                            </WalletSignProvider>
+                                          </ModalProvider>
+                                        </TokensProvider>
+                                      </BalanceProvider>
+                                    </NavigationContainer>
+                                    <SecurityScreen
+                                      visible={
+                                        appState !== 'active' &&
+                                        appState !== 'unknown'
+                                      }
+                                    />
+                                  </>
+                                )}
+                              </LockScreen>
+                            </HotspotOnboardingProvider>
+                          </WalletConnectProvider>
+                        </KeystoneOnboardingProvider>
+                      </WalletOnboardingProvider>
+                    </SplashScreen>
+                  </BlockchainApiProvider>
+                </SolanaProvider>
+                {/* BottomSheetModalProvider wraps its children in its own
                       PortalProvider, which has no 'root' host. Default
                       <Portal>s register there and need this host. */}
-                  <PortalHost name="root" />
-                </BottomSheetModalProvider>
-              </PortalProvider>
-            </ThemeProvider>
+                <PortalHost name="root" />
+              </BottomSheetModalProvider>
+            </PortalProvider>
           </SafeAreaProvider>
         </KeyboardProvider>
       </GestureHandlerRootView>

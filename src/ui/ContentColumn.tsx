@@ -3,8 +3,7 @@ import React, { createContext, useContext } from 'react'
 import { View, type ViewProps } from 'react-native'
 import { twMerge } from './twMerge'
 
-// True inside a content column. The legacy ContentColumn provides it too, so
-// a sheet inside either column skips the margins.
+// True inside a content column, so a sheet inside it skips the margins.
 export const InContentColumn = createContext(false)
 
 // Margins for a gorhom sheet. A sheet mounts where its provider or portal
@@ -37,3 +36,10 @@ export const ContentColumn = ({
     </InContentColumn.Provider>
   )
 }
+
+// Navigators pass this as `screenLayout`, so native chrome stays full width.
+export const contentColumnLayout = ({
+  children,
+}: {
+  children: React.ReactElement
+}) => <ContentColumn>{children}</ContentColumn>

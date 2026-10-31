@@ -32,7 +32,7 @@ const COMPILED_FILES = [
   'src/features/ledger/DeviceShow.tsx',
   'src/features/account/useTxn.tsx',
   'src/features/account/AccountsScreen.tsx',
-  'src/components/AutoGasBanner.tsx',
+  'src/ui/AutoGasBanner.tsx',
   'src/features/keystone/components/DynamicQrScanner.tsx',
   'src/ui/QrScanner.tsx',
   'src/features/keystone/SignTx/SignTxModal.tsx',

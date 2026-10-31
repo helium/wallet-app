@@ -189,9 +189,6 @@ jest.mock(
   () => ({ useVisibleTokens: () => ({ visibleTokens: [] }) }),
   { virtual: true },
 )
-jest.mock('@theme/themeHooks', () => ({ useHitSlop: () => undefined }), {
-  virtual: true,
-})
 jest.mock('@utils/constants', () => ({ Mints: {} }), { virtual: true })
 jest.mock('@utils/getDomainOwner', () => ({ fetchDomainOwner: jest.fn() }), {
   virtual: true,

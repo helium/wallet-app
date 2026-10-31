@@ -30,8 +30,7 @@ const FADE_USE = /\bFade(?:In|Out)\b(?:(\})|((?:\s*\.\w+\([^)]*\))+))?/g
 // motion. Fades are the motion reduced motion keeps, so they must opt out.
 const OPACITY_TIMING_FILES = [
   'src/features/request/RequestScreen.tsx',
-  'src/components/SecretKeyWarningScreen.tsx',
-  'src/components/SplashScreen.tsx',
+  'src/ui/SplashScreen.tsx',
   'src/ui/SuccessReveal.tsx',
 ]
 
@@ -65,16 +64,6 @@ describe('fades run under reduced motion', () => {
       expect(count(source, 'reduceMotion: ReduceMotion.Never')).toBe(timings)
     },
   )
-})
-
-describe('IconPressedContainer haptic', () => {
-  it('fires the haptic in onPress, not on touch end', () => {
-    const source = read('src/components/IconPressedContainer.tsx')
-    expect(source).not.toContain('onTouchEnd')
-    expect(source).toMatch(
-      /const handlePress = onPress\s*\?\s*\(event[^)]*\)\s*=>\s*\{\s*triggerImpact\([^)]*\)\s*onPress\(event\)/,
-    )
-  })
 })
 
 describe('PositionCard list row', () => {

@@ -67,9 +67,6 @@ jest.mock(
   () => ({ useMetaplexMetadata: () => ({ symbol: 'HNT', loading: false }) }),
   { virtual: true },
 )
-jest.mock('@theme/themeHooks', () => ({ useSafeTopPaddingStyle: () => ({}) }), {
-  virtual: true,
-})
 jest.mock('@utils/layout', () => ({ useContentColumnMargins: () => ({}) }), {
   virtual: true,
 })
@@ -92,9 +89,10 @@ jest.mock(
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
-jest.mock('react-native', () => ({ View: 'View' }))
+jest.mock('react-native', () => ({ Platform: { OS: 'ios' }, View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
+  useSafeAreaInsets: () => ({ top: 0 }),
 }))
 jest.mock('lucide-react-native', () => ({ ArrowUpRight: 'ArrowUpRight' }))
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))

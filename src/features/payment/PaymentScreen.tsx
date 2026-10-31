@@ -20,7 +20,6 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { useHitSlop } from '@theme/themeHooks'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { Mints } from '@utils/constants'
@@ -152,7 +151,7 @@ const PaymentScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = 24
 
   const navBack = useCallback(() => {
     if (navigation.canGoBack()) {

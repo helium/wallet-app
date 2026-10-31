@@ -21,7 +21,6 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useHitSlop } from '@theme/themeHooks'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { BN } from 'bn.js'
@@ -80,7 +79,7 @@ const BurnScreen = () => {
   const { top } = useSafeAreaInsets()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const hitSlop = useHitSlop('l')
+  const hitSlop = 24
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { submitDelegateDataCredits, delegateDataCreditsMutation } =
     useSubmitTxn()

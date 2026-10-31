@@ -41,9 +41,6 @@ jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
 jest.mock('@assets/images/keystoneLogo.svg', () => 'KeystoneLogo', {
   virtual: true,
 })
-jest.mock('@theme/themeHooks', () => ({ useHitSlop: () => undefined }), {
-  virtual: true,
-})
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('react-i18next', () => ({

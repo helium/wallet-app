@@ -7,11 +7,7 @@ jest.mock('@react-navigation/native-stack', () => ({
     Screen: 'NativeStackScreen',
   }),
 }))
-jest.mock(
-  '@theme/themeHooks',
-  () => ({ useOpacity: () => ({ backgroundStyle: {} }) }),
-  { virtual: true },
-)
+jest.mock('uniwind', () => ({ useResolveClassNames: () => ({}) }))
 jest.mock('../SecretKeyWarningScreen', () => 'SecretKeyWarningScreen')
 jest.mock('../../migration/SolanaMigration', () => 'SolanaMigration')
 jest.mock('../../migration/MigrateToWorld', () => 'MigrateToWorld')
