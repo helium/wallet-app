@@ -72,6 +72,9 @@ const SettingsListItem = ({
     }
   }
 
+  const selectedItem = select?.items.find((i) => i.value === value)
+  const selectedLabel = selectedItem?.labelShort || selectedItem?.label
+
   let textClassName = 'text-foreground'
   if (destructive && !disabled) textClassName = 'text-destructive'
   if (destructive && disabled) textClassName = 'text-destructive/60'
@@ -137,6 +140,11 @@ const SettingsListItem = ({
           thumbColorClassName="accent-white"
           disabled={disabled}
         />
+      )}
+      {!!selectedLabel && (
+        <Text size="base" className="font-bold text-muted-foreground">
+          {selectedLabel}
+        </Text>
       )}
       {select && (
         <SettingsSelectSheet

@@ -186,4 +186,19 @@ describe('Settings', () => {
       navigation.findAllByProps({ testID: 'ActionSheet.devnet' }),
     ).toHaveLength(1)
   })
+
+  it('shows the selected value on a select row', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+
+    const row = renderer.root.findByProps({ testID: 'Settings.Cluster' })
+    const texts = row
+      .findAllByType('Text' as never)
+      .map((node) => node.props.children)
+
+    expect(texts).toContain('Mainnet-Beta')
+  })
 })
