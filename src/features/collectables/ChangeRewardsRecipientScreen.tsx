@@ -54,11 +54,13 @@ const RecipientRow = ({
   icons,
   address,
   removing,
+  disabled,
   onRemove,
 }: {
   icons: ReactNode
   address?: PublicKey
   removing: boolean
+  disabled: boolean
   onRemove: () => void
 }) => {
   const { t } = useTranslation()
@@ -76,7 +78,7 @@ const RecipientRow = ({
       <PressableScale
         feedback="opacity"
         className="ml-4 rounded-md bg-muted px-4 py-1.5"
-        disabled={removing}
+        disabled={disabled}
         onPress={onRemove}
       >
         {removing ? (
@@ -294,6 +296,7 @@ const ChangeRewardsRecipientScreen = () => {
                                 iotRecipient?.destination
                               }
                               removing={removing}
+                              disabled={removing || updating}
                               onRemove={onRemove}
                             />
                           ) : (
@@ -310,6 +313,7 @@ const ChangeRewardsRecipientScreen = () => {
                                   }
                                   address={iotRecipient?.destination}
                                   removing={removing}
+                                  disabled={removing || updating}
                                   onRemove={onRemove}
                                 />
                               )}
@@ -325,6 +329,7 @@ const ChangeRewardsRecipientScreen = () => {
                                   }
                                   address={mobileRecipient?.destination}
                                   removing={removing}
+                                  disabled={removing || updating}
                                   onRemove={onRemove}
                                 />
                               )}
@@ -344,6 +349,7 @@ const ChangeRewardsRecipientScreen = () => {
                                     iotRecipient?.destination
                                   }
                                   removing={removing}
+                                  disabled={removing || updating}
                                   onRemove={onRemove}
                                 />
                               )}
