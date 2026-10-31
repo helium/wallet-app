@@ -1,25 +1,36 @@
-import React, { memo, useCallback, useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import BackScreen from '@components/BackScreen'
-import TextTransform from '@components/TextTransform'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import CopyAddress from '@components/CopyAddress'
 import useAlert from '@hooks/useAlert'
+import useCopyText from '@hooks/useCopyText'
 import useSecureWindow from '@hooks/useSecureWindow'
-import { getSecureAccount } from '../../storage/secureStorage'
+import { useNavigation } from '@react-navigation/native'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Copy } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
+import { getSecureAccount } from '../../storage/secureStorage'
+import SettingsBackHeader from './SettingsBackHeader'
+
+const CopyIcon = withUniwind(Copy)
+
+const SUBTITLE_COMPONENTS = {
+  secondaryText: <Text size="base" className="text-muted-foreground" />,
+  red500: <Text size="base" className="text-destructive" />,
+}
 
 const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { t } = useTranslation()
   const navigation = useNavigation()
+  const { bottom } = useSafeAreaInsets()
   const [privateKey, setPrivateKey] = useState<string>()
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()
+  const copyText = useCopyText({ haptic: false })
   useSecureWindow()
 
   useEffect(() => {
@@ -38,83 +49,82 @@ const RevealPrivateKeyScreen = () => {
     run().catch((e) => console.error(e))
   }, [currentAccount?.address, revealed])
 
-  const showConfirmDialog = useCallback(async () => {
+  const showConfirmDialog = async () => {
     const decision = await showOKCancelAlert({
       title: t('settings.revealPrivateKey.alertTitle'),
       message: t('settings.revealPrivateKey.alertMessage'),
     })
     setRevealed(decision)
-  }, [showOKCancelAlert, t])
+  }
 
   return (
-    <BackScreen backgroundColor="primaryBackground" flex={1}>
-      <Text variant="h1" maxFontSizeMultiplier={1} marginTop="xl">
-        {t('settings.revealPrivateKey.title')}
-      </Text>
-      <TextTransform
-        variant="body1"
-        maxFontSizeMultiplier={1}
-        marginTop="m"
-        i18nKey="settings.revealPrivateKey.subtitle"
-        marginBottom="xl"
-      />
-      {revealed ? (
-        <>
-          <Box
-            marginHorizontal="xs"
-            height={140}
-            marginVertical="l"
-            backgroundColor="grey900"
-            padding="l"
-            borderRadius="m"
-            justifyContent="center"
+    <View className="flex-1 bg-background" style={{ paddingBottom: bottom }}>
+      <SettingsBackHeader onBack={navigation.goBack} />
+      <View className="flex-1 px-6">
+        <Text
+          size="4xl"
+          className="mt-8 font-semibold"
+          maxFontSizeMultiplier={1}
+        >
+          {t('settings.revealPrivateKey.title')}
+        </Text>
+        <Text size="base" className="mb-8 mt-4" maxFontSizeMultiplier={1}>
+          <Trans
+            i18nKey="settings.revealPrivateKey.subtitle"
+            components={SUBTITLE_COMPONENTS}
+          />
+        </Text>
+        {revealed ? (
+          <>
+            <View className="mx-1 my-6 h-[140px] justify-center rounded-md bg-secondary p-6">
+              <Text className="text-xs" maxFontSizeMultiplier={1} selectable>
+                {privateKey}
+              </Text>
+            </View>
+            <Button
+              variant="cta"
+              size="lg"
+              className="w-full"
+              onPress={() =>
+                copyText({
+                  message: t('generic.privateKey'),
+                  copyText: privateKey || '',
+                })
+              }
+            >
+              <CopyIcon size={16} colorClassName="accent-white" />
+              <Text className="font-medium text-white">
+                {t('generic.copy')}
+              </Text>
+            </Button>
+          </>
+        ) : (
+          <PressableScale
+            feedback="opacity"
+            onPress={() => void showConfirmDialog().catch(console.error)}
+            className="mx-1 my-6 h-24 justify-center rounded-md bg-secondary p-6"
           >
             <Text
-              fontSize={12}
-              color="primaryText"
+              size="lg"
+              className="text-center font-bold"
               maxFontSizeMultiplier={1}
-              selectable
             >
-              {privateKey}
+              {t('settings.revealPrivateKey.tap')}
             </Text>
-          </Box>
-          <CopyAddress address={privateKey || ''} />
-        </>
-      ) : (
-        <TouchableOpacityBox
-          onPress={() => void showConfirmDialog().catch(console.error)}
-          marginHorizontal="xs"
-          height={{ smallPhone: 80, phone: 100 }}
-          marginVertical="l"
-          backgroundColor="grey900"
-          padding="l"
-          borderRadius="m"
-          justifyContent="center"
+          </PressableScale>
+        )}
+        <View className="flex-1" />
+        <Button
+          variant="secondary"
+          size="lg"
+          className="mb-4 w-full"
+          onPress={navigation.goBack}
         >
-          <Text
-            fontSize={18}
-            color="primaryText"
-            maxFontSizeMultiplier={1}
-            textAlign="center"
-            fontWeight="bold"
-            selectable
-          >
-            {t('settings.revealPrivateKey.tap')}
-          </Text>
-        </TouchableOpacityBox>
-      )}
-      <Box flex={1} />
-      <ButtonPressable
-        height={60}
-        borderRadius="round"
-        backgroundColor="surfaceSecondary"
-        titleColor="primaryText"
-        title={t('settings.revealPrivateKey.done')}
-        marginBottom="m"
-        onPress={navigation.goBack}
-      />
-    </BackScreen>
+          {t('settings.revealPrivateKey.done')}
+        </Button>
+      </View>
+    </View>
   )
 }
 
-export default memo(RevealPrivateKeyScreen)
+export default RevealPrivateKeyScreen
