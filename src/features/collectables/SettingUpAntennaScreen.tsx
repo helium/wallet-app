@@ -1,24 +1,27 @@
-import React, { memo, useCallback } from 'react'
-import Box from '@components/Box'
+import React from 'react'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useNavigation, RouteProp, useRoute } from '@react-navigation/native'
 import { TabBarNavigationProp } from 'src/navigation/rootTypes'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackArrow from '@assets/images/backArrow.svg'
-import AccountIcon from '@components/AccountIcon'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { ChevronLeft } from 'lucide-react-native'
+import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
 import { parseTransactionError } from '@utils/solanaUtils'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
+import { withUniwind } from 'uniwind'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { CollectableStackParamList } from './collectablesTypes'
+
+const BackIcon = withUniwind(ChevronLeft)
 
 const SettingUpAntennaScreen = () => {
   const route =
@@ -44,52 +47,37 @@ const SettingUpAntennaScreen = () => {
   const isConfirmed = status === 'confirmed'
   const isPending = isLoading || status === 'pending'
 
-  const onReturn = useCallback(() => {
+  const onReturn = () => {
     // Reset Collectables stack to first screen
     navigation.reset({
       index: 0,
       routes: [{ name: 'Collectables' }],
     })
-  }, [navigation])
+  }
 
   if (!currentAccount) {
     return null
   }
 
   return (
-    <ReAnimatedBox flex={1} backgroundColor="secondaryBackground">
-      <Box
-        backgroundColor="transparent"
-        flex={1}
-        padding="m"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Box flexGrow={1} justifyContent="center" alignItems="center">
-          <Box
-            shadowColor="black"
-            shadowOpacity={0.4}
-            shadowOffset={{ width: 0, height: 10 }}
-            shadowRadius={10}
-            elevation={12}
-          >
+    <Animated.View className="flex-1 bg-secondary">
+      <View className="flex-1 items-center justify-center p-4">
+        <View className="grow items-center justify-center">
+          <View className="shadow-lg">
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
-          </Box>
+          </View>
           {(!route.params?.batchId || isConfirmed) && (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Text variant="h1Medium" color="white" marginTop="xl">
+              <Text size="4xl" className="mt-8 font-medium">
                 {t('antennaSetupScreen.settingUpComplete')}
               </Text>
               <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
+                className="mt-8 text-center text-muted-foreground"
                 numberOfLines={2}
-                textAlign="center"
               >
                 {t('antennaSetupScreen.settingUpCompleteBody')}
               </Text>
@@ -98,26 +86,16 @@ const SettingUpAntennaScreen = () => {
 
           {hasError && (
             <Animated.View
-              style={{
-                alignItems: 'center',
-              }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-                textAlign="center"
-              >
+              <Text size="4xl" className="mt-8 text-center font-medium">
                 {t('collectablesScreen.rewardsError')}
               </Text>
               <Text
-                variant="body2"
-                color="secondaryText"
-                marginTop="xl"
+                className="mt-8 text-center text-muted-foreground"
                 numberOfLines={2}
-                textAlign="center"
               >
                 {parseTransactionError(
                   solBalance,
@@ -129,59 +107,42 @@ const SettingUpAntennaScreen = () => {
 
           {isPending && (
             <Animated.View
-              style={{ alignItems: 'center' }}
+              className="items-center"
               entering={FADE_IN}
               exiting={FADE_OUT}
             >
-              <Text
-                variant="h1Medium"
-                color="white"
-                marginTop="xl"
-                textAlign="center"
-              >
+              <Text size="4xl" className="mt-8 text-center font-medium">
                 {t('antennaSetupScreen.settingUp')}
               </Text>
               <Text
-                variant="body0"
-                color="grey600"
-                textAlign="center"
-                marginBottom="m"
-                marginTop="s"
+                size="xl"
+                className="mb-4 mt-2 text-center text-muted-foreground"
               >
                 {t('antennaSetupScreen.settingUpBody')}
               </Text>
-              <Box flexDirection="row" marginHorizontal="xxl" marginTop="m">
-                <IndeterminateProgressBar paddingHorizontal="l" />
-              </Box>
+              <View className="mx-12 mt-4">
+                <Spinner size="large" />
+              </View>
             </Animated.View>
           )}
-        </Box>
-        <Box
-          width="100%"
-          justifyContent="flex-end"
-          style={{ marginBottom: bottom }}
-        >
-          <ButtonPressable
-            marginHorizontal="m"
-            marginBottom="m"
-            height={65}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacity={0.1}
-            backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
-            title={t('collectablesScreen.returnToCollectables')}
-            titleColor="white"
+        </View>
+        <View className="w-full justify-end" style={{ marginBottom: bottom }}>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="mx-4 mb-4"
             onPress={onReturn}
             disabled={isPending}
-            LeadingComponent={
-              <BackArrow width={16} height={15} color="white" />
-            }
-          />
-        </Box>
-      </Box>
-    </ReAnimatedBox>
+          >
+            <BackIcon size={16} colorClassName="accent-secondary-foreground" />
+            <Text className={buttonTextVariants({ variant: 'secondary' })}>
+              {t('collectablesScreen.returnToCollectables')}
+            </Text>
+          </Button>
+        </View>
+      </View>
+    </Animated.View>
   )
 }
 
-export default memo(SettingUpAntennaScreen)
+export default SettingUpAntennaScreen

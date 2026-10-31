@@ -86,6 +86,7 @@ const migratedFiles = [
   'src/features/addressBook/**',
   'src/features/browser/**',
   'src/features/burn/**',
+  'src/features/collectables/**',
   'src/features/dappLogin/**',
   'src/features/governance/AssignProxyScreen.tsx',
   'src/features/governance/ClaimingRewardsModal.tsx',

@@ -1,12 +1,15 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute } from '@react-navigation/native'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { Text } from '@ui/Text'
+import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import BackHeader from './components/BackHeader'
 import { CollectableStackParamList } from './collectablesTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 type Route = RouteProp<CollectableStackParamList, 'NftMetadataScreen'>
 
@@ -28,57 +31,49 @@ const NftMetadataScreen = () => {
   const { t } = useTranslation()
   const { metadata } = route.params
 
-  const renderProperty = useCallback(
-    (
-      traitType: string | undefined,
-      traitValue: boolean | string | string[] | undefined,
-    ) => (
-      <Box
-        padding="s"
-        paddingHorizontal="m"
-        borderRadius="round"
-        backgroundColor="transparent10"
-        margin="s"
-        key={`${traitType}+${stringify(traitValue)}`}
-      >
-        <Text variant="subtitle4" color="grey600">
-          {traitType?.toUpperCase() ||
-            t('collectablesScreen.collectables.noTraitType')}
-        </Text>
-        <Text variant="body1" color="white" textAlign="center">
-          {stringify(traitValue) ||
-            t('collectablesScreen.collectables.noTraitValue')}
-        </Text>
-      </Box>
-    ),
-    [t],
+  const renderProperty = (
+    traitType: string | undefined,
+    traitValue: boolean | string | string[] | undefined,
+  ) => (
+    <View
+      className="m-2 rounded-full bg-secondary p-2 px-4"
+      key={`${traitType}+${stringify(traitValue)}`}
+    >
+      <Text className="font-medium text-muted-foreground">
+        {traitType?.toUpperCase() ||
+          t('collectablesScreen.collectables.noTraitType')}
+      </Text>
+      <Text size="base" className="text-center">
+        {stringify(traitValue) ||
+          t('collectablesScreen.collectables.noTraitValue')}
+      </Text>
+    </View>
   )
 
   return (
-    <BackScreen
-      title={t('collectablesScreen.metadata')}
-      padding="none"
-      headerTopMargin="l"
-    >
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
-        <SafeAreaBox alignItems="center" flex={1}>
-          <Text variant="subtitle1" color="grey600" marginBottom="l">
-            {t('collectablesScreen.collectables.properties')}
-          </Text>
-          <Box
-            flexDirection="row"
-            paddingHorizontal="m"
-            flexWrap="wrap"
-            justifyContent="center"
-          >
-            {metadata.attributes?.map(
-              ({ trait_type, value }: { trait_type: string; value: string }) =>
-                renderProperty(trait_type, value),
-            )}
-          </Box>
-        </SafeAreaBox>
-      </ScrollView>
-    </BackScreen>
+    <SafeArea className="flex-1 bg-background">
+      <BackHeader title={t('collectablesScreen.metadata')} className="mt-6" />
+      <View className="flex-1">
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <SafeArea className="flex-1 items-center">
+            <Text size="xl" className="mb-6 font-medium text-muted-foreground">
+              {t('collectablesScreen.collectables.properties')}
+            </Text>
+            <View className="flex-row flex-wrap justify-center px-4">
+              {metadata.attributes?.map(
+                ({
+                  trait_type,
+                  value,
+                }: {
+                  trait_type: string
+                  value: string
+                }) => renderProperty(trait_type, value),
+              )}
+            </View>
+          </SafeArea>
+        </ScrollView>
+      </View>
+    </SafeArea>
   )
 }
 

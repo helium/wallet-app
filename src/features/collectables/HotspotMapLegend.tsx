@@ -1,113 +1,62 @@
-import Hex from '@assets/images/hex.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { useColors } from '@theme/themeHooks'
+import HexArt from '@assets/images/hex.svg'
+import { Text } from '@ui/Text'
 import React from 'react'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
+
+const Hex = withUniwind(HexArt)
 
 export const HotspotMapLegend = ({
   network,
 }: {
   network: 'IOT' | 'MOBILE'
 }) => {
-  const colors = useColors()
-
   return (
-    <Box
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      paddingTop="ms"
-      paddingBottom="m"
-    >
-      <Box flexDirection="row" flexWrap="wrap" paddingHorizontal="ms" gap="sx">
-        <Box
-          flexDirection="row"
-          justifyContent="center"
-          alignItems="center"
-          paddingRight="ms"
-          paddingLeft="s"
-          paddingVertical="sx"
-          borderRadius="round"
-          backgroundColor="darkGrey"
-        >
+    <View className="flex-col items-center justify-center pb-4 pt-3">
+      <View className="flex-row flex-wrap gap-1.5 px-3">
+        <View className="flex-row items-center justify-center rounded-full bg-secondary py-1.5 pl-2 pr-3">
           <Hex
             width={18}
             height={18}
-            color={network === 'IOT' ? colors.green500 : colors.blue500}
+            colorClassName={
+              network === 'IOT' ? 'accent-success-500' : 'accent-blue-dark-500'
+            }
           />
-          <Text variant="body2" color="primaryText" marginLeft="xs">
-            {network} Hotspot
-          </Text>
-        </Box>
+          <Text className="ml-1 text-foreground">{network} Hotspot</Text>
+        </View>
         {network === 'MOBILE' && (
-          <Box
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            paddingRight="ms"
-            paddingLeft="s"
-            paddingVertical="sx"
-            borderRadius="round"
-            backgroundColor="darkGrey"
-            gap="sx"
-          >
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-            >
+          <View className="flex-row items-center justify-center gap-1.5 rounded-full bg-secondary py-1.5 pl-2 pr-3">
+            <View className="flex-row items-center justify-center">
               <Hex
                 width={18}
                 height={18}
-                color={colors.jazzberryJam}
+                colorClassName="accent-chart-1"
                 opacity={0.6}
               />
-              <Text variant="body2" color="primaryText" marginLeft="sx">
-                Low Boost
-              </Text>
-            </Box>
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Hex width={18} height={18} color={colors.jazzberryJam} />
-              <Text variant="body2" color="primaryText" marginLeft="sx">
-                High Boost
-              </Text>
-            </Box>
-          </Box>
+              <Text className="ml-1.5 text-foreground">Low Boost</Text>
+            </View>
+            <View className="flex-row items-center justify-center">
+              <Hex width={18} height={18} colorClassName="accent-chart-1" />
+              <Text className="ml-1.5 text-foreground">High Boost</Text>
+            </View>
+          </View>
         )}
-        <Box
-          flexDirection="row"
-          justifyContent="center"
-          alignItems="center"
-          paddingRight="ms"
-          paddingLeft="s"
-          paddingVertical="sx"
-          borderRadius="round"
-          backgroundColor="darkGrey"
-          gap="s"
-        >
-          <Box flexDirection="row" justifyContent="center" alignItems="center">
+        <View className="flex-row items-center justify-center gap-2 rounded-full bg-secondary py-1.5 pl-2 pr-3">
+          <View className="flex-row items-center justify-center">
             <Hex
               width={18}
               height={18}
-              color={colors.solanaPurple}
+              colorClassName="accent-purple-500"
               opacity={0.6}
             />
-            <Text variant="body2" color="primaryText" marginLeft="xs">
-              Weak Signal
-            </Text>
-          </Box>
-          <Box flexDirection="row" justifyContent="center" alignItems="center">
-            <Hex width={18} height={18} color={colors.solanaPurple} />
-            <Text variant="body2" color="primaryText" marginLeft="xs">
-              Strong Signal
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+            <Text className="ml-1 text-foreground">Weak Signal</Text>
+          </View>
+          <View className="flex-row items-center justify-center">
+            <Hex width={18} height={18} colorClassName="accent-purple-500" />
+            <Text className="ml-1 text-foreground">Strong Signal</Text>
+          </View>
+        </View>
+      </View>
+    </View>
   )
 }
