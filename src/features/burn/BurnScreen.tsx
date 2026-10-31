@@ -39,8 +39,8 @@ import {
 import { withUniwind } from 'uniwind'
 import AddressBookSelector, {
   AddressBookRef,
-} from '../../components/AddressBookSelector'
-import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
+} from '@components/AddressBookSelector'
+import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -64,6 +64,8 @@ const FEE = new BN(TXN_FEE_IN_SOL)
 const SafeArea = withUniwind(SafeAreaView)
 const QrIcon = withUniwind(QrCode)
 const CloseIcon = withUniwind(X)
+
+const errorMessage = (e: unknown) => (e as Error)?.message
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
@@ -184,17 +186,16 @@ const BurnScreen = () => {
   const handleSubmit = async () => {
     // Reset mutation state on retry
     delegateDataCreditsMutation.reset()
+    if (!isDelegate || !amountBalance) return
     try {
-      if (isDelegate && amountBalance) {
-        await submitDelegateDataCredits(
-          delegateAddress,
-          amountBalance.toNumber(),
-          mint,
-          memo,
-        )
-      }
+      await submitDelegateDataCredits(
+        delegateAddress,
+        amountBalance.toNumber(),
+        mint,
+        memo,
+      )
     } catch (e) {
-      setSubmitError((e as Error)?.message)
+      setSubmitError(errorMessage(e))
     }
   }
 
@@ -310,6 +311,7 @@ const BurnScreen = () => {
                 <View hitSlop={hitSlop} className="p-2">
                   <PressableScale
                     onPress={handleQrScan}
+                    accessibilityLabel={t('generic.scanQrCode')}
                     feedback="opacity"
                     className="size-11 items-center justify-center"
                   >
@@ -325,6 +327,7 @@ const BurnScreen = () => {
                 </Text>
                 <PressableScale
                   onPress={navigation.goBack}
+                  accessibilityLabel={t('generic.close')}
                   feedback="opacity"
                   className="w-16 p-6"
                   hitSlop={hitSlop}

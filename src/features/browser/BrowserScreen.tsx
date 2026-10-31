@@ -132,7 +132,7 @@ const BrowserScreen = () => {
       >
         <Input
           ref={textInputRef}
-          className="h-10 w-auto flex-1 px-4 text-sm"
+          className="h-10 w-auto flex-1 border-0 px-4 text-sm shadow-none"
           placeholder="Search or type URL"
           autoFocus={false}
           onFocus={onBrowserInputFocus}

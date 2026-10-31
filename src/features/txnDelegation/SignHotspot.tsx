@@ -28,11 +28,20 @@ import {
   RootStackParamList,
 } from '../../navigation/rootTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
-import { getKeypair } from '../../storage/secureStorage'
 import { formatAccountAlias } from '../../utils/accountUtils'
 import * as Logger from '../../utils/logger'
 import { HomeNavigationProp } from '../home/homeTypes'
 import useSolTxns from './useSolTxns'
+
+// The hotspot app sends signed transactions; with none there is nothing to
+// submit, which the caller reports as a failure.
+const submitSignedTransactions = async (solana: {
+  hasTransactions: boolean
+  submit: () => Promise<unknown>
+}) => {
+  if (!solana.hasTransactions) throw new Error('')
+  await solana.submit()
+}
 
 const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
 const METERS_TO_FEET = 3.28084
@@ -113,11 +122,7 @@ const SignHotspot = () => {
 
     // submitting signed transaction from hotspot app
     try {
-      if (solana.hasTransactions) {
-        await solana.submit()
-      } else {
-        throw new Error('')
-      }
+      await submitSignedTransactions(solana)
 
       Toast.show(t('generic.submitSuccess'), Toast.SHORT)
     } catch (e) {
@@ -203,8 +208,7 @@ const SignHotspot = () => {
       .catch(() => {
         setValidated(false)
       })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getKeypair, parsedToken, token])
+  }, [parsedToken])
 
   const { submitLoading } = solana
 

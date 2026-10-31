@@ -35,6 +35,7 @@ const sharedComposites = [
   'AccountButton',
   'AccountListItem',
   'AccountSelector',
+  'AddressBookSelector',
   'HNTKeyboard',
   'QrScanner',
   'SearchInput',

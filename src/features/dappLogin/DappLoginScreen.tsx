@@ -222,6 +222,7 @@ const DappLoginScreen = () => {
       <PressableScale
         feedback="opacity"
         onPress={() => void goBack().catch(console.error)}
+        accessibilityLabel={t('generic.close')}
         className="-me-4 justify-center self-end px-4"
       >
         <CloseIcon size={21} colorClassName="accent-foreground" />

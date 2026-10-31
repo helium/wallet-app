@@ -130,8 +130,10 @@ jest.mock('@components/TokenSelector', () => 'TokenSelector', {
 jest.mock('@components/TouchableOpacityBox', () => 'TouchableOpacityBox', {
   virtual: true,
 })
-jest.mock('../../../components/AddressBookSelector', () => 'AddressBook')
-jest.mock('../../../components/HNTKeyboard', () => 'HNTKeyboard')
+jest.mock('@components/AddressBookSelector', () => 'AddressBook', {
+  virtual: true,
+})
+jest.mock('@components/HNTKeyboard', () => 'HNTKeyboard', { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })

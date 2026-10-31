@@ -146,7 +146,8 @@ const ContactDetails = ({ action, contact }: Props) => {
   const handleSaveNewContact = () => {
     if (!contact) return
     void editContact(contact.address, {
-      address,
+      address: heliumAddressFromSolAddress(address),
+      solanaAddress: address,
       alias: nickname,
       netType: accountNetType(address),
     })
@@ -242,7 +243,7 @@ const ContactDetails = ({ action, contact }: Props) => {
               autoComplete="off"
               autoCorrect={false}
               onKeyPress={handleKeydown}
-              className="h-auto rounded-none px-8 py-8 text-lg"
+              className="h-auto rounded-none border-0 px-8 py-8 text-lg shadow-none"
             />
             <View className="mx-8 mb-2 mt-4 flex-row justify-between">
               <Text size="base">{t('addNewContact.nickname.title')}</Text>
@@ -259,7 +260,7 @@ const ContactDetails = ({ action, contact }: Props) => {
               returnKeyType="done"
               autoCorrect={false}
               ref={nicknameInput}
-              className="h-auto rounded-none px-8 py-4 text-lg"
+              className="h-auto rounded-none border-0 px-8 py-4 text-lg shadow-none"
             />
             {isAddingContact && (
               <Button
@@ -292,7 +293,7 @@ const ContactDetails = ({ action, contact }: Props) => {
                     !addressIsValid ||
                     !nickname ||
                     (nickname === contact?.alias &&
-                      address === contact?.address)
+                      address === contact?.solanaAddress)
                   }
                   onPress={handleSaveNewContact}
                 >
