@@ -1,23 +1,19 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import React from 'react'
-import { BoxProps } from '@shopify/restyle'
-import { Theme } from '@theme/theme'
+import { View } from 'react-native'
 
-export const ProxyCardStat: React.FC<
-  {
-    title: string
-    value: string
-  } & BoxProps<Theme>
-> = ({ title, value, ...boxProps }) => {
+export const ProxyCardStat: React.FC<{
+  title: string
+  value: string
+  className?: string
+}> = ({ title, value, className }) => {
   return (
-    <Box flexDirection="column" {...boxProps}>
-      <Text variant="body3" color="white" opacity={0.5}>
+    <View className={twMerge('flex-col', className)}>
+      <Text size="xs" className="text-muted-foreground">
         {title}
       </Text>
-      <Text variant="body1" color="white">
-        {value}
-      </Text>
-    </Box>
+      <Text size="base">{value}</Text>
+    </View>
   )
 }

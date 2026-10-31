@@ -1,25 +1,29 @@
-import React, { useCallback, useMemo, memo } from 'react'
+import React from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import { BlurView } from 'expo-blur'
+import { ChevronRight, Info } from 'lucide-react-native'
+import { Image, Platform, ScrollView, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
-import InfoIcon from '@assets/images/info.svg'
-import ArrowRight from '@assets/images/arrowRight.svg'
-import SafeAreaBox from '@components/SafeAreaBox'
-import globalStyles from '@theme/globalStyles'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
-import BackScreen from '@components/BackScreen'
-import { useSpacing } from '@theme/themeHooks'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import { withUniwind } from 'uniwind'
 import { useContentWidth } from '../../utils/layout'
+import BackHeader from './components/BackHeader'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const Blur = withUniwind(BlurView)
+const InfoIcon = withUniwind(Info)
+const NextIcon = withUniwind(ChevronRight)
 
 type Route = RouteProp<CollectableStackParamList, 'NftDetailsScreen'>
 
@@ -27,119 +31,102 @@ const NftDetailsScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<CollectableNavigationProp>()
   const COLLECTABLE_HEIGHT = useContentWidth()
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
 
   const { t } = useTranslation()
 
   const { collectable } = route.params
   const { json } = collectable
 
-  const spacing = useSpacing()
+  const imageSize = COLLECTABLE_HEIGHT - 64
 
-  const handleSend = useCallback(() => {
+  const handleSend = () => {
     navigation.navigate('TransferCollectableScreen', {
       collectable,
     })
-  }, [collectable, navigation])
+  }
 
-  const handleInfoPress = useCallback(() => {
+  const handleInfoPress = () => {
     if (json) {
       navigation.push('NftMetadataScreen', {
         metadata: json,
       })
     }
-  }, [navigation, json])
+  }
 
-  const backgroundImageUri = useMemo(() => {
-    return json?.image
-  }, [json])
+  const backgroundImageUri = json?.image
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
-      <BackScreen
-        padding="none"
-        title={t('collectablesScreen.nfts.nftDetialTitle')}
-        backgroundImageUri={backgroundImageUri}
-        edges={backEdges}
-        TrailingIcon={InfoIcon}
-        onTrailingIconPress={handleInfoPress}
-        headerTopMargin="l"
-      >
-        <ScrollView contentInsetAdjustmentBehavior="automatic">
-          <SafeAreaBox
-            edges={safeEdges}
-            backgroundColor="transparent"
-            flex={1}
-            padding="m"
-            alignItems="center"
+    <Animated.View className="flex-1 bg-background">
+      {/* The blurred NFT image fills the screen behind the content. */}
+      {backgroundImageUri && (
+        <>
+          <Image
+            className="absolute inset-0 opacity-70"
+            source={{ uri: backgroundImageUri, cache: 'force-cache' }}
+            resizeMode="cover"
+          />
+          <Blur
+            className="absolute inset-0"
+            intensity={Platform.OS === 'android' ? 15 : 5}
+          />
+        </>
+      )}
+      <SafeArea edges={['top']} className="flex-1">
+        <View className="mt-6">
+          <BackHeader title={t('collectablesScreen.nfts.nftDetialTitle')} />
+          <PressableScale
+            onPress={handleInfoPress}
+            hitSlop={24}
+            feedback="opacity"
+            accessibilityLabel={t('collectablesScreen.metadata')}
+            className="absolute bottom-0 right-6 top-0 justify-center"
           >
+            <InfoIcon size={24} colorClassName="accent-foreground" />
+          </PressableScale>
+        </View>
+        <ScrollView contentInsetAdjustmentBehavior="automatic">
+          <SafeArea edges={['bottom']} className="flex-1 items-center p-4">
             {json && (
-              <Box
-                shadowColor="black"
-                shadowOpacity={0.4}
-                shadowOffset={{ width: 0, height: 10 }}
-                shadowRadius={10}
-                elevation={12}
-              >
-                <ImageBox
-                  marginTop="l"
-                  backgroundColor={json.image ? 'black' : 'surfaceSecondary'}
-                  height={COLLECTABLE_HEIGHT - spacing.xl * 2}
-                  width={COLLECTABLE_HEIGHT - spacing.xl * 2}
+              <View className="shadow-lg">
+                <Image
+                  className={twMerge(
+                    'mt-6 rounded-[35px]',
+                    json.image ? 'bg-primary' : 'bg-secondary',
+                  )}
+                  style={{ height: imageSize, width: imageSize }}
                   source={{ uri: json.image, cache: 'force-cache' }}
-                  borderRadius="xxl"
                 />
-              </Box>
+              </View>
             )}
-            <Text
-              marginTop="l"
-              marginBottom="s"
-              marginHorizontal="l"
-              textAlign="center"
-              variant="h1Medium"
-            >
+            <Text size="4xl" className="mx-6 mb-2 mt-6 text-center font-medium">
               {json?.name}
             </Text>
             <Text
-              variant="body3Medium"
-              color="grey600"
-              marginBottom="xl"
-              textAlign="center"
+              size="xs"
+              className="mb-8 text-center font-medium text-muted-foreground"
             >
               {json?.description || t('collectables.noDescription')}
             </Text>
-            <Box
-              flexDirection="row"
-              marginBottom="xl"
-              marginTop="m"
-              marginHorizontal="xl"
-            >
+            <View className="mx-8 mb-8 mt-4 flex-row">
               {collectable.model === 'nft' && (
-                <ButtonPressable
-                  height={65}
-                  flexGrow={1}
-                  borderRadius="round"
-                  backgroundColor="white"
-                  backgroundColorOpacity={1}
-                  backgroundColorOpacityPressed={0.7}
-                  titleColorDisabled="grey600"
-                  backgroundColorDisabled="white"
-                  backgroundColorDisabledOpacity={0.1}
-                  title={t('collectablesScreen.transfer')}
-                  titleColor="black"
+                <Button
+                  variant="cta"
+                  size="lg"
+                  className="flex-1"
                   onPress={handleSend}
-                  TrailingComponent={
-                    <ArrowRight width={16} height={15} color="black" />
-                  }
-                />
+                >
+                  <Text className={buttonTextVariants({ variant: 'cta' })}>
+                    {t('collectablesScreen.transfer')}
+                  </Text>
+                  <NextIcon size={16} colorClassName="accent-white" />
+                </Button>
               )}
-            </Box>
-          </SafeAreaBox>
+            </View>
+          </SafeArea>
         </ScrollView>
-      </BackScreen>
-    </ReAnimatedBox>
+      </SafeArea>
+    </Animated.View>
   )
 }
 
-export default memo(NftDetailsScreen)
+export default NftDetailsScreen

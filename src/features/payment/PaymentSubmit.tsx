@@ -1,10 +1,9 @@
-import Box from '@components/Box'
-import FadeInOut from '@components/FadeInOut'
 import { PublicKey } from '@solana/web3.js'
-import globalStyles from '@theme/globalStyles'
+import { FADE_IN } from '@theme/motion'
 import BN from 'bn.js'
 import React, { memo, useMemo, useState } from 'react'
-import { StyleSheet } from 'react-native'
+import { View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { submitStage } from './logic/submitStage'
 import PaymentError from './PaymentError'
 import { Payment } from './PaymentItem'
@@ -64,32 +63,26 @@ const PaymentSubmit = ({
     setError(submitError)
   }
 
-  const containerStyle = useMemo(
-    () => [StyleSheet.absoluteFill, { backgroundColor: '#111419' }],
-    [],
-  )
-
   const body = useMemo(() => {
     const stage = submitStage({ succeeded, hasError: !!submitError })
     switch (stage) {
       case 'loading':
         return <PaymentSubmitLoading />
       case 'success':
+        // PaymentSuccess reveals itself, so no fade wraps it.
         return (
-          <FadeInOut style={globalStyles.container}>
-            <PaymentSuccess
-              mint={mint}
-              totalBalance={totalBalance}
-              feeTokenBalance={feeTokenBalance}
-              payments={payments}
-              onSuccess={onSuccess}
-              actionTitle={actionTitle}
-            />
-          </FadeInOut>
+          <PaymentSuccess
+            mint={mint}
+            totalBalance={totalBalance}
+            feeTokenBalance={feeTokenBalance}
+            payments={payments}
+            onSuccess={onSuccess}
+            actionTitle={actionTitle}
+          />
         )
       case 'error':
         return (
-          <FadeInOut style={globalStyles.container}>
+          <Animated.View entering={FADE_IN} className="flex-1">
             <PaymentError
               mint={mint}
               totalBalance={totalBalance}
@@ -98,7 +91,7 @@ const PaymentSubmit = ({
               error={submitError}
               onRetry={handleRetry}
             />
-          </FadeInOut>
+          </Animated.View>
         )
       default: {
         const _exhaustive: never = stage
@@ -119,7 +112,7 @@ const PaymentSubmit = ({
 
   if (!loading) return null
 
-  return <Box style={containerStyle}>{body}</Box>
+  return <View className="absolute inset-0 bg-background">{body}</View>
 }
 
 export default memo(PaymentSubmit)

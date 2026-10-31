@@ -29,3 +29,10 @@
   --color-navy-glass: rgba(14, 31, 56, 0.6);
   --color-navy-foreground: #fff;
 }
+
+/* Helium network brand colours (governance positions and split bars). */
+@theme {
+  --color-hnt: #2755f8;
+  --color-mobile: #009ef8;
+  --color-iot: #26ed75;
+}

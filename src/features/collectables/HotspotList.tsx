@@ -1,31 +1,31 @@
-import Globe from '@assets/images/globe.svg'
-import Plus from '@assets/images/plus.svg'
-import Automation from '@assets/images/automation.svg'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
 import { useMint } from '@helium/helium-react-hooks'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
-import useHaptic from '@hooks/useHaptic'
 import useHotspots from '@hooks/useHotspots'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useColors } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
-import React, { useCallback, useEffect, useState } from 'react'
+import { Globe, Plus, Repeat } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl } from 'react-native'
+import { RefreshControl, View } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
+import { useCSSVariable, withUniwind } from 'uniwind'
 import { CompressedNFT, HotspotWithPendingRewards } from '../../types/solana'
 import { formatLargeNumber } from '../../utils/accountUtils'
 import HotspotCompressedListItem from './HotspotCompressedListItem'
 import { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
+
+const GlobeIcon = withUniwind(Globe)
+const PlusIcon = withUniwind(Plus)
+const AutomationIcon = withUniwind(Repeat)
 
 type AutomationSchedule = 'daily' | 'weekly' | 'monthly' | undefined
 
@@ -47,12 +47,10 @@ function RewardItem({
   }
 
   return (
-    <Box alignItems="center" justifyContent="center" flexDirection="row">
+    <View className="flex-row items-center justify-center">
       <TokenIcon img={json?.image} size={24} />
       <Text
-        marginLeft="xs"
-        color="white"
-        variant="subtitle4"
+        className="ml-1 font-medium"
         numberOfLines={1}
         adjustsFontSizeToFit
         maxFontSizeMultiplier={1.1}
@@ -60,19 +58,18 @@ function RewardItem({
         {realAmount}
         {hasMore ? '+' : ''}
       </Text>
-      <Text marginLeft="xs" variant="subtitle4" color="grey50">
-        {symbol}
-      </Text>
-    </Box>
+      <Text className="ml-1 font-medium text-muted-foreground">{symbol}</Text>
+    </View>
   )
 }
+
+const COLUMN_WRAPPER_STYLE = { flexDirection: 'column' } as const
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
   const isFocused = useIsFocused()
-  const { primaryText } = useColors()
-  const { triggerImpact } = useHaptic()
+  const foreground = useCSSVariable('--color-foreground') as string | undefined
   const [automationSchedule] = useState<AutomationSchedule>()
 
   const {
@@ -89,45 +86,41 @@ const HotspotList = () => {
     totalHotspots,
   } = useHotspots()
 
-  const handleOnEndReached = useCallback(() => {
+  const handleOnEndReached = () => {
     if (!fetchingMore && isFocused && !onEndReached) {
       fetchMore()
     }
-  }, [fetchingMore, isFocused, fetchMore, onEndReached])
+  }
 
-  const handleNavigateToHotspot = useCallback(
-    (hotspot: HotspotWithPendingRewards) => {
-      if (hotspot.content.metadata) {
-        triggerImpact('light')
-        const { iot, mobile } = hotspot.content.metadata.hotspot_infos || {}
-        navigation.navigate('HotspotMapScreen', {
-          hotspot,
-          network: iot?.location
-            ? 'IOT'
-            : mobile?.location
-              ? 'MOBILE'
-              : undefined,
-        })
-      }
-    },
-    [navigation, triggerImpact],
-  )
+  const handleNavigateToHotspot = (hotspot: HotspotWithPendingRewards) => {
+    if (hotspot.content.metadata) {
+      const { iot, mobile } = hotspot.content.metadata.hotspot_infos || {}
+      navigation.navigate('HotspotMapScreen', {
+        hotspot,
+        network: iot?.location
+          ? 'IOT'
+          : mobile?.location
+            ? 'MOBILE'
+            : undefined,
+      })
+    }
+  }
 
-  const handleNavigateToClaimRewards = useCallback(() => {
+  const handleNavigateToClaimRewards = () => {
     navigation.navigate('ClaimAllRewardsScreen')
-  }, [navigation])
+  }
 
-  const handleNavigateToMap = useCallback(() => {
+  const handleNavigateToMap = () => {
     navigation.navigate('HotspotMapScreen')
-  }, [navigation])
+  }
 
-  const handleNavigateToHotspotOnboard = useCallback(() => {
+  const handleNavigateToHotspotOnboard = () => {
     navigation.navigate('OnboardingNavigator')
-  }, [navigation])
+  }
 
-  const handleNavigateToAutomation = useCallback(() => {
+  const handleNavigateToAutomation = () => {
     navigation.navigate('AutomationSetupScreen')
-  }, [navigation])
+  }
 
   useEffect(() => {
     // TODO: Load automation schedule from storage
@@ -139,109 +132,92 @@ const HotspotList = () => {
     void loadAutomationSchedule()
   }, [])
 
-  const renderHeader = useCallback(() => {
-    return (
-      <Box
-        marginTop="m"
-        marginBottom="s"
-        flexDirection="column"
-        alignItems="stretch"
-      >
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="stretch"
-          marginBottom="l"
-        >
-          <ButtonPressable
-            height={36}
-            borderRadius="round"
-            backgroundColor="surfaceSecondary"
-            backgroundColorOpacityPressed={0.7}
-            flex={1}
-            LeadingComponent={<Globe width={18} height={18} color="white" />}
-            title={t('collectablesScreen.hotspots.openMap')}
-            titleColor="white"
-            fontSize={14}
-            onPress={handleNavigateToMap}
-          />
-          <Box marginHorizontal="xs" />
-          <ButtonPressable
-            height={36}
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            flex={1}
-            LeadingComponent={<Plus width={18} height={18} color="black" />}
-            title={t('collectablesScreen.hotspots.connect')}
-            titleColor="black"
-            fontSize={14}
-            onPress={handleNavigateToHotspotOnboard}
-          />
-        </Box>
-        <Box flexDirection="row" alignItems="center">
-          <Box backgroundColor="grey500" height={1} flexGrow={1} />
-          <Box flexDirection="row" alignItems="center" paddingHorizontal="s">
-            <Text color="grey50">You own</Text>
-            <Text color="white" ml="xs">
-              {totalHotspots} hotspots
-            </Text>
-          </Box>
-
-          <Box backgroundColor="grey500" height={1} flexGrow={1} />
-        </Box>
-      </Box>
-    )
-  }, [t, handleNavigateToMap, handleNavigateToHotspotOnboard, totalHotspots])
-
-  const renderCollectable = useCallback(
-    ({ item }: { item: HotspotWithPendingRewards }) => {
-      return (
-        <HotspotCompressedListItem
-          hotspot={item}
-          onPress={handleNavigateToHotspot}
-          key={item.id}
-          marginBottom="s"
-        />
-      )
-    },
-    [handleNavigateToHotspot],
-  )
-
-  const renderEmptyComponent = useCallback(() => {
-    if (!loadingHotspots) return null
-
-    if (loadingHotspots && hotspots) {
-      return (
-        <Box flex={1} flexDirection="row">
-          {times(hotspots.length).map((i) => (
-            <NFTSkeleton key={i} />
-          ))}
-        </Box>
-      )
-    }
-
-    return null
-  }, [hotspots, loadingHotspots])
-
-  const keyExtractor = useCallback((item: CompressedNFT) => {
-    return item.id
-  }, [])
-
-  const Footer = useCallback(
-    () => (
-      <Box marginTop="m" marginBottom="s">
-        {fetchingMore ? <CircleLoader loaderSize={40} /> : <Box height={40} />}
-      </Box>
-    ),
-    [fetchingMore],
-  )
-
   useEffect(() => {
     return navigation.addListener('focus', () => {
       refresh()
     })
   }, [navigation, refresh])
+
+  const header = (
+    <View className="mb-2 mt-4 flex-col items-stretch">
+      <View className="mb-6 flex-row items-stretch justify-between gap-2">
+        <Button
+          variant="secondary"
+          className="flex-1 rounded-full"
+          onPress={handleNavigateToMap}
+        >
+          <GlobeIcon size={18} colorClassName="accent-secondary-foreground" />
+          <Text className="font-medium text-secondary-foreground">
+            {t('collectablesScreen.hotspots.openMap')}
+          </Text>
+        </Button>
+        <Button
+          className="flex-1 rounded-full"
+          onPress={handleNavigateToHotspotOnboard}
+        >
+          <PlusIcon size={18} colorClassName="accent-primary-foreground" />
+          <Text className="font-medium text-primary-foreground">
+            {t('collectablesScreen.hotspots.connect')}
+          </Text>
+        </Button>
+      </View>
+      <View className="flex-row items-center">
+        <View className="h-px grow bg-border" />
+        <View className="flex-row items-center px-2">
+          <Text className="text-muted-foreground">You own</Text>
+          <Text className="ml-1">{totalHotspots} hotspots</Text>
+        </View>
+        <View className="h-px grow bg-border" />
+      </View>
+    </View>
+  )
+
+  const renderCollectable = ({ item }: { item: HotspotWithPendingRewards }) => (
+    <HotspotCompressedListItem
+      hotspot={item}
+      onPress={handleNavigateToHotspot}
+      key={item.id}
+      className="mb-2"
+    />
+  )
+
+  const renderEmptyComponent = () => {
+    if (!loadingHotspots) return null
+
+    if (loadingHotspots && hotspots) {
+      return (
+        <View className="flex-1 flex-row">
+          {times(hotspots.length).map((i) => (
+            <NFTSkeleton key={i} />
+          ))}
+        </View>
+      )
+    }
+
+    return null
+  }
+
+  const keyExtractor = (item: CompressedNFT) => item.id
+
+  const footer = (
+    <View className="mb-2 mt-4">
+      {fetchingMore ? (
+        <Spinner size="large" className="h-10" />
+      ) : (
+        <View className="h-10" />
+      )}
+    </View>
+  )
+
+  const claimDisabled =
+    (pendingIotRewards &&
+      pendingIotRewards.eq(new BN('0')) &&
+      pendingMobileRewards &&
+      pendingMobileRewards.eq(new BN('0')) &&
+      pendingHntRewards &&
+      pendingHntRewards.eq(new BN('0')) &&
+      hotspotsWithMeta.length === (totalHotspots || 0)) ||
+    hotspotsWithMeta?.length === 0
 
   return (
     <>
@@ -249,17 +225,15 @@ const HotspotList = () => {
         contentInsetAdjustmentBehavior="automatic"
         data={hotspotsWithMeta}
         numColumns={2}
-        columnWrapperStyle={{
-          flexDirection: 'column',
-        }}
-        ListHeaderComponent={renderHeader}
+        columnWrapperStyle={COLUMN_WRAPPER_STYLE}
+        ListHeaderComponent={header}
         refreshControl={
           <RefreshControl
             enabled
             refreshing={loadingHotspots}
             onRefresh={refresh}
             title=""
-            tintColor={primaryText}
+            tintColor={foreground}
           />
         }
         renderItem={renderCollectable}
@@ -267,15 +241,10 @@ const HotspotList = () => {
         onEndReachedThreshold={0.001}
         onEndReached={handleOnEndReached}
         keyExtractor={keyExtractor}
-        ListFooterComponent={Footer}
+        ListFooterComponent={footer}
       />
-      <Box
-        backgroundColor="surfaceSecondary"
-        borderTopLeftRadius="l"
-        borderTopRightRadius="l"
-        p="m"
-      >
-        <Box flexDirection="row" justifyContent="space-evenly">
+      <View className="rounded-t-[12px] bg-secondary p-4">
+        <View className="flex-row justify-evenly">
           <RewardItem
             mint={HNT_MINT}
             amount={pendingHntRewards}
@@ -291,55 +260,32 @@ const HotspotList = () => {
             amount={pendingIotRewards}
             hasMore={hotspots.length < (totalHotspots || 0)}
           />
-        </Box>
-        <Box
-          flexGrow={1}
-          marginTop="m"
-          flexDirection="row"
-          alignItems="center"
-          marginBottom="l"
-        >
-          <ButtonPressable
-            flex={1}
-            height={50}
-            borderRadius="round"
-            backgroundColor="hntBlue"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="secondaryText"
-            title={t('collectablesScreen.hotspots.claimAllRewards')}
-            titleColor="white"
+        </View>
+        <View className="mb-6 mt-4 grow flex-row items-center gap-2">
+          <Button
+            variant="cta"
+            size="lg"
+            className="flex-1 rounded-full"
             onPress={handleNavigateToClaimRewards}
-            disabled={
-              (pendingIotRewards &&
-                pendingIotRewards.eq(new BN('0')) &&
-                pendingMobileRewards &&
-                pendingMobileRewards.eq(new BN('0')) &&
-                pendingHntRewards &&
-                pendingHntRewards.eq(new BN('0')) &&
-                hotspotsWithMeta.length === (totalHotspots || 0)) ||
-              hotspotsWithMeta?.length === 0
-            }
-          />
-          <ButtonPressable
-            width={50}
-            height={50}
-            marginStart="s"
-            borderRadius="round"
-            backgroundColor="offWhite"
-            innerContainerProps={{
-              justifyContent: 'center',
-            }}
-            backgroundColorOpacityPressed={0.7}
-            alignItems="center"
-            justifyContent="center"
+            disabled={claimDisabled}
+          >
+            {t('collectablesScreen.hotspots.claimAllRewards')}
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-10 rounded-full"
             onPress={handleNavigateToAutomation}
-            Icon={Automation}
-            titleColor={automationSchedule ? 'gold' : 'black'}
-          />
-        </Box>
-      </Box>
+          >
+            <AutomationIcon
+              size={20}
+              colorClassName={
+                automationSchedule ? 'accent-warning-500' : 'accent-foreground'
+              }
+            />
+          </Button>
+        </View>
+      </View>
     </>
   )
 }

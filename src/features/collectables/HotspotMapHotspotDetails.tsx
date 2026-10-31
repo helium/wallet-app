@@ -1,15 +1,7 @@
-import CopyAddress from '@assets/images/copyAddress.svg'
 import Hex from '@assets/images/hex.svg'
 import HntSymbol from '@assets/images/hnt.svg'
 import IotSymbol from '@assets/images/iotSymbol.svg'
 import MobileSymbol from '@assets/images/mobileSymbol.svg'
-import { ReAnimatedBlurBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import ImageBox from '@components/ImageBox'
-import ListItem from '@components/ListItem'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { makerApprovalKey } from '@helium/helium-entity-manager-sdk'
 import { useMint } from '@helium/helium-react-hooks'
 import { NetworkType } from '@helium/onboarding'
@@ -30,21 +22,91 @@ import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useMutation } from '@tanstack/react-query'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { FADE_OUT_STATE } from '@theme/motion'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import { removeDashAndCapitalize } from '@utils/hotspotNftsUtils'
 import { Explorer } from '@utils/walletApiV2'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
+import { BlurView } from 'expo-blur'
+import { CircleCheck, Copy } from 'lucide-react-native'
+import React, { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Linking } from 'react-native'
+import { Image, Linking, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { SvgUri } from 'react-native-svg'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { CompressedNFT } from '../../types/solana'
 import { IOT_CONFIG_KEY, Mints } from '../../utils/constants'
 import { CollectableNavigationProp } from './collectablesTypes'
-import { FADE_OUT_STATE } from '@theme/motion'
+
+const HexIcon = withUniwind(Hex)
+const HntIcon = withUniwind(HntSymbol)
+const MobileIcon = withUniwind(MobileSymbol)
+const IotIcon = withUniwind(IotSymbol)
+const CopyIcon = withUniwind(Copy)
+const CheckIcon = withUniwind(CircleCheck)
+const AnimatedBlurView = withUniwind(Animated.createAnimatedComponent(BlurView))
+
+// One row of the actions list: a title with an optional icon before it and a
+// check after it when selected.
+const ActionRow = ({
+  title,
+  icon,
+  selected,
+  onPress,
+}: {
+  title: string
+  icon?: ReactNode
+  selected?: boolean
+  onPress: () => void
+}) => (
+  <PressableScale
+    feedback="opacity"
+    onPress={onPress}
+    className="flex-row items-center border-b border-border py-4"
+  >
+    {icon}
+    <View className="mx-4 flex-1 justify-center">
+      <Text size="base" className="font-medium">
+        {title}
+      </Text>
+    </View>
+    <View className="mr-6">
+      {selected && <CheckIcon size={20} colorClassName="accent-foreground" />}
+    </View>
+  </PressableScale>
+)
+
+// A pending-rewards pill: the token symbol and the amount on a tinted ground.
+const RewardPill = ({
+  icon,
+  amount,
+  className,
+  textClassName,
+}: {
+  icon: ReactNode
+  amount?: string
+  className: string
+  textClassName: string
+}) => (
+  <View
+    className={twMerge(
+      'flex-row items-center justify-between rounded-md py-1 pl-1 pr-2',
+      className,
+    )}
+  >
+    {icon}
+    <Text size="xs" className={twMerge('ml-2 font-medium', textClassName)}>
+      {amount}
+    </Text>
+  </View>
+)
 
 const IotMapDetails = ({
   maker,
@@ -54,47 +116,50 @@ const IotMapDetails = ({
   info: IotHotspotInfoV0
 }) => {
   const { t } = useTranslation()
-  const colors = useColors()
   const { gain, elevation } = info
 
   return (
-    <Box flexDirection="row" marginTop="m">
-      <Box flex={1} flexDirection="row" justifyContent="space-between">
-        <Box>
-          <Text variant="body2Medium">
+    <View className="mt-4 flex-row">
+      <View className="flex-1 flex-row justify-between">
+        <View>
+          <Text className="font-medium">
             {t('collectablesScreen.hotspots.map.transmitScale')}
           </Text>
-          <Box flexDirection="row" alignItems="center">
-            <Hex width={16} height={16} color={colors.darkGrey} />
-            <Text marginLeft="s" variant="body3">
+          <View className="flex-row items-center">
+            <HexIcon
+              width={16}
+              height={16}
+              colorClassName="accent-muted-foreground"
+            />
+            <Text size="xs" className="ml-2">
               ---
             </Text>
-          </Box>
-        </Box>
-        <Box>
-          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+          </View>
+        </View>
+        <View>
+          <Text className="font-medium" adjustsFontSizeToFit numberOfLines={1}>
             {t('generic.maker')}
           </Text>
-          <Text variant="body3" numberOfLines={1}>
+          <Text size="xs" numberOfLines={1}>
             {maker}
           </Text>
-        </Box>
-        <Box>
-          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+        </View>
+        <View>
+          <Text className="font-medium" adjustsFontSizeToFit numberOfLines={1}>
             {t('generic.gain')}
           </Text>
-          <Text variant="body3">
+          <Text size="xs">
             {gain ? gain / 10 : gain} {t('generic.dBi')}
           </Text>
-        </Box>
-        <Box>
-          <Text variant="body2Medium" adjustsFontSizeToFit numberOfLines={1}>
+        </View>
+        <View>
+          <Text className="font-medium" adjustsFontSizeToFit numberOfLines={1}>
             {t('generic.elevation')}
           </Text>
-          <Text variant="body3">{elevation}m</Text>
-        </Box>
-      </Box>
-    </Box>
+          <Text size="xs">{elevation}m</Text>
+        </View>
+      </View>
+    </View>
   )
 }
 
@@ -106,33 +171,56 @@ const MobileMapDetails = ({
   info: MobileHotspotInfoV0
 }) => {
   const { t } = useTranslation()
-  const colors = useColors()
   const { deviceType } = info
 
   return (
-    <Box flexDirection="row" marginTop="m">
-      <Box flex={1} flexDirection="row" justifyContent="space-between">
-        <Box>
-          <Text variant="body2Medium">{t('generic.coverage')}</Text>
-          <Box flexDirection="row" alignItems="center">
-            <Hex width={16} height={16} color={colors.darkGrey} />
-            <Text marginLeft="s" variant="body3">
+    <View className="mt-4 flex-row">
+      <View className="flex-1 flex-row justify-between">
+        <View>
+          <Text className="font-medium">{t('generic.coverage')}</Text>
+          <View className="flex-row items-center">
+            <HexIcon
+              width={16}
+              height={16}
+              colorClassName="accent-muted-foreground"
+            />
+            <Text size="xs" className="ml-2">
               ---
             </Text>
-          </Box>
-        </Box>
-        <Box>
-          <Text variant="body2Medium">{t('generic.maker')}</Text>
-          <Text variant="body3">{maker}</Text>
-        </Box>
-        <Box>
-          <Text variant="body2Medium">{t('generic.radioType')}</Text>
-          <Text variant="body3">
+          </View>
+        </View>
+        <View>
+          <Text className="font-medium">{t('generic.maker')}</Text>
+          <Text size="xs">{maker}</Text>
+        </View>
+        <View>
+          <Text className="font-medium">{t('generic.radioType')}</Text>
+          <Text size="xs">
             {deviceType ? Object.keys(deviceType)[0] : '---'}
           </Text>
-        </Box>
-      </Box>
-    </Box>
+        </View>
+      </View>
+    </View>
+  )
+}
+
+const hasOtherRecipient = (
+  destination: PublicKey | undefined,
+  wallet: PublicKey | undefined,
+) =>
+  !!destination &&
+  !!wallet &&
+  !new PublicKey(destination).equals(wallet) &&
+  !new PublicKey(destination).equals(PublicKey.default)
+
+const formatRewards = (
+  rewards: Record<string, string> | undefined,
+  mint: string,
+  decimals: number,
+) => {
+  if (!rewards) return
+  return formatLargeNumber(
+    new BigNumber(toNumber(new BN(rewards[mint]), decimals)),
   )
 }
 
@@ -148,7 +236,6 @@ export const HotspotMapHotspotDetails = ({
   network: NetworkType
 }) => {
   const { t } = useTranslation()
-  const colors = useColors()
   const wallet = useCurrentWallet()
   const navigation = useNavigation<CollectableNavigationProp>()
   const { anchorProvider } = useSolana()
@@ -170,8 +257,6 @@ export const HotspotMapHotspotDetails = ({
     (k) => k.group_key === 'collection',
   )?.group_value
   const collectionKey = usePublicKey(collection)
-  const { primaryText } = useColors()
-  const { backgroundStyle: flamecoOpaque } = useOpacity('flamenco', 0.1)
 
   const { loading: mplxLoading, metadata: mplxMetadata } =
     useMetaplexMetadata(collectionKey)
@@ -187,13 +272,9 @@ export const HotspotMapHotspotDetails = ({
     mplxMetadata?.updateAuthority.toBase58(),
   )
 
-  const iotMakerApproval = useMemo(() => {
-    if (!mplxMetadata) {
-      return undefined
-    }
-
-    return makerApprovalKey(IOT_CONFIG_KEY, mplxMetadata.updateAuthority)[0]
-  }, [mplxMetadata])
+  const iotMakerApproval = mplxMetadata
+    ? makerApprovalKey(IOT_CONFIG_KEY, mplxMetadata.updateAuthority)[0]
+    : undefined
 
   const { info: iotMakerApprovalAcc } = useMakerApproval(iotMakerApproval)
 
@@ -202,135 +283,46 @@ export const HotspotMapHotspotDetails = ({
   // Only check IOT hotspots since wallet app doesn't have serial numbers for mobile hotspots
   const needsRepair = Boolean(iotMakerApprovalAcc) && !iotInfoAcc?.info
 
-  const pendingIotRewards = useMemo(
-    () =>
-      hotspotWithMeta?.pendingRewards &&
-      new BN(hotspotWithMeta?.pendingRewards[Mints.IOT]),
-    [hotspotWithMeta],
+  const pendingRewards = hotspotWithMeta?.pendingRewards
+  const pendingIotRewardsString = formatRewards(
+    pendingRewards,
+    Mints.IOT,
+    iotMint?.decimals || 6,
+  )
+  const pendingMobileRewardsString = formatRewards(
+    pendingRewards,
+    Mints.MOBILE,
+    mobileMint?.decimals || 6,
+  )
+  const pendingHntRewardsString = formatRewards(
+    pendingRewards,
+    Mints.HNT,
+    hntMint?.decimals || 8,
   )
 
-  const pendingIotRewardsString = useMemo(() => {
-    if (!hotspotWithMeta?.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspotWithMeta?.pendingRewards[Mints.IOT]),
-      iotMint?.decimals || 6,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspotWithMeta, iotMint])
+  const hasIotRewards =
+    !!pendingRewards && new BN(pendingRewards[Mints.IOT]).gt(new BN(0))
+  const hasMobileRewards =
+    !!pendingRewards && new BN(pendingRewards[Mints.MOBILE]).gt(new BN(0))
+  const hasHntRewards =
+    !!pendingRewards && new BN(pendingRewards[Mints.HNT]).gt(new BN(0))
+  const hasRewards = hasIotRewards || hasMobileRewards || hasHntRewards
 
-  const pendingMobileRewards = useMemo(
-    () =>
-      hotspotWithMeta?.pendingRewards &&
-      new BN(hotspotWithMeta?.pendingRewards[Mints.MOBILE]),
-    [hotspotWithMeta],
-  )
+  const recipients = hotspotWithMeta?.rewardRecipients
+  const hasRecipientSet =
+    hasOtherRecipient(recipients?.[Mints.IOT]?.destination, wallet) ||
+    hasOtherRecipient(recipients?.[Mints.MOBILE]?.destination, wallet) ||
+    hasOtherRecipient(recipients?.[Mints.HNT]?.destination, wallet)
 
-  const pendingMobileRewardsString = useMemo(() => {
-    if (!hotspotWithMeta?.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspotWithMeta?.pendingRewards[Mints.MOBILE]),
-      mobileMint?.decimals || 6,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspotWithMeta, mobileMint])
+  const isLoading =
+    mplxLoading || explorerLoading || makerLoading || loadingMeta
 
-  const pendingHntRewards = useMemo(
-    () =>
-      hotspotWithMeta?.pendingRewards &&
-      new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
-    [hotspotWithMeta],
-  )
-
-  const pendingHntRewardsString = useMemo(() => {
-    if (!hotspotWithMeta?.pendingRewards) return
-    const num = toNumber(
-      new BN(hotspotWithMeta?.pendingRewards[Mints.HNT]),
-      hntMint?.decimals || 8,
-    )
-    return formatLargeNumber(new BigNumber(num))
-  }, [hotspotWithMeta, hntMint])
-
-  const hasIotRewards = useMemo(
-    () => pendingIotRewards && pendingIotRewards.gt(new BN(0)),
-    [pendingIotRewards],
-  )
-  const hasMobileRewards = useMemo(
-    () => pendingMobileRewards && pendingMobileRewards.gt(new BN(0)),
-    [pendingMobileRewards],
-  )
-
-  const hasHntRewards = useMemo(
-    () => pendingHntRewards && pendingHntRewards.gt(new BN(0)),
-    [pendingHntRewards],
-  )
-
-  const hasRewards = useMemo(
-    () => hasIotRewards || hasMobileRewards || hasHntRewards,
-    [hasIotRewards, hasMobileRewards, hasHntRewards],
-  )
-
-  const mobileRecipient = useMemo(
-    () => hotspotWithMeta?.rewardRecipients?.[Mints.MOBILE],
-    [hotspotWithMeta],
-  )
-
-  const iotRecipient = useMemo(
-    () => hotspotWithMeta?.rewardRecipients?.[Mints.IOT],
-    [hotspotWithMeta],
-  )
-
-  const hntRecipient = useMemo(
-    () => hotspotWithMeta?.rewardRecipients?.[Mints.HNT],
-    [hotspotWithMeta],
-  )
-
-  const hasIotRecipient = useMemo(
-    () =>
-      iotRecipient?.destination &&
-      wallet &&
-      !new PublicKey(iotRecipient.destination).equals(wallet) &&
-      !new PublicKey(iotRecipient.destination).equals(PublicKey.default),
-    [iotRecipient, wallet],
-  )
-
-  const hasMobileRecipient = useMemo(
-    () =>
-      mobileRecipient?.destination &&
-      wallet &&
-      !new PublicKey(mobileRecipient.destination).equals(wallet) &&
-      !new PublicKey(mobileRecipient.destination).equals(PublicKey.default),
-    [mobileRecipient, wallet],
-  )
-
-  const hasHntRecipient = useMemo(
-    () =>
-      hntRecipient?.destination &&
-      wallet &&
-      !new PublicKey(hntRecipient.destination).equals(wallet) &&
-      !new PublicKey(hntRecipient.destination).equals(PublicKey.default),
-    [hntRecipient, wallet],
-  )
-
-  const hasRecipientSet = useMemo(
-    () => hasIotRecipient || hasMobileRecipient || hasHntRecipient,
-    [hasIotRecipient, hasMobileRecipient, hasHntRecipient],
-  )
-
-  const isLoading = useMemo(
-    () => mplxLoading || explorerLoading || makerLoading || loadingMeta,
-    [mplxLoading, explorerLoading, makerLoading, loadingMeta],
-  )
-
-  const eccCompact = useMemo(() => {
-    if (!metadata || !metadata?.attributes?.length) {
-      return undefined
-    }
-
-    return metadata.attributes.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (attr: any) => attr?.trait_type === 'ecc_compact',
-    )?.value
-  }, [metadata])
+  const eccCompact: string | undefined = metadata?.attributes?.length
+    ? metadata.attributes.find(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (attr: any) => attr?.trait_type === 'ecc_compact',
+      )?.value
+    : undefined
 
   const [prevExplorer, setPrevExplorer] = useState(explorer)
   if (prevExplorer !== explorer) {
@@ -340,65 +332,62 @@ export const HotspotMapHotspotDetails = ({
     }
   }
 
-  const handleCopyAddress = useCallback(() => {
+  const handleCopyAddress = () => {
     if (!eccCompact) return
 
     copyText({
       message: ellipsizeAddress(eccCompact),
       copyText: eccCompact,
     })
-  }, [copyText, eccCompact])
+  }
 
-  const handleViewInExplorer = useCallback(async () => {
+  const handleViewInExplorer = async () => {
     if (explorer && entityKey) {
       const url = getExplorerUrl({ entityKey, explorer })
       await Linking.openURL(url)
     } else if (entityKey) {
       setSelectExplorerOpen(true)
     }
-  }, [explorer, entityKey, setSelectExplorerOpen])
+  }
 
-  const handleConfirmExplorer = useCallback(
-    async (selectedExplorer: string) => {
-      await updateExplorer(selectedExplorer)
+  const handleConfirmExplorer = async (selectedExplorer: string) => {
+    await updateExplorer(selectedExplorer)
 
-      const selected = available?.find(
-        (a: Explorer) => a.value === selectedExplorer,
-      )
-      if (entityKey && selected) {
-        const url = getExplorerUrl({
-          entityKey,
-          explorer: selected,
-        })
-        await Linking.openURL(url)
-      }
-    },
-    [available, entityKey, updateExplorer],
-  )
+    const selected = available?.find(
+      (a: Explorer) => a.value === selectedExplorer,
+    )
+    if (entityKey && selected) {
+      const url = getExplorerUrl({
+        entityKey,
+        explorer: selected,
+      })
+      await Linking.openURL(url)
+    }
+  }
 
-  const handleClaimRewards = useCallback(() => {
+  const handleClaimRewards = () => {
     if (hotspotWithMeta) {
       navigation.navigate('ClaimRewardsScreen', {
         hotspot: hotspotWithMeta,
       })
     }
-  }, [hotspotWithMeta, navigation])
+  }
 
-  const handleTransfer = useCallback(() => {
+  const handleTransfer = () => {
     navigation.navigate('TransferCollectableScreen', {
       collectable: hotspot,
     })
-  }, [hotspot, navigation])
+  }
 
-  const handleRecipientChange = useCallback(() => {
+  const handleRecipientChange = () => {
     if (hotspotWithMeta) {
       navigation.navigate('ChangeRewardsRecipientScreen', {
         hotspot: hotspotWithMeta,
       })
     }
-  }, [hotspotWithMeta, navigation])
+  }
 
-  const handleAssertLocation = useCallback(() => {
+  const handleAssertLocation = () => {
     if (hotspotWithMeta) {
       navigation.navigate(
         'AssertLocationScreen',
@@ -406,15 +395,15 @@ export const HotspotMapHotspotDetails = ({
         { pop: true },
       )
     }
-  }, [hotspotWithMeta, navigation])
+  }
 
-  const handleAntennaSetup = useCallback(() => {
+  const handleAntennaSetup = () => {
     if (hotspotWithMeta) {
       navigation.navigate('AntennaSetupScreen', {
         collectable: hotspotWithMeta,
       })
     }
-  }, [hotspotWithMeta, navigation])
+  }
 
   const {
     mutate: handleOnboard,
@@ -448,77 +437,63 @@ export const HotspotMapHotspotDetails = ({
 
   return (
     <>
-      <Box padding="ms" borderBottomColor="black900" borderBottomWidth={1}>
+      <View className="border-b border-border p-3">
         {isLoading && (
-          <Box
-            flexDirection="row"
-            minHeight={110}
-            justifyContent="center"
-            alignContent="center"
-          >
-            <Box justifyContent="center">
-              <CircleLoader loaderSize={24} color="white" />
-            </Box>
-          </Box>
+          <View className="min-h-[110px] flex-row justify-center">
+            <View className="justify-center">
+              <Spinner colorClassName="accent-foreground" />
+            </View>
+          </View>
         )}
         {!isLoading && (
           <>
-            <Box flexDirection="row">
-              <ImageBox
-                borderRadius="lm"
-                height={60}
-                width={60}
-                mr="ms"
+            <View className="flex-row">
+              <Image
+                className="mr-3 h-[60px] w-[60px] rounded-lg"
                 source={{
                   uri: metadata?.image,
                   cache: 'force-cache',
                 }}
               />
-              <Box flex={1}>
-                <Box flexDirection="row" alignItems="center">
-                  <Box flex={1} flexDirection="row">
+              <View className="flex-1">
+                <View className="flex-row items-center">
+                  <View className="flex-1 flex-row">
                     <Text
-                      variant="h3Bold"
-                      color="white"
+                      size="2xl"
+                      className="font-bold text-foreground"
                       numberOfLines={1}
                       adjustsFontSizeToFit
                     >
                       {removeDashAndCapitalize(hotspot.content.metadata.name)}
                     </Text>
-                  </Box>
-                </Box>
-                <Box flex={1} flexDirection="row" alignItems="center">
+                  </View>
+                </View>
+                <View className="flex-1 flex-row items-center">
                   {streetAddress && (
                     <>
-                      <Box flexShrink={1} flexDirection="row">
-                        <Text numberOfLines={1} variant="body1">
+                      <View className="shrink flex-row">
+                        <Text numberOfLines={1} size="base">
                           {streetAddress}
                         </Text>
-                      </Box>
-                      <Box
-                        backgroundColor="surfaceContrast"
-                        height={6}
-                        width={6}
-                        borderRadius="round"
-                        marginHorizontal="ms"
-                      />
+                      </View>
+                      <View className="mx-3 h-1.5 w-1.5 rounded-full bg-primary" />
                     </>
                   )}
                   {eccCompact && (
-                    <TouchableOpacityBox
-                      flexDirection="row"
-                      alignItems="center"
+                    <PressableScale
+                      feedback="opacity"
+                      className="flex-row items-center"
                       onPress={handleCopyAddress}
                     >
-                      <Text variant="body1" numberOfLines={1} marginRight="xs">
+                      <Text size="base" numberOfLines={1} className="mr-1">
                         {ellipsizeAddress(eccCompact, { numChars: 4 })}
                       </Text>
-                      <CopyAddress width={16} height={16} color={primaryText} />
-                    </TouchableOpacityBox>
+                      <CopyIcon size={16} colorClassName="accent-foreground" />
+                    </PressableScale>
                   )}
-                </Box>
-              </Box>
-            </Box>
+                </View>
+              </View>
+            </View>
             {network === 'IOT' && info && (
               <IotMapDetails
                 maker={makerAcc?.name || 'Unknown'}
@@ -532,256 +507,173 @@ export const HotspotMapHotspotDetails = ({
               />
             )}
             {onboardError && (
-              <Box
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                paddingTop="ms"
-              >
-                <Text variant="body3Medium" color="red500">
+              <View className="flex-row items-center justify-center pt-3">
+                <Text size="xs" className="font-medium text-destructive">
                   {onboardError.toString()}
                 </Text>
-              </Box>
+              </View>
             )}
           </>
         )}
-      </Box>
+      </View>
 
       {showActions && (
-        <Box position="relative">
-          <ReAnimatedBlurBox
-            visible={onboardLoading}
-            zIndex={onboardLoading ? 100 : 0}
-            exiting={FADE_OUT_STATE}
-            position="absolute"
-            width="100%"
-            height="100%"
-            justifyContent="center"
-            alignItems="center"
-            tint="dark"
-            intensity={80}
-          >
-            <CircleLoader loaderSize={24} color="white" />
-          </ReAnimatedBlurBox>
+        <View className="relative">
+          {onboardLoading && (
+            <AnimatedBlurView
+              exiting={FADE_OUT_STATE}
+              className="absolute z-[100] h-full w-full items-center justify-center"
+              tint="dark"
+              intensity={80}
+            >
+              <Spinner colorClassName="accent-foreground" />
+            </AnimatedBlurView>
+          )}
           {selectExplorerOpen ? (
             <>
-              <Box
-                borderBottomColor="black900"
-                padding="m"
-                borderBottomWidth={1}
-              >
-                <Text variant="subtitle1">
+              <View className="border-b border-border p-4">
+                <Text size="xl" className="font-medium">
                   {t('activityScreen.selectExplorer')}
                 </Text>
 
-                <Text variant="body2">
-                  {t('activityScreen.selectExplorerSubtitle')}
-                </Text>
-              </Box>
+                <Text>{t('activityScreen.selectExplorerSubtitle')}</Text>
+              </View>
 
               {available?.map((a) => {
                 return (
-                  <ListItem
+                  <ActionRow
                     key={a.value}
                     title={a.label}
-                    Icon={
+                    icon={
                       a.image.endsWith('svg') ? (
                         <SvgUri height={16} width={16} uri={a.image} />
                       ) : (
-                        <ImageBox
-                          height={16}
-                          width={16}
-                          source={{ uri: a.image }}
-                        />
+                        <Image className="h-4 w-4" source={{ uri: a.image }} />
                       )
                     }
                     onPress={() =>
                       void handleConfirmExplorer(a.value).catch(console.error)
                     }
                     selected={explorer?.value === a.value}
-                    hasPressedState={false}
                   />
                 )
               })}
             </>
           ) : (
             <>
-              <TouchableOpacityBox
-                paddingVertical="m"
-                borderBottomColor="black900"
-                borderBottomWidth={1}
+              <PressableScale
+                feedback="opacity"
+                className="border-b border-border py-4"
                 onPress={hasRewards ? handleClaimRewards : undefined}
                 disabled={!hasRewards}
               >
-                <Box
-                  flex={1}
-                  flexDirection="row"
-                  alignItems="center"
-                  marginHorizontal="m"
-                >
-                  <Text variant="subtitle3" opacity={!hasRewards ? 0.5 : 1}>
+                <View className="mx-4 flex-1 flex-row items-center">
+                  <Text
+                    size="base"
+                    className={twMerge(
+                      'font-medium',
+                      !hasRewards && 'opacity-50',
+                    )}
+                  >
                     {t('collectablesScreen.hotspots.claimRewards')}
                   </Text>
-                  <Box
-                    flex={1}
-                    flexDirection="row"
-                    justifyContent="flex-end"
-                    gap="xs"
-                  >
-                    {!!hasHntRewards && (
-                      <Box
-                        flexDirection="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        backgroundColor="hntDarkBlue"
-                        borderRadius="m"
-                        paddingVertical="xs"
-                        paddingLeft="xs"
-                        paddingRight="s"
-                      >
-                        <HntSymbol
-                          color={colors.hntBlue}
-                          width={20}
-                          height={20}
-                        />
-                        <Text
-                          variant="body3Medium"
-                          marginLeft="s"
-                          color="hntBlue"
-                        >
-                          {pendingHntRewardsString}
-                        </Text>
-                      </Box>
+                  <View className="flex-1 flex-row justify-end gap-1">
+                    {hasHntRewards && (
+                      <RewardPill
+                        className="bg-blue-dark-700"
+                        textClassName="text-blue-dark-400"
+                        amount={pendingHntRewardsString}
+                        icon={
+                          <HntIcon
+                            width={20}
+                            height={20}
+                            colorClassName="accent-blue-dark-400"
+                          />
+                        }
+                      />
                     )}
-                    {!!hasMobileRewards && (
-                      <Box
-                        flexDirection="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        backgroundColor="mobileDarkBlue"
-                        borderRadius="m"
-                        paddingVertical="xs"
-                        paddingLeft="xs"
-                        paddingRight="s"
-                      >
-                        <MobileSymbol
-                          color={colors.mobileBlue}
-                          width={20}
-                          height={20}
-                        />
-                        <Text
-                          variant="body3Medium"
-                          marginLeft="s"
-                          color="mobileBlue"
-                        >
-                          {pendingMobileRewardsString}
-                        </Text>
-                      </Box>
+                    {hasMobileRewards && (
+                      <RewardPill
+                        className="bg-blue-dark-500/15"
+                        textClassName="text-blue-dark-500"
+                        amount={pendingMobileRewardsString}
+                        icon={
+                          <MobileIcon
+                            width={20}
+                            height={20}
+                            colorClassName="accent-blue-dark-500"
+                          />
+                        }
+                      />
                     )}
-                    {!!hasIotRewards && (
-                      <Box
-                        flexDirection="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        backgroundColor="iotDarkGreen"
-                        borderRadius="m"
-                        paddingVertical="xs"
-                        paddingLeft="xs"
-                        paddingRight="s"
-                      >
-                        <IotSymbol
-                          color={colors.iotGreen}
-                          width={20}
-                          height={20}
-                        />
-                        <Text
-                          variant="body3Medium"
-                          marginLeft="s"
-                          color="iotGreen"
-                        >
-                          {pendingIotRewardsString}
-                        </Text>
-                      </Box>
+                    {hasIotRewards && (
+                      <RewardPill
+                        className="bg-success-500/15"
+                        textClassName="text-success-500"
+                        amount={pendingIotRewardsString}
+                        icon={
+                          <IotIcon
+                            width={20}
+                            height={20}
+                            colorClassName="accent-success-500"
+                          />
+                        }
+                      />
                     )}
-                  </Box>
-                </Box>
-              </TouchableOpacityBox>
-              <TouchableOpacityBox
-                paddingVertical="m"
-                borderBottomColor="black900"
-                borderBottomWidth={1}
+                  </View>
+                </View>
+              </PressableScale>
+              <PressableScale
+                feedback="opacity"
+                className="border-b border-border py-4"
                 onPress={handleRecipientChange}
               >
-                <Box
-                  flex={1}
-                  flexDirection="row"
-                  alignItems="center"
-                  marginHorizontal="m"
-                  justifyContent="space-between"
-                >
-                  <Text variant="subtitle3">
+                <View className="mx-4 flex-1 flex-row items-center justify-between">
+                  <Text size="base" className="font-medium">
                     {t('changeRewardsRecipientScreen.title')}
                   </Text>
                   {hasRecipientSet && (
-                    <Box flexDirection="row" alignItems="center">
-                      <Box
-                        flexDirection="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        borderRadius="m"
-                        paddingVertical="sx"
-                        paddingLeft="s"
-                        paddingRight="s"
-                        style={{
-                          ...flamecoOpaque,
-                        }}
-                      >
-                        <Text variant="body3Medium" color="flamenco">
+                    <View className="flex-row items-center">
+                      <View className="flex-row items-center justify-between rounded-md bg-warning-500/10 px-2 py-1.5">
+                        <Text
+                          size="xs"
+                          className="font-medium text-warning-500"
+                        >
                           {t('changeRewardsRecipientScreen.set')}
                         </Text>
-                      </Box>
-                    </Box>
+                      </View>
+                    </View>
                   )}
-                </Box>
-              </TouchableOpacityBox>
-              <ListItem
+                </View>
+              </PressableScale>
+              <ActionRow
                 title={t('collectablesScreen.hotspots.viewInExplorer')}
                 onPress={() => void handleViewInExplorer().catch(console.error)}
-                selected={false}
-                hasPressedState={false}
               />
-              <ListItem
+              <ActionRow
                 title={t('collectablesScreen.hotspots.transferHotspot')}
                 onPress={handleTransfer}
-                selected={false}
-                hasPressedState={false}
               />
-              <ListItem
+              <ActionRow
                 title={t('collectablesScreen.hotspots.assertLocation')}
                 onPress={handleAssertLocation}
-                selected={false}
-                hasPressedState={false}
               />
               {network === 'IOT' && (
-                <ListItem
+                <ActionRow
                   title={t('collectablesScreen.hotspots.antennaSetup')}
                   onPress={handleAntennaSetup}
-                  selected={false}
-                  hasPressedState={false}
                 />
               )}
               {needsRepair && (
-                <ListItem
+                <ActionRow
                   key="onboard"
                   title={t('collectablesScreen.hotspots.onboard.title')}
                   onPress={() => handleOnboard()}
-                  selected={false}
-                  hasPressedState={false}
                 />
               )}
             </>
           )}
-        </Box>
+        </View>
       )}
     </>
   )

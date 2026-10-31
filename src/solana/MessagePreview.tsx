@@ -1,5 +1,5 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Card } from '@ui/Card'
+import { Text } from '@ui/Text'
 import React from 'react'
 
 interface IMransactionPreviewProps {
@@ -11,12 +11,8 @@ export const MessagePreview = ({
   warning,
   message,
 }: IMransactionPreviewProps) => (
-  <Box backgroundColor="surface" borderRadius="l" mt="m" px="m" py="ms" gap="s">
-    {message && <Text variant="body2">{message}</Text>}
-    {warning && (
-      <Text variant="body2" color="orange500">
-        {warning}
-      </Text>
-    )}
-  </Box>
+  <Card className="mt-4 gap-2 px-4 py-3">
+    {message && <Text>{message}</Text>}
+    {warning && <Text className="text-warning-500">{warning}</Text>}
+  </Card>
 )

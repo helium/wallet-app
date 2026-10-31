@@ -1,29 +1,33 @@
-import Checkmark from '@assets/images/checkmark.svg'
-import IndentArrow from '@assets/images/indentArrow.svg'
-import InfoIcon from '@assets/images/info.svg'
-import CancelIcon from '@assets/images/remixCancel.svg'
-import ChevronDown from '@assets/images/remixChevronDown.svg'
-import ChevronUp from '@assets/images/remixChevronUp.svg'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
 import SubmitButton from '@components/SubmitButton'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { WarningPill } from '@components/WarningPill'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
-import { humanReadable } from '@helium/spl-utils'
 import { sus } from '@helium/sus'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useRentExempt } from '@hooks/useRentExempt'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { DAO_KEY } from '@utils/constants'
+import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback, useMemo, useState } from 'react'
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  CornerDownRight,
+  Info,
+  X,
+} from 'lucide-react-native'
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
+import { withUniwind } from 'uniwind'
 import { fetchCanopyBlacklist } from './canopyBlacklist'
 import { useSolana } from './SolanaProvider'
 import WalletSignBottomSheetTransaction from './WalletSignBottomSheetTransaction'
@@ -31,6 +35,13 @@ import {
   WalletSignOpts,
   WalletStandardMessageTypes,
 } from './walletSignBottomSheetTypes'
+
+const CheckIcon = withUniwind(Check)
+const ChevronDownIcon = withUniwind(ChevronDown)
+const ChevronUpIcon = withUniwind(ChevronUp)
+const IndentArrowIcon = withUniwind(CornerDownRight)
+const InfoIcon = withUniwind(Info)
+const CancelIcon = withUniwind(X)
 
 type IWalletSignBottomSheetSimulatedProps = WalletSignOpts & {
   onCancel: () => void
@@ -99,79 +110,49 @@ export const WalletSignBottomSheetSimulated = ({
     },
   })
 
-  const [currentTxs, hasMore] = useMemo(() => {
-    if (!simulationResults) return [[], false]
+  const itemsPerPage = 5
+  const pages = Math.ceil((simulationResults?.length || 0) / itemsPerPage)
+  const currentTxs = simulationResults
+    ? simulationResults.slice(0, currentPage * itemsPerPage)
+    : []
+  const hasMore = !!simulationResults && currentPage < pages
 
-    let scopedTxs
-    const itemsPerPage = 5
-    const pages = Math.ceil((simulationResults.length || 0) / itemsPerPage)
-    const more = currentPage < pages
-
-    if (simulationResults) {
-      const endIndex = currentPage * itemsPerPage
-      scopedTxs = simulationResults.slice(0, endIndex)
-    }
-
-    return [scopedTxs, more]
-  }, [simulationResults, currentPage])
-
-  const handleLoadMore = useCallback(() => {
+  const handleLoadMore = () => {
     setCurrentPage((page) => page + 1)
-  }, [setCurrentPage])
+  }
 
-  const estimatedTotalLamports = useMemo(
-    () =>
-      simulationResults?.reduce(
-        (a, b) => a + b.solFee + (b.priorityFee || 0),
-        0,
-      ) || 0,
-    [simulationResults],
+  const estimatedTotalLamports =
+    simulationResults?.reduce(
+      (a, b) => a + b.solFee + (b.priorityFee || 0),
+      0,
+    ) || 0
+
+  const estimatedTotalSol =
+    loading || !simulationResults
+      ? '...'
+      : humanReadable(new BN(estimatedTotalLamports), 9)
+
+  const estimatedTotalBaseFee = humanReadable(
+    new BN(simulationResults?.reduce((a, b) => a + b.solFee, 0) || 0),
+    9,
   )
 
-  const estimatedTotalSol = useMemo(
-    () =>
-      loading || !simulationResults
-        ? '...'
-        : humanReadable(new BN(estimatedTotalLamports), 9),
-    [estimatedTotalLamports, loading, simulationResults],
+  const estimatedTotalPriorityFee = humanReadable(
+    new BN(
+      simulationResults?.reduce((a, b) => a + (b.priorityFee || 0), 0) || 0,
+    ),
+    9,
   )
 
-  const estimatedTotalBaseFee = useMemo(
-    () =>
-      humanReadable(
-        new BN(simulationResults?.reduce((a, b) => a + b.solFee, 0) || 0),
-        9,
-      ),
-    [simulationResults],
+  const totalWarnings = simulationResults?.reduce(
+    (a, b) =>
+      a +
+      (b.warnings.filter((w) => w.severity === 'critical').length > 0 ? 1 : 0),
+    0,
   )
 
-  const estimatedTotalPriorityFee = useMemo(
-    () =>
-      humanReadable(
-        new BN(
-          simulationResults?.reduce((a, b) => a + (b.priorityFee || 0), 0) || 0,
-        ),
-        9,
-      ),
-    [simulationResults],
-  )
-
-  const totalWarnings = useMemo(
-    () =>
-      simulationResults?.reduce(
-        (a, b) =>
-          a +
-          (b.warnings.filter((w) => w.severity === 'critical').length > 0
-            ? 1
-            : 0),
-        0,
-      ),
-    [simulationResults],
-  )
-
-  const worstSeverity = useMemo(() => {
-    if (simulationResults) {
-      return simulationResults?.reduce((a, b) => {
+  const worstSeverity = simulationResults
+    ? simulationResults.reduce((a, b) => {
         if (a === 'critical') {
           return 'critical'
         }
@@ -181,130 +162,112 @@ export const WalletSignBottomSheetSimulated = ({
 
         return a
       }, 'warning')
-    }
-    return 'critical'
-  }, [simulationResults])
+    : 'critical'
 
-  const insufficientRentExempt = useMemo(() => {
-    if (solBalance) {
-      return new BN(solBalance.toString())
+  const insufficientRentExempt = solBalance
+    ? new BN(solBalance.toString())
         .sub(new BN(estimatedTotalLamports))
         .lt(new BN(rentExemptLamports))
-    }
-  }, [solBalance, estimatedTotalLamports, rentExemptLamports])
+    : undefined
 
-  const insufficientFunds = useMemo(
-    () =>
-      new BN(estimatedTotalLamports).gt(
-        new BN(solBalance?.toString() || '0'),
-      ) || simulationResults?.some((r) => r.insufficientFunds),
-    [solBalance, estimatedTotalLamports, simulationResults],
-  )
+  const insufficientFunds =
+    new BN(estimatedTotalLamports).gt(new BN(solBalance?.toString() || '0')) ||
+    simulationResults?.some((r) => r.insufficientFunds)
 
-  const Chevron = feesExpanded ? ChevronUp : ChevronDown
+  const Chevron = feesExpanded ? ChevronUpIcon : ChevronDownIcon
   const showWarnings =
     totalWarnings && !suppressWarnings && worstSeverity === 'critical'
 
   return (
-    <Box p="m">
+    <View className="p-4">
       {header || url ? (
-        <Box marginBottom="s">
+        <View className="mb-2">
           {header ? (
-            <Text variant="h4Medium" color="white">
+            <Text size="xl" className="font-medium">
               {header}
             </Text>
           ) : null}
           {url ? (
             <Text
-              variant="body1Medium"
-              color="secondaryText"
-              textAlign="center"
+              size="base"
+              className="text-center font-medium text-muted-foreground"
             >
               {url || ''}
             </Text>
           ) : null}
-        </Box>
+        </View>
       ) : null}
       {type === WalletStandardMessageTypes.connect && (
-        <Box flexGrow={1} justifyContent="center">
-          <Box
-            borderRadius="l"
-            backgroundColor="secondaryBackground"
-            flexDirection="column"
-            padding="m"
-          >
-            <Box flexDirection="row" marginBottom="m">
-              <Checkmark color="white" />
-              <Text variant="body1" marginStart="s">
+        <View className="grow justify-center">
+          <View className="flex-col rounded-xl bg-secondary p-4">
+            <View className="mb-4 flex-row">
+              <CheckIcon size={20} colorClassName="accent-foreground" />
+              <Text size="base" className="ms-2">
                 {t('browserScreen.connectBullet1')}
               </Text>
-            </Box>
-            <Box flexDirection="row">
-              <Checkmark color="white" />
-              <Text marginStart="s" variant="body1">
+            </View>
+            <View className="flex-row">
+              <CheckIcon size={20} colorClassName="accent-foreground" />
+              <Text size="base" className="ms-2">
                 {t('browserScreen.connectBullet2')}
               </Text>
-            </Box>
-          </Box>
-          <Box>
+            </View>
+          </View>
+          <View>
             <Text
-              variant="body1"
-              color="secondaryText"
-              textAlign="center"
-              marginTop="m"
+              size="base"
+              className="mt-4 text-center text-muted-foreground"
             >
               {t('browserScreen.connectToWebsitesYouTrust')}
             </Text>
-          </Box>
-        </Box>
+          </View>
+        </View>
       )}
       {(type === WalletStandardMessageTypes.signMessage ||
         type === WalletStandardMessageTypes.signAndSendTransaction ||
         type === WalletStandardMessageTypes.signTransaction) && (
-        <Box flexGrow={1} justifyContent="center">
+        <View className="grow justify-center">
           {warning && (
-            <Box
-              borderRadius="l"
-              backgroundColor="secondaryBackground"
-              padding="m"
-              marginBottom="m"
-            >
-              <Text variant="body1Medium" color="orange500">
+            <View className="mb-4 rounded-xl bg-secondary p-4">
+              <Text size="base" className="font-medium text-warning-500">
                 {warning}
               </Text>
-            </Box>
+            </View>
           )}
 
-          <Box flexDirection="column" maxHeight={500}>
+          <View className="max-h-[500px] flex-col">
             <ScrollView contentInsetAdjustmentBehavior="automatic">
-              <Box flexDirection="row" alignItems="center">
-                <Text variant="subtitle2" mr="s">
+              <View className="flex-row items-center">
+                <Text size="lg" className="mr-2 font-medium">
                   {t('browserScreen.estimatedChanges')}
                 </Text>
-                <TouchableOpacityBox
+                <PressableScale
+                  feedback="opacity"
                   onPress={() => setInfoVisible((prev) => !prev)}
                 >
-                  <InfoIcon width={15} height={15} />
-                </TouchableOpacityBox>
-              </Box>
+                  <InfoIcon
+                    size={15}
+                    colorClassName="accent-muted-foreground"
+                  />
+                </PressableScale>
+              </View>
               {infoVisible && (
-                <Text mt="s" variant="body3" color="white">
+                <Text size="xs" className="mt-2">
                   {t('browserScreen.estimatedChangesDescription')}
                 </Text>
               )}
 
               {!(insufficientFunds || insufficientRentExempt) && message && (
-                <Text mt="s" mb="s" variant="body1Medium" color="secondaryText">
+                <Text
+                  size="base"
+                  className="my-2 font-medium text-muted-foreground"
+                >
                   {message}
                 </Text>
               )}
 
               {showWarnings ? (
-                <Box
-                  marginVertical="s"
-                  flexDirection="row"
-                  justifyContent="flex-start"
-                >
+                <View className="my-2 flex-row justify-start">
                   <WarningPill
                     text={t('browserScreen.suspiciousActivity', {
                       num: totalWarnings,
@@ -312,15 +275,11 @@ export const WalletSignBottomSheetSimulated = ({
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     variant={worstSeverity as any}
                   />
-                </Box>
+                </View>
               ) : null}
 
               {(insufficientFunds || insufficientRentExempt) && (
-                <Box
-                  marginVertical="s"
-                  flexDirection="row"
-                  justifyContent="flex-start"
-                >
+                <View className="my-2 flex-row justify-start">
                   <WarningPill
                     text={
                       insufficientFunds
@@ -331,56 +290,53 @@ export const WalletSignBottomSheetSimulated = ({
                     }
                     variant="critical"
                   />
-                </Box>
+                </View>
               )}
 
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                marginTop="s"
-              >
-                <Box flexGrow={1} flexDirection="row" alignItems="center">
-                  <Text variant="subtitle3" mr="s">
+              <View className="mt-2 flex-row justify-between">
+                <View className="grow flex-row items-center">
+                  <Text size="base" className="mr-2 font-medium">
                     {t('browserScreen.writableAccounts')}
                   </Text>
-                  <TouchableOpacityBox
+                  <PressableScale
+                    feedback="opacity"
                     onPress={() => setWritableInfoVisible((prev) => !prev)}
                   >
-                    <InfoIcon width={15} height={15} />
-                  </TouchableOpacityBox>
-                </Box>
-                <Text variant="body1" color="grey50">
+                    <InfoIcon
+                      size={15}
+                      colorClassName="accent-muted-foreground"
+                    />
+                  </PressableScale>
+                </View>
+                <Text size="base" className="text-muted-foreground">
                   {t('browserScreen.transactions', {
                     num: simulationResults?.length || 1,
                   })}
                 </Text>
-              </Box>
+              </View>
               {writableInfoVisible && (
-                <Text mt="s" variant="body3" color="white">
+                <Text size="xs" className="mt-2">
                   {t('browserScreen.writableAccountsDescription')}
                 </Text>
               )}
 
-              <Box flex={1} paddingTop="m">
-                {loading && <CircleLoader />}
+              <View className="flex-1 pt-4">
+                {loading && <Spinner />}
                 {error ? (
-                  <Box marginBottom="m">
-                    <Box>
-                      <Box
-                        borderBottomStartRadius="l"
-                        borderBottomEndRadius="l"
-                        backgroundColor="secondaryBackground"
-                        padding="m"
+                  <View className="mb-4">
+                    <View className="rounded-b-xl bg-secondary p-4">
+                      <Text
+                        size="base"
+                        className={
+                          loading
+                            ? 'font-medium'
+                            : 'font-medium text-destructive'
+                        }
                       >
-                        <Text
-                          variant="body1Medium"
-                          color={loading ? 'white' : 'matchaRed500'}
-                        >
-                          {error.message || error.toString()}
-                        </Text>
-                      </Box>
-                    </Box>
-                  </Box>
+                        {error.message || error.toString()}
+                      </Text>
+                    </View>
+                  </View>
                 ) : null}
                 {currentTxs && (
                   <>
@@ -393,90 +349,95 @@ export const WalletSignBottomSheetSimulated = ({
                       />
                     ))}
                     {hasMore && (
-                      <ButtonPressable
-                        width="100%"
-                        borderRadius="round"
-                        backgroundColor="white"
-                        backgroundColorOpacity={0.1}
-                        backgroundColorOpacityPressed={0.05}
-                        titleColorPressedOpacity={0.3}
-                        titleColor="white"
-                        title={t('generic.loadMore')}
+                      <Button
+                        variant="secondary"
+                        className="w-full rounded-full"
                         onPress={handleLoadMore}
-                      />
+                      >
+                        {t('generic.loadMore')}
+                      </Button>
                     )}
                   </>
                 )}
-              </Box>
+              </View>
             </ScrollView>
             {(type === WalletStandardMessageTypes.signAndSendTransaction ||
               type === WalletStandardMessageTypes.signTransaction) && (
-              <Box flexDirection="column">
-                <TouchableOpacityBox
+              <View className="flex-col">
+                <PressableScale
+                  feedback="opacity"
                   onPress={() => setFeesExpanded(!feesExpanded)}
-                  marginTop="s"
-                  flexDirection="row"
-                  justifyContent="space-between"
+                  className="mt-2 flex-row justify-between"
                 >
-                  <Text variant="body1Bold">
+                  <Text size="base" className="font-bold">
                     {t('browserScreen.totalNetworkFee')}
                   </Text>
-                  <Box flexDirection="row">
-                    <Text variant="body1Medium" color="blue500">
+                  <View className="flex-row items-center">
+                    <Text
+                      size="base"
+                      className="font-medium text-blue-dark-500"
+                    >
                       {`~${estimatedTotalSol} SOL`}
                     </Text>
-                    <Chevron color="grey500" />
-                  </Box>
-                </TouchableOpacityBox>
+                    <Chevron
+                      size={20}
+                      colorClassName="accent-muted-foreground"
+                    />
+                  </View>
+                </PressableScale>
                 {feesExpanded ? (
-                  <Box paddingRight="l">
-                    <Box
-                      marginTop="s"
-                      flexDirection="row"
-                      justifyContent="space-between"
-                    >
-                      <Box flexDirection="row">
-                        <IndentArrow />
-                        <Text variant="body1" ml="s" color="grey50">
+                  <View className="pr-6">
+                    <View className="mt-2 flex-row justify-between">
+                      <View className="flex-row">
+                        <IndentArrowIcon
+                          size={16}
+                          colorClassName="accent-muted-foreground"
+                        />
+                        <Text
+                          size="base"
+                          className="ml-2 text-muted-foreground"
+                        >
                           {t('browserScreen.totalBaseFee')}
                         </Text>
-                      </Box>
+                      </View>
 
-                      <Text variant="body1" color="blue500">
+                      <Text size="base" className="text-blue-dark-500">
                         {`~${estimatedTotalBaseFee} SOL`}
                       </Text>
-                    </Box>
-                    <Box
-                      marginTop="s"
-                      flexDirection="row"
-                      justifyContent="space-between"
-                    >
-                      <Box flexDirection="row">
-                        <IndentArrow />
-                        <Text variant="body1" ml="s" color="grey50">
+                    </View>
+                    <View className="mt-2 flex-row justify-between">
+                      <View className="flex-row">
+                        <IndentArrowIcon
+                          size={16}
+                          colorClassName="accent-muted-foreground"
+                        />
+                        <Text
+                          size="base"
+                          className="ml-2 text-muted-foreground"
+                        >
                           {t('browserScreen.totalPriorityFee')}
                         </Text>
-                      </Box>
+                      </View>
 
-                      <Text variant="body1" color="blue500">
+                      <Text size="base" className="text-blue-dark-500">
                         {`~${estimatedTotalPriorityFee} SOL`}
                       </Text>
-                    </Box>
-                  </Box>
+                    </View>
+                  </View>
                 ) : null}
-              </Box>
+              </View>
             )}
-          </Box>
-        </Box>
+          </View>
+        </View>
       )}
       {showWarnings ? (
-        <Box
-          flexDirection="row"
-          justifyContent="flex-start"
-          alignItems="center"
-          mt={feesExpanded ? 's' : 'm'}
+        <View
+          className={twMerge(
+            'flex-row items-center justify-start',
+            feesExpanded ? 'mt-2' : 'mt-4',
+          )}
         >
-          <Box flex={1}>
+          <View className="flex-1">
             <SubmitButton
               color="matchaRed500"
               backgroundColor="white"
@@ -487,56 +448,46 @@ export const WalletSignBottomSheetSimulated = ({
               }
               onSubmit={onAccept}
             />
-          </Box>
-          <ButtonPressable
-            ml="s"
-            width={65}
-            height={65}
-            innerContainerProps={{
-              justifyContent: 'center',
-            }}
-            borderRadius="round"
-            backgroundColor="black200"
-            Icon={CancelIcon}
+          </View>
+          <Button
+            variant="secondary"
+            className="ml-2 size-[65px] rounded-full px-0"
             onPress={onCancel}
-          />
-        </Box>
+          >
+            <CancelIcon
+              size={24}
+              colorClassName="accent-secondary-foreground"
+            />
+          </Button>
+        </View>
       ) : (
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          mt={feesExpanded ? 's' : 'm'}
+        <View
+          className={twMerge(
+            'flex-row justify-between',
+            feesExpanded ? 'mt-2' : 'mt-4',
+          )}
         >
-          <ButtonPressable
-            width="48%"
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacity={0.1}
-            backgroundColorOpacityPressed={0.05}
-            titleColorPressedOpacity={0.3}
-            titleColor="white"
-            title={t('browserScreen.cancel')}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-[48%] rounded-full"
             onPress={onCancel}
-          />
+          >
+            {t('browserScreen.cancel')}
+          </Button>
 
-          <ButtonPressable
-            width="48%"
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="secondaryText"
-            title={
-              type === WalletStandardMessageTypes.connect
-                ? t('browserScreen.connect')
-                : t('browserScreen.approve')
-            }
-            titleColor="black"
+          <Button
+            variant="cta"
+            size="lg"
+            className="w-[48%] rounded-full"
             onPress={onAccept}
-          />
-        </Box>
+          >
+            {type === WalletStandardMessageTypes.connect
+              ? t('browserScreen.connect')
+              : t('browserScreen.approve')}
+          </Button>
+        </View>
       )}
-    </Box>
+    </View>
   )
 }

@@ -1,34 +1,37 @@
-import Close from '@assets/images/close.svg'
-import Box from '@components/Box'
-import IconPressedContainer from '@components/IconPressedContainer'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableContainer from '@components/TouchableContainer'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
-import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { Checkbox } from '@ui/Checkbox'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
+import { twMerge } from '@ui/twMerge'
 import { useBalance } from '@utils/Balance'
 import { syncTokenAccounts } from '@utils/balances'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { memo, useCallback, useMemo, useRef } from 'react'
-import { RefreshControl } from 'react-native'
+import { X } from 'lucide-react-native'
+import React, { useRef } from 'react'
+import { RefreshControl, View } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
-import { Edge } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { getSortValue } from './logic/visibleTokens'
+
+const SafeArea = withUniwind(SafeAreaView)
+const CloseIcon = withUniwind(X)
+
+const HIT_SLOP = { top: 24, bottom: 24, left: 24, right: 24 }
 
 const CheckableTokenListItem = ({
   bottomBorder,
@@ -47,14 +50,12 @@ const CheckableTokenListItem = ({
   const { json, symbol } = useMetaplexMetadata(mint)
   const isMountedRef = useRef(true)
 
-  const balanceToDisplay = useMemo(() => {
-    return amount && typeof decimals !== 'undefined'
+  const balanceToDisplay =
+    amount && typeof decimals !== 'undefined'
       ? humanReadable(new BN(amount.toString()), decimals)
       : ''
-  }, [amount, decimals])
-  const colors = useColors()
 
-  const handleValueChange = useCallback(() => {
+  const handleValueChange = () => {
     try {
       if (isMountedRef.current && mint) {
         onUpdateTokens(mint, !checked)
@@ -62,7 +63,7 @@ const CheckableTokenListItem = ({
     } catch (error) {
       console.warn('CheckBox onValueChange error:', error)
     }
-  }, [mint, checked, onUpdateTokens])
+  }
 
   React.useEffect(() => {
     isMountedRef.current = true
@@ -72,82 +73,55 @@ const CheckableTokenListItem = ({
   }, [])
 
   return (
-    <TouchableContainer
-      onPress={() => {}}
-      flexDirection="row"
-      minHeight={72}
-      alignItems="center"
-      paddingHorizontal="m"
-      paddingVertical="m"
-      borderBottomColor="primaryBackground"
-      borderBottomWidth={bottomBorder ? 0 : 1}
-      disabled
+    <View
+      className={twMerge(
+        'min-h-[72px] flex-row items-center border-border px-4 py-4',
+        !bottomBorder && 'border-b',
+      )}
     >
       <TokenIcon img={json?.image} />
-      <Box flex={1} paddingHorizontal="m">
-        <Box flexDirection="row" alignItems="center">
-          <Text variant="body1" color="primaryText" maxFontSizeMultiplier={1.3}>
+      <View className="flex-1 px-4">
+        <View className="flex-row items-center">
+          <Text size="base" maxFontSizeMultiplier={1.3}>
             {`${balanceToDisplay} `}
           </Text>
           <Text
-            variant="body2Medium"
-            color="secondaryText"
+            className="font-medium text-muted-foreground"
             maxFontSizeMultiplier={1.3}
           >
             {symbol}
           </Text>
-        </Box>
+        </View>
         {symbol && (
           <AccountTokenCurrencyBalance
-            variant="subtitle4"
-            color="secondaryText"
+            className="font-medium text-muted-foreground"
             ticker={symbol.toUpperCase()}
           />
         )}
-      </Box>
-      <Box justifyContent="center" alignItems="center" marginEnd="xs">
-        <CheckBox
-          value={checked}
-          style={{ height: 18, width: 18 }}
-          tintColors={{
-            true: colors.primaryText,
-            false: colors.transparent10,
-          }}
-          onCheckColor={colors.secondary}
-          onTintColor={colors.primaryText}
-          tintColor={colors.transparent10}
-          onFillColor={colors.primaryText}
-          onAnimationType="fill"
-          offAnimationType="fill"
-          boxType="square"
-          onValueChange={handleValueChange}
-        />
-      </Box>
-    </TouchableContainer>
+      </View>
+      <View className="me-1 items-center justify-center">
+        <Checkbox checked={checked} onChange={handleValueChange} />
+      </View>
+    </View>
   )
 }
 
 const AccountManageTokenListScreen: React.FC = () => {
   const navigation = useNavigation<HomeNavigationProp>()
-  const { primaryText } = useColors()
-  const hitSlop = useHitSlop('l')
   const { visibleTokens, setVisibleTokens } = useVisibleTokens()
   const { tokenAccounts } = useBalance()
-  const mints = useMemo(() => {
-    return tokenAccounts
-      ?.filter(
-        (ta) =>
-          ta.balance > 0 && (ta.decimals > 0 || ta.mint === DC_MINT.toBase58()),
-      )
-      .map((ta) => ta.mint)
-      .sort((a, b) => {
-        return getSortValue(b) - getSortValue(a)
-      })
-  }, [tokenAccounts])
+  const mints = tokenAccounts
+    ?.filter(
+      (ta) =>
+        ta.balance > 0 && (ta.decimals > 0 || ta.mint === DC_MINT.toBase58()),
+    )
+    .map((ta) => ta.mint)
+    .sort((a, b) => {
+      return getSortValue(b) - getSortValue(a)
+    })
   const queryClient = useQueryClient()
   const { anchorProvider, cluster } = useSolana()
   const { currentAccount } = useAccountStorage()
-  const colors = useColors()
 
   const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
     mutationFn: async () => {
@@ -163,45 +137,39 @@ const AccountManageTokenListScreen: React.FC = () => {
       }
     },
   })
-  const renderItem = useCallback(
-    ({ index, item: token }: { index: number; item: string }) => {
-      return (
-        <CheckableTokenListItem
-          mint={token}
-          bottomBorder={index === (mints?.length || 0) - 1}
-          checked={visibleTokens.has(token)}
-          onUpdateTokens={setVisibleTokens}
-        />
-      )
-    },
-    [mints?.length, visibleTokens, setVisibleTokens],
-  )
+  const renderItem = ({
+    index,
+    item: token,
+  }: {
+    index: number
+    item: string
+  }) => {
+    return (
+      <CheckableTokenListItem
+        mint={token}
+        bottomBorder={index === (mints?.length || 0) - 1}
+        checked={visibleTokens.has(token)}
+        onUpdateTokens={setVisibleTokens}
+      />
+    )
+  }
 
-  const keyExtractor = useCallback((item: string) => {
+  const keyExtractor = (item: string) => {
     return item
-  }, [])
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
+  }
 
   return (
-    <SafeAreaBox flex={1} edges={safeEdges}>
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        borderTopStartRadius="xl"
-        borderTopEndRadius="xl"
-        marginBottom="m"
-      >
-        <Box hitSlop={hitSlop} padding="s">
-          <IconPressedContainer
-            onPress={navigation.goBack}
-            activeOpacity={0.75}
-            idleOpacity={1.0}
-          >
-            <Close color={primaryText} height={16} width={16} />
-          </IconPressedContainer>
-        </Box>
-      </Box>
+    <SafeArea className="flex-1 bg-background" edges={['top']}>
+      <View className="mb-4 flex-row items-center justify-between">
+        <PressableScale
+          feedback="opacity"
+          onPress={navigation.goBack}
+          hitSlop={HIT_SLOP}
+          className="p-2"
+        >
+          <CloseIcon colorClassName="accent-foreground" />
+        </PressableScale>
+      </View>
 
       <FlatList
         contentInsetAdjustmentBehavior="automatic"
@@ -211,15 +179,15 @@ const AccountManageTokenListScreen: React.FC = () => {
             refreshing={refetchingTokens}
             onRefresh={() => refetchTokens()}
             title=""
-            tintColor={colors.primaryText}
+            tintColorClassName="accent-foreground"
           />
         }
         data={mints}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
-    </SafeAreaBox>
+    </SafeArea>
   )
 }
 
-export default memo(AccountManageTokenListScreen)
+export default AccountManageTokenListScreen

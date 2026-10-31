@@ -1,146 +1,103 @@
-import AccountIco from '@assets/images/account.svg'
-import CarotDown from '@assets/images/carot-down.svg'
-import CogIco from '@assets/images/cog.svg'
-import NotificationsBellIco from '@assets/images/notificationBell.svg'
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
-import IconPressedContainer from '@components/IconPressedContainer'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
-import { useColors } from '@theme/themeHooks'
-import React, { useCallback, useMemo } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { AccountIcon } from '@ui/AccountIcon'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Bell, ChevronDown, CircleUser, Settings } from 'lucide-react-native'
+import React from 'react'
+import { LayoutChangeEvent, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import { useAppStore } from '../../store/appStore'
 import { HomeNavigationProp } from '../home/homeTypes'
 
+const SettingsIcon = withUniwind(Settings)
+const BellIcon = withUniwind(Bell)
+const ContactsIcon = withUniwind(CircleUser)
+const ChevronDownIcon = withUniwind(ChevronDown)
+
 type Props = {
   onPressWallet: () => void
   onLayout?: (event: LayoutChangeEvent) => void
 }
 const AccountsTopNav = ({ onPressWallet, onLayout }: Props) => {
-  const { primaryText } = useColors()
   const navigation = useNavigation<HomeNavigationProp>()
   const { currentAccount, currentNetworkAddress } = useAccountStorage()
   const { cluster } = useSolana()
   const showBanner = useAppStore((state) => state.showBanner)
   const { isHealthy } = useSolanaHealth()
-
   const { notificationsByResource } = useNotificationStorage()
-
-  const hasUnreadNotifications = useMemo(() => {
-    const allNotifs = Object.keys(notificationsByResource).flatMap(
-      (k) => notificationsByResource[k],
-    )
-
-    const unread = allNotifs.find((n) => !n.viewedAt)
-    return !!unread
-  }, [notificationsByResource])
-
-  const navToSettings = useCallback(() => {
-    navigation.navigate('SettingsNavigator')
-  }, [navigation])
-
-  const navToNotifs = useCallback(() => {
-    navigation.push('NotificationsNavigator')
-  }, [navigation])
-
-  const navToAddressBook = useCallback(() => {
-    navigation.push('AddressBookNavigator')
-  }, [navigation])
-
   const { top } = useSafeAreaInsets()
 
-  const bannerVisible = useMemo(() => {
-    if (cluster === 'devnet') {
-      return true
-    }
-    return !isHealthy
-  }, [cluster, isHealthy])
+  const hasUnreadNotifications = Object.keys(notificationsByResource)
+    .flatMap((k) => notificationsByResource[k])
+    .some((n) => !n.viewedAt)
 
-  const containerStyle = useMemo(
-    () => ({ marginTop: bannerVisible && showBanner ? 0 : top }),
-    [top, bannerVisible, showBanner],
-  )
+  const bannerVisible = cluster === 'devnet' || !isHealthy
+  const containerStyle = { marginTop: bannerVisible && showBanner ? 0 : top }
 
   return (
-    <Box
-      flexDirection="row"
-      justifyContent="space-between"
-      alignItems="center"
+    <View
+      className="z-10 flex-row items-center justify-between"
       onLayout={onLayout}
       style={containerStyle}
-      zIndex={1}
     >
-      <Box flexDirection="row">
-        <IconPressedContainer
+      <View className="flex-row">
+        <PressableScale
           testID="AccountsTopNav.Settings"
-          onPress={navToSettings}
+          feedback="opacity"
+          className="size-11 items-center justify-center"
+          onPress={() => navigation.navigate('SettingsNavigator')}
         >
-          <CogIco color="white" />
-        </IconPressedContainer>
-        <Box paddingHorizontal="m" />
-      </Box>
-      <TouchableOpacityBox
+          <SettingsIcon size={24} colorClassName="accent-muted-foreground" />
+        </PressableScale>
+        <View className="px-4" />
+      </View>
+      <PressableScale
         testID="AccountsTopNav.Wallet"
-        flexDirection="row"
-        flex={1}
-        flexGrow={1}
-        paddingHorizontal="l"
-        justifyContent="center"
-        alignItems="center"
-        paddingVertical="ms"
+        feedback="opacity"
+        className="flex-1 flex-row items-center justify-center px-6 py-3"
         onPress={onPressWallet}
       >
         <AccountIcon address={currentNetworkAddress} size={25} />
         <Text
-          variant="subtitle1"
-          marginLeft="m"
-          marginRight="xs"
+          size="xl"
+          className="ml-4 mr-1 font-medium"
           numberOfLines={1}
           adjustsFontSizeToFit
           maxFontSizeMultiplier={1.2}
         >
           {currentAccount?.alias}
         </Text>
-        <CarotDown color={primaryText} />
-      </TouchableOpacityBox>
-      <Box flexDirection="row" alignItems="center">
-        <Box position="relative">
-          <IconPressedContainer onPress={navToNotifs}>
-            <NotificationsBellIco color="white" />
-          </IconPressedContainer>
+        <ChevronDownIcon size={20} colorClassName="accent-foreground" />
+      </PressableScale>
+      <View className="flex-row items-center">
+        <View className="relative">
+          <PressableScale
+            feedback="opacity"
+            className="size-11 items-center justify-center"
+            onPress={() => navigation.push('NotificationsNavigator')}
+          >
+            <BellIcon size={24} colorClassName="accent-muted-foreground" />
+          </PressableScale>
           {hasUnreadNotifications && (
-            <Box
-              position="absolute"
-              justifyContent="center"
-              alignItems="center"
-              top={14}
-              right={12}
-              backgroundColor="black"
-              borderRadius="round"
-              height={10}
-              width={10}
-            >
-              <Box
-                backgroundColor="malachite"
-                borderRadius="round"
-                height={6}
-                width={6}
-              />
-            </Box>
+            <View className="absolute right-3 top-3.5 size-2.5 items-center justify-center rounded-full bg-background">
+              <View className="size-1.5 rounded-full bg-success-500" />
+            </View>
           )}
-        </Box>
-        <IconPressedContainer onPress={navToAddressBook} padding="none">
-          <AccountIco color="white" />
-        </IconPressedContainer>
-      </Box>
-    </Box>
+        </View>
+        <PressableScale
+          feedback="opacity"
+          className="size-11 items-center justify-center"
+          onPress={() => navigation.push('AddressBookNavigator')}
+        >
+          <ContactsIcon size={24} colorClassName="accent-muted-foreground" />
+        </PressableScale>
+      </View>
+    </View>
   )
 }
 

@@ -1,122 +1,103 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { StyleSheet } from 'react-native'
+import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
 import { Carousel, Pagination } from 'react-native-reanimated-carousel'
-import Box from '@components/Box'
-import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextTransform from '@components/TextTransform'
+import { useResolveClassNames, withUniwind } from 'uniwind'
 import { useAppStorage } from '@storage/AppStorageProvider'
-import { Spacing } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
 import { useContentWidth } from '@utils/layout'
-import ButtonPressable from '@components/ButtonPressable'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import { BrowserNavigationProp } from './browserTypes'
 import { useSolana } from '../../solana/SolanaProvider'
+
+const SafeArea = withUniwind(SafeAreaView)
+
+const EDGES: Edge[] = ['top']
 
 type CarouselItem = {
   titleKey: string
   bodyKey: string
-  image: Element
-  imageVerticalOffset?: Spacing
+  image: ImageSourcePropType
+  // Classes that pull the title up under the image
+  imageVerticalOffset?: string
 }
 const slides: Array<CarouselItem> = [
   {
     titleKey: 'defiTutorial.slides.0.title',
     bodyKey: 'defiTutorial.slides.0.body',
     image: require('@assets/images/defiSlide1.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-mt-12',
   },
   {
     titleKey: 'defiTutorial.slides.1.title',
     bodyKey: 'defiTutorial.slides.1.body',
     image: require('@assets/images/defiSlide2.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-mt-12',
   },
   {
     titleKey: 'defiTutorial.slides.2.title',
     bodyKey: 'defiTutorial.slides.2.body',
     image: require('@assets/images/defiSlide3.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-mt-12',
   },
   {
     titleKey: 'defiTutorial.slides.3.title',
     bodyKey: 'defiTutorial.slides.3.body',
     image: require('@assets/images/defiSlide4.png'),
-    imageVerticalOffset: 'n_xxl',
+    imageVerticalOffset: '-mt-12',
   },
 ]
 const DAppTutorial = () => {
   const { t } = useTranslation()
   const progress = useSharedValue(0)
   const [viewedSlides, setViewedSlides] = useState(false)
-  const colors = useColors()
+  const { backgroundColor: dotColour } = useResolveClassNames('bg-foreground')
   const contentWidth = useContentWidth()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { setDAppTutorialCompleted } = useAppStorage()
   const { cluster } = useSolana()
-  const edges = useMemo((): Edge[] => ['top'], [])
 
-  const handleEnterDAppPressed = useCallback(() => {
+  const handleEnterDAppPressed = () => {
     void setDAppTutorialCompleted(cluster)
     navigation.replace('BrowserScreen')
-  }, [navigation, setDAppTutorialCompleted, cluster])
+  }
 
-  const onSnapToItem = useCallback((index: number) => {
+  const onSnapToItem = (index: number) => {
     if (index === slides.length - 1) {
       setViewedSlides(true)
     }
-  }, [])
+  }
 
-  const renderCarouselItem = useCallback(
-    ({ item }: { item: CarouselItem }) => {
-      return (
-        <Box flex={1} justifyContent="center">
-          <ImageBox
-            flexShrink={1}
-            source={item.image}
-            resizeMode="contain"
-            alignSelf="center"
-            width={Math.round(contentWidth * 0.5)}
-          />
-          <Text
-            variant="h1"
-            textAlign="center"
-            marginTop={item.imageVerticalOffset}
-          >
-            {t(item.titleKey)}
-          </Text>
-          <TextTransform
-            variant="body1"
-            colorTextVariant="bold"
-            textAlign="center"
-            color="secondaryText"
-            marginTop="m"
-            i18nKey={t(item.bodyKey)}
-          />
-        </Box>
-      )
-    },
-    [contentWidth, t],
-  )
+  const renderCarouselItem = ({ item }: { item: CarouselItem }) => {
+    return (
+      <View className="flex-1 justify-center">
+        <Image
+          className="shrink self-center"
+          source={item.image}
+          resizeMode="contain"
+          style={{ width: Math.round(contentWidth * 0.5) }}
+        />
+        <Text size="4xl" className={`text-center ${item.imageVerticalOffset}`}>
+          {t(item.titleKey)}
+        </Text>
+        <Text size="base" className="mt-4 text-center text-muted-foreground">
+          {t(item.bodyKey)}
+        </Text>
+      </View>
+    )
+  }
 
   return (
-    <ReAnimatedBox flex={1}>
-      <SafeAreaBox flex={1} edges={edges}>
-        <Box
-          paddingTop="xxl"
-          paddingBottom="xl"
-          backgroundColor="primaryBackground"
-        >
-          <Text variant="h4" textAlign="center">
+    <View className="flex-1">
+      <SafeArea className="flex-1" edges={EDGES}>
+        <View className="bg-background pt-12 pb-8">
+          <Text size="xl" className="text-center">
             {t('defiTutorial.title')}
           </Text>
-        </Box>
+        </View>
         <Carousel
           style={[styles.carousel, { width: Math.round(contentWidth * 0.9) }]}
           contentContainerStyle={styles.carouselContent}
@@ -125,35 +106,30 @@ const DAppTutorial = () => {
           progress={progress}
           onSnapToItem={onSnapToItem}
         />
-        <Box>
+        <View>
           <Pagination
             count={slides.length}
             progress={progress}
-            dotStyle={{ ...styles.dot, backgroundColor: colors.white }}
+            dotStyle={{ ...styles.dot, backgroundColor: dotColour }}
             activeDotStyle={{
               ...styles.activeDot,
-              backgroundColor: colors.white,
+              backgroundColor: dotColour,
             }}
             containerStyle={styles.pagination}
           />
 
-          <ButtonPressable
-            marginBottom="l"
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="secondaryText"
-            title={t('defiTutorial.enterDApps')}
-            titleColor="black"
-            marginHorizontal="l"
+          <Button
+            variant="cta"
+            size="lg"
+            className="mx-6 mb-6"
             onPress={handleEnterDAppPressed}
             disabled={!viewedSlides}
-          />
-        </Box>
-      </SafeAreaBox>
-    </ReAnimatedBox>
+          >
+            {t('defiTutorial.enterDApps')}
+          </Button>
+        </View>
+      </SafeArea>
+    </View>
   )
 }
 
@@ -169,4 +145,4 @@ const styles = StyleSheet.create({
   pagination: { paddingVertical: 30, justifyContent: 'center', gap: 16 },
 })
 
-export default memo(DAppTutorial)
+export default DAppTutorial

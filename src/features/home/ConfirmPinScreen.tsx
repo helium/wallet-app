@@ -2,12 +2,9 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import * as LocalAuthentication from 'expo-local-authentication'
-import ConfirmPinView from './ConfirmPinView'
-import {
-  HomeNavigationProp,
-  HomeStackParamList,
-} from '../features/home/homeTypes'
-import { useAppStorage } from '../storage/AppStorageProvider'
+import ConfirmPinView from '@components/ConfirmPinView'
+import { HomeNavigationProp, HomeStackParamList } from './homeTypes'
+import { useAppStorage } from '../../storage/AppStorageProvider'
 
 type Route = RouteProp<HomeStackParamList, 'ConfirmPin'>
 

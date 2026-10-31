@@ -1,14 +1,17 @@
-import SuccessIcon from '@assets/images/paymentSuccess.svg'
-import BackgroundFill from '@components/BackgroundFill'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { PublicKey } from '@solana/web3.js'
+import { Button } from '@ui/Button'
+import { SuccessReveal } from '@ui/SuccessReveal'
+import { Text } from '@ui/Text'
 import BN from 'bn.js'
+import { CircleCheck } from 'lucide-react-native'
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { Payment } from './PaymentItem'
 import PaymentSummary from './PaymentSummary'
+
+const SuccessIcon = withUniwind(CircleCheck)
 
 type Props = {
   mint: PublicKey
@@ -29,48 +32,41 @@ const PaymentSuccess = ({
 }: Props) => {
   const { t } = useTranslation()
   return (
-    <Box flex={1} justifyContent="flex-end">
-      <Box padding="l" paddingBottom="none">
-        <SuccessIcon />
-      </Box>
-      <Text
-        testID="PaymentSuccess.Title"
-        variant="h2"
-        color="surfaceText"
-        padding="l"
+    <View className="flex-1 justify-end">
+      <SuccessReveal
+        icon={
+          <View className="px-6 pt-6">
+            <SuccessIcon size={56} colorClassName="accent-success-500" />
+          </View>
+        }
       >
-        {t('payment.submitSuccess')}
-      </Text>
-      <Box
-        borderTopLeftRadius="xl"
-        borderTopRightRadius="xl"
-        padding="l"
-        overflow="hidden"
-      >
-        <BackgroundFill backgroundColor="secondary" opacity={0.4} />
-        <PaymentSummary
-          mint={mint}
-          totalBalance={totalBalance}
-          feeTokenBalance={feeTokenBalance}
-          payments={payments}
-          alwaysShowRecipients
-        />
-        <TouchableOpacityBox
-          marginTop="xxl"
-          marginBottom="m"
-          testID="PaymentSuccess.Done"
-          onPress={onSuccess}
-          backgroundColor="blueBright500"
-          paddingVertical="m"
-          borderRadius="round"
-          alignItems="center"
+        <Text
+          testID="PaymentSuccess.Title"
+          size="3xl"
+          className="p-6 text-card-foreground"
         >
-          <Text variant="body1" color="black900">
+          {t('payment.submitSuccess')}
+        </Text>
+        <View className="overflow-hidden rounded-t-[20px] bg-secondary p-6">
+          <PaymentSummary
+            mint={mint}
+            totalBalance={totalBalance}
+            feeTokenBalance={feeTokenBalance}
+            payments={payments}
+            alwaysShowRecipients
+          />
+          <Button
+            testID="PaymentSuccess.Done"
+            variant="cta"
+            size="lg"
+            className="mb-4 mt-12 w-full"
+            onPress={onSuccess}
+          >
             {actionTitle}
-          </Text>
-        </TouchableOpacityBox>
-      </Box>
-    </Box>
+          </Button>
+        </View>
+      </SuccessReveal>
+    </View>
   )
 }
 

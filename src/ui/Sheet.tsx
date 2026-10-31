@@ -31,11 +31,11 @@ const SheetBackdrop = (props: BottomSheetBackdropProps) => (
   />
 )
 
-const SheetBackground = ({ style }: BottomSheetBackgroundProps) => (
+export const SheetBackground = ({ style }: BottomSheetBackgroundProps) => (
   <View style={style} className="rounded-t-3xl bg-popover" />
 )
 
-const SheetHandle = () => (
+export const SheetHandle = () => (
   <View
     accessible
     accessibilityRole="adjustable"

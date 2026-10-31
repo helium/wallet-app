@@ -1,17 +1,21 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import TransportHID from '@ledgerhq/react-native-hid'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
+import { FlatList, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation } from '@react-navigation/native'
-import CarotRight from '@assets/images/carot-right.svg'
+import { ChevronRight } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
 import LedgerCircle from '@assets/images/ledger-circle.svg'
 import Ledger from '@assets/images/ledger.svg'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors } from '@theme/themeHooks'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const ChevronRightIcon = withUniwind(ChevronRight)
+const LedgerIcon = withUniwind(Ledger)
+const LedgerCircleIcon = withUniwind(LedgerCircle)
 
 type Device = {
   deviceId: number
@@ -23,7 +27,6 @@ type Device = {
 const DeviceScanUsb = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<LedgerNavigatorNavigationProp>()
-  const { primaryText } = useColors()
 
   const [devices, setDevices] = useState<Device[]>([])
   const [transportReady, setTransportReady] = useState(false)
@@ -39,92 +42,63 @@ const DeviceScanUsb = () => {
 
     void TransportHID.list().then(setDevices)
   }, [transportReady])
-  const keyExtractor = useCallback((item) => item.deviceId, [])
+  const keyExtractor = (item: Device) => item.deviceId.toString()
 
-  const onSelectDevice = useCallback(
-    (device: Device) => () => {
-      navigation.navigate('DeviceShow', {
-        ledgerDevice: {
-          id: device.deviceId.toString(),
-          name: device.productId.toString(),
-          type: 'usb',
-        },
-      })
-    },
-    [navigation],
-  )
+  const onSelectDevice = (device: Device) => () => {
+    navigation.navigate('DeviceShow', {
+      ledgerDevice: {
+        id: device.deviceId.toString(),
+        name: device.productId.toString(),
+        type: 'usb',
+      },
+    })
+  }
 
-  const renderItem = useCallback(
-    ({ item: device }) => {
-      return (
-        <TouchableOpacityBox
-          onPress={onSelectDevice(device)}
-          paddingHorizontal="s"
-          paddingVertical="m"
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Box flexDirection="row" alignItems="center">
-            <Box
-              marginRight="ms"
-              backgroundColor="secondary"
-              borderRadius="round"
-            >
-              <LedgerCircle width={40} height={40} color={primaryText} />
-            </Box>
-            <Text variant="body1" color="primaryText">
-              {device.name}
-            </Text>
-          </Box>
-          <CarotRight color={primaryText} />
-        </TouchableOpacityBox>
-      )
-    },
-    [onSelectDevice, primaryText],
-  )
+  const renderItem = ({ item: device }: { item: Device }) => {
+    return (
+      <PressableScale
+        feedback="opacity"
+        onPress={onSelectDevice(device)}
+        className="flex-row items-center justify-between px-2 py-4"
+      >
+        <View className="flex-row items-center">
+          <View className="mr-3 rounded-full bg-secondary">
+            <LedgerCircleIcon
+              width={40}
+              height={40}
+              colorClassName="accent-foreground"
+            />
+          </View>
+          <Text size="base">{device.name}</Text>
+        </View>
+        <ChevronRightIcon colorClassName="accent-foreground" />
+      </PressableScale>
+    )
+  }
 
   return (
-    <SafeAreaBox
-      flex={1}
-      backgroundColor="secondary"
-      marginTop="l"
-      paddingHorizontal="l"
-    >
-      <Box
-        flex={1}
-        justifyContent="flex-end"
-        alignItems="center"
-        marginBottom="l"
-      >
-        <Ledger width={61} height={61} color={primaryText} />
-        <Text
-          variant="h1"
-          marginVertical="l"
-          textAlign="center"
-          lineHeight={38}
-        >
+    <SafeArea className="mt-6 flex-1 bg-secondary px-6">
+      <View className="mb-6 flex-1 items-center justify-end">
+        <LedgerIcon width={61} height={61} colorClassName="accent-foreground" />
+        <Text size="4xl" className="my-6 text-center">
           {t('ledger.scan.title')}
         </Text>
         <Text
-          variant="subtitle1"
-          color="secondaryText"
-          textAlign="center"
-          fontSize={21}
-          lineHeight={23}
+          size="xl"
+          className="text-center font-medium text-muted-foreground"
         >
           {t('ledger.scan.subtitleUsb')}
         </Text>
-      </Box>
-      <Box flex={1} marginTop="l">
+      </View>
+      <View className="mt-6 flex-1">
         <FlatList
           contentInsetAdjustmentBehavior="automatic"
           data={devices}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
         />
-      </Box>
-    </SafeAreaBox>
+      </View>
+    </SafeArea>
   )
 }
 

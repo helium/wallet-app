@@ -1,29 +1,25 @@
-import ContactIcon from '@assets/images/account.svg'
-import Remove from '@assets/images/remove.svg'
-import AccountIcon from '@components/AccountIcon'
-import BackgroundFill from '@components/BackgroundFill'
-import Box from '@components/Box'
-import MemoInput from '@components/MemoInput'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Theme } from '@theme/theme'
-import { useColors, useOpacity } from '@theme/themeHooks'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
+import { CircleUser, X } from 'lucide-react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Keyboard,
   NativeSyntheticEvent,
   TextInputEndEditingEventData,
+  View,
 } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { useDebounce } from 'use-debounce'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
@@ -32,6 +28,7 @@ import {
   ellipsizeAddress,
   solAddressIsValid,
 } from '../../utils/accountUtils'
+import MemoInput from './MemoInput'
 
 export type Payment = {
   address?: string
@@ -41,7 +38,7 @@ export type Payment = {
   max?: boolean
   memo?: string
   createTokenAccountFee?: BN
-} & BoxProps<Theme>
+}
 
 type Props = {
   index: number
@@ -63,21 +60,19 @@ type Props = {
   mint?: PublicKey
   netType?: number
   showAmount?: boolean
+  className?: string
 } & Payment
 
 const ITEM_HEIGHT = 80
 
-const AddressIcon = ({
-  address,
-  color,
-}: {
-  address?: string
-  color: string
-}) => {
+const ContactIcon = withUniwind(CircleUser)
+const RemoveIcon = withUniwind(X)
+
+const AddressIcon = ({ address }: { address?: string }) => {
   if (address && Address.isValid(address)) {
     return <AccountIcon address={address} size={40} />
   }
-  return <ContactIcon color={color} />
+  return <ContactIcon colorClassName="accent-muted-foreground" size={40} />
 }
 
 const PaymentItem = ({
@@ -101,13 +96,11 @@ const PaymentItem = ({
   showAmount = true,
   max: _max,
   onToggleMax: _onToggleMax,
-  ...boxProps
+  className,
 }: Props) => {
   const decimals = useMint(mint)?.info?.decimals
-  const { colorStyle } = useOpacity('primaryText', 0.3)
   const { dcToNetworkTokens } = useBalance()
   const { t } = useTranslation()
-  const { secondaryText } = useColors()
   const { symbol, loading: loadingMeta } = useMetaplexMetadata(mint)
   const [rawAddress, setRawAddress] = useState('')
   const [debouncedAddress] = useDebounce(rawAddress, 500)
@@ -201,148 +194,131 @@ const PaymentItem = ({
   )
 
   return (
-    <Box
-      marginHorizontal="l"
-      backgroundColor="secondary"
-      borderRadius="xl"
-      overflow="hidden"
-      {...boxProps}
+    <View
+      className={twMerge(
+        'mx-6 overflow-hidden rounded-[20px] bg-secondary',
+        className,
+      )}
     >
-      {hasError && <BackgroundFill backgroundColor="error" opacity={0.2} />}
-      <Box flexDirection="row">
+      {hasError && <View className="absolute inset-0 bg-destructive/20" />}
+      <View className="flex-row">
         {isDeepLink && address ? (
-          <Text
-            variant="subtitle2"
-            color="primaryText"
-            flex={1}
-            paddingHorizontal="l"
-            paddingVertical="m"
-          >
+          <Text size="lg" className="flex-1 px-6 py-4 font-medium">
             {ellipsizeAddress(address)}
           </Text>
         ) : (
-          <Box flex={1} minHeight={ITEM_HEIGHT} justifyContent="center">
-            <Box>
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Box flex={1} marginTop="s">
+          <View
+            className="flex-1 justify-center"
+            style={{ minHeight: ITEM_HEIGHT }}
+          >
+            <View>
+              <View className="flex-row items-center justify-between">
+                <View className="mt-2 flex-1">
                   <Text />
-                  <Box position="absolute" top={10} left={0}>
-                    <Text marginStart="m" variant="body3" color="secondaryText">
+                  <View className="absolute left-0 top-[10px]">
+                    <Text size="xs" className="ms-4 text-muted-foreground">
                       {account?.alias && account?.alias.split('.').length === 2
                         ? address && shortenAddress(address, 6)
                         : account?.alias}
                     </Text>
-                  </Box>
-                  <TextInput
-                    variant="transparent"
-                    flex={1}
-                    textInputProps={{
-                      testID: 'PaymentItem.Address',
-                      placeholder: t('payment.enterAddress'),
-                      value: rawAddress || address,
-                      onChangeText: setRawAddress,
-                      onEndEditing: handleAddressBlur,
-                      autoCapitalize: 'none',
-                      numberOfLines: 1,
-                      multiline: false,
-                      autoComplete: 'off',
-                      autoCorrect: false,
-                      returnKeyType: 'done',
-                    }}
+                  </View>
+                  <Input
+                    className="h-auto flex-1 border-0 bg-transparent px-4 py-3 shadow-none"
+                    testID="PaymentItem.Address"
+                    placeholder={t('payment.enterAddress')}
+                    value={rawAddress || address}
+                    onChangeText={setRawAddress}
+                    onEndEditing={handleAddressBlur}
+                    autoCapitalize="none"
+                    numberOfLines={1}
+                    multiline={false}
+                    autoComplete="off"
+                    autoCorrect={false}
+                    returnKeyType="done"
                   />
                   {isProgramAccount ? (
-                    <Text ml="m" mb="s" color="orange500">
+                    <Text className="mb-2 ml-4 text-warning-500">
                       {t('payment.programOwnedWarning')}
                     </Text>
                   ) : null}
-                </Box>
-                <TouchableOpacityBox
-                  marginEnd="l"
+                </View>
+                <PressableScale
+                  feedback="opacity"
+                  className="me-6"
                   onPress={handleAddressBookSelected}
                 >
-                  <AddressIcon address={address} color={secondaryText} />
-                </TouchableOpacityBox>
-              </Box>
-            </Box>
-          </Box>
+                  <AddressIcon address={address} />
+                </PressableScale>
+              </View>
+            </View>
+          </View>
         )}
         {!!onRemove && (
-          <TouchableOpacityBox
-            justifyContent="center"
-            paddingRight="m"
+          <PressableScale
+            feedback="opacity"
+            className="justify-center pr-4"
             onPress={handleRemove}
           >
-            <Remove color={secondaryText} />
-          </TouchableOpacityBox>
+            <RemoveIcon colorClassName="accent-muted-foreground" size={20} />
+          </PressableScale>
         )}
-      </Box>
+      </View>
 
-      <Box height={1} backgroundColor="primaryBackground" />
+      <View className="h-px bg-background" />
 
       {showAmount && (
-        <Box flexDirection="row" minHeight={ITEM_HEIGHT}>
+        <View className="flex-row" style={{ minHeight: ITEM_HEIGHT }}>
           {!amount || amount?.isZero() ? (
             <>
-              <TouchableOpacityBox
+              <PressableScale
+                feedback="opacity"
                 testID="PaymentItem.Amount"
                 onPress={handleEditAmount}
-                flex={1}
-                justifyContent="center"
+                className="flex-1 justify-center"
               >
                 {!loadingMeta && (
                   <Text
-                    color="secondaryText"
-                    padding="m"
-                    variant="subtitle2"
-                    fontWeight="100"
-                    style={colorStyle}
+                    size="lg"
+                    className="p-4 font-thin text-muted-foreground opacity-30"
                   >
                     {t('payment.enterAmount', {
                       ticker: symbol,
                     })}
                   </Text>
                 )}
-              </TouchableOpacityBox>
+              </PressableScale>
             </>
           ) : (
-            <TouchableOpacityBox
-              justifyContent="center"
+            <PressableScale
+              feedback="opacity"
+              className="flex-1 justify-center"
               onPress={handleEditAmount}
-              flex={1}
             >
-              <Text
-                paddingHorizontal="m"
-                variant="subtitle2"
-                color="primaryText"
-              >
+              <Text size="lg" className="px-4 font-medium">
                 {humanReadable(amount, decimals)}
               </Text>
               {fee && (
-                <Text paddingHorizontal="m" variant="body3" style={colorStyle}>
+                <Text size="xs" className="px-4 opacity-30">
                   {t('payment.fee', {
                     value: humanReadable(feeAsTokens, 8),
                   })}
                 </Text>
               )}
-            </TouchableOpacityBox>
+            </PressableScale>
           )}
-        </Box>
+        </View>
       )}
 
       {!hideMemo && (
         <>
-          <Box height={1} backgroundColor="primaryBackground" />
+          <View className="h-px bg-background" />
 
-          <Box justifyContent="center" minHeight={ITEM_HEIGHT}>
+          <View className="justify-center" style={{ minHeight: ITEM_HEIGHT }}>
             <MemoInput value={memo} onChangeText={handleEditMemo} />
-          </Box>
+          </View>
         </>
       )}
-    </Box>
+    </View>
   )
 }
 export default React.memo(PaymentItem)

@@ -1,33 +1,37 @@
-import BackArrow from '@assets/images/backArrow.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import ImageBox from '@components/ImageBox'
-import IndeterminateProgressBar from '@components/IndeterminateProgressBar'
-import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useSpacing } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { parseTransactionError } from '@utils/solanaUtils'
-import React, { memo, useCallback, useMemo } from 'react'
+import { BlurView } from 'expo-blur'
+import { ChevronLeft } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { LogBox } from 'react-native'
+import { Image, LogBox, Platform, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { Edge } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
+import { withUniwind } from 'uniwind'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { Collectable, CompressedNFT } from '../../types/solana'
 import { useContentWidth } from '../../utils/layout'
+import BackHeader from './components/BackHeader'
 import { CollectableStackParamList } from './collectablesTypes'
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
+
+const SafeArea = withUniwind(SafeAreaView)
+const Blur = withUniwind(BlurView)
+const BackIcon = withUniwind(ChevronLeft)
 
 type Route = RouteProp<CollectableStackParamList, 'TransferCompleteScreen'>
 
@@ -35,7 +39,6 @@ const TransferCollectableScreen = () => {
   const route = useRoute<Route>()
   const navigation = useNavigation<TabBarNavigationProp>()
   const COLLECTABLE_HEIGHT = useContentWidth()
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const solBalance = useBN(useSolOwnedAmount(useCurrentWallet()).amount)
 
   const { t } = useTranslation()
@@ -53,80 +56,63 @@ const TransferCollectableScreen = () => {
     status === 'partial'
   const isConfirmed = status === 'confirmed'
   const isPending = isLoading || status === 'pending'
-  const spacing = useSpacing()
 
-  const compressedNFT = useMemo(
-    () => collectable as CompressedNFT,
-    [collectable],
-  )
-  const nft = useMemo(() => collectable as Collectable, [collectable])
+  const compressedNFT = collectable as CompressedNFT
+  const nft = collectable as Collectable
 
-  const metadata = useMemo(() => {
-    return compressedNFT?.content?.metadata || nft?.json
-  }, [compressedNFT, nft])
+  const metadata = compressedNFT?.content?.metadata || nft?.json
 
-  const backgroundImageUri = useMemo(() => {
-    return metadata?.image
-  }, [metadata.image])
+  const backgroundImageUri = metadata?.image
 
-  const onReturn = useCallback(() => {
+  const imageSize = COLLECTABLE_HEIGHT - 160
+
+  const onReturn = () => {
     // Reset Collectables stack to first screen
     navigation.reset({
       index: 0,
       routes: [{ name: 'Collectables' }],
     })
-  }, [navigation])
+  }
 
   return (
-    <ReAnimatedBox flex={1}>
-      <BackScreen
-        padding="none"
-        backgroundImageUri={backgroundImageUri}
-        edges={backEdges}
-        onClose={onReturn}
-        hideBack
-        headerTopMargin="l"
-      >
-        <Box
-          backgroundColor="transparent"
-          flex={1}
-          padding="m"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <Box
-            flexGrow={1}
-            marginBottom="xl"
-            justifyContent="center"
-            alignItems="center"
-          >
+    <Animated.View className="flex-1 bg-background">
+      {/* The blurred NFT image fills the screen behind the content. */}
+      {backgroundImageUri && (
+        <>
+          <Image
+            className="absolute inset-0 opacity-70"
+            source={{ uri: backgroundImageUri, cache: 'force-cache' }}
+            resizeMode="cover"
+          />
+          <Blur
+            className="absolute inset-0"
+            intensity={Platform.OS === 'android' ? 15 : 5}
+          />
+        </>
+      )}
+      <SafeArea edges={['top']} className="flex-1">
+        <BackHeader hideBack onClose={onReturn} className="mt-6" />
+        <View className="flex-1 items-center justify-center p-4">
+          <View className="mb-8 grow items-center justify-center">
             {metadata && (
-              <Box
-                shadowColor="black"
-                shadowOpacity={0.4}
-                shadowOffset={{ width: 0, height: 10 }}
-                shadowRadius={10}
-                elevation={12}
-              >
-                <ImageBox
-                  marginTop="l"
-                  backgroundColor={
-                    metadata.image ? 'black' : 'surfaceSecondary'
-                  }
-                  height={COLLECTABLE_HEIGHT - spacing.xl * 5}
-                  width={COLLECTABLE_HEIGHT - spacing.xl * 5}
+              <View className="shadow-lg">
+                <Image
+                  className={twMerge(
+                    'mt-6 rounded-[35px]',
+                    metadata.image ? 'bg-primary' : 'bg-secondary',
+                  )}
+                  style={{ height: imageSize, width: imageSize }}
                   source={{ uri: metadata.image, cache: 'force-cache' }}
-                  borderRadius="xxl"
                 />
-              </Box>
+              </View>
             )}
             {isConfirmed && (
               <Animated.View
-                style={{ alignItems: 'center' }}
+                className="items-center"
                 entering={FADE_IN}
                 exiting={FADE_OUT}
               >
-                <Text variant="h2" color="white" marginTop="xl">
+                <Text size="3xl" className="mt-8">
                   {t('collectablesScreen.transferComplete')}
                 </Text>
               </Animated.View>
@@ -134,24 +120,16 @@ const TransferCollectableScreen = () => {
 
             {hasError && (
               <Animated.View
-                style={{ alignItems: 'center' }}
+                className="items-center"
                 entering={FADE_IN}
                 exiting={FADE_OUT}
               >
-                <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
-                  textAlign="center"
-                >
+                <Text size="3xl" className="mt-8 text-center">
                   {t('collectablesScreen.transferError')}
                 </Text>
                 <Text
-                  variant="body2"
-                  color="secondaryText"
-                  marginTop="xl"
+                  className="mt-8 text-center text-muted-foreground"
                   numberOfLines={2}
-                  textAlign="center"
                 >
                   {parseTransactionError(
                     solBalance,
@@ -163,16 +141,11 @@ const TransferCollectableScreen = () => {
 
             {!batchId && (
               <Animated.View
-                style={{ alignItems: 'center' }}
+                className="items-center"
                 entering={FADE_IN}
                 exiting={FADE_OUT}
               >
-                <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
-                  textAlign="center"
-                >
+                <Text size="3xl" className="mt-8 text-center">
                   {t('collectablesScreen.transferError')}
                 </Text>
               </Animated.View>
@@ -180,54 +153,43 @@ const TransferCollectableScreen = () => {
 
             {isPending && (
               <Animated.View
-                style={{ alignItems: 'center' }}
+                className="items-center"
                 entering={FADE_IN}
                 exiting={FADE_OUT}
               >
-                <Text
-                  variant="h2"
-                  color="white"
-                  marginTop="xl"
-                  textAlign="center"
-                >
+                <Text size="3xl" className="mt-8 text-center">
                   {t('collectablesScreen.transferingNftTitle')}
                 </Text>
                 <Text
-                  variant="body0"
-                  color="grey600"
-                  textAlign="center"
-                  marginBottom="m"
+                  size="xl"
+                  className="mb-4 text-center text-muted-foreground"
                 >
                   {t('collectablesScreen.transferingNftBody')}
                 </Text>
-                <Box flexDirection="row" marginHorizontal="xxl">
-                  <IndeterminateProgressBar paddingHorizontal="l" />
-                </Box>
+                <Spinner />
               </Animated.View>
             )}
-          </Box>
-          <Box flex={1} width="100%" justifyContent="flex-end">
-            <ButtonPressable
-              marginHorizontal="m"
-              marginBottom="m"
-              height={65}
-              borderRadius="round"
-              backgroundColor="white"
-              backgroundColorOpacity={0.1}
-              backgroundColorOpacityPressed={0.05}
-              titleColorPressedOpacity={0.3}
-              title={t('collectablesScreen.returnToCollectables')}
-              titleColor="white"
+          </View>
+          <View className="w-full flex-1 justify-end">
+            <Button
+              variant="secondary"
+              size="lg"
+              className="mx-4 mb-4"
               onPress={onReturn}
-              LeadingComponent={
-                <BackArrow width={16} height={15} color="white" />
-              }
-            />
-          </Box>
-        </Box>
-      </BackScreen>
-    </ReAnimatedBox>
+            >
+              <BackIcon
+                size={16}
+                colorClassName="accent-secondary-foreground"
+              />
+              <Text className={buttonTextVariants({ variant: 'secondary' })}>
+                {t('collectablesScreen.returnToCollectables')}
+              </Text>
+            </Button>
+          </View>
+        </View>
+      </SafeArea>
+    </Animated.View>
   )
 }
 
-export default memo(TransferCollectableScreen)
+export default TransferCollectableScreen

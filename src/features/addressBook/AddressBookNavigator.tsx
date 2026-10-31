@@ -1,6 +1,6 @@
-import React, { memo } from 'react'
+import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '@theme/themeHooks'
+import { useResolveClassNames } from 'uniwind'
 import AddressBook from './AddressBook'
 import AddNewContact from './AddNewContact'
 import EditContact from './EditContact'
@@ -9,12 +9,12 @@ import AddressQrScanner from './AddressQrScanner'
 const AddressBookStack = createNativeStackNavigator()
 
 const AddressBookNavigator = () => {
-  const { backgroundStyle } = useOpacity('primaryBackground', 0.98)
+  const contentStyle = useResolveClassNames('bg-background')
   return (
     <AddressBookStack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: backgroundStyle,
+        contentStyle,
         presentation: 'modal',
       }}
     >
@@ -29,4 +29,4 @@ const AddressBookNavigator = () => {
   )
 }
 
-export default memo(AddressBookNavigator)
+export default AddressBookNavigator

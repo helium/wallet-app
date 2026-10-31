@@ -1,9 +1,10 @@
 import Pending from '@assets/images/pending.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { PublicKey } from '@solana/web3.js'
-import React, { memo, useCallback, useMemo } from 'react'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import React from 'react'
+import { View } from 'react-native'
 import { Activity } from '../../types/activity'
 import useTxn from './useTxn'
 
@@ -18,48 +19,34 @@ const TxnListItem = ({ mint, item, now, isLast, onPress }: Props) => {
   const { listIcon, title, color, time, getAmount } = useTxn(mint, item, {
     now,
   })
-  const amt = useMemo(() => getAmount(), [getAmount])
-
-  const handlePress = useCallback(() => {
-    onPress(item)
-  }, [item, onPress])
+  const amt = getAmount()
 
   return (
-    <TouchableOpacityBox
-      alignItems="center"
-      borderBottomColor="primaryBackground"
-      borderBottomWidth={isLast ? 1 : 0}
-      flexDirection="row"
-      onPress={handlePress}
+    <PressableScale
+      feedback="opacity"
+      className={twMerge(
+        'flex-row items-center border-border',
+        isLast && 'border-b',
+      )}
+      onPress={() => onPress(item)}
     >
-      <Box paddingRight="s">{listIcon}</Box>
-      <Box flex={1} flexDirection="row">
+      <View className="pr-2">{listIcon}</View>
+      <View className="flex-1 flex-row">
         {item.pending && (
-          <Box
-            flex={1}
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-          >
+          <View className="absolute inset-0 flex-1">
             <Pending />
-          </Box>
+          </View>
         )}
-        <Box justifyContent="center" paddingVertical="m" flex={1}>
-          <Text variant="body2">{title}</Text>
-          <Text variant="body2" color="grey500">
-            {time}
-          </Text>
-        </Box>
-        <Box paddingVertical="m" maxWidth="55%">
-          <Text variant="body2" color={color} textAlign="right">
-            {amt}
-          </Text>
-        </Box>
-      </Box>
-    </TouchableOpacityBox>
+        <View className="flex-1 justify-center py-4">
+          <Text>{title}</Text>
+          <Text className="text-muted-foreground">{time}</Text>
+        </View>
+        <View className="max-w-[55%] py-4">
+          <Text className={twMerge('text-right', color)}>{amt}</Text>
+        </View>
+      </View>
+    </PressableScale>
   )
 }
 
-export default memo(TxnListItem)
+export default TxnListItem

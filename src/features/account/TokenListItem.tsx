@@ -1,12 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-import Arrow from '@assets/images/listItemRight.svg'
-import Lock from '@assets/images/lockClosed.svg'
-import InfoWarning from '@assets/images/warning.svg'
-import Box from '@components/Box'
-import FadeInOut from '@components/FadeInOut'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableContainer from '@components/TouchableContainer'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import {
@@ -22,14 +13,28 @@ import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useQuery } from '@tanstack/react-query'
-import { useColors } from '@theme/themeHooks'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { useCallback, useMemo } from 'react'
+import { ChevronRight, Lock, TriangleAlert } from 'lucide-react-native'
+import React from 'react'
+import { View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+
+const Arrow = withUniwind(ChevronRight)
+const LockIcon = withUniwind(Lock)
+const WarningIcon = withUniwind(TriangleAlert)
+
+const ROW_CLASS =
+  'min-h-[72px] flex-row items-center border-b border-border px-4 py-4'
 
 export const ITEM_HEIGHT = 72
 type Props = {
@@ -38,28 +43,16 @@ type Props = {
 
 export const TokenSkeleton = () => {
   return (
-    <FadeInOut>
-      <Box
-        flexDirection="row"
-        height={ITEM_HEIGHT}
-        alignItems="center"
-        paddingHorizontal="l"
-        borderBottomColor="primaryBackground"
-        borderBottomWidth={1}
-      >
-        <Box
-          width={40}
-          height={40}
-          borderRadius="round"
-          backgroundColor="surface"
-        />
-        <Box flex={1} paddingHorizontal="m">
-          <Box width={120} height={16} backgroundColor="surface" />
-          <Box width={70} height={16} marginTop="s" backgroundColor="surface" />
-        </Box>
-        <Arrow width={4} height={4} />
-      </Box>
-    </FadeInOut>
+    <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
+      <View className="h-[72px] flex-row items-center border-b border-border px-6">
+        <View className="h-10 w-10 rounded-full bg-card" />
+        <View className="flex-1 px-4">
+          <View className="h-4 w-[120px] bg-card" />
+          <View className="mt-2 h-4 w-[70px] bg-card" />
+        </View>
+        <Arrow colorClassName="accent-muted-foreground" />
+      </View>
+    </Animated.View>
   )
 }
 
@@ -74,17 +67,16 @@ export const TokenListItem = ({ mint }: Props) => {
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()
 
-  const handleNavigation = useCallback(() => {
+  const handleNavigation = () => {
     navigation.navigate('AccountTokenScreen', {
       mint: mintStr,
     })
-  }, [navigation, mintStr])
+  }
 
-  const balanceToDisplay = useMemo(() => {
-    return amount && typeof decimals !== 'undefined'
+  const balanceToDisplay =
+    amount && typeof decimals !== 'undefined'
       ? humanReadable(new BN(amount.toString()), decimals)
       : '0'
-  }, [amount, decimals])
 
   if (
     (mint.equals(MOBILE_MINT) || mint.equals(IOT_MINT)) &&
@@ -94,74 +86,53 @@ export const TokenListItem = ({ mint }: Props) => {
   }
 
   return (
-    <TouchableContainer
+    <PressableScale
+      feedback="opacity"
       testID={`TokenListItem.${symbol}`}
       onPress={handleNavigation}
-      flexDirection="row"
-      minHeight={ITEM_HEIGHT}
-      alignItems="center"
-      paddingHorizontal="m"
-      paddingVertical="m"
-      borderBottomColor="primaryBackground"
-      borderBottomWidth={1}
+      className={ROW_CLASS}
     >
       {loading ? (
-        <Box
-          width={40}
-          height={40}
-          borderRadius="round"
-          backgroundColor="surface"
-        />
+        <View className="h-10 w-10 rounded-full bg-card" />
       ) : (
         <TokenIcon img={json?.image} />
       )}
 
-      <Box flex={1} paddingHorizontal="m">
+      <View className="flex-1 px-4">
         {loadingOwned ? (
-          <Box flex={1} paddingHorizontal="m">
-            <Box width={120} height={16} backgroundColor="surface" />
-            <Box
-              width={70}
-              height={16}
-              marginTop="s"
-              backgroundColor="surface"
-            />
-          </Box>
+          <View className="flex-1 px-4">
+            <View className="h-4 w-[120px] bg-card" />
+            <View className="mt-2 h-4 w-[70px] bg-card" />
+          </View>
         ) : (
-          <Box>
-            <Box flexDirection="row" alignItems="center">
-              <Text
-                variant="body1"
-                color="primaryText"
-                maxFontSizeMultiplier={1.3}
-              >
+          <View>
+            <View className="flex-row items-center">
+              <Text size="base" maxFontSizeMultiplier={1.3}>
                 {`${balanceToDisplay} `}
               </Text>
               <Text
-                variant="body2Medium"
-                color="secondaryText"
+                className="font-medium text-muted-foreground"
                 maxFontSizeMultiplier={1.3}
               >
                 {symbol}
               </Text>
-            </Box>
+            </View>
             {symbol && (
               <AccountTokenCurrencyBalance
-                variant="subtitle4"
-                color="secondaryText"
+                className="font-medium text-muted-foreground"
                 ticker={symbol.toUpperCase()}
               />
             )}
-          </Box>
+          </View>
         )}
-      </Box>
+      </View>
       {mint.equals(NATIVE_MINT) && (amount || 0) < MIN_BALANCE_THRESHOLD && (
-        <Box mr="m">
-          <InfoWarning width={28} height={28} />
-        </Box>
+        <View className="mr-4">
+          <WarningIcon size={28} colorClassName="accent-warning-500" />
+        </View>
       )}
-      <Arrow />
-    </TouchableContainer>
+      <Arrow colorClassName="accent-muted-foreground" />
+    </PressableScale>
   )
 }
 
@@ -172,32 +143,24 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const { json, symbol, loading } = useMetaplexMetadata(mint)
   const decimals = useMint(mint)?.info?.decimals
   const mintStr = mint.toBase58()
-  const colors = useColors()
   const {
     positions: contextPositions,
     mint: govMint,
     loading: loadingContext,
   } = useHeliumVsrState()
-  const useContextPositions = useMemo(
-    () => !!govMint?.equals(mint),
-    [govMint, mint],
-  )
+  const useContextPositions = !!govMint?.equals(mint)
 
   const { registrarKey } = useRegistrarForMint(mint)
 
   const registrarKeyStr = registrarKey?.toBase58()
   const walletStr = wallet?.toBase58()
-  const args = useMemo(
-    () =>
-      walletStr &&
-      connection &&
-      registrarKeyStr && {
-        registrar: new PublicKey(registrarKeyStr),
-        owner: new PublicKey(walletStr),
-        connection,
-      },
-    [registrarKeyStr, walletStr, connection],
-  )
+  const args = walletStr &&
+    connection &&
+    registrarKeyStr && {
+      registrar: new PublicKey(registrarKeyStr),
+      owner: new PublicKey(walletStr),
+      connection,
+    }
 
   const { data: result, isLoading: loadingPositionKeys } = useQuery({
     queryKey: [
@@ -214,15 +177,11 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
     usePositions(result?.positions)
   const loadingPositions = loadingFetchedPositions || loadingContext
-  const positions = useMemo(
-    () =>
-      useContextPositions
-        ? contextPositions
-        : fetchedPositions?.map((fetched) => fetched.info),
-    [useContextPositions, contextPositions, fetchedPositions],
-  )
+  const positions = useContextPositions
+    ? contextPositions
+    : fetchedPositions?.map((fetched) => fetched.info)
 
-  const { amountLocked } = useMemo(() => {
+  const getAmountLocked = () => {
     if (positions && positions.length) {
       let amountLocked = new BN(0)
       positions.forEach((position) => {
@@ -233,34 +192,30 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
         }
       })
 
-      return {
-        amountLocked,
-      }
+      return amountLocked
     }
 
-    return {}
-  }, [positions])
+    return undefined
+  }
+  const amountLocked = getAmountLocked()
 
   const prevLocked = usePrevious(amountLocked)
 
-  const handleNavigation = useCallback(() => {
+  const handleNavigation = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(navigation as any).navigate('Governance', {
       screen: 'PositionsScreen',
       initial: false,
       params: { mint: mintStr },
     })
-  }, [navigation, mintStr])
+  }
 
-  const balanceToDisplay = useMemo(() => {
-    return amountLocked && typeof decimals !== 'undefined'
+  const balanceToDisplay =
+    amountLocked && typeof decimals !== 'undefined'
       ? humanReadable(new BN(amountLocked.toString()), decimals)
       : '0'
-  }, [amountLocked, decimals])
 
-  const loadingAmount = useMemo(() => {
-    return !prevLocked && (loadingPositionKeys || loadingPositions)
-  }, [loadingPositionKeys, loadingPositions, prevLocked])
+  const loadingAmount = !prevLocked && (loadingPositionKeys || loadingPositions)
 
   if (
     (mint.equals(MOBILE_MINT) || mint.equals(IOT_MINT)) &&
@@ -270,85 +225,48 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
   }
 
   return (
-    <TouchableContainer
+    <PressableScale
+      feedback="opacity"
       onPress={handleNavigation}
-      flexDirection="row"
-      minHeight={ITEM_HEIGHT}
-      alignItems="center"
-      paddingHorizontal="m"
-      paddingVertical="m"
-      borderBottomColor="primaryBackground"
-      borderBottomWidth={1}
+      className={ROW_CLASS}
     >
       {loading ? (
-        <Box
-          width={40}
-          height={40}
-          borderRadius="round"
-          backgroundColor="surface"
-        />
+        <View className="h-10 w-10 rounded-full bg-card" />
       ) : (
-        <Box position="relative">
+        <View className="relative">
           <TokenIcon img={json?.image} />
-          <Box
-            position="absolute"
-            top={-6}
-            right={-8}
-            backgroundColor="bottomSheetBg"
-            justifyContent="center"
-            borderRadius="round"
-            alignItems="center"
-            height={22}
-            width={22}
-          >
-            <Box
-              backgroundColor="orange500"
-              borderRadius="round"
-              justifyContent="center"
-              alignItems="center"
-              height={18}
-              width={18}
-            >
-              <Lock width={12} height={12} color={colors.secondaryBackground} />
-            </Box>
-          </Box>
-        </Box>
+          <View className="absolute -right-2 top-[-6px] h-[22px] w-[22px] items-center justify-center rounded-full bg-popover">
+            <View className="h-[18px] w-[18px] items-center justify-center rounded-full bg-warning-500">
+              <LockIcon size={12} colorClassName="accent-secondary" />
+            </View>
+          </View>
+        </View>
       )}
 
-      <Box flex={1} paddingHorizontal="m">
+      <View className="flex-1 px-4">
         {loadingAmount ? (
-          <Box flex={1} paddingHorizontal="m">
-            <Box width={120} height={16} backgroundColor="surface" />
-            <Box
-              width={70}
-              height={16}
-              marginTop="s"
-              backgroundColor="surface"
-            />
-          </Box>
+          <View className="flex-1 px-4">
+            <View className="h-4 w-[120px] bg-card" />
+            <View className="mt-2 h-4 w-[70px] bg-card" />
+          </View>
         ) : (
-          <Box>
-            <Box flexDirection="row" alignItems="center">
-              <Text
-                variant="body1"
-                color="primaryText"
-                maxFontSizeMultiplier={1.3}
-              >
+          <View>
+            <View className="flex-row items-center">
+              <Text size="base" maxFontSizeMultiplier={1.3}>
                 {`${balanceToDisplay} `}
               </Text>
               <Text
-                variant="body2Medium"
-                color="secondaryText"
+                className="font-medium text-muted-foreground"
                 maxFontSizeMultiplier={1.3}
               >
                 {symbol} (Locked)
               </Text>
-            </Box>
-            <Text color="secondaryText">-</Text>
-          </Box>
+            </View>
+            <Text className="text-muted-foreground">-</Text>
+          </View>
         )}
-      </Box>
-      <Arrow />
-    </TouchableContainer>
+      </View>
+      <Arrow colorClassName="accent-muted-foreground" />
+    </PressableScale>
   )
 }

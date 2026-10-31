@@ -1,14 +1,13 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Image, LogBox, FlatList } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
-import BackScreen from '@components/BackScreen'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import useHaptic from '@hooks/useHaptic'
-import globalStyles from '@theme/globalStyles'
-import { useBorderRadii } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
 import { useCollectableHeight } from '@utils/layout'
+import { withUniwind } from 'uniwind'
+import BackHeader from './components/BackHeader'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
@@ -19,6 +18,8 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
 
+const SafeArea = withUniwind(SafeAreaView)
+
 type Route = RouteProp<CollectableStackParamList, 'CollectionScreen'>
 
 const CollectionScreen = () => {
@@ -26,57 +27,44 @@ const CollectionScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const collectableHeight = useCollectableHeight()
   const collectables = route.params.collection
-  const { lm: borderRadius } = useBorderRadii()
-  const { triggerImpact } = useHaptic()
 
-  const handleNavigateToCollectable = useCallback(
-    (collectable: Collectable) => {
-      if (collectable) {
-        triggerImpact()
-        navigation.navigate('NftDetailsScreen', { collectable })
-      }
-    },
-    [navigation, triggerImpact],
-  )
+  const handleNavigateToCollectable = (collectable: Collectable) => {
+    if (collectable) {
+      navigation.navigate('NftDetailsScreen', { collectable })
+    }
+  }
 
-  const renderCollectable = useCallback(
-    ({ item }: { item: Collectable }) => {
-      const { json } = item
+  const renderCollectable = ({ item }: { item: Collectable }) => {
+    const { json } = item
 
-      return (
-        <ReAnimatedBox style={{ width: '50%' }}>
-          <TouchableOpacityBox
-            marginHorizontal="s"
-            marginVertical="s"
-            alignItems="center"
-            backgroundColor="surfaceSecondary"
-            borderRadius="xxl"
-            onPress={() => handleNavigateToCollectable(item)}
-          >
-            <Image
-              borderRadius={borderRadius}
-              style={{ height: collectableHeight, width: '100%' }}
-              source={{
-                uri: json?.image || '',
-              }}
-            />
-          </TouchableOpacityBox>
-        </ReAnimatedBox>
-      )
-    },
-    [collectableHeight, borderRadius, handleNavigateToCollectable],
-  )
+    return (
+      <Animated.View className="w-1/2">
+        <PressableScale
+          feedback="opacity"
+          className="m-2 items-center rounded-[16px] bg-secondary"
+          onPress={() => handleNavigateToCollectable(item)}
+        >
+          <Image
+            className="w-full rounded-lg"
+            style={{ height: collectableHeight }}
+            source={{
+              uri: json?.image || '',
+            }}
+          />
+        </PressableScale>
+      </Animated.View>
+    )
+  }
 
-  const keyExtractor = useCallback((item: Collectable) => item.id, [])
+  const keyExtractor = (item: Collectable) => item.id
 
   return (
-    <BackScreen
-      padding="none"
-      headerBackgroundColor="primaryBackground"
-      title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
-      headerTopMargin="l"
-    >
-      <ReAnimatedBox marginTop="s" style={globalStyles.container}>
+    <SafeArea className="flex-1 bg-background" edges={['top']}>
+      <BackHeader
+        className="mt-6"
+        title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
+      />
+      <Animated.View className="mt-2 flex-1">
         <FlatList
           contentInsetAdjustmentBehavior="automatic"
           scrollEnabled
@@ -85,8 +73,8 @@ const CollectionScreen = () => {
           renderItem={renderCollectable}
           keyExtractor={keyExtractor}
         />
-      </ReAnimatedBox>
-    </BackScreen>
+      </Animated.View>
+    </SafeArea>
   )
 }
 

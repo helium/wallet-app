@@ -1,10 +1,3 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import RewardItem from '@components/RewardItem'
-import Text from '@components/Text'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { useBN } from '@hooks/useBN'
@@ -20,11 +13,21 @@ import {
   MOBILE_LAZY_KEY,
 } from '@utils/constants'
 import BN from 'bn.js'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
+import { ScrollView, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { PublicKey } from '@solana/web3.js'
+import BackHeader from './components/BackHeader'
 import { CollectableNavigationProp } from './collectablesTypes'
+import RewardItem from './RewardItem'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 const ClaimAllRewardsScreen = () => {
   const { t } = useTranslation()
@@ -33,9 +36,9 @@ const ClaimAllRewardsScreen = () => {
   const { submitClaimAllRewards } = useSubmitTxn()
   const { showModal } = useModal()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
-  const hasEnoughSol = useMemo(() => {
-    return (solBalance || new BN(0)).gt(new BN(MIN_BALANCE_THRESHOLD))
-  }, [solBalance])
+  const hasEnoughSol = (solBalance || new BN(0)).gt(
+    new BN(MIN_BALANCE_THRESHOLD),
+  )
   const {
     hotspots,
     hotspotsWithMeta,
@@ -48,17 +51,13 @@ const ClaimAllRewardsScreen = () => {
   const [redeeming, setRedeeming] = useState(false)
   const [claimError, setClaimError] = useState<string | undefined>()
 
-  const title = useMemo(() => {
-    return t('collectablesScreen.hotspots.claimAllRewards')
-  }, [t])
+  const title = t('collectablesScreen.hotspots.claimAllRewards')
 
-  const subtitle = useMemo(() => {
-    return t('collectablesScreen.hotspots.hotspotCount', {
-      count: totalHotspots,
-    })
-  }, [totalHotspots, t])
+  const subtitle = t('collectablesScreen.hotspots.hotspotCount', {
+    count: totalHotspots,
+  })
 
-  const onClaimRewards = useCallback(async () => {
+  const onClaimRewards = async () => {
     try {
       setClaimError(undefined)
       setRedeeming(true)
@@ -101,46 +100,30 @@ const ClaimAllRewardsScreen = () => {
       setClaimError((e as any)?.response?.data?.error || (e as Error)?.message)
       setRedeeming(false)
     }
-  }, [
-    hasEnoughSol,
-    submitClaimAllRewards,
-    hotspotsWithMeta,
-    totalHotspots,
-    navigation,
-    showModal,
-    pendingHntRewards,
-    pendingIotRewards,
-    pendingMobileRewards,
-  ])
+  }
   const hasMore = hotspots.length < (totalHotspots || 0)
 
   return (
-    <ReAnimatedBox flex={1} backgroundColor="primaryBackground">
-      <BackScreen title={title} paddingVertical="none" paddingHorizontal="m">
-        <Box flexGrow={1}>
-          <Box flexGrow={2} alignItems="center">
-            <Box flexGrow={1}>
-              <Text variant="body2" color="secondaryText">
-                {subtitle}
-              </Text>
-            </Box>
-            <Text variant="h3Medium" textAlign="center" marginBottom="xl">
+    <Animated.View className="flex-1 bg-background">
+      <SafeArea className="flex-1">
+        <BackHeader title={title} />
+        <View className="grow px-4">
+          <View className="grow-[2] items-center">
+            <View className="grow">
+              <Text className="text-muted-foreground">{subtitle}</Text>
+            </View>
+            <Text size="2xl" className="mb-8 text-center font-medium">
               {t('collectablesScreen.hotspots.hotspotsClaimMessage')}
             </Text>
-          </Box>
+          </View>
           <ScrollView contentInsetAdjustmentBehavior="automatic" horizontal>
-            <Box
-              flexGrow={1}
-              alignItems="center"
-              justifyContent="center"
-              flexDirection="row"
-            >
+            <View className="grow flex-row items-center justify-center">
               {hasMore ||
               (pendingHntRewards && pendingHntRewards.gt(new BN(0))) ? (
                 <RewardItem
                   mint={HNT_MINT}
                   amount={pendingHntRewards || new BN(0)}
-                  marginEnd="s"
+                  className="me-2"
                   hasMore={hasMore}
                 />
               ) : null}
@@ -149,7 +132,7 @@ const ClaimAllRewardsScreen = () => {
                 <RewardItem
                   mint={MOBILE_MINT}
                   amount={pendingMobileRewards || new BN(0)}
-                  marginEnd="s"
+                  className="me-2"
                   hasMore={hasMore}
                 />
               ) : null}
@@ -161,47 +144,36 @@ const ClaimAllRewardsScreen = () => {
                   hasMore={hasMore}
                 />
               ) : null}
-            </Box>
+            </View>
           </ScrollView>
           {claimError && (
-            <Box>
+            <View>
               <Text
-                variant="body2"
-                color="red500"
-                marginTop="xl"
+                className="mt-8 text-center text-destructive"
                 numberOfLines={2}
-                textAlign="center"
               >
                 {claimError}
               </Text>
-            </Box>
+            </View>
           )}
-          <Box flexGrow={1} />
-          <ButtonPressable
-            marginBottom="l"
-            borderRadius="round"
-            backgroundColor="hntBlue"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="secondaryText"
-            title={
-              !redeeming ? t('collectablesScreen.hotspots.claimAllRewards') : ''
-            }
-            titleColor="white"
-            marginHorizontal="l"
+          <View className="grow" />
+          <Button
+            variant="cta"
+            size="lg"
+            className="mx-6 mb-6"
             onPress={() => void onClaimRewards().catch(console.error)}
             disabled={redeeming}
-            TrailingComponent={
-              redeeming ? (
-                <CircleLoader loaderSize={20} color="white" />
-              ) : undefined
-            }
-          />
-        </Box>
-      </BackScreen>
-    </ReAnimatedBox>
+          >
+            {redeeming ? (
+              <Spinner colorClassName="accent-white" />
+            ) : (
+              t('collectablesScreen.hotspots.claimAllRewards')
+            )}
+          </Button>
+        </View>
+      </SafeArea>
+    </Animated.View>
   )
 }
 
-export default memo(ClaimAllRewardsScreen)
+export default ClaimAllRewardsScreen

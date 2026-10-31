@@ -1,22 +1,25 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import RewardItem from '@components/RewardItem'
-import Text from '@components/Text'
 import { HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import BN from 'bn.js'
-import React, { memo, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
+import { View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { Mints } from '../../utils/constants'
+import BackHeader from './components/BackHeader'
 import {
   CollectableNavigationProp,
   CollectableStackParamList,
 } from './collectablesTypes'
+import RewardItem from './RewardItem'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
@@ -29,37 +32,24 @@ const ClaimRewardsScreen = () => {
   const { hotspot } = route.params
   const { submitClaimRewards } = useSubmitTxn()
 
-  const pendingIotRewards = useMemo(
-    () =>
-      hotspot &&
-      hotspot.pendingRewards &&
-      new BN(hotspot.pendingRewards[Mints.IOT]),
-    [hotspot],
-  )
+  const pendingIotRewards =
+    hotspot &&
+    hotspot.pendingRewards &&
+    new BN(hotspot.pendingRewards[Mints.IOT])
 
-  const pendingMobileRewards = useMemo(
-    () =>
-      hotspot &&
-      hotspot.pendingRewards &&
-      new BN(hotspot.pendingRewards[Mints.MOBILE]),
-    [hotspot],
-  )
+  const pendingMobileRewards =
+    hotspot &&
+    hotspot.pendingRewards &&
+    new BN(hotspot.pendingRewards[Mints.MOBILE])
 
-  const pendingHntRewards = useMemo(
-    () =>
-      hotspot &&
-      hotspot.pendingRewards &&
-      new BN(hotspot.pendingRewards[Mints.HNT]),
-    [hotspot],
-  )
+  const pendingHntRewards =
+    hotspot &&
+    hotspot.pendingRewards &&
+    new BN(hotspot.pendingRewards[Mints.HNT])
 
-  const title = useMemo(() => {
-    return t('collectablesScreen.hotspots.claimRewards')
-  }, [t])
+  const title = t('collectablesScreen.hotspots.claimRewards')
 
-  const subtitle = useMemo(() => {
-    return hotspot?.content?.metadata?.name || ''
-  }, [hotspot.content.metadata.name])
+  const subtitle = hotspot?.content?.metadata?.name || ''
 
   const onClaimRewards = async () => {
     if (redeeming) return
@@ -77,49 +67,33 @@ const ClaimRewardsScreen = () => {
     }
   }
 
-  const addAllToAccountDisabled = useMemo(() => {
-    return (
-      pendingIotRewards &&
-      pendingIotRewards.eq(new BN(0)) &&
-      pendingMobileRewards &&
-      pendingMobileRewards.eq(new BN(0)) &&
-      pendingHntRewards &&
-      pendingHntRewards.eq(new BN(0))
-    )
-  }, [pendingIotRewards, pendingMobileRewards, pendingHntRewards])
-
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
+  const addAllToAccountDisabled =
+    pendingIotRewards &&
+    pendingIotRewards.eq(new BN(0)) &&
+    pendingMobileRewards &&
+    pendingMobileRewards.eq(new BN(0)) &&
+    pendingHntRewards &&
+    pendingHntRewards.eq(new BN(0))
 
   return (
-    <ReAnimatedBox flex={1}>
-      <BackScreen
-        title={title}
-        paddingVertical="none"
-        paddingHorizontal="m"
-        edges={safeEdges}
-      >
-        <Box flexGrow={1}>
-          <Box flexGrow={2} alignItems="center">
-            <Box flexGrow={1}>
-              <Text variant="body2" color="secondaryText">
-                {subtitle}
-              </Text>
-            </Box>
-            <Text variant="h3Medium" textAlign="center" marginBottom="xl">
+    <Animated.View className="flex-1">
+      <SafeArea className="flex-1" edges={['top']}>
+        <BackHeader title={title} />
+        <View className="grow px-4">
+          <View className="grow-[2] items-center">
+            <View className="grow">
+              <Text className="text-muted-foreground">{subtitle}</Text>
+            </View>
+            <Text size="2xl" className="mb-8 text-center font-medium">
               {t('collectablesScreen.hotspots.hotspotClaimMessage')}
             </Text>
-          </Box>
-          <Box
-            flexGrow={1}
-            alignItems="center"
-            justifyContent="center"
-            flexDirection="row"
-          >
+          </View>
+          <View className="grow flex-row items-center justify-center">
             {!!pendingHntRewards && pendingHntRewards.gt(new BN(0)) && (
               <RewardItem
                 mint={HNT_MINT}
                 amount={pendingHntRewards}
-                marginStart="s"
+                className="ms-2"
                 hasMore={false}
               />
             )}
@@ -127,7 +101,7 @@ const ClaimRewardsScreen = () => {
               <RewardItem
                 mint={MOBILE_MINT}
                 amount={pendingMobileRewards}
-                marginEnd="s"
+                className="me-2"
                 hasMore={false}
               />
             )}
@@ -135,50 +109,39 @@ const ClaimRewardsScreen = () => {
               <RewardItem
                 mint={IOT_MINT}
                 amount={pendingIotRewards}
-                marginStart="s"
+                className="ms-2"
                 hasMore={false}
               />
             )}
-          </Box>
+          </View>
           {claimError && (
-            <Box>
+            <View>
               <Text
-                variant="body2"
-                color="red500"
-                marginTop="xl"
+                className="mt-8 text-center text-destructive"
                 numberOfLines={2}
-                textAlign="center"
               >
                 {claimError}
               </Text>
-            </Box>
+            </View>
           )}
-          <Box flexGrow={1} />
-          <ButtonPressable
-            marginBottom="l"
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="secondaryText"
-            title={
-              !redeeming ? t('collectablesScreen.hotspots.claimRewards') : ''
-            }
-            titleColor="black"
-            marginHorizontal="l"
+          <View className="grow" />
+          <Button
+            variant="cta"
+            size="lg"
+            className="mx-6 mb-6"
             onPress={() => void onClaimRewards().catch(console.error)}
             disabled={addAllToAccountDisabled || redeeming}
-            TrailingComponent={
-              redeeming ? (
-                <CircleLoader loaderSize={20} color="white" />
-              ) : undefined
-            }
-          />
-        </Box>
-      </BackScreen>
-    </ReAnimatedBox>
+          >
+            {redeeming ? (
+              <Spinner colorClassName="accent-white" />
+            ) : (
+              t('collectablesScreen.hotspots.claimRewards')
+            )}
+          </Button>
+        </View>
+      </SafeArea>
+    </Animated.View>
   )
 }
 
-export default memo(ClaimRewardsScreen)
+export default ClaimRewardsScreen

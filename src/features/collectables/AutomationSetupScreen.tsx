@@ -1,20 +1,23 @@
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { HNT_MINT } from '@helium/spl-utils'
 import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 import { useAutomation, useFundingEstimate } from '@hooks/useAutomation'
 import useHotspots from '@hooks/useHotspots'
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback, useMemo, useState } from 'react'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { ScrollView, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import BackHeader from './components/BackHeader'
 import { CollectableNavigationProp } from './collectablesTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
 
@@ -34,51 +37,40 @@ const EstimateDisplay = ({
 }: EstimateDisplayProps) => {
   const { t } = useTranslation()
   return (
-    <Box
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      padding="m"
-      marginBottom="m"
-    >
-      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
-        <Text variant="body2" color="grey400">
+    <View className="mb-4 rounded-[12px] bg-background p-4">
+      <View className="mb-2 flex-row justify-between">
+        <Text className="text-muted-foreground">
           {t('automationScreen.reclaimableSol')}
         </Text>
-        <Text variant="body2Medium" color="grey200">
-          {estimate.rentFee.toFixed(4)} SOL
-        </Text>
-      </Box>
+        <Text className="font-medium">{estimate.rentFee.toFixed(4)} SOL</Text>
+      </View>
       {showRecipientFee && estimate.recipientFee > 0 && (
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          marginBottom="s"
-        >
-          <Text variant="body2" color="grey400">
+        <View className="mb-2 flex-row justify-between">
+          <Text className="text-muted-foreground">
             {t('automationScreen.recipientSol')}
           </Text>
-          <Text variant="body2Medium" color="grey200">
+          <Text className="font-medium">
             {estimate.recipientFee.toFixed(4)} SOL
           </Text>
-        </Box>
+        </View>
       )}
-      <Box flexDirection="row" justifyContent="space-between" marginBottom="s">
-        <Text variant="body2" color="grey400">
+      <View className="mb-2 flex-row justify-between">
+        <Text className="text-muted-foreground">
           {t('automationScreen.transactionFees')}
         </Text>
-        <Text variant="body2Medium" color="grey200">
+        <Text className="font-medium">
           {estimate.operationalSol.toFixed(4)} SOL
         </Text>
-      </Box>
-      <Box flexDirection="row" justifyContent="space-between">
-        <Text variant="body2Medium" color="grey200">
+      </View>
+      <View className="flex-row justify-between">
+        <Text className="font-medium">
           {t('automationScreen.totalFunding')}
         </Text>
-        <Text variant="body2Medium" color="white">
+        <Text className="font-medium">
           {estimate.totalSolNeeded.toFixed(4)} SOL
         </Text>
-      </Box>
-    </Box>
+      </View>
+    </View>
   )
 }
 
@@ -95,34 +87,57 @@ const ScheduleOption = ({
 }) => {
   const { t } = useTranslation()
   return (
-    <TouchableOpacityBox
+    <PressableScale
       onPress={() => onSelect(schedule)}
-      backgroundColor={selected ? 'white' : 'black'}
-      marginBottom="none"
-      alignItems="center"
-      justifyContent="center"
-      flex={1}
-      padding="s"
-      borderRadius="xl"
-      marginLeft={index > 0 ? 'xxs' : 'none'}
+      feedback="opacity"
+      accessibilityState={{ selected }}
+      className={twMerge(
+        'flex-1 items-center justify-center rounded-[20px] p-2',
+        selected ? 'bg-primary' : 'bg-transparent',
+        index > 0 && 'ml-0.5',
+      )}
     >
       <Text
-        variant="subtitle4"
-        color={selected ? 'black' : 'grey300'}
-        textAlign="center"
+        className={twMerge(
+          'text-center font-medium',
+          selected ? 'text-primary-foreground' : 'text-muted-foreground',
+        )}
       >
         {t(`automationScreen.schedule.${schedule}`)}
       </Text>
-    </TouchableOpacityBox>
+    </PressableScale>
   )
 }
+
+const DurationInput = ({
+  duration,
+  unitLabel,
+  onChange,
+}: {
+  duration: string
+  unitLabel: string
+  onChange: (text: string) => void
+}) => (
+  <View className="mb-4 flex-row items-center">
+    <Input
+      className="w-auto flex-1"
+      placeholder={duration || '------'}
+      onChangeText={onChange}
+      value={duration}
+      keyboardType="decimal-pad"
+      returnKeyType="done"
+    />
+    <Text size="base" className="ms-2 font-medium text-muted-foreground">
+      {unitLabel}
+    </Text>
+  </View>
+)
 
 const AutomationSetupScreen = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule>('daily')
   const [duration, setDuration] = useState('10')
-  const backEdges = ['top'] as Edge[]
 
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
 
@@ -149,11 +164,9 @@ const AutomationSetupScreen = () => {
   // Get funding estimate (used for both create and fund flows)
   const estimate = useFundingEstimate(duration)
 
-  const hotspotsNeedingRecipient = useMemo(() => {
-    return hotspotsWithMeta.filter(
-      (hotspot) => !hotspot.rewardRecipients[HNT_MINT.toBase58()],
-    ).length
-  }, [hotspotsWithMeta])
+  const hotspotsNeedingRecipient = hotspotsWithMeta.filter(
+    (hotspot) => !hotspot.rewardRecipients[HNT_MINT.toBase58()],
+  ).length
 
   const error =
     createAutomationError ||
@@ -162,11 +175,8 @@ const AutomationSetupScreen = () => {
     estimate.estimateError
 
   // Calculate insufficient SOL for create flow
-  const insufficientSol = useMemo(() => {
-    if (!estimate.estimate) return false
-    // This would need to check actual wallet balance - simplified for now
-    return false
-  }, [estimate.estimate])
+  // This would need to check actual wallet balance - simplified for now
+  const insufficientSol = false
 
   const handleDurationChange = (text: string) => {
     // Remove any non-numeric characters
@@ -193,11 +203,11 @@ const AutomationSetupScreen = () => {
     }
   }
 
-  const handleScheduleSelect = useCallback((schedule: Schedule) => {
+  const handleScheduleSelect = (schedule: Schedule) => {
     setSelectedSchedule(schedule)
-  }, [])
+  }
 
-  const handleSave = useCallback(async () => {
+  const handleSave = async () => {
     if (!totalHotspots || !estimate.estimate) return
 
     try {
@@ -214,25 +224,18 @@ const AutomationSetupScreen = () => {
     } catch (e) {
       console.error(e)
     }
-  }, [
-    totalHotspots,
-    createAutomation,
-    selectedSchedule,
-    duration,
-    estimate.estimate,
-    navigation,
-  ])
+  }
 
-  const handleRemoveAutomation = useCallback(async () => {
+  const handleRemoveAutomation = async () => {
     try {
       await closeAutomation()
       navigation.goBack()
     } catch (e) {
       console.error(e)
     }
-  }, [closeAutomation, navigation])
+  }
 
-  const handleFundAutomation = useCallback(async () => {
+  const handleFundAutomation = async () => {
     if (!duration || !estimate.estimate) return
 
     try {
@@ -246,7 +249,7 @@ const AutomationSetupScreen = () => {
     } catch (e) {
       console.error(e)
     }
-  }, [duration, fundAutomation, currentSchedule, estimate.estimate, navigation])
+  }
 
   const formatNextRunDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -258,320 +261,242 @@ const AutomationSetupScreen = () => {
   }
 
   return (
-    <BackScreen
-      padding="s"
-      backgroundColor="secondaryBackground"
-      edges={backEdges}
-      onClose={() => navigation.goBack()}
-    >
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
-        <Box flex={1} padding="l">
-          <Text variant="subtitle1" marginBottom="s">
-            {t('automationScreen.title')}
-          </Text>
-          <Text variant="subtitle4" color="grey400" marginBottom="xl">
-            {t('automationScreen.description')}
-          </Text>
+    <SafeArea edges={['top']} className="flex-1 bg-background">
+      <BackHeader onClose={() => navigation.goBack()} />
+      <View className="flex-1 bg-secondary p-2">
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          showsVerticalScrollIndicator={false}
+          contentContainerClassName="grow"
+        >
+          <View className="flex-1 p-6">
+            <Text size="xl" className="mb-2 font-medium">
+              {t('automationScreen.title')}
+            </Text>
+            <Text className="mb-8 font-medium text-muted-foreground">
+              {t('automationScreen.description')}
+            </Text>
 
-          {hasExistingAutomation && currentSchedule ? (
-            <>
-              <Text variant="subtitle3" marginBottom="m">
-                {t('automationScreen.currentAutomation')}
-              </Text>
-              <Box
-                backgroundColor="black"
-                borderRadius="xl"
-                padding="l"
-                marginBottom="l"
-              >
-                <Text variant="subtitle4" color="grey300" marginBottom="s">
-                  {t('automationScreen.schedule.running', {
-                    schedule: t(
-                      `automationScreen.schedule.${currentSchedule.schedule}`,
-                    ).toLowerCase(),
-                    time: currentSchedule.time,
-                  })}
+            {hasExistingAutomation && currentSchedule ? (
+              <>
+                <Text size="base" className="mb-4 font-medium">
+                  {t('automationScreen.currentAutomation')}
                 </Text>
-                <Text variant="subtitle4" color="grey300" marginBottom="m">
-                  {t('automationScreen.nextRun', {
-                    date: formatNextRunDate(new Date(currentSchedule.nextRun)),
-                  })}
+                <View className="mb-6 rounded-[20px] bg-background p-6">
+                  <Text className="mb-2 font-medium text-muted-foreground">
+                    {t('automationScreen.schedule.running', {
+                      schedule: t(
+                        `automationScreen.schedule.${currentSchedule.schedule}`,
+                      ).toLowerCase(),
+                      time: currentSchedule.time,
+                    })}
+                  </Text>
+                  <Text className="mb-4 font-medium text-muted-foreground">
+                    {t('automationScreen.nextRun', {
+                      date: formatNextRunDate(
+                        new Date(currentSchedule.nextRun),
+                      ),
+                    })}
+                  </Text>
+                  {remainingClaims !== undefined && (
+                    <View className="mb-2 flex-row justify-between">
+                      <Text className="font-medium text-muted-foreground">
+                        {t('automationScreen.remainingClaims')}
+                      </Text>
+                      <Text className="font-medium">{remainingClaims}</Text>
+                    </View>
+                  )}
+                  {fundingPeriodInfo && (
+                    <>
+                      <View className="mb-2 flex-row justify-between">
+                        <Text className="font-medium text-muted-foreground">
+                          {t('automationScreen.cronJobBalance')}
+                        </Text>
+                        <Text className="font-medium">
+                          {(
+                            parseFloat(cronJobBalance || '0') / LAMPORTS_PER_SOL
+                          ).toFixed(4)}{' '}
+                          SOL
+                        </Text>
+                      </View>
+                      <View className="flex-row justify-between">
+                        <Text className="font-medium text-muted-foreground">
+                          {t('automationScreen.pdaWalletBalance')}
+                        </Text>
+                        <Text className="font-medium">
+                          {(
+                            parseFloat(pdaWalletBalance || '0') /
+                            LAMPORTS_PER_SOL
+                          ).toFixed(4)}{' '}
+                          SOL
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+
+                {/* Fund Automation Section */}
+                <Text size="base" className="mb-4 font-medium">
+                  {t('automationScreen.fundAutomation')}
                 </Text>
-                {remainingClaims !== undefined && (
-                  <Box
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    marginBottom="s"
-                  >
-                    <Text variant="subtitle4" color="grey400">
-                      {t('automationScreen.remainingClaims')}
-                    </Text>
-                    <Text variant="subtitle4" color="grey200">
-                      {remainingClaims}
-                    </Text>
-                  </Box>
+                <Text className="mb-2 font-medium text-muted-foreground">
+                  {t('automationScreen.enterAdditionalDuration')}
+                </Text>
+                <DurationInput
+                  duration={duration}
+                  unitLabel={getUnitLabel()}
+                  onChange={handleDurationChange}
+                />
+
+                {estimate.estimate && duration && (
+                  <EstimateDisplay
+                    estimate={estimate.estimate}
+                    showRecipientFee
+                  />
                 )}
-                {fundingPeriodInfo && (
+                {estimate.estimateLoading && <Spinner className="mb-4" />}
+              </>
+            ) : (
+              <>
+                <Text className="mb-4 font-medium">
+                  {t('automationScreen.selectSchedule')}
+                </Text>
+
+                <View className="mb-6 flex-row rounded-[20px] bg-background p-0.5">
+                  <ScheduleOption
+                    schedule="daily"
+                    index={0}
+                    selected={selectedSchedule === 'daily'}
+                    onSelect={handleScheduleSelect}
+                  />
+                  <ScheduleOption
+                    schedule="weekly"
+                    index={1}
+                    selected={selectedSchedule === 'weekly'}
+                    onSelect={handleScheduleSelect}
+                  />
+                  <ScheduleOption
+                    schedule="monthly"
+                    index={2}
+                    selected={selectedSchedule === 'monthly'}
+                    onSelect={handleScheduleSelect}
+                  />
+                </View>
+
+                {selectedSchedule && (
                   <>
-                    <Box
-                      flexDirection="row"
-                      justifyContent="space-between"
-                      marginBottom="s"
-                    >
-                      <Text variant="subtitle4" color="grey400">
-                        {t('automationScreen.cronJobBalance')}
-                      </Text>
-                      <Text variant="subtitle4" color="grey200">
-                        {(
-                          parseFloat(cronJobBalance || '0') / LAMPORTS_PER_SOL
-                        ).toFixed(4)}{' '}
-                        SOL
-                      </Text>
-                    </Box>
-                    <Box flexDirection="row" justifyContent="space-between">
-                      <Text variant="subtitle4" color="grey400">
-                        {t('automationScreen.pdaWalletBalance')}
-                      </Text>
-                      <Text variant="subtitle4" color="grey200">
-                        {(
-                          parseFloat(pdaWalletBalance || '0') / LAMPORTS_PER_SOL
-                        ).toFixed(4)}{' '}
-                        SOL
-                      </Text>
-                    </Box>
+                    <Text className="mb-2 font-medium">
+                      {t('automationScreen.enterDuration')}
+                    </Text>
+                    <DurationInput
+                      duration={duration}
+                      unitLabel={getUnitLabel()}
+                      onChange={handleDurationChange}
+                    />
                   </>
                 )}
-              </Box>
+              </>
+            )}
 
-              {/* Fund Automation Section */}
-              <Text variant="subtitle3" marginBottom="m">
-                {t('automationScreen.fundAutomation')}
-              </Text>
-              <Text variant="subtitle4" color="grey400" marginBottom="s">
-                {t('automationScreen.enterAdditionalDuration')}
-              </Text>
-              <Box flexDirection="row" alignItems="center" marginBottom="m">
-                <TextInput
-                  flex={1}
-                  variant="transparent"
-                  textInputProps={{
-                    placeholder: duration || '------',
-                    onChangeText: handleDurationChange,
-                    value: duration,
-                    keyboardType: 'decimal-pad',
-                    returnKeyType: 'done',
-                  }}
-                />
-                <Text variant="subtitle3" color="grey400" marginStart="s">
-                  {getUnitLabel()}
+            <View className="flex-1" />
+
+            {(error || statusError) && (
+              <View className="mb-4 flex-row rounded-[12px] bg-background p-4">
+                <Text size="xs" className="font-medium text-destructive">
+                  {error instanceof Error
+                    ? error.message
+                    : statusError instanceof Error
+                      ? statusError.message
+                      : String(error || statusError)}
                 </Text>
-              </Box>
+              </View>
+            )}
+            {isOutOfSol && (
+              <View className="mt-4 rounded-[12px] bg-background p-4">
+                <Text size="xs" className="font-medium text-destructive">
+                  {t('automationScreen.outOfSol')}
+                </Text>
+              </View>
+            )}
 
-              {estimate.estimate && duration && (
-                <EstimateDisplay
-                  estimate={estimate.estimate}
-                  showRecipientFee
-                />
-              )}
-              {estimate.estimateLoading && <CircleLoader marginBottom="m" />}
-            </>
-          ) : (
-            <>
-              <Text variant="subtitle4" marginBottom="m">
-                {t('automationScreen.selectSchedule')}
-              </Text>
-
-              <Box
-                flexDirection="row"
-                backgroundColor="black"
-                borderRadius="xl"
-                padding="xxs"
-                marginBottom="l"
-              >
-                <ScheduleOption
-                  schedule="daily"
-                  index={0}
-                  selected={selectedSchedule === 'daily'}
-                  onSelect={handleScheduleSelect}
-                />
-                <ScheduleOption
-                  schedule="weekly"
-                  index={1}
-                  selected={selectedSchedule === 'weekly'}
-                  onSelect={handleScheduleSelect}
-                />
-                <ScheduleOption
-                  schedule="monthly"
-                  index={2}
-                  selected={selectedSchedule === 'monthly'}
-                  onSelect={handleScheduleSelect}
-                />
-              </Box>
-
-              {selectedSchedule && (
-                <>
-                  <Text variant="subtitle4" marginBottom="s">
-                    {t('automationScreen.enterDuration')}
-                  </Text>
-                  <Box flexDirection="row" alignItems="center" marginBottom="m">
-                    <TextInput
-                      flex={1}
-                      variant="transparent"
-                      textInputProps={{
-                        placeholder: duration || '------',
-                        onChangeText: handleDurationChange,
-                        value: duration,
-                        keyboardType: 'decimal-pad',
-                        returnKeyType: 'done',
-                      }}
-                    />
-                    <Text variant="subtitle3" color="grey400" marginStart="s">
-                      {getUnitLabel()}
-                    </Text>
-                  </Box>
-                </>
-              )}
-            </>
-          )}
-
-          <Box flex={1} />
-
-          {(error || statusError) && (
-            <Box
-              flexDirection="row"
-              backgroundColor="surfaceSecondary"
-              borderRadius="l"
-              padding="m"
-              marginBottom="m"
-            >
-              <Text variant="body3Medium" color="red500">
-                {error instanceof Error
-                  ? error.message
-                  : statusError instanceof Error
-                    ? statusError.message
-                    : String(error || statusError)}
-              </Text>
-            </Box>
-          )}
-          {isOutOfSol && (
-            <Box
-              backgroundColor="surfaceSecondary"
-              borderRadius="l"
-              padding="m"
-              marginTop="m"
-            >
-              <Text variant="body3Medium" color="red500">
-                {t('automationScreen.outOfSol')}
-              </Text>
-            </Box>
-          )}
-
-          {!hasExistingAutomation && estimate.estimate && duration && (
-            <EstimateDisplay
-              estimate={estimate.estimate}
-              showRecipientFee={!!totalHotspots && hotspotsNeedingRecipient > 0}
-            />
-          )}
-          {!hasExistingAutomation && estimate.estimateLoading && (
-            <CircleLoader marginBottom="m" />
-          )}
-
-          {hasExistingAutomation ? (
-            <>
-              {duration && (
-                <ButtonPressable
-                  title={
-                    fundAutomationLoading
-                      ? undefined
-                      : t('automationScreen.fundAutomation')
-                  }
-                  backgroundColor="white"
-                  backgroundColorDisabled="grey400"
-                  backgroundColorDisabledOpacity={0.5}
-                  backgroundColorOpacityPressed={0.7}
-                  titleColorDisabled="secondaryText"
-                  titleColor="black"
-                  disabled={
-                    !duration || fundAutomationLoading || !estimate.estimate
-                  }
-                  TrailingComponent={
-                    fundAutomationLoading ? (
-                      <CircleLoader loaderSize={20} color="black" />
-                    ) : undefined
-                  }
-                  onPress={() =>
-                    void handleFundAutomation().catch(console.error)
-                  }
-                  borderRadius="round"
-                  padding="m"
-                  marginBottom="m"
-                />
-              )}
-              <ButtonPressable
-                title={
-                  closeAutomationLoading
-                    ? undefined
-                    : t('automationScreen.removeAutomation')
+            {!hasExistingAutomation && estimate.estimate && duration && (
+              <EstimateDisplay
+                estimate={estimate.estimate}
+                showRecipientFee={
+                  !!totalHotspots && hotspotsNeedingRecipient > 0
                 }
-                backgroundColor="black"
-                backgroundColorDisabled="grey400"
-                backgroundColorDisabledOpacity={0.5}
-                backgroundColorOpacityPressed={0.7}
-                titleColor="error"
-                disabled={closeAutomationLoading}
-                TrailingComponent={
-                  closeAutomationLoading ? (
-                    <CircleLoader loaderSize={20} color="error" />
-                  ) : undefined
-                }
-                onPress={() =>
-                  void handleRemoveAutomation().catch(console.error)
-                }
-                borderRadius="round"
-                padding="m"
-                marginBottom="m"
               />
-            </>
-          ) : (
-            <ButtonPressable
-              title={
-                insufficientSol
-                  ? t('generic.insufficientSol')
-                  : createAutomationLoading
-                    ? undefined
-                    : t('generic.save')
-              }
-              backgroundColor="white"
-              backgroundColorDisabled="grey400"
-              backgroundColorDisabledOpacity={0.5}
-              backgroundColorOpacityPressed={0.7}
-              titleColorDisabled="secondaryText"
-              titleColor="black"
-              disabled={
-                insufficientSol ||
-                !selectedSchedule ||
-                !duration ||
-                createAutomationLoading ||
-                !estimate.estimate
-              }
-              TrailingComponent={
-                createAutomationLoading ? (
-                  <CircleLoader loaderSize={20} color="black" />
-                ) : undefined
-              }
-              onPress={() => void handleSave().catch(console.error)}
-              borderRadius="round"
-              padding="m"
-              marginBottom="m"
-            />
-          )}
-        </Box>
-      </ScrollView>
-    </BackScreen>
+            )}
+            {!hasExistingAutomation && estimate.estimateLoading && (
+              <Spinner className="mb-4" />
+            )}
+
+            {hasExistingAutomation ? (
+              <>
+                {duration && (
+                  <Button
+                    variant="cta"
+                    size="lg"
+                    className="mb-4 w-full"
+                    disabled={
+                      !duration || fundAutomationLoading || !estimate.estimate
+                    }
+                    onPress={() =>
+                      void handleFundAutomation().catch(console.error)
+                    }
+                  >
+                    {fundAutomationLoading ? (
+                      <Spinner size="small" colorClassName="accent-white" />
+                    ) : (
+                      t('automationScreen.fundAutomation')
+                    )}
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="mb-4 w-full"
+                  disabled={closeAutomationLoading}
+                  onPress={() =>
+                    void handleRemoveAutomation().catch(console.error)
+                  }
+                >
+                  {closeAutomationLoading ? (
+                    <Spinner size="small" colorClassName="accent-destructive" />
+                  ) : (
+                    <Text className="font-medium text-destructive">
+                      {t('automationScreen.removeAutomation')}
+                    </Text>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="cta"
+                size="lg"
+                className="mb-4 w-full"
+                disabled={
+                  insufficientSol ||
+                  !selectedSchedule ||
+                  !duration ||
+                  createAutomationLoading ||
+                  !estimate.estimate
+                }
+                onPress={() => void handleSave().catch(console.error)}
+              >
+                {createAutomationLoading ? (
+                  <Spinner size="small" colorClassName="accent-white" />
+                ) : insufficientSol ? (
+                  t('generic.insufficientSol')
+                ) : (
+                  t('generic.save')
+                )}
+              </Button>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    </SafeArea>
   )
 }
 

@@ -1,13 +1,16 @@
 import React, { useEffect, useEffectEvent, useMemo, useState } from 'react'
-import DynamicQrScanner from '@components/DynamicQrScanner'
-import SafeAreaBox from '@components/SafeAreaBox'
 import { URDecoder } from '@ngraveio/bc-ur'
 import KeystoneSDK, { MultiAccounts, UR } from '@keystonehq/keystone-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { Alert } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useTranslation } from 'react-i18next'
+import DynamicQrScanner from './components/DynamicQrScanner'
 import { KeystoneAccountType } from './SelectKeystoneAccountsScreen'
 import { KeystoneNavigationProp } from './keystoneNavigatorTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 const ScanQrCodeScreen = () => {
   const { t } = useTranslation()
@@ -58,12 +61,12 @@ const ScanQrCodeScreen = () => {
     }
   }, [isUnexpectedQrCode])
   return (
-    <SafeAreaBox flex={1}>
+    <SafeArea className="flex-1">
       <DynamicQrScanner
         onBarCodeScanned={handleBarCodeScanned}
         progress={progress}
       />
-    </SafeAreaBox>
+    </SafeArea>
   )
 }
 

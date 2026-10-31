@@ -1,9 +1,11 @@
-import React, { memo } from 'react'
-import { ActivityIndicator } from 'react-native'
-import QR from '@assets/images/qr.svg'
-import Checkmark from '@assets/images/checkmark.svg'
-import { useColors, useHitSlop } from '@theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Check, QrCode } from 'lucide-react-native'
+import React from 'react'
+import { withUniwind } from 'uniwind'
+
+const CheckIcon = withUniwind(Check)
+const QrIcon = withUniwind(QrCode)
 
 type AddressExtraProps = {
   addressLoading?: boolean
@@ -15,20 +17,17 @@ const AddressExtra = ({
   isValidAddress,
   onScanPress,
 }: AddressExtraProps) => {
-  const colors = useColors()
-  const hitSlop = useHitSlop('l')
-
   if (addressLoading) {
-    return <ActivityIndicator color="black500" />
+    return <Spinner colorClassName="accent-foreground" />
   }
   if (isValidAddress) {
-    return <Checkmark color={colors.blueBright500} />
+    return <CheckIcon size={16} colorClassName="accent-blue-dark-500" />
   }
   return (
-    <TouchableOpacityBox onPress={onScanPress} hitSlop={hitSlop}>
-      <QR width={16} color={colors.white} />
-    </TouchableOpacityBox>
+    <PressableScale onPress={onScanPress} hitSlop={24} feedback="opacity">
+      <QrIcon size={16} colorClassName="accent-foreground" />
+    </PressableScale>
   )
 }
 
-export default memo(AddressExtra)
+export default AddressExtra

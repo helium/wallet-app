@@ -121,11 +121,6 @@ jest.mock('../usePaymentsReducer', () => ({
 
 // Screen chrome and leaf views render as named host elements; wrappers keep
 // their children so the submit view mounts.
-jest.mock('@assets/images/close.svg', () => 'Close', { virtual: true })
-jest.mock('@assets/images/qr.svg', () => 'QR', { virtual: true })
-jest.mock('@assets/images/paymentFailure.svg', () => 'FailureIcon', {
-  virtual: true,
-})
 jest.mock('@components/AccountButton', () => 'AccountButton', {
   virtual: true,
 })
@@ -135,23 +130,27 @@ jest.mock('@components/AccountSelector', () => 'AccountSelector', {
 jest.mock('@components/AddressBookSelector', () => 'AddressBookSelector', {
   virtual: true,
 })
-jest.mock('@components/BackgroundFill', () => 'BackgroundFill', {
-  virtual: true,
-})
-jest.mock('@components/Box', () => 'Box', { virtual: true })
-jest.mock('@components/FadeInOut', () => 'FadeInOut', { virtual: true })
 jest.mock('@components/HNTKeyboard', () => 'HNTKeyboard', { virtual: true })
-jest.mock('@components/IconPressedContainer', () => 'IconPressedContainer', {
-  virtual: true,
-})
-jest.mock('@components/Text', () => 'Text', { virtual: true })
 jest.mock('@components/TokenButton', () => 'TokenButton', { virtual: true })
 jest.mock('@components/TokenSelector', () => 'TokenSelector', {
   virtual: true,
 })
-jest.mock('@components/TouchableOpacityBox', () => 'TouchableOpacityBox', {
+jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
+jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
+jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@theme/motion', () => ({ FADE_IN: {} }), { virtual: true })
+jest.mock('lucide-react-native', () => ({
+  CircleX: 'CircleX',
+  QrCode: 'QrCode',
+  X: 'X',
+}))
+jest.mock('uniwind', () => ({ withUniwind: (icon: unknown) => icon }))
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: { View: 'Animated.View' },
+}))
 jest.mock('../PaymentCard', () => 'PaymentCard')
 jest.mock('../PaymentItem', () => 'PaymentItem')
 jest.mock('../PaymentSubmitLoading', () => 'PaymentSubmitLoading')
@@ -182,12 +181,9 @@ jest.mock(
   () => ({ useVisibleTokens: () => ({ visibleTokens: [] }) }),
   { virtual: true },
 )
-jest.mock(
-  '@theme/themeHooks',
-  () => ({ useColors: () => ({}), useHitSlop: () => undefined }),
-  { virtual: true },
-)
-jest.mock('@theme/globalStyles', () => ({ container: {} }), { virtual: true })
+jest.mock('@theme/themeHooks', () => ({ useHitSlop: () => undefined }), {
+  virtual: true,
+})
 jest.mock('@utils/constants', () => ({ Mints: {} }), { virtual: true })
 jest.mock('@utils/getDomainOwner', () => ({ fetchDomainOwner: jest.fn() }), {
   virtual: true,
@@ -211,7 +207,7 @@ jest.mock('react-i18next', () => ({
 jest.mock('react-native', () => ({
   Keyboard: { dismiss: () => undefined },
   Platform: { OS: 'ios' },
-  StyleSheet: { absoluteFill: {} },
+  View: 'View',
 }))
 jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
@@ -305,12 +301,10 @@ const submit = async () => {
 }
 
 const buttons = (label: string) =>
-  renderer.root
-    .findAll(
-      (node) =>
-        (node.type as string) === 'Text' && node.props.children === label,
-    )
-    .map((text) => text.parent)
+  renderer.root.findAll(
+    (node) =>
+      (node.type as string) === 'Button' && node.props.children === label,
+  )
 
 const retry = async () => {
   const retryButtons = buttons('generic.retry')

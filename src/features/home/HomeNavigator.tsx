@@ -1,4 +1,3 @@
-import ConfirmPinScreen from '@components/ConfirmPinScreen'
 import {
   createNativeStackNavigator,
   NativeStackNavigationOptions,
@@ -21,6 +20,7 @@ import RequestScreen from '../request/RequestScreen'
 import SettingsNavigator from '../settings/SettingsNavigator'
 import SwapNavigator from '../swaps/SwapNavigator'
 import AddNewAccountNavigator from './addNewAccount/AddNewAccountNavigator'
+import ConfirmPinScreen from './ConfirmPinScreen'
 import ImportSubAccountsScreen from '../onboarding/import/ImportSubAccountsScreen'
 import KeystoneAccountAssignScreen from '../keystone/KeystoneAccountAssignScreen'
 

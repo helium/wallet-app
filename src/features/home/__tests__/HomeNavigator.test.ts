@@ -7,9 +7,7 @@ jest.mock('@react-navigation/native-stack', () => ({
     Screen: 'NativeStackScreen',
   }),
 }))
-jest.mock('@components/ConfirmPinScreen', () => 'ConfirmPinScreen', {
-  virtual: true,
-})
+jest.mock('../ConfirmPinScreen', () => 'ConfirmPinScreen')
 jest.mock('../../account/AccountsScreen', () => 'AccountsScreen')
 jest.mock('../../account/AccountTokenScreen', () => 'AccountTokenScreen')
 jest.mock('../../account/AirdropScreen', () => 'AirdropScreen')

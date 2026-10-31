@@ -1,21 +1,10 @@
-import Menu from '@assets/images/menu.svg'
-import Plus from '@assets/images/plus.svg'
-import Refresh from '@assets/images/refresh.svg'
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
-import { ReAnimatedBlurBox, ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
 import CloseButton from '@components/CloseButton'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
 import TextTransform from '@components/TextTransform'
 import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import {
   useMint,
   useOwnedAmount,
@@ -41,7 +30,12 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useJupiter } from '@storage/JupiterProvider'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { CSAccount } from '@storage/cloudStorage'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { useBalance } from '@utils/Balance'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { TXN_FEE_IN_LAMPORTS, humanReadable } from '@utils/solanaUtils'
@@ -56,14 +50,17 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Menu, Plus, RefreshCw } from 'lucide-react-native'
 import {
   LayoutAnimation,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
-  Platform,
+  View,
 } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import Animated from 'react-native-reanimated'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
@@ -73,6 +70,11 @@ import { SwapNavigationProp } from './swapTypes'
 import { FADE_IN } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
+
+const SafeArea = withUniwind(SafeAreaView)
+const MenuIcon = withUniwind(Menu)
+const PlusIcon = withUniwind(Plus)
+const RefreshIcon = withUniwind(RefreshCw)
 
 // Selector Mode enum
 enum SelectorMode {
@@ -88,7 +90,6 @@ const SwapScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { isDevnet, connection } = useSolana()
   const wallet = useCurrentWallet()
-  const colors = useColors()
   const navigation = useNavigation<SwapNavigationProp>()
   const { submitJupiterSwap, submitTreasurySwap, submitMintDataCredits } =
     useSubmitTxn()
@@ -179,8 +180,6 @@ const SwapScreen = () => {
     },
     [],
   )
-  const hitSlop = useHitSlop('l')
-
   const handleEditAddress = useCallback((text?: string) => {
     setRecipient(text || '')
     setHasRecipientError(false)
@@ -269,96 +268,88 @@ const SwapScreen = () => {
 
   const Header = useMemo(() => {
     return (
-      <Box
-        flexDirection="row"
-        justifyContent="center"
-        alignItems="center"
-        paddingHorizontal="m"
-      >
+      <View className="flex-row items-center justify-center px-4">
         <CloseButton onPress={handleClose} />
-        <Text variant="h4" color="white" flex={1} textAlign="center">
+        <Text size="xl" className="flex-1 text-center font-medium">
           {t('swapsScreen.title')}
         </Text>
-        <TouchableOpacityBox
-          paddingEnd="m"
+        <PressableScale
+          feedback="opacity"
+          className="pe-4"
+          accessibilityLabel={t('swapsScreen.refresh')}
           onPress={() => void refresh().catch(console.error)}
         >
-          <Refresh width={16} height={16} />
-        </TouchableOpacityBox>
-      </Box>
+          <RefreshIcon size={16} colorClassName="accent-foreground" />
+        </PressableScale>
+      </View>
     )
   }, [refresh, t, handleClose])
 
   const Slippage = useMemo(() => {
     if (isDevnet)
       return (
-        <Box
-          flexDirection="row"
-          borderRadius="l"
-          marginTop="xl"
-          marginBottom="xxl"
-          marginHorizontal="m"
-          backgroundColor="surfaceSecondary"
-        />
+        <View className="mx-4 mb-12 mt-8 flex-row rounded-[12px] bg-secondary" />
       )
 
     const bpsOptions: number[] = [30, 50, 100]
     const disabled = outputMint.equals(DC_MINT)
 
     return (
-      <Box
-        flexDirection="row"
-        borderRadius="l"
-        marginTop="xl"
-        marginBottom="xxl"
-        marginHorizontal="m"
-        backgroundColor="surfaceSecondary"
-        opacity={disabled ? 0.3 : 1}
+      <View
+        className={twMerge(
+          'mx-4 mb-12 mt-8 flex-row overflow-hidden rounded-[12px] bg-secondary',
+          disabled ? 'opacity-30' : undefined,
+        )}
       >
-        <TouchableOpacityBox
-          flex={1}
-          borderEndWidth={2}
-          alignItems="center"
-          justifyContent="center"
-          alignContent="center"
-          flexDirection="row"
-          paddingHorizontal="ms"
-          onPress={() => setSlippageInfoVisible(true)}
-        >
-          <Text variant="body3Medium" color="surfaceSecondaryText">
-            {t('swapsScreen.slippage')}
-          </Text>
-        </TouchableOpacityBox>
+        <View className="flex-1 justify-center border-e-2 border-background">
+          <PressableScale
+            feedback="opacity"
+            className="flex-row items-center justify-center px-3 py-3"
+            onPress={() => setSlippageInfoVisible(true)}
+          >
+            <Text size="xs" className="font-medium text-muted-foreground">
+              {t('swapsScreen.slippage')}
+            </Text>
+          </PressableScale>
+        </View>
 
         {bpsOptions.map((bps, idx) => {
           const isLast = idx === bpsOptions.length - 1
           const isActive = slippageBps === bps
+          const isSelected = !disabled && isActive
 
           return (
-            <TouchableOpacityBox
-              disabled={disabled}
+            <View
               key={bps}
-              flex={1}
-              padding="ms"
-              alignItems="center"
-              borderEndWidth={isLast ? 0 : 2}
-              borderTopRightRadius={isLast ? 'l' : 'none'}
-              borderBottomRightRadius={isLast ? 'l' : 'none'}
-              backgroundColor={
-                !disabled && isActive ? 'black500' : 'surfaceSecondary'
-              }
-              onPress={() => setSlippageBps(bps)}
+              className={twMerge(
+                'flex-1 justify-center border-background',
+                isLast ? undefined : 'border-e-2',
+                isSelected ? 'bg-primary' : 'bg-secondary',
+              )}
             >
-              <Text
-                variant="body3Medium"
-                color={isActive ? 'primaryText' : 'surfaceSecondaryText'}
+              <PressableScale
+                disabled={disabled}
+                feedback="opacity"
+                className="items-center p-3"
+                accessibilityState={{ selected: isSelected, disabled }}
+                onPress={() => setSlippageBps(bps)}
               >
-                {bps / 100}%
-              </Text>
-            </TouchableOpacityBox>
+                <Text
+                  size="xs"
+                  className={twMerge(
+                    'font-medium',
+                    isSelected
+                      ? 'text-primary-foreground'
+                      : 'text-muted-foreground',
+                  )}
+                >
+                  {bps / 100}%
+                </Text>
+              </PressableScale>
+            </View>
           )
         })}
-      </Box>
+      </View>
     )
   }, [
     slippageBps,
@@ -712,7 +703,7 @@ const SwapScreen = () => {
   }, [loading, loadingPrice, isDevnet])
 
   return (
-    <ReAnimatedBox flex={1}>
+    <View className="flex-1">
       <AddressBookSelector
         ref={addressBookRef}
         onContactSelected={handleContactSelected}
@@ -743,28 +734,27 @@ const SwapScreen = () => {
               onPress={Keyboard.dismiss}
               accessibilityRole="button"
             >
-              <SafeAreaBox backgroundColor="black900" edges={edges} flex={1}>
+              <SafeArea edges={edges} className="flex-1 bg-background">
                 <KeyboardAvoidingView
                   behavior="position"
                   keyboardVerticalOffset={60}
                 >
                   {Header}
-                  <Box flexGrow={1} justifyContent="center" marginTop="xxxl">
+                  <View className="mt-15 grow justify-center">
                     <SwapItem
                       testID="Swap.PayItem"
                       onPress={onTokenItemPressed(true)}
-                      marginHorizontal="m"
+                      className="mx-4"
                       isPaying
                       onCurrencySelect={onCurrencySelect(true)}
                       mintSelected={inputMint}
                       amount={inputAmount}
                     />
                     {Slippage}
-                    <Box>
+                    <View>
                       <SwapItem
                         onPress={onTokenItemPressed(false)}
-                        marginHorizontal="m"
-                        marginBottom="m"
+                        className="mx-4 mb-4"
                         isPaying={false}
                         onCurrencySelect={onCurrencySelect(false)}
                         mintSelected={outputMint}
@@ -772,106 +762,96 @@ const SwapScreen = () => {
                         loading={isLoading}
                       />
                       {!isRecipientOpen && outputMint.equals(DC_MINT) && (
-                        <TouchableOpacityBox
-                          marginBottom="m"
-                          hitSlop={hitSlop}
-                          alignItems="center"
+                        <PressableScale
+                          feedback="opacity"
+                          hitSlop={24}
+                          className="mb-4 items-center"
                           onPress={handleRecipientClick}
                         >
-                          <Box alignItems="center" flexDirection="row">
-                            <Text
-                              marginLeft="ms"
-                              marginRight="xs"
-                              color="secondaryText"
-                            >
+                          <View className="flex-row items-center">
+                            <Text className="me-1 ms-3 text-muted-foreground">
                               {t('swapsScreen.addRecipient')}
                             </Text>
-                            <Plus color={colors.secondaryText} />
-                          </Box>
-                        </TouchableOpacityBox>
+                            <PlusIcon
+                              size={16}
+                              colorClassName="accent-muted-foreground"
+                            />
+                          </View>
+                        </PressableScale>
                       )}
                       {isRecipientOpen && (
-                        <TextInput
-                          floatingLabel={t('collectablesScreen.transferTo')}
-                          optional
-                          variant="thickDark"
-                          backgroundColor="red500"
-                          marginHorizontal="m"
-                          marginBottom="m"
-                          height={80}
-                          textColor="white"
-                          fontSize={15}
-                          TrailingIcon={Menu}
-                          onTrailingIconPress={handleAddressBookSelected}
-                          textInputProps={{
-                            placeholder: t('generic.solanaAddress'),
-                            placeholderTextColor: 'white',
-                            autoCorrect: false,
-                            autoComplete: 'off',
-                            onChangeText: handleEditAddress,
-                            value: recipient,
-                          }}
-                        />
+                        <View className="mx-4 mb-4">
+                          <Text
+                            size="xs"
+                            className="mb-1 text-muted-foreground"
+                          >
+                            {t('collectablesScreen.transferTo')}
+                          </Text>
+                          <View className="flex-row items-center">
+                            <Input
+                              variant="form"
+                              className="flex-1"
+                              placeholder={t('generic.solanaAddress')}
+                              autoCorrect={false}
+                              autoCapitalize="none"
+                              autoComplete="off"
+                              onChangeText={handleEditAddress}
+                              value={recipient}
+                            />
+                            <PressableScale
+                              feedback="opacity"
+                              hitSlop={12}
+                              className="ms-3"
+                              accessibilityLabel={t(
+                                'swapsScreen.openAddressBook',
+                              )}
+                              onPress={handleAddressBookSelected}
+                            >
+                              <MenuIcon
+                                size={24}
+                                colorClassName="accent-foreground"
+                              />
+                            </PressableScale>
+                          </View>
+                        </View>
                       )}
                       {showError && (
-                        <Box marginTop="s">
+                        <View className="mt-2">
                           <Text
-                            marginTop="s"
-                            marginHorizontal="m"
-                            variant="body3Medium"
-                            color="red500"
-                            textAlign="center"
+                            size="xs"
+                            className="mx-4 mt-2 text-center font-medium text-destructive"
                           >
                             {showError}
                           </Text>
-                        </Box>
+                        </View>
                       )}
                       {!showError && hntPriceLoading && (
-                        <Box marginTop="s">
+                        <View className="mt-2">
                           <Text
-                            marginTop="s"
-                            marginHorizontal="m"
-                            variant="body3Medium"
-                            color="secondaryText"
-                            textAlign="center"
+                            size="xs"
+                            className="mx-4 mt-2 text-center font-medium text-muted-foreground"
                           >
                             {t('swapsScreen.hntPriceLoading')}
                           </Text>
-                        </Box>
+                        </View>
                       )}
                       {priceImpact > 2.5 && (
-                        <Box marginTop="s">
-                          <Text
-                            color="orange500"
-                            textAlign="center"
-                            marginTop="s"
-                            marginBottom="m"
-                            marginHorizontal="m"
-                          >
+                        <View className="mt-2">
+                          <Text className="mx-4 mb-4 mt-2 text-center text-warning-500">
                             {t('swapsScreen.priceImpact', {
                               percent: priceImpact.toFixed(2),
                             })}
                           </Text>
-                        </Box>
+                        </View>
                       )}
-                    </Box>
-                  </Box>
+                    </View>
+                  </View>
                 </KeyboardAvoidingView>
-                <Box
-                  flexDirection="column"
-                  marginBottom="xl"
-                  marginHorizontal="m"
-                >
-                  <ButtonPressable
-                    height={65}
-                    flexGrow={1}
-                    borderRadius="round"
-                    backgroundColor="white"
-                    backgroundColorOpacityPressed={0.7}
-                    backgroundColorDisabled="surfaceSecondary"
-                    backgroundColorDisabledOpacity={0.5}
-                    titleColorDisabled="secondaryText"
-                    titleColor="black"
+                <View className="mx-4 mb-8">
+                  <Button
+                    variant="cta"
+                    size="lg"
+                    className="w-full"
                     disabled={
                       hasInsufficientBalance ||
                       insufficientTokensToSwap ||
@@ -881,24 +861,23 @@ const SwapScreen = () => {
                       loading ||
                       swapping
                     }
-                    titleColorPressedOpacity={0.3}
-                    title={swapping ? '' : t('swapsScreen.swapTokens')}
                     onPress={() => void handleSwapTokens().catch(console.error)}
                     testID="Swap.Submit"
-                    TrailingComponent={
-                      swapping ? (
-                        <CircleLoader loaderSize={20} color="white" />
-                      ) : undefined
-                    }
-                  />
+                  >
+                    {swapping ? (
+                      <Spinner colorClassName="accent-white" />
+                    ) : (
+                      t('swapsScreen.swapTokens')
+                    )}
+                  </Button>
 
-                  <Box marginTop="m">
+                  <View className="mt-4">
                     {!isDevnet && !outputMint.equals(DC_MINT) && (
                       <TextTransform
                         textAlign="center"
                         marginHorizontal="m"
                         variant="body3Medium"
-                        color="white"
+                        color="primaryText"
                         i18nKey="swapsScreen.slippageLabelValue"
                         values={{ amount: slippageBps / 100 }}
                       />
@@ -907,7 +886,7 @@ const SwapScreen = () => {
                       textAlign="center"
                       marginHorizontal="m"
                       variant="body3Medium"
-                      color="white"
+                      color="primaryText"
                       i18nKey="collectablesScreen.transferFee"
                       values={{ amount: humanReadable(solFee, 9) }}
                     />
@@ -916,80 +895,43 @@ const SwapScreen = () => {
                         textAlign="center"
                         marginHorizontal="m"
                         variant="body3Medium"
-                        color="white"
+                        color="primaryText"
                         i18nKey="swapsScreen.minReceived"
                         values={{ amount: minReceived }}
                       />
                     )}
-                  </Box>
-                </Box>
-              </SafeAreaBox>
+                  </View>
+                </View>
+              </SafeArea>
             </TouchableWithoutFeedback>
           </TokenSelector>
           {slippageInfoVisible ? (
-            <>
-              {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
-              {Platform.OS === 'android' && (
-                <Box
-                  position="absolute"
-                  zIndex={0}
-                  left={0}
-                  top={0}
-                  height="100%"
-                  width="100%"
-                  backgroundColor="black"
-                />
-              )}
-              <ReAnimatedBlurBox
-                entering={FADE_IN}
-                position="absolute"
-                height="100%"
-                width="100%"
-                tint="dark"
-                intensity={80}
-              >
-                <Box flexDirection="column" height="100%">
-                  <Box
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    marginTop="l"
-                  >
-                    <Box flex={1}>
-                      <CloseButton
-                        marginStart="m"
-                        onPress={() => setSlippageInfoVisible(false)}
-                      />
-                    </Box>
-                    <Box flex={1} alignItems="center" flexDirection="row">
-                      <Text
-                        variant="h4"
-                        color="white"
-                        flex={1}
-                        textAlign="center"
-                      >
-                        {t('swapsScreen.slippage')}
-                      </Text>
-                    </Box>
-                    <Box flex={1} />
-                  </Box>
-                  <Box flex={1} paddingHorizontal="m" marginTop="l">
-                    <Text
-                      variant="body1Medium"
-                      color="white"
-                      flex={1}
-                      textAlign="center"
-                    >
-                      {t('swapsScreen.slippageInfo')}
-                    </Text>
-                  </Box>
-                </Box>
-              </ReAnimatedBlurBox>
-            </>
+            <Animated.View
+              entering={FADE_IN}
+              className="absolute inset-0 bg-background"
+            >
+              <View className="mt-6 flex-row items-center justify-between">
+                <View className="flex-1">
+                  <CloseButton
+                    marginStart="m"
+                    onPress={() => setSlippageInfoVisible(false)}
+                  />
+                </View>
+                <Text size="xl" className="flex-1 text-center">
+                  {t('swapsScreen.slippage')}
+                </Text>
+                <View className="flex-1" />
+              </View>
+              <View className="mt-6 flex-1 px-4">
+                <Text size="base" className="text-center font-medium">
+                  {t('swapsScreen.slippageInfo')}
+                </Text>
+              </View>
+            </Animated.View>
           ) : undefined}
         </HNTKeyboard>
       </AddressBookSelector>
-    </ReAnimatedBox>
+    </View>
   )
 }
 

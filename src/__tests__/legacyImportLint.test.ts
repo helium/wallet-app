@@ -30,9 +30,7 @@ describe('legacy import ban', () => {
     "import { Box } from '@components'",
     "import { useTheme } from '@shopify/restyle'",
   ])('warns on `%s` in code not yet migrated', async (code) => {
-    expect(await restrictedImportHits('src/features/home/X.tsx', code)).toEqual(
-      [WARN],
-    )
+    expect(await restrictedImportHits('src/utils/X.tsx', code)).toEqual([WARN])
   })
 
   it('rejects legacy imports in @ui code', async () => {
@@ -51,6 +49,79 @@ describe('legacy import ban', () => {
         "import Text from '@components/Text'",
       ),
     ).toEqual([ERROR])
+  })
+
+  it.each([
+    'src/features/account/X.tsx',
+    'src/features/home/X.tsx',
+    'src/features/payment/X.tsx',
+  ])('rejects legacy imports in migrated %s', async (file) => {
+    expect(
+      await restrictedImportHits(file, "import Box from '@components/Box'"),
+    ).toEqual([ERROR])
+  })
+
+  it('allows a listed shared composite in migrated code', async () => {
+    expect(
+      await restrictedImportHits(
+        'src/features/home/X.tsx',
+        "import TabBar from '@components/TabBar'",
+      ),
+    ).toEqual([])
+  })
+
+  it.each(['src/ui', 'src/features/uiGallery', 'src/features/migration'])(
+    'rejects a shared composite in %s',
+    async (dir) => {
+      expect(
+        await restrictedImportHits(
+          `${dir}/X.tsx`,
+          "import HNTKeyboard from '@components/HNTKeyboard'",
+        ),
+      ).toEqual([ERROR])
+    },
+  )
+
+  const featuresMigratedWithSharedComposites = [
+    'addressBook',
+    'browser',
+    'burn',
+    'dappLogin',
+    'request',
+    'txnDelegation',
+  ]
+
+  it.each(featuresMigratedWithSharedComposites)(
+    'rejects legacy imports in src/features/%s',
+    async (feature) => {
+      expect(
+        await restrictedImportHits(
+          `src/features/${feature}/X.tsx`,
+          "import Box from '@components/Box'",
+        ),
+      ).toEqual([ERROR])
+    },
+  )
+
+  it.each(featuresMigratedWithSharedComposites)(
+    'allows a shared composite in src/features/%s',
+    async (feature) => {
+      expect(
+        await restrictedImportHits(
+          `src/features/${feature}/X.tsx`,
+          "import HNTKeyboard from '@components/HNTKeyboard'",
+        ),
+      ).toEqual([])
+    },
+  )
+
+  it('allows the address book selector in src/features/burn', async () => {
+    expect(
+      await restrictedImportHits(
+        'src/features/burn/X.tsx',
+        "import AddressBookSelector from '@components/AddressBookSelector'",
+      ),
+    ).toEqual([])
   })
 
   it('allows @ui imports', async () => {

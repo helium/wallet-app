@@ -1,18 +1,20 @@
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
+import { FlatList, View } from 'react-native'
 import Fuse from 'fuse.js'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { NetTypes } from '@helium/address'
 import { sortBy, unionBy } from 'lodash'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Plus } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import FabButton from '@components/FabButton'
 import SearchInput from '@components/SearchInput'
 import AccountListItem from '@components/AccountListItem'
 import { CSAccount } from '../../storage/cloudStorage'
+
+const PlusIcon = withUniwind(Plus)
 
 type Props = {
   onAddNew: () => void
@@ -35,63 +37,54 @@ const ContactsList = ({
 
   const { t } = useTranslation()
   const [searchTerm, setSearchTerm] = useState('')
-  const handleContactPressed = useCallback(
-    (item: CSAccount) => {
-      handleContactSelected?.(item)
-    },
-    [handleContactSelected],
-  )
+  const handleContactPressed = (item: CSAccount) => {
+    handleContactSelected?.(item)
+  }
 
-  const renderFlatlistItem = useCallback(
-    ({ item: account }: { item: CSAccount; index: number }) => {
-      return (
-        <AccountListItem
-          selected={address === account.address}
-          account={account}
-          onPress={handleContactPressed}
-        />
-      )
-    },
-    [address, handleContactPressed],
-  )
-
-  const header = useMemo(() => {
+  const renderFlatlistItem = ({
+    item: account,
+  }: {
+    item: CSAccount
+    index: number
+  }) => {
     return (
-      <Box>
-        <SearchInput
-          placeholder={t('addressBook.searchContacts')}
-          marginHorizontal="lx"
-          marginTop="xl"
-          onChangeText={setSearchTerm}
-          value={searchTerm}
-        />
-        <TouchableOpacityBox
-          flexDirection="row"
-          alignItems="center"
-          padding="xl"
-          onPress={onAddNew}
-        >
-          <FabButton
-            icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
-            size={40}
-            disabled
-            marginRight="ms"
-          />
-          <Text variant="body1" color="secondaryText">
-            {t('addressBook.addNext')}
-          </Text>
-        </TouchableOpacityBox>
-      </Box>
+      <AccountListItem
+        selected={address === account.address}
+        account={account}
+        onPress={handleContactPressed}
+      />
     )
-  }, [onAddNew, searchTerm, t])
+  }
 
-  const keyExtractor = useCallback((item: CSAccount) => {
+  const header = (
+    <View>
+      <SearchInput
+        placeholder={t('addressBook.searchContacts')}
+        marginHorizontal="lx"
+        marginTop="xl"
+        onChangeText={setSearchTerm}
+        value={searchTerm}
+      />
+      <PressableScale
+        feedback="opacity"
+        className="flex-row items-center p-8"
+        onPress={onAddNew}
+      >
+        <View className="mr-3 size-10 items-center justify-center rounded-full bg-primary">
+          <PlusIcon size={16} colorClassName="accent-primary-foreground" />
+        </View>
+        <Text size="base" className="text-muted-foreground">
+          {t('addressBook.addNext')}
+        </Text>
+      </PressableScale>
+    </View>
+  )
+
+  const keyExtractor = (item: CSAccount) => {
     return item.address
-  }, [])
+  }
 
-  const allContacts = useMemo(() => {
+  const allContacts = (() => {
     const contacts = contactsForNetType()
 
     if (!showMyAccounts) return contacts
@@ -103,14 +96,9 @@ const ContactsList = ({
       unionBy(contacts, accounts, ({ address: addr }) => addr),
       ({ alias }) => alias,
     )
-  }, [
-    contactsForNetType,
-    currentAccount,
-    showMyAccounts,
-    sortedAccountsForNetType,
-  ])
+  })()
 
-  const data = useMemo(() => {
+  const data = (() => {
     let listData = allContacts
     if (hideCurrentAccount) {
       listData = listData.filter(
@@ -133,13 +121,7 @@ const ContactsList = ({
         })
     }
     return listData.sort((a, b) => a.alias.localeCompare(b.alias))
-  }, [
-    allContacts,
-    currentAccount?.address,
-    currentAccount?.solanaAddress,
-    hideCurrentAccount,
-    searchTerm,
-  ])
+  })()
 
   if (insideBottomSheet) {
     return (
@@ -164,4 +146,4 @@ const ContactsList = ({
   )
 }
 
-export default memo(ContactsList)
+export default ContactsList
