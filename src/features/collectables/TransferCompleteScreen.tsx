@@ -5,11 +5,12 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Button } from '@ui/Button'
 import { buttonTextVariants } from '@ui/buttonVariants'
 import { Spinner } from '@ui/Spinner'
+import { SuccessReveal } from '@ui/SuccessReveal'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { parseTransactionError } from '@utils/solanaUtils'
 import { BlurView } from 'expo-blur'
-import { ChevronLeft } from 'lucide-react-native'
+import { ChevronLeft, CircleCheck } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, LogBox, Platform, View } from 'react-native'
@@ -32,6 +33,7 @@ LogBox.ignoreLogs([
 const SafeArea = withUniwind(SafeAreaView)
 const Blur = withUniwind(BlurView)
 const BackIcon = withUniwind(ChevronLeft)
+const SuccessIcon = withUniwind(CircleCheck)
 
 type Route = RouteProp<CollectableStackParamList, 'TransferCompleteScreen'>
 
@@ -107,15 +109,22 @@ const TransferCollectableScreen = () => {
               </View>
             )}
             {isConfirmed && (
-              <Animated.View
-                className="items-center"
-                entering={FADE_IN}
-                exiting={FADE_OUT}
-              >
-                <Text size="3xl" className="mt-8">
-                  {t('collectablesScreen.transferComplete')}
-                </Text>
-              </Animated.View>
+              <View className="items-center">
+                <SuccessReveal
+                  icon={
+                    <View className="mt-8">
+                      <SuccessIcon
+                        size={56}
+                        colorClassName="accent-success-500"
+                      />
+                    </View>
+                  }
+                >
+                  <Text size="3xl" className="mt-4">
+                    {t('collectablesScreen.transferComplete')}
+                  </Text>
+                </SuccessReveal>
+              </View>
             )}
 
             {hasError && (

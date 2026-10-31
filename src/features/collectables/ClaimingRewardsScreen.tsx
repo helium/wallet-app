@@ -6,9 +6,10 @@ import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'
 import { buttonTextVariants } from '@ui/buttonVariants'
 import { Spinner } from '@ui/Spinner'
+import { SuccessReveal } from '@ui/SuccessReveal'
 import { Text } from '@ui/Text'
 import { parseTransactionError } from '@utils/solanaUtils'
-import { ChevronLeft } from 'lucide-react-native'
+import { ChevronLeft, CircleCheck } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
@@ -23,6 +24,7 @@ import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CollectableStackParamList } from './collectablesTypes'
 
 const BackIcon = withUniwind(ChevronLeft)
+const SuccessIcon = withUniwind(CircleCheck)
 
 const ClaimingRewardsScreen = () => {
   const route =
@@ -66,21 +68,28 @@ const ClaimingRewardsScreen = () => {
             <AccountIcon address={currentAccount?.solanaAddress} size={76} />
           </View>
           {isConfirmed && (
-            <Animated.View
-              className="items-center"
-              entering={FADE_IN}
-              exiting={FADE_OUT}
-            >
-              <Text size="4xl" className="mt-8 font-medium">
-                {t('collectablesScreen.claimComplete')}
-              </Text>
-              <Text
-                className="mt-8 text-center text-muted-foreground"
-                numberOfLines={2}
+            <View className="items-center">
+              <SuccessReveal
+                icon={
+                  <View className="mt-8">
+                    <SuccessIcon
+                      size={56}
+                      colorClassName="accent-success-500"
+                    />
+                  </View>
+                }
               >
-                {t('collectablesScreen.claimCompleteBody')}
-              </Text>
-            </Animated.View>
+                <Text size="4xl" className="mt-4 font-medium">
+                  {t('collectablesScreen.claimComplete')}
+                </Text>
+                <Text
+                  className="mt-8 text-center text-muted-foreground"
+                  numberOfLines={2}
+                >
+                  {t('collectablesScreen.claimCompleteBody')}
+                </Text>
+              </SuccessReveal>
+            </View>
           )}
 
           {hasError ? (
