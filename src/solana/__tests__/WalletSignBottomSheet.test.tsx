@@ -150,4 +150,30 @@ describe('WalletSignBottomSheet', () => {
 
     expect(testIDs()).toEqual(['WalletSign.Cancel', 'WalletSign.Approve'])
   })
+
+  it.each([
+    ['WalletSign.Approve', true],
+    ['WalletSign.Cancel', false],
+  ])('settles show() when %s is pressed', async (testID, decision) => {
+    const sheetRef = React.createRef<WalletSignBottomSheetRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree sheetRef={sheetRef} />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const { root } = renderer
+
+    let result: Promise<boolean> | undefined
+    act(() => {
+      result = sheetRef.current?.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        renderer: () => null,
+      })
+    })
+    act(() => {
+      root.findByProps({ testID }).props.onPress()
+    })
+
+    await expect(result).resolves.toBe(decision)
+  })
 })

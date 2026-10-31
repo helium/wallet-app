@@ -23,6 +23,7 @@ import {
   getDerivationTypeForSigning,
 } from '@utils/heliumLedger'
 import React, {
+  memo,
   ReactNode,
   Ref,
   useImperativeHandle,
@@ -104,6 +105,8 @@ const deviceModelIdFor = (name?: string) => {
 }
 
 const LedgerModal = ({ children, ref }: Props) => {
+  // The compiler skips this component: it throws inside a try/catch
+  'use no memo'
   const { currentAccount, upsertAccount } = useAccountStorage()
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const sheetMargins = useSheetMargins()
@@ -453,4 +456,4 @@ const LedgerModal = ({ children, ref }: Props) => {
   )
 }
 
-export default LedgerModal
+export default memo(LedgerModal)

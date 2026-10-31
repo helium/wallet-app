@@ -76,10 +76,7 @@ const DeviceShow = () => {
   }
 
   const { length: accountCount } = Object.keys(accounts as CSAccounts)
-  const selectedCount = Object.keys(selectedAccounts).filter(
-    (key) => !!selectedAccounts[key],
-  ).length
-  const reachedAccountLimit = accountCount + selectedCount > MAX_ACCOUNTS
+  const reachedAccountLimit = accountCount + accountsToAdd.length > MAX_ACCOUNTS
 
   const canAddAccounts = !reachedAccountLimit && accountsToAdd.length
 

@@ -72,8 +72,9 @@ const WalletSignBottomSheetTransaction = ({
   const warningsByAccount = transaction.warnings.reduce(
     (acc, warning) => {
       if (warning.account) {
-        acc[warning.account.toBase58()] ||= []
-        acc[warning.account.toBase58()].push(warning)
+        const key = warning.account.toBase58()
+        if (!acc[key]) acc[key] = []
+        acc[key].push(warning)
       }
       return acc
     },

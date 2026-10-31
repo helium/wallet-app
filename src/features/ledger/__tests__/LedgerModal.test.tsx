@@ -183,4 +183,10 @@ describe('LedgerModal', () => {
       ]),
     )
   })
+
+  it('stays memoized: the compiler skips this component', () => {
+    expect((LedgerModal as unknown as { $$typeof: symbol }).$$typeof).toBe(
+      Symbol.for('react.memo'),
+    )
+  })
 })

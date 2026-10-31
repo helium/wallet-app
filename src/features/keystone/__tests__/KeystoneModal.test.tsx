@@ -161,4 +161,38 @@ describe('KeystoneModal', () => {
     await expect(signature).resolves.toEqual(Buffer.from([]))
     expect(modal.findAllByType(SignTxModal)).toHaveLength(0)
   })
+
+  // Backdrop tap, swipe down and the back button close the sheet through
+  // onDismiss only, with no close event.
+  it('settles the pending request with an empty signature on sheet dismiss', async () => {
+    const ref = React.createRef<KeystoneModalRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <KeystoneModal ref={ref}>{null}</KeystoneModal>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const { root } = renderer
+
+    let signature: Promise<Buffer | undefined> | undefined
+    act(() => {
+      signature = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('01', 'hex'),
+      })
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    act(() => {
+      root
+        .find((n) => typeof n.props.onDismiss === 'function')
+        .props.onDismiss()
+    })
+
+    await expect(signature).resolves.toEqual(Buffer.from([]))
+  })
 })
