@@ -18,6 +18,7 @@ jest.mock('react-native', () => ({
     },
   },
   FlatList: 'FlatList',
+  View: 'View',
 }))
 // the real hook, with the native SecureWindow module mocked
 jest.mock(
@@ -40,10 +41,13 @@ jest.mock('@react-navigation/native', () => {
 jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
 }))
-jest.mock('@assets/images/close.svg', () => 'Close', { virtual: true })
-jest.mock('@components/Box', () => 'Box', { virtual: true })
-jest.mock('@components/Text', () => 'Text', { virtual: true })
-jest.mock('@components/TouchableOpacityBox', () => 'TouchableOpacityBox', {
+jest.mock('@components/FocusAwareStatusBar', () => 'FocusAwareStatusBar', {
+  virtual: true,
+})
+jest.mock('uniwind', () => ({ withUniwind: () => 'Icon' }))
+jest.mock('lucide-react-native', () => ({ X: 'X' }))
+jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
 jest.mock(
@@ -52,11 +56,6 @@ jest.mock(
     const alert = { showOKAlert: jest.fn() }
     return () => alert
   },
-  { virtual: true },
-)
-jest.mock(
-  '@theme/themeHooks',
-  () => ({ useColors: () => ({}), usePaddingStyle: () => ({}) }),
   { virtual: true },
 )
 jest.mock('../../../../storage/AccountStorageProvider', () => {

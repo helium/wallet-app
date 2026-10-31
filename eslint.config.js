@@ -33,6 +33,8 @@ const legacyImports = {
 // Shared legacy composites that migrated code may still import. Ticket 136
 // ports them to @ui and removes this list. One name per line, sorted.
 const sharedComposites = [
+  'FocusAwareStatusBar',
+  'QrScanner',
 ]
 
 const migratedLegacyImports = {
@@ -56,9 +58,11 @@ const migratedFiles = [
   'src/features/hotspot-onboarding/**',
   'src/features/lock/**',
   'src/features/notifications/**',
+  'src/features/onboarding/**',
   'src/features/security/**',
   'src/features/settings/**',
   'src/utils/parseMarkup.tsx',
+  'src/components/SplashScreen.tsx',
 ]
 
 module.exports = [

@@ -1,20 +1,28 @@
-import React, { memo, useCallback, useEffect, useMemo } from 'react'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useTranslation } from 'react-i18next'
-import { Image } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import TextTransform from '@components/TextTransform'
-import SafeAreaBox from '@components/SafeAreaBox'
-import CloseButton from '@components/CloseButton'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { X } from 'lucide-react-native'
+import React, { useEffect } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { Image, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { useOnboarding } from '../OnboardingProvider'
 import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigatorTypes'
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const CloseIcon = withUniwind(X)
+
+const SUBTITLE_COMPONENTS = {
+  havelockBlue: <Text size="xl" className="font-medium text-purple-400" />,
+  jazzberryJam: <Text size="xl" className="font-medium text-purple-400" />,
+}
 
 type Route = RouteProp<MultiAccountStackParamList, 'AccountImportStartScreen'>
 
@@ -35,144 +43,110 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
     })
   }, [navigation, setOnboardingData])
 
-  const navNext = useCallback(
-    () => () => {
-      if (hasAccounts) {
-        addNewAcctNav.navigate('ImportAccount', {
-          screen: 'AccountImportScreen',
-          params: {},
-        })
-      } else {
-        navigation.navigate('AccountImportScreen', {})
-      }
-    },
-    [hasAccounts, addNewAcctNav, navigation],
-  )
+  const navNext = () => {
+    if (hasAccounts) {
+      addNewAcctNav.navigate('ImportAccount', {
+        screen: 'AccountImportScreen',
+        params: {},
+      })
+    } else {
+      navigation.navigate('AccountImportScreen', {})
+    }
+  }
 
-  const onClose = useCallback(() => {
+  const onClose = () => {
     navigation.goBack()
-  }, [navigation])
+  }
 
-  const importPrivateKey = useCallback(() => {
+  const importPrivateKey = () => {
     rootNav.navigate('ImportPrivateKey', { key: undefined })
-  }, [rootNav])
+  }
 
-  const cliExport = useCallback(
-    () => () => {
-      if (hasAccounts) {
-        addNewAcctNav.navigate('CLIAccountNavigator')
-      } else {
-        navigation.navigate('CLIAccountNavigator')
-      }
-    },
-    [hasAccounts, addNewAcctNav, navigation],
-  )
+  const cliExport = () => {
+    if (hasAccounts) {
+      addNewAcctNav.navigate('CLIAccountNavigator')
+    } else {
+      navigation.navigate('CLIAccountNavigator')
+    }
+  }
 
-  const edges = useMemo((): Edge[] => ['bottom'], [])
-
-  const isInline = useMemo(() => {
-    return inline || params?.inline
-  }, [inline, params])
+  const isInline = inline || params?.inline
 
   return (
-    <SafeAreaBox
-      flex={1}
-      flexDirection="column"
-      edges={edges}
-      backgroundColor="secondaryBackground"
-    >
+    <SafeArea edges={['bottom']} className="flex-1 bg-navy">
+      <FocusAwareStatusBar barStyle="light-content" />
       {isInline ? null : (
-        <CloseButton alignSelf="flex-end" padding="l" onPress={onClose} />
+        <PressableScale
+          feedback="opacity"
+          hitSlop={16}
+          className="self-end p-6"
+          onPress={onClose}
+        >
+          <CloseIcon size={16} colorClassName="accent-navy-foreground" />
+        </PressableScale>
       )}
-      <Box
-        flex={1}
-        justifyContent="center"
-        alignItems="center"
-        paddingHorizontal="l"
-      >
+      <View className="flex-1 items-center justify-center px-6">
         <Image source={require('@assets/images/fingerprint.png')} />
         <Text
-          variant="h1"
-          fontSize={44}
-          marginTop="l"
-          marginBottom="s"
-          textAlign="center"
-          lineHeight={44}
+          size="4xl"
+          className="mb-2 mt-6 text-center font-medium leading-[44px] text-navy-foreground"
         >
           {t('accountImport.title')}
         </Text>
-        <TextTransform
-          variant="subtitle1"
-          textAlign="center"
-          color="secondaryText"
-          i18nKey="accountImport.subTitle"
-        />
-      </Box>
+        <Text
+          size="xl"
+          className="text-center font-medium text-navy-foreground/50"
+        >
+          <Trans
+            i18nKey="accountImport.subTitle"
+            components={SUBTITLE_COMPONENTS}
+          />
+        </Text>
+      </View>
       <Text
-        variant={reachedAccountLimit ? 'body1' : 'subtitle1'}
-        textAlign="center"
-        marginBottom="l"
-        marginHorizontal="l"
-        color={reachedAccountLimit ? 'error' : 'secondaryText'}
-        fontWeight={reachedAccountLimit ? '500' : undefined}
+        size={reachedAccountLimit ? 'base' : 'xl'}
+        className={
+          reachedAccountLimit
+            ? 'mx-6 mb-6 text-center font-medium text-destructive'
+            : 'mx-6 mb-6 text-center font-medium text-navy-foreground/50'
+        }
       >
         {reachedAccountLimit
           ? t('accountImport.accountLimit')
           : t('accountImport.pickKeyType')}
       </Text>
-      <Box flexDirection="row" marginHorizontal="l" marginBottom="l">
-        <ButtonPressable
-          width="33.33%"
-          borderTopLeftRadius="round"
-          borderBottomLeftRadius="round"
-          backgroundColor="havelockBlue"
-          titleColor="black900"
-          title={t('accountImport.recoveryPhrase')}
-          onPress={navNext()}
+      <View className="mx-6 mb-6 flex-row gap-1">
+        <Button
+          variant="cta"
+          size="lg"
+          className="flex-1 px-2"
+          onPress={navNext}
           testID="AccountImportStart.SecretPhrase"
-          titleColorDisabled="black800"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="havelockBlue"
-          backgroundColorDisabledOpacity={0.4}
-          fontWeight="500"
-          fontSize={16}
           disabled={reachedAccountLimit}
-        />
-        <ButtonPressable
-          width="33.33%"
-          marginLeft="xxs"
-          backgroundColor="grey500"
-          titleColor="black900"
-          title={t('accountImport.keyImport')}
+        >
+          {t('accountImport.recoveryPhrase')}
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
+          className="flex-1 px-2"
           onPress={importPrivateKey}
-          titleColorDisabled="black800"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="grey500"
-          backgroundColorDisabledOpacity={0.4}
-          fontWeight="500"
-          fontSize={16}
           disabled={reachedAccountLimit}
-        />
-        <ButtonPressable
-          width="33.33%"
-          marginLeft="xxs"
-          backgroundColor="jazzberryJam"
-          titleColor="black900"
-          title={t('accountImport.cliImport')}
-          onPress={cliExport()}
-          titleColorDisabled="black800"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="jazzberryJam"
-          backgroundColorDisabledOpacity={0.4}
-          fontWeight="500"
-          fontSize={16}
+        >
+          {t('accountImport.keyImport')}
+        </Button>
+        <Button
+          variant="secondary"
+          size="lg"
+          className="flex-1 px-2"
+          onPress={cliExport}
           disabled={reachedAccountLimit}
-          borderTopRightRadius="round"
-          borderBottomRightRadius="round"
-        />
-      </Box>
-    </SafeAreaBox>
+        >
+          {t('accountImport.cliImport')}
+        </Button>
+      </View>
+    </SafeArea>
   )
 }
 
-export default memo(AccountImportStartScreen)
+export default AccountImportStartScreen

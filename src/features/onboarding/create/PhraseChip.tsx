@@ -1,20 +1,26 @@
-import React, { useState, memo, useCallback } from 'react'
+import { PressableScale, type PressableScaleProps } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { upperCase } from 'lodash'
-import CheckMark from '@assets/images/checkmark.svg'
-import Fail from '@assets/images/fail.svg'
-import Text from '@components/Text'
-import TouchableHighlightBox, {
-  TouchableHighlightBoxProps,
-} from '@components/TouchableHighlightBox'
-import { useColors } from '@theme/themeHooks'
-import Box from '@components/Box'
-import { Color } from '@theme/theme'
+import { Check, X } from 'lucide-react-native'
+import React from 'react'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 
-type Props = Omit<TouchableHighlightBoxProps, 'children'> & {
+const CheckIcon = withUniwind(Check)
+const FailIcon = withUniwind(X)
+
+type Props = Omit<PressableScaleProps, 'children'> & {
   title: string
   selected?: boolean
   fail: boolean
   success: boolean
+}
+
+const chipBackground = (fail: boolean, success: boolean) => {
+  if (fail) return 'bg-destructive'
+  if (success) return 'bg-purple-500'
+  return 'bg-navy-glass'
 }
 
 const PhraseChip = ({
@@ -23,70 +29,36 @@ const PhraseChip = ({
   fail,
   success,
   disabled,
+  className,
   ...props
-}: Props) => {
-  const { surface, primary } = useColors()
-  const [underlayShowing, setUnderlayShowing] = useState(false)
-
-  const getBackgroundColor = useCallback((): Color => {
-    if (fail) return 'error'
-    if (success) return 'greenBright500'
-    return 'transparent10'
-  }, [fail, success])
-
-  const getIcon = useCallback(() => {
-    if (success) return <CheckMark color={primary} />
-
-    if (fail) return <Fail color={primary} />
-
-    return null
-  }, [fail, primary, success])
-
-  const handleUnderlayChange = useCallback(
-    (val: boolean) => () => setUnderlayShowing(val),
-    [],
-  )
-
-  return (
-    <TouchableHighlightBox
-      backgroundColor={getBackgroundColor()}
-      borderRadius="lm"
-      paddingVertical="s"
-      maxWidth="30%"
-      justifyContent="center"
-      underlayColor={surface}
-      disabled={selected || disabled}
-      onHideUnderlay={handleUnderlayChange(false)}
-      onShowUnderlay={handleUnderlayChange(true)}
-      {...props}
+}: Props) => (
+  <PressableScale
+    feedback="opacity"
+    disabled={selected || disabled}
+    className={twMerge(
+      'max-w-[30%] justify-center rounded-xl py-2',
+      chipBackground(fail, success),
+      className,
+    )}
+    {...props}
+  >
+    <View className="absolute inset-0 items-center justify-center">
+      {success && <CheckIcon colorClassName="accent-navy-foreground" />}
+      {fail && <FailIcon colorClassName="accent-navy-foreground" />}
+    </View>
+    <Text
+      size="lg"
+      numberOfLines={1}
+      adjustsFontSizeToFit
+      className={twMerge(
+        'px-4',
+        selected ? 'text-navy-foreground' : 'text-navy-foreground/50',
+        (fail || success) && 'opacity-0',
+      )}
     >
-      <>
-        <Box
-          position="absolute"
-          justifyContent="center"
-          alignItems="center"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-        >
-          {getIcon()}
-        </Box>
-        <Text
-          paddingHorizontal="m"
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          opacity={fail || success ? 0 : 1}
-          variant="body0"
-          color={
-            selected || underlayShowing ? 'primaryText' : 'surfaceSecondaryText'
-          }
-        >
-          {upperCase(title)}
-        </Text>
-      </>
-    </TouchableHighlightBox>
-  )
-}
+      {upperCase(title)}
+    </Text>
+  </PressableScale>
+)
 
-export default memo(PhraseChip)
+export default PhraseChip

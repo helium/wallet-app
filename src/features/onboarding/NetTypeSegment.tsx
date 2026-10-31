@@ -1,111 +1,69 @@
-import { BoxProps } from '@shopify/restyle'
-import * as React from 'react'
-import { useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { NetTypes as NetType } from '@helium/address'
-import { Platform, Switch } from 'react-native'
-import { Theme } from '@theme/theme'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import { useColors, useHitSlop, useSpacing } from '@theme/themeHooks'
-import { useOnboarding } from './OnboardingProvider'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import * as React from 'react'
+import { useTranslation } from 'react-i18next'
+import { Platform, Switch, View } from 'react-native'
 import { useAppStorage } from '../../storage/AppStorageProvider'
+import { useOnboarding } from './OnboardingProvider'
 
-type Props = BoxProps<Theme>
-const NetTypeSegment = (boxProps: Props) => {
+const NetTypeSegment = ({ className }: { className?: string }) => {
   const { t } = useTranslation()
-  const { xs: switchMarginHorizontal } = useSpacing()
-  const colors = useColors()
-  const hitSlop = useHitSlop('l')
   const { onboardingData, setOnboardingData } = useOnboarding()
   const { enableTestnet } = useAppStorage()
 
-  const trackColor = useMemo(
-    () => ({ false: colors.secondaryText, true: colors.blueBright500 }),
-    [colors],
-  )
+  const handleNetTypeChange = (nextNetType?: NetType.NetType) => () => {
+    setOnboardingData((prev) => {
+      let netType = nextNetType
+      if (netType === undefined) {
+        netType =
+          prev.netType === NetType.MAINNET ? NetType.TESTNET : NetType.MAINNET
+      }
+      return { ...prev, netType }
+    })
+  }
 
-  const thumbColor = useMemo(() => {
-    if (Platform.OS === 'android') {
-      return colors.primaryText
-    }
-    return colors.primaryBackground
-  }, [colors.primaryBackground, colors.primaryText])
-
-  const switchStyles = useMemo(() => {
-    const container = { transform: [{ rotate: '180deg' }] }
-
-    const shared = {
-      marginHorizontal: switchMarginHorizontal,
-    }
-    const platform =
-      Platform.OS === 'android'
-        ? undefined
-        : { transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }
-
-    return { container, switch: { ...shared, ...platform } }
-  }, [switchMarginHorizontal])
-
-  const handleNetTypeChange = useCallback(
-    (nextNetType?: NetType.NetType) => () => {
-      setOnboardingData((prev) => {
-        let netType = nextNetType
-        if (netType === undefined) {
-          netType =
-            prev.netType === NetType.MAINNET ? NetType.TESTNET : NetType.MAINNET
-        }
-        return { ...prev, netType }
-      })
-    },
-    [setOnboardingData],
-  )
+  const netTypeClassName = (netType: NetType.NetType) =>
+    onboardingData.netType === netType
+      ? 'text-navy-foreground'
+      : 'text-navy-foreground/50'
 
   if (!enableTestnet) return null
 
   return (
-    <Box flexDirection="row" alignItems="center" {...boxProps}>
-      <TouchableOpacityBox
+    <View className={twMerge('flex-row items-center', className)}>
+      <PressableScale
+        feedback="opacity"
+        className="py-2"
         onPress={handleNetTypeChange(NetType.MAINNET)}
-        paddingVertical="s"
       >
-        <Text
-          variant="subtitle2"
-          color={
-            onboardingData.netType === NetType.MAINNET
-              ? 'primaryText'
-              : 'secondaryText'
-          }
-        >
+        <Text size="base" className={netTypeClassName(NetType.MAINNET)}>
           {t('generic.mainnet')}
         </Text>
-      </TouchableOpacityBox>
-      <Box style={switchStyles.container}>
+      </PressableScale>
+      <View
+        className={twMerge(
+          'mx-1 rotate-180',
+          Platform.OS === 'ios' && 'scale-80',
+        )}
+      >
         <Switch
-          style={switchStyles.switch}
           value={onboardingData.netType === NetType.MAINNET}
           onValueChange={handleNetTypeChange()}
-          trackColor={trackColor}
-          thumbColor={thumbColor}
-          hitSlop={hitSlop}
+          hitSlop={24}
         />
-      </Box>
-      <TouchableOpacityBox
+      </View>
+      <PressableScale
+        feedback="opacity"
+        className="py-2"
         onPress={handleNetTypeChange(NetType.TESTNET)}
-        paddingVertical="s"
       >
-        <Text
-          variant="subtitle2"
-          color={
-            onboardingData.netType === NetType.TESTNET
-              ? 'primaryText'
-              : 'secondaryText'
-          }
-        >
+        <Text size="base" className={netTypeClassName(NetType.TESTNET)}>
           {t('generic.testnet')}
         </Text>
-      </TouchableOpacityBox>
-    </Box>
+      </PressableScale>
+    </View>
   )
 }
 

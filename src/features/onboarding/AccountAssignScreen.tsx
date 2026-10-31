@@ -1,24 +1,27 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import FabButton from '@components/FabButton'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
-import CheckBox from '@react-native-community/checkbox'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import { CSAccountVersion } from '@storage/cloudStorage'
 import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
-import { useColors, useSpacing } from '@theme/themeHooks'
-import { createHash } from 'crypto'
 import { useMutation } from '@tanstack/react-query'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { Checkbox } from '@ui/Checkbox'
+import { Input } from '@ui/Input'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { createHash } from 'crypto'
+import { ArrowRight } from 'lucide-react-native'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { KeyboardAvoidingView, Platform, View } from 'react-native'
+import {
+  SafeAreaView as RNSafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { accountNetType } from '@utils/accountUtils'
 import { ResolvedPath } from '@hooks/useDerivationAccounts'
 import { RootNavigationProp } from '../../navigation/rootTypes'
@@ -28,6 +31,10 @@ import { HomeStackParamList } from '../home/homeTypes'
 import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { useOnboarding } from './OnboardingProvider'
+
+const SafeAreaView = withUniwind(RNSafeAreaView)
+const StyledKeyboardAvoidingView = withUniwind(KeyboardAvoidingView)
+const ContinueIcon = withUniwind(ArrowRight)
 
 type Route = RouteProp<HomeStackParamList, 'AccountAssignScreen'>
 
@@ -47,8 +54,6 @@ const AccountAssignScreen = () => {
     onboardingData: { paths, words },
   } = useOnboarding()
   const insets = useSafeAreaInsets()
-  const spacing = useSpacing()
-  const colors = useColors()
   const {
     setCurrentAccount,
     upsertAccounts,
@@ -58,12 +63,10 @@ const AccountAssignScreen = () => {
   } = useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
-  const existingNames = useMemo(
-    () => accounts && new Set(Object.values(accounts).map((a) => a.alias)),
-    [accounts],
-  )
+  const existingNames =
+    accounts && new Set(Object.values(accounts).map((a) => a.alias))
 
-  const allPaths = useMemo(() => {
+  const allPaths = (() => {
     if (
       route.params?.secretKey &&
       route.params?.derivationPath &&
@@ -80,9 +83,9 @@ const AccountAssignScreen = () => {
       ]
     }
     return paths
-  }, [paths, route.params])
+  })()
 
-  const storeAllSecureAccounts = useCallback(async () => {
+  const storeAllSecureAccounts = async () => {
     const secureAccounts = allPaths
       .slice()
       .reverse()
@@ -95,21 +98,18 @@ const AccountAssignScreen = () => {
       )
 
     await Promise.all(secureAccounts.map(storeSecureAccount))
-  }, [words, allPaths])
+  }
 
   const generateMnemonicHash = (words?: string[]): string | undefined => {
     if (!words) return undefined
     return createHash('sha256').update(words.join(' ')).digest('hex')
   }
 
-  const generateUniqueName = useCallback(
-    (baseAlias: string, index: number): string => {
-      let i = index
-      while (existingNames?.has(`${baseAlias} ${i + 1}`)) i += 1
-      return `${baseAlias} ${i + 1}`
-    },
-    [existingNames],
-  )
+  const generateUniqueName = (baseAlias: string, index: number): string => {
+    let i = index
+    while (existingNames?.has(`${baseAlias} ${i + 1}`)) i += 1
+    return `${baseAlias} ${i + 1}`
+  }
 
   const createNewAccounts = async (
     paths: ResolvedPath[],
@@ -180,129 +180,99 @@ const AccountAssignScreen = () => {
     },
   })
 
-  const onCheckboxToggled = useCallback(
-    (newValue) => toggleSetAsDefault(newValue),
-    [],
-  )
-
   return (
-    <SafeAreaBox
-      backgroundColor="secondaryBackground"
-      flex={1}
-      paddingHorizontal="xl"
-    >
-      <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.l}
+    <SafeAreaView className="flex-1 bg-navy px-8">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <StyledKeyboardAvoidingView
+        keyboardVerticalOffset={insets.top + 24}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
-        style={styles.container}
+        className="w-full flex-1"
       >
-        <Box alignItems="center" flex={1}>
+        <View className="flex-1 items-center">
           <Text
-            variant="h1"
-            textAlign="center"
-            fontSize={44}
-            lineHeight={44}
-            marginTop="xl"
+            size="4xl"
+            className="mt-8 text-center font-medium text-navy-foreground"
           >
             {t('accountAssign.title')}
           </Text>
 
-          <Box
-            backgroundColor="transparent10"
-            borderRadius="xl"
-            padding="m"
-            width="100%"
-            marginTop="xl"
-            flexDirection="row"
-          >
+          <View className="mt-8 w-full flex-row items-center rounded-3xl bg-navy-glass p-4">
             <AccountIcon
               size={40}
               address={paths[0] && paths[0].keypair.publicKey.toBase58()}
             />
-            <TextInput
-              textColor="primaryText"
-              fontSize={24}
-              marginLeft="m"
-              marginRight="xl"
-              textInputProps={{
-                testID: 'AccountAssign.Alias',
-                placeholder: t('accountAssign.AccountNamePlaceholder'),
-                autoCorrect: false,
-                autoComplete: 'off',
-                autoCapitalize: 'words',
-                onChangeText: setAlias,
-                value: alias,
-                autoFocus: true,
-              }}
+            <Input
+              testID="AccountAssign.Alias"
+              placeholder={t('accountAssign.AccountNamePlaceholder')}
+              autoCorrect={false}
+              autoComplete="off"
+              autoCapitalize="words"
+              onChangeText={setAlias}
+              value={alias}
+              autoFocus
+              keyboardAppearance="dark"
+              placeholderTextColorClassName="accent-navy-foreground/50"
+              className="ml-4 mr-8 h-12 flex-1 border-0 px-0 text-2xl text-navy-foreground shadow-none"
             />
-          </Box>
+          </View>
 
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            marginTop="xl"
-            opacity={hasAccounts ? 100 : 0}
+          <View
+            className={
+              hasAccounts
+                ? 'mt-8 flex-row items-center'
+                : 'mt-8 flex-row items-center opacity-0'
+            }
           >
-            <CheckBox
+            <Checkbox
               disabled={!hasAccounts}
-              value={setAsDefault}
-              style={{ height: 20, width: 20 }}
-              tintColors={{
-                true: colors.primaryText,
-                false: colors.transparent10,
-              }}
-              onCheckColor={colors.secondary}
-              onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
-              onFillColor={colors.primaryText}
-              onAnimationType="fill"
-              offAnimationType="fill"
-              boxType="square"
-              onValueChange={onCheckboxToggled}
+              checked={setAsDefault}
+              onChange={toggleSetAsDefault}
+              className={
+                setAsDefault
+                  ? 'size-5 border-purple-500 bg-purple-500'
+                  : 'size-5 border-navy-foreground/50'
+              }
             />
 
             <Text
-              variant="body1"
-              color={setAsDefault ? 'primaryText' : 'secondaryText'}
-              marginLeft="m"
+              size="base"
+              className={
+                setAsDefault
+                  ? 'ml-4 text-navy-foreground'
+                  : 'ml-4 text-navy-foreground/50'
+              }
             >
               {t('accountAssign.setDefault')}
             </Text>
-          </Box>
+          </View>
 
-          <Box flex={1} />
+          <View className="flex-1" />
           {!loading && existingNames?.has(alias) ? (
-            <Text mb="m" color="red500">
+            <Text className="mb-4 text-destructive">
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
           {error ? (
-            <Text mb="m" color="red500">
-              {error}
-            </Text>
+            <Text className="mb-4 text-destructive">{error}</Text>
           ) : null}
           {loading ? (
-            <CircleLoader />
+            <Spinner colorClassName="accent-navy-foreground" />
           ) : (
-            <FabButton
+            <Button
               testID="AccountAssign.Continue"
+              variant="cta"
+              size="icon"
+              className="size-12 rounded-full"
               onPress={() => handlePress()}
-              icon="arrowRight"
-              iconColor="primary"
               disabled={!alias || existingNames?.has(alias)}
-              backgroundColor="primaryText"
-              backgroundColorPressed="surfaceContrast"
-              backgroundColorOpacityPressed={0.1}
-            />
+            >
+              <ContinueIcon size={20} colorClassName="accent-navy-foreground" />
+            </Button>
           )}
-        </Box>
-      </KeyboardAvoidingView>
-    </SafeAreaBox>
+        </View>
+      </StyledKeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 
-const styles = StyleSheet.create({
-  container: { width: '100%', flex: 1 },
-})
-
-export default memo(AccountAssignScreen)
+export default AccountAssignScreen

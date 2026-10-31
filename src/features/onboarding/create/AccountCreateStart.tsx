@@ -1,14 +1,20 @@
-import React, { memo, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import CreateAccount from '@assets/images/createAccount.svg'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { useNavigation } from '@react-navigation/native'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
-import CloseButton from '@components/CloseButton'
-import SafeAreaBox from '@components/SafeAreaBox'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { CirclePlus, X } from 'lucide-react-native'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
+
+const SafeAreaView = withUniwind(RNSafeAreaView)
+const CloseIcon = withUniwind(X)
+const CreateIcon = withUniwind(CirclePlus)
 
 type Props = { onCreate: () => void; inline?: boolean }
 const AccountCreateStart = ({ onCreate, inline }: Props) => {
@@ -16,74 +22,58 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   const { reachedAccountLimit } = useAccountStorage()
   const navigation = useNavigation<CreateAccountNavigationProp>()
 
-  const onClose = useCallback(() => {
-    navigation.goBack()
-  }, [navigation])
-
   return (
-    <SafeAreaBox
-      flex={1}
-      backgroundColor="secondaryBackground"
-      paddingHorizontal="l"
-    >
-      <Box width="100%" alignItems="flex-end" visible={!inline}>
-        <CloseButton onPress={onClose} />
-      </Box>
-      <Box justifyContent="center" alignItems="center" flex={1}>
-        <CreateAccount />
+    <SafeAreaView className="flex-1 bg-navy px-6">
+      <FocusAwareStatusBar barStyle="light-content" />
+      {!inline && (
+        <View className="w-full items-end">
+          <PressableScale
+            feedback="opacity"
+            hitSlop={16}
+            className="py-4"
+            onPress={() => navigation.goBack()}
+          >
+            <CloseIcon size={16} colorClassName="accent-navy-foreground" />
+          </PressableScale>
+        </View>
+      )}
+      <View className="flex-1 items-center justify-center">
+        <CreateIcon size={72} colorClassName="accent-purple-400" />
         <Text
-          variant="h1"
-          fontSize={44}
-          textAlign="center"
-          lineHeight={44}
-          marginTop="l"
+          size="4xl"
+          className="mt-6 text-center font-medium text-navy-foreground"
         >
           {t('accountSetup.title')}
         </Text>
-        <Text
-          variant="subtitle1"
-          textAlign="center"
-          color="secondaryText"
-          marginVertical="m"
-        >
+        <Text size="lg" className="my-4 text-center text-navy-foreground/50">
           {t('accountSetup.subtitle1')}
         </Text>
+        {!reachedAccountLimit && (
+          <Text size="lg" className="text-center text-purple-400">
+            {t('accountSetup.subtitle2')}
+          </Text>
+        )}
+      </View>
+      {reachedAccountLimit && (
         <Text
-          variant="subtitle1"
-          textAlign="center"
-          color="greenBright500"
-          visible={!reachedAccountLimit}
+          size="base"
+          className="mb-6 text-center font-medium text-destructive"
         >
-          {t('accountSetup.subtitle2')}
+          {t('accountImport.accountLimit')}
         </Text>
-      </Box>
-      <Text
-        visible={reachedAccountLimit}
-        variant="body1"
-        textAlign="center"
-        color="error"
-        fontWeight="500"
-        marginBottom="l"
-      >
-        {t('accountImport.accountLimit')}
-      </Text>
-      <ButtonPressable
+      )}
+      <Button
         testID="AccountCreateStart.Create"
+        variant="cta"
+        size="lg"
+        className="mb-6 w-full"
         disabled={reachedAccountLimit}
-        borderRadius="round"
-        titleColor="secondary"
-        fontWeight="500"
-        title={t('accountSetup.createButtonTitle')}
-        backgroundColor="greenBright500"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        marginBottom="l"
         onPress={onCreate}
-      />
-    </SafeAreaBox>
+      >
+        {t('accountSetup.createButtonTitle')}
+      </Button>
+    </SafeAreaView>
   )
 }
 
-export default memo(AccountCreateStart)
+export default AccountCreateStart

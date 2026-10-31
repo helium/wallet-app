@@ -1,28 +1,30 @@
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TouchableContainer from '@components/TouchableContainer'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   ResolvedPath,
   useDerivationAccounts,
 } from '@hooks/useDerivationAccounts'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import CheckBox from '@react-native-community/checkbox'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_DERIVATION_PATH } from '@storage/secureStorage'
-import { useColors } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { Checkbox } from '@ui/Checkbox'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, RefreshControl } from 'react-native'
+import { FlatList, RefreshControl, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
+import { withUniwind } from 'uniwind'
 import { useOnboarding } from '../OnboardingProvider'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 const TokenItem = ({ mint, amount }: { mint: PublicKey; amount: bigint }) => {
   const decimals = useMint(mint).info?.decimals
@@ -30,26 +32,25 @@ const TokenItem = ({ mint, amount }: { mint: PublicKey; amount: bigint }) => {
 
   return (
     <Text
-      variant="body2Medium"
-      color="secondaryText"
+      className="font-medium text-navy-foreground/50"
       maxFontSizeMultiplier={1.3}
     >
       {humanReadable(new BN(amount.toString() || 0), decimals)} {symbol}
     </Text>
   )
 }
-export default () => {
+const ImportSubAccountsScreen = () => {
   const { t } = useTranslation()
   const { hasAccounts } = useAccountStorage()
   const { onboardingData, setOnboardingData } = useOnboarding()
   const { words } = onboardingData
-  const mnemonic = useMemo(() => {
-    if (!words || words.length === 0) return undefined
-    return words
-      .filter((word) => word && word.trim())
-      .join(' ')
-      .trim()
-  }, [words])
+  const mnemonic =
+    !words || words.length === 0
+      ? undefined
+      : words
+          .filter((word) => word && word.trim())
+          .join(' ')
+          .trim()
   const {
     error,
     loading,
@@ -57,33 +58,28 @@ export default () => {
     fetchMore,
   } = useDerivationAccounts({ mnemonic })
 
-  const derivationAccounts = useMemo(() => {
-    return foundAccounts.filter(
-      (acc) =>
-        (acc.tokens?.length || 0) > 0 ||
-        (acc?.balance || 0) > 0 ||
-        acc.needsMigrated ||
-        acc.derivationPath === DEFAULT_DERIVATION_PATH,
-    )
-  }, [foundAccounts])
+  const derivationAccounts = foundAccounts.filter(
+    (acc) =>
+      (acc.tokens?.length || 0) > 0 ||
+      (acc?.balance || 0) > 0 ||
+      acc.needsMigrated ||
+      acc.derivationPath === DEFAULT_DERIVATION_PATH,
+  )
 
-  const colors = useColors()
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set([DEFAULT_DERIVATION_PATH]),
   )
   const [hasInitialized, setHasInitialized] = React.useState(false)
 
-  useEffect(() => {
-    if (derivationAccounts.length > 0 && !hasInitialized) {
-      setSelected(
-        new Set([
-          ...derivationAccounts.map((d) => d.derivationPath),
-          DEFAULT_DERIVATION_PATH,
-        ]),
-      )
-      setHasInitialized(true)
-    }
-  }, [derivationAccounts, hasInitialized])
+  if (derivationAccounts.length > 0 && !hasInitialized) {
+    setSelected(
+      new Set([
+        ...derivationAccounts.map((d) => d.derivationPath),
+        DEFAULT_DERIVATION_PATH,
+      ]),
+    )
+    setHasInitialized(true)
+  }
 
   useEffect(() => {
     setOnboardingData((data) => ({
@@ -94,113 +90,86 @@ export default () => {
     }))
   }, [setOnboardingData, selected, derivationAccounts])
 
-  const renderItem = useCallback(
-    ({ item, index }: { item: ResolvedPath; index: number }) => {
-      const onSelect = () => {
-        setSelected((prev) => {
-          const newSelected = new Set(prev)
-          if (prev?.has(item.derivationPath)) {
-            newSelected.delete(item.derivationPath)
-          } else {
-            newSelected.add(item.derivationPath)
-          }
-          return newSelected
-        })
-      }
+  const renderItem = ({ item }: { item: ResolvedPath }) => {
+    const onSelect = () => {
+      setSelected((prev) => {
+        const newSelected = new Set(prev)
+        if (prev?.has(item.derivationPath)) {
+          newSelected.delete(item.derivationPath)
+        } else {
+          newSelected.add(item.derivationPath)
+        }
+        return newSelected
+      })
+    }
 
-      const isSelected = selected?.has(item.derivationPath)
-      return (
-        <TouchableContainer
-          onPress={onSelect}
-          flexDirection="row"
-          minHeight={72}
-          alignItems="center"
-          paddingHorizontal="m"
-          paddingVertical="m"
-          borderBottomColor="primaryBackground"
-          borderBottomWidth={index === derivationAccounts.length - 1 ? 0 : 1}
-        >
-          <Box flex={1} paddingHorizontal="m">
-            <Box flexDirection="column" justifyContent="flex-start">
-              <Text
-                variant="body1"
-                color="primaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {item.derivationPath}
-              </Text>
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {ellipsizeAddress(item.keypair.publicKey.toBase58())}
-              </Text>
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                maxFontSizeMultiplier={1.3}
-              >
-                {humanReadable(new BN(item?.balance || 0), 9)} SOL
-              </Text>
-              {item.tokens?.map((token) => (
-                <TokenItem
-                  key={token.mint.toBase58()}
-                  mint={token.mint}
-                  amount={token.amount}
-                />
-              ))}
-              {item.needsMigrated ? (
-                <Text
-                  variant="body2Medium"
-                  color="secondaryText"
-                  maxFontSizeMultiplier={1.3}
-                >
-                  {t('accountImport.privateKey.needsMigration')}
-                </Text>
-              ) : null}
-            </Box>
-          </Box>
-          <Box justifyContent="center" alignItems="center" marginEnd="xs">
-            <CheckBox
-              value={isSelected}
-              style={{ height: 18, width: 18 }}
-              tintColors={{
-                true: colors.primaryText,
-                false: colors.transparent10,
-              }}
-              onCheckColor={colors.secondary}
-              onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
-              onFillColor={colors.primaryText}
-              onAnimationType="fill"
-              offAnimationType="fill"
-              boxType="square"
-              onValueChange={() => {}}
-              disabled
+    const isSelected = selected?.has(item.derivationPath)
+    return (
+      <PressableScale
+        feedback="opacity"
+        onPress={onSelect}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: isSelected }}
+        className="mx-4 mb-2 min-h-[72px] flex-row items-center rounded-[12px] bg-navy-glass p-4"
+      >
+        <View className="flex-1 px-4">
+          <Text
+            size="base"
+            className="text-navy-foreground"
+            maxFontSizeMultiplier={1.3}
+          >
+            {item.derivationPath}
+          </Text>
+          <Text
+            className="font-medium text-navy-foreground/50"
+            maxFontSizeMultiplier={1.3}
+          >
+            {ellipsizeAddress(item.keypair.publicKey.toBase58())}
+          </Text>
+          <Text
+            className="font-medium text-navy-foreground/50"
+            maxFontSizeMultiplier={1.3}
+          >
+            {humanReadable(new BN(item?.balance || 0), 9)} SOL
+          </Text>
+          {item.tokens?.map((token) => (
+            <TokenItem
+              key={token.mint.toBase58()}
+              mint={token.mint}
+              amount={token.amount}
             />
-          </Box>
-        </TouchableContainer>
-      )
-    },
-    [
-      colors.primaryText,
-      colors.secondary,
-      colors.transparent10,
-      derivationAccounts,
-      selected,
-      t,
-    ],
-  )
+          ))}
+          {item.needsMigrated ? (
+            <Text
+              className="font-medium text-navy-foreground/50"
+              maxFontSizeMultiplier={1.3}
+            >
+              {t('accountImport.privateKey.needsMigration')}
+            </Text>
+          ) : null}
+        </View>
+        <View className="me-1 items-center justify-center">
+          <Checkbox
+            checked={isSelected}
+            onChange={onSelect}
+            accessible={false}
+            importantForAccessibility="no"
+            className={
+              isSelected
+                ? 'border-purple-500 bg-purple-500'
+                : 'border-navy-foreground/50'
+            }
+          />
+        </View>
+      </PressableScale>
+    )
+  }
 
-  const keyExtractor = useCallback(
-    (item: ResolvedPath) => item.derivationPath,
-    [],
-  )
+  const keyExtractor = (item: ResolvedPath) => item.derivationPath
 
   const navigation = useNavigation<RootNavigationProp>()
 
-  const onNext = useCallback(() => {
+  const onNext = () => {
     if (hasAccounts) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -226,65 +195,56 @@ export default () => {
         },
       })
     }
-  }, [hasAccounts, navigation, words])
+  }
 
   return (
-    <SafeAreaBox backgroundColor="secondaryBackground" flex={1}>
-      <Box flex={1} backgroundColor="secondaryBackground" height="100%">
-        <Text
-          variant="h1"
-          mt="xl"
-          textAlign="center"
-          fontSize={44}
-          lineHeight={44}
-          mb="s"
-        >
-          {t('accountImport.privateKey.selectAccounts')}
+    <SafeArea className="flex-1 bg-navy">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <Text
+        size="4xl"
+        className="mb-2 mt-8 text-center font-medium leading-[44px] text-navy-foreground"
+      >
+        {t('accountImport.privateKey.selectAccounts')}
+      </Text>
+      <Text size="base" className="mb-6 p-2 text-center text-navy-foreground">
+        {t('accountImport.privateKey.selectAccountsBody')}
+      </Text>
+      {error && (
+        <Text className="mb-6 text-center text-destructive">
+          {error.message}
         </Text>
-        <Text textAlign="center" p="s" variant="body1" mb="l">
-          {t('accountImport.privateKey.selectAccountsBody')}
-        </Text>
-        {error && (
-          <Text textAlign="center" color="red500" mb="l">
-            {error.message}
-          </Text>
-        )}
-        <FlatList
-          contentInsetAdjustmentBehavior="automatic"
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={() => {}}
-              title=""
-              tintColor={colors.primaryText}
-            />
-          }
-          data={derivationAccounts}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          refreshing={loading}
-          onEndReached={fetchMore}
-        />
-        {!!derivationAccounts.length && (
-          <ButtonPressable
-            marginTop="l"
-            borderRadius="round"
-            backgroundColor="white"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="black500"
-            titleColor="black500"
-            disabled={!selected || selected.size === 0 || !!error || loading}
-            onPress={onNext}
-            testID="ImportSubAccounts.Next"
-            title={t('generic.next')}
-            marginBottom="l"
-            marginHorizontal="l"
+      )}
+      <FlatList
+        contentInsetAdjustmentBehavior="automatic"
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={loading}
+            onRefresh={() => {}}
+            title=""
+            tintColorClassName="accent-navy-foreground"
           />
-        )}
-      </Box>
-    </SafeAreaBox>
+        }
+        data={derivationAccounts}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        refreshing={loading}
+        onEndReached={fetchMore}
+      />
+      {!!derivationAccounts.length && (
+        <Button
+          variant="cta"
+          size="lg"
+          className="mx-6 my-6"
+          disabled={!selected || selected.size === 0 || !!error || loading}
+          onPress={onNext}
+          testID="ImportSubAccounts.Next"
+        >
+          {t('generic.next')}
+        </Button>
+      )}
+    </SafeArea>
   )
 }
+
+export default ImportSubAccountsScreen

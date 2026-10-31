@@ -22,3 +22,10 @@
     0 7px 14px rgba(0, 0, 0, 0.04), 0 26px 26px rgba(0, 0, 0, 0.03),
     0 59px 36px rgba(0, 0, 0, 0.02), 0 105px 42px rgba(0, 0, 0, 0.01);
 }
+
+/* World's navy surfaces: splash and onboarding only (style guide §1.4). */
+@theme {
+  --color-navy: #000b1a;
+  --color-navy-glass: rgba(14, 31, 56, 0.6);
+  --color-navy-foreground: #fff;
+}

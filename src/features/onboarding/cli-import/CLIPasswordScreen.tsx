@@ -1,30 +1,33 @@
-import Terminal from '@assets/images/terminal.svg'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CloseButton from '@components/CloseButton'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import useAlert from '@hooks/useAlert'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { createKeypair } from '@storage/secureStorage'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { decryptPasswordProtectedData } from '@utils/crypto'
-import React, { useCallback, useMemo, useState } from 'react'
+import { SquareTerminal, X } from 'lucide-react-native'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TextStyle } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useOnboarding } from '../OnboardingProvider'
 import {
   CLIAccountNavigationProp,
   CLIAccountStackParamList,
 } from './CLIAccountNavigatorTypes'
 
+const SafeArea = withUniwind(SafeAreaView)
+const CloseIcon = withUniwind(X)
+const TerminalIcon = withUniwind(SquareTerminal)
+
 type Route = RouteProp<CLIAccountStackParamList, 'CLIPasswordScreen'>
 
 const CLIPasswordScreen = () => {
   const navigation = useNavigation<CLIAccountNavigationProp>()
-  const edges = useMemo((): Edge[] => ['bottom'], [])
   const route = useRoute<Route>()
   const { showOKAlert } = useAlert()
   const { t } = useTranslation()
@@ -34,17 +37,13 @@ const CLIPasswordScreen = () => {
     seed: { ciphertext, nonce, salt },
   } = route.params
 
-  const onClose = useCallback(() => {
+  const onClose = () => {
     navigation.getParent()?.goBack()
-  }, [navigation])
+  }
 
   const [password, setPassword] = useState('')
 
-  const inputStyle = useMemo(() => {
-    return { color: 'white', fontSize: 24, textAlign: 'center' } as TextStyle
-  }, [])
-
-  const handleNext = useCallback(async () => {
+  const handleNext = async () => {
     try {
       // One simple function call instead of manual crypto operations!
       const decryptedData = decryptPasswordProtectedData(
@@ -75,67 +74,52 @@ const CLIPasswordScreen = () => {
         message: t('accountImport.cli.alert.body'),
       })
     }
-  }, [
-    ciphertext,
-    navigation,
-    nonce,
-    password,
-    salt,
-    setOnboardingData,
-    showOKAlert,
-    t,
-  ])
+  }
 
   return (
-    <SafeAreaBox marginHorizontal="l" flex={1} edges={edges}>
-      <Box width="100%" alignItems="flex-end" paddingVertical="l">
-        <CloseButton onPress={onClose} />
-      </Box>
-      <Box flexGrow={1} alignItems="center">
-        <Terminal width={98} height={98} />
+    <SafeArea edges={['bottom']} className="flex-1 bg-navy px-6">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <View className="w-full items-end py-6">
+        <PressableScale feedback="opacity" hitSlop={16} onPress={onClose}>
+          <CloseIcon size={16} colorClassName="accent-navy-foreground" />
+        </PressableScale>
+      </View>
+      <View className="grow items-center">
+        <TerminalIcon size={64} colorClassName="accent-navy-foreground" />
 
-        <Text variant="h2" color="white" marginTop="l" textAlign="center">
+        <Text size="3xl" className="mt-6 text-center text-navy-foreground">
           {t('accountImport.cli.password.title')}
         </Text>
 
         <Text
-          variant="subtitle1"
-          color="grey500"
-          marginTop="l"
-          textAlign="center"
+          size="xl"
+          className="mt-6 text-center font-medium text-navy-foreground/50"
         >
           {t('accountImport.cli.password.body')}
         </Text>
 
-        <TextInput
-          variant="transparent"
-          textInputProps={{
-            onChangeText: setPassword,
-            placeholderTextColor: 'grey500',
-            value: password,
-            placeholder: 'password',
-            autoCorrect: false,
-            autoComplete: 'off',
-            keyboardAppearance: 'dark',
-            style: inputStyle,
-            secureTextEntry: true,
-          }}
-          marginTop="xl"
-          width="100%"
+        <Input
+          onChangeText={setPassword}
+          value={password}
+          placeholder="password"
+          autoCorrect={false}
+          autoComplete="off"
+          keyboardAppearance="dark"
+          secureTextEntry
+          placeholderTextColorClassName="accent-navy-foreground/50"
+          className="mt-8 h-12 bg-navy-glass text-center text-2xl text-navy-foreground"
         />
-      </Box>
+      </View>
 
-      <Box width="100%">
-        <ButtonPressable
-          borderRadius="round"
-          backgroundColor="blueBright500"
-          backgroundColorOpacityPressed={0.7}
-          onPress={() => void handleNext().catch(console.error)}
-          title={t('accountImport.cli.password.buttonText')}
-          marginBottom="m"
-        />
-      </Box>
-    </SafeAreaBox>
+      <Button
+        variant="cta"
+        size="lg"
+        className="mb-4 w-full"
+        onPress={() => void handleNext().catch(console.error)}
+      >
+        {t('accountImport.cli.password.buttonText')}
+      </Button>
+    </SafeArea>
   )
 }
 

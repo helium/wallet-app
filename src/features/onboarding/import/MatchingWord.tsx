@@ -1,51 +1,28 @@
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { upperCase } from 'lodash'
-import React, { useCallback } from 'react'
-import Text from '@components/Text'
-import TouchableOpacityBox, {
-  TouchableOpacityBoxProps,
-} from '@components/TouchableOpacityBox'
+import React from 'react'
 
-type WordProps = {
+type Props = {
   fullWord: string
   matchingText: string
   onPress: (fullWord: string) => void
 }
 
-type Props = Omit<TouchableOpacityBoxProps, 'children' | 'onPress'> & WordProps
-
-const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => {
-  const handlePress = useCallback(
-    (selectedWord: string) => () => onPress(selectedWord),
-    [onPress],
-  )
-  return (
-    <TouchableOpacityBox
-      testID={`MatchingWord.${fullWord}`}
-      justifyContent="center"
-      alignContent="center"
-      marginLeft={{ smallPhone: 'm', phone: 'ms' }}
-      paddingHorizontal={{ smallPhone: 'm', phone: 'ms' }}
-      paddingVertical="m"
-      onPress={handlePress(fullWord)}
-    >
-      <Text
-        variant="body1"
-        justifyContent="center"
-        alignContent="center"
-        color="primaryText"
-      >
-        {upperCase(matchingText)}
-        <Text
-          variant="body1"
-          alignContent="center"
-          justifyContent="center"
-          color="secondaryText"
-        >
-          {upperCase(fullWord.slice(matchingText.length))}
-        </Text>
+const MatchingWord = ({ fullWord, matchingText, onPress }: Props) => (
+  <PressableScale
+    testID={`MatchingWord.${fullWord}`}
+    feedback="opacity"
+    className="ml-3 justify-center px-3 py-4"
+    onPress={() => onPress(fullWord)}
+  >
+    <Text size="base" className="text-navy-foreground">
+      {upperCase(matchingText)}
+      <Text size="base" className="text-navy-foreground/50">
+        {upperCase(fullWord.slice(matchingText.length))}
       </Text>
-    </TouchableOpacityBox>
-  )
-}
+    </Text>
+  </PressableScale>
+)
 
 export default MatchingWord

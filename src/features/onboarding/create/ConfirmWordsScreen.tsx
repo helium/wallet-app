@@ -1,34 +1,20 @@
-import React, { memo, useCallback, useRef, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useNavigation } from '@react-navigation/native'
-import { Animated, FlatList } from 'react-native'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import CloseButton from '@components/CloseButton'
-import { Color } from '@theme/theme'
-import { useColors, usePaddingStyle } from '@theme/themeHooks'
-import { upperCase } from 'lodash'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import useHaptic from '@hooks/useHaptic'
 import useSecureWindow from '@hooks/useSecureWindow'
-import { CreateAccountNavigationProp } from './createAccountNavTypes'
+import { useNavigation } from '@react-navigation/native'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { upperCase } from 'lodash'
+import { X } from 'lucide-react-native'
+import React, { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Animated, FlatList, View } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
+import { withUniwind } from 'uniwind'
 import PassphraseAutocomplete from '../import/PassphraseAutocomplete'
+import { CreateAccountNavigationProp } from './createAccountNavTypes'
 
-const accentColors = [
-  'purple500',
-  'blueBright500',
-  'greenBright500',
-  'orange500',
-  'persianRose',
-  'grey350',
-  'flamenco',
-  'electricViolet',
-  'malachite',
-  'turquoise',
-  'white',
-  'red500',
-] as Color[]
+const CloseIcon = withUniwind(X)
 
 type Props = {
   title?: string
@@ -50,31 +36,14 @@ const ConfirmWordsScreen: React.FC<Props> = ({
   const { t } = useTranslation()
   const navigation = useNavigation<CreateAccountNavigationProp>()
   const flatlistRef = useRef<FlatList>(null)
-  const colors = useColors()
-  const flatListStyle = usePaddingStyle('m', ['left', 'right'])
   const wordCount = mnemonic.length
   const [words, setWords] = useState<(string | null)[]>(
     new Array(wordCount).fill(null),
   )
 
-  const getAccent = useCallback(
-    (idx) => {
-      return {
-        key: accentColors[idx % 12],
-        value: colors[accentColors[idx % 12]],
-      }
-    },
-    [colors],
-  )
+  const findTargetWord = (pos: number) => mnemonic[pos]
 
-  const findTargetWord = useCallback(
-    (pos: number) => {
-      return mnemonic[pos]
-    },
-    [mnemonic],
-  )
-
-  const wordFailure = useCallback(() => {
+  const wordFailure = () => {
     const move = (direction: 'left' | 'right' | 'center') => {
       let value = 0
       if (direction === 'left') value = -15
@@ -95,27 +64,24 @@ const ConfirmWordsScreen: React.FC<Props> = ({
     ]).start()
 
     triggerImpact()
-  }, [triggerImpact, shakeAnim])
+  }
 
-  const handleSelectWord = useCallback(
-    (selectedWordd: string) => {
-      if (selectedWordd === findTargetWord(wordIndex)) {
-        setWords((w) => [
-          ...w.slice(0, wordIndex),
-          selectedWordd,
-          ...w.slice(wordIndex + 1),
-        ])
+  const handleSelectWord = (selectedWordd: string) => {
+    if (selectedWordd === findTargetWord(wordIndex)) {
+      setWords((w) => [
+        ...w.slice(0, wordIndex),
+        selectedWordd,
+        ...w.slice(wordIndex + 1),
+      ])
 
-        if (wordIndex === wordCount - 1) return
-        setWordIndex(wordIndex + 1)
-      } else {
-        wordFailure()
-      }
-    },
-    [wordCount, wordIndex, findTargetWord, wordFailure],
-  )
+      if (wordIndex === wordCount - 1) return
+      setWordIndex(wordIndex + 1)
+    } else {
+      wordFailure()
+    }
+  }
 
-  const handleContentSizeChanged = useCallback(() => {
+  const handleContentSizeChanged = () => {
     flatlistRef.current?.scrollToIndex({
       index:
         wordIndex === words.length - 1 || wordIndex < 2
@@ -123,80 +89,82 @@ const ConfirmWordsScreen: React.FC<Props> = ({
           : wordIndex - 1,
       animated: true,
     })
-  }, [wordIndex, words.length])
+  }
 
-  const keyExtractor = useCallback((_item, index) => index, [])
+  const keyExtractor = (_item: string | null, index: number) => String(index)
 
-  const handleWordSelectedAtIndex = useCallback(
-    (index: number) => () => {
-      setWordIndex(index)
-    },
-    [],
+  const wordClassName = (w: string | null, index: number) => {
+    if (w) return 'text-navy-foreground'
+    if (wordIndex === index) return 'text-purple-400'
+    return 'text-navy-foreground/50'
+  }
+
+  const renderItem = ({
+    index,
+    item: w,
+  }: {
+    item: string | null
+    index: number
+  }) => (
+    <PressableScale
+      feedback="opacity"
+      className="items-center px-2 py-5"
+      onPress={() => setWordIndex(index)}
+    >
+      <Text size="base" className={wordClassName(w, index)}>
+        {upperCase(
+          w || t('accountImport.wordEntry.word', { ordinal: index + 1 }),
+        )}
+      </Text>
+    </PressableScale>
   )
 
-  const renderItem = useCallback(
-    ({ index, item: w }: { item: string | null; index: number }) => {
-      return (
-        <TouchableOpacityBox
-          paddingHorizontal="s"
-          onPress={handleWordSelectedAtIndex(index)}
-          paddingVertical="lm"
-          alignItems="center"
-        >
-          <Text
-            variant="body1"
-            color={
-              w || wordIndex === index ? getAccent(index).key : 'secondaryText'
-            }
-          >
-            {upperCase(
-              w || t('accountImport.wordEntry.word', { ordinal: index + 1 }),
-            )}
-          </Text>
-        </TouchableOpacityBox>
-      )
-    },
-    [getAccent, handleWordSelectedAtIndex, t, wordIndex],
-  )
-
-  const handleOnPaste = useCallback((copiedContent: string) => {
+  const handleOnPaste = (copiedContent: string) => {
     setWords(copiedContent.split(' '))
-  }, [])
+  }
 
-  const onSkip = useCallback(() => {
+  const onSkip = () => {
     if (__DEV__) {
       onComplete()
     }
-  }, [onComplete])
+  }
 
-  const onClose = useCallback(() => {
+  const onClose = () => {
     if (!navigation.canGoBack()) return
 
     navigation.goBack()
-  }, [navigation])
+  }
 
-  const onPressForgot = useCallback(() => {
+  const onPressForgot = () => {
     if (onForgotWords) {
       onForgotWords()
       return
     }
 
     onClose()
-  }, [onClose, onForgotWords])
+  }
 
-  const handleOnComplete = useCallback(() => {
+  const handleOnComplete = () => {
     if (words.every((w, idx) => mnemonic[idx] === w)) {
       onComplete()
     } else {
       wordFailure()
     }
-  }, [words, mnemonic, wordFailure, onComplete])
+  }
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      <Box width="100%" alignItems="flex-end">
-        <CloseButton onPress={onClose} />
-      </Box>
+    <View className="flex-1 bg-navy">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <View className="w-full items-end">
+        <PressableScale
+          feedback="opacity"
+          hitSlop={16}
+          className="p-6"
+          onPress={onClose}
+        >
+          <CloseIcon size={16} colorClassName="accent-navy-foreground" />
+        </PressableScale>
+      </View>
       <KeyboardAwareScrollView
         contentInsetAdjustmentBehavior="automatic"
         extraKeyboardSpace={80}
@@ -204,20 +172,12 @@ const ConfirmWordsScreen: React.FC<Props> = ({
         keyboardShouldPersistTaps="always"
       >
         <Animated.View style={{ transform: [{ translateX: shakeAnim }] }}>
-          <Text
-            variant="subtitle1"
-            color="secondaryText"
-            textAlign="center"
-            marginTop="m"
-          >
+          <Text size="lg" className="mt-4 text-center text-navy-foreground/50">
             {title || t('accountSetup.confirm.title')}
           </Text>
           <Text
-            variant="h1"
-            textAlign="center"
-            marginTop="m"
-            fontSize={40}
-            lineHeight={40}
+            size="4xl"
+            className="mt-4 text-center font-medium leading-10 text-navy-foreground"
           >
             {t('accountSetup.confirm.subtitleOrdinal', {
               ordinal: wordIndex + 1,
@@ -226,7 +186,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
           <FlatList
             contentInsetAdjustmentBehavior="automatic"
             data={words}
-            contentContainerStyle={flatListStyle}
+            contentContainerClassName="px-4"
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             horizontal
@@ -242,40 +202,40 @@ const ConfirmWordsScreen: React.FC<Props> = ({
             wordIdx={wordIndex}
             totalWords={wordCount}
             onSubmit={handleOnComplete}
-            accentKey={getAccent(wordIndex).key}
-            accentValue={getAccent(wordIndex).value}
             onPaste={handleOnPaste}
           />
         </Animated.View>
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <TouchableOpacityBox onPress={onPressForgot} paddingVertical="xxxl">
+        <View className="flex-1 items-center justify-center">
+          <PressableScale
+            feedback="opacity"
+            className="py-12"
+            onPress={onPressForgot}
+          >
             <Text
-              variant="h4"
+              size="lg"
               adjustsFontSizeToFit
               maxFontSizeMultiplier={1}
-              textAlign="center"
-              color="secondaryText"
+              className="text-center text-navy-foreground/50"
             >
               {t('accountSetup.confirm.forgot')}
             </Text>
-          </TouchableOpacityBox>
+          </PressableScale>
           {__DEV__ && (
-            <TouchableOpacityBox onPress={onSkip}>
+            <PressableScale feedback="opacity" onPress={onSkip}>
               <Text
-                variant="h4"
+                size="lg"
                 adjustsFontSizeToFit
                 maxFontSizeMultiplier={1}
-                textAlign="center"
-                color="secondaryText"
+                className="text-center text-navy-foreground/50"
               >
                 {t('generic.skip')}
               </Text>
-            </TouchableOpacityBox>
+            </PressableScale>
           )}
-        </Box>
+        </View>
       </KeyboardAwareScrollView>
-    </Box>
+    </View>
   )
 }
 
-export default memo(ConfirmWordsScreen)
+export default ConfirmWordsScreen

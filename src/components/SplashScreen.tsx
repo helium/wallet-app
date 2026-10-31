@@ -1,25 +1,21 @@
-import React, { memo, ReactNode, useCallback, useEffect, useState } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { DUR, EASE_OUT } from '@theme/motion'
 import * as SplashLib from 'expo-splash-screen'
+import React, { ReactNode, useEffect, useState } from 'react'
+import { View } from 'react-native'
 import Animated, {
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
-  ReduceMotion,
   withTiming,
 } from 'react-native-reanimated'
-import globalStyles from '@theme/globalStyles'
-import { DUR, EASE_OUT } from '@theme/motion'
-import { useColors } from '@theme/themeHooks'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { useAppStorage } from '../storage/AppStorageProvider'
-import { ReAnimatedBox } from './AnimatedBox'
 
 const SplashScreen = ({ children }: { children: ReactNode }) => {
   const { restored: accountsRestored } = useAccountStorage()
   const { locked } = useAppStorage()
   const [isAppReady, setAppReady] = useState(false)
   const [imageReady, setImageReady] = useState(false)
-  const { primaryBackground } = useColors()
   const animValue = useSharedValue(1)
 
   useEffect(() => {
@@ -34,43 +30,35 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
       easing: EASE_OUT,
       reduceMotion: ReduceMotion.Never,
     }),
-    backgroundColor: primaryBackground,
   }))
 
-  const onImageLoaded = useCallback(async () => {
+  const onImageLoaded = () => {
     setImageReady(true)
     void SplashLib.hideAsync()
-  }, [])
+  }
 
   if (!isAppReady && accountsRestored && imageReady && locked !== undefined) {
     setAppReady(true)
   }
 
   return (
-    <View style={globalStyles.container}>
+    <View className="flex-1">
       {isAppReady && children}
-      <ReAnimatedBox
+      <Animated.View
         pointerEvents="none"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        position="absolute"
+        className="absolute inset-0 bg-navy"
         style={style}
       >
         <Animated.Image
-          style={styles.image}
+          className="size-full"
+          resizeMode="cover"
           source={require('../assets/images/SplashScreen.png')}
-          onLoadEnd={() => void onImageLoaded().catch(console.error)}
+          onLoadEnd={onImageLoaded}
           fadeDuration={0}
         />
-      </ReAnimatedBox>
+      </Animated.View>
     </View>
   )
 }
 
-const styles = StyleSheet.create({
-  image: { width: '100%', height: '100%', resizeMode: 'cover' },
-})
-
-export default memo(SplashScreen)
+export default SplashScreen

@@ -1,25 +1,27 @@
-import Close from '@assets/images/close.svg'
-import InfoError from '@assets/images/infoError.svg'
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import RevealWords from '@components/RevealWords'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DEFAULT_DERIVATION_PATH, createKeypair } from '@storage/secureStorage'
-import { useColors } from '@theme/themeHooks'
 import { useQuery } from '@tanstack/react-query'
-import React, { memo, useCallback, useMemo } from 'react'
+import { PressableScale } from '@ui/PressableScale'
+import { RevealWords } from '@ui/RevealWords'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { CircleAlert, X } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
 
+const CloseIcon = withUniwind(X)
+const WarningIcon = withUniwind(CircleAlert)
+
 const AccountCreatePassphraseScreen = () => {
   const { t } = useTranslation()
   const { hasAccounts } = useAccountStorage()
-  const colors = useColors()
   const { setOnboardingData } = useOnboarding()
   const parentNav = useNavigation<OnboardingNavigationProp>()
   const navigation = useNavigation<CreateAccountNavigationProp>()
@@ -32,15 +34,15 @@ const AccountCreatePassphraseScreen = () => {
     retry: false,
   })
 
-  const navToTop = useCallback(() => {
+  const navToTop = () => {
     if (hasAccounts) {
       parentNav.popToTop()
     } else {
       parentNav.navigate('CreateImport', undefined, { pop: true })
     }
-  }, [hasAccounts, parentNav])
+  }
 
-  const navNext = useCallback(() => {
+  const navNext = () => {
     if (!defaultKeypair) return
 
     setOnboardingData((prev) => ({
@@ -60,57 +62,43 @@ const AccountCreatePassphraseScreen = () => {
       words: defaultKeypair.words,
       derivationPath: DEFAULT_DERIVATION_PATH,
     })
-  }, [defaultKeypair, navigation, setOnboardingData])
+  }
 
-  const ListHeaderComponent = useMemo(() => {
-    return (
-      <>
-        <TouchableOpacityBox
-          padding="l"
-          onPress={navToTop}
-          alignItems="flex-end"
-        >
-          <Close color={colors.primaryText} height={16} width={16} />
-        </TouchableOpacityBox>
-        <Box justifyContent="center" alignItems="center" marginBottom="xl">
-          <InfoError />
-        </Box>
-        <Text variant="h1" textAlign="center" fontSize={40} lineHeight={40}>
-          {t('accountSetup.passphrase.title')}
-        </Text>
-        <Text
-          variant="subtitle1"
-          color="secondaryText"
-          textAlign="center"
-          marginTop="m"
-          marginHorizontal="l"
-        >
-          {t('accountSetup.passphrase.subtitle1')}
-        </Text>
-        <Text
-          variant="subtitle1"
-          color="red500"
-          textAlign="center"
-          marginVertical="l"
-          marginHorizontal="xl"
-        >
-          {t('accountSetup.passphrase.subtitle2')}
-        </Text>
-      </>
-    )
-  }, [colors.primaryText, navToTop, t])
+  const ListHeaderComponent = (
+    <>
+      <PressableScale
+        feedback="opacity"
+        hitSlop={16}
+        className="items-end py-6"
+        onPress={navToTop}
+      >
+        <CloseIcon size={16} colorClassName="accent-navy-foreground" />
+      </PressableScale>
+      <View className="mb-8 items-center justify-center">
+        <WarningIcon size={64} colorClassName="accent-destructive" />
+      </View>
+      <Text
+        size="4xl"
+        className="text-center font-medium leading-10 text-navy-foreground"
+      >
+        {t('accountSetup.passphrase.title')}
+      </Text>
+      <Text size="lg" className="mx-6 mt-4 text-center text-navy-foreground/50">
+        {t('accountSetup.passphrase.subtitle1')}
+      </Text>
+      <Text size="lg" className="mx-8 my-6 text-center text-destructive">
+        {t('accountSetup.passphrase.subtitle2')}
+      </Text>
+    </>
+  )
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
+    <View className="flex-1 bg-navy">
+      <FocusAwareStatusBar barStyle="light-content" />
       {loading ? (
-        <Box
-          height="100%"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-        >
-          <CircleLoader />
-        </Box>
+        <View className="h-full items-center justify-center">
+          <Spinner colorClassName="accent-navy-foreground" />
+        </View>
       ) : (
         <RevealWords
           ListHeaderComponent={ListHeaderComponent}
@@ -118,8 +106,8 @@ const AccountCreatePassphraseScreen = () => {
           onDone={navNext}
         />
       )}
-    </Box>
+    </View>
   )
 }
 
-export default memo(AccountCreatePassphraseScreen)
+export default AccountCreatePassphraseScreen

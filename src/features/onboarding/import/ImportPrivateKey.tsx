@@ -1,20 +1,23 @@
-import BackButton from '@components/BackButton'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { Mnemonic } from '@helium/crypto-react-native'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import useSecureWindow from '@hooks/useSecureWindow'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { decryptPasswordProtectedData, extractEd25519Seed } from '@utils/crypto'
 import * as Logger from '@utils/logger'
 import bs58 from 'bs58'
 import { Buffer } from 'buffer'
-import React, { memo, useCallback, useState, useEffect } from 'react'
+import { ChevronLeft } from 'lucide-react-native'
+import React, { useCallback, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import {
@@ -23,6 +26,9 @@ import {
 } from '../../../storage/secureStorage'
 import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingStackParamList } from '../onboardingTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const BackIcon = withUniwind(ChevronLeft)
 
 type Route = RouteProp<OnboardingStackParamList, 'ImportPrivateKey'>
 
@@ -128,7 +134,7 @@ const ImportPrivateKey = () => {
     run().catch((e) => console.error(e))
   }, [decodePrivateKey])
 
-  const onBack = useCallback(() => {
+  const onBack = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
     } else if (hasAccounts) {
@@ -136,9 +142,9 @@ const ImportPrivateKey = () => {
     } else {
       navigation.replace('OnboardingNavigator')
     }
-  }, [hasAccounts, navigation])
+  }
 
-  const onImportAccount = useCallback(() => {
+  const onImportAccount = () => {
     function getRoute(subRoute: string) {
       if (hasAccounts) {
         return [
@@ -171,102 +177,97 @@ const ImportPrivateKey = () => {
       // @ts-ignore
       navigation.replace(...getRoute('AccountAssignScreen'))
     }
-  }, [onboardingData.words, hasAccounts, navigation])
+  }
 
-  const onChangePassword = useCallback((text: string) => {
+  const onChangePassword = (text: string) => {
     setPassword(text)
-  }, [])
+  }
 
-  const onChangeText = useCallback(
-    (text: string) => {
-      void decodePrivateKey(text)
-    },
-    [decodePrivateKey],
-  )
+  const onChangeText = (text: string) => {
+    void decodePrivateKey(text)
+  }
 
   return (
-    <SafeAreaBox paddingHorizontal="l" flex={1}>
-      <BackButton onPress={onBack} paddingHorizontal="none" />
-      <Text variant="h1" marginTop="m">
+    <SafeArea className="flex-1 bg-navy px-6">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <PressableScale
+        onPress={onBack}
+        hitSlop={24}
+        feedback="opacity"
+        className="flex-row items-center gap-1 self-start py-4"
+      >
+        <BackIcon size={16} colorClassName="accent-navy-foreground" />
+        <Text className="text-navy-foreground">{t('generic.back')}</Text>
+      </PressableScale>
+      <Text size="4xl" className="mt-4 font-medium text-navy-foreground">
         {t('accountImport.privateKey.title')}
       </Text>
-      <Text
-        variant="body1"
-        marginTop="xl"
-        marginBottom="xl"
-        visible={!publicKey && !encodedKey}
-      >
-        {t('accountImport.privateKey.paste')}
-      </Text>
-      <TextInput
-        visible={!publicKey && !encodedKey}
-        textInputProps={{
-          placeholder: t('accountImport.privateKey.inputPlaceholder'),
-          autoCapitalize: 'none',
-          keyboardAppearance: 'dark',
-          autoCorrect: false,
-          onChangeText,
-          autoComplete: 'off',
-          returnKeyType: 'done',
-        }}
-        variant="underline"
-      />
-      <Text
-        variant="body1"
-        marginTop="xl"
-        marginBottom="xl"
-        visible={!!encodedKey}
-      >
-        Enter the password you set for your private key.
-      </Text>
-      <TextInput
-        visible={!!encodedKey}
-        textInputProps={{
-          placeholder: t('accountImport.privateKey.passwordPlaceholder'),
-          autoCapitalize: 'none',
-          keyboardAppearance: 'dark',
-          autoCorrect: false,
-          onChangeText: onChangePassword,
-          autoComplete: 'off',
-          returnKeyType: 'done',
-        }}
-        variant="underline"
-      />
-      <Text
-        variant="body1"
-        marginTop="m"
-        marginBottom="m"
-        visible={!!error}
-        color="red500"
-      >
-        {error}
-      </Text>
-      <Text variant="body1" marginTop="xl" visible={!!publicKey}>
-        {t('accountImport.privateKey.body')}
-      </Text>
-      <Text
-        variant="body1"
-        fontWeight="bold"
-        marginTop="xl"
-        textAlign="center"
-        visible={!!publicKey}
-      >
-        {publicKey}
-      </Text>
-      <Box flex={1} />
-      <ButtonPressable
+      {!publicKey && !encodedKey && (
+        <>
+          <Text size="base" className="my-8 text-navy-foreground">
+            {t('accountImport.privateKey.paste')}
+          </Text>
+          <Input
+            placeholder={t('accountImport.privateKey.inputPlaceholder')}
+            autoCapitalize="none"
+            keyboardAppearance="dark"
+            autoCorrect={false}
+            onChangeText={onChangeText}
+            autoComplete="off"
+            returnKeyType="done"
+            placeholderTextColorClassName="accent-navy-foreground/50"
+            className="bg-navy-glass text-navy-foreground"
+          />
+        </>
+      )}
+      {!!encodedKey && (
+        <>
+          <Text size="base" className="my-8 text-navy-foreground">
+            Enter the password you set for your private key.
+          </Text>
+          <Input
+            placeholder={t('accountImport.privateKey.passwordPlaceholder')}
+            autoCapitalize="none"
+            keyboardAppearance="dark"
+            autoCorrect={false}
+            onChangeText={onChangePassword}
+            autoComplete="off"
+            returnKeyType="done"
+            placeholderTextColorClassName="accent-navy-foreground/50"
+            className="bg-navy-glass text-navy-foreground"
+          />
+        </>
+      )}
+      {!!error && (
+        <Text size="base" className="my-4 text-destructive">
+          {error}
+        </Text>
+      )}
+      {!!publicKey && (
+        <>
+          <Text size="base" className="mt-8 text-navy-foreground">
+            {t('accountImport.privateKey.body')}
+          </Text>
+          <Text
+            size="base"
+            className="mt-8 text-center font-bold text-navy-foreground"
+          >
+            {publicKey}
+          </Text>
+        </>
+      )}
+      <View className="flex-1" />
+      <Button
+        variant="cta"
+        size="lg"
+        className="w-full"
         onPress={onImportAccount}
-        title={t('accountImport.privateKey.action')}
-        borderRadius="round"
-        backgroundColor="white"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColor="black"
         disabled={!!error || publicKey === undefined}
-      />
-    </SafeAreaBox>
+      >
+        {t('accountImport.privateKey.action')}
+      </Button>
+    </SafeArea>
   )
 }
 
-export default memo(ImportPrivateKey)
+export default ImportPrivateKey

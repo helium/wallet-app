@@ -1,104 +1,95 @@
-import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import Plus from '@assets/images/plus.svg'
-import DownArrow from '@assets/images/importIcon.svg'
-import Ledger from '@assets/images/ledger.svg'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import Keystone from '@assets/images/keystoneLogo.svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { useColors } from '@theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import BackgroundFill from '@components/BackgroundFill'
-import FinePrint from '@components/FinePrint'
+import LedgerLogo from '@assets/images/ledger.svg'
+import { useNavigation } from '@react-navigation/native'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Download, Plus } from 'lucide-react-native'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import {
+  SafeAreaView as RNSafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import FinePrint from './FinePrint'
 import NetTypeSegment from './NetTypeSegment'
 import { OnboardingNavigationProp } from './onboardingTypes'
+
+const SafeAreaView = withUniwind(RNSafeAreaView)
+const ImportIcon = withUniwind(Download)
+const CreateIcon = withUniwind(Plus)
+const Ledger = withUniwind(LedgerLogo)
 
 const CreateImportAccountScreen = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingNavigationProp>()
-  const colors = useColors()
   const { bottom } = useSafeAreaInsets()
 
-  const createAccount = useCallback(() => {
-    navigation.navigate('CreateAccount')
-  }, [navigation])
-
-  const importAccount = useCallback(() => {
-    navigation.navigate('ImportAccount')
-  }, [navigation])
-
-  const connectLedger = useCallback(() => {
-    navigation.navigate('LedgerNavigator')
-  }, [navigation])
-
-  const connectKeystone = useCallback(() => {
-    navigation.navigate('KeystoneNavigator')
-  }, [navigation])
-
   return (
-    <SafeAreaBox flex={1} paddingHorizontal="l" justifyContent="center">
-      <NetTypeSegment marginBottom="l" marginTop="n_xxl" />
-      <Text variant="h0">{t('accountSetup.createImport.title')}</Text>
-      <Box marginVertical="l" borderRadius="xl" overflow="hidden">
-        <BackgroundFill backgroundColor="surfaceContrast" opacity={0.06} />
-        <TouchableOpacityBox
+    <SafeAreaView className="flex-1 justify-center bg-navy px-6">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <NetTypeSegment className="-mt-12 mb-6" />
+      <Text size="4xl" className="font-medium text-navy-foreground">
+        {t('accountSetup.createImport.title')}
+      </Text>
+      <View className="my-6 overflow-hidden rounded-3xl bg-navy-glass">
+        <PressableScale
           testID="CreateImport.Import"
-          onPress={importAccount}
-          padding="lm"
+          feedback="opacity"
+          className="flex-row items-center p-5"
+          onPress={() => navigation.navigate('ImportAccount')}
         >
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="subtitle1" color="blueBright500" flex={1}>
-              {t('accountSetup.createImport.import')}
-            </Text>
-            <DownArrow height={20} width={20} color={colors.blueBright500} />
-          </Box>
-        </TouchableOpacityBox>
-        <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox
+          <Text size="lg" className="flex-1 text-purple-400">
+            {t('accountSetup.createImport.import')}
+          </Text>
+          <ImportIcon size={20} colorClassName="accent-purple-400" />
+        </PressableScale>
+        <View className="h-px bg-navy" />
+        <PressableScale
           testID="CreateImport.Create"
-          onPress={createAccount}
-          padding="lm"
+          feedback="opacity"
+          className="flex-row items-center p-5"
+          onPress={() => navigation.navigate('CreateAccount')}
         >
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="subtitle1" color="greenBright500" flex={1}>
-              {t('accountSetup.createImport.create')}
-            </Text>
-            <Plus height={20} width={20} color={colors.greenBright500} />
-          </Box>
-        </TouchableOpacityBox>
-        <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox onPress={connectKeystone} padding="lm">
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="subtitle1" flex={1}>
-              {t('accountSetup.createImport.keystone')}
-            </Text>
-            <Keystone height={20} width={20} color={colors.primaryText} />
-          </Box>
-        </TouchableOpacityBox>
-        <Box height={1} backgroundColor="primaryBackground" />
-        <TouchableOpacityBox onPress={connectLedger} padding="lm">
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="subtitle1" flex={1}>
-              {t('accountSetup.createImport.ledger')}
-            </Text>
-            <Ledger height={20} width={20} color={colors.primaryText} />
-          </Box>
-        </TouchableOpacityBox>
-      </Box>
-      <FinePrint
-        position="absolute"
-        justifyContent="center"
-        paddingBottom="l"
-        paddingHorizontal="xxl"
-        bottom={bottom}
-        left={0}
-        right={0}
-      />
-    </SafeAreaBox>
+          <Text size="lg" className="flex-1 text-purple-400">
+            {t('accountSetup.createImport.create')}
+          </Text>
+          <CreateIcon size={20} colorClassName="accent-purple-400" />
+        </PressableScale>
+        <View className="h-px bg-navy" />
+        <PressableScale
+          feedback="opacity"
+          className="flex-row items-center p-5"
+          onPress={() => navigation.navigate('KeystoneNavigator')}
+        >
+          <Text size="lg" className="flex-1 text-navy-foreground">
+            {t('accountSetup.createImport.keystone')}
+          </Text>
+          <Keystone height={20} width={20} />
+        </PressableScale>
+        <View className="h-px bg-navy" />
+        <PressableScale
+          feedback="opacity"
+          className="flex-row items-center p-5"
+          onPress={() => navigation.navigate('LedgerNavigator')}
+        >
+          <Text size="lg" className="flex-1 text-navy-foreground">
+            {t('accountSetup.createImport.ledger')}
+          </Text>
+          <Ledger
+            height={20}
+            width={20}
+            colorClassName="accent-navy-foreground"
+          />
+        </PressableScale>
+      </View>
+      <View className="absolute inset-x-0 px-12 pb-6" style={{ bottom }}>
+        <FinePrint className="justify-center" />
+      </View>
+    </SafeAreaView>
   )
 }
 
-export default memo(CreateImportAccountScreen)
+export default CreateImportAccountScreen

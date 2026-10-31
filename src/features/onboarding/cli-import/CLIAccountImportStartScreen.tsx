@@ -1,65 +1,78 @@
-import React, { useCallback, useMemo } from 'react'
+import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
 import { useNavigation } from '@react-navigation/native'
-import { Edge } from 'react-native-safe-area-context'
-import { useTranslation } from 'react-i18next'
-import Terminal from '@assets/images/terminal.svg'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import ButtonPressable from '@components/ButtonPressable'
-import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
-import TextTransform from '@components/TextTransform'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { SquareTerminal, X } from 'lucide-react-native'
+import React from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { CLIAccountNavigationProp } from './CLIAccountNavigatorTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const CloseIcon = withUniwind(X)
+const TerminalIcon = withUniwind(SquareTerminal)
+
+const BODY_COMPONENTS = {
+  codeHighlight: (
+    <Text
+      size="xl"
+      className="bg-navy-glass font-light text-navy-foreground/50"
+    />
+  ),
+}
 
 const CLIAccountImportStartScreen = () => {
   const navigation = useNavigation<CLIAccountNavigationProp>()
-  const edges = useMemo((): Edge[] => ['bottom'], [])
   const { t } = useTranslation()
 
-  const handleNext = useCallback(() => {
+  const handleNext = () => {
     navigation.navigate('CLIQrScanner')
-  }, [navigation])
+  }
 
-  const onClose = useCallback(() => {
+  const onClose = () => {
     navigation.getParent()?.goBack()
-  }, [navigation])
+  }
 
   return (
-    <SafeAreaBox flex={1} edges={edges} backgroundColor="secondary">
-      <Box flex={1} marginHorizontal="l">
-        <Box width="100%" alignItems="flex-end" paddingTop="l">
-          <CloseButton onPress={onClose} />
-        </Box>
-        <Box flexGrow={1} alignItems="center">
-          <Terminal width={98} height={98} />
+    <SafeArea edges={['bottom']} className="flex-1 bg-navy">
+      <FocusAwareStatusBar barStyle="light-content" />
+      <View className="mx-6 flex-1">
+        <View className="w-full items-end pt-6">
+          <PressableScale feedback="opacity" hitSlop={16} onPress={onClose}>
+            <CloseIcon size={16} colorClassName="accent-navy-foreground" />
+          </PressableScale>
+        </View>
+        <View className="grow items-center">
+          <TerminalIcon size={64} colorClassName="accent-navy-foreground" />
 
-          <Text variant="h2" color="white" marginTop="l" textAlign="center">
+          <Text size="3xl" className="mt-6 text-center text-navy-foreground">
             {t('accountImport.cli.import.title')}
           </Text>
 
-          <TextTransform
-            marginTop="l"
-            variant="subtitle1"
-            textAlign="center"
-            color="grey500"
-            i18nKey="accountImport.cli.import.body"
-          />
-        </Box>
+          <Text
+            size="xl"
+            className="mt-6 text-center font-medium text-navy-foreground/50"
+          >
+            <Trans
+              i18nKey="accountImport.cli.import.body"
+              components={BODY_COMPONENTS}
+            />
+          </Text>
+        </View>
 
-        <Box width="100%">
-          <ButtonPressable
-            marginTop="m"
-            borderRadius="round"
-            backgroundColor="white"
-            titleColor="primaryBackground"
-            backgroundColorOpacityPressed={0.7}
-            onPress={handleNext}
-            title={t('accountImport.cli.import.buttonText')}
-            marginBottom="m"
-          />
-        </Box>
-      </Box>
-    </SafeAreaBox>
+        <Button
+          variant="cta"
+          size="lg"
+          className="my-4 w-full"
+          onPress={handleNext}
+        >
+          {t('accountImport.cli.import.buttonText')}
+        </Button>
+      </View>
+    </SafeArea>
   )
 }
 

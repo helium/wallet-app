@@ -17,6 +17,10 @@ jest.mock('react-native', () => ({
       return mockPlatform?.OS
     },
   },
+  View: 'View',
+}))
+jest.mock('react-native-safe-area-context', () => ({
+  SafeAreaView: 'SafeAreaView',
 }))
 // the real hook, with the native SecureWindow module mocked
 jest.mock(
@@ -50,14 +54,17 @@ jest.mock(
   { virtual: true },
 )
 jest.mock('@utils/logger', () => ({ error: jest.fn() }), { virtual: true })
-jest.mock('@components/BackButton', () => 'BackButton', { virtual: true })
-jest.mock('@components/Box', () => 'Box', { virtual: true })
-jest.mock('@components/ButtonPressable', () => 'ButtonPressable', {
+jest.mock('@components/FocusAwareStatusBar', () => 'FocusAwareStatusBar', {
   virtual: true,
 })
-jest.mock('@components/SafeAreaBox', () => 'SafeAreaBox', { virtual: true })
-jest.mock('@components/Text', () => 'Text', { virtual: true })
-jest.mock('@components/TextInput', () => 'TextInput', { virtual: true })
+jest.mock('uniwind', () => ({ withUniwind: () => 'Icon' }))
+jest.mock('lucide-react-native', () => ({ ChevronLeft: 'ChevronLeft' }))
+jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
+jest.mock('@ui/Input', () => ({ Input: 'Input' }), { virtual: true })
+jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
+  virtual: true,
+})
 jest.mock('../../../../storage/AccountStorageProvider', () => {
   const storage = { hasAccounts: false }
   return { useAccountStorage: () => storage }
