@@ -4,7 +4,7 @@ import { PublicKey } from '@solana/web3.js'
 import { Card } from '@ui/Card'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
-import React, { memo } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { GestureResponderEvent, View } from 'react-native'
 
@@ -66,4 +66,4 @@ const SwapItem = ({
   )
 }
 
-export default memo(SwapItem)
+export default SwapItem

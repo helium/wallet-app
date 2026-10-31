@@ -212,11 +212,6 @@ jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/twMerge', () => jest.requireActual('../../../ui/twMerge'), {
   virtual: true,
 })
-jest.mock(
-  '@ui/buttonVariants',
-  () => jest.requireActual('../../../ui/buttonVariants'),
-  { virtual: true },
-)
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
@@ -227,7 +222,6 @@ jest.mock('react-native', () => ({
   TouchableWithoutFeedback: 'TouchableWithoutFeedback',
   Keyboard: { dismiss: () => {} },
   LayoutAnimation: { configureNext: () => {}, Presets: {} },
-  Platform: { OS: 'ios' },
 }))
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,
@@ -298,5 +292,171 @@ describe('SwapNavigator', () => {
       closeButtons[closeButtons.length - 1].props.onPress()
     })
     expect(view.texts()).not.toContain('swapsScreen.slippageInfo')
+  })
+
+  it('marks only the current slippage option as selected', async () => {
+    const view = await render()
+
+    const options = view.root.findAll(
+      (n) =>
+        n.type === ('PressableScale' as never) &&
+        n.props.accessibilityState !== undefined,
+    )
+    const selected = (label: string) =>
+      options.find((n) =>
+        n
+          .findAllByType('Text' as never)
+          .some((t) => [t.props.children].flat().join('') === label),
+      )?.props.accessibilityState.selected
+
+    // The screen opens at 50 bps.
+    expect(selected('0.5%')).toBe(true)
+    expect(selected('0.3%')).toBe(false)
+  })
+
+  it('keeps the recipient address as typed, without auto-capitalising it', async () => {
+    const view = await render()
+
+    // Pick DC as the token to receive, which offers a recipient.
+    const [, receivePill] = view.root.findAllByType('TokenPill' as never)
+    await act(async () => {
+      receivePill.props.onPress()
+    })
+    const [tokenSelector] = view.root.findAll(
+      (n) => typeof n.props.onTokenSelected === 'function',
+    )
+    const { DC_MINT } = jest.requireMock('@helium/spl-utils')
+    await act(async () => {
+      tokenSelector.props.onTokenSelected(DC_MINT)
+    })
+
+    const [addRecipient] = view.root.findAll(
+      (n) =>
+        n.type === ('PressableScale' as never) &&
+        n
+          .findAllByType('Text' as never)
+          .some((t) => t.props.children === 'swapsScreen.addRecipient'),
+    )
+    await act(async () => {
+      addRecipient.props.onPress()
+    })
+
+    const [recipientInput] = view.root.findAllByType('Input' as never)
+    expect(recipientInput.props.autoCapitalize).toBe('none')
+  })
+
+  it('selects the slippage option that is pressed', async () => {
+    const view = await render()
+
+    const slippageOptions = () =>
+      view.root.findAll(
+        (n) =>
+          n.type === ('PressableScale' as never) &&
+          n.props.accessibilityState !== undefined,
+      )
+    const option = (label: string) =>
+      slippageOptions().find((n) =>
+        n
+          .findAllByType('Text' as never)
+          .some((t) => [t.props.children].flat().join('') === label),
+      )
+
+    await act(async () => {
+      option('1%')?.props.onPress()
+    })
+
+    expect(option('1%')?.props.accessibilityState.selected).toBe(true)
+    expect(option('0.5%')?.props.accessibilityState.selected).toBe(false)
+  })
+
+  it('disables the slippage options and selects none when receiving DC', async () => {
+    const view = await render()
+
+    const [, receivePill] = view.root.findAllByType('TokenPill' as never)
+    await act(async () => {
+      receivePill.props.onPress()
+    })
+    const [tokenSelector] = view.root.findAll(
+      (n) => typeof n.props.onTokenSelected === 'function',
+    )
+    const { DC_MINT } = jest.requireMock('@helium/spl-utils')
+    await act(async () => {
+      tokenSelector.props.onTokenSelected(DC_MINT)
+    })
+
+    const options = view.root.findAll(
+      (n) =>
+        n.type === ('PressableScale' as never) &&
+        n.props.accessibilityState !== undefined,
+    )
+    expect(options).toHaveLength(3)
+    options.forEach((n) => {
+      expect(n.props.accessibilityState.selected).toBe(false)
+      expect(n.props.accessibilityState.disabled).toBe(true)
+    })
+  })
+
+  it('labels the refresh control for screen readers', async () => {
+    const view = await render()
+
+    const refresh = view.root.findAll(
+      (n) =>
+        n.type === ('PressableScale' as never) &&
+        n.props.accessibilityLabel === 'swapsScreen.refresh',
+    )
+    expect(refresh).toHaveLength(1)
+  })
+
+  it('labels the address book control for screen readers', async () => {
+    const view = await render()
+
+    const [, receivePill] = view.root.findAllByType('TokenPill' as never)
+    await act(async () => {
+      receivePill.props.onPress()
+    })
+    const [tokenSelector] = view.root.findAll(
+      (n) => typeof n.props.onTokenSelected === 'function',
+    )
+    const { DC_MINT } = jest.requireMock('@helium/spl-utils')
+    await act(async () => {
+      tokenSelector.props.onTokenSelected(DC_MINT)
+    })
+    const [addRecipient] = view.root.findAll(
+      (n) =>
+        n.type === ('PressableScale' as never) &&
+        n
+          .findAllByType('Text' as never)
+          .some((t) => t.props.children === 'swapsScreen.addRecipient'),
+    )
+    await act(async () => {
+      addRecipient.props.onPress()
+    })
+
+    const addressBook = view.root.findAll(
+      (n) =>
+        n.type === ('PressableScale' as never) &&
+        n.props.accessibilityLabel === 'swapsScreen.openAddressBook',
+    )
+    expect(addressBook).toHaveLength(1)
+  })
+
+  it('switches the amount keyboard back to the paid token when the pay item is pressed', async () => {
+    const view = await render()
+    const keyboard = () =>
+      view.root.find((n) => typeof n.props.onConfirmBalance === 'function')
+
+    // Choosing the token to receive points the keyboard at the received side.
+    const [, receivePill] = view.root.findAllByType('TokenPill' as never)
+    await act(async () => {
+      receivePill.props.onPress()
+    })
+    expect(keyboard().props.allowOverdraft).toBe(true)
+
+    const [payItem] = view.byTestID('Swap.PayItem')
+    await act(async () => {
+      payItem.props.onPress()
+    })
+
+    expect(keyboard().props.allowOverdraft).toBe(false)
   })
 })

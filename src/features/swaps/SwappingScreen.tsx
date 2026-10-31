@@ -12,7 +12,7 @@ import { Text } from '@ui/Text'
 import { TokenIcon } from '@ui/TokenIcon'
 import { parseTransactionError } from '@utils/solanaUtils'
 import { ChevronLeft, ChevronRight } from 'lucide-react-native'
-import React, { memo, useCallback } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
@@ -54,10 +54,10 @@ const SwappingScreen = () => {
   const isConfirmed = status === 'confirmed'
   const isPending = isLoading || status === 'pending'
 
-  const onReturn = useCallback(() => {
+  const onReturn = () => {
     // Reset Swap stack to first screen
     navigation.goBack()
-  }, [navigation])
+  }
 
   return (
     <View className="flex-1 bg-background">
@@ -160,4 +160,4 @@ const SwappingScreen = () => {
   )
 }
 
-export default memo(SwappingScreen)
+export default SwappingScreen

@@ -530,6 +530,8 @@ export default {
     swapAlertTitle: 'Are you sure you will like to swap your tokens?',
     swapAlertBody: 'This action is irreversible.',
     addRecipient: 'Add Recipient',
+    refresh: 'Refresh',
+    openAddressBook: 'Open address book',
   },
   secretKeyWarningScreen: {
     title: 'Warning! Nobody should ask for your secret phrase or private key.',

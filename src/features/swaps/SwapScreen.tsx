@@ -35,6 +35,7 @@ import { Input } from '@ui/Input'
 import { PressableScale } from '@ui/PressableScale'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { useBalance } from '@utils/Balance'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
 import { TXN_FEE_IN_LAMPORTS, humanReadable } from '@utils/solanaUtils'
@@ -275,6 +276,7 @@ const SwapScreen = () => {
         <PressableScale
           feedback="opacity"
           className="pe-4"
+          accessibilityLabel={t('swapsScreen.refresh')}
           onPress={() => void refresh().catch(console.error)}
         >
           <RefreshIcon size={16} colorClassName="accent-foreground" />
@@ -294,45 +296,57 @@ const SwapScreen = () => {
 
     return (
       <View
-        className={`mx-4 mb-12 mt-8 flex-row overflow-hidden rounded-[12px] bg-secondary ${
-          disabled ? 'opacity-30' : ''
-        }`}
+        className={twMerge(
+          'mx-4 mb-12 mt-8 flex-row overflow-hidden rounded-[12px] bg-secondary',
+          disabled ? 'opacity-30' : undefined,
+        )}
       >
-        <PressableScale
-          feedback="opacity"
-          className="flex-1 flex-row items-center justify-center border-e-2 border-background px-3"
-          onPress={() => setSlippageInfoVisible(true)}
-        >
-          <Text size="xs" className="font-medium text-muted-foreground">
-            {t('swapsScreen.slippage')}
-          </Text>
-        </PressableScale>
+        <View className="flex-1 justify-center border-e-2 border-background">
+          <PressableScale
+            feedback="opacity"
+            className="flex-row items-center justify-center px-3 py-3"
+            onPress={() => setSlippageInfoVisible(true)}
+          >
+            <Text size="xs" className="font-medium text-muted-foreground">
+              {t('swapsScreen.slippage')}
+            </Text>
+          </PressableScale>
+        </View>
 
         {bpsOptions.map((bps, idx) => {
           const isLast = idx === bpsOptions.length - 1
           const isActive = slippageBps === bps
+          const isSelected = !disabled && isActive
 
           return (
-            <PressableScale
-              disabled={disabled}
+            <View
               key={bps}
-              feedback="opacity"
-              className={`flex-1 items-center border-background p-3 ${
-                isLast ? '' : 'border-e-2'
-              } ${!disabled && isActive ? 'bg-primary' : 'bg-secondary'}`}
-              onPress={() => setSlippageBps(bps)}
+              className={twMerge(
+                'flex-1 justify-center border-background',
+                isLast ? undefined : 'border-e-2',
+                isSelected ? 'bg-primary' : 'bg-secondary',
+              )}
             >
-              <Text
-                size="xs"
-                className={`font-medium ${
-                  !disabled && isActive
-                    ? 'text-primary-foreground'
-                    : 'text-muted-foreground'
-                }`}
+              <PressableScale
+                disabled={disabled}
+                feedback="opacity"
+                className="items-center p-3"
+                accessibilityState={{ selected: isSelected, disabled }}
+                onPress={() => setSlippageBps(bps)}
               >
-                {bps / 100}%
-              </Text>
-            </PressableScale>
+                <Text
+                  size="xs"
+                  className={twMerge(
+                    'font-medium',
+                    isSelected
+                      ? 'text-primary-foreground'
+                      : 'text-muted-foreground',
+                  )}
+                >
+                  {bps / 100}%
+                </Text>
+              </PressableScale>
+            </View>
           )
         })}
       </View>
@@ -779,6 +793,7 @@ const SwapScreen = () => {
                               className="flex-1"
                               placeholder={t('generic.solanaAddress')}
                               autoCorrect={false}
+                              autoCapitalize="none"
                               autoComplete="off"
                               onChangeText={handleEditAddress}
                               value={recipient}
@@ -787,6 +802,9 @@ const SwapScreen = () => {
                               feedback="opacity"
                               hitSlop={12}
                               className="ms-3"
+                              accessibilityLabel={t(
+                                'swapsScreen.openAddressBook',
+                              )}
                               onPress={handleAddressBookSelected}
                             >
                               <MenuIcon
