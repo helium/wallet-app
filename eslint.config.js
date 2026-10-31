@@ -18,8 +18,7 @@ const reactCompilerRules = Object.fromEntries(
     .map((rule) => [rule, 'error']),
 )
 
-// Legacy components and Restyle get bug fixes only; new code uses @ui. The
-// ban is an error in migrated code and a warning elsewhere.
+// Legacy components and Restyle are gone; UI code uses @ui.
 const legacyImports = {
   paths: [
     { name: '@components', message: 'Legacy component. Use @ui.' },
@@ -29,70 +28,6 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
-// @ui and its gallery never depend on legacy code.
-const strictFiles = [
-  'src/features/migration/**',
-  'src/features/uiGallery/**',
-  'src/ui/**',
-]
-// Reskinned features. One entry per line, sorted.
-const migratedFiles = [
-  'src/components/SplashScreen.tsx',
-  'src/features/StatusPage/**',
-  'src/features/account/**',
-  'src/features/activity/**',
-  'src/features/addressBook/**',
-  'src/features/browser/**',
-  'src/features/burn/**',
-  'src/features/collectables/**',
-  'src/features/dappLogin/**',
-  'src/features/governance/AssignProxyScreen.tsx',
-  'src/features/governance/ClaimingRewardsModal.tsx',
-  'src/features/governance/DelegateTokensModal.tsx',
-  'src/features/governance/GovernanceTutorialScreen.tsx',
-  'src/features/governance/GovernanceWrapper.tsx',
-  'src/features/governance/LockTokensModal.tsx',
-  'src/features/governance/Markdown.tsx',
-  'src/features/governance/PositionCard.tsx',
-  'src/features/governance/PositionPreview.tsx',
-  'src/features/governance/PositionsList.tsx',
-  'src/features/governance/PositionsScreen.tsx',
-  'src/features/governance/ProposalCard.tsx',
-  'src/features/governance/ProposalScreen.tsx',
-  'src/features/governance/ProposalTags.tsx',
-  'src/features/governance/ProposalsList.tsx',
-  'src/features/governance/ProposalsScreen.tsx',
-  'src/features/governance/ProxiesScreen.tsx',
-  'src/features/governance/ProxyCardStat.tsx',
-  'src/features/governance/ProxyScreen.tsx',
-  'src/features/governance/ProxySearch.tsx',
-  'src/features/governance/RevokeProxyScreen.tsx',
-  'src/features/governance/Select.tsx',
-  'src/features/governance/SplitBar.tsx',
-  'src/features/governance/TransferTokensModal.tsx',
-  'src/features/governance/VoteHistory.tsx',
-  'src/features/governance/VoteOption.tsx',
-  'src/features/governance/__tests__/**',
-  'src/features/governance/components/**',
-  'src/features/home/**',
-  'src/features/hotspot-onboarding/**',
-  'src/features/keystone/**',
-  'src/features/ledger/**',
-  'src/features/lock/**',
-  'src/features/notifications/**',
-  'src/features/onboarding/**',
-  'src/features/payment/**',
-  'src/features/request/**',
-  'src/features/security/**',
-  'src/features/settings/**',
-  'src/features/swaps/**',
-  'src/features/txnDelegation/**',
-  'src/solana/*Preview.tsx',
-  'src/solana/WalletSIgnBottomSheetSimulated.tsx',
-  'src/solana/WalletSign*',
-  'src/solana/WarningBox.tsx',
-  'src/utils/parseMarkup.tsx',
-]
 
 module.exports = [
   {
@@ -140,7 +75,7 @@ module.exports = [
       ],
       'import-x/no-duplicates': 'error',
       'import-x/no-extraneous-dependencies': 'error',
-      'no-restricted-imports': ['warn', legacyImports],
+      'no-restricted-imports': ['error', legacyImports],
       'no-restricted-properties': [
         'error',
         {
@@ -172,18 +107,6 @@ module.exports = [
         'error',
         { allow: ['\\.json$', '\\.png$'] },
       ],
-    },
-  },
-  {
-    files: migratedFiles,
-    rules: {
-      'no-restricted-imports': ['error', legacyImports],
-    },
-  },
-  {
-    files: strictFiles,
-    rules: {
-      'no-restricted-imports': ['error', legacyImports],
     },
   },
   {

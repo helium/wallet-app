@@ -28,7 +28,6 @@ module.exports = (api) => {
             // This needs to be mirrored in tsconfig.json
             '@helium/crypto': './node_modules/@helium/crypto-react-native',
             '@assets': './src/assets',
-            '@components': './src/components',
             '@constants': './src/constants',
             '@hooks': './src/hooks',
             '@theme': './src/theme',

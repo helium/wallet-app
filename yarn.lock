@@ -6628,16 +6628,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/restyle@npm:2.4.5":
-  version: 2.4.5
-  resolution: "@shopify/restyle@npm:2.4.5"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10/1ebc53c66b9c77bc7a2c7f328d390acdeeea93e0575c1b628efacec87ec0623028c3a12c79eef86f91e5b23081923d98bd77063f133636cd4e49c652775bbd69
-  languageName: node
-  linkType: hard
-
 "@sideway/address@npm:^4.1.5":
   version: 4.1.5
   resolution: "@sideway/address@npm:4.1.5"
@@ -14487,7 +14477,6 @@ __metadata:
     "@react-navigation/material-top-tabs": "npm:7.8.1"
     "@react-navigation/native": "npm:7.5.1"
     "@react-navigation/native-stack": "npm:7.21.0"
-    "@shopify/restyle": "npm:2.4.5"
     "@solana/spl-account-compression": "npm:0.1.4"
     "@solana/spl-token": "npm:0.3.6"
     "@solana/wallet-adapter-react": "npm:0.15.33"

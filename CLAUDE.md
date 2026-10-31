@@ -21,7 +21,7 @@ yarn bump-patch         # Version bump (also: bump-minor, bump-major)
 - **Feature-based** - `src/features/` (account, payment, governance, swaps, browser, etc.)
 - **Redux Toolkit** - `src/store/slices/` with RTK Query
 - **Redux Persist** - app/auth/hotspots/browser slices persisted
-- **Shopify Restyle** - theming in `src/theme/`
+- **Uniwind** - Tailwind classes; components in `src/ui/`, tokens in `src/theme/world-theme.css`
 - **React Navigation v6** - Stack + Bottom Tabs
 - **Provider hierarchy** - 17+ nested providers in App.tsx
 
@@ -38,7 +38,7 @@ yarn bump-patch         # Version bump (also: bump-minor, bump-major)
 
 ## Import Aliases
 
-`@components`, `@hooks`, `@utils`, `@theme`, `@storage`, `@types`, `@assets`, `@constants`, `@helium/crypto`
+`@ui`, `@hooks`, `@utils`, `@theme`, `@storage`, `@types`, `@assets`, `@constants`, `@helium/crypto`
 
 ## Code Style
 
