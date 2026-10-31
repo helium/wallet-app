@@ -1,13 +1,13 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import ConfirmPinView from '@components/ConfirmPinView'
 import useAlert from '@hooks/useAlert'
 import usePrevious from '@hooks/usePrevious'
 import useSecureWindow from '@hooks/useSecureWindow'
+import { ConfirmPinView } from '@ui/ConfirmPinView'
 import * as LocalAuthentication from 'expo-local-authentication'
 import React, { memo, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
+import Animated from 'react-native-reanimated'
 import { FullWindowOverlay } from 'react-native-screens'
 import { FADE_IN_STATE, FADE_OUT_STATE } from '@theme/motion'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -112,15 +112,10 @@ const LockScreen = ({ children }: Props) => {
   }, [handleSuccess, locked])
 
   const overlay = (
-    <ReAnimatedBox
+    <Animated.View
       entering={FADE_IN_STATE}
       exiting={FADE_OUT_STATE}
-      zIndex={9999}
-      top={0}
-      bottom={0}
-      left={0}
-      right={0}
-      position="absolute"
+      className="absolute inset-0 z-[9999]"
     >
       <ConfirmPinView
         originalPin={pin?.value || ''}
@@ -130,7 +125,7 @@ const LockScreen = ({ children }: Props) => {
         onCancel={() => void handleSignOut().catch(console.error)}
         clearable
       />
-    </ReAnimatedBox>
+    </Animated.View>
   )
 
   return (

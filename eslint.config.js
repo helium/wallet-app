@@ -51,7 +51,13 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/StatusPage/**',
+  'src/features/activity/**',
+  'src/features/hotspot-onboarding/**',
+  'src/features/lock/**',
   'src/features/notifications/**',
+  'src/features/security/**',
+  'src/features/settings/**',
   'src/utils/parseMarkup.tsx',
 ]
 

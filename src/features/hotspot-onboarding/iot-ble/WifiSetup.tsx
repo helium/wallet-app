@@ -1,12 +1,12 @@
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
 import { BleError, useHotspotBle } from '@helium/react-native-sdk'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { useCallback, useState } from 'react'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { Text } from '@ui/Text'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import OnboardingScreen from '../components/OnboardingScreen'
 import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
 
 type Route = RouteProp<HotspotBLEStackParamList, 'WifiSetup'>
@@ -21,7 +21,7 @@ const WifiSetup = () => {
   const { setWifi } = useHotspotBle()
   const { t } = useTranslation()
   const navigation = useNavigation<HotspotBleNavProp>()
-  const onBack = useCallback(() => {
+  const onBack = () => {
     navigation.navigate(
       'WifiSettings',
       {
@@ -29,13 +29,13 @@ const WifiSetup = () => {
       },
       { pop: true },
     )
-  }, [network, navigation])
+  }
 
-  const toggleSecureEntry = useCallback(() => {
+  const toggleSecureEntry = () => {
     setSecureTextEntry(!secureTextEntry)
-  }, [secureTextEntry])
+  }
 
-  const handleSetWifi = useCallback(async () => {
+  const handleSetWifi = async () => {
     setLoading(true)
     try {
       const nextStatus = await setWifi(network, password)
@@ -49,43 +49,38 @@ const WifiSetup = () => {
       }
     }
     setLoading(false)
-  }, [onBack, network, password, setWifi])
+  }
 
   return (
-    <BackScreen title={`Setup ${network}`}>
-      <Box flexDirection="row">
-        <TextInput
-          flexGrow={1}
-          textInputProps={{
-            placeholder: t('generic.password'),
-            autoCorrect: false,
-            secureTextEntry,
-            autoComplete: 'off',
-            onChangeText: setPassword,
-            value: password,
-            autoFocus: true,
-            keyboardAppearance: 'dark',
-          }}
+    <OnboardingScreen title={`Setup ${network}`}>
+      <View className="flex-row items-center gap-2">
+        <Input
+          variant="form"
+          className="flex-1"
+          placeholder={t('generic.password')}
+          autoCorrect={false}
+          secureTextEntry={secureTextEntry}
+          autoComplete="off"
+          onChangeText={setPassword}
+          value={password}
+          autoFocus
         />
-        <ButtonPressable
-          title={secureTextEntry ? 'Show' : 'Hide'}
-          onPress={toggleSecureEntry}
-        />
-      </Box>
+        <Button variant="ghost" size="lg" onPress={toggleSecureEntry}>
+          {secureTextEntry ? 'Show' : 'Hide'}
+        </Button>
+      </View>
 
-      <ButtonPressable
-        mt="l"
-        borderRadius="round"
-        titleColor="white"
-        borderColor="white"
-        borderWidth={1}
-        backgroundColor="transparent"
+      <Button
+        variant="outline"
+        size="lg"
+        className="mt-6 w-full"
         onPress={() => void handleSetWifi().catch(console.error)}
         disabled={loading}
-        title={t('hotspotOnboarding.wifiSettings.setup')}
-      />
+      >
+        {t('hotspotOnboarding.wifiSettings.setup')}
+      </Button>
       <Text>{loading ? 'loading...' : status}</Text>
-    </BackScreen>
+    </OnboardingScreen>
   )
 }
 

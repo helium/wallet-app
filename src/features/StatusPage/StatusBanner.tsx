@@ -3,15 +3,15 @@ import Toast, {
   ToastConfig,
   ToastConfigParams,
 } from 'react-native-toast-message'
-import { Linking } from 'react-native'
+import { Linking, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { useTranslation } from 'react-i18next'
-import Close from '@assets/images/closeModal.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import { X } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
 import useStatusPage from './useStatusPage'
 import { HELIUM_STATUS_URL, Incident } from './statusPageTypes'
 import shortLocale from '../../utils/formatDistance'
@@ -23,42 +23,42 @@ const onTapStatusBanner = async () => {
 
 const hideBanner = () => Toast.hide()
 
+const CloseIcon = withUniwind(X)
+
+const HIT_SLOP = { top: 16, bottom: 16, left: 16, right: 16 }
+
 const IncidentToast = ({
   type,
   text1,
   text2,
   onPress,
 }: ToastConfigParams<unknown>) => {
-  const hitSlop = useHitSlop('m')
-  const { primaryText } = useColors()
-
   return (
-    <TouchableOpacityBox
+    <PressableScale
+      feedback="opacity"
       onPress={onPress}
-      flexDirection="row"
-      marginHorizontal="ms"
-      paddingVertical="m"
-      paddingLeft="lm"
-      borderRadius="m"
-      backgroundColor={type === 'danger' ? 'error' : 'orange500'}
+      className={twMerge(
+        'mx-3 flex-row rounded-md py-4 pl-5',
+        type === 'danger' ? 'bg-destructive' : 'bg-warning-500',
+      )}
     >
-      <Box flex={1}>
-        <Text variant="subtitle1" color="white" marginBottom="xs">
+      <View className="flex-1">
+        <Text size="lg" className="mb-1 font-semibold text-white">
           {text1}
         </Text>
-        <Text variant="body2" color="white">
+        <Text size="sm" className="text-white">
           {text2}
         </Text>
-      </Box>
-      <TouchableOpacityBox
+      </View>
+      <PressableScale
+        feedback="opacity"
         onPress={hideBanner}
-        padding="s"
-        hitSlop={hitSlop}
-        alignItems="flex-end"
+        hitSlop={HIT_SLOP}
+        className="items-end p-2"
       >
-        <Close color={primaryText} width={30} height={30} />
-      </TouchableOpacityBox>
-    </TouchableOpacityBox>
+        <CloseIcon size={24} colorClassName="accent-white" />
+      </PressableScale>
+    </PressableScale>
   )
 }
 
