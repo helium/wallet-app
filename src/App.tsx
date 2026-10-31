@@ -10,7 +10,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import globalStyles from '@theme/globalStyles'
 import * as SplashLib from 'expo-splash-screen'
 import React, { useMemo } from 'react'
-import { LogBox, StatusBar } from 'react-native'
+import { LogBox } from 'react-native'
 import useAppState from 'react-native-appstate-hook'
 import Config from '@utils/config'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -36,6 +36,7 @@ import { navigationRef } from './navigation/NavigationHelper'
 import { navigationTheme } from './navigation/navigationTheme'
 import RootNavigator from './navigation/RootNavigator'
 import SolanaProvider from './solana/SolanaProvider'
+import { RootStatusBar } from './ui/RootStatusBar'
 import WalletSignProvider from './solana/WalletSignProvider'
 import { useAccountStorage } from './storage/AccountStorageProvider'
 import { GovernanceProvider } from './storage/GovernanceProvider'
@@ -143,10 +144,7 @@ const App = () => {
                                                 */}
                                                 <PrivyAppProvider>
                                                   <AutoGasBanner />
-                                                  <StatusBar
-                                                    animated
-                                                    barStyle="dark-content"
-                                                  />
+                                                  <RootStatusBar />
                                                   <RootNavigator />
 
                                                   {/* place app specific modals here */}

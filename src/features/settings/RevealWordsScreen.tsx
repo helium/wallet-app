@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { getSecureAccount } from '@storage/secureStorage'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { RevealWords } from '@ui/RevealWords'
 import { Text } from '@ui/Text'
 import React, { useEffect, useState } from 'react'
@@ -30,6 +31,7 @@ const RevealWordsScreen = () => {
 
   return (
     <View className="flex-1 bg-black">
+      <FocusAwareStatusBar barStyle="light-content" />
       <SettingsBackHeader
         onBack={navigation.goBack}
         title={

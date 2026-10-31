@@ -18,6 +18,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { Input } from '@ui/Input'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
@@ -253,6 +254,7 @@ const BrowserScreen = () => {
 
   return (
     <View className="flex-1">
+      <FocusAwareStatusBar barStyle="light-content" />
       <View
         className="absolute inset-x-0 top-0 bg-primary"
         style={{ height: top }}

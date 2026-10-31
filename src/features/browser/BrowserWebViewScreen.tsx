@@ -4,6 +4,7 @@ import {
   SolanaSignMessageInput,
 } from '@solana/wallet-standard-features'
 import { VersionedTransaction } from '@solana/web3.js'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import bs58 from 'bs58'
@@ -532,6 +533,7 @@ const BrowserWebViewScreen = () => {
 
   return (
     <SafeArea className="flex-1 bg-primary" edges={EDGES}>
+      <FocusAwareStatusBar barStyle="light-content" />
       <WalletSignBottomSheet ref={walletSignBottomSheetRef} onClose={() => {}}>
         <BrowserHeader currentUrl={currentUrl} onClose={closeModal} />
         <WebView
