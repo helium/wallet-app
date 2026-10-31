@@ -75,12 +75,12 @@ export const VoteOption = ({
           <View className="flex-1 flex-row flex-wrap items-center gap-1">
             <Text className="text-muted-foreground">Voted by -</Text>
             {voters.map((voter, idx) => (
-              <>
-                <Voter key={voter.toBase58()} voter={voter} />
+              <React.Fragment key={voter.toBase58()}>
+                <Voter voter={voter} />
                 {idx !== voters.length - 1 && (
                   <Text className="text-muted-foreground">|</Text>
                 )}
-              </>
+              </React.Fragment>
             ))}
           </View>
         </View>

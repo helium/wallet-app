@@ -1,7 +1,10 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import { Portal } from '@gorhom/portal'
 import { NavigationContainer } from '@react-navigation/native'
+import { Text } from '@ui/Text'
+import { GovernanceModal } from '../components/GovernanceModal'
 import GovernanceWrapper from '../GovernanceWrapper'
 import ProposalsScreen from '../ProposalsScreen'
 
@@ -136,7 +139,9 @@ jest.mock(
   () => () => ({ handleDismiss: () => {}, setIsShowing: () => {} }),
   { virtual: true },
 )
-jest.mock('@theme/motion', () => ({ SHEET_TIMING: {} }), { virtual: true })
+jest.mock('@theme/motion', () => ({ SHEET_TIMING: {}, FADE_IN: {} }), {
+  virtual: true,
+})
 jest.mock('@ui/twMerge', () => jest.requireActual('../../../ui/twMerge'), {
   virtual: true,
 })
@@ -152,7 +157,14 @@ jest.mock('react-i18next', () => {
 jest.mock('react-native', () => ({
   View: 'View',
   ScrollView: 'ScrollView',
+  Platform: { OS: 'ios' },
+  StyleSheet: { absoluteFill: {} },
 }))
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: { createAnimatedComponent: (c: unknown) => c },
+}))
+jest.mock('expo-blur', () => ({ BlurView: 'BlurView' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
@@ -163,6 +175,7 @@ jest.mock('lucide-react-native', () => ({
   Flag: 'Flag',
   UserStar: 'UserStar',
   Zap: 'Zap',
+  X: 'X',
 }))
 
 // Tell React that this runner wraps renders and presses in act().
@@ -254,5 +267,32 @@ describe('ProposalsScreen', () => {
 
     const cards = root.findAllByType('ProposalCard' as never)
     expect(cards.map((c) => c.props.filter)).toEqual(['active'])
+  })
+
+  // PositionsScreen shape: the position modals and the Manage menus are
+  // portals in the wrapper's children, under the wrapper's sheet provider.
+  it('renders governance modals and default portals from its children', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <NavigationContainer>
+            <GovernanceWrapper selectedTab="positions">
+              <GovernanceModal onClose={() => {}}>
+                <Text>governance-modal</Text>
+              </GovernanceModal>
+              <Portal>
+                <Text>default-portal</Text>
+              </Portal>
+            </GovernanceWrapper>
+          </NavigationContainer>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+
+    const texts = textOf(renderer.root)
+    expect(texts).toContain('governance-modal')
+    expect(texts).toContain('default-portal')
   })
 })

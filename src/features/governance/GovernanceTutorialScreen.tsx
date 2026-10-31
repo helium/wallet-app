@@ -20,8 +20,8 @@ const CloseIcon = withUniwind(X)
 // Bold highlights in the slide bodies (en.ts uses <primaryText> and
 // <caribbeanGreen>).
 const bodyComponents = {
-  primaryText: <Text className="font-bold text-foreground" />,
-  caribbeanGreen: <Text className="font-bold text-success-500" />,
+  primaryText: <Text size="base" className="font-bold text-foreground" />,
+  caribbeanGreen: <Text size="base" className="font-bold text-success-500" />,
 }
 
 type CarouselItem = {

@@ -1,4 +1,5 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import { PortalHost } from '@gorhom/portal'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
 import React, { useEffect, useMemo } from 'react'
@@ -55,7 +56,9 @@ export const GovernanceWrapper: React.FC<
   }, [route, navigation])
 
   // The tab select and the proposal filter sheets portal to the nearest
-  // BottomSheetModalProvider. This one keeps them inside the screen.
+  // BottomSheetModalProvider. This one keeps them inside the screen. It also
+  // wraps the children in its own PortalProvider, so the children's portals
+  // (GovernanceModal, default <Portal>s) need the hosts below to render.
   return (
     <BottomSheetModalProvider>
       <SafeArea edges={safeEdges} className="flex-1 bg-background">
@@ -88,6 +91,8 @@ export const GovernanceWrapper: React.FC<
           )}
         </View>
       </SafeArea>
+      <PortalHost name="GovernancePortalHost" />
+      <PortalHost name="root" />
     </BottomSheetModalProvider>
   )
 }
