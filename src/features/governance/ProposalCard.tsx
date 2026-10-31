@@ -34,14 +34,6 @@ interface IProposalCardProps {
 }
 
 const markdownParser = MarkdownIt()
-export const ProposalCardSkeleton = ({ className }: { className?: string }) => (
-  <Animated.View
-    className={twMerge('flex-1 rounded-[12px] bg-secondary p-15', className)}
-    entering={FADE_IN}
-    exiting={FADE_OUT}
-  />
-)
-
 const StatusChip = ({
   dotClassName,
   label,

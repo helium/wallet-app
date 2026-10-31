@@ -82,7 +82,6 @@ const render = (element: React.ReactElement) => {
   const { root } = renderer
   return {
     pressable: () => root.findByType(Pressable),
-    box: () => root.findByType(Pressable),
     labels: () => root.findAllByType(RNText),
   }
 }
@@ -134,7 +133,7 @@ describe('Button', () => {
       </Button>,
     )
 
-    expect(view.box().props.className).toBe(
+    expect(view.pressable().props.className).toBe(
       'flex-row items-center justify-center gap-2 h-9 px-4 bg-destructive rounded-full',
     )
   })
@@ -184,8 +183,8 @@ describe('Button', () => {
       pressIn(view)
 
       expect(view.pressable().props.disabled).toBe(true)
-      expect(view.box().props.className).toContain('opacity-50')
-      expect(view.box().props.style).not.toHaveProperty('opacity')
+      expect(view.pressable().props.className).toContain('opacity-50')
+      expect(view.pressable().props.style).not.toHaveProperty('opacity')
     },
   )
 
@@ -198,7 +197,7 @@ describe('Button', () => {
 
     pressIn(view)
 
-    expect(view.box().props.style).toEqual(OPACITY_AT(0.7))
+    expect(view.pressable().props.style).toEqual(OPACITY_AT(0.7))
   })
 
   it('scales the default variant while pressed', () => {
@@ -206,7 +205,7 @@ describe('Button', () => {
 
     pressIn(view)
 
-    expect(view.box().props.style).toEqual(SCALE_AT(0.97))
+    expect(view.pressable().props.style).toEqual(SCALE_AT(0.97))
   })
 })
 
@@ -245,15 +244,15 @@ describe('PressableScale', () => {
       </PressableScale>,
     )
 
-    expect(view.box().props.className).toBe('rounded-xl')
-    expect(view.box().props.style).toEqual(SCALE_AT(1))
+    expect(view.pressable().props.className).toBe('rounded-xl')
+    expect(view.pressable().props.style).toEqual(SCALE_AT(1))
 
     pressIn(view)
-    expect(view.box().props.style).toEqual(SCALE_AT(0.97))
+    expect(view.pressable().props.style).toEqual(SCALE_AT(0.97))
     expect(onPressIn).toHaveBeenCalledTimes(1)
 
     pressOut(view)
-    expect(view.box().props.style).toEqual(SCALE_AT(1))
+    expect(view.pressable().props.style).toEqual(SCALE_AT(1))
     expect(onPressOut).toHaveBeenCalledTimes(1)
   })
 
@@ -293,10 +292,10 @@ describe('PressableScale', () => {
     )
 
     pressIn(view)
-    expect(view.box().props.style).toEqual(OPACITY_AT(0.7))
+    expect(view.pressable().props.style).toEqual(OPACITY_AT(0.7))
 
     pressOut(view)
-    expect(view.box().props.style).toEqual(OPACITY_AT(1))
+    expect(view.pressable().props.style).toEqual(OPACITY_AT(1))
   })
 
   it('fades in place of scale with opacity feedback', () => {
@@ -308,6 +307,6 @@ describe('PressableScale', () => {
 
     pressIn(view)
 
-    expect(view.box().props.style).toEqual(OPACITY_AT(0.7))
+    expect(view.pressable().props.style).toEqual(OPACITY_AT(0.7))
   })
 })

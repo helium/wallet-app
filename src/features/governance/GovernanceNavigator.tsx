@@ -1,4 +1,3 @@
-import { PortalHost } from '@gorhom/portal'
 import {
   NativeStackNavigationOptions,
   createNativeStackNavigator,
@@ -26,49 +25,43 @@ const GovernanceStackScreen = () => {
   const { voteTutorialShown } = useAppStorage()
 
   return (
-    <>
-      <GovernanceStack.Navigator screenOptions={screenOptions}>
-        {!voteTutorialShown && (
-          <GovernanceStack.Screen
-            name="GovernanceTutorialScreen"
-            component={GovernanceTutorialScreen}
-          />
-        )}
+    <GovernanceStack.Navigator screenOptions={screenOptions}>
+      {!voteTutorialShown && (
         <GovernanceStack.Screen
-          name="ProposalsScreen"
-          component={ProposalsScreen}
+          name="GovernanceTutorialScreen"
+          component={GovernanceTutorialScreen}
         />
-        <GovernanceStack.Screen
-          name="PositionsScreen"
-          component={PositionsScreen}
-        />
-        <GovernanceStack.Screen
-          name="ProxiesScreen"
-          component={ProxiesScreen}
-        />
-        <GovernanceStack.Screen
-          name="ProposalScreen"
-          component={ProposalScreen}
-          options={detailOptions}
-        />
-        <GovernanceStack.Screen
-          name="ProxyScreen"
-          component={ProxyScreen}
-          options={detailOptions}
-        />
-        <GovernanceStack.Screen
-          name="AssignProxyScreen"
-          component={AssignProxyScreen}
-          options={detailOptions}
-        />
-        <GovernanceStack.Screen
-          name="RevokeProxyScreen"
-          component={RevokeProxyScreen}
-          options={detailOptions}
-        />
-      </GovernanceStack.Navigator>
-      <PortalHost name="GovernancePortalHost" />
-    </>
+      )}
+      <GovernanceStack.Screen
+        name="ProposalsScreen"
+        component={ProposalsScreen}
+      />
+      <GovernanceStack.Screen
+        name="PositionsScreen"
+        component={PositionsScreen}
+      />
+      <GovernanceStack.Screen name="ProxiesScreen" component={ProxiesScreen} />
+      <GovernanceStack.Screen
+        name="ProposalScreen"
+        component={ProposalScreen}
+        options={detailOptions}
+      />
+      <GovernanceStack.Screen
+        name="ProxyScreen"
+        component={ProxyScreen}
+        options={detailOptions}
+      />
+      <GovernanceStack.Screen
+        name="AssignProxyScreen"
+        component={AssignProxyScreen}
+        options={detailOptions}
+      />
+      <GovernanceStack.Screen
+        name="RevokeProxyScreen"
+        component={RevokeProxyScreen}
+        options={detailOptions}
+      />
+    </GovernanceStack.Navigator>
   )
 }
 

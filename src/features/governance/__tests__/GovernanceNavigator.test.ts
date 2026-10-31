@@ -7,7 +7,6 @@ jest.mock('@react-navigation/native-stack', () => ({
     Screen: 'NativeStackScreen',
   }),
 }))
-jest.mock('@gorhom/portal', () => ({ PortalHost: 'PortalHost' }))
 jest.mock(
   '@storage/AppStorageProvider',
   () => ({ useAppStorage: () => ({ voteTutorialShown: false }) }),
@@ -32,9 +31,9 @@ type NavigatorProps = {
 // so calling it returns the element tree without a renderer.
 const renderNavigator = () => {
   const { type } = GovernanceNavigator as unknown as {
-    type: () => ReactElement<{ children: ReactElement[] }>
+    type: () => ReactElement<NavigatorProps>
   }
-  const [navigator] = type().props.children as ReactElement<NavigatorProps>[]
+  const navigator = type()
   const screens = navigator.props.children.filter(
     (child): child is ReactElement<ScreenProps> => !!child,
   )

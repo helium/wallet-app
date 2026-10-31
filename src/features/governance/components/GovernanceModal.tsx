@@ -20,11 +20,10 @@ type Props = {
 }
 
 // Full-screen blurred overlay for the governance position modals. It renders
-// in the nearest GovernancePortalHost. Every caller today sits under
-// GovernanceWrapper, which has one. GovernanceNavigator keeps a second host
-// beside the governance stack for callers outside the wrapper. A navigation
-// hook in content there gets the Governance tab's navigation, not the stack's:
-// call no navigation hook in the content.
+// in the GovernancePortalHost of GovernanceWrapper, so every caller must sit
+// under GovernanceWrapper. A navigation hook in content there gets the
+// Governance tab's navigation, not the stack's: call no navigation hook in
+// the content.
 export const GovernanceModal = ({
   children,
   onClose,
