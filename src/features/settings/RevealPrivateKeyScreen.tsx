@@ -30,7 +30,7 @@ const RevealPrivateKeyScreen = () => {
   const [privateKey, setPrivateKey] = useState<string>()
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()
-  const copyText = useCopyText()
+  const copyText = useCopyText({ haptic: false })
   useSecureWindow()
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const RevealPrivateKeyScreen = () => {
               className="w-full"
               onPress={() =>
                 copyText({
-                  message: t('generic.copy'),
+                  message: t('generic.privateKey'),
                   copyText: privateKey || '',
                 })
               }

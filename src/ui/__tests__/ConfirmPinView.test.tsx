@@ -103,6 +103,16 @@ describe('ConfirmPinView', () => {
     expect(pinSuccess.mock.calls).toEqual([['123456']])
   })
 
+  it('ignores digits past six', () => {
+    const pinSuccess = jest.fn()
+    const view = render({ pinSuccess })
+    view.press('1', '2', '3', '4', '5', '6', '7')
+    expect(view.filled()).toBe(6)
+    view.press('backspace')
+    expect(view.filled()).toBe(5)
+    expect(pinSuccess).toHaveBeenCalledTimes(1)
+  })
+
   it('clears a wrong PIN with a haptic and no success', () => {
     const pinSuccess = jest.fn()
     const view = render({ pinSuccess })

@@ -154,7 +154,10 @@ jest.mock('../../../storage/LanguageProvider', () => ({
 jest.mock('../../../storage/secureStorage', () => ({}))
 jest.mock('../../../utils/i18n', () => ({ SUPPORTED_LANGUAGUES: [] }))
 jest.mock('../../../utils/queryClient', () => ({ queryClient: {} }))
-jest.mock('../../../utils/supportedCurrencies', () => ({}))
+jest.mock('../../../utils/supportedCurrencies', () => ({
+  __esModule: true,
+  default: { USD: 'US Dollar' },
+}))
 
 // Tell React that this runner wraps renders and presses in act().
 ;(
@@ -200,5 +203,20 @@ describe('Settings', () => {
       .map((node) => node.props.children)
 
     expect(texts).toContain('Mainnet-Beta')
+  })
+
+  it('shows the short label of the selected currency', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+
+    const texts = renderer.root
+      .findAllByType('Text' as never)
+      .map((node) => node.props.children)
+
+    expect(texts).toContain('USD')
+    expect(texts).not.toContain('USD US Dollar')
   })
 })

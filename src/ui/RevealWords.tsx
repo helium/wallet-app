@@ -32,12 +32,12 @@ export const RevealWords = ({
   ListHeaderComponent,
 }: RevealWordsProps) => {
   const { t } = useTranslation()
-  const copyText = useCopyText()
+  const copyText = useCopyText({ haptic: false })
   useSecureWindow()
 
   const handleCopySeedPhrase = () => {
     copyText({
-      message: t('generic.copiedSeedPhrase'),
+      message: t('generic.seedPhrase'),
       copyText: mnemonic.join(' ') || '',
     })
   }

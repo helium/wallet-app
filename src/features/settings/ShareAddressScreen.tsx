@@ -1,5 +1,4 @@
 import useCopyText from '@hooks/useCopyText'
-import useHaptic from '@hooks/useHaptic'
 import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Button } from '@ui/Button'
@@ -24,14 +23,13 @@ const QR_PADDING = 24
 
 const ShareAddressScreen = () => {
   const { currentAccount } = useAccountStorage()
-  const { triggerNavHaptic } = useHaptic()
   const navigation = useNavigation()
   const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
   }>(null)
-  const copyText = useCopyText()
+  const copyText = useCopyText({ haptic: false })
 
   const address = currentAccount?.solanaAddress
 
@@ -70,7 +68,6 @@ const ShareAddressScreen = () => {
         }
       }
 
-      triggerNavHaptic()
       void Share.open(options)
     })
   }

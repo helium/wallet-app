@@ -66,6 +66,10 @@ const KeypadButton = ({
         testID={`Keypad.${value}`}
         onPressIn={() => onPress(value)}
         disabled={!value && value !== 0}
+        accessibilityRole="button"
+        accessibilityLabel={
+          value === 'backspace' ? t('generic.backspace') : undefined
+        }
         hitSlop={16}
       >
         {({ pressed }) => (

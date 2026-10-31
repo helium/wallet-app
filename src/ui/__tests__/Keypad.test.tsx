@@ -93,6 +93,13 @@ describe('Keypad', () => {
     press('Keypad.clear')
 
     expect(onPress.mock.calls).toEqual([[0], [7], ['backspace'], ['clear']])
+    expect(
+      keys(root).every((k) => k.props.accessibilityRole === 'button'),
+    ).toBe(true)
+    expect(
+      keys(root).find((k) => k.props.testID === 'Keypad.backspace')?.props
+        .accessibilityLabel,
+    ).toBe('generic.backspace')
     expect(mockTriggerImpact).toHaveBeenCalledTimes(4)
   })
 

@@ -5,7 +5,16 @@ import { RevealWords } from '../RevealWords'
 const mockCopyText = jest.fn()
 const mockUseSecureWindow = jest.fn()
 
-jest.mock('@hooks/useCopyText', () => () => mockCopyText, { virtual: true })
+const mockUseCopyText = jest.fn()
+
+jest.mock(
+  '@hooks/useCopyText',
+  () => (options: unknown) => {
+    mockUseCopyText(options)
+    return mockCopyText
+  },
+  { virtual: true },
+)
 jest.mock('@hooks/useSecureWindow', () => () => mockUseSecureWindow(), {
   virtual: true,
 })
@@ -71,7 +80,10 @@ describe('RevealWords', () => {
     let renderer!: TestRenderer.ReactTestRenderer
     act(() => {
       renderer = TestRenderer.create(
-        <RevealWords mnemonic={['apple', 'banana']} onDone={onDone} />,
+        <RevealWords
+          mnemonic={['apple', 'banana', 'cherry']}
+          onDone={onDone}
+        />,
       )
     })
     const { root } = renderer
@@ -82,14 +94,25 @@ describe('RevealWords', () => {
         .children
     expect(word(0)).toBe('APPLE')
     expect(word(1)).toBe('BANANA')
+    expect(word(2)).toBe('CHERRY')
+    const texts = root
+      .findAllByType('Text' as never)
+      .map((n) => n.props.children)
+    expect(texts.filter((c) => /^\d+\. $/.test(String(c)))).toEqual([
+      '1. ',
+      '2. ',
+      '3. ',
+    ])
     expect(mockUseSecureWindow).toHaveBeenCalled()
 
     act(() => {
       root.findByType('PressableScale' as never).props.onPress()
     })
+    // The copy pressable fires its own haptic.
+    expect(mockUseCopyText).toHaveBeenCalledWith({ haptic: false })
     expect(mockCopyText).toHaveBeenCalledWith({
-      message: 'generic.copiedSeedPhrase',
-      copyText: 'apple banana',
+      message: 'generic.seedPhrase',
+      copyText: 'apple banana cherry',
     })
 
     const next = root.findByType('Button' as never)
