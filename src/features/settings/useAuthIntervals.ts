@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { HeliumActionSheetItemType } from '../../components/HeliumActionSheetItem'
+import type { SelectItem } from './SettingsSelectSheet'
 
 const MILLIS_IN_SECOND = 1000
 const SECONDS_IN_MINUTE = 60
@@ -42,5 +42,5 @@ export default () => {
       label: t('settings.sections.security.authIntervals.after_4_hr'),
       value: Intervals.FOUR_HOURS,
     },
-  ] as HeliumActionSheetItemType[]
+  ] as SelectItem[]
 }

@@ -1,8 +1,3 @@
-import BackScreen from '@components/BackScreen'
-import ButtonPressable from '@components/ButtonPressable'
-import FabButton from '@components/FabButton'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { keyToAssetKey } from '@helium/helium-entity-manager-sdk'
 import { useHotspotBle } from '@helium/react-native-sdk'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -14,12 +9,20 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { DAO_KEY } from '@utils/constants'
 import { getHotspotWithRewards } from '@utils/solanaUtils'
 import { useQuery } from '@tanstack/react-query'
-import React, { useCallback, useEffect, useState } from 'react'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Plus } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
+import { FlatList, View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../../solana/SolanaProvider'
 import { CollectableNavigationProp } from '../../collectables/collectablesTypes'
+import OnboardingScreen from '../components/OnboardingScreen'
 import type { HotspotBLEStackParamList, HotspotBleNavProp } from './navTypes'
+
+const PlusIcon = withUniwind(Plus)
 
 type Option = {
   name: string
@@ -110,7 +113,7 @@ const Settings = () => {
   )
   const loading = loadingInfo || loadingAddress || loadingKta
 
-  const navNext = useCallback(async () => {
+  const navNext = async () => {
     if (iotInfo && keyToAsset && anchorProvider && wallet) {
       const collectable = await getHotspotWithRewards(
         keyToAsset.asset,
@@ -132,53 +135,34 @@ const Settings = () => {
         network: 'IOT',
       })
     }
-  }, [
-    createGatewayTx,
-    address,
-    anchorProvider,
-    navigation,
-    iotInfo,
-    keyToAsset,
-    collectNav,
-    wallet,
-  ])
+  }
 
-  const renderItem = React.useCallback(
-    ({ item, index }: { item: Option; index: number }) => {
-      return (
-        <TouchableOpacityBox
-          onPress={() => {
-            if (item.route === 'WifiSettings') {
-              navigation.push('WifiSettings', {})
-            } else {
-              navigation.push('Diagnostics')
-            }
-          }}
-          alignItems="center"
-          padding="l"
-          flexDirection="row"
-          borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="grey900"
-          borderBottomWidth={1}
-        >
-          <FabButton
-            icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
-            size={30}
-            disabled
-            marginRight="ms"
-          />
-          <Text color="secondaryText" variant="subtitle1">
-            {item.name}
-          </Text>
-        </TouchableOpacityBox>
-      )
-    },
-    [navigation],
-  )
+  const renderItem = ({ item, index }: { item: Option; index: number }) => {
+    return (
+      <PressableScale
+        onPress={() => {
+          if (item.route === 'WifiSettings') {
+            navigation.push('WifiSettings', {})
+          } else {
+            navigation.push('Diagnostics')
+          }
+        }}
+        feedback="opacity"
+        className={`flex-row items-center border-b border-border p-6 ${
+          index === 0 ? '' : 'border-t'
+        }`}
+      >
+        <View className="mr-3 size-[30px] items-center justify-center rounded-full bg-secondary">
+          <PlusIcon size={16} colorClassName="accent-foreground" />
+        </View>
+        <Text size="xl" className="font-medium text-muted-foreground">
+          {item.name}
+        </Text>
+      </PressableScale>
+    )
+  }
 
-  const keyExtractor = useCallback((option: Option) => option.name, [])
+  const keyExtractor = (option: Option) => option.name
   let errorMessage = error?.message
     ? error?.message.toString()
     : error?.toString()
@@ -187,7 +171,7 @@ const Settings = () => {
   }
 
   return (
-    <BackScreen title={t('hotspotOnboarding.settings.title')}>
+    <OnboardingScreen title={t('hotspotOnboarding.settings.title')}>
       <FlatList
         contentInsetAdjustmentBehavior="automatic"
         data={data}
@@ -195,24 +179,23 @@ const Settings = () => {
         keyExtractor={keyExtractor}
       />
       {error && (
-        <Text variant="body1Medium" color="red500">
+        <Text size="base" className="font-medium text-destructive">
           {t('hotspotOnboarding.settings.hotspotError')}
           {errorMessage}
         </Text>
       )}
       {!loadingInfo && !loadingKta && (
-        <ButtonPressable
-          marginTop="l"
-          borderRadius="round"
-          titleColor="black"
-          borderColor="transparent"
-          backgroundColor="white"
+        <Button
+          variant="cta"
+          size="lg"
+          className="mt-6 w-full"
           disabled={loading || !!error || !address}
-          title={iotInfo ? t('generic.done') : t('generic.next')}
           onPress={() => void navNext().catch(console.error)}
-        />
+        >
+          {iotInfo ? t('generic.done') : t('generic.next')}
+        </Button>
       )}
-    </BackScreen>
+    </OnboardingScreen>
   )
 }
 

@@ -10,7 +10,7 @@ const Stack = createNativeStackNavigator()
 
 const screenOptions = { headerShown: false } as NativeStackNavigationOptions
 
-export default React.memo(function OnboardingNav() {
+const OnboardingNav = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -25,4 +25,6 @@ export default React.memo(function OnboardingNav() {
       />
     </Stack.Navigator>
   )
-})
+}
+
+export default OnboardingNav

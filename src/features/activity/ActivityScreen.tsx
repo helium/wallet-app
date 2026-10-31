@@ -1,182 +1,149 @@
-import React, { useCallback, useMemo } from 'react'
-import { RefreshControl, SectionList } from 'react-native'
+import React from 'react'
+import {
+  RefreshControl,
+  SectionList,
+  SectionListRenderItem,
+  View,
+} from 'react-native'
 import { EnrichedTransaction } from 'src/types/solana'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
-import CircleLoader from '@components/CircleLoader'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import globalStyles from '@theme/globalStyles'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { ActivityNavigationProp } from './activityTypes'
 import ActivityListItem from './ActivityListItem'
+
+const SafeArea = withUniwind(SafeAreaView)
+
+type Transaction = EnrichedTransaction | ConfirmedSignatureInfo
+type Section = { title: string; data: Transaction[] }
 
 const ActivityScreen = () => {
   const { transactions, loading, fetchingMore, fetchMore, refresh } =
     useEnrichedTransactions()
   const { t } = useTranslation()
-  const spacing = useSpacing()
-  const colors = useColors()
   const navigation = useNavigation<ActivityNavigationProp>()
 
-  const contentContainer = useMemo(
-    () => ({
-      paddingBottom: spacing.xxxl,
-    }),
-    [spacing.xxxl],
-  )
+  // Group by date
+  const grouped = transactions.reduce(
+    (acc, tx) => {
+      const enrichedTx = tx as EnrichedTransaction
+      const confirmedSig = tx as ConfirmedSignatureInfo
 
-  const SectionData = useMemo((): {
-    title: string
-    data: (EnrichedTransaction | ConfirmedSignatureInfo)[]
-  }[] => {
-    // Group by date
-    const grouped = transactions.reduce(
-      (acc, tx) => {
-        const enrichedTx = tx as EnrichedTransaction
-        const confirmedSig = tx as ConfirmedSignatureInfo
+      const date = new Date()
 
-        const date = new Date()
-
-        if (enrichedTx.timestamp) {
-          date.setTime(enrichedTx.timestamp * 1000)
-        }
-
-        if (confirmedSig.blockTime) {
-          date.setTime(confirmedSig.blockTime * 1000)
-        }
-
-        const key = date.toDateString()
-        if (!acc[key]) {
-          acc[key] = []
-        }
-
-        if (!tx) return acc
-
-        acc[key].push(tx)
-        return acc
-      },
-      {} as Record<string, (EnrichedTransaction | ConfirmedSignatureInfo)[]>,
-    )
-
-    // Create array of objects
-    const sections = Object.keys(grouped).map((date) => {
-      return {
-        title: date,
-        data: grouped[date],
+      if (enrichedTx.timestamp) {
+        date.setTime(enrichedTx.timestamp * 1000)
       }
+
+      if (confirmedSig.blockTime) {
+        date.setTime(confirmedSig.blockTime * 1000)
+      }
+
+      const key = date.toDateString()
+      if (!acc[key]) {
+        acc[key] = []
+      }
+
+      if (!tx) return acc
+
+      acc[key].push(tx)
+      return acc
+    },
+    {} as Record<string, Transaction[]>,
+  )
+
+  const sections: Section[] = Object.keys(grouped).map((date) => ({
+    title: date,
+    data: grouped[date],
+  }))
+
+  const renderSectionHeader = ({
+    section: { title },
+  }: {
+    section: Section
+  }) => (
+    <View className="flex-row items-center justify-center bg-background px-6 pb-4 pt-8">
+      <Text size="xs" className="text-center text-muted-foreground">
+        {title}
+      </Text>
+    </View>
+  )
+
+  const handleActivityItemPress = (transaction: Transaction) => () => {
+    navigation.navigate('ActivityDetailsScreen', {
+      transaction,
     })
+  }
 
-    return sections
-  }, [transactions])
+  const renderItem: SectionListRenderItem<Transaction, Section> = ({
+    item,
+    index,
+    section,
+  }) => {
+    const firstItem = index === 0
+    const lastItem = index === section.data.length - 1
 
-  const renderSectionHeader = useCallback(
-    ({ section: { title } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="xl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-        justifyContent="center"
-      >
-        <Text variant="body3" textAlign="center" color="secondaryText">
-          {title}
-        </Text>
-      </Box>
-    ),
-    [],
-  )
-
-  const renderHeader = useCallback(() => {
     return (
-      <Box
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-      >
-        <Text variant="h4" textAlign="center">
-          {t('activityScreen.title')}
-        </Text>
-      </Box>
+      <ActivityListItem
+        className={twMerge(
+          'mx-4',
+          firstItem && 'rounded-t-[20px]',
+          lastItem && 'rounded-b-[20px]',
+        )}
+        hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
+        transaction={item}
+        onPress={handleActivityItemPress(item)}
+      />
     )
-  }, [t])
+  }
 
-  const handleActivityItemPress = useCallback(
-    (transaction: EnrichedTransaction | ConfirmedSignatureInfo) => () => {
-      navigation.navigate('ActivityDetailsScreen', {
-        transaction,
-      })
-    },
-    [navigation],
-  )
-
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
-
-  const renderItem = useCallback(
-    ({ item, index, section }) => {
-      const firstItem = index === 0
-      const lastItem = index === section.data.length - 1
-
-      return (
-        <ActivityListItem
-          borderTopStartRadius={firstItem ? 'xl' : undefined}
-          borderTopEndRadius={firstItem ? 'xl' : undefined}
-          borderBottomStartRadius={lastItem ? 'xl' : undefined}
-          borderBottomEndRadius={lastItem ? 'xl' : undefined}
-          hasDivider={!lastItem || (firstItem && section.data.length !== 1)}
-          marginHorizontal="m"
-          transaction={item}
-          onPress={handleActivityItemPress(item)}
-        />
-      )
-    },
-    [handleActivityItemPress],
-  )
-
-  const Footer = useCallback(() => {
-    return fetchingMore ? (
-      <Box marginTop="m">
-        <CircleLoader loaderSize={40} />
-      </Box>
-    ) : null
-  }, [fetchingMore])
-
-  const keyExtractor = useCallback((item, index) => item.signature + index, [])
+  const keyExtractor = (item: Transaction, index: number) =>
+    item.signature + index
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
-      <SafeAreaBox edges={safeEdges}>
+    <View className="flex-1">
+      <SafeArea edges={['top']}>
         <SectionList
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={contentContainer}
-          sections={SectionData}
+          contentContainerClassName="pb-15"
+          sections={sections}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={
+            <View className="bg-background px-6 pb-4 pt-12">
+              <Text size="xl" className="text-center">
+                {t('activityScreen.title')}
+              </Text>
+            </View>
+          }
           refreshControl={
             <RefreshControl
               enabled
               refreshing={loading}
               onRefresh={() => void refresh().catch(console.error)}
               title=""
-              tintColor={colors.primaryText}
+              tintColorClassName="accent-foreground"
             />
           }
           onEndReachedThreshold={0.05}
           onEndReached={() => void fetchMore().catch(console.error)}
-          ListFooterComponent={Footer}
+          ListFooterComponent={
+            fetchingMore ? (
+              <View className="mt-4">
+                <Spinner size="large" />
+              </View>
+            ) : null
+          }
         />
-      </SafeAreaBox>
-    </ReAnimatedBox>
+      </SafeArea>
+    </View>
   )
 }
 

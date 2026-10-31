@@ -1,9 +1,3 @@
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import RadioButton from '@components/RadioButton'
-import Text from '@components/Text'
 import {
   init,
   iotInfoKey,
@@ -35,11 +29,18 @@ import { toTransactionData, hashTagParams } from '@utils/transactionUtils'
 import BN from 'bn.js'
 import { Buffer } from 'buffer'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import React, { useMemo, useState } from 'react'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { PressableScale } from '@ui/PressableScale'
+import { RadioButton } from '@ui/RadioButton'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, ScrollView } from 'react-native'
+import { Alert, Linking, ScrollView, View } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
 import { CollectableNavigationProp } from '../../collectables/collectablesTypes'
+import OnboardingScreen from '../components/OnboardingScreen'
 import { HotspotBLEStackParamList } from './navTypes'
 
 type Route = RouteProp<HotspotBLEStackParamList, 'AddGatewayBle'>
@@ -72,9 +73,10 @@ const AddGatewayBle = () => {
     locationAssertDcRequirements,
     loadingOnboardingDcRequirements,
   } = useOnboardingBalnces(onboardingAddress)
-  const keyToAssetK = useMemo(() => {
-    return keyToAssetKey(daoKey(HNT_MINT)[0], onboardingAddress)[0].toBase58()
-  }, [onboardingAddress])
+  const keyToAssetK = keyToAssetKey(
+    daoKey(HNT_MINT)[0],
+    onboardingAddress,
+  )[0].toBase58()
   const { info: keyToAsset } = useKeyToAsset(keyToAssetK)
   const { data: asset } = useQuery({
     queryKey: [
@@ -319,19 +321,26 @@ const AddGatewayBle = () => {
   )
   const usd = requiredDc.toNumber() / 100000
   const assertUsd = assertRequiredDc.toNumber() / 100000
+  const paymentOptions = [
+    {
+      value: 'contact' as const,
+      label: t('hotspotOnboarding.onboarding.optionContact'),
+    },
+    {
+      value: 'pay' as const,
+      label: t('hotspotOnboarding.onboarding.optionPay', { usd, assertUsd }),
+    },
+  ]
 
   return (
-    <BackScreen title={t('hotspotOnboarding.onboarding.title')}>
+    <OnboardingScreen title={t('hotspotOnboarding.onboarding.title')}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerClassName="grow"
       >
         <Text
-          marginTop="m"
-          marginBottom="m"
-          variant="subtitle1"
-          color="secondaryText"
-          textAlign="left"
+          size="xl"
+          className="my-4 text-left font-medium text-muted-foreground"
           adjustsFontSizeToFit
         >
           {t('hotspotOnboarding.onboarding.subtitle', {
@@ -339,16 +348,16 @@ const AddGatewayBle = () => {
           })}
         </Text>
         {error && (
-          <Text variant="body1Medium" color="red500">
+          <Text size="base" className="font-medium text-destructive">
             {error.message ? error.message.toString() : error.toString()}
           </Text>
         )}
         {!wrongOwner && balError && (
           <>
-            <Text variant="body1Medium" color="red500">
+            <Text size="base" className="font-medium text-destructive">
               {t('hotspotOnboarding.onboarding.responsible')}
             </Text>
-            <Text mt="s" variant="body1Medium" color="red500">
+            <Text size="base" className="mt-2 font-medium text-destructive">
               {t('hotspotOnboarding.onboarding.manufacturerMissing', {
                 name: maker?.name,
                 tokens: `${[
@@ -359,38 +368,37 @@ const AddGatewayBle = () => {
                   .join(' and ')}`,
               })}
             </Text>
-            <Text mt="s" variant="body1Medium" color="red500">
+            <Text size="base" className="mt-2 font-medium text-destructive">
               {t('hotspotOnboarding.onboarding.twoSolutions')}
             </Text>
-            <Box
-              pl="s"
-              flexDirection="column"
-              alignItems="flex-start"
-              justifyContent="flex-start"
-            >
-              <RadioButton
-                label={t('hotspotOnboarding.onboarding.optionContact')}
-                selected={selectedOption === 'contact'}
-                onClick={() => setSelectedOption('contact')}
-              />
-              <RadioButton
-                label={t('hotspotOnboarding.onboarding.optionPay', {
-                  usd,
-                  assertUsd,
-                })}
-                selected={selectedOption === 'pay'}
-                onClick={() => setSelectedOption('pay')}
-              />
-            </Box>
+            <View accessibilityRole="radiogroup" className="items-start pl-2">
+              {paymentOptions.map(({ value, label }) => (
+                <PressableScale
+                  key={value}
+                  feedback="opacity"
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: selectedOption === value }}
+                  className="mt-4 flex-row items-center gap-3"
+                  onPress={() => setSelectedOption(value)}
+                >
+                  <RadioButton
+                    selected={selectedOption === value}
+                    onSelect={() => setSelectedOption(value)}
+                    accessible={false}
+                    importantForAccessibility="no"
+                  />
+                  <Text size="base" className="shrink">
+                    {label}
+                  </Text>
+                </PressableScale>
+              ))}
+            </View>
 
             {selectedOption === 'contact' && (
-              <ButtonPressable
-                marginTop="l"
-                borderRadius="round"
-                titleColor="black"
-                borderColor="transparent"
-                backgroundColor="white"
-                title={t('hotspotOnboarding.onboarding.contact')}
+              <Button
+                variant="cta"
+                size="lg"
+                className="mt-6 w-full"
                 onPress={() =>
                   void (async () => {
                     const url = `https://docs.helium.com/hotspot-makers/#${maker?.name.toLowerCase()}`
@@ -402,18 +410,26 @@ const AddGatewayBle = () => {
                     }
                   })().catch(console.error)
                 }
-              />
+              >
+                {t('hotspotOnboarding.onboarding.contact')}
+              </Button>
             )}
 
             {selectedOption === 'pay' && (
               <>
                 {!callbackLoading && insufficientMySolBal && (
-                  <Text mt="s" variant="body1Medium" color="red500">
+                  <Text
+                    size="base"
+                    className="mt-2 font-medium text-destructive"
+                  >
                     {t('hotspotOnboarding.onboarding.notEnoughSol')}
                   </Text>
                 )}
                 {!callbackLoading && insufficientMyDcBal && (
-                  <Text mt="s" variant="body1Medium" color="red500">
+                  <Text
+                    size="base"
+                    className="mt-2 font-medium text-destructive"
+                  >
                     {t('hotspotOnboarding.onboarding.notEnoughDc')}
                   </Text>
                 )}
@@ -421,32 +437,27 @@ const AddGatewayBle = () => {
                   (!insufficientMySolBal && !insufficientMyDcBal)) && (
                   <>
                     <Text
-                      fontWeight="bold"
-                      mt="s"
-                      variant="body1Medium"
-                      color="red500"
+                      size="base"
+                      className="mt-2 font-bold text-destructive"
                     >
                       {t('hotspotOnboarding.onboarding.pay', {
                         usd,
                         assertUsd,
                       })}
                     </Text>
-                    <ButtonPressable
-                      marginTop="l"
-                      borderRadius="round"
-                      titleColor="black"
-                      borderColor="transparent"
-                      opacity={disabled ? 0.5 : undefined}
-                      backgroundColor="red500"
-                      title={
-                        loading
-                          ? undefined
-                          : t('hotspotOnboarding.onboarding.onboardAndPay')
-                      }
+                    <Button
+                      variant="destructive"
+                      size="lg"
+                      className="mt-6 w-full"
                       onPress={() => handleAddGateway()}
-                      disabled={disabled}
-                      LeadingComponent={loading ? <CircleLoader /> : undefined}
-                    />
+                      disabled={!!disabled}
+                    >
+                      {loading ? (
+                        <Spinner colorClassName="accent-white" />
+                      ) : (
+                        t('hotspotOnboarding.onboarding.onboardAndPay')
+                      )}
+                    </Button>
                   </>
                 )}
               </>
@@ -454,21 +465,21 @@ const AddGatewayBle = () => {
           </>
         )}
         {!wrongOwner && !balError ? (
-          <ButtonPressable
-            marginTop="l"
-            borderRadius="round"
-            titleColor="black"
-            borderColor="transparent"
-            opacity={disabled ? 0.5 : undefined}
-            backgroundColor="white"
-            title={t('hotspotOnboarding.onboarding.onboard')}
+          <Button
+            variant="cta"
+            size="lg"
+            className="mt-6 w-full"
             onPress={() => handleAddGateway()}
-            disabled={disabled}
-            LeadingComponent={loading ? <CircleLoader /> : undefined}
-          />
+            disabled={!!disabled}
+          >
+            {loading && <Spinner size="small" colorClassName="accent-white" />}
+            <Text className={buttonTextVariants({ variant: 'cta' })}>
+              {t('hotspotOnboarding.onboarding.onboard')}
+            </Text>
+          </Button>
         ) : null}
       </ScrollView>
-    </BackScreen>
+    </OnboardingScreen>
   )
 }
 

@@ -1,10 +1,9 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { format } from 'date-fns'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
-import TouchableContainer from '@components/TouchableContainer'
-import { Insets } from 'react-native'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import { View } from 'react-native'
 import parseMarkup from '../../utils/parseMarkup'
 import { Notification } from '../../utils/walletApiV2'
 
@@ -12,73 +11,51 @@ export type NotificationListItemProps = {
   notification: Notification
   viewed?: boolean
   hasDivider?: boolean
-  hitSlop?: Insets
-} & TouchableOpacityBoxProps
+  className?: string
+  onPress: () => void
+}
 
 const NotificationListItem = ({
   notification,
   viewed,
   hasDivider,
-  ...rest
+  className,
+  onPress,
 }: NotificationListItemProps) => {
-  const title = useMemo(() => {
-    return notification.title
-  }, [notification.title])
-
-  const subtitle = useMemo(() => {
-    return parseMarkup(notification.body)
-  }, [notification.body])
-
-  const time = useMemo(() => {
-    const date = new Date(notification.time)
-    // To local time
-    date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
-    return format(date, 'hh:mm a')
-  }, [notification.time])
+  const date = new Date(notification.time)
+  // To local time
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+  const time = format(date, 'hh:mm a')
 
   return (
-    <TouchableContainer
-      backgroundColor="secondaryBackground"
-      flexDirection="row"
-      padding="m"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="black"
-      {...rest}
-    >
-      <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
-        <Box flexDirection="row" alignItems="center" marginBottom="xs">
-          {!viewed && (
-            <Box
-              borderRadius="round"
-              backgroundColor="malachite"
-              width={10}
-              height={10}
-              marginRight="xs"
-            />
-          )}
-          <Text
-            variant="subtitle4"
-            color="primaryText"
-            adjustsFontSizeToFit
-            allowFontScaling
-          >
-            {title}
-          </Text>
-        </Box>
-        <Text variant="body3" color="secondaryText" numberOfLines={2}>
-          {subtitle}
-        </Text>
-      </Box>
-      <Text
-        variant="body3"
-        fontSize={10}
-        fontStyle="italic"
-        color="secondaryText"
-        paddingStart="s"
+    <View className="mx-4">
+      <PressableScale
+        feedback="opacity"
+        onPress={onPress}
+        className={twMerge(
+          'flex-row bg-secondary p-4',
+          hasDivider && 'border-b border-border',
+          className,
+        )}
       >
-        {time}
-      </Text>
-    </TouchableContainer>
+        <View className="ms-2 grow basis-0 justify-center">
+          <View className="mb-1 flex-row items-center">
+            {!viewed && (
+              <View className="mr-1 size-2.5 rounded-full bg-success-500" />
+            )}
+            <Text className="font-medium" adjustsFontSizeToFit allowFontScaling>
+              {notification.title}
+            </Text>
+          </View>
+          <Text size="xs" className="text-muted-foreground" numberOfLines={2}>
+            {parseMarkup(notification.body)}
+          </Text>
+        </View>
+        <Text className="ps-2 text-[10px] italic text-muted-foreground">
+          {time}
+        </Text>
+      </PressableScale>
+    </View>
   )
 }
 

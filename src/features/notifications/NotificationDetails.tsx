@@ -1,22 +1,28 @@
-import React, { memo, useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { formatDistanceToNow, parseISO } from 'date-fns'
-import Animated from 'react-native-reanimated'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import BackButton from '@components/BackButton'
+import { ChevronLeft } from 'lucide-react-native'
+import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import usePrevious from '@hooks/usePrevious'
 import useMount from '@hooks/useMount'
-import globalStyles from '@theme/globalStyles'
 import { NotificationsListStackParamList } from './notificationTypes'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationDetailBanner from './NotificationDetailBanner'
 import parseMarkup from '../../utils/parseMarkup'
 
+const SafeArea = withUniwind(SafeAreaView)
+const BackIcon = withUniwind(ChevronLeft)
+
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 
 const NotificationDetails = () => {
+  const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation()
   const { notification } = route.params
@@ -44,59 +50,45 @@ const NotificationDetails = () => {
     }
   }, [navigation, selectedList, prevSelectedList])
 
-  const bodyStyle = useMemo(
-    () => ({ paddingBottom: notification.actionTitle ? 90 : 0 }),
-    [notification],
-  )
-
-  const time = useMemo(
-    () =>
-      formatDistanceToNow(parseISO(notification.time), {
-        addSuffix: true,
-      }),
-    [notification],
-  )
+  const time = formatDistanceToNow(parseISO(notification.time), {
+    addSuffix: true,
+  })
 
   return (
-    <Animated.View style={globalStyles.container}>
-      <SafeAreaBox
-        backgroundColor="primaryBackground"
-        flex={1}
-        paddingHorizontal="l"
-        paddingTop="m"
-      >
-        <BackButton
+    <SafeArea className="flex-1 bg-background px-6 pt-4">
+      <View className="mb-4 items-start">
+        <PressableScale
           onPress={navigation.goBack}
-          color="surfaceSecondaryText"
-          paddingHorizontal="none"
-          marginBottom="m"
-        />
+          hitSlop={24}
+          feedback="opacity"
+          accessibilityLabel={t('generic.back')}
+        >
+          <BackIcon size={24} colorClassName="accent-muted-foreground" />
+        </PressableScale>
+      </View>
 
-        <Box marginHorizontal="m">
-          <NotificationDetailBanner icon={notification.icon} />
-          <Text
-            variant="h3"
-            marginTop="m"
-            adjustsFontSizeToFit
-            numberOfLines={2}
-          >
-            {notification.title}
-          </Text>
-          <Text variant="body2" paddingVertical="m" color="greenBright500">
-            {time}
-          </Text>
-          <Text
-            variant="body2"
-            color="surfaceSecondaryText"
-            style={bodyStyle}
-            marginBottom="xl"
-          >
-            {parseMarkup(notification.body)}
-          </Text>
-        </Box>
-      </SafeAreaBox>
-    </Animated.View>
+      <View className="mx-4">
+        <NotificationDetailBanner icon={notification.icon} />
+        <Text
+          size="2xl"
+          className="mt-4"
+          adjustsFontSizeToFit
+          numberOfLines={2}
+        >
+          {notification.title}
+        </Text>
+        <Text className="py-4 text-success-500">{time}</Text>
+        <Text
+          className={twMerge(
+            'mb-8 text-muted-foreground',
+            notification.actionTitle && 'pb-[90px]',
+          )}
+        >
+          {parseMarkup(notification.body)}
+        </Text>
+      </View>
+    </SafeArea>
   )
 }
 
-export default memo(NotificationDetails)
+export default NotificationDetails
