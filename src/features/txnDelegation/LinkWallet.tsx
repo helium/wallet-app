@@ -1,7 +1,9 @@
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import React, { memo, useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { getUnixTime } from 'date-fns'
 import { getBundleId } from 'react-native-device-info'
 import {
@@ -10,14 +12,13 @@ import {
   makeAppLinkAuthToken,
 } from '@helium/wallet-link'
 import { NetTypes } from '@helium/address'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import AccountSelector, {
   AccountSelectorRef,
 } from '@components/AccountSelector'
 import AccountButton from '@components/AccountButton'
 import useAlert from '@hooks/useAlert'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { formatAccountAlias } from '../../utils/accountUtils'
@@ -27,6 +28,8 @@ import {
   RootStackParamList,
 } from '../../navigation/rootTypes'
 import sleep from '../../utils/sleep'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 type Route = RouteProp<RootStackParamList, 'LinkWallet'>
 const LinkWallet = () => {
@@ -70,7 +73,7 @@ const LinkWallet = () => {
     [callbackUrl, currentAccount?.address, navigation, rootNav],
   )
 
-  const handleLink = useCallback(async () => {
+  const handleLink = async () => {
     if (!currentAccount?.address) return
     const keypair = await getKeypair(currentAccount.address)
     if (!keypair) {
@@ -91,7 +94,7 @@ const LinkWallet = () => {
       keypair,
     )
     await callback({ token, status: 'success' })
-  }, [currentAccount, requestAppId, callbackUrl, appName, callback])
+  }
 
   const handleCancel = useCallback(async () => {
     await callback({ status: 'user_cancelled' })
@@ -130,23 +133,18 @@ const LinkWallet = () => {
     t,
   ])
 
-  const handleAccountButtonPress = useCallback(() => {
+  const handleAccountButtonPress = () => {
     if (!accountSelectorRef?.current) return
     accountSelectorRef.current.showAccountTypes(NetTypes.MAINNET)()
-  }, [])
+  }
 
   return (
     <AccountSelector ref={accountSelectorRef}>
-      <SafeAreaBox
-        backgroundColor="primaryBackground"
-        flex={1}
-        padding="l"
-        justifyContent="center"
-      >
-        <Text variant="body1" fontSize={32} marginTop="m">
+      <SafeArea className="flex-1 justify-center bg-background p-6">
+        <Text size="3xl" className="mt-4">
           {t('linkWallet.title', { appName })}
         </Text>
-        <Text variant="body1" marginVertical="m">
+        <Text size="base" className="my-4">
           {t('linkWallet.body', { appName })}
         </Text>
 
@@ -158,38 +156,26 @@ const LinkWallet = () => {
           onPress={handleAccountButtonPress}
         />
 
-        <TouchableOpacityBox
-          marginTop="ms"
-          minHeight={56}
-          backgroundColor="surfaceContrast"
-          justifyContent="center"
-          borderRadius="round"
+        <Button
+          variant="cta"
+          size="lg"
+          className="mt-3 w-full"
           onPress={() => void handleLink().catch(console.error)}
         >
-          <Text
-            variant="subtitle1"
-            color="surfaceContrastText"
-            textAlign="center"
-          >
-            {t('linkWallet.yes')}
-          </Text>
-        </TouchableOpacityBox>
+          {t('linkWallet.yes')}
+        </Button>
 
-        <TouchableOpacityBox
-          minHeight={56}
-          justifyContent="center"
-          backgroundColor="secondary"
-          marginTop="ms"
-          borderRadius="round"
+        <Button
+          variant="secondary"
+          size="lg"
+          className="mt-3 w-full"
           onPress={() => void handleCancel().catch(console.error)}
         >
-          <Text variant="subtitle1" color="primaryText" textAlign="center">
-            {t('linkWallet.no')}
-          </Text>
-        </TouchableOpacityBox>
-      </SafeAreaBox>
+          {t('linkWallet.no')}
+        </Button>
+      </SafeArea>
     </AccountSelector>
   )
 }
 
-export default memo(LinkWallet)
+export default LinkWallet

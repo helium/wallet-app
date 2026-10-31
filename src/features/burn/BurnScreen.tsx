@@ -1,19 +1,13 @@
-import Close from '@assets/images/close.svg'
-import QR from '@assets/images/qr.svg'
 import AccountButton from '@components/AccountButton'
 import AccountSelector, {
   AccountSelectorRef,
 } from '@components/AccountSelector'
-import Box from '@components/Box'
-import SafeAreaBox from '@components/SafeAreaBox'
 import SubmitButton from '@components/SubmitButton'
-import Text from '@components/Text'
 import TokenButton from '@components/TokenButton'
 import TokenSelector, {
   TokenListItem,
   TokenSelectorRef,
 } from '@components/TokenSelector'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
 import { useOwnedAmount, useSolOwnedAmount } from '@helium/helium-react-hooks'
 import {
@@ -28,25 +22,25 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useHitSlop } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { BN } from 'bn.js'
-import React, {
-  memo as reactMemo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { QrCode, X } from 'lucide-react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform } from 'react-native'
+import { Platform, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  Edge,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import AddressBookSelector, {
   AddressBookRef,
-} from '../../components/AddressBookSelector'
-import HNTKeyboard, { HNTKeyboardRef } from '../../components/HNTKeyboard'
-import IconPressedContainer from '../../components/IconPressedContainer'
+} from '@components/AddressBookSelector'
+import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -67,6 +61,11 @@ import PaymentSubmit from '../payment/PaymentSubmit'
 import PaymentSummary from '../payment/PaymentSummary'
 
 const FEE = new BN(TXN_FEE_IN_SOL)
+const SafeArea = withUniwind(SafeAreaView)
+const QrIcon = withUniwind(QrCode)
+const CloseIcon = withUniwind(X)
+
+const errorMessage = (e: unknown) => (e as Error)?.message
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
 const BurnScreen = () => {
@@ -81,7 +80,6 @@ const BurnScreen = () => {
   const { top } = useSafeAreaInsets()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
   const accountSelectorRef = useRef<AccountSelectorRef>(null)
   const { submitDelegateDataCredits, delegateDataCreditsMutation } =
@@ -97,16 +95,12 @@ const BurnScreen = () => {
 
   // The delegate goes out as one transaction, so it is retried only when every
   // transaction the batch reports failed.
-  const batchFailed = useMemo(
-    () =>
-      batchFailure(status, transactions, [
-        {
-          item: 'delegate',
-          signatures: transactions.map((tx) => tx.signature),
-        },
-      ]),
-    [status, transactions],
-  )
+  const batchFailed = batchFailure(status, transactions, [
+    {
+      item: 'delegate',
+      signatures: transactions.map((tx) => tx.signature),
+    },
+  ])
 
   // Only show loading after we have a batchId (transaction submitted)
   const isSubmitting = batchId ? batchLoading || status === 'pending' : false
@@ -129,42 +123,31 @@ const BurnScreen = () => {
   const { symbol } = useMetaplexMetadata(mint)
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 
-  const { isDelegate } = useMemo(() => route.params, [route.params])
+  const { isDelegate } = route.params
 
-  const containerStyle = useMemo(
-    () => ({ marginTop: Platform.OS === 'android' ? top : undefined }),
-    [top],
-  )
+  const containerStyle = {
+    marginTop: Platform.OS === 'android' ? top : undefined,
+  }
 
-  const networkType = useMemo(
-    () => accountNetType(route.params.address),
-    [route.params.address],
-  )
+  const networkType = accountNetType(route.params.address)
 
-  const handleShowAccounts = useCallback(() => {
+  const handleShowAccounts = () => {
     if (!accountSelectorRef?.current) return
     accountSelectorRef.current.showAccountTypes(networkType)()
-  }, [networkType])
+  }
 
-  const amountBalance = useMemo(() => {
-    const amount = new BN(route.params.amount || 0)
+  const amountBalance = dcAmount || new BN(route.params.amount || 0)
 
-    if (dcAmount) return dcAmount
+  const amountInDc = amountBalance
+    ? networkTokensToDc(amountBalance)
+    : undefined
 
-    return amount
-  }, [dcAmount, route.params.amount])
-
-  const amountInDc = useMemo(() => {
-    if (!amountBalance) return
-    return networkTokensToDc(amountBalance)
-  }, [amountBalance, networkTokensToDc])
-
-  const onTokenItemPressed = useCallback(() => {
+  const onTokenItemPressed = () => {
     hntKeyboardRef.current?.show({
       payer: currentAccount,
       balance: amountBalance,
     })
-  }, [amountBalance, currentAccount])
+  }
 
   useEffect(() => {
     if (currentAccount?.netType === networkType || isDelegate) return
@@ -200,134 +183,110 @@ const BurnScreen = () => {
     t,
   ])
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = async () => {
     // Reset mutation state on retry
     delegateDataCreditsMutation.reset()
+    if (!isDelegate || !amountBalance) return
     try {
-      if (isDelegate && amountBalance) {
-        await submitDelegateDataCredits(
-          delegateAddress,
-          amountBalance.toNumber(),
-          mint,
-          memo,
-        )
-      }
-    } catch (e) {
-      setSubmitError((e as Error)?.message)
-    }
-  }, [
-    amountBalance,
-    delegateAddress,
-    isDelegate,
-    mint,
-    memo,
-    submitDelegateDataCredits,
-    setSubmitError,
-    delegateDataCreditsMutation,
-  ])
-
-  const handleQrScan = useCallback(() => {
-    navigation.navigate('PaymentQrScanner')
-  }, [navigation])
-
-  const insufficientFunds = useMemo(() => {
-    if (!amountBalance || !dcBalance || !solBalance) return false
-
-    return amountBalance.gt(dcBalance) || FEE.gt(solBalance)
-  }, [amountBalance, dcBalance, solBalance])
-
-  const errors = useMemo(() => {
-    const errStrings: string[] = []
-    if (insufficientFunds) {
-      errStrings.push(
-        t('payment.insufficientFunds', {
-          token: dcBalance && amountBalance.gt(dcBalance) ? 'DC' : 'SOL',
-        }),
+      await submitDelegateDataCredits(
+        delegateAddress,
+        amountBalance.toNumber(),
+        mint,
+        memo,
       )
+    } catch (e) {
+      setSubmitError(errorMessage(e))
+    }
+  }
+
+  const handleQrScan = () => {
+    navigation.navigate('PaymentQrScanner')
+  }
+
+  const insufficientFunds =
+    !!amountBalance &&
+    !!dcBalance &&
+    !!solBalance &&
+    (amountBalance.gt(dcBalance) || FEE.gt(solBalance))
+
+  const errors: string[] = []
+  if (insufficientFunds) {
+    errors.push(
+      t('payment.insufficientFunds', {
+        token: dcBalance && amountBalance.gt(dcBalance) ? 'DC' : 'SOL',
+      }),
+    )
+  }
+
+  const handleAddressBookSelected = ({
+    address,
+    index,
+  }: {
+    address?: string | undefined
+    index: number
+  }) => {
+    addressBookRef?.current?.showAddressBook({ address, index })
+  }
+
+  const handleContactSelected = ({
+    contact,
+    index,
+  }: {
+    contact: CSAccount
+    prevAddress?: string
+    index?: number
+  }) => {
+    if (index === undefined) return
+
+    const payee = contact.solanaAddress
+
+    if (!payee) return
+
+    setDelegateAddress(payee)
+  }
+
+  const handleAddressError = ({ address }: { address: string }) => {
+    let invalidAddress = false
+
+    if (isDelegate) {
+      invalidAddress = !!address && !Address.isValid(address)
+    } else {
+      invalidAddress = !!address && !solAddressIsValid(address)
     }
 
-    return errStrings
-  }, [amountBalance, dcBalance, insufficientFunds, t])
+    const wrongNetType =
+      address !== undefined &&
+      address !== '' &&
+      accountNetType(address) !== networkType
 
-  const onConfirmBalance = useCallback((opts) => {
-    setDcAmount(new BN(opts.balance))
-  }, [])
+    setHasError(invalidAddress || wrongNetType)
+  }
 
-  const handleAddressBookSelected = useCallback(
-    ({ address, index }: { address?: string | undefined; index: number }) => {
-      addressBookRef?.current?.showAddressBook({ address, index })
-    },
-    [],
-  )
-
-  const handleContactSelected = useCallback(
-    ({
-      contact,
-      index,
-    }: {
-      contact: CSAccount
-      prevAddress?: string
-      index?: number
-    }) => {
-      if (index === undefined) return
-
-      const payee = contact.solanaAddress
-
-      if (!payee) return
-
-      setDelegateAddress(payee)
-    },
-    [],
-  )
-
-  const handleAddressError = useCallback(
-    ({ address }: { address: string }) => {
-      let invalidAddress = false
-
-      if (isDelegate) {
-        invalidAddress = !!address && !Address.isValid(address)
-      } else {
-        invalidAddress = !!address && !solAddressIsValid(address)
-      }
-
-      const wrongNetType =
-        address !== undefined &&
-        address !== '' &&
-        accountNetType(address) !== networkType
-
-      setHasError(invalidAddress || wrongNetType)
-    },
-    [networkType, isDelegate],
-  )
-
-  const onMintSelected = useCallback((tick: PublicKey) => {
+  const onMintSelected = (tick: PublicKey) => {
     setMint(tick)
-  }, [])
+  }
 
-  const handleTokenTypeSelected = useCallback(() => {
+  const handleTokenTypeSelected = () => {
     tokenSelectorRef?.current?.showTokens()
-  }, [])
+  }
 
-  const data = useMemo(
-    (): TokenListItem[] => [
-      {
-        mint: MOBILE_MINT,
-        selected: mint.equals(MOBILE_MINT),
-      },
-      {
-        mint: IOT_MINT,
-        selected: mint.equals(IOT_MINT),
-      },
-    ],
-    [mint],
-  )
+  const data: TokenListItem[] = [
+    {
+      mint: MOBILE_MINT,
+      selected: mint.equals(MOBILE_MINT),
+    },
+    {
+      mint: IOT_MINT,
+      selected: mint.equals(IOT_MINT),
+    },
+  ]
 
   if (!amountBalance) return null
 
   return (
     <HNTKeyboard
       ref={hntKeyboardRef}
-      onConfirmBalance={onConfirmBalance}
+      onConfirmBalance={(opts) => setDcAmount(new BN(opts.balance))}
       mint={DC_MINT}
       networkFee={FEE}
       usePortal
@@ -343,44 +302,39 @@ const BurnScreen = () => {
             onContactSelected={handleContactSelected}
             hideCurrentAccount
           >
-            <SafeAreaBox
-              backgroundColor="secondaryBackground"
-              flex={1}
+            <SafeArea
+              className="flex-1 bg-secondary"
               style={containerStyle}
               edges={['top'] as Edge[]}
             >
-              <Box
-                flexDirection="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Box hitSlop={hitSlop} padding="s">
-                  <IconPressedContainer
+              <View className="flex-row items-center justify-between">
+                <View hitSlop={hitSlop} className="p-2">
+                  <PressableScale
                     onPress={handleQrScan}
-                    activeOpacity={0.75}
-                    idleOpacity={1.0}
+                    accessibilityLabel={t('generic.scanQrCode')}
+                    feedback="opacity"
+                    className="size-11 items-center justify-center"
                   >
-                    <QR color={primaryText} height={16} width={16} />
-                  </IconPressedContainer>
-                </Box>
+                    <QrIcon size={16} colorClassName="accent-foreground" />
+                  </PressableScale>
+                </View>
                 <Text
-                  variant="subtitle2"
-                  flex={1}
-                  textAlign="center"
-                  color="primaryText"
+                  size="lg"
+                  className="flex-1 text-center font-medium"
                   maxFontSizeMultiplier={1}
                 >
                   {t(isDelegate ? 'delegate.title' : 'burn.title')}
                 </Text>
-                <TouchableOpacityBox
+                <PressableScale
                   onPress={navigation.goBack}
-                  width={64}
-                  padding="l"
+                  accessibilityLabel={t('generic.close')}
+                  feedback="opacity"
+                  className="w-16 p-6"
                   hitSlop={hitSlop}
                 >
-                  <Close color={primaryText} height={16} width={16} />
-                </TouchableOpacityBox>
-              </Box>
+                  <CloseIcon size={16} colorClassName="accent-foreground" />
+                </PressableScale>
+              </View>
 
               <KeyboardAwareScrollView
                 contentInsetAdjustmentBehavior="automatic"
@@ -413,7 +367,7 @@ const BurnScreen = () => {
                 />
 
                 {isDelegate ? (
-                  <Box>
+                  <View>
                     <PaymentItem
                       index={0}
                       onAddressBookSelected={handleAddressBookSelected}
@@ -434,7 +388,7 @@ const BurnScreen = () => {
                       memo={memo}
                       hasError={hasError}
                     />
-                  </Box>
+                  </View>
                 ) : (
                   <>
                     <AccountButton
@@ -449,84 +403,51 @@ const BurnScreen = () => {
                       address={route.params.address}
                       marginHorizontal="l"
                     />
-                    <Box
-                      marginTop="xs"
-                      marginHorizontal="l"
-                      backgroundColor="secondary"
-                      borderRadius="xl"
-                      paddingHorizontal="m"
-                      overflow="hidden"
-                    >
-                      <Text variant="body3" color="secondaryText" marginTop="m">
+                    <View className="mx-6 mt-1 overflow-hidden rounded-[20px] bg-secondary px-4">
+                      <Text size="xs" className="mt-4 text-muted-foreground">
                         {t('burn.amount')}
                       </Text>
-                      <Text variant="subtitle2" color="primaryText">
+                      <Text size="lg" className="font-medium">
                         {amountBalance.toString()}
                       </Text>
-                      <Text
-                        variant="body3"
-                        marginBottom="m"
-                        color="secondaryText"
-                      >
+                      <Text size="xs" className="mb-4 text-muted-foreground">
                         {t('payment.fee', {
                           value: humanReadable(FEE, 9),
                         })}
                       </Text>
 
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
-                      />
+                      <View className="-mx-4 h-px bg-background" />
 
-                      <Text variant="body3" color="secondaryText" marginTop="m">
+                      <Text size="xs" className="mt-4 text-muted-foreground">
                         {t('burn.equivalent')}
                       </Text>
-                      <Text
-                        variant="subtitle2"
-                        color="primaryText"
-                        marginBottom="m"
-                      >
+                      <Text size="lg" className="mb-4 font-medium">
                         {amountInDc?.toString()}
                       </Text>
 
-                      <Box
-                        height={1}
-                        backgroundColor="primaryBackground"
-                        marginHorizontal="n_m"
-                      />
-                    </Box>
+                      <View className="-mx-4 h-px bg-background" />
+                    </View>
                   </>
                 )}
               </KeyboardAwareScrollView>
               {submitError && (
-                <Box marginBottom="s">
+                <View className="mb-2">
                   <Text
-                    marginTop="s"
-                    marginHorizontal="m"
-                    variant="body3Medium"
-                    color="red500"
-                    textAlign="center"
+                    size="xs"
+                    className="mx-4 mt-2 text-center font-medium text-destructive"
                   >
                     {submitError}
                   </Text>
-                </Box>
+                </View>
               )}
-              <Box
-                borderTopLeftRadius="xl"
-                borderTopRightRadius="xl"
-                padding="l"
-                overflow="hidden"
-                minHeight={220}
-                backgroundColor="secondary"
-              >
+              <View className="min-h-[220px] overflow-hidden rounded-t-[20px] bg-secondary p-6">
                 <PaymentSummary
                   mint={DC_MINT}
                   totalBalance={amountBalance}
                   feeTokenBalance={FEE}
                   errors={errors}
                 />
-                <Box flex={1} justifyContent="flex-end">
+                <View className="flex-1 justify-end">
                   <SubmitButton
                     disabled={
                       amountBalance.isZero() ||
@@ -539,9 +460,9 @@ const BurnScreen = () => {
                     )}
                     onSubmit={() => void handleSubmit().catch(console.error)}
                   />
-                </Box>
-              </Box>
-            </SafeAreaBox>
+                </View>
+              </View>
+            </SafeArea>
             <PaymentSubmit
               mint={DC_MINT}
               submitLoading={isSubmitting}
@@ -566,4 +487,4 @@ const BurnScreen = () => {
   )
 }
 
-export default reactMemo(BurnScreen)
+export default BurnScreen

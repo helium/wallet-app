@@ -70,6 +70,60 @@ describe('legacy import ban', () => {
     ).toEqual([])
   })
 
+  it.each(['src/ui', 'src/features/uiGallery', 'src/features/migration'])(
+    'rejects a shared composite in %s',
+    async (dir) => {
+      expect(
+        await restrictedImportHits(
+          `${dir}/X.tsx`,
+          "import HNTKeyboard from '@components/HNTKeyboard'",
+        ),
+      ).toEqual([ERROR])
+    },
+  )
+
+  const featuresMigratedWithSharedComposites = [
+    'addressBook',
+    'browser',
+    'burn',
+    'dappLogin',
+    'request',
+    'txnDelegation',
+  ]
+
+  it.each(featuresMigratedWithSharedComposites)(
+    'rejects legacy imports in src/features/%s',
+    async (feature) => {
+      expect(
+        await restrictedImportHits(
+          `src/features/${feature}/X.tsx`,
+          "import Box from '@components/Box'",
+        ),
+      ).toEqual([ERROR])
+    },
+  )
+
+  it.each(featuresMigratedWithSharedComposites)(
+    'allows a shared composite in src/features/%s',
+    async (feature) => {
+      expect(
+        await restrictedImportHits(
+          `src/features/${feature}/X.tsx`,
+          "import HNTKeyboard from '@components/HNTKeyboard'",
+        ),
+      ).toEqual([])
+    },
+  )
+
+  it('allows the address book selector in src/features/burn', async () => {
+    expect(
+      await restrictedImportHits(
+        'src/features/burn/X.tsx',
+        "import AddressBookSelector from '@components/AddressBookSelector'",
+      ),
+    ).toEqual([])
+  })
+
   it('allows @ui imports', async () => {
     expect(
       await restrictedImportHits(

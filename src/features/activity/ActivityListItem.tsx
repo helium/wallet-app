@@ -1,39 +1,39 @@
-import Send from '@assets/images/send.svg'
-import Receive from '@assets/images/receive.svg'
-import Error from '@assets/images/error.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableContainer from '@components/TouchableContainer'
-import { TouchableOpacityBoxProps } from '@components/TouchableOpacityBox'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { ConfirmedSignatureInfo } from '@solana/web3.js'
-import { useColors } from '@theme/themeHooks'
+import { PressableScale, PressableScaleProps } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { ellipsizeAddress, solAddressIsValid } from '@utils/accountUtils'
-import React, { useMemo } from 'react'
+import { ArrowDownLeft, ArrowUpRight, CircleX } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Insets } from 'react-native'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { EnrichedTransaction } from '../../types/solana'
+
+const SendIcon = withUniwind(ArrowUpRight)
+const ReceiveIcon = withUniwind(ArrowDownLeft)
+const ErrorIcon = withUniwind(CircleX)
 
 export type ActivityListItemProps = {
   transaction: EnrichedTransaction | ConfirmedSignatureInfo
   hasDivider?: boolean
-  hitSlop?: Insets
-} & TouchableOpacityBoxProps
+} & Omit<PressableScaleProps, 'children'>
 
 const ActivityListItem = ({
   transaction,
   hasDivider,
+  className,
   ...rest
 }: ActivityListItemProps) => {
-  const colors = useColors()
   const { t, i18n } = useTranslation()
 
   const wallet = useCurrentWallet()
 
-  const title = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
+  const enrichedTx = transaction as EnrichedTransaction
+  const confirmedSig = transaction as ConfirmedSignatureInfo
 
+  const title = (() => {
     // Check if transaction is a confirmed signature
     if (enrichedTx.transactionError || confirmedSig.err || !enrichedTx.type) {
       return ellipsizeAddress(
@@ -47,12 +47,9 @@ const ActivityListItem = ({
     return i18n.exists(txKey)
       ? t(txKey)
       : t('activityScreen.enrichedTransactionTypes.UNKNOWN')
-  }, [i18n, t, transaction])
+  })()
 
-  const subtitle = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-
+  const subtitle = (() => {
     // Custom description that ellipsizes the address
     if (enrichedTx.description) {
       const customDescription = enrichedTx.description
@@ -76,49 +73,41 @@ const ActivityListItem = ({
     }
 
     return t('generic.success')
-  }, [t, transaction])
+  })()
 
-  const transactionFailed = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    const confirmedSig = transaction as ConfirmedSignatureInfo
-    return !!confirmedSig?.err || !!enrichedTx.transactionError
-  }, [transaction])
+  const transactionFailed = !!confirmedSig?.err || !!enrichedTx.transactionError
 
-  const userSignedTransaction = useMemo(() => {
-    const enrichedTx = transaction as EnrichedTransaction
-    if (wallet && enrichedTx.signers) {
-      return enrichedTx.signers?.includes(wallet?.toBase58())
-    }
-
-    return false
-  }, [transaction, wallet])
+  const userSignedTransaction =
+    wallet && enrichedTx.signers
+      ? enrichedTx.signers.includes(wallet.toBase58())
+      : false
 
   return (
-    <TouchableContainer
-      backgroundColor="surfaceSecondary"
-      flexDirection="row"
-      alignItems="center"
-      padding="m"
-      borderBottomWidth={hasDivider ? 1 : 0}
-      borderBottomColor="black"
+    <PressableScale
+      feedback="opacity"
+      className={twMerge(
+        'flex-row items-center bg-secondary p-4',
+        hasDivider && 'border-b border-border',
+        className,
+      )}
       {...rest}
     >
       {!transactionFailed ? (
         userSignedTransaction ? (
-          <Send width={25} height={25} color={colors.green500} />
+          <SendIcon size={24} colorClassName="accent-success-500" />
         ) : (
-          <Receive width={25} height={25} color={colors.blue500} />
+          <ReceiveIcon size={24} colorClassName="accent-blue-dark-500" />
         )
       ) : (
-        <Error width={25} height={25} color={colors.error} />
+        <ErrorIcon size={24} colorClassName="accent-destructive" />
       )}
-      <Box marginStart="s" flexGrow={1} flexBasis={0.5} justifyContent="center">
-        <Text variant="subtitle4">{title}</Text>
-        <Text variant="body3" color="secondaryText">
+      <View className="ml-2 flex-1 justify-center">
+        <Text className="font-medium">{title}</Text>
+        <Text size="xs" className="text-muted-foreground">
           {subtitle}
         </Text>
-      </Box>
-    </TouchableContainer>
+      </View>
+    </PressableScale>
   )
 }
 

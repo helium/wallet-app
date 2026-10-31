@@ -1,59 +1,58 @@
-import React, { memo, useCallback } from 'react'
+import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { Platform } from 'react-native'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import CloseButton from '@components/CloseButton'
+import { View } from 'react-native'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { X } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
 import { CSAccount } from '@storage/cloudStorage'
 import { HomeNavigationProp } from '../home/homeTypes'
 import ContactsList from './ContactsList'
 import { AddressBookNavigationProp } from './addressBookTypes'
+
+const CloseIcon = withUniwind(X)
 
 const AddressBook = () => {
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressNav = useNavigation<AddressBookNavigationProp>()
 
-  const onRequestClose = useCallback(() => {
+  const onRequestClose = () => {
     homeNav.goBack()
-  }, [homeNav])
+  }
 
-  const handleAddNewContact = useCallback(() => {
+  const handleAddNewContact = () => {
     addressNav.navigate('AddNewContact')
-  }, [addressNav])
+  }
 
-  const handleEditContact = useCallback(
-    (contact: CSAccount) => {
-      addressNav.navigate('EditContact', { contact })
-    },
-    [addressNav],
-  )
+  const handleEditContact = (contact: CSAccount) => {
+    addressNav.navigate('EditContact', { contact })
+  }
 
   return (
-    <Box flex={1} backgroundColor="surfaceSecondary">
-      <Box
-        marginTop="s"
-        style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
-        flexDirection="row"
-        alignItems="center"
-      >
-        <Box flex={1} />
-        <Text variant="subtitle2">{t('addressBook.title')}</Text>
-        <Box flex={1} alignItems="flex-end">
-          <CloseButton
+    <View className="flex-1 bg-secondary">
+      <View className="mt-2 flex-row items-center android:pt-6">
+        <View className="flex-1" />
+        <Text size="lg" className="font-medium">
+          {t('addressBook.title')}
+        </Text>
+        <View className="flex-1 items-end">
+          <PressableScale
             onPress={onRequestClose}
-            paddingVertical="s"
-            paddingHorizontal="m"
-          />
-        </Box>
-      </Box>
+            feedback="opacity"
+            className="px-4 py-2"
+          >
+            <CloseIcon size={18} colorClassName="accent-foreground" />
+          </PressableScale>
+        </View>
+      </View>
       <ContactsList
         onAddNew={handleAddNewContact}
         handleContactSelected={handleEditContact}
       />
-    </Box>
+    </View>
   )
 }
 
-export default memo(AddressBook)
+export default AddressBook

@@ -1,14 +1,13 @@
-import BackScreen from '@components/BackScreen'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import FabButton from '@components/FabButton'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { Device, useHotspotBle } from '@helium/react-native-sdk'
 import { useNavigation } from '@react-navigation/native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { Plus } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, Platform, PermissionsAndroid } from 'react-native'
+import { FlatList, Platform, PermissionsAndroid, View } from 'react-native'
 import {
   PERMISSIONS,
   PermissionStatus,
@@ -16,9 +15,16 @@ import {
   check,
   request,
 } from 'react-native-permissions'
+import { withUniwind } from 'uniwind'
 import * as Logger from '../../../utils/logger'
+import OnboardingScreen from '../components/OnboardingScreen'
 import type { HotspotBleNavProp } from './navTypes'
 import { useIotBleOptions } from './optionsContext'
+
+const PlusIcon = withUniwind(Plus)
+
+// Every permission status other than granted blocks the scan
+const isGranted = (result: PermissionStatus) => result === RESULTS.GRANTED
 
 const ScanHotspots = () => {
   const { startScan, stopScan, connect, scannedDevices } = useHotspotBle()
@@ -36,35 +42,21 @@ const ScanHotspots = () => {
     setError(String(e))
   }
 
-  const updateCanScan = useCallback((result: PermissionStatus) => {
-    switch (result) {
-      case RESULTS.UNAVAILABLE:
-      case RESULTS.BLOCKED:
-      case RESULTS.DENIED:
-      case RESULTS.LIMITED:
-        setCanScan(false)
-        break
-      case RESULTS.GRANTED:
-        setCanScan(true)
-        break
-    }
-  }, [])
-
   useEffect(() => {
     if (Platform.OS === 'ios') return
 
     check(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
-      .then(updateCanScan)
+      .then((result) => setCanScan(isGranted(result)))
       .catch(showError)
-  }, [updateCanScan])
+  }, [])
 
   useEffect(() => {
     if (canScan !== false) return
 
     request(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION)
-      .then(updateCanScan)
+      .then((result) => setCanScan(isGranted(result)))
       .catch(showError)
-  }, [canScan, updateCanScan])
+  }, [canScan])
 
   const checkPermission = async () => {
     if (Platform.OS === 'ios') {
@@ -98,7 +90,7 @@ const ScanHotspots = () => {
     return true
   }
 
-  const handleScanPress = useCallback(async () => {
+  const handleScanPress = async () => {
     const shouldScan = !scanning
     setScanning(shouldScan)
     await checkPermission()
@@ -132,82 +124,62 @@ const ScanHotspots = () => {
         stopScan()
       }
     }
-  }, [scannedDevices.length, scanning, startScan, stopScan])
+  }
 
-  const navNext = useCallback(() => navigation.push('Settings'), [navigation])
+  const navNext = () => navigation.push('Settings')
 
   const [connecting, setConnecting] = useState(false)
-  const connectDevice = useCallback(
-    (d: Device) => async () => {
-      try {
-        setConnecting(true)
-        await connect(d)
-        if (scanning) {
-          stopScan()
-          setScanning(false)
-        }
-        setConnecting(false)
-        navNext()
-      } catch (e) {
-        showError(e)
-      } finally {
-        setConnecting(false)
+  const connectDevice = (d: Device) => async () => {
+    try {
+      setConnecting(true)
+      await connect(d)
+      if (scanning) {
+        stopScan()
+        setScanning(false)
       }
-    },
-    [connect, navNext, scanning, stopScan],
-  )
+      setConnecting(false)
+      navNext()
+    } catch (e) {
+      // No finally clause: the React Compiler cannot compile one yet
+      setConnecting(false)
+      showError(e)
+    }
+  }
 
-  const renderItem = React.useCallback(
-    ({ item }: { item: Device }) => {
-      return (
-        <TouchableOpacityBox
-          onPress={() => void connectDevice(item)().catch(console.error)}
-          alignItems="center"
-          padding="m"
-          flexDirection="row"
-          borderTopWidth={1}
-          borderColor="grey900"
-          borderBottomWidth={1}
-          disabled={connecting}
-        >
-          <FabButton
-            icon="add"
-            backgroundColor="secondary"
-            iconColor="white"
-            size={20}
-            disabled
-            marginRight="ms"
-          />
-          <Text color="secondaryText" variant="body1Medium">
-            {item.name}
-          </Text>
-        </TouchableOpacityBox>
-      )
-    },
-    [connectDevice, connecting],
-  )
+  const renderItem = ({ item }: { item: Device }) => {
+    return (
+      <PressableScale
+        onPress={() => void connectDevice(item)().catch(console.error)}
+        feedback="opacity"
+        className="flex-row items-center border-y border-border p-4"
+        disabled={connecting}
+      >
+        <View className="mr-3 size-5 items-center justify-center rounded-full bg-secondary">
+          <PlusIcon size={12} colorClassName="accent-foreground" />
+        </View>
+        <Text size="base" className="font-medium text-muted-foreground">
+          {item.name}
+        </Text>
+      </PressableScale>
+    )
+  }
 
-  const keyExtractor = React.useCallback(({ id }: Device) => id, [])
+  const keyExtractor = ({ id }: Device) => id
 
   return (
-    <BackScreen title={t('hotspotOnboarding.scan.title')}>
+    <OnboardingScreen title={t('hotspotOnboarding.scan.title')}>
       <Text
-        marginTop="m"
-        marginBottom="m"
-        variant="subtitle1"
-        color="secondaryText"
-        textAlign="left"
+        size="xl"
+        className="my-4 text-left font-medium text-muted-foreground"
         adjustsFontSizeToFit
       >
         {bleInstructions || t('hotspotOnboarding.scan.subtitle')}
       </Text>
-      {scannedDevices.length === 0 && scanning && <CircleLoader />}
+      {scannedDevices.length === 0 && scanning && <Spinner />}
       {scannedDevices.length === 0 && scanning && (
         <Text
-          mt="s"
-          variant="body1Medium"
-          textAlign="center"
-          color="secondaryText"
+          size="base"
+          className="mt-2 text-center font-medium text-muted-foreground"
         >
           {t('hotspotOnboarding.scan.scanning')}
         </Text>
@@ -220,30 +192,24 @@ const ScanHotspots = () => {
         keyExtractor={keyExtractor}
       />
       {error && (
-        <Text variant="body1Medium" color="red500">
+        <Text size="base" className="font-medium text-destructive">
           {error}
         </Text>
       )}
-      <ButtonPressable
-        marginTop="l"
-        borderRadius="round"
-        titleColor={scanning ? 'white' : 'black'}
-        borderColor={scanning ? 'white' : 'transparent'}
-        borderWidth={scanning ? 2 : 0}
-        backgroundColor={scanning ? 'transparent' : 'white'}
-        title={
-          canScan
-            ? scanning
-              ? t('hotspotOnboarding.scan.stop')
-              : t('hotspotOnboarding.scan.start')
-            : t('hotspotOnboarding.scan.notEnabled')
-        }
+      <Button
+        variant={scanning ? 'outline' : 'cta'}
+        size="lg"
+        className="mt-6 w-full"
         onPress={() => void handleScanPress().catch(console.error)}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
         disabled={!canScan || connecting}
-      />
-    </BackScreen>
+      >
+        {canScan
+          ? scanning
+            ? t('hotspotOnboarding.scan.stop')
+            : t('hotspotOnboarding.scan.start')
+          : t('hotspotOnboarding.scan.notEnabled')}
+      </Button>
+    </OnboardingScreen>
   )
 }
 
