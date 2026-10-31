@@ -243,6 +243,48 @@ describe('HNTKeyboard', () => {
     expect(opts.max).toBe(true)
   })
 
+  const pressMax = (renderer: Rendered) =>
+    act(() => {
+      renderer.root
+        .findByType('PressableScale' as unknown as React.ElementType)
+        .props.onPress()
+    })
+
+  it('holds back minTokens from the Max amount', () => {
+    const { renderer, ref } = render({
+      networkFee: FEE,
+      minTokens: new BN(100000000),
+    })
+    act(() => ref.current?.show({ payer: PAYER }))
+    pressMax(renderer)
+
+    expect(amount(renderer)).toBe('499 HNT')
+  })
+
+  it('holds back the network fee from a native SOL Max amount', () => {
+    const { renderer, ref } = render({
+      mint: { equals: () => true } as unknown as PublicKey,
+      networkFee: FEE,
+      actionableAmount: new BN(100005000),
+    })
+    act(() => ref.current?.show({ payer: PAYER }))
+    pressMax(renderer)
+
+    expect(amount(renderer)).toBe('1 HNT')
+  })
+
+  it('clamps Max to 0 when the fee exceeds the balance', () => {
+    const { renderer, ref } = render({
+      mint: { equals: () => true } as unknown as PublicKey,
+      networkFee: FEE,
+      actionableAmount: new BN(1000),
+    })
+    act(() => ref.current?.show({ payer: PAYER }))
+    pressMax(renderer)
+
+    expect(amount(renderer)).toBe('0 HNT')
+  })
+
   it('renders children beside the sheet and merges the caller className', () => {
     const { renderer } = render({ className: 'bg-secondary' })
     const [root] = renderer.root.findAllByType(View)
