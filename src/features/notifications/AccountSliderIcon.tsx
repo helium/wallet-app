@@ -21,9 +21,10 @@ const AccountSliderIcon = ({
 }: Props) => {
   const { notificationsByResource } = useNotificationStorage()
 
+  const address = resource || ''
   let key = resource
   try {
-    key = heliumAddressToSolAddress(resource || '')
+    key = heliumAddressToSolAddress(address)
   } catch {}
   const hasUnread = (notificationsByResource[key] || []).some(
     (n) => !n.viewedAt,
@@ -34,6 +35,7 @@ const AccountSliderIcon = ({
       <PressableScale
         feedback="opacity"
         onPress={() => onPress(index)}
+        accessibilityState={{ selected }}
         className={twMerge(
           'size-16 items-center justify-center rounded-full',
           selected && 'border-2 border-primary',

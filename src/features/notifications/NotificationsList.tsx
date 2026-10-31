@@ -67,7 +67,6 @@ const NotificationsList = ({
     return (
       <NotificationListItem
         className={twMerge(
-          'mx-4',
           isFirst && 'rounded-t-[20px]',
           isLast && 'rounded-b-[20px]',
         )}

@@ -265,4 +265,42 @@ describe('NotificationsScreen', () => {
 
     expect(view.buttons()).toHaveLength(0)
   })
+
+  it('shows no action button without an action title', async () => {
+    mockStorage.selectedNotification = notification(6, '2026-10-01T18:00:00Z', {
+      actionUrl: 'https://example.com/read',
+    })
+
+    const view = await render()
+
+    expect(view.buttons()).toHaveLength(0)
+  })
+
+  it('logs a failed action link instead of leaving the rejection unhandled', async () => {
+    const failure = new Error('cannot open')
+    mockOpenURL.mockImplementationOnce(() => Promise.reject(failure))
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+    const unhandled = jest.fn()
+    process.on('unhandledRejection', unhandled)
+    mockStorage.selectedNotification = notification(7, '2026-10-01T18:00:00Z', {
+      actionTitle: 'Read more',
+      actionUrl: 'https://example.com/read',
+    })
+
+    try {
+      const view = await render()
+      await act(async () => {
+        view.buttons()[0].props.onPress()
+      })
+      await new Promise((resolve) => setImmediate(resolve))
+
+      expect(consoleError).toHaveBeenCalledWith(failure)
+      expect(unhandled).not.toHaveBeenCalled()
+    } finally {
+      process.off('unhandledRejection', unhandled)
+      consoleError.mockRestore()
+    }
+  })
 })

@@ -3,10 +3,12 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { formatDistanceToNow, parseISO } from 'date-fns'
 import { ChevronLeft } from 'lucide-react-native'
 import { View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import usePrevious from '@hooks/usePrevious'
 import useMount from '@hooks/useMount'
 import { NotificationsListStackParamList } from './notificationTypes'
@@ -20,6 +22,7 @@ const BackIcon = withUniwind(ChevronLeft)
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>
 
 const NotificationDetails = () => {
+  const { t } = useTranslation()
   const route = useRoute<Route>()
   const navigation = useNavigation()
   const { notification } = route.params
@@ -53,15 +56,16 @@ const NotificationDetails = () => {
 
   return (
     <SafeArea className="flex-1 bg-background px-6 pt-4">
-      <PressableScale
-        onPress={navigation.goBack}
-        hitSlop={24}
-        feedback="opacity"
-        accessibilityLabel="Back"
-        className="mb-4 self-start"
-      >
-        <BackIcon size={24} colorClassName="accent-muted-foreground" />
-      </PressableScale>
+      <View className="mb-4 items-start">
+        <PressableScale
+          onPress={navigation.goBack}
+          hitSlop={24}
+          feedback="opacity"
+          accessibilityLabel={t('generic.back')}
+        >
+          <BackIcon size={24} colorClassName="accent-muted-foreground" />
+        </PressableScale>
+      </View>
 
       <View className="mx-4">
         <NotificationDetailBanner icon={notification.icon} />
@@ -75,11 +79,10 @@ const NotificationDetails = () => {
         </Text>
         <Text className="py-4 text-success-500">{time}</Text>
         <Text
-          className={
-            notification.actionTitle
-              ? 'mb-8 pb-[90px] text-muted-foreground'
-              : 'mb-8 text-muted-foreground'
-          }
+          className={twMerge(
+            'mb-8 text-muted-foreground',
+            notification.actionTitle && 'pb-[90px]',
+          )}
         >
           {parseMarkup(notification.body)}
         </Text>

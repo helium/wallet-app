@@ -29,7 +29,7 @@ const NotificationsScreen = () => {
 
   const onActionPress = () => {
     if (!selectedNotification?.actionUrl) return
-    void Linking.openURL(selectedNotification?.actionUrl)
+    void Linking.openURL(selectedNotification.actionUrl).catch(console.error)
   }
 
   const HeaderComponent = (

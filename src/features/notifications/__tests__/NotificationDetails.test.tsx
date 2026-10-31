@@ -53,6 +53,12 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key }),
+}))
+jest.mock('@ui/twMerge', () => jest.requireActual('../../../ui/twMerge'), {
+  virtual: true,
+})
 jest.mock('lucide-react-native', () => ({ ChevronLeft: 'ChevronLeft' }))
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
@@ -118,6 +124,7 @@ describe('NotificationDetails', () => {
   it('goes back on the back press', async () => {
     const view = await render()
 
+    expect(view.back().props.accessibilityLabel).toBe('generic.back')
     act(() => {
       view.back().props.onPress()
     })

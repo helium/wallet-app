@@ -19,6 +19,7 @@ const MarkupLink = ({
   href?: string
 }) => (
   <Text
+    accessibilityRole="link"
     onPress={() => {
       if (href) void Linking.openURL(href).catch(console.error)
     }}
@@ -38,7 +39,10 @@ const MarkupBullet = ({
   style?: ViewStyle
 }) => (
   <View className="mb-2 flex-row items-start" style={style}>
-    <Text className="mr-2 text-2xl leading-[22px]" style={{ color }}>
+    <Text
+      className="mr-2 text-2xl leading-[22px]"
+      style={color ? { color } : undefined}
+    >
       &bull;
     </Text>
     <Text className="w-[90%] text-muted-foreground">{children}</Text>
