@@ -239,6 +239,7 @@ const TransferCollectableScreen = () => {
                       placeholder={t('generic.solanaAddress')}
                       autoCorrect={false}
                       autoComplete="off"
+                      autoCapitalize="none"
                       onChangeText={handleEditAddress}
                       onEndEditing={handleAddressBlur}
                       value={recipient}

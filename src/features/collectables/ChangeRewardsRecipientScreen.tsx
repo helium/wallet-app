@@ -76,6 +76,7 @@ const RecipientRow = ({
       <PressableScale
         feedback="opacity"
         className="ml-4 rounded-md bg-muted px-4 py-1.5"
+        disabled={removing}
         onPress={onRemove}
       >
         {removing ? (
@@ -362,6 +363,7 @@ const ChangeRewardsRecipientScreen = () => {
                       placeholder={t('generic.solanaAddress')}
                       autoCorrect={false}
                       autoComplete="off"
+                      autoCapitalize="none"
                       onChangeText={handleEditAddress}
                       onEndEditing={handleAddressBlur}
                       value={recipient}

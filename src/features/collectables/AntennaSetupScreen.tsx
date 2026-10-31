@@ -140,6 +140,7 @@ const AntennaSetupScreen = () => {
                 variant="cta"
                 size="lg"
                 className="w-full"
+                disabled={updating}
                 onPress={() => void handleUpdateElevGain().catch(console.error)}
               >
                 {updating ? (

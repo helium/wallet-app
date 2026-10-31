@@ -3,6 +3,7 @@ import TestRenderer, { act } from 'react-test-renderer'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { NavigationContainer } from '@react-navigation/native'
 import AddressBookSelector, { AddressBookRef } from '../AddressBookSelector'
+import type { CSAccount } from '../../../storage/cloudStorage'
 
 // The node test runner cannot load gorhom (Reanimated, gesture handler). This
 // model keeps the part that decides where sheet content renders, as gorhom
@@ -73,10 +74,17 @@ jest.mock('@react-navigation/native', () => {
 })
 
 // Stands in for sheet content that reads the screen's context, as a contact
-// row does when it navigates.
+// row does when it navigates. It records the selection handler so a test can
+// pick a contact. jest only lets a mock factory read `mock`-prefixed names.
+let mockLastHandleContactSelected: ((contact: CSAccount) => void) | undefined
 jest.mock('../ContactsList', () => {
   const { useNavigation } = jest.requireMock('@react-navigation/native')
-  return () => {
+  return ({
+    handleContactSelected,
+  }: {
+    handleContactSelected: (contact: CSAccount) => void
+  }) => {
+    mockLastHandleContactSelected = handleContactSelected
     useNavigation()
     return 'ContactsList'
   }
@@ -125,5 +133,41 @@ describe('AddressBookSelector', () => {
     })
 
     expect(JSON.stringify(renderer.toJSON())).toContain('ContactsList')
+  })
+
+  it('maps a picked contact back with the previous address and index', () => {
+    const ref = React.createRef<AddressBookRef>()
+    const onContactSelected = jest.fn()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <NavigationContainer>
+            <AddressBookSelector
+              ref={ref}
+              onContactSelected={onContactSelected}
+            >
+              screen
+            </AddressBookSelector>
+          </NavigationContainer>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+
+    act(() => {
+      ref.current?.showAddressBook({ address: 'prev-addr', index: 2 })
+    })
+    act(() => {
+      mockLastHandleContactSelected?.({ address: 'picked' } as CSAccount)
+    })
+
+    expect(onContactSelected).toHaveBeenCalledTimes(1)
+    expect(onContactSelected).toHaveBeenCalledWith({
+      contact: { address: 'picked' },
+      prevAddress: 'prev-addr',
+      index: 2,
+    })
+    expect(JSON.stringify(renderer.toJSON())).not.toContain('ContactsList')
   })
 })

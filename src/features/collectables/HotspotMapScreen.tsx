@@ -21,7 +21,13 @@ import { BN } from 'bn.js'
 import { BlurView } from 'expo-blur'
 import { cellToBoundary, latLngToCell } from 'h3-js'
 import { ChevronLeft, CircleHelp, LocateFixed } from 'lucide-react-native'
-import React, { ComponentProps, useEffect, useRef, useState } from 'react'
+import React, {
+  ComponentProps,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, View } from 'react-native'
 import Animated from 'react-native-reanimated'
@@ -206,29 +212,41 @@ const HotspotMapScreen = () => {
 
   const iconSize = 0.17 * (zoomLevel / MAX_MAP_ZOOM)
 
-  const hexsFeature = featureCollection(
-    Object.keys(hexInfoBuckets).map((h) => {
-      const center = parseH3BNLocation(new BN(h))
-      return feature(
-        {
-          type: 'Polygon',
-          coordinates: [
-            cellToBoundary(
-              latLngToCell(
-                center[0],
-                center[1],
-                networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8,
-              ),
-            ).map((p) => p.reverse()),
-          ],
-        } as Polygon,
-        {
-          id: h,
-          color: networkType === 'MOBILE' ? mobileHexColor : iotHexColor,
-          opacity: h === activeHex ? 1 : 0.3,
-        },
-      )
-    }),
+  // The React Compiler skips this file, so the hex polygons are memoized by hand.
+  const hexsFeature = useMemo(
+    () =>
+      featureCollection(
+        Object.keys(hexInfoBuckets).map((h) => {
+          const center = parseH3BNLocation(new BN(h))
+          return feature(
+            {
+              type: 'Polygon',
+              coordinates: [
+                cellToBoundary(
+                  latLngToCell(
+                    center[0],
+                    center[1],
+                    networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8,
+                  ),
+                ).map((p) => p.reverse()),
+              ],
+            } as Polygon,
+            {
+              id: h,
+              color: networkType === 'MOBILE' ? mobileHexColor : iotHexColor,
+              opacity: h === activeHex ? 1 : 0.3,
+            },
+          )
+        }),
+      ),
+    [
+      activeHex,
+      hexInfoBuckets,
+      iotHexColor,
+      mobileHexColor,
+      networkType,
+      zoomLevel,
+    ],
   )
 
   const activeHexItem = (() => {

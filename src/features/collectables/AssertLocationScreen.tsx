@@ -692,6 +692,7 @@ const AssertLocationScreen = () => {
                       variant="outline"
                       size="lg"
                       className="grow"
+                      disabled={asserting}
                       onPress={() =>
                         void handleAssertLocationPress().catch(console.error)
                       }

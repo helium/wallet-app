@@ -210,8 +210,8 @@ const hasOtherRecipient = (
 ) =>
   !!destination &&
   !!wallet &&
-  !destination.equals(wallet) &&
-  !destination.equals(PublicKey.default)
+  !new PublicKey(destination).equals(wallet) &&
+  !new PublicKey(destination).equals(PublicKey.default)
 
 const formatRewards = (
   rewards: Record<string, string> | undefined,
