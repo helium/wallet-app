@@ -3,6 +3,7 @@ import TestRenderer, { act } from 'react-test-renderer'
 import {
   ContentColumn,
   contentColumnLayout,
+  nativeModalLayout,
   useSheetMargins,
 } from '../ContentColumn'
 
@@ -10,10 +11,13 @@ const columnMargins = { marginLeft: 117, marginRight: 117 }
 
 // The node test runner cannot load react-native. The host components render
 // as named elements so the test reads their props.
-jest.mock('react-native', () => ({ View: 'View' }))
+jest.mock('react-native', () => ({ View: 'View', Platform: { OS: 'ios' } }))
 jest.mock(
   '@utils/layout',
-  () => ({ useContentColumnMargins: () => columnMargins }),
+  () => ({
+    CONTENT_MAX_WIDTH: 600,
+    useContentColumnMargins: () => columnMargins,
+  }),
   { virtual: true },
 )
 
@@ -76,5 +80,31 @@ describe('contentColumnLayout', () => {
 
     expect(column.props.style).toEqual([columnMargins, undefined])
     expect(column.props.children).toEqual(<>screen</>)
+  })
+})
+
+describe('nativeModalLayout', () => {
+  const { Platform } = jest.requireMock('react-native')
+
+  afterEach(() => {
+    Platform.OS = 'ios'
+  })
+
+  it('caps an iOS modal screen at the content width, centered', () => {
+    const { root } = create(nativeModalLayout({ children: <>screen</> }))
+    const column = root.findByType(View)
+
+    expect(column.props.className).toContain('flex-1')
+    expect(column.props.className).toContain('w-full')
+    expect(column.props.className).toContain('self-center')
+    expect(column.props.style).toEqual({ maxWidth: 600 })
+    expect(column.props.children).toEqual(<>screen</>)
+  })
+
+  it('leaves an Android modal screen as is, already in the column', () => {
+    Platform.OS = 'android'
+    const renderer = create(nativeModalLayout({ children: <>screen</> }))
+
+    expect(renderer.toJSON()).toBe('screen')
   })
 })

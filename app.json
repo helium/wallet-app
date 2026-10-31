@@ -7,7 +7,7 @@
   "ios": {
     "bundleIdentifier": "com.helium.wallet.app",
     "appleTeamId": "PVM9KJZ2AD",
-    "supportsTablet": false,
+    "supportsTablet": true,
     "config": {
       "usesNonExemptEncryption": false
     },

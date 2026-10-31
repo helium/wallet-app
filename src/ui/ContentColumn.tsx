@@ -1,6 +1,6 @@
-import { useContentColumnMargins } from '@utils/layout'
+import { CONTENT_MAX_WIDTH, useContentColumnMargins } from '@utils/layout'
 import React, { createContext, useContext } from 'react'
-import { View, type ViewProps } from 'react-native'
+import { Platform, View, type ViewProps } from 'react-native'
 import { twMerge } from './twMerge'
 
 // True inside a content column, so a sheet inside it skips the margins.
@@ -43,3 +43,24 @@ export const contentColumnLayout = ({
 }: {
   children: React.ReactElement
 }) => <ContentColumn>{children}</ContentColumn>
+
+// iOS presents native-stack modals in their own UIKit hierarchy, outside the
+// content column, and on iPad as page sheets narrower than the window, so
+// window-based margins do not fit them. Navigators with native modals pass
+// this as `screenLayout`; in the column it changes nothing. Android modals
+// stay in the column.
+export const nativeModalLayout = ({
+  children,
+}: {
+  children: React.ReactElement
+}) =>
+  Platform.OS === 'ios' ? (
+    <View
+      className="w-full flex-1 self-center"
+      style={{ maxWidth: CONTENT_MAX_WIDTH }}
+    >
+      {children}
+    </View>
+  ) : (
+    children
+  )

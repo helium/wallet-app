@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import React, { memo } from 'react'
 import { useResolveClassNames } from 'uniwind'
+import { nativeModalLayout } from '../../ui/ContentColumn'
 import SolanaMigration from '../migration/SolanaMigration'
 import MigrateToWorldScreen from '../migration/MigrateToWorld'
 import AutoGasManager from './AutoGasManager'
@@ -44,6 +45,7 @@ const SettingsNavigator = () => {
         headerShown: false,
         contentStyle: backgroundStyle,
       }}
+      screenLayout={nativeModalLayout}
     >
       <SettingsStack.Screen name="Settings" component={Settings} />
       <SettingsStack.Screen

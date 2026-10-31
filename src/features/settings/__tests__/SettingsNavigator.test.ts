@@ -8,6 +8,9 @@ jest.mock('@react-navigation/native-stack', () => ({
   }),
 }))
 jest.mock('uniwind', () => ({ useResolveClassNames: () => ({}) }))
+jest.mock('../../../ui/ContentColumn', () => ({
+  nativeModalLayout: 'nativeModalLayout',
+}))
 jest.mock('../SecretKeyWarningScreen', () => 'SecretKeyWarningScreen')
 jest.mock('../../migration/SolanaMigration', () => 'SolanaMigration')
 jest.mock('../../migration/MigrateToWorld', () => 'MigrateToWorld')
@@ -24,16 +27,20 @@ jest.mock('../UpdateAliasScreen', () => 'UpdateAliasScreen')
 type ScreenProps = { name: string; options?: Record<string, unknown> }
 type NavigatorProps = {
   screenOptions?: Record<string, unknown>
+  screenLayout?: unknown
   children: ReactElement<ScreenProps>[]
 }
 
 // The navigator is a memo component whose only hook is mocked, so calling it
 // returns the element tree without a renderer.
-const optionsOf = (name: string) => {
+const renderNavigator = () => {
   const { type } = SettingsNavigator as unknown as {
     type: () => ReactElement<NavigatorProps>
   }
-  const navigator = type()
+  return type()
+}
+const optionsOf = (name: string) => {
+  const navigator = renderNavigator()
   const screen = navigator.props.children.find((s) => s.props.name === name)
   return { ...navigator.props.screenOptions, ...screen?.props.options }
 }
@@ -46,5 +53,11 @@ describe('SettingsNavigator', () => {
 
     expect(options.presentation).toBe('card')
     expect(options.animation).toBe('slide_from_bottom')
+  })
+
+  // iOS presents the PIN, secret key and auto-gas modals outside the content
+  // column, so they need their own cap on iPad.
+  it('caps its native modals', () => {
+    expect(renderNavigator().props.screenLayout).toBe('nativeModalLayout')
   })
 })

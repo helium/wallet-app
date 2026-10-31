@@ -10,6 +10,7 @@ import ImportAccountNavigator from './import/ImportAccountNavigator'
 import ImportPrivateKey from './import/ImportPrivateKey'
 import { OnboardingStackParamList } from './onboardingTypes'
 import KeystoneNavigator from '../keystone/KeystoneNavigator'
+import { nativeModalLayout } from '../../ui/ContentColumn'
 
 const OnboardingStack = createNativeStackNavigator<OnboardingStackParamList>()
 
@@ -31,7 +32,10 @@ const OnboardingNavigator = () => {
     [],
   )
   return (
-    <OnboardingStack.Navigator screenOptions={screenOptions}>
+    <OnboardingStack.Navigator
+      screenOptions={screenOptions}
+      screenLayout={nativeModalLayout}
+    >
       <OnboardingStack.Screen
         name="CreateImport"
         component={CreateImportAccountScreen}

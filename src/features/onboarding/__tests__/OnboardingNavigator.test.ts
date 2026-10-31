@@ -17,10 +17,14 @@ jest.mock('../create/CreateAccountNavigator', () => 'CreateAccountNavigator')
 jest.mock('../import/ImportAccountNavigator', () => 'ImportAccountNavigator')
 jest.mock('../import/ImportPrivateKey', () => 'ImportPrivateKey')
 jest.mock('../../keystone/KeystoneNavigator', () => 'KeystoneNavigator')
+jest.mock('../../../ui/ContentColumn', () => ({
+  nativeModalLayout: 'nativeModalLayout',
+}))
 
 type ScreenProps = { name: string; options?: Record<string, unknown> }
 type NavigatorProps = {
   screenOptions?: Record<string, unknown>
+  screenLayout?: unknown
   children: ReactElement<ScreenProps>[]
 }
 
@@ -52,6 +56,14 @@ describe('OnboardingNavigator', () => {
 
     expect(options.presentation).toBe('modal')
     expect(options.animation).toBe('slide_from_bottom')
+  })
+
+  // iOS presents the sub-flows outside the content column, so they need
+  // their own cap on iPad.
+  it('caps its native modals', () => {
+    expect(renderNavigator().navigator.props.screenLayout).toBe(
+      'nativeModalLayout',
+    )
   })
 
   it('keeps the default animation on CreateImport', () => {

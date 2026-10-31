@@ -9,6 +9,7 @@ import LedgerNavigator from '../../ledger/LedgerNavigator'
 import ImportAccountNavigator from '../../onboarding/import/ImportAccountNavigator'
 import CreateAccountNavigator from '../../onboarding/create/CreateAccountNavigator'
 import CLIAccountNavigator from '../../onboarding/cli-import/CLIAccountNavigator'
+import { nativeModalLayout } from '../../../ui/ContentColumn'
 
 const AddAccountStack = createNativeStackNavigator()
 
@@ -19,7 +20,10 @@ const navigatorScreenOptions = {
 
 const AddNewAccountNavigator = () => {
   return (
-    <AddAccountStack.Navigator screenOptions={navigatorScreenOptions}>
+    <AddAccountStack.Navigator
+      screenOptions={navigatorScreenOptions}
+      screenLayout={nativeModalLayout}
+    >
       <AddAccountStack.Screen
         name="AddNewAccount"
         component={AddNewAccountScreen}
