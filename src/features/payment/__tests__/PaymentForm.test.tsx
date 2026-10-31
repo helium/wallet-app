@@ -2,6 +2,7 @@ import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
+import MemoInput from '../MemoInput'
 import PaymentCard from '../PaymentCard'
 import PaymentItem from '../PaymentItem'
 
@@ -110,6 +111,23 @@ describe('PaymentItem', () => {
     expect(onEditAmount).toHaveBeenCalledWith({ address: undefined, index: 0 })
   })
 
+  it('shows the chosen address in the address field', () => {
+    const root = render(
+      <PaymentItem
+        index={0}
+        address="recipient"
+        account={{ address: 'recipient' } as never}
+        hideMemo
+        onAddressBookSelected={jest.fn()}
+        onEditAddress={jest.fn()}
+        onEditAmount={jest.fn()}
+        handleAddressError={jest.fn()}
+      />,
+    )
+
+    expect(byTestID(root, 'PaymentItem.Address').props.value).toBe('recipient')
+  })
+
   it('tints the row when the payment has an error', () => {
     const root = render(
       <PaymentItem
@@ -130,6 +148,17 @@ describe('PaymentItem', () => {
           node.props.className === 'absolute inset-0 bg-destructive/20',
       ),
     ).toHaveLength(1)
+  })
+})
+
+describe('MemoInput', () => {
+  const counterClass = (value: string) =>
+    render(<MemoInput value={value} />).findByType('Text' as never).props
+      .className
+
+  it('accepts a memo of 8 bytes and flags one of 9', () => {
+    expect(counterClass('12345678')).toBe('mr-4 text-foreground')
+    expect(counterClass('123456789')).toBe('mr-4 text-destructive')
   })
 })
 

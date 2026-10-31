@@ -5,6 +5,7 @@ import {
 } from '@gorhom/bottom-sheet'
 import { PublicKey } from '@solana/web3.js'
 import { Sheet } from '@ui/Sheet'
+import { useContentColumnMargins } from '@utils/layout'
 import React, {
   FC,
   ReactNode,
@@ -58,6 +59,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
     title,
   } = useTxnDetails(mint, txn)
   const createExplorerUrl = useCreateExplorerUrl()
+  const sheetMargins = useContentColumnMargins()
 
   const snapPoints = ['50%', contentHeight > 0 ? contentHeight : '90%']
 
@@ -69,7 +71,12 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   return (
     <BottomSheetModalProvider>
       <Provider value={{ show }}>
-        <Sheet ref={sheetRef} index={0} snapPoints={snapPoints}>
+        <Sheet
+          ref={sheetRef}
+          index={0}
+          snapPoints={snapPoints}
+          style={sheetMargins}
+        >
           <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
             <SafeArea
               edges={['bottom']}

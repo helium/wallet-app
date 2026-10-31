@@ -51,14 +51,15 @@ describe('legacy import ban', () => {
     ).toEqual([ERROR])
   })
 
-  it.each(['src/features/account/X.tsx', 'src/features/home/X.tsx'])(
-    'rejects legacy imports in migrated %s',
-    async (file) => {
-      expect(
-        await restrictedImportHits(file, "import Box from '@components/Box'"),
-      ).toEqual([ERROR])
-    },
-  )
+  it.each([
+    'src/features/account/X.tsx',
+    'src/features/home/X.tsx',
+    'src/features/payment/X.tsx',
+  ])('rejects legacy imports in migrated %s', async (file) => {
+    expect(
+      await restrictedImportHits(file, "import Box from '@components/Box'"),
+    ).toEqual([ERROR])
+  })
 
   it('allows a listed shared composite in migrated code', async () => {
     expect(

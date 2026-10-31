@@ -1,6 +1,9 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet'
 import { NavigationContext } from '@react-navigation/native'
 import {
   useTransactionDetail,
@@ -86,6 +89,11 @@ jest.mock('@hooks/useAlert', () => () => ({ showOKCancelAlert: () => {} }), {
   virtual: true,
 })
 jest.mock('@hooks/useCopyText', () => () => () => {}, { virtual: true })
+jest.mock(
+  '@utils/layout',
+  () => ({ useContentColumnMargins: () => ({ marginLeft: 120 }) }),
+  { virtual: true },
+)
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
@@ -182,5 +190,16 @@ describe('TransactionDetail', () => {
     expect(textOf(root)).toEqual(
       expect.arrayContaining(['Received HNT', '1 HNT', 'today', 'abc']),
     )
+  })
+
+  it('keeps the sheet in the content column', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+    expect(renderer.root.findByType(BottomSheetModal).props.style).toEqual({
+      marginLeft: 120,
+    })
   })
 })
