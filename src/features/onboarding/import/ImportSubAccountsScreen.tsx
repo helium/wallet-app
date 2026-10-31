@@ -16,7 +16,7 @@ import { Text } from '@ui/Text'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -58,12 +58,18 @@ const ImportSubAccountsScreen = () => {
     fetchMore,
   } = useDerivationAccounts({ mnemonic })
 
-  const derivationAccounts = foundAccounts.filter(
-    (acc) =>
-      (acc.tokens?.length || 0) > 0 ||
-      (acc?.balance || 0) > 0 ||
-      acc.needsMigrated ||
-      acc.derivationPath === DEFAULT_DERIVATION_PATH,
+  // Memoised by hand: the effect below writes onboarding data on each new
+  // array, and the compiler does not memoise this value.
+  const derivationAccounts = useMemo(
+    () =>
+      foundAccounts.filter(
+        (acc) =>
+          (acc.tokens?.length || 0) > 0 ||
+          (acc?.balance || 0) > 0 ||
+          acc.needsMigrated ||
+          acc.derivationPath === DEFAULT_DERIVATION_PATH,
+      ),
+    [foundAccounts],
   )
 
   const [selected, setSelected] = React.useState<Set<string>>(
