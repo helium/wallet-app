@@ -1,0 +1,19 @@
+# App Store screen: governance.
+# scripts/app-store-screenshots.sh captures the screen after this flow.
+appId: com.helium.wallet.app
+---
+- runFlow: ../subflows/home.yaml
+- tapOn:
+    id: NavBar.governance
+- runFlow:
+    when:
+      visible:
+        id: GovernanceTutorial.Start
+    commands:
+      - tapOn:
+          id: GovernanceTutorial.Start
+- extendedWaitUntil:
+    visible:
+      id: Governance.TabSelect
+    timeout: 30000
+- waitForAnimationToEnd

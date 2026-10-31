@@ -129,3 +129,54 @@ test login of its own.
 
 The flow stops on the review screen. Confirm signs and submits the migration
 at once, with no sign sheet, so the flow never taps it.
+
+## App Store screenshots
+
+`scripts/app-store-screenshots.sh` captures every screenshot set that App
+Store Connect needs. Each set gets a new simulator. The script imports the
+fixture wallet with flow 02, opens each screen with a flow in
+`.maestro/screenshots/`, and captures it with `xcrun simctl io`. The wallet
+holds only the throwaway fixture seed, so no real keys or funds show.
+
+| Set                          | Simulator             | Size      |
+| ---------------------------- | --------------------- | --------- |
+| iphone-dynamic-island-medium | iPhone 17             | 1206x2622 |
+| iphone-dynamic-island-large  | iPhone 17 Pro Max     | 1320x2868 |
+| ipad-13                      | iPad Pro 13-inch (M5) | 2064x2752 |
+| iphone-duo-outer (display 1) | iPhone Duo, folded    | 1398x2034 |
+| iphone-duo-inner (display 3) | iPhone Duo, unfolded  | 2007x2853 |
+
+The script fails when a file does not have the size in the table. It sets
+the status bar to 9:41 with full signal and battery, light appearance, and
+the en_US locale. It removes the alpha channel, which Apple rejects.
+
+You need Xcode with the iOS 27.1 simulator runtime (the iPhone Duo does not
+run on an earlier one). Set `SCREENSHOT_RUNTIME` to use another runtime.
+
+1. Make a Release simulator build that points at the fork. A Release bundle
+   does not read `.env.development.local`, so write the values to
+   `.env.production.local`:
+
+   ```bash
+   scripts/maestro-surfpool.sh env | sed 's/^export //' > .env.production.local
+   yarn ios --configuration Release
+   ```
+
+2. Start surfpool and seed the fixture wallet:
+
+   ```bash
+   eval "$(scripts/maestro-surfpool.sh)"
+   ```
+
+3. Run the script in a terminal, with the path to the `.app` that step 1
+   built. The files go to `build/app-store-screenshots/<set>/`:
+
+   ```bash
+   scripts/app-store-screenshots.sh "<path to Helium Wallet.app>"
+   ```
+
+4. The iPhone Duo boots folded, and `simctl` has no command to unfold it.
+   After the outer set, the script stops. Unfold the simulator, then press
+   Enter to capture the inner set.
+
+5. Stop surfpool and remove `.env.production.local`.

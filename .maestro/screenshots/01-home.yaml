@@ -1,0 +1,6 @@
+# App Store screen: home with the fixture wallet balances.
+# scripts/app-store-screenshots.sh captures the screen after this flow.
+appId: com.helium.wallet.app
+---
+- runFlow: ../subflows/home.yaml
+- waitForAnimationToEnd

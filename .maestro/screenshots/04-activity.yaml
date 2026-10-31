@@ -1,0 +1,9 @@
+# App Store screen: activity.
+# scripts/app-store-screenshots.sh captures the screen after this flow.
+appId: com.helium.wallet.app
+---
+- runFlow: ../subflows/home.yaml
+- tapOn:
+    id: NavBar.activity
+- waitForAnimationToEnd:
+    timeout: 10000

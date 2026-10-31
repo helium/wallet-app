@@ -1,0 +1,15 @@
+# App Store screen: HNT token detail.
+# scripts/app-store-screenshots.sh captures the screen after this flow.
+appId: com.helium.wallet.app
+---
+- runFlow: ../subflows/home.yaml
+- scrollUntilVisible:
+    element:
+      id: TokenListItem.HNT
+- tapOn:
+    id: TokenListItem.HNT
+- extendedWaitUntil:
+    visible:
+      id: AccountToken.Balance
+    timeout: 30000
+- waitForAnimationToEnd
