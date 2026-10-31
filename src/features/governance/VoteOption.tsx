@@ -1,15 +1,18 @@
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useKnownProxy } from '@helium/voter-stake-registry-hooks'
-import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
-import { Color, Theme } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
+import { lightThemeColors } from '@theme/theme'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { shortenAddress } from '@utils/formatting'
 import React from 'react'
+import { View } from 'react-native'
 import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
+
+// Each choice keeps its fixed data colour, so it is a JS value, not a token.
+export const votingResultColor = (index: number) =>
+  lightThemeColors[VotingResultColors[index] as keyof typeof lightThemeColors]
 
 export const VoteOption = ({
   option,
@@ -20,7 +23,7 @@ export const VoteOption = ({
   onVote,
   onRelinquishVote,
   voters,
-  ...boxProps
+  className,
 }: {
   voters?: PublicKey[]
   option: VoteChoiceWithMeta
@@ -30,8 +33,10 @@ export const VoteOption = ({
   voting: boolean
   onVote?: () => Promise<void>
   onRelinquishVote?: () => Promise<void>
-} & BoxProps<Theme>) => {
-  const colors = useColors()
+  className?: string
+}) => {
+  const color = votingResultColor(option.index)
+  const fill = didVote ? color : 'transparent'
   const handleVote = canVote
     ? onVote
     : canRelinquishVote
@@ -39,81 +44,55 @@ export const VoteOption = ({
       : undefined
 
   return (
-    <TouchableOpacityBox
-      flexGrow={1}
-      flexDirection="column"
-      padding="ms"
-      borderRadius="m"
-      backgroundColor="surfaceSecondary"
-      {...boxProps}
+    <PressableScale
+      feedback="opacity"
+      className={twMerge(
+        'grow flex-col rounded-md bg-secondary p-3',
+        className,
+      )}
       onPress={handleVote && (() => void handleVote().catch(console.error))}
     >
-      <Box flexDirection="row">
+      <View className="flex-row">
         {!voting ? (
-          <Box
-            width={20}
-            height={20}
-            borderRadius="round"
-            marginRight="ms"
-            borderWidth={2}
-            borderColor={VotingResultColors[option.index]}
-            backgroundColor={
-              !didVote ? 'transparent' : VotingResultColors[option.index]
-            }
+          <View
+            className="mr-3 size-5 rounded-full border-2"
+            style={{
+              borderColor: color,
+              backgroundColor: fill,
+            }}
           />
         ) : (
-          <Box marginRight="ms">
-            <CircleLoader
-              color={colors[VotingResultColors[option.index]] as Color}
-              loaderSize={20}
-            />
-          </Box>
+          <View className="mr-3">
+            <Spinner color={color} />
+          </View>
         )}
 
-        <Text variant="body2" color="secondaryText">
-          {option.name}
-        </Text>
-      </Box>
+        <Text className="text-muted-foreground">{option.name}</Text>
+      </View>
 
       {voters && voters.length > 0 && (
-        <Box
-          flex={1}
-          borderTopColor="primaryBackground"
-          borderTopWidth={2}
-          mt="ms"
-          pt="s"
-        >
-          <Box
-            flex={1}
-            flexDirection="row"
-            flexWrap="wrap"
-            alignItems="center"
-            gap="xs"
-          >
-            <Text variant="body2" color="secondaryText">
-              Voted by -
-            </Text>
+        <View className="mt-3 flex-1 border-t-2 border-background pt-2">
+          <View className="flex-1 flex-row flex-wrap items-center gap-1">
+            <Text className="text-muted-foreground">Voted by -</Text>
             {voters.map((voter, idx) => (
               <>
                 <Voter key={voter.toBase58()} voter={voter} />
                 {idx !== voters.length - 1 && (
-                  <Text variant="body2" color="secondaryText">
-                    |
-                  </Text>
+                  <Text className="text-muted-foreground">|</Text>
                 )}
               </>
             ))}
-          </Box>
-        </Box>
+          </View>
+        </View>
       )}
-    </TouchableOpacityBox>
+    </PressableScale>
   )
 }
 
 export const Voter = ({ voter }: { voter: PublicKey }) => {
   const { knownProxy } = useKnownProxy(voter)
   return (
-    <Text variant="body2" color="red500">
+    <Text className="text-destructive">
       {knownProxy?.name || shortenAddress(voter.toBase58())}
     </Text>
   )

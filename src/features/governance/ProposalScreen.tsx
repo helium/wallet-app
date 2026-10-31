@@ -1,12 +1,4 @@
-import BrowseProxies from '@assets/images/browseProxies.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
 import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import { Markdown } from '@components/Markdown'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   useProposal,
@@ -27,25 +19,37 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useGovernance } from '@storage/GovernanceProvider'
-import globalStyles from '@theme/globalStyles'
+import { Button } from '@ui/Button'
+import { buttonTextVariants } from '@ui/buttonVariants'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { humanReadable } from '@utils/formatting'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import axios from 'axios'
 import BN from 'bn.js'
 import { useQuery } from '@tanstack/react-query'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Users } from 'lucide-react-native'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
-import { VoteOption } from './VoteOption'
+import { ScrollView, View } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import { Markdown } from './Markdown'
+import { VoteOption, votingResultColor } from './VoteOption'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
   ProposalV0,
   VoteChoiceWithMeta,
-  VotingResultColors,
 } from './governanceTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const BrowseProxiesIcon = withUniwind(Users)
+
+const safeEdges: Edge[] = ['bottom']
+const backEdges: Edge[] = ['top']
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
@@ -54,8 +58,6 @@ export const ProposalScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const [currVote, setCurrVote] = useState(0)
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-  const backEdges = useMemo(() => ['top'] as Edge[], [])
   const proposalKey = useMemo(
     () => new PublicKey(route.params.proposal),
     [route.params.proposal],
@@ -77,13 +79,13 @@ export const ProposalScreen = () => {
     isPending: relinquishMutPending,
     error: relinquishError,
   } = useRelinquishVoteMutation()
-  const handleBrowseProxies = useCallback(() => {
+  const handleBrowseProxies = () => {
     navigation.navigate(
       'ProxiesScreen',
       { mint: mint.toBase58() },
       { pop: true },
     )
-  }, [navigation, mint])
+  }
   const { info: proposal } = useProposal(proposalKey)
   const { info: proposalConfig } = useProposalConfig(proposal?.proposalConfig)
   const { info: registrar } = useRegistrar(proposalConfig?.voteController)
@@ -249,273 +251,198 @@ export const ProposalScreen = () => {
       completed)
 
   return (
-    <ReAnimatedBox style={globalStyles.container}>
+    <Animated.View className="flex-1">
       <BackScreen
         headerTopMargin="l"
         padding="none"
         title="Proposal Overview"
         edges={backEdges}
       >
-        <SafeAreaBox
-          edges={safeEdges}
-          backgroundColor="transparent"
-          flex={1}
-          marginTop="l"
-        >
+        <SafeArea edges={safeEdges} className="mt-6 flex-1 bg-transparent">
           <ScrollView contentInsetAdjustmentBehavior="automatic">
-            <Box paddingHorizontal="m">
-              <Box
-                flexGrow={1}
-                justifyContent="center"
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                padding="m"
-              >
-                <Box flexDirection="row">
+            <View className="px-4">
+              <View className="grow justify-center rounded-[12px] bg-secondary p-4">
+                <View className="flex-row">
                   {proposal?.tags
                     .filter((tag) => tag !== 'tags')
-                    .map((tag, idx) => (
-                      <Box
-                        key={tag}
-                        marginLeft={idx > 0 ? 's' : 'none'}
-                        padding="s"
-                        backgroundColor={
-                          tag.toLowerCase().includes('temp check')
-                            ? 'orange500'
-                            : 'black600'
-                        }
-                        borderRadius="m"
-                      >
-                        <Text variant="body3" color="secondaryText">
-                          {tag.toUpperCase()}
-                        </Text>
-                      </Box>
-                    ))}
-                </Box>
-                <Box flexShrink={1} marginTop="ms">
-                  <Text variant="subtitle3" color="primaryText">
+                    .map((tag, idx) => {
+                      const tempCheck = tag.toLowerCase().includes('temp check')
+                      return (
+                        <View
+                          key={tag}
+                          className={`${idx > 0 ? 'ml-2' : ''} rounded-md p-2 ${
+                            tempCheck ? 'bg-warning-100' : 'bg-background'
+                          }`}
+                        >
+                          <Text
+                            size="xs"
+                            className={
+                              tempCheck
+                                ? 'text-warning-500'
+                                : 'text-muted-foreground'
+                            }
+                          >
+                            {tag.toUpperCase()}
+                          </Text>
+                        </View>
+                      )
+                    })}
+                </View>
+                <View className="mt-3 shrink">
+                  <Text size="base" className="font-medium">
                     {proposal?.name}
                   </Text>
-                </Box>
-                <Box marginTop="ms">
-                  <Box flexDirection="row" justifyContent="space-between">
-                    <Box>
+                </View>
+                <View className="mt-3">
+                  <View className="flex-row justify-between">
+                    <View>
                       {derivedState === 'active' && !completed && (
-                        <Text variant="body2" color="secondaryText">
+                        <Text className="text-muted-foreground">
                           {t('gov.proposals.estTime')}
                         </Text>
                       )}
                       {derivedState === 'active' && completed && (
-                        <Text variant="body2" color="secondaryText">
+                        <Text className="text-muted-foreground">
                           {t('gov.proposals.votingClosed')}
                         </Text>
                       )}
                       {derivedState === 'passed' && (
-                        <Text variant="body2" color="greenBright500">
+                        <Text className="text-success-500">
                           {t('gov.proposals.success')}
                         </Text>
                       )}
                       {derivedState === 'completed' && (
-                        <Text variant="body2" color="greenBright500">
+                        <Text className="text-success-500">
                           {t('gov.proposals.completed')}
                         </Text>
                       )}
                       {derivedState === 'failed' && (
-                        <Text variant="body2" color="error">
+                        <Text className="text-destructive">
                           {t('gov.proposals.failed')}
                         </Text>
                       )}
                       {derivedState === 'cancelled' && (
-                        <Text variant="body2" color="orange500">
+                        <Text className="text-warning-500">
                           {t('gov.proposals.cancelled')}
                         </Text>
                       )}
                       {derivedState !== 'cancelled' && (
-                        <Text variant="body2" color="primaryText">
-                          {getTimeFromNowFmt(endTs || new BN(0))}
-                        </Text>
+                        <Text>{getTimeFromNowFmt(endTs || new BN(0))}</Text>
                       )}
-                    </Box>
+                    </View>
                     {derivedState !== 'cancelled' && (
-                      <Box>
-                        <Text
-                          variant="body2"
-                          color="secondaryText"
-                          textAlign="right"
-                        >
+                      <View>
+                        <Text className="text-right text-muted-foreground">
                           {t('gov.proposals.votes')}
                         </Text>
-                        <Text
-                          variant="body2"
-                          color="primaryText"
-                          textAlign="right"
-                        >
+                        <Text className="text-right">
                           {humanReadable(votingResults?.totalVotes, decimals) ||
                             'None'}
                         </Text>
-                      </Box>
+                      </View>
                     )}
-                  </Box>
+                  </View>
                   {showVoteResults &&
                     votingResults?.totalVotes.gt(new BN(0)) && (
-                      <Box
-                        backgroundColor="surfaceSecondary"
-                        borderRadius="l"
-                        paddingTop="m"
-                      >
+                      <View className="rounded-[12px] bg-secondary pt-4">
                         {votingResults.results
                           ?.sort((a, b) => b.percent - a.percent)
                           .map((r, idx) => (
-                            <Box
+                            <View
                               key={r.name}
-                              flex={1}
-                              marginTop={idx > 0 ? 's' : 'none'}
+                              className={`flex-1 ${idx > 0 ? 'mt-2' : ''}`}
                             >
-                              <Text
-                                variant="body2"
-                                color="primaryText"
-                                marginBottom="xs"
-                              >
-                                {r.name}
-                              </Text>
-                              <Box
-                                flexDirection="row"
-                                flex={1}
-                                backgroundColor="grey900"
-                                borderRadius="m"
-                                overflow="hidden"
-                                marginBottom="xs"
-                              >
-                                <Box
-                                  flexDirection="row"
-                                  height={6}
-                                  width={`${r.percent}%`}
-                                  backgroundColor={VotingResultColors[r.index]}
+                              <Text className="mb-1">{r.name}</Text>
+                              <View className="mb-1 flex-1 flex-row overflow-hidden rounded-md bg-muted">
+                                <View
+                                  className="h-1.5 flex-row"
+                                  style={{
+                                    width: `${r.percent}%`,
+                                    backgroundColor: votingResultColor(r.index),
+                                  }}
                                 />
-                              </Box>
-                              <Box
-                                flexDirection="row"
-                                justifyContent="space-between"
-                              >
-                                <Text
-                                  variant="body2"
-                                  color="secondaryText"
-                                  marginRight="ms"
-                                >
+                              </View>
+                              <View className="flex-row justify-between">
+                                <Text className="mr-3 text-muted-foreground">
                                   {humanReadable(r.weight, decimals)}
                                 </Text>
-                                <Text variant="body2" color="primaryText">
-                                  {r.percent.toFixed(2)}%
-                                </Text>
-                              </Box>
-                            </Box>
+                                <Text>{r.percent.toFixed(2)}%</Text>
+                              </View>
+                            </View>
                           ))}
-                      </Box>
+                      </View>
                     )}
-                </Box>
-              </Box>
+                </View>
+              </View>
               {noVotingPower && (
-                <TouchableOpacityBox
+                <PressableScale
+                  feedback="opacity"
                   onPress={() =>
                     navigation.push('PositionsScreen', {
                       mint: mint.toBase58(),
                     })
                   }
                 >
-                  <Box
-                    flexDirection="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                    flexGrow={1}
-                    backgroundColor="surfaceSecondary"
-                    borderRadius="l"
-                    padding="m"
-                    marginTop="m"
-                  >
-                    <Text variant="body2" color="flamenco">
+                  <View className="mt-4 grow flex-row items-center justify-between rounded-[12px] bg-secondary p-4">
+                    <Text className="text-warning-500">
                       {`${t('gov.votingPower.noPower')}, ${t(
                         'gov.votingPower.increase',
                       )}`}
                     </Text>
-                    <Text variant="subtitle1" color="primaryText">
+                    <Text size="xl" className="font-medium">
                       &gt;
                     </Text>
-                  </Box>
-                </TouchableOpacityBox>
+                  </View>
+                </PressableScale>
               )}
               {derivedState === 'active' && !noVotingPower && (
                 <>
-                  <Box
-                    flexGrow={1}
-                    justifyContent="center"
-                    backgroundColor="surfaceSecondary"
-                    borderRadius="l"
-                    padding="m"
-                    marginTop="m"
-                  >
-                    <Text variant="body2" color="primaryText">
+                  <View className="mt-4 grow justify-center rounded-[12px] bg-secondary p-4">
+                    <Text>
                       {t('gov.proposals.toVote', {
                         maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
                         choicesLength: proposal?.choices.length,
                       })}
                     </Text>
-                    <Box flexDirection="row" alignItems="center">
-                      <Box
-                        borderBottomColor="white"
-                        opacity={0.5}
-                        borderBottomWidth={1}
-                        flex={1}
-                      />
-                      <Text color="white" opacity={0.5} p="m" variant="body2">
-                        OR
-                      </Text>
-                      <Box
-                        borderBottomColor="white"
-                        opacity={0.5}
-                        borderBottomWidth={1}
-                        flex={1}
-                      />
-                    </Box>
-                    <Text variant="body2" color="primaryText">
-                      {t('gov.proposals.assignProxy')}
-                    </Text>
-                    <ButtonPressable
-                      fontSize={16}
-                      height={48}
-                      backgroundColor="black500"
-                      LeadingComponent={
-                        <BrowseProxies width={18} height={18} />
-                      }
-                      borderRadius="round"
-                      mt="m"
+                    <View className="flex-row items-center">
+                      <View className="flex-1 border-b border-border" />
+                      <Text className="p-4 text-muted-foreground">OR</Text>
+                      <View className="flex-1 border-b border-border" />
+                    </View>
+                    <Text>{t('gov.proposals.assignProxy')}</Text>
+                    <Button
+                      size="lg"
+                      className="mt-4 w-full rounded-full"
                       onPress={handleBrowseProxies}
-                      padding="s"
-                      title={t('gov.assignProxy.browseProxies')}
-                    />
-                  </Box>
-                  <Box flexGrow={1} justifyContent="center" mt="m" gap="ms">
+                    >
+                      <BrowseProxiesIcon
+                        size={16}
+                        colorClassName="accent-primary-foreground"
+                      />
+                      <Text className={buttonTextVariants()}>
+                        {t('gov.assignProxy.browseProxies')}
+                      </Text>
+                    </Button>
+                  </View>
+                  <View className="mt-4 grow justify-center gap-3">
                     {showError && (
-                      <Box
-                        flexDirection="row"
-                        backgroundColor="surfaceSecondary"
-                        borderRadius="l"
-                        padding="m"
-                      >
-                        <Text variant="body3Medium" color="red500">
+                      <View className="flex-row rounded-[12px] bg-secondary p-4">
+                        <Text
+                          size="xs"
+                          className="font-medium text-destructive"
+                        >
                           {showError}
                         </Text>
-                      </Box>
+                      </View>
                     )}
-                    <Box flex={1} flexDirection="column" gap="m">
+                    <View className="flex-1 flex-col gap-4">
                       {votingResults.results?.map((r) => (
-                        <Box
-                          backgroundColor="surfaceSecondary"
-                          borderRadius="l"
-                          padding="xs"
+                        <View
+                          key={r.name}
+                          className="rounded-[12px] bg-secondary p-1"
                         >
                           <VoteOption
                             voters={voters?.[r.index] || []}
-                            key={r.name}
                             voting={
                               currVote === r.index &&
                               (voteMutPending || relinquishMutPending)
@@ -529,29 +456,22 @@ export const ProposalScreen = () => {
                             onVote={handleVote(r)}
                             onRelinquishVote={handleRelinquish(r)}
                           />
-                        </Box>
+                        </View>
                       ))}
-                    </Box>
-                  </Box>
+                    </View>
+                  </View>
                 </>
               )}
               {markdown && (
-                <Box
-                  flexGrow={1}
-                  justifyContent="center"
-                  backgroundColor="surfaceSecondary"
-                  borderRadius="l"
-                  padding="m"
-                  marginTop="m"
-                >
+                <View className="mt-4 grow justify-center rounded-[12px] bg-secondary p-4">
                   <Markdown markdown={markdown} />
-                </Box>
+                </View>
               )}
-            </Box>
+            </View>
           </ScrollView>
-        </SafeAreaBox>
+        </SafeArea>
       </BackScreen>
-    </ReAnimatedBox>
+    </Animated.View>
   )
 }
 

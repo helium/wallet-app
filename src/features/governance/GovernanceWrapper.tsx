@@ -1,28 +1,30 @@
-import Flag from '@assets/images/flag.svg'
-import LightningBolt from '@assets/images/lightningBolt.svg'
-import UserStar from '@assets/images/userStar.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
-import { Select } from '@components/Select'
-import Text from '@components/Text'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useGovernance } from '@storage/GovernanceProvider'
-import globalStyles from '@theme/globalStyles'
 import React, { useEffect, useMemo } from 'react'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { Flag, UserStar, Zap } from 'lucide-react-native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
+import { View } from 'react-native'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
+import { Select } from './Select'
 import { useSetTab } from './useSetTab'
 
+const SafeArea = withUniwind(SafeAreaView)
+const FlagIcon = withUniwind(Flag)
+const UserStarIcon = withUniwind(UserStar)
+const ZapIcon = withUniwind(Zap)
+
 const icons: { [key: string]: React.ReactElement } = {
-  proposals: <Flag width={16} height={16} color="white" />,
-  proxies: <UserStar width={16} height={16} color="white" />,
-  positions: <LightningBolt width={16} height={16} color="white" />,
+  proposals: <FlagIcon size={16} colorClassName="accent-foreground" />,
+  proxies: <UserStarIcon size={16} colorClassName="accent-foreground" />,
+  positions: <ZapIcon size={16} colorClassName="accent-foreground" />,
 }
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalsScreen'>
@@ -52,24 +54,26 @@ export const GovernanceWrapper: React.FC<
     }
   }, [route, navigation])
 
+  // The tab select and the proposal filter sheets portal to the nearest
+  // BottomSheetModalProvider. This one keeps them inside the screen.
   return (
-    <ReAnimatedBox style={globalStyles.container}>
-      <SafeAreaBox edges={safeEdges} flex={1}>
-        <Box flexDirection="column" height="100%">
-          <Text marginTop="m" alignSelf="center" variant="h4">
+    <BottomSheetModalProvider>
+      <SafeArea edges={safeEdges} className="flex-1 bg-background">
+        <View className="h-full flex-col">
+          <Text size="xl" className="mt-4 self-center font-semibold">
             {t('gov.title')}
           </Text>
           {loading ? (
-            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
-              <CircleLoader loaderSize={24} color="white" />
-            </Box>
+            <View className="mt-12 flex-1 flex-col px-4">
+              <Spinner />
+            </View>
           ) : (
-            <Box paddingHorizontal="m" mt="xxl" flexDirection="column" flex={1}>
+            <View className="mt-12 flex-1 flex-col px-4">
               {header}
               <Select
                 testID="Governance.TabSelect"
                 title=""
-                mb="xl"
+                className="mb-8"
                 value={selectedTab}
                 onValueChange={setSelectedTab}
                 options={['proposals', 'proxies', 'positions'].map((o) => ({
@@ -80,11 +84,11 @@ export const GovernanceWrapper: React.FC<
               />
 
               {children}
-            </Box>
+            </View>
           )}
-        </Box>
-      </SafeAreaBox>
-    </ReAnimatedBox>
+        </View>
+      </SafeArea>
+    </BottomSheetModalProvider>
   )
 }
 

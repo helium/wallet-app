@@ -1,16 +1,15 @@
-import BrowseProxies from '@assets/images/browseProxies.svg'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
 import SearchInput from '@components/SearchInput'
-import Text from '@components/Text'
-import TouchableContainer from '@components/TouchableContainer'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { shortenAddress } from '@utils/formatting'
+import { Users } from 'lucide-react-native'
 import React, {
   useCallback,
   useImperativeHandle,
@@ -19,10 +18,13 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, TextInput, useWindowDimensions } from 'react-native'
+import { FlatList, TextInput, View, useWindowDimensions } from 'react-native'
 import { useKeyboard } from '@react-native-community/hooks'
+import { withUniwind } from 'uniwind'
 import { useDebounce } from 'use-debounce'
 import { GovernanceNavigationProp } from './governanceTypes'
+
+const UsersIcon = withUniwind(Users)
 
 export const ProxySearch = React.forwardRef<
   TextInput,
@@ -78,10 +80,9 @@ export const ProxySearch = React.forwardRef<
   const renderItem = useCallback(
     ({ item }: { item: { value: string; label: string } }) => {
       return (
-        <TouchableContainer
-          backgroundColor="surfaceSecondary"
-          p="m"
-          mt="s"
+        <PressableScale
+          feedback="opacity"
+          className="mt-2 rounded-[12px] bg-secondary p-4"
           onPress={() => {
             isSelectingFromDropdown.current = true
             setInput(item.value)
@@ -91,17 +92,15 @@ export const ProxySearch = React.forwardRef<
             inputRef.current?.blur()
           }}
         >
-          <Text variant="body3" color="white">
-            {item.label}
-          </Text>
-        </TouchableContainer>
+          <Text>{item.label}</Text>
+        </PressableScale>
       )
     },
     [onValueChange],
   )
   const ListEmptyComponent = useCallback(() => {
     if (loading || isPending) {
-      return <CircleLoader />
+      return <Spinner />
     }
 
     return null
@@ -172,10 +171,10 @@ export const ProxySearch = React.forwardRef<
       }}
       ListHeaderComponent={
         <>
-          <Text variant="body3" color="secondaryText" mb="xs">
+          <Text className="mb-1 text-muted-foreground">
             {selected ? selected.label : t('gov.assignProxy.searchPlaceholder')}
           </Text>
-          <Box flexDirection="row" alignItems="center">
+          <View className="flex-row items-center">
             <SearchInput
               ref={inputRef}
               flex={1}
@@ -192,17 +191,15 @@ export const ProxySearch = React.forwardRef<
                 editable: !disabled,
               }}
             />
-            <ButtonPressable
-              backgroundColor="secondary"
-              Icon={BrowseProxies}
-              borderRadius="l"
-              ml="s"
+            <Button
+              variant="secondary"
+              className="ml-2 h-[52px] rounded-[12px] px-4"
+              accessibilityLabel={t('gov.assignProxy.browseProxies')}
               onPress={handleBrowseVoters}
-              padding="s"
-              height={52}
-              innerContainerProps={{ px: 'm' }}
-            />
-          </Box>
+            >
+              <UsersIcon size={20} colorClassName="accent-foreground" />
+            </Button>
+          </View>
         </>
       }
       ListEmptyComponent={ListEmptyComponent}

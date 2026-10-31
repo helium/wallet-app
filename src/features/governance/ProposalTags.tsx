@@ -1,6 +1,6 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
+import { Text } from '@ui/Text'
 import React from 'react'
+import { View } from 'react-native'
 
 export const ProposalTags: React.FC<{
   tags?: string[]
@@ -10,23 +10,29 @@ export const ProposalTags: React.FC<{
       {tags
         ? tags
             .filter((tag) => tag !== 'tags')
-            .map((tag) => (
-              <Box key={tag} marginRight="s" marginBottom="s">
-                <Box
-                  padding="s"
-                  backgroundColor={
-                    tag.toLowerCase().includes('temp check')
-                      ? 'orange500'
-                      : 'black600'
+            .map((tag) => {
+              const tempCheck = tag.toLowerCase().includes('temp check')
+              return (
+                <View
+                  key={tag}
+                  className={
+                    tempCheck
+                      ? 'mb-2 mr-2 rounded-md bg-warning-100 p-2'
+                      : 'mb-2 mr-2 rounded-md bg-background p-2'
                   }
-                  borderRadius="m"
                 >
-                  <Text fontSize={10} color="secondaryText">
+                  <Text
+                    className={
+                      tempCheck
+                        ? 'text-[10px] text-warning-500'
+                        : 'text-[10px] text-muted-foreground'
+                    }
+                  >
                     {tag.toUpperCase()}
                   </Text>
-                </Box>
-              </Box>
-            ))
+                </View>
+              )
+            })
         : null}
     </>
   )

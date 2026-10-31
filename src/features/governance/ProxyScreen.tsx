@@ -1,28 +1,30 @@
-import UserShare from '@assets/images/userShare.svg'
-import UserX from '@assets/images/userX.svg'
 import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import { Markdown } from '@components/Markdown'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
 import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { useQuery } from '@tanstack/react-query'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
+import { Share, UserX } from 'lucide-react-native'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image } from 'react-native'
+import { Image, View } from 'react-native'
+import { withUniwind } from 'uniwind'
+import { Markdown } from './Markdown'
 import { VoteHistory } from './VoteHistory'
 import { ProxyCardStat } from './ProxyCardStat'
 import {
   GovernanceNavigationProp,
   GovernanceStackParamList,
 } from './governanceTypes'
+
+const ShareIcon = withUniwind(Share)
+const UserXIcon = withUniwind(UserX)
 
 type Route = RouteProp<GovernanceStackParamList, 'ProxyScreen'>
 
@@ -82,30 +84,30 @@ export const ProxyScreen = () => {
   if (!proxy) {
     return (
       <BackScreen title={t('gov.title')}>
-        <Box flexDirection="row" justifyContent="center" alignItems="center">
-          <CircleLoader loaderSize={20} />
-        </Box>
+        <View className="flex-row items-center justify-center">
+          <Spinner />
+        </View>
       </BackScreen>
     )
   }
   return (
     <BackScreen padding="m" title={t('gov.title')}>
-      <Box flexDirection="column">
+      <View className="flex-col">
         <VoteHistory
           onRefresh={() => void refetch().catch(console.error)}
           wallet={wallet}
           header={
             <>
-              <Box flexDirection="column" alignItems="center">
+              <View className="flex-col items-center">
                 <Image
                   source={{ uri: proxy?.image }}
-                  style={{ width: 80, height: 80, borderRadius: 100 }}
+                  className="size-20 rounded-full"
                 />
-                <Text mt="m" variant="h4">
+                <Text size="xl" className="mt-4 font-semibold">
                   {proxy.name}
                 </Text>
-                <Box flexDirection="row" alignItems="center" mb="l">
-                  <Text mr="s" variant="body1">
+                <View className="mb-6 flex-row items-center">
+                  <Text size="base" className="mr-2">
                     {shortenAddress(proxy.wallet)}
                   </Text>
                   {[...(networks || new Set())].map((n) => {
@@ -140,90 +142,64 @@ export const ProxyScreen = () => {
                     }
                     return null
                   })}
-                </Box>
-              </Box>
-              <Box
-                flexDirection="row"
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                alignItems="center"
-                justifyContent="space-evenly"
-                p="l"
-                mb="m"
-              >
+                </View>
+              </View>
+              <View className="mb-4 flex-row items-center justify-evenly rounded-[12px] bg-secondary p-6">
                 <ProxyCardStat
                   title="Current Rank"
-                  alignItems="center"
+                  className="items-center"
                   value={`#${proxy.rank} of ${proxy.numProxies}`}
                 />
                 <ProxyCardStat
                   title="Last Time Voted"
-                  alignItems="center"
+                  className="items-center"
                   value={
                     proxy.lastVotedAt
                       ? new Date(proxy.lastVotedAt).toLocaleDateString()
                       : 'Never'
                   }
                 />
-              </Box>
-              <Box flexDirection="row" alignItems="center" mb="m">
-                <ButtonPressable
-                  height={50}
-                  flex={1}
-                  LeadingComponent={<UserShare width={16} height={16} />}
-                  backgroundColor="transparent"
-                  titleColor="white"
-                  borderColor="white"
-                  borderWidth={1}
-                  borderRadius="round"
-                  backgroundColorOpacityPressed={0.7}
-                  backgroundColorDisabled="black500"
-                  title={t('gov.proxy.assignProxy')}
+              </View>
+              <View className="mb-4 flex-row items-center">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-[50px] flex-1 rounded-full"
                   disabled={!unproxiedPositions?.length}
                   onPress={handleAssignProxy}
-                />
-                {proxiedPositions?.length ? (
-                  <ButtonPressable
-                    flex={1}
-                    height={50}
-                    ml="m"
-                    LeadingComponent={<UserX width={16} height={16} />}
-                    backgroundColor="transparent"
-                    titleColor="white"
-                    borderColor="white"
-                    borderWidth={1}
-                    borderRadius="round"
-                    backgroundColorOpacityPressed={0.7}
-                    title={t('gov.proxy.revokeProxy')}
-                    onPress={handleRevokeProxy}
-                  />
-                ) : null}
-              </Box>
-
-              <Box mb="m">
-                <Markdown markdown={proxy.detail} />
-              </Box>
-              <Box
-                backgroundColor="surfaceSecondary"
-                borderRadius="l"
-                p="m"
-                mt="m"
-                mb="m"
-              >
-                <Box
-                  pb="s"
-                  flexDirection="row"
-                  borderBottomColor="dividerGrey"
-                  borderBottomWidth={1}
-                  justifyContent="space-between"
                 >
+                  <ShareIcon size={16} colorClassName="accent-foreground" />
+                  <Text className="font-medium">
+                    {t('gov.proxy.assignProxy')}
+                  </Text>
+                </Button>
+                {proxiedPositions?.length ? (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="ml-4 h-[50px] flex-1 rounded-full"
+                    onPress={handleRevokeProxy}
+                  >
+                    <UserXIcon size={16} colorClassName="accent-foreground" />
+                    <Text className="font-medium">
+                      {t('gov.proxy.revokeProxy')}
+                    </Text>
+                  </Button>
+                ) : null}
+              </View>
+
+              <View className="mb-4">
+                <Markdown markdown={proxy.detail} />
+              </View>
+              <View className="my-4 rounded-[12px] bg-secondary p-4">
+                <View className="flex-row justify-between border-b border-border pb-2">
                   <ProxyCardStat
                     title="Current Rank"
                     value={`#${proxy.rank} of ${proxy.numProxies}`}
                   />
                   <ProxyCardStat
                     title="Total Power"
-                    alignItems="flex-end"
+                    className="items-end"
                     value={
                       // Force 2 decimals
                       decimals && proxy.proxiedVeTokens
@@ -236,24 +212,20 @@ export const ProxyScreen = () => {
                         : ''
                     }
                   />
-                </Box>
-                <Box pt="s" flexDirection="row" justifyContent="space-between">
+                </View>
+                <View className="flex-row justify-between pt-2">
                   <ProxyCardStat
                     title="Proposals Voted"
                     value={proxy.numProposalsVoted}
                   />
                   <ProxyCardStat
                     title="Num Assignments"
-                    alignItems="flex-end"
+                    className="items-end"
                     value={proxy.numAssignments}
                   />
-                </Box>
+                </View>
                 {votingPower?.gt(new BN(0)) ? (
-                  <Box
-                    pt="s"
-                    flexDirection="row"
-                    justifyContent="space-between"
-                  >
+                  <View className="flex-row justify-between pt-2">
                     <ProxyCardStat
                       title="Power From Me"
                       value={
@@ -270,22 +242,17 @@ export const ProxyScreen = () => {
                     />
                     <ProxyCardStat
                       title="Positions Assigned"
-                      alignItems="flex-end"
+                      className="items-end"
                       value={proxiedToPositions?.length?.toString() || '0'}
                     />
-                  </Box>
+                  </View>
                 ) : null}
-              </Box>
-              <Box
-                mt="l"
-                mb="xxl"
-                borderBottomColor="dividerGrey"
-                borderBottomWidth={1}
-              />
+              </View>
+              <View className="mb-12 mt-6 border-b border-border" />
             </>
           }
         />
-      </Box>
+      </View>
     </BackScreen>
   )
 }

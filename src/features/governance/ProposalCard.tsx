@@ -1,24 +1,23 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   useProposalConfig,
   useResolutionSettings,
 } from '@helium/modular-governance-hooks'
-import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { Theme } from '@theme/theme'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
 import MarkdownIt from 'markdown-it'
 import { useQuery } from '@tanstack/react-query'
-import React, { useCallback, useMemo } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import useNowAfter from '@hooks/useNowAfter'
@@ -26,30 +25,43 @@ import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 import { ProposalTags } from './ProposalTags'
 
-interface IProposalCardProps extends BoxProps<Theme> {
+interface IProposalCardProps {
   filter: ProposalFilter
   proposal: ProposalV0
   proposalKey: PublicKey
   onPress?: (mint: PublicKey, proposal: PublicKey) => Promise<void>
+  className?: string
 }
 
 const markdownParser = MarkdownIt()
-export const ProposalCardSkeleton = (boxProps: BoxProps<Theme>) => (
-  <ReAnimatedBox
-    flex={1}
-    backgroundColor="black900"
-    borderRadius="l"
-    padding="xxxl"
+export const ProposalCardSkeleton = ({ className }: { className?: string }) => (
+  <Animated.View
+    className={twMerge('flex-1 rounded-[12px] bg-secondary p-15', className)}
     entering={FADE_IN}
     exiting={FADE_OUT}
-    {...boxProps}
   />
 )
+
+const StatusChip = ({
+  dotClassName,
+  label,
+}: {
+  dotClassName: string
+  label: string
+}) => (
+  <View className="mb-2 mr-2">
+    <View className="flex-row items-center rounded-md bg-background p-2">
+      <View className={twMerge('z-[2] size-2.5 rounded-full', dotClassName)} />
+      <Text className="ml-2 text-[10px] text-muted-foreground">{label}</Text>
+    </View>
+  </View>
+)
+
 export const ProposalCard = ({
   proposal,
   proposalKey,
   onPress,
-  ...boxProps
+  className,
 }: IProposalCardProps) => {
   const { t } = useTranslation()
   const { currentAccount } = useAccountStorage()
@@ -61,19 +73,12 @@ export const ProposalCard = ({
     proposalConfig?.stateController,
   )
 
-  const derivedState = useMemo(
-    () => getDerivedProposalState(proposal),
-    [proposal],
-  )
+  const derivedState = getDerivedProposalState(proposal)
 
-  const hasSeen = useMemo(() => {
-    const proposalIdsSeenByMint = currentAccount?.proposalIdsSeenByMint
-    if (proposalIdsSeenByMint) {
-      return proposalIdsSeenByMint[mint.toBase58()]?.includes(
-        proposalKey.toBase58(),
-      )
-    }
-  }, [currentAccount?.proposalIdsSeenByMint, mint, proposalKey])
+  const proposalIdsSeenByMint = currentAccount?.proposalIdsSeenByMint
+  const hasSeen = proposalIdsSeenByMint
+    ? proposalIdsSeenByMint[mint.toBase58()]?.includes(proposalKey.toBase58())
+    : undefined
 
   const endTs =
     resolution &&
@@ -85,7 +90,7 @@ export const ProposalCard = ({
           )?.offsetFromStartTs?.offset ?? new BN(0),
         ))
 
-  const proposalUri = useMemo(() => proposal?.uri, [proposal])
+  const proposalUri = proposal?.uri
   const { isLoading: descLoading, data: desc } = useQuery({
     queryKey: ['proposalDescription', proposalUri],
     queryFn: async () => {
@@ -103,181 +108,115 @@ export const ProposalCard = ({
     },
   })
 
-  const votingResults = useMemo(() => {
-    const totalVotes: BN = [...(proposal?.choices || [])].reduce(
-      (acc, { weight }) => weight.add(acc) as BN,
-      new BN(0),
-    )
-
-    return { totalVotes }
-  }, [proposal])
+  const totalVotes: BN = [...(proposal?.choices || [])].reduce(
+    (acc, { weight }) => weight.add(acc) as BN,
+    new BN(0),
+  )
 
   const now = useNowAfter(endTs?.toNumber())
   const completed = endTs && endTs.toNumber() <= now / 1000
   const isLoading = descLoading
-  const handleOnPress = useCallback(async () => {
+  const handleOnPress = async () => {
     if (onPress) await onPress(mint, proposalKey)
-  }, [mint, proposalKey, onPress])
+  }
 
   if (isLoading) return null
   return (
-    <ReAnimatedBox
-      backgroundColor="surfaceSecondary"
-      borderRadius="l"
-      position="relative"
+    <Animated.View
+      className={twMerge('relative rounded-[12px] bg-secondary', className)}
       entering={FADE_IN}
       exiting={FADE_OUT}
-      {...boxProps}
     >
-      <TouchableOpacityBox
+      <PressableScale
+        feedback="opacity"
         onPress={() => void handleOnPress().catch(console.error)}
       >
-        <Box
-          position="relative"
-          paddingTop="ms"
-          padding="m"
-          paddingBottom={derivedState === 'active' ? 'm' : 's'}
+        <View
+          className={twMerge(
+            'relative p-4 pt-3',
+            derivedState === 'active' ? 'pb-4' : 'pb-2',
+          )}
         >
-          <Box flexDirection="row" flexWrap="wrap">
+          <View className="flex-row flex-wrap">
             {!hasSeen && derivedState === 'active' && !completed && (
-              <Box marginRight="s" marginBottom="s">
-                <Box
-                  flexDirection="row"
-                  padding="s"
-                  alignItems="center"
-                  backgroundColor="black600"
-                  borderRadius="m"
-                >
-                  <Box
-                    zIndex={2}
-                    width={10}
-                    height={10}
-                    backgroundColor="flamenco"
-                    borderRadius="round"
-                  />
-                  <Text fontSize={10} color="secondaryText" marginLeft="s">
-                    UNSEEN
-                  </Text>
-                </Box>
-              </Box>
+              <StatusChip dotClassName="bg-warning-500" label="UNSEEN" />
             )}
             {hasSeen && derivedState === 'active' && !completed && (
-              <Box marginRight="s" marginBottom="s">
-                <Box
-                  flexDirection="row"
-                  padding="s"
-                  alignItems="center"
-                  backgroundColor="black600"
-                  borderRadius="m"
-                >
-                  <Box
-                    zIndex={2}
-                    width={10}
-                    height={10}
-                    backgroundColor="blueBright500"
-                    borderRadius="round"
-                  />
-                  <Text fontSize={10} color="secondaryText" marginLeft="s">
-                    ACTIVE
-                  </Text>
-                </Box>
-              </Box>
+              <StatusChip dotClassName="bg-blue-dark-500" label="ACTIVE" />
             )}
             <ProposalTags tags={proposal?.tags} />
-          </Box>
-          <Box
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Text variant="subtitle3" color="primaryText" flexShrink={1}>
+          </View>
+          <View className="flex-row items-center justify-between">
+            <Text size="base" className="shrink font-medium">
               {proposal?.name}
             </Text>
-          </Box>
+          </View>
           {derivedState === 'active' && (
-            <Text
-              variant="body2"
-              marginTop="xs"
-              color="surfaceSecondaryText"
-              numberOfLines={2}
-            >
+            <Text className="mt-1 text-muted-foreground" numberOfLines={2}>
               {desc || t('gov.proposals.noDescription')}
             </Text>
           )}
-        </Box>
+        </View>
         {/* TODO (gov): add back once we can derive what they voted easily */}
         {/*         {derivedState === 'active' && (
-          <Box
-            borderTopColor="primaryBackground"
-            borderTopWidth={2}
-            borderBottomColor="primaryBackground"
-            borderBottomWidth={2}
-            paddingHorizontal="m"
-            paddingVertical="s"
-          >
-            <Text variant="body2" color="secondaryText">
-              You Voted - Yes
-            </Text>
-          </Box>
+          <View className="border-y-2 border-background px-4 py-2">
+            <Text className="text-muted-foreground">You Voted - Yes</Text>
+          </View>
         )} */}
-        {}
-        <Box
-          paddingHorizontal="m"
+        <View
           /* TODO (gov): add back once we can derive what they voted easily */
-          /* paddingTop={derivedState === 'active' ? 'm' : 'none'} */
-          paddingBottom="ms"
+          /* pt-4 when derivedState === 'active' */
+          className="px-4 pb-3"
         >
-          <Box flexDirection="row" justifyContent="space-between">
-            <Box>
+          <View className="flex-row justify-between">
+            <View>
               {derivedState === 'active' && !completed && (
-                <Text variant="body2" color="secondaryText">
+                <Text className="text-muted-foreground">
                   {t('gov.proposals.estTime')}
                 </Text>
               )}
               {derivedState === 'active' && completed && (
-                <Text variant="body2" color="secondaryText">
+                <Text className="text-muted-foreground">
                   {t('gov.proposals.votingClosed')}
                 </Text>
               )}
               {derivedState === 'passed' && (
-                <Text variant="body2" color="greenBright500">
+                <Text className="text-success-500">
                   {t('gov.proposals.success')}
                 </Text>
               )}
               {derivedState === 'completed' && (
-                <Text variant="body2" color="greenBright500">
+                <Text className="text-success-500">
                   {t('gov.proposals.completed')}
                 </Text>
               )}
               {derivedState === 'failed' && (
-                <Text variant="body2" color="error">
+                <Text className="text-destructive">
                   {t('gov.proposals.failed')}
                 </Text>
               )}
               {derivedState === 'cancelled' && (
-                <Text variant="body2" color="orange500">
+                <Text className="text-warning-500">
                   {t('gov.proposals.cancelled')}
                 </Text>
               )}
               {derivedState !== 'cancelled' && (
-                <Text variant="body2" color="primaryText">
-                  {getTimeFromNowFmt(endTs || new BN(0))}
-                </Text>
+                <Text>{getTimeFromNowFmt(endTs || new BN(0))}</Text>
               )}
-            </Box>
+            </View>
             {derivedState !== 'cancelled' && (
-              <Box>
-                <Text variant="body2" color="secondaryText" textAlign="right">
+              <View>
+                <Text className="text-right text-muted-foreground">
                   {t('gov.proposals.votes')}
                 </Text>
-                <Text variant="body2" color="primaryText" textAlign="right">
-                  {humanReadable(votingResults?.totalVotes, decimals) || 'None'}
+                <Text className="text-right">
+                  {humanReadable(totalVotes, decimals) || 'None'}
                 </Text>
-              </Box>
+              </View>
             )}
-          </Box>
-        </Box>
-      </TouchableOpacityBox>
-    </ReAnimatedBox>
+          </View>
+        </View>
+      </PressableScale>
+    </Animated.View>
   )
 }

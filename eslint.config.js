@@ -33,12 +33,14 @@ const legacyImports = {
 // Shared legacy composites that migrated code may still import. Ticket 136
 // ports them to @ui and removes this list. One name per line, sorted.
 const sharedComposites = [
+  'BackScreen',
   'BlurActionSheet',
   'CardSkeleton',
   'Dot',
   'HNTKeyboard',
   'ListItem',
   'Pill',
+  'SearchInput',
 ]
 
 const migratedLegacyImports = {
@@ -57,14 +59,32 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/governance/AssignProxyScreen.tsx',
   'src/features/governance/ClaimingRewardsModal.tsx',
   'src/features/governance/DelegateTokensModal.tsx',
+  'src/features/governance/GovernanceTutorialScreen.tsx',
+  'src/features/governance/GovernanceWrapper.tsx',
   'src/features/governance/LockTokensModal.tsx',
+  'src/features/governance/Markdown.tsx',
   'src/features/governance/PositionCard.tsx',
+  'src/features/governance/PositionPreview.tsx',
   'src/features/governance/PositionsList.tsx',
   'src/features/governance/PositionsScreen.tsx',
+  'src/features/governance/ProposalCard.tsx',
+  'src/features/governance/ProposalScreen.tsx',
+  'src/features/governance/ProposalTags.tsx',
+  'src/features/governance/ProposalsList.tsx',
+  'src/features/governance/ProposalsScreen.tsx',
+  'src/features/governance/ProxiesScreen.tsx',
+  'src/features/governance/ProxyCardStat.tsx',
+  'src/features/governance/ProxyScreen.tsx',
+  'src/features/governance/ProxySearch.tsx',
+  'src/features/governance/RevokeProxyScreen.tsx',
+  'src/features/governance/Select.tsx',
   'src/features/governance/SplitBar.tsx',
   'src/features/governance/TransferTokensModal.tsx',
+  'src/features/governance/VoteHistory.tsx',
+  'src/features/governance/VoteOption.tsx',
   'src/features/governance/components/**',
   'src/features/governance/__tests__/**',
 ]
