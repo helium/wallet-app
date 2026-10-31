@@ -294,5 +294,10 @@ describe('ProposalsScreen', () => {
     const texts = textOf(renderer.root)
     expect(texts).toContain('governance-modal')
     expect(texts).toContain('default-portal')
+    // The root host comes after the modal host, so the keyboard sheet that a
+    // position modal portals to root draws over the modal.
+    expect(texts.indexOf('default-portal')).toBeGreaterThan(
+      texts.indexOf('governance-modal'),
+    )
   })
 })

@@ -4,11 +4,8 @@ import TestRenderer, { act } from 'react-test-renderer'
 import { DelegateTokensModal } from '../DelegateTokensModal'
 
 // @react-navigation ships ESM only, which this jest config does not
-// transform. useNavigation keeps the check of @react-navigation/core
-// useNavigation: it throws when no navigator or container is above it. Here
-// it always throws, so the test fails if the modal content calls it: in the
-// GovernanceNavigator host that hook gets the Governance tab's navigation, not
-// the governance stack's.
+// transform. Here useNavigation always throws, so the test fails if the
+// modal content calls it: GovernanceModal content calls no navigation hook.
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => {
     throw new Error(
@@ -96,10 +93,10 @@ jest.mock('lucide-react-native', () => ({ X: 'X' }))
 const noop = () => {}
 
 describe('DelegateTokensModal', () => {
-  // PositionCard and PositionsScreen render it in a GovernancePortalHost.
-  // GovernanceNavigator puts one after its native stack: inside the
-  // NavigationContainer, outside the governance stack.
-  it('renders its sub DAOs and submit button in the governance portal host outside the governance stack', async () => {
+  // PositionCard and PositionsScreen render it under GovernanceWrapper, which
+  // puts a GovernancePortalHost inside its own sheet provider. This test
+  // gives it a bare host.
+  it('renders its sub DAOs and submit button in a governance portal host', async () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
     await act(async () => {
       renderer = TestRenderer.create(
