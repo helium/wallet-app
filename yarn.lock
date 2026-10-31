@@ -10234,69 +10234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-preset-expo@npm:~58.0.0":
-  version: 58.0.22
-  resolution: "babel-preset-expo@npm:58.0.22"
-  dependencies:
-    "@babel/generator": "npm:^7.20.5"
-    "@babel/helper-module-imports": "npm:^7.25.9"
-    "@babel/plugin-proposal-decorators": "npm:^7.12.9"
-    "@babel/plugin-proposal-export-default-from": "npm:^7.24.7"
-    "@babel/plugin-syntax-dynamic-import": "npm:^7.8.3"
-    "@babel/plugin-syntax-export-default-from": "npm:^7.24.7"
-    "@babel/plugin-syntax-nullish-coalescing-operator": "npm:^7.8.3"
-    "@babel/plugin-syntax-optional-chaining": "npm:^7.8.3"
-    "@babel/plugin-transform-async-generator-functions": "npm:^7.25.4"
-    "@babel/plugin-transform-async-to-generator": "npm:^7.24.7"
-    "@babel/plugin-transform-block-scoping": "npm:^7.25.0"
-    "@babel/plugin-transform-class-properties": "npm:^7.25.4"
-    "@babel/plugin-transform-class-static-block": "npm:^7.27.1"
-    "@babel/plugin-transform-classes": "npm:^7.25.4"
-    "@babel/plugin-transform-destructuring": "npm:^7.24.8"
-    "@babel/plugin-transform-export-namespace-from": "npm:^7.25.9"
-    "@babel/plugin-transform-flow-strip-types": "npm:^7.25.2"
-    "@babel/plugin-transform-for-of": "npm:^7.24.7"
-    "@babel/plugin-transform-logical-assignment-operators": "npm:^7.24.7"
-    "@babel/plugin-transform-modules-commonjs": "npm:^7.24.8"
-    "@babel/plugin-transform-named-capturing-groups-regex": "npm:^7.24.7"
-    "@babel/plugin-transform-nullish-coalescing-operator": "npm:^7.24.7"
-    "@babel/plugin-transform-object-rest-spread": "npm:^7.24.7"
-    "@babel/plugin-transform-optional-catch-binding": "npm:^7.24.7"
-    "@babel/plugin-transform-optional-chaining": "npm:^7.24.8"
-    "@babel/plugin-transform-parameters": "npm:^7.24.7"
-    "@babel/plugin-transform-private-methods": "npm:^7.24.7"
-    "@babel/plugin-transform-private-property-in-object": "npm:^7.24.7"
-    "@babel/plugin-transform-react-display-name": "npm:^7.24.7"
-    "@babel/plugin-transform-react-jsx": "npm:^7.28.6"
-    "@babel/plugin-transform-react-jsx-development": "npm:^7.27.1"
-    "@babel/plugin-transform-react-pure-annotations": "npm:^7.27.1"
-    "@babel/plugin-transform-runtime": "npm:^7.24.7"
-    "@babel/plugin-transform-typescript": "npm:^7.25.2"
-    "@babel/plugin-transform-unicode-regex": "npm:^7.24.7"
-    "@babel/preset-typescript": "npm:^7.23.0"
-    "@react-native/babel-plugin-codegen": "npm:0.88.1"
-    babel-plugin-react-compiler: "npm:^1.0.0"
-    babel-plugin-react-native-web: "npm:~0.21.4"
-    babel-plugin-syntax-hermes-parser: "npm:^0.36.0"
-    babel-plugin-transform-flow-enums: "npm:^0.0.2"
-    debug: "npm:^4.3.4"
-  peerDependencies:
-    "@babel/runtime": ^7.20.0
-    expo: "*"
-    expo-widgets: ^58.0.25
-    react-refresh: ">=0.14.0 <1.0.0"
-  peerDependenciesMeta:
-    "@babel/runtime":
-      optional: true
-    expo:
-      optional: true
-    expo-widgets:
-      optional: true
-  checksum: 10/67c4ab91109c57fad7980e4191e04933118ef9accb1ff8ebe2a5e7e8d70126ed65a0ae21d238b8f3b1a1eb622d7051a53dd5d36c7d5f3fdb7e930156a45c31c5
-  languageName: node
-  linkType: hard
-
-"babel-preset-expo@npm:~58.0.23":
+"babel-preset-expo@npm:~58.0.0, babel-preset-expo@npm:~58.0.23":
   version: 58.0.23
   resolution: "babel-preset-expo@npm:58.0.23"
   dependencies:
@@ -16968,17 +16906,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.23":
+"lodash@npm:4.17.23, lodash@npm:^4.17.21":
   version: 4.17.23
   resolution: "lodash@npm:4.17.23"
   checksum: 10/82504c88250f58da7a5a4289f57a4f759c44946c005dd232821c7688b5fcfbf4a6268f6a6cdde4b792c91edd2f3b5398c1d2a0998274432cff76def48735e233
-  languageName: node
-  linkType: hard
-
-"lodash@npm:^4.17.21":
-  version: 4.17.21
-  resolution: "lodash@npm:4.17.21"
-  checksum: 10/c08619c038846ea6ac754abd6dd29d2568aa705feb69339e836dfa8d8b09abbb2f859371e86863eda41848221f9af43714491467b5b0299122431e202bb0c532
   languageName: node
   linkType: hard
 
