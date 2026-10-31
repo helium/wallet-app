@@ -1,12 +1,12 @@
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
-import Text from '@components/Text'
 import { useMint } from '@helium/helium-react-hooks'
 import { PublicKey } from '@solana/web3.js'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Text } from '@ui/Text'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import React, { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { Payment } from './PaymentItem'
 
 type Props = {
@@ -56,43 +56,22 @@ const PaymentSummary = ({
       .slice(0, MAX_ACCOUNT_ICONS)
       .map(({ address }, index) => {
         return (
-          <Box key={`${index}.${address}`} style={{ marginLeft: index * -4 }}>
+          <View key={`${index}.${address}`} style={{ marginLeft: index * -4 }}>
             <AccountIcon address={address} size={16} />
-          </Box>
+          </View>
         )
       })
     if (payments.length > MAX_ACCOUNT_ICONS) {
       icons.push(
-        <Box
+        <View
           key="ellipsis"
           style={{ marginLeft: MAX_ACCOUNT_ICONS * -4 }}
-          width={16}
-          borderRadius="round"
-          height={16}
-          backgroundColor="black300"
-          flexDirection="row"
-          alignItems="center"
-          justifyContent="space-evenly"
+          className="size-4 flex-row items-center justify-evenly rounded-full bg-primary"
         >
-          <Box
-            width={2}
-            height={2}
-            backgroundColor="surfaceSecondaryText"
-            borderRadius="round"
-          />
-          <Box
-            width={2}
-            height={2}
-            backgroundColor="surfaceSecondaryText"
-            borderRadius="round"
-          />
-          <Box
-            width={2}
-            height={2}
-            backgroundColor="surfaceSecondaryText"
-            borderRadius="round"
-          />
-        </Box>,
+          <View className="size-0.5 rounded-full bg-muted-foreground" />
+          <View className="size-0.5 rounded-full bg-muted-foreground" />
+          <View className="size-0.5 rounded-full bg-muted-foreground" />
+        </View>,
       )
     }
     return icons
@@ -100,33 +79,27 @@ const PaymentSummary = ({
 
   return (
     <>
-      <Box flexDirection="row" alignItems="center">
-        <Text variant="body1" color="primaryText" flex={1}>
+      <View className="flex-row items-center">
+        <Text size="base" className="flex-1">
           {t('payment.total')}
         </Text>
-        <Text variant="h3" color="primaryText">
-          {total}
-        </Text>
-      </Box>
+        <Text size="2xl">{total}</Text>
+      </View>
 
-      <Box flexDirection="row" alignItems="center">
+      <View className="flex-row items-center">
         {showRecipients && payments.length > 0 && (
           <>
             {accountIcons}
-            <Text variant="body2" color="secondaryText" marginLeft="s">
+            <Text className="ml-2 text-muted-foreground">
               {t('payment.totalRecipients', { count: payments.length })}
             </Text>
           </>
         )}
         {!!errors?.length && (
-          <Text variant="body2" color="error">
-            {errors[0]}
-          </Text>
+          <Text className="text-destructive">{errors[0]}</Text>
         )}
-        <Text variant="body2" color="secondaryText" flex={1} textAlign="right">
-          {fee}
-        </Text>
-      </Box>
+        <Text className="flex-1 text-right text-muted-foreground">{fee}</Text>
+      </View>
     </>
   )
 }

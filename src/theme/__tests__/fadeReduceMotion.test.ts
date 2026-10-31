@@ -32,6 +32,7 @@ const OPACITY_TIMING_FILES = [
   'src/features/request/RequestScreen.tsx',
   'src/components/SecretKeyWarningScreen.tsx',
   'src/components/SplashScreen.tsx',
+  'src/ui/SuccessReveal.tsx',
 ]
 
 describe('fades run under reduced motion', () => {

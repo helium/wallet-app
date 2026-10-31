@@ -1,5 +1,3 @@
-import Close from '@assets/images/close.svg'
-import QR from '@assets/images/qr.svg'
 import AccountButton from '@components/AccountButton'
 import AccountSelector, {
   AccountSelectorRef,
@@ -7,16 +5,12 @@ import AccountSelector, {
 import AddressBookSelector, {
   AddressBookRef,
 } from '@components/AddressBookSelector'
-import Box from '@components/Box'
 import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import IconPressedContainer from '@components/IconPressedContainer'
-import Text from '@components/Text'
 import TokenButton from '@components/TokenButton'
 import TokenSelector, {
   TokenListItem,
   TokenSelectorRef,
 } from '@components/TokenSelector'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address, { NetTypes } from '@helium/address'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, truthy } from '@helium/spl-utils'
@@ -26,7 +20,9 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { useColors, useHitSlop } from '@theme/themeHooks'
+import { useHitSlop } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import { Mints } from '@utils/constants'
 import { fetchDomainOwner } from '@utils/getDomainOwner'
 import {
@@ -35,6 +31,7 @@ import {
 } from '@utils/solanaUtils'
 import BN from 'bn.js'
 import { unionBy } from 'lodash'
+import { QrCode, X } from 'lucide-react-native'
 import React, {
   memo as reactMemo,
   useCallback,
@@ -45,10 +42,11 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Keyboard, Platform } from 'react-native'
+import { Keyboard, Platform, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
+import { withUniwind } from 'uniwind'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { navigateToHomeScreen } from '../../navigation/NavigationHelper'
@@ -85,6 +83,9 @@ type LinkedPayment = {
   mint?: string
   defaultTokenType?: string
 }
+
+const QrIcon = withUniwind(QrCode)
+const CloseIcon = withUniwind(X)
 
 const parseLinkedPayments = (opts: PaymentRouteParam): LinkedPayment[] => {
   if (opts.payments) {
@@ -151,7 +152,6 @@ const PaymentScreen = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
   const { t } = useTranslation()
-  const { primaryText } = useColors()
   const hitSlop = useHitSlop('l')
 
   const navBack = useCallback(() => {
@@ -786,47 +786,35 @@ const PaymentScreen = () => {
               onTokenSelected={onTokenSelected}
               tokenData={data}
             >
-              <Box
-                flex={1}
+              <View
+                className="flex-1 rounded-t-[20px] bg-secondary"
                 style={containerStyle}
-                borderTopStartRadius="xl"
-                borderTopEndRadius="xl"
-                backgroundColor="secondaryBackground"
               >
-                <Box
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  borderTopStartRadius="xl"
-                  borderTopEndRadius="xl"
-                >
-                  <Box hitSlop={hitSlop} padding="s">
-                    <IconPressedContainer
-                      onPress={handleQrScan}
-                      activeOpacity={0.75}
-                      idleOpacity={1.0}
-                    >
-                      <QR color={primaryText} height={16} width={16} />
-                    </IconPressedContainer>
-                  </Box>
+                <View className="flex-row items-center justify-between rounded-t-[20px]">
+                  <PressableScale
+                    feedback="opacity"
+                    hitSlop={hitSlop}
+                    className="p-2"
+                    onPress={handleQrScan}
+                  >
+                    <QrIcon colorClassName="accent-foreground" size={16} />
+                  </PressableScale>
                   <Text
-                    variant="subtitle2"
-                    textAlign="center"
-                    color="primaryText"
+                    size="lg"
+                    className="text-center font-medium"
                     maxFontSizeMultiplier={1}
                   >
                     {t('payment.send')}
                   </Text>
-                  <Box hitSlop={hitSlop} padding="s">
-                    <IconPressedContainer
-                      onPress={navBack}
-                      activeOpacity={0.75}
-                      idleOpacity={1.0}
-                    >
-                      <Close color={primaryText} height={16} width={16} />
-                    </IconPressedContainer>
-                  </Box>
-                </Box>
+                  <PressableScale
+                    feedback="opacity"
+                    hitSlop={hitSlop}
+                    className="p-2"
+                    onPress={navBack}
+                  >
+                    <CloseIcon colorClassName="accent-foreground" size={16} />
+                  </PressableScale>
+                </View>
 
                 <KeyboardAwareScrollView
                   contentInsetAdjustmentBehavior="automatic"
@@ -866,8 +854,7 @@ const PaymentScreen = () => {
                       <PaymentItem
                         {...p}
                         hideMemo
-                        marginTop={index === 0 ? 'xs' : 'none'}
-                        marginBottom="l"
+                        className={index === 0 ? 'mb-6 mt-1' : 'mb-6'}
                         hasError={
                           p.address === currentAccount?.address || p.hasError
                         }
@@ -892,21 +879,15 @@ const PaymentScreen = () => {
                     </React.Fragment>
                   ))}
                   {canAddPayee && (
-                    <TouchableOpacityBox
-                      minHeight={75}
+                    <PressableScale
+                      feedback="opacity"
                       onPress={handleAddPayee}
-                      borderRadius="xl"
-                      overflow="hidden"
-                      marginHorizontal="l"
-                      marginBottom="l"
-                      alignItems="center"
-                      justifyContent="center"
-                      backgroundColor="secondary"
+                      className="mx-6 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-[20px] bg-secondary"
                     >
-                      <Text variant="body1" color="surfaceSecondaryText">
+                      <Text size="base" className="text-muted-foreground">
                         {t('payment.addRecipient')}
                       </Text>
-                    </TouchableOpacityBox>
+                    </PressableScale>
                   )}
                 </KeyboardAwareScrollView>
 
@@ -920,7 +901,7 @@ const PaymentScreen = () => {
                   errors={errors}
                   handleCancel={navBack}
                 />
-              </Box>
+              </View>
             </TokenSelector>
           </AddressBookSelector>
         </AccountSelector>

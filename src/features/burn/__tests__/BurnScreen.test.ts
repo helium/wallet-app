@@ -188,6 +188,16 @@ jest.mock('react-i18next', () => ({
 jest.mock('react-native', () => ({
   Platform: { OS: 'ios' },
   StyleSheet: { absoluteFill: {} },
+  View: 'View',
+}))
+jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
+jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@theme/motion', () => ({ FADE_IN: {} }), { virtual: true })
+jest.mock('lucide-react-native', () => ({ CircleX: 'CircleX' }))
+jest.mock('uniwind', () => ({ withUniwind: (icon: unknown) => icon }))
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: { View: 'Animated.View' },
 }))
 jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
@@ -252,12 +262,10 @@ const submit = async () => {
 }
 
 const buttons = (label: string) =>
-  renderer.root
-    .findAll(
-      (node) =>
-        (node.type as string) === 'Text' && node.props.children === label,
-    )
-    .map((text) => text.parent)
+  renderer.root.findAll(
+    (node) =>
+      (node.type as string) === 'Button' && node.props.children === label,
+  )
 
 const retry = async () => {
   const retryButtons = buttons('generic.retry')

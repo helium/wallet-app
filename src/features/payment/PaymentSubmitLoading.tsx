@@ -1,30 +1,25 @@
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import React, { memo } from 'react'
-import { StyleSheet } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import Text from '@components/Text'
-import Box from '@components/Box'
-import ActivityIndicator from '@components/ActivityIndicator'
+import { View } from 'react-native'
 
 const PaymentSubmitLoading = () => {
   const { t } = useTranslation()
 
   return (
     <>
-      <Box style={StyleSheet.absoluteFill} justifyContent="center">
-        <Box aspectRatio={1}>
-          <ActivityIndicator />
-        </Box>
-      </Box>
-      <Box flex={1} justifyContent="flex-end">
+      <View className="absolute inset-0 justify-center">
+        <Spinner size="large" />
+      </View>
+      <View className="flex-1 justify-end">
         <Text
-          variant="subtitle2"
-          textAlign="center"
-          color="secondaryText"
-          padding="xl"
+          size="lg"
+          className="p-8 text-center font-medium text-muted-foreground"
         >
           {t('payment.sending')}
         </Text>
-      </Box>
+      </View>
     </>
   )
 }
