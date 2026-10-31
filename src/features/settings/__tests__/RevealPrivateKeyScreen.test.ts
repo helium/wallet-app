@@ -12,6 +12,7 @@ const mockSetSecure = jest.fn((_secure: boolean) => Promise.resolve())
 
 // read at render time: the import of the screen runs before mockPlatform is set
 jest.mock('react-native', () => ({
+  View: 'View',
   Platform: {
     // undefined at import: useSecureWindow reads it before mockPlatform is set
     get OS() {
@@ -31,23 +32,25 @@ jest.mock('expo', () => ({
       ? { setSecure: (secure: boolean) => mockSetSecure(secure) }
       : null,
 }))
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: String }) }))
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: String }),
+  Trans: 'Trans',
+}))
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ goBack: jest.fn() }),
 }))
-jest.mock('@components/Text', () => 'Text', { virtual: true })
-jest.mock('@components/Box', () => 'Box', { virtual: true })
-jest.mock('@components/ButtonPressable', () => 'ButtonPressable', {
+jest.mock('react-native-safe-area-context', () => ({
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0 }),
+}))
+jest.mock('uniwind', () => ({ withUniwind: () => 'Icon' }))
+jest.mock('lucide-react-native', () => ({ Copy: 'Copy' }))
+jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
+jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
-jest.mock('@components/BackScreen', () => 'BackScreen', { virtual: true })
-jest.mock('@components/TextTransform', () => 'TextTransform', {
-  virtual: true,
-})
-jest.mock('@components/TouchableOpacityBox', () => 'TouchableOpacityBox', {
-  virtual: true,
-})
-jest.mock('@components/CopyAddress', () => 'CopyAddress', { virtual: true })
+jest.mock('../SettingsBackHeader', () => 'SettingsBackHeader')
+jest.mock('@hooks/useCopyText', () => () => jest.fn(), { virtual: true })
 jest.mock(
   '@hooks/useAlert',
   () => {

@@ -1,8 +1,4 @@
-import Box from '@components/Box'
-import CloseButton from '@components/CloseButton'
-import ImageBox from '@components/ImageBox'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { truthy } from '@helium/spl-utils'
 import useAlert from '@hooks/useAlert'
 import { useAppVersion } from '@hooks/useDevice'
@@ -10,12 +6,16 @@ import { useExplorer } from '@hooks/useExplorer'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { Cluster } from '@solana/web3.js'
-import { useHitSlop, useSpacing } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { X } from 'lucide-react-native'
 import React, { memo, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, Linking, SectionList } from 'react-native'
+import { Alert, Image, Linking, SectionList, View } from 'react-native'
 import deviceInfo from 'react-native-device-info'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { SvgUri } from 'react-native-svg'
+import { withUniwind } from 'uniwind'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
 import { RootNavigationProp } from '../../navigation/rootTypes'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -36,15 +36,16 @@ import { SettingsNavigationProp } from './settingsTypes'
 import { withICloudSignOutWarning } from './signOutWarning'
 import useAuthIntervals from './useAuthIntervals'
 
+const SafeArea = withUniwind(SafeAreaView)
+const CloseIcon = withUniwind(X)
+
 const Settings = () => {
   const { t } = useTranslation()
   const homeNav = useNavigation<HomeNavigationProp>()
   const settingsNav = useNavigation<SettingsNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
-  const spacing = useSpacing()
   const version = useAppVersion()
   const buildNumber = deviceInfo.getBuildNumber()
-  const hitSlop = useHitSlop('xxl')
   const authIntervals = useAuthIntervals()
   const {
     currentAccount,
@@ -82,13 +83,6 @@ const Settings = () => {
   const onRequestClose = useCallback(() => {
     homeNav.navigate('AccountsScreen', undefined, { pop: true })
   }, [homeNav])
-
-  const contentContainer = useMemo(
-    () => ({
-      paddingBottom: spacing.xxxl,
-    }),
-    [spacing.xxxl],
-  )
 
   const keyExtractor = useCallback((item, index) => item.title + index, [])
 
@@ -527,12 +521,24 @@ const Settings = () => {
               items:
                 explorers?.map((ex) => ({
                   ...ex,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  Icon: ({ ...props }: any) => {
+                  Icon: ({
+                    width,
+                    height,
+                  }: {
+                    width: number
+                    height: number
+                  }) => {
                     if (ex.image.endsWith('svg')) {
-                      return <SvgUri {...props} uri={ex.image} />
+                      return (
+                        <SvgUri width={width} height={height} uri={ex.image} />
+                      )
                     }
-                    return <ImageBox {...props} source={{ uri: ex.image }} />
+                    return (
+                      <Image
+                        style={{ width, height }}
+                        source={{ uri: ex.image }}
+                      />
+                    )
                   },
                 })) || [],
             },
@@ -622,52 +628,51 @@ const Settings = () => {
 
   const renderSectionHeader = useCallback(
     ({ section: { title, icon } }) => (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop="xxl"
-        paddingBottom="m"
-        paddingHorizontal="l"
-      >
+      <View className="flex-row items-center px-6 pb-4 pt-12">
         {icon !== undefined && icon}
-        <Text variant="body2" fontWeight="bold">
-          {title}
-        </Text>
-      </Box>
+        <Text className="font-bold">{title}</Text>
+      </View>
     ),
     [],
   )
 
   return (
-    <SafeAreaBox backgroundColor="surfaceSecondary">
-      <Box
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        paddingHorizontal="l"
-      >
-        <Text variant="h1">{t('settings.title')}</Text>
-        <CloseButton
-          testID="Settings.Close"
-          onPress={onRequestClose}
-          hitSlop={hitSlop}
-          paddingVertical="m"
+    // The option sheets portal to the nearest BottomSheetModalProvider. This
+    // one keeps them inside the app's providers (the App-root one sits outside
+    // NavigationContainer).
+    <BottomSheetModalProvider>
+      <SafeArea className="flex-1 bg-secondary">
+        <View className="flex-row items-center justify-between px-6">
+          <Text size="4xl" className="font-semibold">
+            {t('settings.title')}
+          </Text>
+          <PressableScale
+            testID="Settings.Close"
+            feedback="opacity"
+            accessibilityRole="button"
+            accessibilityLabel={t('generic.close')}
+            onPress={onRequestClose}
+            hitSlop={48}
+            className="py-4"
+          >
+            <CloseIcon size={24} colorClassName="accent-foreground" />
+          </PressableScale>
+        </View>
+        <SectionList
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerClassName="pb-15"
+          sections={SectionData}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
+          renderSectionHeader={renderSectionHeader}
+          renderSectionFooter={renderSectionFooter}
+          initialNumToRender={100}
+          stickySectionHeadersEnabled={false}
+          // ^ Sometimes on initial page load there is a bug with SectionList
+          // where it won't render all items right away. This seems to fix it.
         />
-      </Box>
-      <SectionList
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={contentContainer}
-        sections={SectionData}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        renderSectionHeader={renderSectionHeader}
-        renderSectionFooter={renderSectionFooter}
-        initialNumToRender={100}
-        stickySectionHeadersEnabled={false}
-        // ^ Sometimes on initial page load there is a bug with SectionList
-        // where it won't render all items right away. This seems to fix it.
-      />
-    </SafeAreaBox>
+      </SafeArea>
+    </BottomSheetModalProvider>
   )
 }
 

@@ -1,26 +1,19 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-} from 'react'
+import React, { useEffect, useEffectEvent } from 'react'
 import { useIsFocused } from '@react-navigation/native'
-import { Linking } from 'react-native'
+import { Linking, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Edge } from 'react-native-safe-area-context'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import { ReAnimatedBox } from '@components/AnimatedBox'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationsList from './NotificationsList'
 
+const SafeArea = withUniwind(SafeAreaView)
+
 const NotificationsScreen = () => {
   const { t } = useTranslation()
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
   const { selectedNotification, updateAllNotifications } =
     useNotificationStorage()
   const isFocused = useIsFocused()
@@ -34,61 +27,44 @@ const NotificationsScreen = () => {
     onFocus()
   }, [isFocused])
 
-  const onActionPress = useCallback(() => {
+  const onActionPress = () => {
     if (!selectedNotification?.actionUrl) return
-    void Linking.openURL(selectedNotification?.actionUrl)
-  }, [selectedNotification])
+    void Linking.openURL(selectedNotification.actionUrl).catch(console.error)
+  }
 
-  const HeaderComponent = useMemo(() => {
-    return (
-      <>
-        <Text textAlign="center" variant="h4" marginTop="m" marginBottom="l">
-          {t('notifications.title')}
-        </Text>
-        <AccountSlider />
-      </>
-    )
-  }, [t])
+  const HeaderComponent = (
+    <>
+      <Text size="xl" className="mb-6 mt-4 text-center">
+        {t('notifications.title')}
+      </Text>
+      <AccountSlider />
+    </>
+  )
 
-  const FooterComponent = useMemo(() => {
-    return selectedNotification?.actionTitle &&
-      selectedNotification?.actionUrl ? (
-      <Box
-        position="absolute"
-        bottom={0}
-        width="100%"
-        paddingHorizontal="m"
-        marginBottom="xl"
-      >
-        <ButtonPressable
-          title={selectedNotification.actionTitle}
+  const FooterComponent =
+    selectedNotification?.actionTitle && selectedNotification?.actionUrl ? (
+      <View className="absolute bottom-0 mb-8 w-full px-4">
+        <Button
+          variant="cta"
+          size="lg"
+          className="mt-4 w-full"
           onPress={onActionPress}
-          backgroundColor="highlight"
-          marginTop="m"
-          borderRadius="round"
-          height={60}
-          titleColor="black900"
-        />
-      </Box>
+        >
+          {selectedNotification.actionTitle}
+        </Button>
+      </View>
     ) : (
       <></>
     )
-  }, [onActionPress, selectedNotification])
 
   return (
-    <ReAnimatedBox flex={1}>
-      <SafeAreaBox
-        flex={1}
-        backgroundColor="primaryBackground"
-        edges={safeEdges}
-      >
-        <NotificationsList
-          HeaderComponent={HeaderComponent}
-          FooterComponent={FooterComponent}
-        />
-      </SafeAreaBox>
-    </ReAnimatedBox>
+    <SafeArea className="flex-1 bg-background" edges={['top']}>
+      <NotificationsList
+        HeaderComponent={HeaderComponent}
+        FooterComponent={FooterComponent}
+      />
+    </SafeArea>
   )
 }
 
-export default memo(NotificationsScreen)
+export default NotificationsScreen

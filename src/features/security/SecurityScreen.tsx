@@ -1,7 +1,6 @@
 import React, { useEffect, memo, useMemo, useRef, useState } from 'react'
-import { Animated, ImageStyle, Image, Platform } from 'react-native'
+import { Animated, ImageStyle, Image, Platform, View } from 'react-native'
 import { FullWindowOverlay } from 'react-native-screens'
-import Box from '@components/Box'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)
 
@@ -61,19 +60,12 @@ const SecurityScreen = ({ visible }: Props) => {
   // draws above the modals presented before it mounts
   return (
     <FullWindowOverlay>
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        backgroundColor="primaryBackground"
-      >
+      <View className="absolute inset-0 bg-background">
         <AnimatedImage
           style={style}
           source={require('../../assets/images/SplashScreen.png')}
         />
-      </Box>
+      </View>
     </FullWindowOverlay>
   )
 }

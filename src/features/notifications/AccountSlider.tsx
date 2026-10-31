@@ -3,9 +3,8 @@ import WalletUpdate from '@assets/images/walletUpdateIcon.svg'
 import HeliumUpdate from '@assets/images/heliumUpdateIcon.svg'
 import { Carousel, CarouselRef } from 'react-native-reanimated-carousel'
 import { Extrapolation, interpolate } from 'react-native-reanimated'
-import { StyleSheet } from 'react-native'
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
+import { StyleSheet, View } from 'react-native'
+import { AccountIcon } from '@ui/AccountIcon'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { useContentWidth } from '../../utils/layout'
 import AccountSliderIcon from './AccountSliderIcon'
@@ -17,6 +16,9 @@ const ITEM_WIDTH = 72
 const ITEM_OFFSET_X = 7
 
 const AccountSlider = () => {
+  // Opt out: effects depend on the memoised slider data and callbacks
+  'use no memo'
+
   const carouselRef = useRef<CarouselRef>(null)
   const {
     selectedList,
@@ -148,7 +150,7 @@ const AccountSlider = () => {
   const keyExtractor = useCallback((item) => item || '', [])
 
   return (
-    <Box marginBottom="l" marginTop="m">
+    <View className="mb-6 mt-4">
       <Carousel
         ref={carouselRef}
         defaultIndex={Math.max(
@@ -163,7 +165,7 @@ const AccountSlider = () => {
         itemAnimation={itemAnimation}
         keyExtractor={keyExtractor}
       />
-    </Box>
+    </View>
   )
 }
 

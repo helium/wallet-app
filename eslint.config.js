@@ -36,12 +36,15 @@ const sharedComposites = [
   'AccountListItem',
   'AccountSelector',
   'AddressBookSelector',
+  'CloseButton',
   'HNTKeyboard',
   'QrScanner',
   'SearchInput',
   'SubmitButton',
   'TabBar',
+  'TextTransform',
   'TokenButton',
+  'TokenPill',
   'TokenSelector',
 ]
 
@@ -67,12 +70,21 @@ const strictFiles = [
 // Reskinned features may still import the shared composites. One entry per
 // line, sorted.
 const migratedFiles = [
+  'src/features/StatusPage/**',
+  'src/features/activity/**',
   'src/features/addressBook/**',
   'src/features/browser/**',
   'src/features/burn/**',
   'src/features/dappLogin/**',
+  'src/features/hotspot-onboarding/**',
+  'src/features/lock/**',
+  'src/features/notifications/**',
   'src/features/request/**',
+  'src/features/security/**',
+  'src/features/settings/**',
+  'src/features/swaps/**',
   'src/features/txnDelegation/**',
+  'src/utils/parseMarkup.tsx',
 ]
 
 module.exports = [

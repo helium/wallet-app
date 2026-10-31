@@ -19,7 +19,7 @@ const Stack = createNativeStackNavigator()
 const screenOptions = { headerShown: false } as NativeStackNavigationOptions
 
 type Route = RouteProp<OnboardingtackParamList, 'IotBle'>
-export default React.memo(function HotspotBLENav() {
+const HotspotBLENav = () => {
   const route = useRoute<Route>()
   const iotParams = route.params
   return (
@@ -60,4 +60,6 @@ export default React.memo(function HotspotBLENav() {
       </HotspotBleProvider>
     </IotBleOptionsProvider>
   )
-})
+}
+
+export default HotspotBLENav

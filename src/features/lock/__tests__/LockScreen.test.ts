@@ -51,14 +51,11 @@ jest.mock('expo-local-authentication', () => ({
   hasHardwareAsync: async () => false,
   isEnrolledAsync: async () => false,
 }))
-jest.mock(
-  '@components/AnimatedBox',
-  () => ({ ReAnimatedBox: 'ReAnimatedBox' }),
-  {
-    virtual: true,
-  },
-)
-jest.mock('@components/ConfirmPinView', () => 'ConfirmPinView', {
+jest.mock('react-native-reanimated', () => ({
+  __esModule: true,
+  default: { View: 'Animated.View' },
+}))
+jest.mock('@ui/ConfirmPinView', () => ({ ConfirmPinView: 'ConfirmPinView' }), {
   virtual: true,
 })
 jest.mock(
@@ -113,7 +110,7 @@ describe('LockScreen overlay', () => {
   it('draws the PIN pad inside FullWindowOverlay on iOS', async () => {
     const { root } = await render()
     const overlay = root.findByType('FullWindowOverlay' as never)
-    const box = overlay.findByType('ReAnimatedBox' as never)
+    const box = overlay.findByType('Animated.View' as never)
     expect(box.parent).toBe(overlay)
     expect(box.findByType('ConfirmPinView' as never)).toBeTruthy()
     // the app stays outside the overlay, under the PIN pad
@@ -125,7 +122,7 @@ describe('LockScreen overlay', () => {
     mockPlatform.OS = 'android'
     const { root } = await render()
     expect(root.findAllByType('FullWindowOverlay' as never)).toHaveLength(0)
-    const box = root.findByType('ReAnimatedBox' as never)
+    const box = root.findByType('Animated.View' as never)
     expect(box.findByType('ConfirmPinView' as never)).toBeTruthy()
   })
 
@@ -136,7 +133,7 @@ describe('LockScreen overlay', () => {
       mockStorage.locked = false
       const { root } = await render()
       expect(root.findAllByType('FullWindowOverlay' as never)).toHaveLength(0)
-      expect(root.findAllByType('ReAnimatedBox' as never)).toHaveLength(0)
+      expect(root.findAllByType('Animated.View' as never)).toHaveLength(0)
       expect(root.findAllByType('App' as never)).toHaveLength(1)
     },
   )
