@@ -29,10 +29,35 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
+
+// Shared legacy composites that migrated code may still import. Ticket 136
+// ports them to @ui and removes this list. One name per line, sorted.
+const sharedComposites = [
+  'AddressBookSelector',
+  'CloseButton',
+  'HNTKeyboard',
+  'TextTransform',
+  'TokenPill',
+  'TokenSelector',
+]
+
+const migratedLegacyImports = {
+  ...legacyImports,
+  patterns: [
+    {
+      group: [
+        '@components/*',
+        ...sharedComposites.map((name) => `!@components/${name}`),
+      ],
+      message: 'Legacy component. Use @ui.',
+    },
+  ],
+}
 const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/swaps/**',
 ]
 
 module.exports = [
@@ -118,7 +143,7 @@ module.exports = [
   {
     files: migratedFiles,
     rules: {
-      'no-restricted-imports': ['error', legacyImports],
+      'no-restricted-imports': ['error', migratedLegacyImports],
     },
   },
   {
