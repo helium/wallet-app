@@ -174,6 +174,16 @@ const textOf = (node: TestRenderer.ReactTestInstance) =>
 const COPY = 'settings.sections.account.copyAddress'
 
 describe('ActivityDetailsScreen', () => {
+  it('leaves the page scroll view without automatic content insets', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const scrollView = renderer.root.findByType('ScrollView' as never)
+    expect(scrollView.props.contentInsetAdjustmentBehavior).toBeUndefined()
+  })
+
   it('opens the address actions sheet inside the screen and copies the address', () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
     act(() => {

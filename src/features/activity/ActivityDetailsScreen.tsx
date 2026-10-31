@@ -274,10 +274,9 @@ const ActivityDetailsScreen = () => {
     // the screen and the app providers above it.
     <BottomSheetModalProvider>
       <View className="flex-1 bg-background">
-        <ScrollView
-          contentContainerClassName="grow justify-center"
-          contentInsetAdjustmentBehavior="automatic"
-        >
+        {/* No automatic content insets: the SafeArea already pads the
+            page, and automatic insets make it scroll. */}
+        <ScrollView contentContainerClassName="grow justify-center">
           <SafeArea className="flex-1">
             <View className="mt-4 flex-row items-center px-7">
               <View className="absolute inset-0 items-center justify-center">
