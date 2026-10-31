@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import Text from '@components/Text'
-import PinDisplay from '@components/PinDisplay'
-import Keypad from '@components/Keypad'
-import Box from '@components/Box'
-import { KeypadInput } from '@components/KeypadButton'
+import { Keypad, type KeypadInput } from '@ui/Keypad'
+import { PinDisplay } from '@ui/PinDisplay'
+import { Text } from '@ui/Text'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { SettingsNavigationProp } from './settingsTypes'
 
 const SettingsCreatePinScreen = () => {
@@ -29,7 +28,7 @@ const SettingsCreatePinScreen = () => {
     })
   }, [navigation])
 
-  const handlePress = useCallback((input?: KeypadInput) => {
+  const handlePress = (input?: KeypadInput) => {
     if (typeof input === 'number') {
       setPin((val) => (val.length < 6 ? val + input : val))
     } else if (input === 'backspace') {
@@ -37,34 +36,31 @@ const SettingsCreatePinScreen = () => {
     } else {
       setPin('')
     }
-  }, [])
+  }
 
   return (
-    <Box
-      backgroundColor="primaryBackground"
-      flex={1}
-      paddingHorizontal="xl"
-      justifyContent="center"
-      alignItems="center"
-    >
-      <Box flex={1} />
+    <View className="flex-1 items-center justify-center bg-background px-8">
+      <View className="flex-1" />
       <Text
-        marginBottom="m"
-        variant="h1"
+        size="4xl"
+        className="mb-4 font-semibold"
         maxFontSizeMultiplier={1}
         numberOfLines={1}
         adjustsFontSizeToFit
       >
         {t('accountSetup.createPin.title')}
       </Text>
-
-      <Text variant="body1" maxFontSizeMultiplier={1.2}>
+      <Text size="base" maxFontSizeMultiplier={1.2}>
         {t('accountSetup.createPin.subtitle')}
       </Text>
-      <PinDisplay length={pin.length} marginVertical="xl" />
-      <Keypad flex={2} customButtonType="cancel" onPress={handlePress} />
-      <Box flex={1} />
-    </Box>
+      <PinDisplay length={pin.length} className="my-8" />
+      <Keypad
+        className="flex-[2]"
+        customButtonType="cancel"
+        onPress={handlePress}
+      />
+      <View className="flex-1" />
+    </View>
   )
 }
 

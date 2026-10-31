@@ -1,10 +1,9 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
-import { ActivityIndicator, Alert } from 'react-native'
+import { Alert, View } from 'react-native'
 import useAlert from '@hooks/useAlert'
-import { useColors } from '@theme/themeHooks'
-import Box from '@components/Box'
+import { Spinner } from '@ui/Spinner'
 import ConfirmWordsScreen from '../onboarding/create/ConfirmWordsScreen'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -23,7 +22,6 @@ const ConfirmSignoutScreen = () => {
   const { showOKCancelAlert } = useAlert()
   const { currentAccount, signOut, accounts } = useAccountStorage()
   const { pin } = useAppStorage()
-  const colors = useColors()
 
   const [mnemonic, setMnemonic] = useState<string[]>()
 
@@ -112,7 +110,7 @@ const ConfirmSignoutScreen = () => {
   if (!mnemonic) return null
 
   return (
-    <Box padding="none" flex={1}>
+    <View className="flex-1">
       {mnemonic ? (
         <ConfirmWordsScreen
           title={t('settings.confirmSignout.title')}
@@ -121,11 +119,11 @@ const ConfirmSignoutScreen = () => {
           onForgotWords={() => void onForgotWords().catch(console.error)}
         />
       ) : (
-        <Box flex={1} justifyContent="center" alignItems="center">
-          <ActivityIndicator color={colors.primaryText} />
-        </Box>
+        <View className="flex-1 items-center justify-center">
+          <Spinner colorClassName="accent-foreground" />
+        </View>
       )}
-    </Box>
+    </View>
   )
 }
 

@@ -28,6 +28,7 @@ jest.mock('react-native', () => ({
     },
   },
   Image: 'Image',
+  View: 'View',
   Animated: {
     Value: class {},
     createAnimatedComponent: (component: unknown) => component,
@@ -44,7 +45,6 @@ jest.mock('react-native', () => ({
 jest.mock('react-native-screens', () => ({
   FullWindowOverlay: 'FullWindowOverlay',
 }))
-jest.mock('@components/Box', () => 'Box', { virtual: true })
 jest.mock('../../../assets/images/SplashScreen.png', () => 'SplashScreen.png')
 
 const render = (visible: boolean) => {
@@ -68,7 +68,7 @@ describe('SecurityScreen', () => {
   it('draws the cover inside FullWindowOverlay on iOS', () => {
     const { root } = render(true)
     const overlay = root.findByType('FullWindowOverlay' as never)
-    const box = overlay.findByType('Box' as never)
+    const box = overlay.findByType('View' as never)
     expect(box.parent).toBe(overlay)
     expect(box.findByType('Image' as never).props.source).toBe(
       'SplashScreen.png',

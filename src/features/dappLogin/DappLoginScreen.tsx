@@ -1,21 +1,15 @@
-import Close from '@assets/images/close.svg'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import Address from '@helium/address'
 import { Addressable, TokenBurnV1 } from '@helium/transactions'
 import useAlert from '@hooks/useAlert'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { useColors } from '@theme/themeHooks'
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-} from 'react'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { X } from 'lucide-react-native'
+import React, { useCallback, useEffect, useEffectEvent, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Linking } from 'react-native'
+import { Linking } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useDebouncedCallback } from 'use-debounce'
 import {
   RootNavigationProp,
@@ -27,6 +21,9 @@ import { HomeNavigationProp } from '../home/homeTypes'
 import DappAccount from './DappAccount'
 import DappConnect from './DappConnect'
 import { useWalletConnect } from './WalletConnectProvider'
+
+const SafeArea = withUniwind(SafeAreaView)
+const CloseIcon = withUniwind(X)
 
 const makeBurnTxn = async (opts: { payerB58: string }) => {
   const { payerB58 } = opts
@@ -78,9 +75,7 @@ const DappLoginScreen = () => {
     pairClient,
   } = useWalletConnect()
   const { t } = useTranslation()
-  const colors = useColors()
   const { currentAccount } = useAccountStorage()
-  const { primaryText } = useColors()
   const { showOKAlert } = useAlert()
   const hasRequestedPair = useRef(false)
 
@@ -116,10 +111,10 @@ const DappLoginScreen = () => {
     }
   }, [disconnect, navigation, rootNav])
 
-  const handleDeny = useCallback(async () => {
+  const handleDeny = async () => {
     await denyPair()
     await goBack()
-  }, [denyPair, goBack])
+  }
 
   const handleAllowLogin = useDebouncedCallback(
     () => {
@@ -133,7 +128,7 @@ const DappLoginScreen = () => {
   )
 
   const currentAddress = currentAccount?.address
-  const handleLogin = useCallback(async () => {
+  const handleLogin = async () => {
     if (!currentAddress) return
 
     try {
@@ -146,7 +141,7 @@ const DappLoginScreen = () => {
         message: (error as Error).toString(),
       })
     }
-  }, [approvePair, currentAddress, sessionProposal, showOKAlert, t])
+  }
 
   const loginWithBurnTxn = useEffectEvent(async () => {
     const address = currentAccount?.address
@@ -194,12 +189,12 @@ const DappLoginScreen = () => {
     }
   }, [connectionState, goBack, checkTimeoutError, showOKAlert, t])
 
-  const body = useMemo(() => {
+  const renderBody = () => {
     if (!sessionProposal || connectionState === 'undetermined') {
       return (
-        <SafeAreaBox backgroundColor="primaryBackground">
-          <ActivityIndicator color={primaryText} />
-        </SafeAreaBox>
+        <SafeArea className="bg-background">
+          <Spinner colorClassName="accent-foreground" />
+        </SafeArea>
       )
     }
     if (connectionState === 'proposal') {
@@ -220,34 +215,21 @@ const DappLoginScreen = () => {
         loading={connectionState !== 'allowed'}
       />
     )
-  }, [
-    connectionState,
-    handleAllowLogin,
-    handleDeny,
-    handleLogin,
-    sessionProposal,
-    goBack,
-    primaryText,
-  ])
+  }
 
   return (
-    <SafeAreaBox
-      backgroundColor="primaryBackground"
-      paddingHorizontal="l"
-      flex={1}
-    >
-      <TouchableOpacityBox
+    <SafeArea className="flex-1 bg-background px-6">
+      <PressableScale
+        feedback="opacity"
         onPress={() => void goBack().catch(console.error)}
-        alignSelf="flex-end"
-        justifyContent="center"
-        paddingHorizontal="m"
-        marginEnd="n_m"
+        accessibilityLabel={t('generic.close')}
+        className="-me-4 justify-center self-end px-4"
       >
-        <Close color={colors.white} height={21} width={21} />
-      </TouchableOpacityBox>
-      {body}
-    </SafeAreaBox>
+        <CloseIcon size={21} colorClassName="accent-foreground" />
+      </PressableScale>
+      {renderBody()}
+    </SafeArea>
   )
 }
 
-export default memo(DappLoginScreen)
+export default DappLoginScreen

@@ -1,19 +1,19 @@
-import React, { memo } from 'react'
+import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { useOpacity } from '@theme/themeHooks'
+import { useResolveClassNames } from 'uniwind'
 import NotificationsScreen from './NotificationsScreen'
 import NotificationDetails from './NotificationDetails'
 
 const NotificationsStack = createNativeStackNavigator()
 
 const NotificationsNavigator = () => {
-  const { backgroundStyle } = useOpacity('primaryBackground', 0.98)
+  const contentStyle = useResolveClassNames('bg-background')
 
   return (
     <NotificationsStack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: backgroundStyle,
+        contentStyle,
       }}
     >
       <NotificationsStack.Screen
@@ -28,4 +28,4 @@ const NotificationsNavigator = () => {
   )
 }
 
-export default memo(NotificationsNavigator)
+export default NotificationsNavigator

@@ -14,8 +14,11 @@ export type PressableScaleProps = Omit<
   feedback?: PressFeedback
 }
 
-// The press primitive for buttons, FABs and cards. `className` styles the
-// scaled view. One light haptic fires per committed press (onPress).
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable)
+
+// The press primitive for buttons, FABs and cards. `className` styles and
+// sizes the press target, which is also the scaled view. One light haptic
+// fires per committed press (onPress).
 export const PressableScale = ({
   className,
   children,
@@ -31,7 +34,7 @@ export const PressableScale = ({
   const { triggerImpact } = useHaptic()
 
   return (
-    <Pressable
+    <AnimatedPressable
       accessibilityRole="button"
       pressRetentionOffset={16}
       {...props}
@@ -45,18 +48,15 @@ export const PressableScale = ({
         setPressed(false)
         onPressOut?.(event)
       }}
+      className={className}
+      style={pressStyle({
+        pressed,
+        reducedMotion,
+        disabled: !!disabled,
+        feedback,
+      })}
     >
-      <Animated.View
-        className={className}
-        style={pressStyle({
-          pressed,
-          reducedMotion,
-          disabled: !!disabled,
-          feedback,
-        })}
-      >
-        {children}
-      </Animated.View>
-    </Pressable>
+      {children}
+    </AnimatedPressable>
   )
 }

@@ -1,11 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import {
@@ -14,18 +7,18 @@ import {
   TextInputKeyPressEventData,
   TextInput as RNTextInput,
   Platform,
+  View,
 } from 'react-native'
-import Checkmark from '@assets/images/checkmark.svg'
 import { useKeyboard } from '@react-native-community/hooks'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import { useColors, useOpacity, useSpacing } from '@theme/themeHooks'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TextInput from '@components/TextInput'
-import ButtonPressable from '@components/ButtonPressable'
-import AccountIcon from '@components/AccountIcon'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
+import { Check, X } from 'lucide-react-native'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Button } from '@ui/Button'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
 import useAlert from '@hooks/useAlert'
-import CloseButton from '@components/CloseButton'
 import { solAddressIsValid, accountNetType } from '@utils/accountUtils'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { useDebounce } from 'use-debounce'
@@ -41,7 +34,12 @@ import AddressExtra from './AddressExtra'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useSolana } from '../../solana/SolanaProvider'
 
-const BUTTON_HEIGHT = 55
+const SafeArea = withUniwind(SafeAreaView)
+const CheckIcon = withUniwind(Check)
+const CloseIcon = withUniwind(X)
+
+// The buttons sit `mt-15` (60) below the nickname input and are `h-10` (40).
+const BUTTONS_OFFSET = 60 + 40
 
 type Route = RouteProp<AddressBookStackParamList, 'AddNewContact'>
 
@@ -56,16 +54,14 @@ const ContactDetails = ({ action, contact }: Props) => {
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressBookNav = useNavigation<AddressBookNavigationProp>()
   const route = useRoute<Route>()
-  const { backgroundStyle } = useOpacity('surface', keyboardShown ? 0.85 : 0.4)
+  const surfaceClass = keyboardShown ? 'bg-card/85' : 'bg-card/40'
   const { addContact, editContact, deleteContact } = useAccountStorage()
   const [nickname, setNickname] = useState(contact?.alias || '')
   const [address, setAddress] = useState(
     route.params?.address || contact?.solanaAddress || '',
   )
   const nicknameInput = useRef<RNTextInput | null>(null)
-  const { blueBright500 } = useColors()
   const { scannedAddress, setScannedAddress } = useAppStorage()
-  const spacing = useSpacing()
   const { showOKCancelAlert } = useAlert()
   const { connection } = useSolana()
   // debounce is needed to avoid unneccessary rpc calls
@@ -115,14 +111,14 @@ const ContactDetails = ({ action, contact }: Props) => {
     }
   }, [debouncedAddress, handleDomainAddress, nickname])
 
-  const onRequestClose = useCallback(() => {
+  const onRequestClose = () => {
     homeNav.goBack()
-  }, [homeNav])
+  }
 
-  const isAddingContact = useMemo(() => action === 'add', [action])
-  const isEditingContact = useMemo(() => action === 'edit', [action])
+  const isAddingContact = action === 'add'
+  const isEditingContact = action === 'edit'
 
-  const handleCreateNewContact = useCallback(() => {
+  const handleCreateNewContact = () => {
     let solanaAddress = ''
 
     solanaAddress = address
@@ -134,45 +130,45 @@ const ContactDetails = ({ action, contact }: Props) => {
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [addContact, address, addressBookNav, nickname])
+  }
 
-  const handleDeleteContact = useCallback(async () => {
+  const handleDeleteContact = async () => {
     const decision = await showOKCancelAlert({
       title: t('editContact.deleteConfirmTitle'),
       message: t('editContact.deleteConfirmMessage', { alias: nickname }),
     })
     if (decision) {
-      void deleteContact(address)
+      void deleteContact(contact?.solanaAddress || address)
       addressBookNav.goBack()
     }
-  }, [address, addressBookNav, deleteContact, nickname, showOKCancelAlert, t])
+  }
 
-  const handleSaveNewContact = useCallback(() => {
+  const handleSaveNewContact = () => {
     if (!contact) return
     void editContact(contact.address, {
-      address,
+      address: heliumAddressFromSolAddress(address),
+      solanaAddress: address,
       alias: nickname,
       netType: accountNetType(address),
     })
     addressBookNav.goBack()
-  }, [contact, editContact, nickname, address, addressBookNav])
+  }
 
-  const handleKeydown = useCallback(
-    (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-      if (e.nativeEvent.key === 'Enter') {
-        nicknameInput.current?.focus()
-      }
-    },
-    [],
-  )
+  const handleKeydown = (
+    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
+  ) => {
+    if (e.nativeEvent.key === 'Enter') {
+      nicknameInput.current?.focus()
+    }
+  }
 
-  const handleAddressChange = useCallback((text: string) => {
+  const handleAddressChange = (text: string) => {
     setAddress(text.trim())
-  }, [])
+  }
 
-  const handleScanAddress = useCallback(() => {
+  const handleScanAddress = () => {
     addressBookNav.push('ScanAddress')
-  }, [addressBookNav])
+  }
 
   useEffect(() => {
     if (!scannedAddress) return
@@ -182,65 +178,51 @@ const ContactDetails = ({ action, contact }: Props) => {
     }
   }, [scannedAddress, setScannedAddress])
 
-  const addressIsValid = useMemo(() => {
-    return solAddressIsValid(address)
-  }, [address])
+  const addressIsValid = solAddressIsValid(address)
 
   return (
-    <SafeAreaBox
-      flex={1}
-      style={backgroundStyle}
-      borderRadius="xl"
+    <SafeArea
+      className={`flex-1 rounded-[20px] ${surfaceClass}`}
       edges={['top']}
     >
-      <Box flex={1} backgroundColor="surfaceSecondary">
-        <Box
-          marginTop="s"
-          style={{ paddingTop: Platform.OS === 'android' ? 24 : 0 }}
-          flexDirection="row"
-          alignItems="center"
-        >
-          <Box flex={1} />
-          <Text variant="subtitle2">
+      <View className="flex-1 bg-secondary">
+        <View className="mt-2 flex-row items-center android:pt-6">
+          <View className="flex-1" />
+          <Text size="lg" className="font-medium">
             {isAddingContact
               ? t('addNewContact.title')
               : t('editContact.title')}
           </Text>
-          <Box flex={1} alignItems="flex-end">
-            <CloseButton
+          <View className="flex-1 items-end">
+            <PressableScale
               onPress={onRequestClose}
-              paddingVertical="s"
-              paddingHorizontal="m"
-            />
-          </Box>
-        </Box>
-        <Box flex={1} alignItems="center" justifyContent="center">
+              feedback="opacity"
+              className="px-4 py-2"
+            >
+              <CloseIcon size={18} colorClassName="accent-foreground" />
+            </PressableScale>
+          </View>
+        </View>
+        <View className="flex-1 items-center justify-center">
           {addressIsValid && (
             <AccountIcon address={address} size={nickname ? 85 : 122} />
           )}
           {!!nickname && (
-            <Text variant="h1" marginTop={addressIsValid ? 'm' : 'none'}>
+            <Text size="4xl" className={addressIsValid ? 'mt-4' : 'mt-0'}>
               {nickname}
             </Text>
           )}
-        </Box>
+        </View>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'android' ? undefined : 'position'}
-          keyboardVerticalOffset={-spacing.xxxl - BUTTON_HEIGHT}
+          keyboardVerticalOffset={-BUTTONS_OFFSET}
         >
-          <SafeAreaBox
-            style={backgroundStyle}
-            borderRadius="xl"
+          <SafeArea
+            className={`rounded-[20px] ${surfaceClass}`}
             edges={['bottom']}
           >
-            <Box
-              flexDirection="row"
-              marginTop="xl"
-              marginBottom="s"
-              justifyContent="space-between"
-              marginHorizontal="xl"
-            >
-              <Text variant="body1">
+            <View className="mx-8 mb-2 mt-8 flex-row justify-between">
+              <Text size="base">
                 {t('addNewContact.address.title', {
                   network: 'Solana',
                 })}
@@ -250,105 +232,80 @@ const ContactDetails = ({ action, contact }: Props) => {
                 isValidAddress={addressIsValid}
                 addressLoading={false}
               />
-            </Box>
-            <TextInput
-              variant="plain"
-              textInputProps={{
-                placeholder: t('addNewContact.address.placeholder'),
-                onChangeText: handleAddressChange,
-                value: address,
-                autoCapitalize: 'none',
-                multiline: true,
-                returnKeyType: 'next',
-                autoComplete: 'off',
-                autoCorrect: false,
-                onKeyPress: handleKeydown,
-              }}
-              paddingVertical="xl"
+            </View>
+            <Input
+              placeholder={t('addNewContact.address.placeholder')}
+              onChangeText={handleAddressChange}
+              value={address}
+              autoCapitalize="none"
+              multiline
+              returnKeyType="next"
+              autoComplete="off"
+              autoCorrect={false}
+              onKeyPress={handleKeydown}
+              className="h-auto rounded-none border-0 px-8 py-8 text-lg shadow-none"
             />
-            <Box
-              flexDirection="row"
-              justifyContent="space-between"
-              marginTop="m"
-              marginBottom="s"
-              marginHorizontal="xl"
-            >
-              <Text variant="body1">{t('addNewContact.nickname.title')}</Text>
-              {!!nickname && <Checkmark color={blueBright500} />}
-            </Box>
-            <TextInput
-              variant="plain"
-              textInputProps={{
-                placeholder: t('addNewContact.nickname.placeholder'),
-                onChangeText: setNickname,
-                value: nickname,
-                autoCapitalize: 'words',
-                autoComplete: 'off',
-                returnKeyType: 'done',
-                autoCorrect: false,
-              }}
+            <View className="mx-8 mb-2 mt-4 flex-row justify-between">
+              <Text size="base">{t('addNewContact.nickname.title')}</Text>
+              {!!nickname && (
+                <CheckIcon size={16} colorClassName="accent-blue-dark-500" />
+              )}
+            </View>
+            <Input
+              placeholder={t('addNewContact.nickname.placeholder')}
+              onChangeText={setNickname}
+              value={nickname}
+              autoCapitalize="words"
+              autoComplete="off"
+              returnKeyType="done"
+              autoCorrect={false}
               ref={nicknameInput}
+              className="h-auto rounded-none border-0 px-8 py-4 text-lg shadow-none"
             />
-            <ButtonPressable
-              visible={isAddingContact}
-              backgroundColor="blueBright500"
-              backgroundColorDisabled="plainInputBackground"
-              titleColorDisabled="grey400"
-              fontSize={19}
-              backgroundColorOpacityPressed={0.7}
-              borderRadius="round"
-              marginTop="xxxl"
-              marginHorizontal="xl"
-              title={t('addNewContact.addContact')}
-              disabled={!addressIsValid || !nickname}
-              onPress={handleCreateNewContact}
-              marginBottom="l"
-            />
-            <Box
-              flexDirection="row"
-              justifyContent="center"
-              marginTop="xxxl"
-              marginHorizontal="xl"
-              visible={isEditingContact}
-            >
-              <ButtonPressable
-                flex={1}
-                backgroundColor="error"
-                height={BUTTON_HEIGHT}
-                backgroundColorDisabled="plainInputBackground"
-                titleColorDisabled="grey400"
-                fontSize={19}
-                backgroundColorOpacity={0.5}
-                backgroundColorOpacityPressed={0.3}
-                borderRadius="round"
-                marginRight="s"
-                title={t('editContact.delete')}
-                onPress={() => void handleDeleteContact().catch(console.error)}
-              />
-              <ButtonPressable
-                flex={1}
-                backgroundColor="blueBright500"
-                height={BUTTON_HEIGHT}
-                backgroundColorDisabled="plainInputBackground"
-                titleColorDisabled="grey400"
-                fontSize={19}
-                backgroundColorOpacityPressed={0.7}
-                borderRadius="round"
-                title={t('editContact.save')}
-                marginLeft="s"
-                disabled={
-                  !addressIsValid ||
-                  !nickname ||
-                  (nickname === contact?.alias && address === contact?.address)
-                }
-                onPress={handleSaveNewContact}
-              />
-            </Box>
-          </SafeAreaBox>
+            {isAddingContact && (
+              <Button
+                variant="cta"
+                size="lg"
+                className="mx-8 mb-6 mt-15"
+                disabled={!addressIsValid || !nickname}
+                onPress={handleCreateNewContact}
+              >
+                {t('addNewContact.addContact')}
+              </Button>
+            )}
+            {isEditingContact && (
+              <View className="mx-8 mt-15 flex-row justify-center gap-4">
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  className="flex-1"
+                  onPress={() =>
+                    void handleDeleteContact().catch(console.error)
+                  }
+                >
+                  {t('editContact.delete')}
+                </Button>
+                <Button
+                  variant="cta"
+                  size="lg"
+                  className="flex-1"
+                  disabled={
+                    !addressIsValid ||
+                    !nickname ||
+                    (nickname === contact?.alias &&
+                      address === contact?.solanaAddress)
+                  }
+                  onPress={handleSaveNewContact}
+                >
+                  {t('editContact.save')}
+                </Button>
+              </View>
+            )}
+          </SafeArea>
         </KeyboardAvoidingView>
-      </Box>
-    </SafeAreaBox>
+      </View>
+    </SafeArea>
   )
 }
 
-export default memo(ContactDetails)
+export default ContactDetails

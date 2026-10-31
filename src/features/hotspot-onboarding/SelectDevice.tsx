@@ -1,19 +1,27 @@
-import BackScreen from '@components/BackScreen'
-import Bluetooth from '@assets/images/bluetooth.svg'
-import ImageBox from '@components/ImageBox'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { useNavigation } from '@react-navigation/native'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { Bluetooth } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList } from 'react-native'
+import { FlatList, Image } from 'react-native'
+import { withUniwind } from 'uniwind'
+import OnboardingScreen from './components/OnboardingScreen'
 import { OnboardableDevice, OnboardingNavProp } from './navTypes'
+
+const BluetoothIcon = withUniwind(Bluetooth)
 
 const data: OnboardableDevice[] = [
   {
     name: 'Bluetooth Enabled Hotspot',
     type: 'IotBle',
-    icon: <Bluetooth width={50} height={50} />,
+    icon: (
+      <BluetoothIcon
+        size={32}
+        className="mr-2"
+        colorClassName="accent-blue-dark-500"
+      />
+    ),
     options: {
       bleInstructions:
         'Power on your Hotspot. Follow manufacturer instructions for enabling bluetooth discovery on the Hotspot.',
@@ -24,52 +32,49 @@ const data: OnboardableDevice[] = [
 const SelectOnboardableDevice = () => {
   const { t } = useTranslation()
   const navigation = useNavigation<OnboardingNavProp>()
-  const renderItem = React.useCallback(
-    ({ item, index }: { item: OnboardableDevice; index: number }) => {
-      return (
-        <TouchableOpacityBox
-          onPress={() => {
-            navigation.push(item.type, item.options)
-          }}
-          alignItems="center"
-          padding="s"
-          flexDirection="row"
-          borderTopWidth={index === 0 ? 0 : 1}
-          borderColor="grey900"
-          borderBottomWidth={1}
-        >
-          {item.image && (
-            <ImageBox
-              mr="s"
-              height={50}
-              width={50}
-              source={{
-                uri: item.image,
-                cache: 'force-cache',
-              }}
-            />
-          )}
-          {item.icon && item.icon}
-          <Text color="secondaryText" variant="body1Medium">
-            {item.name}
-          </Text>
-        </TouchableOpacityBox>
-      )
-    },
-    [navigation],
-  )
+  const renderItem = ({
+    item,
+    index,
+  }: {
+    item: OnboardableDevice
+    index: number
+  }) => {
+    return (
+      <PressableScale
+        onPress={() => {
+          navigation.push(item.type, item.options)
+        }}
+        feedback="opacity"
+        className={`flex-row items-center border-b border-border p-2 ${
+          index === 0 ? '' : 'border-t'
+        }`}
+      >
+        {item.image && (
+          <Image
+            className="mr-2 size-[50px]"
+            source={{
+              uri: item.image,
+              cache: 'force-cache',
+            }}
+          />
+        )}
+        {item.icon && item.icon}
+        <Text size="base" className="font-medium text-muted-foreground">
+          {item.name}
+        </Text>
+      </PressableScale>
+    )
+  }
 
-  const keyExtractor = React.useCallback(
-    ({ name }: OnboardableDevice) => name,
-    [],
-  )
+  const keyExtractor = ({ name }: OnboardableDevice) => name
 
   return (
-    <BackScreen title={t('hotspotOnboarding.selectOnboardingMethod.title')}>
+    <OnboardingScreen
+      title={t('hotspotOnboarding.selectOnboardingMethod.title')}
+    >
       <Text
-        variant="subtitle1"
-        color="secondaryText"
-        textAlign="left"
+        size="xl"
+        className="text-left font-medium text-muted-foreground"
         adjustsFontSizeToFit
       >
         {t('hotspotOnboarding.selectOnboardingMethod.subtitle')}
@@ -80,7 +85,7 @@ const SelectOnboardableDevice = () => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
-    </BackScreen>
+    </OnboardingScreen>
   )
 }
 
