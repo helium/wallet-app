@@ -741,6 +741,7 @@ export default {
     cancel: 'Cancel',
     close: 'Close',
     save: 'Save',
+    scanQrCode: 'Scan QR code',
     swap: 'Swap',
     clear: 'Clear',
     of: 'of',

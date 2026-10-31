@@ -29,14 +29,21 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
-
 // Shared legacy composites that migrated code may still import. Ticket 136
 // ports them to @ui and removes this list. One name per line, sorted.
 const sharedComposites = [
+  'AccountButton',
+  'AccountListItem',
+  'AccountSelector',
   'AddressBookSelector',
   'CloseButton',
   'HNTKeyboard',
+  'QrScanner',
+  'SearchInput',
+  'SubmitButton',
+  'TabBar',
   'TextTransform',
+  'TokenButton',
   'TokenPill',
   'TokenSelector',
 ]
@@ -53,18 +60,30 @@ const migratedLegacyImports = {
     },
   ],
 }
-const migratedFiles = [
-  'src/ui/**',
-  'src/features/uiGallery/**',
+// @ui and its gallery never depend on legacy code: the full ban, with no
+// shared composites.
+const strictFiles = [
   'src/features/migration/**',
+  'src/features/uiGallery/**',
+  'src/ui/**',
+]
+// Reskinned features may still import the shared composites. One entry per
+// line, sorted.
+const migratedFiles = [
   'src/features/StatusPage/**',
   'src/features/activity/**',
+  'src/features/addressBook/**',
+  'src/features/browser/**',
+  'src/features/burn/**',
+  'src/features/dappLogin/**',
   'src/features/hotspot-onboarding/**',
   'src/features/lock/**',
   'src/features/notifications/**',
+  'src/features/request/**',
   'src/features/security/**',
   'src/features/settings/**',
   'src/features/swaps/**',
+  'src/features/txnDelegation/**',
   'src/utils/parseMarkup.tsx',
 ]
 
@@ -152,6 +171,12 @@ module.exports = [
     files: migratedFiles,
     rules: {
       'no-restricted-imports': ['error', migratedLegacyImports],
+    },
+  },
+  {
+    files: strictFiles,
+    rules: {
+      'no-restricted-imports': ['error', legacyImports],
     },
   },
   {
