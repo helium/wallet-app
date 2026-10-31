@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigation } from '@react-navigation/native'
 import useHaptic from '@hooks/useHaptic'
 import useAlert from '@hooks/useAlert'
-import QrScanner from '@components/QrScanner'
+import { QrScanner } from '@ui/QrScanner'
 import {
   CLIAccountNavigationProp,
   EncyptedAccountRouteParam,

@@ -1,4 +1,4 @@
-import { Pill } from '@components/Pill'
+import { Pill } from '@ui/Pill'
 import { SusResult, Warning } from '@helium/sus'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { getMetadata } from '@hooks/useMetaplexMetadata'
@@ -243,7 +243,7 @@ const WalletSignBottomSheetTransaction = ({
                   </View>
                   <View className="flex-row items-center justify-end">
                     <View className="mr-1">
-                      <Pill text="Unknown Changes" color="orange" />
+                      <Pill text="Unknown Changes" color="warning" />
                     </View>
                     <Chevron
                       size={16}

@@ -1,6 +1,4 @@
-import Send from '@assets/images/send.svg'
-import Receive from '@assets/images/receive.svg'
-import { Pill } from '@components/Pill'
+import { Pill } from '@ui/Pill'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
@@ -8,6 +6,7 @@ import { Card } from '@ui/Card'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
 import { TokenIcon } from '@ui/TokenIcon'
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react-native'
 import React from 'react'
 import { View } from 'react-native'
 
@@ -52,7 +51,11 @@ export const SwapPreview = ({
               <Text size="base">{inputMintSymbol}</Text>
             </View>
             <View className="flex-row items-center">
-              <Pill text={inputAmount.toString()} Icon={Send} color="blue" />
+              <Pill
+                text={inputAmount.toString()}
+                Icon={ArrowUpRight}
+                color="info"
+              />
             </View>
           </View>
           <View className="flex-row items-center justify-between">
@@ -65,8 +68,8 @@ export const SwapPreview = ({
             <View className="flex-row items-center">
               <Pill
                 text={outputAmount.toString()}
-                Icon={Receive}
-                color="green"
+                Icon={ArrowDownLeft}
+                color="success"
               />
             </View>
           </View>

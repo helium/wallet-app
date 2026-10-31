@@ -33,9 +33,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { Mints } from '../../utils/constants'
 import * as Logger from '../../utils/logger'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '../addressBook/AddressBookSelector'
+import {
+  AddressBookSelector,
+  type AddressBookRef,
+} from '@ui/AddressBookSelector'
 import BackHeader from './components/BackHeader'
 import {
   CollectableNavigationProp,

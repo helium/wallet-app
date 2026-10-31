@@ -11,7 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import EventEmitter from 'events'
 
-import CloseButton from '@components/CloseButton'
+import { CloseButton } from '@ui/CloseButton'
 import { useHitSlop } from '@theme/themeHooks'
 import { AnimatedQrCode } from '../components/StaticQrCode'
 import ProgressBar from '../components/ProgressBar'
@@ -173,9 +173,8 @@ const ScanTxQrcodeScreen = ({
           </Text>
         )}
         <CloseButton
-          paddingHorizontal="lx"
+          className="-me-7 px-7"
           hitSlop={hitSlop}
-          marginEnd="n_lx"
           onPress={() => {
             eventEmitter.emit('closeKeystoneSignatureModal', '')
           }}

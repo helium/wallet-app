@@ -108,32 +108,40 @@ jest.mock('../../../hooks/useTransactionBatchStatus', () => {
 jest.mock('@assets/images/paymentFailure.svg', () => 'FailureIcon', {
   virtual: true,
 })
-jest.mock('@components/AccountButton', () => 'AccountButton', {
+jest.mock('@ui/AccountButton', () => ({ AccountButton: 'AccountButton' }), {
   virtual: true,
 })
-jest.mock('@components/AccountSelector', () => 'AccountSelector', {
-  virtual: true,
-})
+jest.mock(
+  '@ui/AccountSelector',
+  () => ({ AccountSelector: 'AccountSelector' }),
+  { virtual: true },
+)
 jest.mock('@components/BackgroundFill', () => 'BackgroundFill', {
   virtual: true,
 })
 jest.mock('@components/Box', () => 'Box', { virtual: true })
 jest.mock('@components/FadeInOut', () => 'FadeInOut', { virtual: true })
-jest.mock('@components/SubmitButton', () => 'SubmitButton', {
+jest.mock('@ui/SubmitButton', () => ({ SubmitButton: 'SubmitButton' }), {
   virtual: true,
 })
 jest.mock('@components/Text', () => 'Text', { virtual: true })
-jest.mock('@components/TokenButton', () => 'TokenButton', { virtual: true })
-jest.mock('@components/TokenSelector', () => 'TokenSelector', {
+jest.mock('@ui/TokenButton', () => ({ TokenButton: 'TokenButton' }), {
+  virtual: true,
+})
+jest.mock('@ui/TokenSelector', () => ({ TokenSelector: 'TokenSelector' }), {
   virtual: true,
 })
 jest.mock('@components/TouchableOpacityBox', () => 'TouchableOpacityBox', {
   virtual: true,
 })
-jest.mock('@components/AddressBookSelector', () => 'AddressBook', {
+jest.mock(
+  '@ui/AddressBookSelector',
+  () => ({ AddressBookSelector: 'AddressBook' }),
+  { virtual: true },
+)
+jest.mock('@ui/HNTKeyboard', () => ({ HNTKeyboard: 'HNTKeyboard' }), {
   virtual: true,
 })
-jest.mock('@components/HNTKeyboard', () => 'HNTKeyboard', { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })

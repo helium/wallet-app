@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-shadow */
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'

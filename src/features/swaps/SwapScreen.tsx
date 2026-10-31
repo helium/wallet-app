@@ -1,10 +1,11 @@
-import AddressBookSelector, {
-  AddressBookRef,
-} from '@components/AddressBookSelector'
-import CloseButton from '@components/CloseButton'
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import TextTransform from '@components/TextTransform'
-import TokenSelector, { TokenSelectorRef } from '@components/TokenSelector'
+import {
+  type AddressBookRef,
+  AddressBookSelector,
+} from '@ui/AddressBookSelector'
+import { CloseButton } from '@ui/CloseButton'
+import { HNTKeyboard, type HNTKeyboardRef } from '@ui/HNTKeyboard'
+import { TextTransform } from '@ui/TextTransform'
+import { TokenSelector, type TokenSelectorRef } from '@ui/TokenSelector'
 import {
   useMint,
   useOwnedAmount,
@@ -874,28 +875,22 @@ const SwapScreen = () => {
                   <View className="mt-4">
                     {!isDevnet && !outputMint.equals(DC_MINT) && (
                       <TextTransform
-                        textAlign="center"
-                        marginHorizontal="m"
-                        variant="body3Medium"
-                        color="primaryText"
+                        size="xs"
+                        className="mx-4 text-center font-medium"
                         i18nKey="swapsScreen.slippageLabelValue"
                         values={{ amount: slippageBps / 100 }}
                       />
                     )}
                     <TextTransform
-                      textAlign="center"
-                      marginHorizontal="m"
-                      variant="body3Medium"
-                      color="primaryText"
+                      size="xs"
+                      className="mx-4 text-center font-medium"
                       i18nKey="collectablesScreen.transferFee"
                       values={{ amount: humanReadable(solFee, 9) }}
                     />
                     {!isDevnet && !outputMint.equals(DC_MINT) && (
                       <TextTransform
-                        textAlign="center"
-                        marginHorizontal="m"
-                        variant="body3Medium"
-                        color="primaryText"
+                        size="xs"
+                        className="mx-4 text-center font-medium"
                         i18nKey="swapsScreen.minReceived"
                         values={{ amount: minReceived }}
                       />
@@ -913,7 +908,7 @@ const SwapScreen = () => {
               <View className="mt-6 flex-row items-center justify-between">
                 <View className="flex-1">
                   <CloseButton
-                    marginStart="m"
+                    className="ms-4"
                     onPress={() => setSlippageInfoVisible(false)}
                   />
                 </View>

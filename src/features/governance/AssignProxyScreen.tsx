@@ -1,4 +1,4 @@
-import BackScreen from '@components/BackScreen'
+import { BackScreen } from '@ui/BackScreen'
 import { truthy } from '@helium/spl-utils'
 import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import Slider from '@react-native-community/slider'
@@ -194,8 +194,7 @@ export const AssignProxyScreen = () => {
   return (
     <BackScreen
       edges={safeEdges}
-      height="100%"
-      padding="s"
+      className="h-full p-2"
       title={t('gov.assignProxy.title')}
     >
       <TouchableWithoutFeedback onPress={handleBlurSearch}>

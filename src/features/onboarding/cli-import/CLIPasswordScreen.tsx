@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import useAlert from '@hooks/useAlert'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'

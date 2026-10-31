@@ -1,6 +1,6 @@
-import BlurActionSheet from '@components/BlurActionSheet'
-import Dot from '@components/Dot'
-import ListItem from '@components/ListItem'
+import { BlurActionSheet } from '@ui/BlurActionSheet'
+import { Dot } from '@ui/Dot'
+import { ListItem } from '@ui/ListItem'
 import type { TokenAmountOutput } from '@helium/blockchain-api'
 import { useOwnedAmount, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
@@ -383,7 +383,7 @@ export const PositionsScreen = () => {
         claimRewardsMutation.isPending ||
         loading,
       SecondaryIcon: positionsWithRewards?.length ? (
-        <Dot filled color="green500" size={8} />
+        <Dot filled color="success" size={8} />
       ) : undefined,
     },
   ]
@@ -421,7 +421,7 @@ export const PositionsScreen = () => {
                     testID="Positions.Manage"
                   >
                     {positionsWithRewards?.length ? (
-                      <Dot filled color="green500" size={8} />
+                      <Dot filled color="success" size={8} />
                     ) : null}
                     <Text
                       className={buttonTextVariants({ variant: 'outline' })}

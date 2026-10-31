@@ -1,6 +1,6 @@
-import FabButton from '@components/FabButton'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
+import { FabButton } from '@ui/FabButton'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import React from 'react'
@@ -114,14 +114,10 @@ const AccountActionBar = ({
         <View className={twMerge(direction, grow, fabMargin)}>
           <FabButton
             icon="fatArrowDown"
-            backgroundColor="greenBright500"
-            backgroundColorOpacity={0.2}
-            backgroundColorOpacityPressed={0.4}
-            iconColor="greenBright500"
+            tone="success"
             title={compact || maxCompact ? undefined : t('accountView.deposit')}
             onPress={handleAction('request')}
-            {...(maxCompact && { width: 47.5, height: 47.5 })}
-            justifyContent="center"
+            className={maxCompact ? 'size-12' : undefined}
           />
           {hasBottomTitle && (
             <Text className="mt-3 text-center font-medium text-muted-foreground">
@@ -135,14 +131,10 @@ const AccountActionBar = ({
           <FabButton
             testID={compact ? 'AccountActionBar.Swaps' : undefined}
             icon="swaps"
-            backgroundColor="orange500"
-            backgroundColorOpacity={0.2}
-            backgroundColorOpacityPressed={0.4}
-            iconColor="orange500"
+            tone="warning"
             title={compact || maxCompact ? undefined : t('accountView.swaps')}
             onPress={handleAction('swaps')}
-            {...(maxCompact && { width: 47.5, height: 47.5 })}
-            justifyContent="center"
+            className={maxCompact ? 'size-12' : undefined}
           />
           {hasBottomTitle && (
             <Text className="mt-3 text-center font-medium text-muted-foreground">
@@ -155,16 +147,12 @@ const AccountActionBar = ({
         <View className={twMerge(direction, fabMargin)}>
           <FabButton
             icon="airdrop"
-            backgroundColor="electricViolet"
-            backgroundColorOpacity={0.2}
-            backgroundColorOpacityPressed={0.4}
-            iconColor="electricViolet"
+            tone="accent"
             title={
               compact || maxCompact ? undefined : t('airdropScreen.airdrop')
             }
             onPress={handleAction('airdrop')}
-            {...(maxCompact && { width: 47.5, height: 47.5 })}
-            justifyContent="center"
+            className={maxCompact ? 'size-12' : undefined}
           />
           {hasBottomTitle && (
             <Text className="mt-3 text-center font-medium text-muted-foreground">
@@ -178,15 +166,11 @@ const AccountActionBar = ({
           <FabButton
             testID={compact ? 'AccountActionBar.Send' : undefined}
             icon="fatArrowUp"
-            backgroundColor="blueBright500"
-            backgroundColorOpacity={0.2}
-            backgroundColorOpacityPressed={0.4}
-            iconColor="blueBright500"
+            tone="info"
             title={compact || maxCompact ? undefined : t('accountView.send')}
             onPress={handleAction('send')}
             reverse
-            {...(maxCompact && { width: 47.5, height: 47.5 })}
-            justifyContent="center"
+            className={maxCompact ? 'size-12' : undefined}
           />
           {hasBottomTitle && (
             <Text className="mt-3 text-center font-medium text-muted-foreground">
@@ -197,15 +181,11 @@ const AccountActionBar = ({
       )}
       {hasDelegate && (
         <FabButton
-          backgroundColor="blueBright500"
-          backgroundColorOpacity={0.2}
-          backgroundColorOpacityPressed={0.1}
-          iconColor="blueBright500"
+          tone="info"
           title={compact || maxCompact ? undefined : t('accountView.delegate')}
           onPress={handleAction('delegate')}
           reverse
-          {...(maxCompact && { width: 47.5, height: 47.5 })}
-          justifyContent="center"
+          className={maxCompact ? 'size-12' : undefined}
         />
       )}
     </View>

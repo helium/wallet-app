@@ -8,6 +8,7 @@ jest.mock(
   { virtual: true },
 )
 jest.mock('../Box', () => 'Box')
+jest.mock('react-native', () => ({ View: 'View' }))
 
 // Babel copies React's exports into ContentColumn's namespace on first
 // require, so the spy must exist before the component module loads

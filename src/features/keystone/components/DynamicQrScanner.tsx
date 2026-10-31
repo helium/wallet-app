@@ -6,7 +6,7 @@ import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
-import BackButton from '@components/BackButton'
+import { BackButton } from '@ui/BackButton'
 import { Text } from '@ui/Text'
 import { CameraScannerLayout } from './CameraScannerLayout'
 import ProgressBar from './ProgressBar'
@@ -66,11 +66,7 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   return (
     <SafeArea className="flex-1">
       <View className="flex-row px-7">
-        <BackButton
-          marginHorizontal="n_ms"
-          paddingHorizontal="none"
-          onPress={navigation.goBack}
-        />
+        <BackButton className="-mx-3 px-0" onPress={navigation.goBack} />
       </View>
       {/* if permission is not granted, show a black screen and notice alert modal */}
       {hasPermission !== true && <View />}

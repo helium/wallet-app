@@ -1,4 +1,4 @@
-import TokenPill from '@components/TokenPill'
+import { TokenPill } from '@ui/TokenPill'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
 import { Card } from '@ui/Card'

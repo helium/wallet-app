@@ -63,7 +63,9 @@ jest.mock('react-native-gesture-handler', () => ({
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Spinner', () => ({ Spinner: 'Spinner' }), { virtual: true })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
-jest.mock('@components/BackButton', () => 'BackButton', { virtual: true })
+jest.mock('@ui/BackButton', () => ({ BackButton: 'BackButton' }), {
+  virtual: true,
+})
 jest.mock('@storage/cloudStorage', () => ({}), { virtual: true })
 jest.mock('../LedgerAccountListItem', () => ({
   __esModule: true,

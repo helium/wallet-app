@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react'
-import { useSheetMargins } from '@components/ContentColumn'
+import { useSheetMargins } from '@ui/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { FlatList, LayoutChangeEvent, View } from 'react-native'
 import { Device } from 'react-native-ble-plx'
@@ -20,7 +20,7 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import BackButton from '@components/BackButton'
+import { BackButton } from '@ui/BackButton'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import useBackHandler from '@hooks/useBackHandler'
@@ -150,11 +150,7 @@ const DeviceScan = () => {
   return (
     <BottomSheetModalProvider>
       <View className="flex-1 bg-secondary px-6">
-        <BackButton
-          marginTop="m"
-          paddingHorizontal="s"
-          onPress={navigation.goBack}
-        />
+        <BackButton className="mt-4 px-2" onPress={navigation.goBack} />
         <View className="mb-6 flex-1 items-center justify-end">
           <LedgerIcon
             width={61}

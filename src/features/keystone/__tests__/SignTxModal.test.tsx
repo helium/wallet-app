@@ -35,7 +35,9 @@ jest.mock('../components/CameraScannerLayout', () => ({
 jest.mock('@hooks/useAlert', () => () => ({ showOKCancelAlert: () => {} }), {
   virtual: true,
 })
-jest.mock('@components/CloseButton', () => 'CloseButton', { virtual: true })
+jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
+  virtual: true,
+})
 jest.mock('@assets/images/keystoneLogo.svg', () => 'KeystoneLogo', {
   virtual: true,
 })

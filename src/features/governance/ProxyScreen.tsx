@@ -1,5 +1,5 @@
-import BackScreen from '@components/BackScreen'
-import { Pill } from '@components/Pill'
+import { BackScreen } from '@ui/BackScreen'
+import { Pill } from '@ui/Pill'
 import { proxyQuery, useProxiedTo } from '@helium/voter-stake-registry-hooks'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -91,7 +91,7 @@ export const ProxyScreen = () => {
     )
   }
   return (
-    <BackScreen padding="m" title={t('gov.title')}>
+    <BackScreen className="p-4" title={t('gov.title')}>
       <View className="flex-col">
         <VoteHistory
           onRefresh={() => void refetch().catch(console.error)}
@@ -116,28 +116,18 @@ export const ProxyScreen = () => {
                         return (
                           <Pill
                             key={n}
-                            textProps={{ variant: 'body3' }}
-                            color="mobileBlue"
+                            textSize="xs"
+                            color="mobile"
                             text="MOBILE"
                           />
                         )
                       case 'hnt':
                         return (
-                          <Pill
-                            key={n}
-                            textProps={{ variant: 'body3' }}
-                            color="hntBlue"
-                            text="HNT"
-                          />
+                          <Pill key={n} textSize="xs" color="hnt" text="HNT" />
                         )
                       case 'iot':
                         return (
-                          <Pill
-                            key={n}
-                            textProps={{ variant: 'body3' }}
-                            color="iotGreen"
-                            text="IOT"
-                          />
+                          <Pill key={n} textSize="xs" color="iot" text="IOT" />
                         )
                     }
                     return null

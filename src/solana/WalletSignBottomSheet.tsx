@@ -8,7 +8,7 @@ import {
 import React, { Ref, useImperativeHandle, useRef, useState } from 'react'
 import { View } from 'react-native'
 import { useResolveClassNames } from 'uniwind'
-import { useSheetMargins } from '@components/ContentColumn'
+import { useSheetMargins } from '@ui/ContentColumn'
 import { createSignRequestResolver } from './signRequestResolver'
 import { WalletSignBottomSheetSimulated } from './WalletSIgnBottomSheetSimulated'
 import { WalletSignBottomSheetCompact } from './WalletSignBottomSheetCompact'

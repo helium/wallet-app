@@ -9,7 +9,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { Button } from '@ui/Button'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
-import BackButton from '@components/BackButton'
+import { BackButton } from '@ui/BackButton'
 import { CSAccountVersion, CSAccounts } from '@storage/cloudStorage'
 import useLedger, { LedgerAccount } from '@hooks/useLedger'
 import {
@@ -122,12 +122,7 @@ const DeviceShow = () => {
   const renderPageHeader = () => {
     return (
       <>
-        <BackButton
-          marginVertical="m"
-          paddingHorizontal="m"
-          marginHorizontal="s"
-          onPress={navigation.goBack}
-        />
+        <BackButton className="m-2 my-4 px-4" onPress={navigation.goBack} />
         <View className="mb-8 flex-row items-center justify-center">
           <LedgerIcon
             width={62}

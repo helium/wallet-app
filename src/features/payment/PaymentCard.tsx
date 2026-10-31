@@ -1,4 +1,4 @@
-import SubmitButton from '@components/SubmitButton'
+import { SubmitButton } from '@ui/SubmitButton'
 import { PaymentV2 } from '@helium/transactions'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
@@ -104,7 +104,7 @@ const PaymentCard = ({
           </View>
         ) : (
           <SubmitButton
-            marginTop="l"
+            className="mt-6"
             title={t('payment.sendButton', {
               ticker: symbol,
             })}

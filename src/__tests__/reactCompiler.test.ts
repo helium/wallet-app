@@ -34,7 +34,7 @@ const COMPILED_FILES = [
   'src/features/account/AccountsScreen.tsx',
   'src/components/AutoGasBanner.tsx',
   'src/features/keystone/components/DynamicQrScanner.tsx',
-  'src/components/QrScanner.tsx',
+  'src/ui/QrScanner.tsx',
   'src/features/keystone/SignTx/SignTxModal.tsx',
   'src/features/dappLogin/DappLoginScreen.tsx',
   'src/features/txnDelegation/useSolTxns.ts',

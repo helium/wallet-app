@@ -1,7 +1,5 @@
-import ActiveCircle from '@assets/images/activeCircle.svg'
-import CancelledCircle from '@assets/images/cancelledCircle.svg'
-import { CardSkeleton } from '@components/CardSkeleton'
-import { Pill } from '@components/Pill'
+import { CardSkeleton } from '@ui/CardSkeleton'
+import { Pill } from '@ui/Pill'
 import { votesForWalletQuery } from '@helium/voter-stake-registry-hooks'
 import { ProposalWithVotes } from '@helium/voter-stake-registry-sdk'
 import { useProposalStatus } from '@hooks/useProposalStatus'
@@ -14,6 +12,7 @@ import { Text } from '@ui/Text'
 import { getTimeFromNowFmt } from '@utils/dateTools'
 import BN from 'bn.js'
 import { times } from 'lodash'
+import { Circle, CircleX } from 'lucide-react-native'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl, View } from 'react-native'
@@ -154,19 +153,21 @@ const ProposalItem: React.FC<{
         <View className="flex-row">
           {!completed ? (
             <Pill
-              iconProps={{ width: 8, height: 8 }}
-              Icon={ActiveCircle}
-              color="black"
-              textProps={{ variant: 'body3' }}
+              iconSize={8}
+              Icon={Circle}
+              iconColorClassName="accent-blue-dark-500"
+              color="primary"
+              textSize="xs"
               text={t('gov.history.active')}
             />
           ) : null}
           {isCancelled ? (
             <Pill
-              iconProps={{ width: 8, height: 8 }}
-              Icon={CancelledCircle}
-              color="black"
-              textProps={{ variant: 'body3' }}
+              iconSize={8}
+              Icon={CircleX}
+              iconColorClassName="accent-warning-500"
+              color="primary"
+              textSize="xs"
               text={t('gov.history.cancelled')}
             />
           ) : null}
@@ -234,7 +235,7 @@ const ProposalItem: React.FC<{
           </>
         ) : (
           <View className="mt-2 w-full flex-row items-center justify-center">
-            <Pill color="orange" text={t('gov.history.notVoted')} />
+            <Pill color="warning" text={t('gov.history.notVoted')} />
           </View>
         )}
       </View>

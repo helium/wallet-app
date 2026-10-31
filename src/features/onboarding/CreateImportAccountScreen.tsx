@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import Keystone from '@assets/images/keystoneLogo.svg'
 import LedgerLogo from '@assets/images/ledger.svg'
 import { useNavigation } from '@react-navigation/native'

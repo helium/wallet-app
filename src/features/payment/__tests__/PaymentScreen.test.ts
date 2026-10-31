@@ -121,18 +121,26 @@ jest.mock('../usePaymentsReducer', () => ({
 
 // Screen chrome and leaf views render as named host elements; wrappers keep
 // their children so the submit view mounts.
-jest.mock('@components/AccountButton', () => 'AccountButton', {
+jest.mock('@ui/AccountButton', () => ({ AccountButton: 'AccountButton' }), {
   virtual: true,
 })
-jest.mock('@components/AccountSelector', () => 'AccountSelector', {
+jest.mock(
+  '@ui/AccountSelector',
+  () => ({ AccountSelector: 'AccountSelector' }),
+  { virtual: true },
+)
+jest.mock(
+  '@ui/AddressBookSelector',
+  () => ({ AddressBookSelector: 'AddressBookSelector' }),
+  { virtual: true },
+)
+jest.mock('@ui/HNTKeyboard', () => ({ HNTKeyboard: 'HNTKeyboard' }), {
   virtual: true,
 })
-jest.mock('@components/AddressBookSelector', () => 'AddressBookSelector', {
+jest.mock('@ui/TokenButton', () => ({ TokenButton: 'TokenButton' }), {
   virtual: true,
 })
-jest.mock('@components/HNTKeyboard', () => 'HNTKeyboard', { virtual: true })
-jest.mock('@components/TokenButton', () => 'TokenButton', { virtual: true })
-jest.mock('@components/TokenSelector', () => 'TokenSelector', {
+jest.mock('@ui/TokenSelector', () => ({ TokenSelector: 'TokenSelector' }), {
   virtual: true,
 })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })

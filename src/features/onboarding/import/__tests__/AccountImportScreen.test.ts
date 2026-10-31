@@ -41,9 +41,11 @@ jest.mock('@react-navigation/native', () => {
 jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
 }))
-jest.mock('@components/FocusAwareStatusBar', () => 'FocusAwareStatusBar', {
-  virtual: true,
-})
+jest.mock(
+  '@ui/FocusAwareStatusBar',
+  () => ({ FocusAwareStatusBar: 'FocusAwareStatusBar' }),
+  { virtual: true },
+)
 jest.mock('uniwind', () => ({ withUniwind: () => 'Icon' }))
 jest.mock('lucide-react-native', () => ({ X: 'X' }))
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })

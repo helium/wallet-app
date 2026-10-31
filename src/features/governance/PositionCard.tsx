@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import type { TokenAmountOutput } from '@helium/blockchain-api'
-import BlurActionSheet from '@components/BlurActionSheet'
-import ListItem from '@components/ListItem'
-import { Pill } from '@components/Pill'
+import { BlurActionSheet } from '@ui/BlurActionSheet'
+import { ListItem } from '@ui/ListItem'
+import { Pill } from '@ui/Pill'
 import { TASK_QUEUE, useDelegationClaimBot } from '@helium/automation-hooks'
 import {
   useMint,
@@ -911,7 +911,7 @@ export const PositionCard = ({
                       </Text>
                       <View className="mt-2">
                         <Pill
-                          color="red"
+                          color="destructive"
                           text={
                             knownProxy?.name ||
                             shortenAddress(position.proxy!.nextVoter.toBase58())

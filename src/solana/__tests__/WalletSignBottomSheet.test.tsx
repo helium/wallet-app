@@ -86,11 +86,9 @@ jest.mock(
   () => ({ estimateTxnFeeLamports: () => 0, TXN_FEE_IN_LAMPORTS: 5000 }),
   { virtual: true },
 )
-jest.mock(
-  '@components/ContentColumn',
-  () => ({ useSheetMargins: () => undefined }),
-  { virtual: true },
-)
+jest.mock('@ui/ContentColumn', () => ({ useSheetMargins: () => undefined }), {
+  virtual: true,
+})
 jest.mock('../WalletSIgnBottomSheetSimulated', () => ({
   WalletSignBottomSheetSimulated: () => null,
 }))

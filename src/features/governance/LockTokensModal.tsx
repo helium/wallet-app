@@ -1,4 +1,4 @@
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
+import { HNTKeyboard, type HNTKeyboardRef } from '@ui/HNTKeyboard'
 import { useMint } from '@helium/helium-react-hooks'
 import { HNT_MINT, toBN, toNumber } from '@helium/spl-utils'
 import { SubDaoWithMeta, useSubDaos } from '@helium/voter-stake-registry-hooks'

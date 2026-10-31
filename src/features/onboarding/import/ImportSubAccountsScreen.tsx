@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   ResolvedPath,

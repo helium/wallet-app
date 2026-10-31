@@ -1,4 +1,4 @@
-import SearchInput from '@components/SearchInput'
+import { SearchInput } from '@ui/SearchInput'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -177,7 +177,7 @@ export const ProxySearch = React.forwardRef<
           <View className="flex-row items-center">
             <SearchInput
               ref={inputRef}
-              flex={1}
+              className="flex-1"
               value={input}
               onChangeText={handleInputChange}
               placeholder={t('gov.assignProxy.searchPlaceholder')}

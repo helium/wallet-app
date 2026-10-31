@@ -102,12 +102,12 @@ jest.mock(
   () => () => ({ handleDismiss: () => {}, setIsShowing: () => {} }),
   { virtual: true },
 )
-jest.mock(
-  '@components/ContentColumn',
-  () => ({ useSheetMargins: () => ({}) }),
-  { virtual: true },
-)
-jest.mock('@components/CloseButton', () => 'CloseButton', { virtual: true })
+jest.mock('@ui/ContentColumn', () => ({ useSheetMargins: () => ({}) }), {
+  virtual: true,
+})
+jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
+  virtual: true,
+})
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/Spinner', () => ({ Spinner: 'Spinner' }), { virtual: true })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })

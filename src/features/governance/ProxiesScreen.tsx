@@ -1,8 +1,6 @@
-import MajorityCircle from '@assets/images/majorityCircle.svg'
-import MinorityCircle from '@assets/images/minorityCircle.svg'
-import { CardSkeleton } from '@components/CardSkeleton'
-import { Pill } from '@components/Pill'
-import SearchInput from '@components/SearchInput'
+import { CardSkeleton } from '@ui/CardSkeleton'
+import { Pill } from '@ui/Pill'
+import { SearchInput } from '@ui/SearchInput'
 import { proxiesQuery } from '@helium/voter-stake-registry-hooks'
 import { EnhancedProxy } from '@helium/voter-stake-registry-sdk'
 import { useNavigation } from '@react-navigation/native'
@@ -13,7 +11,7 @@ import { Text } from '@ui/Text'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
 import { times } from 'lodash'
-import { CircleCheck, TriangleAlert } from 'lucide-react-native'
+import { Circle, CircleCheck, TriangleAlert } from 'lucide-react-native'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, Image, RefreshControl, View } from 'react-native'
@@ -196,10 +194,13 @@ const ProxyCard: React.FC<{
         </View>
         <View className="flex-1 items-end">
           <Pill
-            iconProps={{ width: 8, height: 8 }}
-            Icon={majority ? MajorityCircle : MinorityCircle}
-            color="black"
-            textProps={{ variant: 'body3' }}
+            iconSize={8}
+            Icon={Circle}
+            iconColorClassName={
+              majority ? 'accent-warning-500' : 'accent-blue-dark-500'
+            }
+            color="primary"
+            textSize="xs"
             text={
               majority ? t('gov.proxies.majority') : t('gov.proxies.minority')
             }

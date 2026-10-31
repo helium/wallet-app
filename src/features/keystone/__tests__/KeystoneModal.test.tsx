@@ -55,12 +55,12 @@ jest.mock(
 jest.mock('@hooks/useAlert', () => () => ({ showOKCancelAlert: () => {} }), {
   virtual: true,
 })
-jest.mock(
-  '@components/ContentColumn',
-  () => ({ useSheetMargins: () => ({}) }),
-  { virtual: true },
-)
-jest.mock('@components/CloseButton', () => 'CloseButton', { virtual: true })
+jest.mock('@ui/ContentColumn', () => ({ useSheetMargins: () => ({}) }), {
+  virtual: true,
+})
+jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
+  virtual: true,
+})
 jest.mock(
   '@storage/AccountStorageProvider',
   () => {

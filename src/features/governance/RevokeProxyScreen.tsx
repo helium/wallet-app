@@ -1,4 +1,4 @@
-import BackScreen from '@components/BackScreen'
+import { BackScreen } from '@ui/BackScreen'
 import { truthy } from '@helium/spl-utils'
 import { PositionWithMeta } from '@helium/voter-stake-registry-hooks'
 import { usePublicKey } from '@hooks/usePublicKey'
@@ -129,8 +129,7 @@ export const RevokeProxyScreen = () => {
   return (
     <BackScreen
       edges={safeEdges}
-      height="100%"
-      padding="s"
+      className="h-full p-2"
       title={t('gov.revokeProxy.title')}
     >
       <View className="flex-1 flex-col">

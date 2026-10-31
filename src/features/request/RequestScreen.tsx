@@ -1,14 +1,13 @@
-import AccountButton from '@components/AccountButton'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import TabBar, { TabBarOption } from '@components/TabBar'
-import TokenButton from '@components/TokenButton'
-import TokenSelector, {
-  TokenListItem,
-  TokenSelectorRef,
-} from '@components/TokenSelector'
+import { AccountButton } from '@ui/AccountButton'
+import { AccountSelector, type AccountSelectorRef } from '@ui/AccountSelector'
+import { HNTKeyboard, type HNTKeyboardRef } from '@ui/HNTKeyboard'
+import { TabBar, type TabBarOption } from '@ui/TabBar'
+import { TokenButton } from '@ui/TokenButton'
+import {
+  type TokenListItem,
+  TokenSelector,
+  type TokenSelectorRef,
+} from '@ui/TokenSelector'
 import { NetTypes as NetType } from '@helium/address'
 import { useMint } from '@helium/helium-react-hooks'
 import useHaptic from '@hooks/useHaptic'
@@ -245,7 +244,7 @@ const RequestScreen = () => {
               tabBarOptions={requestTypeOptions}
               selectedValue={requestType}
               onItemSelected={handleRequestTypePress}
-              marginVertical="l"
+              className="my-6"
             />
             <KeyboardAwareScrollView
               contentInsetAdjustmentBehavior="automatic"
@@ -288,18 +287,18 @@ const RequestScreen = () => {
 
                 <AccountButton
                   accountIconSize={41}
-                  backgroundColor="secondary"
+                  backgroundClassName="bg-secondary"
                   showBubbleArrow
-                  marginTop="l"
                   title={currentAccount?.alias}
                   address={currentAccount?.address}
                   onPress={handleAccountButtonPress}
+                  className="mt-6"
                 />
                 <TokenButton
                   title={t('request.requestType', {
                     ticker: symbol || '',
                   })}
-                  backgroundColor="secondary"
+                  backgroundClassName="bg-secondary"
                   address={currentAccount?.address}
                   onPress={handleTickerSelected}
                   showBubbleArrow

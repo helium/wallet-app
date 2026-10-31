@@ -54,9 +54,11 @@ jest.mock(
   { virtual: true },
 )
 jest.mock('@utils/logger', () => ({ error: jest.fn() }), { virtual: true })
-jest.mock('@components/FocusAwareStatusBar', () => 'FocusAwareStatusBar', {
-  virtual: true,
-})
+jest.mock(
+  '@ui/FocusAwareStatusBar',
+  () => ({ FocusAwareStatusBar: 'FocusAwareStatusBar' }),
+  { virtual: true },
+)
 jest.mock('uniwind', () => ({ withUniwind: () => 'Icon' }))
 jest.mock('lucide-react-native', () => ({ ChevronLeft: 'ChevronLeft' }))
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })

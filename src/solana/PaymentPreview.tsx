@@ -1,5 +1,4 @@
-import Send from '@assets/images/send.svg'
-import { Pill } from '@components/Pill'
+import { Pill } from '@ui/Pill'
 import { useMint } from '@helium/helium-react-hooks'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { PublicKey } from '@solana/web3.js'
@@ -9,6 +8,7 @@ import { TokenIcon } from '@ui/TokenIcon'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
+import { ArrowUpRight } from 'lucide-react-native'
 import React from 'react'
 import { View } from 'react-native'
 
@@ -40,8 +40,8 @@ export const PaymentPreivew = ({ mint, payments }: IPaymentPreviewProps) => {
           <View className="flex-row items-center">
             <Pill
               text={humanReadable(balanceAmount, decimals)}
-              Icon={Send}
-              color="blue"
+              Icon={ArrowUpRight}
+              color="info"
             />
           </View>
         </View>

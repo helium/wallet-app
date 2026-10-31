@@ -10,8 +10,8 @@ import { Text } from '@ui/Text'
 import { Plus } from 'lucide-react-native'
 import { withUniwind } from 'uniwind'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import SearchInput from '@components/SearchInput'
-import AccountListItem from '@components/AccountListItem'
+import { SearchInput } from '@ui/SearchInput'
+import { AccountListItem } from '@ui/AccountListItem'
 import { CSAccount } from '../../storage/cloudStorage'
 
 const PlusIcon = withUniwind(Plus)
@@ -60,8 +60,7 @@ const ContactsList = ({
     <View>
       <SearchInput
         placeholder={t('addressBook.searchContacts')}
-        marginHorizontal="lx"
-        marginTop="xl"
+        className="mx-7 mt-8"
         onChangeText={setSearchTerm}
         value={searchTerm}
       />

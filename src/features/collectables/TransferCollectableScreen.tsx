@@ -34,9 +34,10 @@ import { Collectable, CompressedNFT } from '../../types/solana'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import { useContentWidth } from '../../utils/layout'
 import * as Logger from '../../utils/logger'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '../addressBook/AddressBookSelector'
+import {
+  AddressBookSelector,
+  type AddressBookRef,
+} from '@ui/AddressBookSelector'
 import BackHeader from './components/BackHeader'
 import {
   CollectableNavigationProp,

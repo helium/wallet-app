@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import useHaptic from '@hooks/useHaptic'
 import useSecureWindow from '@hooks/useSecureWindow'
 import { useNavigation } from '@react-navigation/native'

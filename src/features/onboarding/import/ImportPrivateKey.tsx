@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { Mnemonic } from '@helium/crypto-react-native'
 import { HELIUM_DERIVATION } from '@hooks/useDerivationAccounts'
 import useSecureWindow from '@hooks/useSecureWindow'

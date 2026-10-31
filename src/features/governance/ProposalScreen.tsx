@@ -1,4 +1,4 @@
-import BackScreen from '@components/BackScreen'
+import { BackScreen } from '@ui/BackScreen'
 import { useMint } from '@helium/helium-react-hooks'
 import {
   useProposal,
@@ -253,8 +253,8 @@ export const ProposalScreen = () => {
   return (
     <Animated.View className="flex-1">
       <BackScreen
-        headerTopMargin="l"
-        padding="none"
+        headerClassName="mt-6"
+        className="p-0"
         title="Proposal Overview"
         edges={backEdges}
       >

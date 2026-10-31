@@ -1,4 +1,4 @@
-import { CardSkeleton } from '@components/CardSkeleton'
+import { CardSkeleton } from '@ui/CardSkeleton'
 import {
   PositionWithMeta,
   useSubDaos,

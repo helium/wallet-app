@@ -1,16 +1,16 @@
-import AccountButton from '@components/AccountButton'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '@components/AddressBookSelector'
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
-import TokenButton from '@components/TokenButton'
-import TokenSelector, {
-  TokenListItem,
-  TokenSelectorRef,
-} from '@components/TokenSelector'
+import { AccountButton } from '@ui/AccountButton'
+import { AccountSelector, type AccountSelectorRef } from '@ui/AccountSelector'
+import {
+  type AddressBookRef,
+  AddressBookSelector,
+} from '@ui/AddressBookSelector'
+import { HNTKeyboard, type HNTKeyboardRef } from '@ui/HNTKeyboard'
+import { TokenButton } from '@ui/TokenButton'
+import {
+  type TokenListItem,
+  TokenSelector,
+  type TokenSelectorRef,
+} from '@ui/TokenSelector'
 import Address, { NetTypes } from '@helium/address'
 import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, truthy } from '@helium/spl-utils'
@@ -823,9 +823,8 @@ const PaymentScreen = () => {
                   keyboardShouldPersistTaps="always"
                 >
                   <AccountButton
-                    backgroundColor="secondary"
+                    backgroundClassName="bg-secondary"
                     accountIconSize={41}
-                    paddingTop="l"
                     title={formatAccountAlias(currentAccount)}
                     subtitle={t('payment.senderAccount')}
                     showChevron={
@@ -834,19 +833,18 @@ const PaymentScreen = () => {
                     address={currentAccount?.address}
                     onPress={handleShowAccounts}
                     showBubbleArrow
-                    marginHorizontal="l"
-                    marginBottom="xs"
+                    className="pt-6 mx-6 mb-1"
                   />
 
                   <TokenButton
-                    backgroundColor="secondary"
+                    backgroundClassName="bg-secondary"
                     title={t('payment.title', { ticker: symbol })}
                     subtitle={tokenButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
-                    marginHorizontal="l"
                     mint={mint}
+                    className="mx-6"
                   />
 
                   {paymentState.payments.map((p, index) => (

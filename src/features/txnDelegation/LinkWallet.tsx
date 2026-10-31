@@ -12,10 +12,8 @@ import {
   makeAppLinkAuthToken,
 } from '@helium/wallet-link'
 import { NetTypes } from '@helium/address'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
-import AccountButton from '@components/AccountButton'
+import { AccountSelector, type AccountSelectorRef } from '@ui/AccountSelector'
+import { AccountButton } from '@ui/AccountButton'
 import useAlert from '@hooks/useAlert'
 import { Button } from '@ui/Button'
 import { Text } from '@ui/Text'
@@ -150,10 +148,10 @@ const LinkWallet = () => {
 
         <AccountButton
           accountIconSize={26}
-          paddingVertical="l"
           title={formatAccountAlias(currentAccount)}
           address={currentAccount?.address}
           onPress={handleAccountButtonPress}
+          className="py-6"
         />
 
         <Button

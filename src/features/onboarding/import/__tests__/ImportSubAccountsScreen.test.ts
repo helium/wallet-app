@@ -51,9 +51,11 @@ jest.mock(
   () => ({ useMetaplexMetadata: () => ({}) }),
   { virtual: true },
 )
-jest.mock('@components/FocusAwareStatusBar', () => 'FocusAwareStatusBar', {
-  virtual: true,
-})
+jest.mock(
+  '@ui/FocusAwareStatusBar',
+  () => ({ FocusAwareStatusBar: 'FocusAwareStatusBar' }),
+  { virtual: true },
+)
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Checkbox', () => ({ Checkbox: 'Checkbox' }), { virtual: true })

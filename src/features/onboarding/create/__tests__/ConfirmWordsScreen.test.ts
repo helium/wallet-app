@@ -46,9 +46,11 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
 }))
-jest.mock('@components/FocusAwareStatusBar', () => 'FocusAwareStatusBar', {
-  virtual: true,
-})
+jest.mock(
+  '@ui/FocusAwareStatusBar',
+  () => ({ FocusAwareStatusBar: 'FocusAwareStatusBar' }),
+  { virtual: true },
+)
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,

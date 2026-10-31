@@ -1,4 +1,4 @@
-import CloseButton from '@components/CloseButton'
+import { CloseButton } from '@ui/CloseButton'
 import {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
@@ -30,7 +30,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
-import { useSheetMargins } from '@components/ContentColumn'
+import { useSheetMargins } from '@ui/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import Animation from './Animation'
 import LedgerConnectSteps from './LedgerConnectSteps'

@@ -82,15 +82,14 @@ jest.mock('@react-navigation/native', () => {
   }
   return { useNavigation: () => navigation, useRoute: () => route }
 })
-jest.mock('../../addressBook/AddressBookSelector', () => {
-  const ReactActual = jest.requireActual('react')
-  return {
-    __esModule: true,
-    default: ReactActual.forwardRef(
-      ({ children }: { children: React.ReactNode }, _ref: unknown) => children,
-    ),
-  }
-})
+jest.mock(
+  '@ui/AddressBookSelector',
+  () => ({
+    AddressBookSelector: ({ children }: { children: React.ReactNode }) =>
+      children,
+  }),
+  { virtual: true },
+)
 jest.mock('../components/BackHeader', () => 'BackHeader')
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Input', () => ({ Input: 'Input' }), { virtual: true })

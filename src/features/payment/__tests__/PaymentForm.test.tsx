@@ -20,7 +20,9 @@ jest.mock(
   () => ({ twMerge: (...names: string[]) => names.join(' ') }),
   { virtual: true },
 )
-jest.mock('@components/SubmitButton', () => 'SubmitButton', { virtual: true })
+jest.mock('@ui/SubmitButton', () => ({ SubmitButton: 'SubmitButton' }), {
+  virtual: true,
+})
 jest.mock('../PaymentSummary', () => 'PaymentSummary')
 jest.mock('@helium/address', () => ({ isValid: () => false }), {
   virtual: true,

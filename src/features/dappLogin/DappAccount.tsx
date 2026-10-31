@@ -6,10 +6,8 @@ import Crowdspot from '@assets/images/crowdspot.svg'
 import AddDapp from '@assets/images/addDapp.svg'
 import DappEllipsis from '@assets/images/dapp-ellipsis.svg'
 import { NetTypes as NetType, NetTypes } from '@helium/address'
-import AccountButton from '@components/AccountButton'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
+import { AccountButton } from '@ui/AccountButton'
+import { AccountSelector, type AccountSelectorRef } from '@ui/AccountSelector'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'

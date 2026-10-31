@@ -171,35 +171,25 @@ jest.mock('@theme/motion', () => ({ FADE_IN: {} }), { virtual: true })
 // closed.
 const passThrough = ({ children }: { children?: React.ReactNode }) => children
 jest.mock(
-  '@components/AddressBookSelector',
-  () => ({ __esModule: true, default: passThrough }),
+  '@ui/AddressBookSelector',
+  () => ({ AddressBookSelector: passThrough }),
   { virtual: true },
 )
-jest.mock(
-  '@components/HNTKeyboard',
-  () => ({ __esModule: true, default: passThrough }),
-  { virtual: true },
-)
-jest.mock(
-  '@components/TokenSelector',
-  () => ({ __esModule: true, default: passThrough }),
-  { virtual: true },
-)
-jest.mock(
-  '@components/CloseButton',
-  () => ({ __esModule: true, default: 'CloseButton' }),
-  { virtual: true },
-)
-jest.mock(
-  '@components/TextTransform',
-  () => ({ __esModule: true, default: 'TextTransform' }),
-  { virtual: true },
-)
-jest.mock(
-  '@components/TokenPill',
-  () => ({ __esModule: true, default: 'TokenPill' }),
-  { virtual: true },
-)
+jest.mock('@ui/HNTKeyboard', () => ({ HNTKeyboard: passThrough }), {
+  virtual: true,
+})
+jest.mock('@ui/TokenSelector', () => ({ TokenSelector: passThrough }), {
+  virtual: true,
+})
+jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
+  virtual: true,
+})
+jest.mock('@ui/TextTransform', () => ({ TextTransform: 'TextTransform' }), {
+  virtual: true,
+})
+jest.mock('@ui/TokenPill', () => ({ TokenPill: 'TokenPill' }), {
+  virtual: true,
+})
 
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Card', () => ({ Card: 'Card' }), { virtual: true })

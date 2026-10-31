@@ -1,4 +1,4 @@
-import CloseButton from '@components/CloseButton'
+import { CloseButton } from '@ui/CloseButton'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { useBN } from '@hooks/useBN'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'

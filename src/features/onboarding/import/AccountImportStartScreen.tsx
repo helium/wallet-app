@@ -1,4 +1,4 @@
-import FocusAwareStatusBar from '@components/FocusAwareStatusBar'
+import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Button } from '@ui/Button'
 import { PressableScale } from '@ui/PressableScale'

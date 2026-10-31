@@ -1,5 +1,5 @@
-import SubmitButton from '@components/SubmitButton'
-import { WarningPill } from '@components/WarningPill'
+import { SubmitButton } from '@ui/SubmitButton'
+import { WarningPill } from '@ui/WarningPill'
 import { entityCreatorKey } from '@helium/helium-entity-manager-sdk'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
 import { sus } from '@helium/sus'
@@ -439,8 +439,8 @@ export const WalletSignBottomSheetSimulated = ({
         >
           <View className="flex-1">
             <SubmitButton
-              color="matchaRed500"
-              backgroundColor="white"
+              color="destructive"
+              backgroundColor="background"
               title={
                 type === WalletStandardMessageTypes.connect
                   ? t('browserScreen.connect')

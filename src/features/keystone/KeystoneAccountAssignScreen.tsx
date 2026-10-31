@@ -1,6 +1,6 @@
-import FabButton from '@components/FabButton'
 import { AccountIcon } from '@ui/AccountIcon'
 import { Checkbox } from '@ui/Checkbox'
+import { FabButton } from '@ui/FabButton'
 import { Input } from '@ui/Input'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
@@ -172,11 +172,8 @@ const KeystoneAccountAssignScreen = () => {
             <FabButton
               onPress={() => handlePress()}
               icon="arrowRight"
-              iconColor="primary"
+              tone="primary"
               disabled={!alias || existingNames?.has(alias)}
-              backgroundColor="primaryText"
-              backgroundColorPressed="surfaceContrast"
-              backgroundColorOpacityPressed={0.1}
             />
           )}
         </View>

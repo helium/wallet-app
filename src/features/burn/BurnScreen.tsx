@@ -1,13 +1,12 @@
-import AccountButton from '@components/AccountButton'
-import AccountSelector, {
-  AccountSelectorRef,
-} from '@components/AccountSelector'
-import SubmitButton from '@components/SubmitButton'
-import TokenButton from '@components/TokenButton'
-import TokenSelector, {
-  TokenListItem,
-  TokenSelectorRef,
-} from '@components/TokenSelector'
+import { AccountButton } from '@ui/AccountButton'
+import { AccountSelector, type AccountSelectorRef } from '@ui/AccountSelector'
+import { SubmitButton } from '@ui/SubmitButton'
+import { TokenButton } from '@ui/TokenButton'
+import {
+  type TokenListItem,
+  TokenSelector,
+  type TokenSelectorRef,
+} from '@ui/TokenSelector'
 import Address, { NetTypes } from '@helium/address'
 import { useOwnedAmount, useSolOwnedAmount } from '@helium/helium-react-hooks'
 import {
@@ -37,10 +36,11 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
-import AddressBookSelector, {
-  AddressBookRef,
-} from '@components/AddressBookSelector'
-import HNTKeyboard, { HNTKeyboardRef } from '@components/HNTKeyboard'
+import {
+  type AddressBookRef,
+  AddressBookSelector,
+} from '@ui/AddressBookSelector'
+import { HNTKeyboard, type HNTKeyboardRef } from '@ui/HNTKeyboard'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -342,28 +342,26 @@ const BurnScreen = () => {
                 keyboardShouldPersistTaps="always"
               >
                 <AccountButton
-                  backgroundColor="secondary"
+                  backgroundClassName="bg-secondary"
                   accountIconSize={41}
-                  paddingTop="l"
                   title={formatAccountAlias(currentAccount)}
                   subtitle={t('payment.senderAccount')}
                   showChevron={sortedAccountsForNetType(networkType).length > 1}
                   address={currentAccount?.address}
                   onPress={handleShowAccounts}
                   showBubbleArrow
-                  marginHorizontal="l"
-                  marginBottom="xs"
+                  className="pt-6 mx-6 mb-1"
                 />
 
                 <TokenButton
-                  backgroundColor="secondary"
+                  backgroundClassName="bg-secondary"
                   title={t('burn.subdao', { subdao: symbol })}
                   subtitle={t('burn.choooseSubDAO')}
                   address={currentAccount?.address}
                   onPress={handleTokenTypeSelected}
                   showBubbleArrow
-                  marginHorizontal="l"
                   mint={mint}
+                  className="mx-6"
                 />
 
                 {isDelegate ? (
@@ -392,7 +390,7 @@ const BurnScreen = () => {
                 ) : (
                   <>
                     <AccountButton
-                      backgroundColor="surfaceSecondary"
+                      backgroundClassName="bg-secondary"
                       accountIconSize={41}
                       subtitle={t('burn.recipient')}
                       title={ellipsizeAddress(
@@ -401,7 +399,7 @@ const BurnScreen = () => {
                       showBubbleArrow
                       showChevron={false}
                       address={route.params.address}
-                      marginHorizontal="l"
+                      className="mx-6"
                     />
                     <View className="mx-6 mt-1 overflow-hidden rounded-[20px] bg-secondary px-4">
                       <Text size="xs" className="mt-4 text-muted-foreground">
@@ -454,7 +452,7 @@ const BurnScreen = () => {
                       hasError ||
                       (!delegateAddress && isDelegate)
                     }
-                    marginTop="l"
+                    className="mt-6"
                     title={t(
                       isDelegate ? 'delegate.swipe' : 'burn.swipeToBurn',
                     )}

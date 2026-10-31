@@ -46,8 +46,10 @@ jest.mock(
 jest.mock('@utils/constants', () => ({ DAO_KEY: undefined }), {
   virtual: true,
 })
-jest.mock('@components/SubmitButton', () => 'SubmitButton', { virtual: true })
-jest.mock('@components/WarningPill', () => ({ WarningPill: 'WarningPill' }), {
+jest.mock('@ui/SubmitButton', () => ({ SubmitButton: 'SubmitButton' }), {
+  virtual: true,
+})
+jest.mock('@ui/WarningPill', () => ({ WarningPill: 'WarningPill' }), {
   virtual: true,
 })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })

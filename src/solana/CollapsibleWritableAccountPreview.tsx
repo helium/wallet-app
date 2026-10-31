@@ -1,7 +1,5 @@
-import Receive from '@assets/images/receive.svg'
-import Send from '@assets/images/send.svg'
 import AnchorAccount from '@assets/images/anchorAccount.svg'
-import { Pill } from '@components/Pill'
+import { Pill } from '@ui/Pill'
 import {
   ParsedInstruction,
   RawInstruction,
@@ -17,7 +15,13 @@ import { TokenIcon } from '@ui/TokenIcon'
 import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import { BN } from 'bn.js'
-import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react-native'
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
+  ChevronUp,
+  CircleHelp,
+} from 'lucide-react-native'
 import React, { useState } from 'react'
 import { View } from 'react-native'
 import { withUniwind } from 'uniwind'
@@ -65,8 +69,8 @@ const TokenBalanceChange = ({
           ? `${humanReadable(bn, writableAccount.metadata!.decimals)}`
           : undefined
       }
-      Icon={amount < 0 ? Send : Receive}
-      color={amount < 0 ? 'blue' : 'green'}
+      Icon={amount < 0 ? ArrowUpRight : ArrowDownLeft}
+      color={amount < 0 ? 'info' : 'success'}
     />
   )
 }
@@ -85,8 +89,8 @@ const NativeSolBalanceChange = ({
   return (
     <Pill
       text={`${humanReadable(bn, 9)}`}
-      Icon={amount < 0 ? Send : Receive}
-      color={amount < 0 ? 'blue' : 'green'}
+      Icon={amount < 0 ? ArrowUpRight : ArrowDownLeft}
+      color={amount < 0 ? 'info' : 'success'}
     />
   )
 }
@@ -173,8 +177,8 @@ export const CollapsibleWritableAccountPreview = ({
                 }
                 color={
                   warnings.some((w) => w.severity === 'critical')
-                    ? 'red'
-                    : 'orange'
+                    ? 'destructive'
+                    : 'warning'
                 }
               />
             </View>
@@ -191,10 +195,10 @@ export const CollapsibleWritableAccountPreview = ({
                 <NativeSolBalanceChange writableAccount={writableAccount} />
               ) : null}
               {!isToken && !isNative && warnings.length === 0 && created ? (
-                <Pill text="Created" color="green" />
+                <Pill text="Created" color="success" />
               ) : null}
               {!isToken && !isNative && warnings.length === 0 && closed ? (
-                <Pill text="Closed" color="blue" />
+                <Pill text="Closed" color="info" />
               ) : null}
             </View>
           ) : null}

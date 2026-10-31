@@ -15,7 +15,7 @@ import React, {
 } from 'react'
 import { View } from 'react-native'
 import { useResolveClassNames } from 'uniwind'
-import { useSheetMargins } from '@components/ContentColumn'
+import { useSheetMargins } from '@ui/ContentColumn'
 import EventEmitter from 'events'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { KeystoneSolanaSDK } from '@keystonehq/keystone-sdk'

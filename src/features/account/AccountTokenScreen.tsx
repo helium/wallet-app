@@ -1,5 +1,5 @@
-import BlurActionSheet from '@components/BlurActionSheet'
-import ListItem from '@components/ListItem'
+import { BlurActionSheet } from '@ui/BlurActionSheet'
+import { ListItem } from '@ui/ListItem'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'

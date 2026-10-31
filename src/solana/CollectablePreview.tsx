@@ -1,7 +1,7 @@
-import Send from '@assets/images/send.svg'
-import { Pill } from '@components/Pill'
+import { Pill } from '@ui/Pill'
 import { Card } from '@ui/Card'
 import { Text } from '@ui/Text'
+import { ArrowUpRight } from 'lucide-react-native'
 import React from 'react'
 import { Image, View } from 'react-native'
 import { ellipsizeAddress } from '@utils/accountUtils'
@@ -42,7 +42,7 @@ export const CollectablePreview = ({
           <Text className="text-[10px]">{ellipsizeAddress(payee)}</Text>
         </View>
         <View className="flex-row items-center">
-          <Pill Icon={Send} color="blue" />
+          <Pill Icon={ArrowUpRight} color="info" />
         </View>
       </View>
     </Card>
