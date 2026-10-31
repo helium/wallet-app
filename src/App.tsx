@@ -145,7 +145,7 @@ const App = () => {
                                                   <AutoGasBanner />
                                                   <StatusBar
                                                     animated
-                                                    barStyle="light-content"
+                                                    barStyle="dark-content"
                                                   />
                                                   <RootNavigator />
 
