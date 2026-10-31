@@ -1,13 +1,12 @@
 import { useNavigation } from '@react-navigation/native'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView } from 'react-native'
+import { ScrollView, View } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Box from '@components/Box'
-import FadeInOut from '@components/FadeInOut'
 import TabBar from '@components/TabBar'
-import Text from '@components/Text'
-import globalStyles from '@theme/globalStyles'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
+import { Text } from '@ui/Text'
 import ConnectKeystoneStart from '../../keystone/ConnectKeystoneStartScreen'
 import PairStart from '../../ledger/PairStart'
 import AccountCreateStart from '../../onboarding/create/AccountCreateStart'
@@ -20,77 +19,87 @@ const AddNewAccountScreen = () => {
   const insets = useSafeAreaInsets()
   const navigation = useNavigation<AddNewAccountNavigationProp>()
 
-  const tabData = useMemo((): Array<{
-    value: OnboardingOpt
-    title: string
-  }> => {
-    return [
-      { value: 'create', title: t('onboarding.create') },
-      { value: 'import', title: t('onboarding.import') },
-      { value: 'ledger', title: t('onboarding.ledger') },
-      { value: 'keystone', title: t('onboarding.keystone') },
-    ]
-  }, [t])
+  const tabData: Array<{ value: OnboardingOpt; title: string }> = [
+    { value: 'create', title: t('onboarding.create') },
+    { value: 'import', title: t('onboarding.import') },
+    { value: 'ledger', title: t('onboarding.ledger') },
+    { value: 'keystone', title: t('onboarding.keystone') },
+  ]
 
   const [selectedOption, setSelectedOption] = useState(tabData[0].value)
 
-  const contentContainerStyle = useMemo(
-    () => ({ flex: 1, paddingBottom: insets.bottom }),
-    [insets.bottom],
-  )
+  const contentContainerStyle = { flex: 1, paddingBottom: insets.bottom }
 
-  const handleItemSelected = useCallback((value: string) => {
+  const handleItemSelected = (value: string) => {
     setSelectedOption(value as OnboardingOpt)
-  }, [])
+  }
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = () => {
     navigation.navigate('CreateAccount')
-  }, [navigation])
+  }
 
   return (
-    <Box flex={1} backgroundColor="secondaryBackground">
-      <Box backgroundColor="surfaceSecondary">
-        <Box flexDirection="row" paddingVertical="m">
-          <Box flex={1} />
-          <Text variant="subtitle1">{t('addNewAccount.title')}</Text>
-          <Box flex={1} />
-        </Box>
+    <View className="flex-1 bg-secondary">
+      <View className="bg-secondary">
+        <View className="flex-row py-4">
+          <View className="flex-1" />
+          <Text size="xl" className="font-medium">
+            {t('addNewAccount.title')}
+          </Text>
+          <View className="flex-1" />
+        </View>
         <TabBar
           tabBarOptions={tabData}
           selectedValue={selectedOption}
           onItemSelected={handleItemSelected}
         />
-      </Box>
+      </View>
 
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={contentContainerStyle}
       >
-        <Box flex={1}>
+        <View className="flex-1">
           {selectedOption === 'create' && (
-            <FadeInOut style={globalStyles.container}>
+            <Animated.View
+              className="flex-1"
+              entering={FADE_IN}
+              exiting={FADE_OUT}
+            >
               <AccountCreateStart onCreate={handleCreate} inline />
-            </FadeInOut>
+            </Animated.View>
           )}
           {selectedOption === 'import' && (
-            <FadeInOut style={globalStyles.container}>
+            <Animated.View
+              className="flex-1"
+              entering={FADE_IN}
+              exiting={FADE_OUT}
+            >
               <AccountImportStartScreen inline />
-            </FadeInOut>
+            </Animated.View>
           )}
           {selectedOption === 'ledger' && (
-            <FadeInOut style={globalStyles.container}>
+            <Animated.View
+              className="flex-1"
+              entering={FADE_IN}
+              exiting={FADE_OUT}
+            >
               <PairStart />
-            </FadeInOut>
+            </Animated.View>
           )}
           {selectedOption === 'keystone' && (
-            <FadeInOut style={globalStyles.container}>
+            <Animated.View
+              className="flex-1"
+              entering={FADE_IN}
+              exiting={FADE_OUT}
+            >
               <ConnectKeystoneStart />
-            </FadeInOut>
+            </Animated.View>
           )}
-        </Box>
+        </View>
       </ScrollView>
-    </Box>
+    </View>
   )
 }
 
-export default memo(AddNewAccountScreen)
+export default AddNewAccountScreen

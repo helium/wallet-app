@@ -1,7 +1,6 @@
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import Box from '@components/Box'
-import WarningBanner, { BannerType } from '@components/WarningBanner'
-import BottomSheet from '@gorhom/bottom-sheet'
+import BottomSheet, {
+  type BottomSheetBackgroundProps,
+} from '@gorhom/bottom-sheet'
 import { HNT_MINT } from '@helium/spl-utils'
 import useAppear from '@hooks/useAppear'
 import useDisappear from '@hooks/useDisappear'
@@ -10,18 +9,12 @@ import useLayoutHeight from '@hooks/useLayoutHeight'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
 import { CSAccount } from '@storage/cloudStorage'
-import { useBackgroundStyle, useColors } from '@theme/themeHooks'
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Platform, View } from 'react-native'
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import SharedGroupPreferences from 'react-native-shared-group-preferences'
 import { RootNavigationProp } from '../../navigation/rootTypes'
@@ -44,6 +37,18 @@ import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { withTransactionDetail } from './TransactionDetail'
+import WarningBanner, { BannerType } from './WarningBanner'
+
+// The token drawer's surface and grab bar, matching @ui/Sheet's.
+const DrawerBackground = ({ style }: BottomSheetBackgroundProps) => (
+  <View style={style} className="rounded-t-3xl bg-secondary" />
+)
+
+const DrawerHandle = () => (
+  <View className="h-4 items-center justify-center">
+    <View className="h-1 w-9 rounded-full bg-foreground/20" />
+  </View>
+)
 
 const AccountsScreen = () => {
   const widgetGroup = 'group.com.helium.mobile.wallet.widget'
@@ -65,47 +70,26 @@ const AccountsScreen = () => {
   const listAnimatedPos = useSharedValue<number>(0)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
   const topHeaderRef = useRef<View>(null)
-  const bottomSheetStyle = useBackgroundStyle('surfaceSecondary')
   const { triggerImpact } = useHaptic()
-  const colors = useColors()
   const showBanner = useAppStore((state) => state.showBanner)
   const toggleConnectedWallets = useAppStore(
     (state) => state.toggleConnectedWallets,
   )
   const { isHealthy } = useSolanaHealth()
 
-  const actualTop = useMemo(() => {
-    if (showBanner) {
-      return 0
-    }
-    return top
-  }, [top, showBanner])
+  const actualTop = showBanner ? 0 : top
+  const actualBannerHeight = showBanner ? bannerHeight : 0
 
-  const actualBannerHeight = useMemo(() => {
-    if (showBanner) {
-      return bannerHeight
-    }
-    return 0
-  }, [bannerHeight, showBanner])
-
-  const snapPoints = useMemo(() => {
-    if (!pageHeight) return undefined
-    const collapsedHeight = ITEM_HEIGHT * 2
-    // Get safe area top height
-    const expandedHeight =
-      pageHeight -
-      navLayoutHeight -
-      actualTop -
-      topHeaderHeight -
-      actualBannerHeight
-    return [collapsedHeight, expandedHeight]
-  }, [
-    navLayoutHeight,
-    pageHeight,
-    actualTop,
-    topHeaderHeight,
-    actualBannerHeight,
-  ])
+  const snapPoints = pageHeight
+    ? [
+        ITEM_HEIGHT * 2,
+        pageHeight -
+          navLayoutHeight -
+          actualTop -
+          topHeaderHeight -
+          actualBannerHeight,
+      ]
+    : undefined
 
   useAppear(() => {
     reset()
@@ -122,18 +106,11 @@ const AccountsScreen = () => {
     }
   }, [rootNav, sortedAccounts.length])
 
-  const showChart = useMemo(() => {
-    return (balanceHistory?.length ?? 0) >= 2
-  }, [balanceHistory])
-
-  const chartValues = useMemo(() => {
-    // Need to have at least a two days of data to display
-    if (!showChart) return
-
-    return balanceHistory?.map((bh) => {
-      return { y: bh.balance, info: bh }
-    })
-  }, [balanceHistory, showChart])
+  // Need to have at least a two days of data to display
+  const chartValues =
+    (balanceHistory?.length ?? 0) >= 2
+      ? balanceHistory?.map((bh) => ({ y: bh.balance, info: bh }))
+      : undefined
 
   useEffect(() => {
     if (currentAccount?.ledgerDevice) return
@@ -177,22 +154,11 @@ const AccountsScreen = () => {
     updateWidget().catch((e) => console.error(e))
   }, [defaultAccountAddress, sortedAccounts])
 
-  const toggleWalletsVisible = useCallback(() => {
+  const toggleWalletsVisible = () => {
     triggerImpact('light')
     toggleConnectedWallets()
     setSelectedBalance(undefined)
-  }, [toggleConnectedWallets, triggerImpact])
-
-  const handleBalanceHistorySelected = useCallback(
-    (accountBalance?: AccountBalance) => {
-      setSelectedBalance(accountBalance)
-    },
-    [],
-  )
-
-  const onTouchStart = useCallback(() => {
-    handleBalanceHistorySelected(undefined)
-  }, [handleBalanceHistorySelected])
+  }
 
   const animatedStyle = useAnimatedStyle(() => {
     if (!snapPoints) {
@@ -248,52 +214,20 @@ const AccountsScreen = () => {
     }
   })
 
-  const handleTopHeaderLayout = useCallback(() => {
+  const handleTopHeaderLayout = () => {
     topHeaderRef.current?.measure((...args) => {
       const [, , , height, , pageY] = args
 
       if (!height || !pageY) return
       setTopHeaderHeight(height)
     })
-  }, [setTopHeaderHeight])
+  }
 
-  const RetractedView = useMemo(() => {
-    return (
-      <ReAnimatedBox
-        flexGrow={1}
-        style={headerAnimatedStyle}
-        paddingTop="m"
-        paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
-        flexDirection="row"
-        alignItems="center"
-        onLayout={handleTopHeaderLayout}
-        ref={topHeaderRef}
-        marginHorizontal="l"
-      >
-        <Box flex={1}>
-          <AccountTokenCurrencyBalance ticker="ALL" variant="h2Medium" />
-        </Box>
-        <AccountActionBar mint={HNT_MINT} maxCompact hasSwaps />
-      </ReAnimatedBox>
-    )
-  }, [handleTopHeaderLayout, headerAnimatedStyle])
-
-  const handleIndicatorStyle = useMemo(() => {
-    return {
-      backgroundColor: colors.secondaryText,
-    }
-  }, [colors.secondaryText])
-
-  const bannerVisible = useMemo(() => {
-    if (cluster === 'devnet') {
-      return true
-    }
-    return !isHealthy
-  }, [cluster, isHealthy])
+  const bannerVisible = cluster === 'devnet' || !isHealthy
 
   return (
-    <Box flex={1}>
-      <Box onLayout={setPageHeight} flex={1}>
+    <View className="flex-1">
+      <View onLayout={setPageHeight} className="flex-1">
         {bannerVisible && (
           <WarningBanner
             type={
@@ -308,41 +242,58 @@ const AccountsScreen = () => {
           onPressWallet={toggleWalletsVisible}
           onLayout={setNavLayoutHeight}
         />
-        {RetractedView}
+        <Animated.View
+          ref={topHeaderRef}
+          style={headerAnimatedStyle}
+          onLayout={handleTopHeaderLayout}
+          className={
+            Platform.OS === 'android'
+              ? 'mx-6 grow flex-row items-center pb-6 pt-4'
+              : 'mx-6 grow flex-row items-center py-4'
+          }
+        >
+          <View className="flex-1">
+            <AccountTokenCurrencyBalance
+              ticker="ALL"
+              size="3xl"
+              className="font-medium"
+            />
+          </View>
+          <AccountActionBar mint={HNT_MINT} maxCompact hasSwaps />
+        </Animated.View>
         {currentAccount?.address && (
-          <ReAnimatedBox flex={1} style={animatedStyle}>
+          <Animated.View className="flex-1" style={animatedStyle}>
             <AccountView
-              flexGrow={1}
-              justifyContent="center"
-              onTouchStart={onTouchStart}
+              className="grow justify-center"
+              onTouchStart={() => setSelectedBalance(undefined)}
               selectedBalance={selectedBalance}
             />
-            <Box>
+            <View>
               {chartValues && (
                 <AccountBalanceChart
-                  chartValues={chartValues || []}
-                  onHistorySelected={handleBalanceHistorySelected}
+                  chartValues={chartValues}
+                  onHistorySelected={setSelectedBalance}
                   selectedBalance={selectedBalance}
                 />
               )}
-            </Box>
-          </ReAnimatedBox>
+            </View>
+          </Animated.View>
         )}
         <StatusBanner />
-      </Box>
+      </View>
       <BottomSheet
         enableDynamicSizing={false}
         ref={bottomSheetRef}
         snapPoints={snapPoints || [10, 100]}
-        backgroundStyle={bottomSheetStyle}
+        backgroundComponent={DrawerBackground}
+        handleComponent={DrawerHandle}
         detached
         animatedPosition={listAnimatedPos}
-        handleIndicatorStyle={handleIndicatorStyle}
       >
         <AccountTokenList />
       </BottomSheet>
-    </Box>
+    </View>
   )
 }
 
-export default memo(withTransactionDetail(AccountsScreen))
+export default withTransactionDetail(AccountsScreen)

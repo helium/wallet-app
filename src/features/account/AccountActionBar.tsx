@@ -1,11 +1,11 @@
-import Box from '@components/Box'
 import FabButton from '@components/FabButton'
-import Text from '@components/Text'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
-import React, { useCallback, useMemo } from 'react'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, View } from 'react-native'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 
@@ -48,77 +48,70 @@ const AccountActionBar = ({
   const { t } = useTranslation()
   const { requirePinForPayment, pin } = useAppStorage()
 
-  const handleAction = useCallback(
-    (type: Action) => () => {
-      switch (type) {
-        case 'send': {
-          if (
-            (pin?.status === 'on' || pin?.status === 'restored') &&
-            requirePinForPayment
-          ) {
-            navigation.navigate('ConfirmPin', { action: 'payment' })
-          } else {
-            navigation.navigate('PaymentScreen', {
-              mint: mint?.toBase58(),
-            })
-          }
-          break
-        }
-        case 'request': {
-          navigation.navigate('RequestScreen')
-          break
-        }
-        case 'swaps': {
-          navigation.navigate('SwapNavigator')
-          break
-        }
-        case 'airdrop': {
-          if (mint) {
-            navigation.navigate('AirdropScreen', { mint: mint?.toBase58() })
-          }
-          break
-        }
-        case '5G': {
-          navigation.navigate('OnboardData')
-          break
-        }
-        case 'delegate': {
-          navigation.navigate('BurnScreen', {
-            address: '',
-            amount: '',
-            isDelegate: true,
+  const handleAction = (type: Action) => () => {
+    switch (type) {
+      case 'send': {
+        if (
+          (pin?.status === 'on' || pin?.status === 'restored') &&
+          requirePinForPayment
+        ) {
+          navigation.navigate('ConfirmPin', { action: 'payment' })
+        } else {
+          navigation.navigate('PaymentScreen', {
+            mint: mint?.toBase58(),
           })
-          break
         }
-        default: {
-          // show()
-          break
-        }
+        break
       }
-    },
-    [pin?.status, requirePinForPayment, navigation, mint],
-  )
+      case 'request': {
+        navigation.navigate('RequestScreen')
+        break
+      }
+      case 'swaps': {
+        navigation.navigate('SwapNavigator')
+        break
+      }
+      case 'airdrop': {
+        if (mint) {
+          navigation.navigate('AirdropScreen', { mint: mint?.toBase58() })
+        }
+        break
+      }
+      case '5G': {
+        navigation.navigate('OnboardData')
+        break
+      }
+      case 'delegate': {
+        navigation.navigate('BurnScreen', {
+          address: '',
+          amount: '',
+          isDelegate: true,
+        })
+        break
+      }
+      default: {
+        // show()
+        break
+      }
+    }
+  }
 
-  const fabMargin = useMemo(() => {
-    if (compact) return 'm'
-    if (maxCompact) return 's'
-    return undefined
-  }, [compact, maxCompact])
+  let fabMargin: string | undefined
+  if (compact) fabMargin = 'me-4'
+  else if (maxCompact) fabMargin = 'me-2'
+  const direction = hasBottomTitle ? 'flex-col' : 'flex-row'
+  const grow = compact || maxCompact ? undefined : 'flex-1'
 
   return (
-    <Box
-      justifyContent="center"
-      alignItems="center"
-      flexDirection="row"
+    <View
+      className={twMerge(
+        'flex-row items-center justify-center',
+        !maxCompact && 'w-full',
+      )}
       onLayout={onLayout}
-      width={maxCompact ? undefined : '100%'}
     >
       {hasRequest && (
-        <Box
-          flexDirection={hasBottomTitle ? 'column' : 'row'}
-          flex={compact || maxCompact ? undefined : 1}
-          marginEnd={fabMargin}
-        >
+        <View className={twMerge(direction, grow, fabMargin)}>
           <FabButton
             icon="fatArrowDown"
             backgroundColor="greenBright500"
@@ -131,24 +124,14 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                marginTop="xs"
-                textAlign="center"
-              >
-                {t('accountView.deposit')}
-              </Text>
-            </Box>
+            <Text className="mt-3 text-center font-medium text-muted-foreground">
+              {t('accountView.deposit')}
+            </Text>
           )}
-        </Box>
+        </View>
       )}
       {hasSwaps && (
-        <Box
-          marginEnd={fabMargin}
-          flexDirection={hasBottomTitle ? 'column' : 'row'}
-        >
+        <View className={twMerge(direction, fabMargin)}>
           <FabButton
             testID={compact ? 'AccountActionBar.Swaps' : undefined}
             icon="swaps"
@@ -162,24 +145,14 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                marginTop="xs"
-                textAlign="center"
-              >
-                {t('accountView.swaps')}
-              </Text>
-            </Box>
+            <Text className="mt-3 text-center font-medium text-muted-foreground">
+              {t('accountView.swaps')}
+            </Text>
           )}
-        </Box>
+        </View>
       )}
       {hasAirdrop && (
-        <Box
-          marginEnd={fabMargin}
-          flexDirection={hasBottomTitle ? 'column' : 'row'}
-        >
+        <View className={twMerge(direction, fabMargin)}>
           <FabButton
             icon="airdrop"
             backgroundColor="electricViolet"
@@ -194,24 +167,14 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                marginTop="xs"
-                textAlign="center"
-              >
-                {t('airdropScreen.airdrop')}
-              </Text>
-            </Box>
+            <Text className="mt-3 text-center font-medium text-muted-foreground">
+              {t('airdropScreen.airdrop')}
+            </Text>
           )}
-        </Box>
+        </View>
       )}
       {hasSend && (
-        <Box
-          flexDirection={hasBottomTitle ? 'column' : 'row'}
-          flex={compact || maxCompact ? undefined : 1}
-        >
+        <View className={twMerge(direction, grow)}>
           <FabButton
             testID={compact ? 'AccountActionBar.Send' : undefined}
             icon="fatArrowUp"
@@ -226,18 +189,11 @@ const AccountActionBar = ({
             justifyContent="center"
           />
           {hasBottomTitle && (
-            <Box marginTop="s">
-              <Text
-                variant="body2Medium"
-                color="secondaryText"
-                marginTop="xs"
-                textAlign="center"
-              >
-                {t('accountView.send')}
-              </Text>
-            </Box>
+            <Text className="mt-3 text-center font-medium text-muted-foreground">
+              {t('accountView.send')}
+            </Text>
           )}
-        </Box>
+        </View>
       )}
       {hasDelegate && (
         <FabButton
@@ -252,7 +208,7 @@ const AccountActionBar = ({
           justifyContent="center"
         />
       )}
-    </Box>
+    </View>
   )
 }
 

@@ -1,6 +1,3 @@
-import Config from '@assets/images/config.svg'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useNavigation } from '@react-navigation/native'
@@ -8,20 +5,24 @@ import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useVisibleTokens } from '@storage/TokensProvider'
-import { useColors } from '@theme/themeHooks'
 import { useBalance } from '@utils/Balance'
 import { syncTokenAccounts } from '@utils/balances'
 import { times } from 'lodash'
-import React, { useCallback, useMemo } from 'react'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { SlidersHorizontal } from 'lucide-react-native'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl } from 'react-native'
+import { RefreshControl, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Box from '@components/Box'
+import { withUniwind } from 'uniwind'
 import { GovMints } from '../../utils/constants'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { deriveVisibleMints } from './logic/visibleTokens'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
+
+const ManageIcon = withUniwind(SlidersHorizontal)
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
@@ -33,7 +34,6 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { visibleTokens } = useVisibleTokens()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
-  const colors = useColors()
   const queryClient = useQueryClient()
 
   const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
@@ -66,34 +66,30 @@ const AccountTokenList = ({ onLayout }: Props) => {
   // automatically when the token accounts query changes.
   //
   // Manual refresh is still available via pull-to-refresh gesture.
-  const onManageTokenList = useCallback(() => {
+  const onManageTokenList = () => {
     navigation.navigate('AccountManageTokenListScreen')
-  }, [navigation])
+  }
   const { tokenAccounts } = useBalance()
   const { bottom } = useSafeAreaInsets()
-  const mints = useMemo(
-    () =>
-      deriveVisibleMints({ tokenAccounts, visibleTokens }).map(
-        (mint) => new PublicKey(mint),
-      ),
-    [tokenAccounts, visibleTokens],
+  const mints = deriveVisibleMints({ tokenAccounts, visibleTokens }).map(
+    (mint) => new PublicKey(mint),
   )
 
-  const bottomSpace = useMemo(() => bottom * 2, [bottom])
+  const bottomSpace = bottom * 2
 
-  const renderItem = useCallback(({ item }: { item: PublicKey }) => {
+  const renderItem = ({ item }: { item: PublicKey }) => {
     if (GovMints.some((m) => new PublicKey(m).equals(item)))
       return (
-        <Box>
+        <View>
           <TokenListItem mint={item} />
           <TokenListGovItem mint={item} />
-        </Box>
+        </View>
       )
 
     return <TokenListItem mint={item} />
-  }, [])
+  }
 
-  const renderEmptyComponent = useCallback(() => {
+  const renderEmptyComponent = () => {
     return (
       <>
         {times(4).map((i) => (
@@ -101,35 +97,31 @@ const AccountTokenList = ({ onLayout }: Props) => {
         ))}
       </>
     )
-  }, [])
+  }
 
-  const renderFooterComponent = useCallback(() => {
+  const renderFooterComponent = () => {
     return (
-      <TouchableOpacityBox
+      <PressableScale
+        feedback="opacity"
         onPress={onManageTokenList}
-        flexDirection="row"
-        justifyContent="center"
-        mt="m"
+        className="mt-4 flex-row items-center justify-center"
       >
-        <Config />
-        <Text ml="s" fontWeight="500" color="grey400">
+        <ManageIcon colorClassName="accent-muted-foreground" />
+        <Text className="ml-2 font-medium text-muted-foreground">
           {t('accountTokenList.manage')}
         </Text>
-      </TouchableOpacityBox>
+      </PressableScale>
     )
-  }, [onManageTokenList, t])
+  }
 
-  const keyExtractor = useCallback((mint: PublicKey) => {
+  const keyExtractor = (mint: PublicKey) => {
     const isGov = GovMints.some((m) => new PublicKey(m).equals(mint))
     return `${mint.toBase58()}${isGov ? '-gov' : ''}`
-  }, [])
+  }
 
-  const contentContainerStyle = useMemo(
-    () => ({
-      paddingBottom: bottomSpace,
-    }),
-    [bottomSpace],
-  )
+  const contentContainerStyle = {
+    paddingBottom: bottomSpace,
+  }
 
   return (
     <BottomSheetFlatList
@@ -143,7 +135,7 @@ const AccountTokenList = ({ onLayout }: Props) => {
           refreshing={refetchingTokens}
           onRefresh={() => refetchTokens()}
           title=""
-          tintColor={colors.primaryText}
+          tintColorClassName="accent-foreground"
         />
       }
       refreshing={refetchingTokens}

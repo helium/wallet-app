@@ -1,23 +1,22 @@
 import DripLogo from '@assets/images/dripLogo.svg'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import * as logger from '@utils/logger'
 import * as solUtils from '@utils/solanaUtils'
 import axios from 'axios'
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronLeft } from 'lucide-react-native'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
+import { View } from 'react-native'
+import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
@@ -27,9 +26,13 @@ import {
   cancelAnimation,
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
-import { Edge } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
+
+const SafeArea = withUniwind(SafeAreaView)
+const BackIcon = withUniwind(ChevronLeft)
 
 const DROP_HEIGHT = 79
 
@@ -52,7 +55,7 @@ const AirdropScreen = () => {
 
   const solanaAddress = currentAccount?.solanaAddress
 
-  const onAirdrop = useCallback(async () => {
+  const onAirdrop = async () => {
     if (!solanaAddress || !anchorProvider) return
 
     setLoading(true)
@@ -74,18 +77,16 @@ const AirdropScreen = () => {
         setErrorMessage((error as Error).message)
       }
     }
-  }, [anchorProvider, solanaAddress, mint, navigation, symbol])
+  }
 
-  const edges = useMemo(() => ['bottom'] as Edge[], [])
-
-  const onAnimationDropComplete = useCallback(() => {
+  const onAnimationDropComplete = () => {
     ring.set(1)
-  }, [ring])
+  }
 
-  const onAnimationComplete = useCallback(() => {
+  const onAnimationComplete = () => {
     ringDrop.set(1)
     ring.set(0)
-  }, [ringDrop, ring])
+  }
 
   const ringStyle = useAnimatedStyle(() => {
     let ringVal = ring.get()
@@ -152,64 +153,54 @@ const AirdropScreen = () => {
   }, [ring, ringDrop])
 
   return (
-    <BackScreen headerBackgroundColor="black" flex={1} padding="none">
-      <SafeAreaBox edges={edges} backgroundColor="black" flex={1}>
-        <Box>
-          <Text variant="h4" textAlign="center" marginTop="l">
-            {t('airdropScreen.title')}
-          </Text>
-          <Text
-            variant="body1"
-            textAlign="center"
-            color="secondaryText"
-            marginTop="m"
-          >
-            {t('airdropScreen.subtitle')}
-          </Text>
-        </Box>
-        <Box
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          marginBottom="l"
+    <SafeArea edges={['top', 'bottom']} className="flex-1 bg-background">
+      <View className="items-start px-6 pb-4 pt-3">
+        <PressableScale
+          onPress={navigation.goBack}
+          hitSlop={24}
+          feedback="opacity"
+          className="flex-row items-center gap-1"
         >
-          <Box justifyContent="center" alignItems="center">
-            <TokenIcon size={160} img={json?.image} />
-            <Box position="absolute" top={120}>
-              <ReAnimatedBox style={[ringStyle, dropStyle]}>
-                <DripLogo />
-              </ReAnimatedBox>
-            </Box>
-          </Box>
-        </Box>
-        <Text variant="body1" textAlign="center" color="red500" marginTop="m">
-          {errorMessage ? t('airdropScreen.error') : ''}
+          <BackIcon size={16} colorClassName="accent-muted-foreground" />
+          <Text className="text-muted-foreground">{t('generic.back')}</Text>
+        </PressableScale>
+      </View>
+      <View>
+        <Text size="xl" className="mt-6 text-center">
+          {t('airdropScreen.title')}
         </Text>
-        <ButtonPressable
-          borderRadius="round"
-          onPress={() => void onAirdrop().catch(console.error)}
-          backgroundColor="primaryText"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
-          titleColor="primary"
-          fontWeight="500"
-          title={
-            !loading
-              ? t('airdropScreen.airdropTicker', { ticker: symbol || '' })
-              : ''
-          }
-          disabled={loading}
-          marginVertical="l"
-          marginHorizontal="l"
-          LeadingComponent={
-            loading && <CircleLoader loaderSize={20} color="white" />
-          }
-        />
-      </SafeAreaBox>
-    </BackScreen>
+        <Text size="base" className="mt-4 text-center text-muted-foreground">
+          {t('airdropScreen.subtitle')}
+        </Text>
+      </View>
+      <View className="mb-6 flex-1 items-center justify-center">
+        <View className="items-center justify-center">
+          <TokenIcon size={160} img={json?.image} />
+          <View className="absolute top-[120px]">
+            <Animated.View style={[ringStyle, dropStyle]}>
+              <DripLogo />
+            </Animated.View>
+          </View>
+        </View>
+      </View>
+      <Text size="base" className="mt-4 text-center text-destructive">
+        {errorMessage ? t('airdropScreen.error') : ''}
+      </Text>
+      <Button
+        variant="cta"
+        size="lg"
+        className="mx-6 my-6"
+        disabled={loading}
+        onPress={() => void onAirdrop().catch(console.error)}
+      >
+        {loading ? (
+          <Spinner size="small" colorClassName="accent-white" />
+        ) : (
+          t('airdropScreen.airdropTicker', { ticker: symbol || '' })
+        )}
+      </Button>
+    </SafeArea>
   )
 }
 
-export default memo(AirdropScreen)
+export default AirdropScreen

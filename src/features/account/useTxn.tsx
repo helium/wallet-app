@@ -1,5 +1,3 @@
-import TxnReceive from '@assets/images/txnReceive.svg'
-import TxnSend from '@assets/images/txnSend.svg'
 import { useAccounts } from '@helium/account-fetch-cache-hooks'
 import { truthy } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -11,8 +9,6 @@ import {
 import { usePublicKey } from '@hooks/usePublicKey'
 import { Mint, unpackMint } from '@solana/spl-token'
 import { AccountInfo, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
-import { Color } from '@theme/theme'
-import { useColors } from '@theme/themeHooks'
 import BN from 'bn.js'
 import {
   addMinutes,
@@ -22,6 +18,7 @@ import {
   fromUnixTime,
 } from 'date-fns'
 import { startCase } from 'lodash'
+import { CircleMinus, CirclePlus } from 'lucide-react-native'
 import React, {
   useCallback,
   useEffect,
@@ -30,9 +27,21 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { withUniwind } from 'uniwind'
 import { Activity } from '../../types/activity'
 import shortLocale from '../../utils/formatDistance'
 import { TXN_FEE_IN_LAMPORTS, humanReadable } from '../../utils/solanaUtils'
+
+const TxnSend = withUniwind(CircleMinus)
+const TxnReceive = withUniwind(CirclePlus)
+
+// A transaction's text colour class and the matching icon colour class.
+const TXN_COLORS = {
+  send: { text: 'text-blue-dark-500', icon: 'accent-blue-dark-500' },
+  receive: { text: 'text-success-500', icon: 'accent-success-500' },
+  other: { text: 'text-foreground', icon: 'accent-foreground' },
+} as const
+type TxnColor = (typeof TXN_COLORS)[keyof typeof TXN_COLORS]['text']
 
 export const MintParser = (pubKey: PublicKey, info: AccountInfo<Buffer>) => {
   const data = unpackMint(pubKey, info)
@@ -48,7 +57,6 @@ const useTxn = (
   item?: Activity,
   dateOpts?: { dateFormat?: string; now?: Date },
 ) => {
-  const colors = useColors()
   const { t } = useTranslation()
   const { symbol: ticker } = useMetaplexMetadata(
     usePublicKey(item?.payments?.[0]?.mint || undefined),
@@ -104,14 +112,15 @@ const useTxn = (
     )
   }, [item?.payments, mint, wallet])
 
-  const color = useMemo((): Color => {
+  const colorKey = useMemo((): keyof typeof TXN_COLORS => {
     switch (item?.type as TxnType) {
       case 'payment_v2':
-        return isSending ? 'blueBright500' : 'greenBright500'
+        return isSending ? 'send' : 'receive'
       default:
-        return 'primaryText'
+        return 'other'
     }
   }, [isSending, item])
+  const color: TxnColor = TXN_COLORS[colorKey].text
 
   const title = useMemo(() => {
     if (!TxnTypeKeys.find((k) => k === item?.type)) {
@@ -146,18 +155,18 @@ const useTxn = (
   }, [item, t, isSending, ticker])
 
   const listIcon = useMemo(() => {
-    const iconColor = colors[color]
+    const iconColor = TXN_COLORS[colorKey].icon
     switch (item?.type as TxnType) {
       case 'payment_v2':
         return isSending ? (
-          <TxnSend color={iconColor} />
+          <TxnSend size={20} colorClassName={iconColor} />
         ) : (
-          <TxnReceive color={iconColor} />
+          <TxnReceive size={20} colorClassName={iconColor} />
         )
       default:
-        return <TxnReceive color={iconColor} />
+        return <TxnReceive size={20} colorClassName={iconColor} />
     }
-  }, [color, colors, isSending, item])
+  }, [colorKey, isSending, item])
 
   const isFee = useMemo(() => {
     // // TODO: Determine if TransferStakeV1 is a fee
@@ -302,7 +311,7 @@ type TxnDetails = {
   icon?: React.JSX.Element
   title: string
   time: string
-  color: Color
+  color: TxnColor
   fee: string
   paymentsReceived: Payment[]
   paymentsSent: Payment[]
@@ -328,7 +337,7 @@ export const useTxnDetails = (mint?: PublicKey, item?: Activity) => {
     feePayer: '',
     title: '',
     time: '',
-    color: 'primaryText',
+    color: TXN_COLORS.other.text,
     fee: '',
     paymentsReceived: [],
     paymentsSent: [],
