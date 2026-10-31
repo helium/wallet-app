@@ -1,21 +1,25 @@
-import React, {
-  BaseSyntheticEvent,
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react'
-import { Platform, processColor, ViewStyle } from 'react-native'
+import React, { BaseSyntheticEvent, useEffect, useRef } from 'react'
+import { Platform, processColor } from 'react-native'
 import { ChartSelectEvent, LineChart } from 'react-native-charts-wrapper'
 import { ScrollView } from 'react-native-gesture-handler'
-import FadeInOut from '@components/FadeInOut'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import Animated from 'react-native-reanimated'
+import { useCSSVariable } from 'uniwind'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
 import useHaptic from '@hooks/useHaptic'
 import usePrevious from '@hooks/usePrevious'
 import { AccountBalance } from '../../types/balance'
 
 const CHART_HEIGHT = 140
+const CONTENT_STYLE = {
+  justifyContent: 'center',
+  height: CHART_HEIGHT,
+} as const
+const CHART_STYLE = {
+  flex: 1,
+  marginHorizontal: -8,
+  borderWidth: 0,
+  maxHeight: CHART_HEIGHT,
+}
 type Props = {
   chartValues: Array<{ y: number; info: AccountBalance | undefined }>
   onHistorySelected: (accountBalance: AccountBalance) => void
@@ -27,8 +31,10 @@ const AccountBalanceChart = ({
   selectedBalance,
 }: Props) => {
   const { triggerImpact } = useHaptic()
-  const { primaryBackground } = useColors()
-  const spacing = useSpacing()
+  const [background, mutedForeground] = useCSSVariable([
+    '--color-background',
+    '--color-muted-foreground',
+  ])
 
   const chartsRef = useRef<
     LineChart & {
@@ -46,31 +52,25 @@ const AccountBalanceChart = ({
     }
   >(null)
 
-  const processedColors = useMemo(
-    () => ({
-      primaryBackground: processColor(primaryBackground),
-      primaryText: processColor('#8C8C8C'),
-    }),
-    [primaryBackground],
-  )
+  const processedColors = {
+    primaryBackground: processColor(String(background)),
+    primaryText: processColor(String(mutedForeground)),
+  }
 
   const prevSelectedBalance = usePrevious(selectedBalance)
 
-  const handleSelect = useCallback(
-    (event: ChartSelectEvent | BaseSyntheticEvent) => {
-      const coercedEvent = event?.nativeEvent as {
-        data: { info: AccountBalance }
-      }
+  const handleSelect = (event: ChartSelectEvent | BaseSyntheticEvent) => {
+    const coercedEvent = event?.nativeEvent as {
+      data: { info: AccountBalance }
+    }
 
-      const info = coercedEvent?.data?.info
-      onHistorySelected(info)
+    const info = coercedEvent?.data?.info
+    onHistorySelected(info)
 
-      if (info) {
-        triggerImpact()
-      }
-    },
-    [onHistorySelected, triggerImpact],
-  )
+    if (info) {
+      triggerImpact()
+    }
+  }
 
   useEffect(() => {
     if (prevSelectedBalance && !selectedBalance && chartsRef?.current) {
@@ -78,28 +78,16 @@ const AccountBalanceChart = ({
     }
   }, [prevSelectedBalance, selectedBalance])
 
-  const style = useMemo((): ViewStyle => {
-    return {
-      justifyContent: 'center',
-      height: CHART_HEIGHT,
-    }
-  }, [])
-
   return (
-    <FadeInOut>
+    <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={style}
+        contentContainerStyle={CONTENT_STYLE}
         scrollEnabled={false}
       >
         <LineChart
           ref={chartsRef}
-          style={{
-            flex: 1,
-            marginHorizontal: -spacing.s,
-            borderWidth: 0,
-            maxHeight: CHART_HEIGHT,
-          }}
+          style={CHART_STYLE}
           onSelect={handleSelect}
           xAxis={{
             enabled: false,
@@ -162,8 +150,8 @@ const AccountBalanceChart = ({
           }}
         />
       </ScrollView>
-    </FadeInOut>
+    </Animated.View>
   )
 }
 
-export default memo(AccountBalanceChart)
+export default AccountBalanceChart

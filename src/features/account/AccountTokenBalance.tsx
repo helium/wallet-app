@@ -1,26 +1,32 @@
-import Box from '@components/Box'
-import Text from '@components/Text'
-import TextTransform from '@components/TextTransform'
 import { useOwnedAmount, useTokenAccount } from '@helium/helium-react-hooks'
 import { DC_MINT } from '@helium/spl-utils'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import { BoxProps } from '@shopify/restyle'
 import { PublicKey } from '@solana/web3.js'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { Theme } from '@theme/theme'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY } from '@utils/constants'
 import { getEscrowTokenAccount, humanReadable } from '@utils/solanaUtils'
 import BN from 'bn.js'
-import React, { memo, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import React from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+
+const TEXT_VARIANT_CLASS = {
+  h0: 'text-4xl',
+  h1: 'text-4xl',
+  h2: 'text-3xl',
+  h2Medium: 'text-3xl font-medium',
+} as const
 
 type Props = {
   mint: PublicKey
-  textVariant?: 'h0' | 'h1' | 'h2' | 'h2Medium'
+  textVariant?: keyof typeof TEXT_VARIANT_CLASS
   showTicker?: boolean
   testID?: string
-} & BoxProps<Theme>
+  className?: string
+}
 
 const EscrowDetails = () => {
   const { t } = useTranslation()
@@ -38,8 +44,8 @@ const EscrowDetails = () => {
   const { info: mobileEscrowAcct } = useTokenAccount(mobileEscrow)
 
   return (
-    <Box>
-      <Text variant="body1" color="secondaryText" textAlign="center">
+    <View>
+      <Text size="base" className="text-center text-muted-foreground">
         {t('accountsScreen.receivedBalance', {
           amount: humanReadable(
             new BN(iotEscrowAcct?.amount?.toString() || '0').add(
@@ -49,15 +55,16 @@ const EscrowDetails = () => {
           ),
         })}
       </Text>
-    </Box>
+    </View>
   )
 }
 
 const AccountTokenBalance = ({
   mint,
-  textVariant,
+  textVariant = 'h1',
   showTicker = true,
-  ...boxProps
+  testID,
+  className,
 }: Props) => {
   const wallet = useCurrentWallet()
   const {
@@ -70,22 +77,19 @@ const AccountTokenBalance = ({
       ? humanReadable(new BN(balance?.toString() || '0'), decimals)
       : undefined
   const { symbol } = useMetaplexMetadata(mint)
-
-  const tokenDetails = useMemo(() => {
-    if (!mint.equals(DC_MINT) || !showTicker) return
-
-    return <EscrowDetails />
-  }, [mint, showTicker])
+  const textClass = TEXT_VARIANT_CLASS[textVariant]
 
   return (
-    <Box flexDirection="row" justifyContent="center" {...boxProps}>
+    <View
+      testID={testID}
+      className={twMerge('flex-row justify-center', className)}
+    >
       {!showTicker &&
         (loadingOwned ? (
-          <Box width={70} height={20} marginTop="s" backgroundColor="surface" />
+          <View className="mt-2 h-5 w-[70px] bg-card" />
         ) : (
           <Text
-            variant={textVariant || 'h1'}
-            color="primaryText"
+            className={textClass}
             numberOfLines={1}
             maxFontSizeMultiplier={1}
             adjustsFontSizeToFit
@@ -93,25 +97,31 @@ const AccountTokenBalance = ({
             {balanceStr}
           </Text>
         ))}
-      <Box>
+      <View>
         {showTicker && (
-          <TextTransform
-            variant={textVariant || 'h1'}
-            color="primaryText"
+          <Text
+            className={textClass}
             numberOfLines={1}
             maxFontSizeMultiplier={1}
             adjustsFontSizeToFit
-            i18nKey="accountsScreen.tokenBalance"
-            values={{
-              amount: balanceStr,
-              ticker: symbol,
-            }}
-          />
+          >
+            <Trans
+              i18nKey="accountsScreen.tokenBalance"
+              values={{ amount: balanceStr, ticker: symbol }}
+              components={{
+                secondaryText: (
+                  <Text
+                    className={twMerge(textClass, 'text-muted-foreground')}
+                  />
+                ),
+              }}
+            />
+          </Text>
         )}
-        {tokenDetails}
-      </Box>
-    </Box>
+        {mint.equals(DC_MINT) && showTicker && <EscrowDetails />}
+      </View>
+    </View>
   )
 }
 
-export default memo(AccountTokenBalance)
+export default AccountTokenBalance

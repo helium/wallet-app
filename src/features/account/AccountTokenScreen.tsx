@@ -1,13 +1,5 @@
-import ActivityIndicator from '@components/ActivityIndicator'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
-import Box from '@components/Box'
-import FadeInOut from '@components/FadeInOut'
 import ListItem from '@components/ListItem'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT, HNT_MINT, IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
@@ -15,14 +7,17 @@ import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
-import { RouteProp, useRoute } from '@react-navigation/native'
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { useModal } from '@storage/ModalsProvider'
-import globalStyles from '@theme/globalStyles'
 import { DUR } from '@theme/motion'
-import { useColors } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import { MIN_BALANCE_THRESHOLD } from '@utils/constants'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { ChevronLeft } from 'lucide-react-native'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, ScrollView, View } from 'react-native'
 import Animated, {
@@ -31,7 +26,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { Activity } from '../../types/activity'
@@ -53,11 +49,27 @@ const delayedAnimation = FadeIn.duration(DUR.enter)
 
 const MIN_BOTTOM_BAR_HEIGHT = 80
 
+const STICKY_HEADER_INDICES = [0]
+
+const SafeArea = withUniwind(SafeAreaView)
+const BackIcon = withUniwind(ChevronLeft)
+
+const SheetBackground = () => (
+  <View className="flex-1 rounded-t-3xl bg-popover" />
+)
+
+const SheetHandle = () => (
+  <View className="h-4 items-center justify-center">
+    <View className="h-1 w-9 rounded-full bg-foreground/20" />
+  </View>
+)
+
 type Route = RouteProp<HomeStackParamList, 'AccountTokenScreen'>
 
 const AccountTokenScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
+  const navigation = useNavigation()
   const { currentAccount } = useAccountStorage()
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
@@ -73,30 +85,20 @@ const AccountTokenScreen = () => {
   const listAnimatedPos = useSharedValue<number>(0)
   const { cluster, isDevnet } = useSolana()
   const insets = useSafeAreaInsets()
-  const colors = useColors()
   const { showModal } = useModal()
   const [
     onEndReachedCalledDuringMomentum,
     setOnEndReachedCalledDuringMomentum,
   ] = useState(true)
 
-  const mintStr = useMemo(() => route.params.mint, [route.params.mint])
+  const mintStr = route.params.mint
   const mint = usePublicKey(mintStr)!
 
   const { json, symbol } = useMetaplexMetadata(mint)
 
-  const toggleFiltersOpen = useCallback(
-    (open) => () => {
-      setFiltersOpen(open)
-    },
-    [],
-  )
-
-  const listStyle = useMemo(() => {
-    return {
-      backgroundColor: colors.primaryBackground,
-    }
-  }, [colors])
+  const toggleFiltersOpen = (open: boolean) => () => {
+    setFiltersOpen(open)
+  }
 
   const filterState = useActivityFilter()
 
@@ -111,18 +113,18 @@ const AccountTokenScreen = () => {
     mint: mint!,
   })
 
-  const handleOnFetchMoreActivity = useCallback(() => {
+  const handleOnFetchMoreActivity = () => {
     if (activityLoading || onEndReachedCalledDuringMomentum) return
 
     fetchMoreActivity()
     setOnEndReachedCalledDuringMomentum(true)
-  }, [activityLoading, fetchMoreActivity, onEndReachedCalledDuringMomentum])
+  }
 
-  const handleOnMomentumScrollBegin = useCallback(() => {
+  const handleOnMomentumScrollBegin = () => {
     setOnEndReachedCalledDuringMomentum(false)
-  }, [])
+  }
 
-  const snapPoints = useMemo(() => {
+  const getSnapPoints = () => {
     if (!actualHeight || !topHeaderYPos || !headerContainerYPos) return
     const collapsed = Math.max(
       actualHeight - headerContainerYPos,
@@ -131,18 +133,12 @@ const AccountTokenScreen = () => {
     const expanded =
       actualHeight - insets.top - backHeaderHeight - topHeaderHeight
     return [collapsed, expanded]
-  }, [
-    actualHeight,
-    backHeaderHeight,
-    headerContainerYPos,
-    insets.top,
-    topHeaderHeight,
-    topHeaderYPos,
-  ])
+  }
+  const snapPoints = getSnapPoints()
   const wallet = useCurrentWallet()
   const { amount } = useOwnedAmount(wallet, mint)
 
-  const canShowList = useMemo(() => snapPoints?.length === 2, [snapPoints])
+  const canShowList = snapPoints?.length === 2
 
   const topHeaderAnimatedStyle = useAnimatedStyle(() => {
     if (!snapPoints || !canShowList) {
@@ -177,218 +173,160 @@ const AccountTokenScreen = () => {
 
   const { show: showTxnDetail } = useTransactionDetail()
 
-  const showTransactionDetail = useCallback(
-    (item: Activity) => {
-      showTxnDetail({
-        item,
-        accountAddress: currentAccount?.address || '',
-        mint,
-      })
-    },
-    [currentAccount?.address, showTxnDetail, mint],
-  )
+  const showTransactionDetail = (item: Activity) => {
+    showTxnDetail({
+      item,
+      accountAddress: currentAccount?.address || '',
+      mint,
+    })
+  }
 
-  const hasAirdrop = useMemo(() => {
-    if (cluster === 'devnet') {
-      return (
-        mint.equals(NATIVE_MINT) ||
-        mint.equals(HNT_MINT) ||
-        mint.equals(IOT_MINT) ||
-        mint.equals(MOBILE_MINT)
-      )
-    }
-    return false
-  }, [mint, cluster])
+  const hasAirdrop =
+    cluster === 'devnet' &&
+    (mint.equals(NATIVE_MINT) ||
+      mint.equals(HNT_MINT) ||
+      mint.equals(IOT_MINT) ||
+      mint.equals(MOBILE_MINT))
 
-  const renderHeader = useCallback(() => {
+  const renderHeader = () => {
     const filterName = t(`accountsScreen.filterTypes.${filterState.filter}`)
 
     return (
-      <Box
+      <View
         onLayout={setBottomScreenHeaderHeight}
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        backgroundColor="primaryBackground"
-        paddingHorizontal="l"
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-        borderTopWidth={1}
-        borderBottomWidth={1}
-        borderBottomColor="secondaryText"
-        borderTopColor="secondaryText"
-        marginBottom="m"
+        className="absolute left-0 right-0 top-0 mb-4 flex-row items-center justify-between border-y border-border bg-popover px-6"
       >
         <Text
-          variant="body1"
-          color="secondaryText"
+          size="base"
+          className="text-muted-foreground"
           numberOfLines={1}
           adjustsFontSizeToFit
         >
           {filterName}
         </Text>
-        <TouchableOpacityBox onPress={toggleFiltersOpen(true)}>
-          <Text variant="body1" padding="ms" color="secondaryText">
+        <PressableScale feedback="opacity" onPress={toggleFiltersOpen(true)}>
+          <Text size="base" className="p-3 text-muted-foreground">
             {t('accountsScreen.filter')}
           </Text>
-        </TouchableOpacityBox>
-      </Box>
+        </PressableScale>
+      </View>
     )
-  }, [filterState.filter, setBottomScreenHeaderHeight, t, toggleFiltersOpen])
+  }
 
-  const keyExtractor = useCallback((item: Activity) => {
+  const keyExtractor = (item: Activity) => {
     return item.hash
-  }, [])
+  }
 
-  const renderItem = useCallback(
-    ({ item, index }) => {
-      const isFirst = index === 0
-      const isLast = index === (activityData?.length || 0) - 1
-      return (
-        <FadeInOut>
-          <Box
-            paddingHorizontal="l"
-            backgroundColor="primaryBackground"
-            style={{
-              marginTop: isFirst ? bottomScreenHeaderHeight : 0,
-            }}
-          >
-            <TxnListItem
-              mint={mint}
-              onPress={showTransactionDetail}
-              item={item}
-              now={now}
-              isLast={isLast}
-            />
-          </Box>
-        </FadeInOut>
-      )
-    },
-    [
-      activityData?.length,
-      bottomScreenHeaderHeight,
-      mint,
-      now,
-      showTransactionDetail,
-    ],
-  )
+  const renderItem = ({ item, index }: { item: Activity; index: number }) => {
+    const isFirst = index === 0
+    const isLast = index === (activityData?.length || 0) - 1
+    return (
+      <View
+        className="bg-popover px-6"
+        style={{
+          marginTop: isFirst ? bottomScreenHeaderHeight : 0,
+        }}
+      >
+        <TxnListItem
+          mint={mint}
+          onPress={showTransactionDetail}
+          item={item}
+          now={now}
+          isLast={isLast}
+        />
+      </View>
+    )
+  }
 
-  const renderFooter = useCallback(() => {
+  const renderFooter = () => {
     if (!activityLoading) {
       return (
-        <Box
-          backgroundColor="primaryBackground"
-          paddingVertical="m"
-          paddingHorizontal="s"
-          flexDirection="row"
-          justifyContent="center"
-          alignItems="center"
+        <View
+          className="flex-row items-center justify-center bg-popover px-2 py-4"
           style={{
             marginTop: activityData?.length > 0 ? 0 : bottomScreenHeaderHeight,
           }}
         >
           <Text
-            variant="body1"
-            color="surfaceSecondaryText"
-            textAlign="center"
+            size="base"
+            className="text-center text-muted-foreground"
             maxFontSizeMultiplier={1.3}
           >
             {t('accountsScreen.allFilterFooter')}
           </Text>
-        </Box>
+        </View>
       )
     }
 
     return (
-      <Box
-        paddingVertical="l"
-        paddingHorizontal="s"
-        flexDirection="row"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <ActivityIndicator animating={activityLoading} />
-      </Box>
+      <View className="flex-row items-center justify-center px-2 py-6">
+        <Spinner animating={activityLoading} />
+      </View>
     )
-  }, [activityData, activityLoading, bottomScreenHeaderHeight, t])
+  }
 
-  const setFilter = useCallback(
-    (filterType: FilterType) => () => {
-      setFiltersOpen(false)
-      filterState.change(filterType)
-    },
-    [filterState],
+  const setFilter = (filterType: FilterType) => () => {
+    setFiltersOpen(false)
+    filterState.change(filterType)
+  }
+
+  const filters = () => (
+    <>
+      {!mint.equals(DC_MINT) && (
+        <>
+          <ListItem
+            key="all"
+            title={`${t('accountsScreen.filterTypes.all')}`}
+            selected={filterState.filter === 'all'}
+            onPress={setFilter('all')}
+            hasPressedState={false}
+          />
+          <ListItem
+            key="in"
+            title={t('accountsScreen.filterTypes.in')}
+            onPress={setFilter('in')}
+            selected={filterState.filter === 'in'}
+            hasPressedState={false}
+          />
+          <ListItem
+            key="out"
+            title={t('accountsScreen.filterTypes.out')}
+            onPress={setFilter('out')}
+            selected={filterState.filter === 'out'}
+            hasPressedState={false}
+          />
+        </>
+      )}
+      {mint.equals(DC_MINT) && (
+        <>
+          <ListItem
+            key="mint"
+            title={t('accountsScreen.filterTypes.mint')}
+            onPress={setFilter('mint')}
+            selected={filterState.filter === 'mint'}
+            hasPressedState={false}
+          />
+          <ListItem
+            key="delegate"
+            title={t('accountsScreen.filterTypes.delegate')}
+            onPress={setFilter('delegate')}
+            selected={filterState.filter === 'delegate'}
+            hasPressedState={false}
+          />
+        </>
+      )}
+    </>
   )
 
-  const filters = useCallback(
-    () => (
-      <>
-        {!mint.equals(DC_MINT) && (
-          <>
-            <ListItem
-              key="all"
-              title={`${t('accountsScreen.filterTypes.all')}`}
-              selected={filterState.filter === 'all'}
-              onPress={setFilter('all')}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="in"
-              title={t('accountsScreen.filterTypes.in')}
-              onPress={setFilter('in')}
-              selected={filterState.filter === 'in'}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="out"
-              title={t('accountsScreen.filterTypes.out')}
-              onPress={setFilter('out')}
-              selected={filterState.filter === 'out'}
-              hasPressedState={false}
-            />
-          </>
-        )}
-        {mint.equals(DC_MINT) && (
-          <>
-            <ListItem
-              key="mint"
-              title={t('accountsScreen.filterTypes.mint')}
-              onPress={setFilter('mint')}
-              selected={filterState.filter === 'mint'}
-              hasPressedState={false}
-            />
-            <ListItem
-              key="delegate"
-              title={t('accountsScreen.filterTypes.delegate')}
-              onPress={setFilter('delegate')}
-              selected={filterState.filter === 'delegate'}
-              hasPressedState={false}
-            />
-          </>
-        )}
-      </>
-    ),
-    [filterState.filter, mint, setFilter, t],
-  )
-
-  const backgroundComponent = useCallback(
-    () => <Box backgroundColor="purpleHeart" flex={1} />,
-    [],
-  )
-
-  const stickyHeaderIndices = useMemo(() => [0], [])
-
-  const handleHeaderLayout = useCallback(() => {
+  const handleHeaderLayout = () => {
     headerContainerRef.current?.measure((...args) => {
       const [, , , height, , pageY] = args
       if (!height || !pageY) return
       setHeaderContainerYPos(height + pageY)
     })
-  }, [])
+  }
 
-  const handleTopHeaderLayout = useCallback(() => {
+  const handleTopHeaderLayout = () => {
     topHeaderRef.current?.measure((...args) => {
       const [, , , height, , pageY] = args
 
@@ -396,9 +334,9 @@ const AccountTokenScreen = () => {
       setTopHeaderYPos(height + pageY)
       setTopHeaderHeight(height)
     })
-  }, [setTopHeaderHeight])
+  }
 
-  const actionBarProps = useMemo(() => {
+  const getActionBarProps = () => {
     let options = {
       hasSend: true,
       hasRequest: true,
@@ -418,59 +356,65 @@ const AccountTokenScreen = () => {
     }
 
     return options
-  }, [mint])
+  }
+  const actionBarProps = getActionBarProps()
 
   return (
-    <ReAnimatedBox style={globalStyles.container} onLayout={setActualHeight}>
-      <BackScreen
-        padding="none"
-        title={t('accountsScreen.title', {
-          ticker: symbol,
-        })}
-        onHeaderLayout={setBackHeaderHeight}
-      >
+    <View className="flex-1" onLayout={setActualHeight}>
+      <SafeArea className="flex-1">
+        <View className="flex-row px-6 py-3" onLayout={setBackHeaderHeight}>
+          <View className="absolute inset-0 items-center justify-center">
+            <Text size="xl" className="font-medium">
+              {t('accountsScreen.title', {
+                ticker: symbol,
+              })}
+            </Text>
+          </View>
+          <PressableScale
+            feedback="opacity"
+            onPress={navigation.goBack}
+            hitSlop={24}
+            className="flex-row items-center gap-1"
+          >
+            <BackIcon size={16} colorClassName="accent-muted-foreground" />
+            <Text className="text-muted-foreground">{t('generic.back')}</Text>
+          </PressableScale>
+        </View>
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
-          style={{
-            flexGrow: 1,
-          }}
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-          }}
+          className="grow"
+          contentContainerClassName="grow justify-center"
         >
-          <Box
-            paddingHorizontal="l"
+          <View
+            className="justify-center px-6"
             ref={headerContainerRef}
             onLayout={handleHeaderLayout}
-            justifyContent="center"
           >
             <Animated.View style={topHeaderAnimatedStyle}>
-              <Box
-                paddingTop="m"
-                paddingBottom={Platform.OS === 'android' ? 'l' : 'm'}
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="center"
+              <View
+                className={
+                  Platform.OS === 'android'
+                    ? 'flex-row items-center justify-center pb-6 pt-4'
+                    : 'flex-row items-center justify-center py-4'
+                }
                 onLayout={handleTopHeaderLayout}
                 ref={topHeaderRef}
               >
-                <Box flex={1}>
+                <View className="flex-1">
                   <AccountTokenBalance
                     showTicker={false}
                     textVariant="h2Medium"
-                    justifyContent="flex-start"
+                    className="flex-1 justify-start"
                     mint={mint}
-                    flex={1}
                   />
                   {!!symbol && (
                     <AccountTokenCurrencyBalance
                       ticker={symbol.toUpperCase()}
-                      variant="body1"
-                      color="secondaryText"
+                      size="base"
+                      className="text-muted-foreground"
                     />
                   )}
-                </Box>
+                </View>
                 <AccountActionBar
                   hasSend={actionBarProps.hasSend}
                   hasRequest={actionBarProps.hasRequest}
@@ -478,25 +422,23 @@ const AccountTokenScreen = () => {
                   mint={mint}
                   maxCompact
                 />
-              </Box>
+              </View>
             </Animated.View>
             <Animated.View style={bottomHeaderAnimatedStyle}>
-              <Box marginVertical="xl">
-                <Box alignItems="center" marginBottom="m">
+              <View className="my-8">
+                <View className="mb-4 items-center">
                   <TokenIcon img={json?.image} size={50} />
-                </Box>
+                </View>
                 <AccountTokenBalance
                   testID="AccountToken.Balance"
-                  marginTop="s"
+                  className="mt-2"
                   mint={mint}
                 />
                 {!!symbol && (
                   <AccountTokenCurrencyBalance
                     ticker={symbol.toUpperCase()}
-                    variant="h4"
-                    color="secondaryText"
-                    textAlign="center"
-                    marginBottom="xl"
+                    size="xl"
+                    className="mb-8 text-center text-muted-foreground"
                   />
                 )}
                 <AccountActionBar
@@ -508,66 +450,56 @@ const AccountTokenScreen = () => {
                   hasBottomTitle={!mint.equals(DC_MINT)}
                   hasAirdrop={hasAirdrop}
                 />
-              </Box>
+              </View>
             </Animated.View>
             {mint.equals(NATIVE_MINT) &&
             !isDevnet &&
             (amount || 0) < MIN_BALANCE_THRESHOLD ? (
               <>
-                <Box
-                  minHeight={topHeaderHeight}
-                  mb="l"
-                  backgroundColor="warning"
-                  borderRadius="s"
-                  p="s"
+                <View
+                  className="mb-6 rounded bg-warning-100 p-2"
+                  style={{ minHeight: topHeaderHeight }}
                 >
-                  <Text variant="body2" color="black700">
+                  <Text className="text-black">
                     {t('accountsScreen.solWarning')}
                   </Text>
-                  <TouchableOpacityBox
-                    marginTop="m"
-                    justifyContent="center"
-                    alignItems="center"
-                    backgroundColor="orange500"
-                    borderRadius="m"
+                  <PressableScale
+                    feedback="opacity"
+                    className="mt-4 items-center justify-center rounded-lg bg-warning-500"
                     onPress={() =>
                       showModal({ type: 'InsufficientSolConversion' })
                     }
                   >
-                    <Text variant="body1" padding="ms" color="black700">
+                    <Text size="base" className="p-3 text-black">
                       {t('accountsScreen.solSwap')}
                     </Text>
-                  </TouchableOpacityBox>
-                </Box>
-                <Box height={MIN_BOTTOM_BAR_HEIGHT} />
+                  </PressableScale>
+                </View>
+                <View style={{ height: MIN_BOTTOM_BAR_HEIGHT }} />
               </>
             ) : (
-              <Box height={topHeaderHeight} />
+              <View style={{ height: topHeaderHeight }} />
             )}
-          </Box>
+          </View>
         </ScrollView>
-      </BackScreen>
+      </SafeArea>
       {!!canShowList && (
         <BottomSheet
           animateOnMount={false}
           snapPoints={snapPoints || []}
-          backgroundComponent={backgroundComponent}
+          backgroundComponent={SheetBackground}
           animatedPosition={listAnimatedPos}
-          handleComponent={null}
+          handleComponent={SheetHandle}
         >
-          <Animated.View
-            style={globalStyles.container}
-            entering={delayedAnimation}
-          >
+          <Animated.View className="flex-1" entering={delayedAnimation}>
             <BottomSheetFlatList
               contentInsetAdjustmentBehavior="automatic"
               onLayout={setListHeight}
-              style={listStyle}
               keyExtractor={keyExtractor}
               directionalLockEnabled
               renderItem={renderItem}
               ListHeaderComponent={renderHeader}
-              stickyHeaderIndices={stickyHeaderIndices}
+              stickyHeaderIndices={STICKY_HEADER_INDICES}
               ListFooterComponent={renderFooter}
               initialNumToRender={10}
               onEndReachedThreshold={0.01}
@@ -581,7 +513,7 @@ const AccountTokenScreen = () => {
 
       {/* HACK FOR BACK GESTURE NOT WORKING ON IOS */}
       {Platform.OS === 'ios' && (
-        <Box position="absolute" top={120} bottom={0} left={0} width={32} />
+        <View className="absolute bottom-0 left-0 top-[120px] w-8" />
       )}
 
       <BlurActionSheet
@@ -591,7 +523,7 @@ const AccountTokenScreen = () => {
       >
         {filters()}
       </BlurActionSheet>
-    </ReAnimatedBox>
+    </View>
   )
 }
 

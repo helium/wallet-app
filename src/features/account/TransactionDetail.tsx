@@ -1,32 +1,27 @@
-import BlurBox from '@components/BlurBox'
-import HandleBasic from '@components/HandleBasic'
-import SafeAreaBox from '@components/SafeAreaBox'
 import {
-  BottomSheetBackdrop,
   BottomSheetModal,
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import useBackHandler from '@hooks/useBackHandler'
 import { PublicKey } from '@solana/web3.js'
+import { Sheet } from '@ui/Sheet'
 import React, {
   FC,
   ReactNode,
   createContext,
-  useCallback,
   useContext,
-  useMemo,
   useRef,
   useState,
 } from 'react'
-import { useSheetMargins } from '@components/ContentColumn'
 import { useTranslation } from 'react-i18next'
-import { LayoutChangeEvent } from 'react-native'
-import { Edge } from 'react-native-safe-area-context'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { Activity } from '../../types/activity'
 import TransactionLineItem from './TransactionLineItem'
 import { useTxnDetails } from './useTxn'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 const initialState = {
   show: () => undefined,
@@ -40,13 +35,13 @@ const TransactionDetailSelectorContext =
   createContext<TransactionDetailSelectorActions>(initialState)
 const { Provider } = TransactionDetailSelectorContext
 
+// The line items call navigation and account storage, so the sheet portals
+// to the local provider inside the screen, not to the app's root provider.
 const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   const { t } = useTranslation()
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null)
-  const sheetMargins = useSheetMargins()
+  const sheetRef = useRef<BottomSheetModal>(null)
   const [detailData, setDetailData] = useState<DetailData>()
   const [contentHeight, setContentHeight] = useState(0)
-  const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
 
   const { item: txn, mint } = detailData || {}
 
@@ -64,75 +59,22 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
   } = useTxnDetails(mint, txn)
   const createExplorerUrl = useCreateExplorerUrl()
 
-  const snapPoints = useMemo(() => {
-    let maxHeight: number | string = '90%'
-    if (contentHeight > 0) {
-      maxHeight = contentHeight
-    }
-    return ['50%', maxHeight]
-  }, [contentHeight])
+  const snapPoints = ['50%', contentHeight > 0 ? contentHeight : '90%']
 
-  const show = useCallback(
-    (data: DetailData) => {
-      setDetailData(data)
-      bottomSheetModalRef.current?.present()
-      setIsShowing(true)
-    },
-    [setIsShowing],
-  )
-
-  const safeEdges = useMemo(() => ['bottom'] as Edge[], [])
-
-  const renderBackdrop = useCallback(
-    (props) => (
-      <BottomSheetBackdrop
-        disappearsOnIndex={-1}
-        opacity={0.8}
-        appearsOnIndex={0}
-        {...props}
-      />
-    ),
-    [],
-  )
-
-  const backgroundComponent = useCallback(() => {
-    return (
-      <BlurBox
-        position="absolute"
-        top={0}
-        bottom={0}
-        left={0}
-        right={0}
-        borderRadius="xl"
-        overflow="hidden"
-      />
-    )
-  }, [])
-
-  const handleComponent = useCallback(() => <HandleBasic />, [])
-
-  const handleContentLayout = useCallback((e: LayoutChangeEvent) => {
-    setContentHeight(e.nativeEvent.layout.height)
-  }, [])
+  const show = (data: DetailData) => {
+    setDetailData(data)
+    sheetRef.current?.present()
+  }
 
   return (
     <BottomSheetModalProvider>
       <Provider value={{ show }}>
-        <BottomSheetModal
-          ref={bottomSheetModalRef}
-          style={sheetMargins}
-          index={0}
-          snapPoints={snapPoints}
-          backdropComponent={renderBackdrop}
-          backgroundComponent={backgroundComponent}
-          handleComponent={handleComponent}
-          onDismiss={handleDismiss}
-        >
+        <Sheet ref={sheetRef} index={0} snapPoints={snapPoints}>
           <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
-            <SafeAreaBox
-              edges={safeEdges}
-              paddingVertical="l"
-              onLayout={handleContentLayout}
+            <SafeArea
+              edges={['bottom']}
+              className="py-6"
+              onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
             >
               <TransactionLineItem
                 title={t('transactions.transaction')}
@@ -147,7 +89,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                       index: index + 1,
                     })}
                     bodyText={amt}
-                    bodyColor="blueBright500"
+                    bodyColor="text-blue-dark-500"
                   />
                 </React.Fragment>
               ))}
@@ -157,7 +99,7 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                   <TransactionLineItem
                     title={t('transactions.amount')}
                     bodyText={amt}
-                    bodyColor="greenBright500"
+                    bodyColor="text-success-500"
                   />
                 </React.Fragment>
               ))}
@@ -199,9 +141,9 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
                 bodyText={txn?.hash || ''}
                 navTo={createExplorerUrl('txn', txn?.hash)}
               />
-            </SafeAreaBox>
+            </SafeArea>
           </BottomSheetScrollView>
-        </BottomSheetModal>
+        </Sheet>
         {children}
       </Provider>
     </BottomSheetModalProvider>

@@ -36,9 +36,15 @@ const sharedComposites = [
   'AccountButton',
   'AccountSelector',
   'AddressBookSelector',
+  'BlurActionSheet',
+  'ConfirmPinView',
+  'FabButton',
   'HNTKeyboard',
+  'ListItem',
   'QrScanner',
   'SubmitButton',
+  'TabBar',
+  'TextTransform',
   'TokenButton',
   'TokenSelector',
 ]
@@ -59,6 +65,8 @@ const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/account/**',
+  'src/features/home/**',
   'src/features/payment/**',
 ]
 

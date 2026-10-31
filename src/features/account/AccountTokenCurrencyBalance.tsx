@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import Text, { TextProps } from '@components/Text'
+import { Text, type TextProps } from '@ui/Text'
+import React from 'react'
 import { useBalance } from '../../utils/Balance'
 
 type Props = {
@@ -16,42 +16,30 @@ const AccountTokenCurrencyBalance = ({ ticker, ...textProps }: Props) => {
     formattedTotal,
   } = useBalance()
 
-  const balanceString = useMemo(() => {
-    let value: string | undefined
-
-    switch (ticker) {
-      case 'ALL':
-        value = formattedTotal
-        break
-      case 'HNT':
-        value = formattedHntValue
-        break
-      case 'SOL':
-        value = formattedSolValue
-        break
-      case 'DC':
-        value = formattedDcValue
-        break
-      case 'MOBILE':
-        value = formattedMobileValue
-        break
-      case 'IOT':
-        value = formattedIotValue
-        break
-      default:
-        value = '-'
-    }
-
-    return value || '-'
-  }, [
-    formattedDcValue,
-    formattedHntValue,
-    formattedIotValue,
-    formattedMobileValue,
-    formattedSolValue,
-    ticker,
-    formattedTotal,
-  ])
+  let value: string | undefined
+  switch (ticker) {
+    case 'ALL':
+      value = formattedTotal
+      break
+    case 'HNT':
+      value = formattedHntValue
+      break
+    case 'SOL':
+      value = formattedSolValue
+      break
+    case 'DC':
+      value = formattedDcValue
+      break
+    case 'MOBILE':
+      value = formattedMobileValue
+      break
+    case 'IOT':
+      value = formattedIotValue
+      break
+    default:
+      value = '-'
+  }
+  const balanceString = value || '-'
 
   return (
     <Text

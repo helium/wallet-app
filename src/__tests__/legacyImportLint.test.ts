@@ -30,9 +30,7 @@ describe('legacy import ban', () => {
     "import { Box } from '@components'",
     "import { useTheme } from '@shopify/restyle'",
   ])('warns on `%s` in code not yet migrated', async (code) => {
-    expect(await restrictedImportHits('src/features/home/X.tsx', code)).toEqual(
-      [WARN],
-    )
+    expect(await restrictedImportHits('src/utils/X.tsx', code)).toEqual([WARN])
   })
 
   it('rejects legacy imports in @ui code', async () => {
@@ -51,6 +49,24 @@ describe('legacy import ban', () => {
         "import Text from '@components/Text'",
       ),
     ).toEqual([ERROR])
+  })
+
+  it.each(['src/features/account/X.tsx', 'src/features/home/X.tsx'])(
+    'rejects legacy imports in migrated %s',
+    async (file) => {
+      expect(
+        await restrictedImportHits(file, "import Box from '@components/Box'"),
+      ).toEqual([ERROR])
+    },
+  )
+
+  it('allows a listed shared composite in migrated code', async () => {
+    expect(
+      await restrictedImportHits(
+        'src/features/home/X.tsx',
+        "import TabBar from '@components/TabBar'",
+      ),
+    ).toEqual([])
   })
 
   it('allows @ui imports', async () => {
