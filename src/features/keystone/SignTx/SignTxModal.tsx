@@ -1,23 +1,25 @@
-import SafeAreaBox from '@components/SafeAreaBox'
 import React, { useEffect, useEffectEvent, useMemo, useState } from 'react'
 import Keystone from '@assets/images/keystoneLogo.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import { useTranslation } from 'react-i18next'
 import KeystoneSDK from '@keystonehq/keystone-sdk'
-import { AnimatedQrCode } from '@components/StaticQrCode'
 import useAlert from '@hooks/useAlert'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
-import { Alert, Linking, Platform, StyleSheet } from 'react-native'
-import ProgressBar from '@components/ProgressBar'
+import { Alert, Linking, Platform, StyleSheet, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import EventEmitter from 'events'
 
 import CloseButton from '@components/CloseButton'
 import { useHitSlop } from '@theme/themeHooks'
-import { CameraScannerLayout } from '../../../components/CameraScannerLayout'
+import { AnimatedQrCode } from '../components/StaticQrCode'
+import ProgressBar from '../components/ProgressBar'
+import { CameraScannerLayout } from '../components/CameraScannerLayout'
 import { KeystoneSolSignRequest } from '../types/keystoneSolanaTxType'
 import { createSignatureScanner } from './signatureScanner'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 type Props = {
   progress: number
@@ -59,7 +61,7 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   }
 
   return (
-    <SafeAreaBox flex={1} edges={['top']}>
+    <SafeArea className="flex-1" edges={['top']}>
       {hasPermission === true && (
         <>
           <CameraView
@@ -76,23 +78,17 @@ const DaynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
         </>
       )}
       {progress > 0 && (
-        <Box position="absolute" bottom="25%" width="70%" alignSelf="center">
+        <View className="absolute bottom-[25%] w-[70%] self-center">
           <ProgressBar progress={progress} />
-        </Box>
+        </View>
       )}
 
-      <Box
-        position="absolute"
-        bottom="15%"
-        width="95%"
-        alignSelf="center"
-        paddingHorizontal="s"
-      >
-        <Text variant="subtitle3" marginTop="xl" textAlign="center">
+      <View className="absolute bottom-[15%] w-[95%] self-center px-2">
+        <Text size="base" className="mt-8 text-center font-medium">
           {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
         </Text>
-      </Box>
-    </SafeAreaBox>
+      </View>
+    </SafeArea>
   )
 }
 const ScanTxQrcodeScreen = ({
@@ -108,10 +104,9 @@ const ScanTxQrcodeScreen = ({
     () => createSignatureScanner(keystoneSDK),
     [keystoneSDK],
   )
-  const solSignRequestUr = useMemo(() => {
-    if (!solSignRequest?.requestId) return undefined
-    return keystoneSDK.sol.generateSignRequest(solSignRequest)
-  }, [keystoneSDK, solSignRequest])
+  const solSignRequestUr = solSignRequest?.requestId
+    ? keystoneSDK.sol.generateSignRequest(solSignRequest)
+    : undefined
   const [openQrCodeScanner, setOpenQrCodeScanner] = useState(false)
   const [progress, setProgress] = useState<number>(0)
   const [isUnexpectedQrCode, setIsUnexpectedQrCode] = useState(false)
@@ -163,25 +158,17 @@ const ScanTxQrcodeScreen = ({
 
   const hitSlop = useHitSlop('l')
   return (
-    <SafeAreaBox flex={1} edges={['bottom']}>
+    <SafeArea className="flex-1" edges={['bottom']}>
       {openQrCodeScanner && (
         <DaynamicQrScanner
           onBarCodeScanned={handleBarCodeScanned}
           progress={progress}
         />
       )}
-      <Box
-        flexDirection="row"
-        width="100%"
-        paddingHorizontal="l"
-        marginTop="l"
-        position="absolute"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <Box paddingHorizontal="lx" />
+      <View className="absolute mt-6 w-full flex-row items-center justify-between px-6">
+        <View className="px-7" />
         {openQrCodeScanner && (
-          <Text variant="h4" textAlign="center">
+          <Text size="xl" className="text-center">
             {t('keystone.scanQrCode')}
           </Text>
         )}
@@ -193,57 +180,45 @@ const ScanTxQrcodeScreen = ({
             eventEmitter.emit('closeKeystoneSignatureModal', '')
           }}
         />
-      </Box>
+      </View>
       {!openQrCodeScanner && (
-        <Box
-          flex={1}
-          alignItems="center"
-          justifyContent="space-between"
-          padding="l"
-          marginTop="xl"
-        >
-          <Box flex={1} justifyContent="center">
-            <Box alignItems="center" paddingVertical="l">
+        <View className="mt-8 flex-1 items-center justify-between p-6">
+          <View className="flex-1 justify-center">
+            <View className="items-center py-6">
               <Keystone width={48} height={48} />
-              <Text variant="h0" textAlign="center" marginVertical="lm">
+              <Text size="4xl" className="my-5 text-center">
                 {t('keystone.payment.scanTxQrcodeScreenTitle')}
               </Text>
-              <Text variant="subtitle1" textAlign="center">
+              <Text size="xl" className="text-center font-medium">
                 {t('keystone.payment.scanTxQrcodeScreenSubtitle1')}
               </Text>
               {/* show the sol sign request qrcode  */}
               {solSignRequestUr && (
-                <Box marginVertical="l">
+                <View className="my-6">
                   <AnimatedQrCode
                     size={240}
                     qrCodeType={solSignRequestUr.type}
                     cborData={solSignRequestUr.cbor.toString('hex')}
                   />
-                </Box>
+                </View>
               )}
-              <Text variant="subtitle1" textAlign="center">
+              <Text size="xl" className="text-center font-medium">
                 {t('keystone.payment.scanTxQrcodeScreenSubtitle2')}
               </Text>
-            </Box>
-          </Box>
-          <ButtonPressable
-            width="100%"
-            borderRadius="round"
+            </View>
+          </View>
+          <Button
+            variant="cta"
+            size="lg"
+            className="mb-6 w-full"
             onPress={handleGetSignature}
-            backgroundColor="primaryText"
-            backgroundColorOpacityPressed={0.7}
-            backgroundColorDisabled="surfaceSecondary"
-            backgroundColorDisabledOpacity={0.5}
-            titleColorDisabled="black500"
-            titleColor="primary"
-            fontWeight="500"
-            title={t('keystone.payment.getSignature')}
-            marginBottom="l"
-          />
-        </Box>
+          >
+            {t('keystone.payment.getSignature')}
+          </Button>
+        </View>
       )}
-    </SafeAreaBox>
+    </SafeArea>
   )
 }
 
-export default React.memo(ScanTxQrcodeScreen)
+export default ScanTxQrcodeScreen

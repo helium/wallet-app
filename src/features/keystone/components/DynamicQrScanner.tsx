@@ -1,14 +1,17 @@
 import React, { useEffect, useEffectEvent, useState } from 'react'
 import { BarcodeScanningResult, Camera, CameraView } from 'expo-camera'
-import { Linking, Platform, StyleSheet } from 'react-native'
+import { Linking, Platform, StyleSheet, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import useAlert from '@hooks/useAlert'
+import BackButton from '@components/BackButton'
+import { Text } from '@ui/Text'
 import { CameraScannerLayout } from './CameraScannerLayout'
-import Box from './Box'
-import BackScreen from './BackScreen'
 import ProgressBar from './ProgressBar'
-import Text from './Text'
+
+const SafeArea = withUniwind(SafeAreaView)
 
 type Props = {
   progress: number
@@ -61,12 +64,19 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
   }
 
   return (
-    <BackScreen padding="none">
+    <SafeArea className="flex-1">
+      <View className="flex-row px-7">
+        <BackButton
+          marginHorizontal="n_ms"
+          paddingHorizontal="none"
+          onPress={navigation.goBack}
+        />
+      </View>
       {/* if permission is not granted, show a black screen and notice alert modal */}
-      {hasPermission !== true && <Box />}
+      {hasPermission !== true && <View />}
 
       {hasPermission === true && (
-        <Box flex={1}>
+        <View className="flex-1">
           <CameraView
             onBarcodeScanned={handleBarCodeScanned}
             barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
@@ -77,23 +87,18 @@ const DynamicQrScanner = ({ onBarCodeScanned, progress }: Props) => {
           />
           <CameraScannerLayout />
 
-          <Box position="absolute" bottom="20%" width="70%" alignSelf="center">
+          <View className="absolute bottom-[20%] w-[70%] self-center">
             <ProgressBar progress={progress} />
-          </Box>
+          </View>
 
-          <Box
-            position="absolute"
-            bottom="10%"
-            alignSelf="center"
-            paddingHorizontal="s"
-          >
-            <Text variant="subtitle3" marginTop="xxxl" textAlign="center">
+          <View className="absolute bottom-[10%] self-center px-2">
+            <Text size="base" className="mt-15 text-center font-medium">
               {t('keystone.payment.scanTxQrcodeScreenSubtitle3')}
             </Text>
-          </Box>
-        </Box>
+          </View>
+        </View>
       )}
-    </BackScreen>
+    </SafeArea>
   )
 }
 export default DynamicQrScanner

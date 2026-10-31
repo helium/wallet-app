@@ -1,21 +1,29 @@
-import Alert from '@assets/images/alert.svg'
-import ExternalLink from '@assets/images/externalLink.svg'
-import ChevronDown from '@assets/images/remixChevronDown.svg'
-import ChevronUp from '@assets/images/remixChevronUp.svg'
-import UnknownAccount from '@assets/images/unknownAccount.svg'
-import Box from '@components/Box'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import { SusResult, Warning } from '@helium/sus'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { getMetadata } from '@hooks/useMetaplexMetadata'
-import React, { memo, useMemo, useState } from 'react'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import {
+  ChevronDown,
+  ChevronUp,
+  CircleHelp,
+  ExternalLink,
+  TriangleAlert,
+} from 'lucide-react-native'
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Image, Linking } from 'react-native'
+import { Image, Linking, View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { CollapsibleWritableAccountPreview } from './CollapsibleWritableAccountPreview'
 import { WarningBox } from './WarningBox'
+
+const AlertIcon = withUniwind(TriangleAlert)
+const ChevronDownIcon = withUniwind(ChevronDown)
+const ChevronUpIcon = withUniwind(ChevronUp)
+const ExternalLinkIcon = withUniwind(ExternalLink)
+const UnknownAccountIcon = withUniwind(CircleHelp)
 
 const AssetImage = ({ uri }: { uri: string }) => {
   const { data: metadata } = useQuery({
@@ -24,7 +32,7 @@ const AssetImage = ({ uri }: { uri: string }) => {
   })
   return (
     <Image
-      style={{ height: 24, width: 24 }}
+      className="size-6"
       source={{
         uri: metadata?.image,
         cache: 'force-cache',
@@ -54,136 +62,119 @@ const WalletSignBottomSheetTransaction = ({
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const [expanded, setExpanded] = useState(false)
-  const Chevron = expanded ? ChevronUp : ChevronDown
+  const Chevron = expanded ? ChevronUpIcon : ChevronDownIcon
 
-  const nonAccountWarnings = useMemo(
-    () => transaction.warnings.filter((w) => !w.account),
-    [transaction.warnings],
-  )
+  const nonAccountWarnings = transaction.warnings.filter((w) => !w.account)
   const [errorsCollapsed, setErrorsCollapsed] = useState(
     transaction.possibleCNftChanges.length <= 10 &&
       !nonAccountWarnings.some((w) => w.severity === 'critical'),
   )
-  const warningsByAccount = useMemo(() => {
-    return transaction.warnings.reduce(
-      (acc, warning) => {
-        if (warning.account) {
-          acc[warning.account.toBase58()] ||= []
-          acc[warning.account.toBase58()].push(warning)
-        }
-        return acc
-      },
-      {} as Record<string, Warning[]>,
-    )
-  }, [transaction])
+  const warningsByAccount = transaction.warnings.reduce(
+    (acc, warning) => {
+      if (warning.account) {
+        acc[warning.account.toBase58()] ||= []
+        acc[warning.account.toBase58()].push(warning)
+      }
+      return acc
+    },
+    {} as Record<string, Warning[]>,
+  )
 
   // Collapse non-token accounts with unchanged warning
-  const [collapsedAccounts, uncollapsedAccounts] = useMemo(() => {
-    return splitArray(
-      transaction.writableAccounts
-        .filter((acc) => !acc.owner || (wallet && acc.owner.equals(wallet)))
-        .sort((acca, accb) => {
-          if (warningsByAccount[acca.address.toBase58()]?.length > 0) {
-            return -1
-          }
+  const [collapsedAccounts, uncollapsedAccounts] = splitArray(
+    transaction.writableAccounts
+      .filter((acc) => !acc.owner || (wallet && acc.owner.equals(wallet)))
+      .sort((acca, accb) => {
+        if (warningsByAccount[acca.address.toBase58()]?.length > 0) {
+          return -1
+        }
 
-          if (warningsByAccount[accb.address.toBase58()]?.length > 0) {
-            return 1
-          }
+        if (warningsByAccount[accb.address.toBase58()]?.length > 0) {
+          return 1
+        }
 
-          const aIsSol = acca.name === 'Native SOL Account'
-          const bIsSol = accb.name === 'Native SOL Account'
-          if (aIsSol && !bIsSol) {
-            return -1
-          }
+        const aIsSol = acca.name === 'Native SOL Account'
+        const bIsSol = accb.name === 'Native SOL Account'
+        if (aIsSol && !bIsSol) {
+          return -1
+        }
 
-          if (!aIsSol && bIsSol) {
-            return 1
-          }
+        if (!aIsSol && bIsSol) {
+          return 1
+        }
 
-          const aIsToken =
-            acca.pre.type === 'TokenAccount' ||
-            acca.post.type === 'TokenAccount'
-          const bIsToken =
-            accb.pre.type === 'TokenAccount' ||
-            accb.post.type === 'TokenAccount'
+        const aIsToken =
+          acca.pre.type === 'TokenAccount' || acca.post.type === 'TokenAccount'
+        const bIsToken =
+          accb.pre.type === 'TokenAccount' || accb.post.type === 'TokenAccount'
 
-          if (aIsToken && !bIsToken) {
-            return -1
-          }
+        if (aIsToken && !bIsToken) {
+          return -1
+        }
 
-          if (!aIsToken && bIsToken) {
-            return 1
-          }
+        if (!aIsToken && bIsToken) {
+          return 1
+        }
 
-          return 0
-        }),
-      (wa) =>
-        warningsByAccount[wa.address.toBase58()]?.some(
-          (warning) => warning.shortMessage === 'Unchanged',
-        ) && !wa.metadata,
-    )
-  }, [transaction.writableAccounts, warningsByAccount, wallet])
+        return 0
+      }),
+    (wa) =>
+      warningsByAccount[wa.address.toBase58()]?.some(
+        (warning) => warning.shortMessage === 'Unchanged',
+      ) && !wa.metadata,
+  )
 
   return (
-    <Box flexDirection="column" marginBottom="m">
-      <Box
-        flexDirection="column"
-        backgroundColor="black500"
-        borderTopLeftRadius="l"
-        borderTopRightRadius="l"
-        padding="s"
-      >
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="stretch"
-        >
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="body1Bold">
+    <View className="mb-4 flex-col">
+      <View className="flex-col rounded-t-[12px] bg-secondary p-2">
+        <View className="flex-row items-stretch justify-between">
+          <View className="flex-row items-center">
+            <Text size="base" className="font-bold">
               {uncollapsedAccounts.length + collapsedAccounts.length}
             </Text>
-            <Text variant="body1"> {t('browserScreen.accounts')}</Text>
-          </Box>
+            <Text size="base"> {t('browserScreen.accounts')}</Text>
+          </View>
           {nonAccountWarnings.length > 0 ? (
-            <TouchableOpacityBox
+            <PressableScale
+              feedback="opacity"
               onPress={() => setErrorsCollapsed((prev) => !prev)}
-              flexDirection="row"
-              alignItems="center"
+              className="flex-row items-center"
             >
-              <Box mr="s">
-                <Alert width={16} height={16} color="matchaRed500" />
-              </Box>
-              <Text variant="body3" color="matchaRed500">
+              <View className="mr-2">
+                <AlertIcon size={16} colorClassName="accent-destructive" />
+              </View>
+              <Text size="xs" className="text-destructive">
                 {nonAccountWarnings.length === 1
                   ? nonAccountWarnings[0].shortMessage
                   : `${nonAccountWarnings.length} Warnings`}
               </Text>
-            </TouchableOpacityBox>
+            </PressableScale>
           ) : null}
-          <Box flexDirection="row" alignItems="center">
-            <Text variant="body1">{transactionIdx + 1}</Text>
-            <Text variant="body1"> {t('generic.of')} </Text>
-            <Text variant="body1">{totalTransactions}</Text>
+          <View className="flex-row items-center">
+            <Text size="base">{transactionIdx + 1}</Text>
+            <Text size="base"> {t('generic.of')} </Text>
+            <Text size="base">{totalTransactions}</Text>
 
-            <TouchableOpacityBox
-              alignItems="center"
-              mb="xxs"
-              ml="s"
+            <PressableScale
+              feedback="opacity"
+              className="mb-0.5 ml-2 items-center"
               onPress={() =>
                 void Linking.openURL(transaction.explorerLink).catch(
                   console.error,
                 )
               }
             >
-              <ExternalLink />
-            </TouchableOpacityBox>
-          </Box>
-        </Box>
+              <ExternalLinkIcon
+                size={16}
+                colorClassName="accent-muted-foreground"
+              />
+            </PressableScale>
+          </View>
+        </View>
         {!transaction.error &&
         nonAccountWarnings.length > 0 &&
         !errorsCollapsed ? (
-          <Box mt="s">
+          <View className="mt-2">
             {nonAccountWarnings.map((warning, idx) => (
               <WarningBox
                 key={warning.shortMessage + idx}
@@ -197,19 +188,11 @@ const WalletSignBottomSheetTransaction = ({
                 body="More than 10 cNFTs (or Hotspots) could be changed by this transaction."
               />
             ) : null}
-          </Box>
+          </View>
         ) : null}
-      </Box>
+      </View>
       {transaction.error ? (
-        <Box
-          p="s"
-          flexDirection="column"
-          alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black500"
-          mt="xxs"
-        >
+        <View className="mt-0.5 flex-col items-stretch rounded-b-[12px] bg-secondary p-2">
           <WarningBox
             header="Simulation Failed"
             body={`${JSON.stringify(transaction.error)}\n${
@@ -222,16 +205,9 @@ const WalletSignBottomSheetTransaction = ({
                 : ''
             }`}
           />
-        </Box>
+        </View>
       ) : (
-        <Box
-          mt="xxs"
-          flexDirection="column"
-          alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black500"
-        >
+        <View className="mt-0.5 flex-col items-stretch rounded-b-[12px] bg-secondary">
           {uncollapsedAccounts.map((writableAccount) => (
             <CollapsibleWritableAccountPreview
               key={writableAccount.address.toBase58()}
@@ -248,33 +224,33 @@ const WalletSignBottomSheetTransaction = ({
           ))}
           {collapsedAccounts.length > 0 ? (
             <>
-              <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
-                <Box
-                  p="s"
-                  flexDirection="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Box flexDirection="row" alignItems="center">
-                    <Box flexDirection="row" alignItems="center">
-                      <UnknownAccount color="white" width={24} height={24} />
-                    </Box>
-                    <Text ml="xs" color="white">
+              <PressableScale
+                feedback="opacity"
+                onPress={() => setExpanded(!expanded)}
+              >
+                <View className="flex-row items-center justify-between p-2">
+                  <View className="flex-row items-center">
+                    <View className="flex-row items-center">
+                      <UnknownAccountIcon
+                        size={24}
+                        colorClassName="accent-foreground"
+                      />
+                    </View>
+                    <Text className="ml-1">
                       {collapsedAccounts.length} {t('browserScreen.accounts')}
                     </Text>
-                  </Box>
-                  <Box
-                    flexDirection="row"
-                    justifyContent="flex-end"
-                    alignItems="center"
-                  >
-                    <Box mr="xs">
+                  </View>
+                  <View className="flex-row items-center justify-end">
+                    <View className="mr-1">
                       <Pill text="Unknown Changes" color="orange" />
-                    </Box>
-                    <Chevron color="grey500" />
-                  </Box>
-                </Box>
-              </TouchableOpacityBox>
+                    </View>
+                    <Chevron
+                      size={16}
+                      colorClassName="accent-muted-foreground"
+                    />
+                  </View>
+                </View>
+              </PressableScale>
               {expanded
                 ? collapsedAccounts.map((writableAccount) => (
                     <CollapsibleWritableAccountPreview
@@ -296,17 +272,17 @@ const WalletSignBottomSheetTransaction = ({
           ) : null}
           {Array.isArray(transaction.possibleCNftChanges) &&
             transaction.possibleCNftChanges.slice(0, 10).map((asset) => (
-              <Box key={asset.id} p="s" flexDirection="row" alignItems="center">
+              <View key={asset.id} className="flex-row items-center p-2">
                 <AssetImage uri={asset.content.json_uri} />
-                <Text ml="xs" color="white">
+                <Text className="ml-1">
                   {asset.content.metadata?.name || 'Unknown cNFT'}
                 </Text>
-              </Box>
+              </View>
             ))}
-        </Box>
+        </View>
       )}
-    </Box>
+    </View>
   )
 }
 
-export default memo(WalletSignBottomSheetTransaction)
+export default WalletSignBottomSheetTransaction

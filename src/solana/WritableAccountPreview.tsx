@@ -1,17 +1,20 @@
-import ArrowRight from '@assets/images/remixArrowRight.svg'
-import Box from '@components/Box'
-import Text from '@components/Text'
 import {
   ParsedInstruction,
   RawInstruction,
   Warning,
   WritableAccount,
 } from '@helium/sus'
+import { Text } from '@ui/Text'
 import { shortenAddress } from '@utils/formatting'
 import { BN } from 'bn.js'
+import { ArrowRight } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { WarningBox } from './WarningBox'
+
+const ArrowIcon = withUniwind(ArrowRight)
 
 type Change = {
   field: string
@@ -106,7 +109,7 @@ export const WritableAccountPreview = ({
         )
       : diff(writableAccount.pre.account, writableAccount.post.account)
   return (
-    <Box flexDirection="column" p="s">
+    <View className="flex-col p-2">
       {warnings.map((warning, idx) => (
         <WarningBox
           key={warning.shortMessage + idx}
@@ -114,118 +117,66 @@ export const WritableAccountPreview = ({
           body={warning.message}
         />
       ))}
-      <Box flexDirection="column">
-        <Box
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="stretch"
-          backgroundColor="black650"
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
-          padding="s"
-        >
-          <Text color="white" variant="body3Bold">
+      <View className="flex-col">
+        <View className="flex-row items-stretch justify-between rounded-t-[12px] bg-card p-2">
+          <Text size="xs" className="font-bold">
             {t('browserScreen.estimatedAccountChanges')}
           </Text>
-        </Box>
-        <Box pt="xxs" backgroundColor="black" />
-        <Box
-          p="s"
-          mb="s"
-          flexDirection="column"
-          alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black650"
-        >
+        </View>
+        <View className="bg-border pt-0.5" />
+        <View className="mb-2 flex-col items-stretch rounded-b-[12px] bg-card p-2">
           {writableAccount.pre.account && !writableAccount.post.account && (
-            <Text variant="body3Medium" color="white" alignSelf="center">
+            <Text size="xs" className="self-center font-medium">
               {t('browserScreen.accountDeleted')}
             </Text>
           )}
           {!writableAccount.pre.account && writableAccount.post.account && (
-            <Text variant="body3Medium" color="white" alignSelf="center">
+            <Text size="xs" className="self-center font-medium">
               {t('browserScreen.accountCreated')}
             </Text>
           )}
           {jsonDiff.map((d) => (
-            <Box
+            <View
               key={d.field}
-              flexDirection="row"
-              alignItems="center"
-              justifyContent="flex-start"
-              overflow="hidden"
+              className="flex-row items-center justify-start overflow-hidden"
             >
-              <Text variant="body3" color="white">
-                {d.field}
-              </Text>
-              <Box
-                flexGrow={1}
-                flexDirection="row"
-                alignItems="center"
-                justifyContent="flex-end"
-                flexWrap="wrap"
-              >
-                <Text
-                  variant="body3"
-                  mr="s"
-                  textDecorationLine="line-through"
-                  color="white"
-                >
+              <Text size="xs">{d.field}</Text>
+              <View className="grow flex-row flex-wrap items-center justify-end">
+                <Text size="xs" className="mr-2 line-through">
                   {d.preValue || 'null'}
                 </Text>
-                <ArrowRight />
-                <Text variant="body3" ml="s" color="white">
+                <ArrowIcon size={16} colorClassName="accent-foreground" />
+                <Text size="xs" className="ml-2">
                   {d.postValue || 'null'}
                 </Text>
-              </Box>
-            </Box>
+              </View>
+            </View>
           ))}
-        </Box>
-      </Box>
-      <Box flexDirection="column">
-        <Box
-          p="s"
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems="stretch"
-          backgroundColor="black650"
-          borderTopLeftRadius="l"
-          borderTopRightRadius="l"
-          padding="s"
-        >
-          <Text color="white" variant="body3Bold">
+        </View>
+      </View>
+      <View className="flex-col">
+        <View className="flex-row items-stretch justify-between rounded-t-[12px] bg-card p-2">
+          <Text size="xs" className="font-bold">
             {t('browserScreen.instructionsAndPrograms')}
           </Text>
-        </Box>
-        <Box pt="xxs" backgroundColor="black" />
-        <Box
-          p="s"
-          flexDirection="column"
-          alignItems="stretch"
-          borderBottomLeftRadius="l"
-          borderBottomRightRadius="l"
-          backgroundColor="black650"
-        >
+        </View>
+        <View className="bg-border pt-0.5" />
+        <View className="flex-col items-stretch rounded-b-[12px] bg-card p-2">
           {instructions.map(({ parsed, raw }, index) => (
-            <Box
+            <View
               // Not really another unique index
               key={index.toString()}
-              flexDirection="row"
-              justifyContent="space-between"
-              alignItems="center"
+              className="flex-row items-center justify-between"
             >
-              <Text variant="body3" color="white">
-                {parsed?.name || t('generic.unknown')}
-              </Text>
-              <Text variant="body3" color="white">
+              <Text size="xs">{parsed?.name || t('generic.unknown')}</Text>
+              <Text size="xs">
                 {shortenAddress(raw.programId.toBase58())} (
                 {parsed?.programName})
               </Text>
-            </Box>
+            </View>
           ))}
-        </Box>
-      </Box>
-    </Box>
+        </View>
+      </View>
+    </View>
   )
 }

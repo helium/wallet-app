@@ -1,14 +1,7 @@
 import Receive from '@assets/images/receive.svg'
-import ChevronDown from '@assets/images/remixChevronDown.svg'
-import ChevronUp from '@assets/images/remixChevronUp.svg'
 import Send from '@assets/images/send.svg'
-import UnknownAccount from '@assets/images/unknownAccount.svg'
 import AnchorAccount from '@assets/images/anchorAccount.svg'
-import Box from '@components/Box'
 import { Pill } from '@components/Pill'
-import Text from '@components/Text'
-import TokenIcon from '@components/TokenIcon'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
 import {
   ParsedInstruction,
   RawInstruction,
@@ -18,13 +11,22 @@ import {
 import { getMetadata, useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { AccountInfo } from '@solana/web3.js'
-import { useColors } from '@theme/themeHooks'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { TokenIcon } from '@ui/TokenIcon'
 import { shortenAddress } from '@utils/formatting'
 import { humanReadable } from '@utils/solanaUtils'
 import { BN } from 'bn.js'
+import { ChevronDown, ChevronUp, CircleHelp } from 'lucide-react-native'
 import React, { useState } from 'react'
+import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { useQuery } from '@tanstack/react-query'
 import { WritableAccountPreview } from './WritableAccountPreview'
+
+const ChevronDownIcon = withUniwind(ChevronDown)
+const ChevronUpIcon = withUniwind(ChevronUp)
+const UnknownAccountIcon = withUniwind(CircleHelp)
 
 const TokenChange = ({
   symbol,
@@ -34,12 +36,10 @@ const TokenChange = ({
   image?: string
 }) => {
   return (
-    <Box flexDirection="row" alignItems="center">
+    <View className="flex-row items-center">
       <TokenIcon img={image} size={24} />
-      <Text ml="xs" color="white">
-        {symbol}
-      </Text>
-    </Box>
+      <Text className="ml-1">{symbol}</Text>
+    </View>
   )
 }
 
@@ -105,14 +105,13 @@ export const CollapsibleWritableAccountPreview = ({
   warnings: Warning[]
 }) => {
   const [expanded, setExpanded] = useState(false)
-  const Chevron = expanded ? ChevronUp : ChevronDown
+  const Chevron = expanded ? ChevronUpIcon : ChevronDownIcon
   const { data: metadata } = useQuery({
     queryKey: ['metadataJson', writableAccount?.metadata?.uri],
     queryFn: async () =>
       (await getMetadata(writableAccount?.metadata?.uri)) ?? null,
   })
   const { json: solMetadata } = useMetaplexMetadata(NATIVE_MINT)
-  const colors = useColors()
   const isNative = writableAccount.name === 'Native SOL Account'
   const isToken =
     writableAccount.metadata &&
@@ -127,14 +126,9 @@ export const CollapsibleWritableAccountPreview = ({
     !accountExists(writableAccount.post.account)
 
   return (
-    <TouchableOpacityBox onPress={() => setExpanded(!expanded)}>
-      <Box
-        p="s"
-        flexDirection="row"
-        justifyContent="space-between"
-        alignItems="center"
-      >
-        <Box flexDirection="row" alignItems="center">
+    <PressableScale feedback="opacity" onPress={() => setExpanded(!expanded)}>
+      <View className="flex-row items-center justify-between p-2">
+        <View className="flex-row items-center">
           {writableAccount.metadata ? (
             <TokenChange
               symbol={
@@ -147,25 +141,28 @@ export const CollapsibleWritableAccountPreview = ({
           ) : isNative ? (
             <TokenChange symbol="SOL" image={solMetadata.image} />
           ) : (
-            <Box flexDirection="row" alignItems="center">
+            <View className="flex-row items-center">
               {writableAccount.name.startsWith('Unknown') ? (
-                <UnknownAccount color="white" width={24} height={24} />
+                <UnknownAccountIcon
+                  size={24}
+                  colorClassName="accent-foreground"
+                />
               ) : (
                 <AnchorAccount width={24} height={24} />
               )}
-              <Text maxWidth={115} ml="xs" color="white" numberOfLines={1}>
+              <Text className="ml-1 max-w-[115px]" numberOfLines={1}>
                 {writableAccount.name}
               </Text>
-            </Box>
+            </View>
           )}
-          <Text variant="body4" ml="xs" color="grey50">
+          <Text className="ml-1 text-[10px] text-muted-foreground">
             {shortenAddress(writableAccount.address.toBase58())}
           </Text>
-        </Box>
+        </View>
 
-        <Box flexDirection="row" justifyContent="flex-end" alignItems="center">
+        <View className="flex-row items-center justify-end">
           {warnings.length > 0 ? (
-            <Box mr="xs">
+            <View className="mr-1">
               <Pill
                 text={
                   warnings.length > 1
@@ -180,10 +177,10 @@ export const CollapsibleWritableAccountPreview = ({
                     : 'orange'
                 }
               />
-            </Box>
+            </View>
           ) : null}
           {isNative || isToken || created || closed ? (
-            <Box mr="xs">
+            <View className="mr-1">
               {isToken ? (
                 <TokenBalanceChange
                   showText={warnings.length === 0}
@@ -199,12 +196,12 @@ export const CollapsibleWritableAccountPreview = ({
               {!isToken && !isNative && warnings.length === 0 && closed ? (
                 <Pill text="Closed" color="blue" />
               ) : null}
-            </Box>
+            </View>
           ) : null}
 
-          <Chevron color={colors.grey500} />
-        </Box>
-      </Box>
+          <Chevron size={16} colorClassName="accent-muted-foreground" />
+        </View>
+      </View>
       {expanded ? (
         <WritableAccountPreview
           writableAccount={writableAccount}
@@ -212,6 +209,6 @@ export const CollapsibleWritableAccountPreview = ({
           warnings={warnings}
         />
       ) : null}
-    </TouchableOpacityBox>
+    </PressableScale>
   )
 }

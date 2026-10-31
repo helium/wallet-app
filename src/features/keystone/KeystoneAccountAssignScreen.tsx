@@ -1,18 +1,16 @@
-import AccountIcon from '@components/AccountIcon'
-import Box from '@components/Box'
-import CircleLoader from '@components/CircleLoader'
 import FabButton from '@components/FabButton'
-import SafeAreaBox from '@components/SafeAreaBox'
-import Text from '@components/Text'
-import TextInput from '@components/TextInput'
-import CheckBox from '@react-native-community/checkbox'
+import { AccountIcon } from '@ui/AccountIcon'
+import { Checkbox } from '@ui/Checkbox'
+import { Input } from '@ui/Input'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import { useNavigation } from '@react-navigation/native'
-import { useColors, useSpacing } from '@theme/themeHooks'
 import { useMutation } from '@tanstack/react-query'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { KeyboardAvoidingView, Platform, View } from 'react-native'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import base58 from 'bs58'
 import { CSAccountVersion } from '@storage/cloudStorage'
 import { hex } from '@anchor-lang/core/dist/cjs/utils/bytes'
@@ -25,6 +23,11 @@ import { ImportAccountNavigationProp } from '../onboarding/import/importAccountN
 import { CreateAccountNavigationProp } from '../onboarding/create/createAccountNavTypes'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
+const SafeArea = withUniwind(SafeAreaView)
+
+// Restyle spacing `l`, kept as the keyboard offset below the top inset
+const KEYBOARD_OFFSET = 24
+
 const KeystoneAccountAssignScreen = () => {
   const onboardingNav = useNavigation<
     ImportAccountNavigationProp & CreateAccountNavigationProp
@@ -34,15 +37,11 @@ const KeystoneAccountAssignScreen = () => {
   const [alias, setAlias] = useState('')
   const { keystoneOnboardingData } = useKeystoneOnboarding()
   const insets = useSafeAreaInsets()
-  const spacing = useSpacing()
-  const colors = useColors()
   const { hasAccounts, accounts } = useAccountStorage()
   const [setAsDefault, toggleSetAsDefault] = useState(false)
 
-  const existingNames = useMemo(
-    () => accounts && new Set(Object.values(accounts).map((a) => a.alias)),
-    [accounts],
-  )
+  const existingNames =
+    accounts && new Set(Object.values(accounts).map((a) => a.alias))
   const accountStorage = useAccountStorage()
   const {
     mutate: handlePress,
@@ -102,41 +101,19 @@ const KeystoneAccountAssignScreen = () => {
     },
   })
 
-  const onCheckboxToggled = useCallback(
-    (newValue) => toggleSetAsDefault(newValue),
-    [],
-  )
-
   return (
-    <SafeAreaBox
-      backgroundColor="secondaryBackground"
-      flex={1}
-      paddingHorizontal="xl"
-    >
+    <SafeArea className="flex-1 bg-secondary px-8">
       <KeyboardAvoidingView
-        keyboardVerticalOffset={insets.top + spacing.l}
+        keyboardVerticalOffset={insets.top + KEYBOARD_OFFSET}
         behavior={Platform.OS === 'android' ? undefined : 'padding'}
-        style={styles.container}
+        className="w-full flex-1"
       >
-        <Box alignItems="center" flex={1}>
-          <Text
-            variant="h1"
-            textAlign="center"
-            fontSize={44}
-            lineHeight={44}
-            marginTop="xl"
-          >
+        <View className="flex-1 items-center">
+          <Text size="4xl" className="mt-8 text-center">
             {t('accountAssign.title')}
           </Text>
 
-          <Box
-            backgroundColor="transparent10"
-            borderRadius="xl"
-            padding="m"
-            width="100%"
-            marginTop="xl"
-            flexDirection="row"
-          >
+          <View className="mt-8 w-full flex-row items-center rounded-[20px] bg-card p-4">
             <AccountIcon
               size={40}
               address={
@@ -146,69 +123,51 @@ const KeystoneAccountAssignScreen = () => {
                 )
               }
             />
-            <TextInput
-              textColor="primaryText"
-              fontSize={24}
-              marginLeft="m"
-              marginRight="xl"
-              textInputProps={{
-                placeholder: t('accountAssign.AccountNamePlaceholder'),
-                autoCorrect: false,
-                autoComplete: 'off',
-                autoCapitalize: 'words',
-                onChangeText: setAlias,
-                value: alias,
-                autoFocus: true,
-              }}
+            <Input
+              variant="form"
+              className="ml-4 flex-1"
+              placeholder={t('accountAssign.AccountNamePlaceholder')}
+              autoCorrect={false}
+              autoComplete="off"
+              autoCapitalize="words"
+              onChangeText={setAlias}
+              value={alias}
+              autoFocus
             />
-          </Box>
+          </View>
 
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            marginTop="xl"
-            opacity={hasAccounts ? 100 : 0}
+          <View
+            className={`mt-8 flex-row items-center ${
+              hasAccounts ? 'opacity-100' : 'opacity-0'
+            }`}
           >
-            <CheckBox
+            <Checkbox
               disabled={!hasAccounts}
-              value={setAsDefault}
-              style={{ height: 20, width: 20 }}
-              tintColors={{
-                true: colors.primaryText,
-                false: colors.transparent10,
-              }}
-              onCheckColor={colors.secondary}
-              onTintColor={colors.primaryText}
-              tintColor={colors.transparent10}
-              onFillColor={colors.primaryText}
-              onAnimationType="fill"
-              offAnimationType="fill"
-              boxType="square"
-              onValueChange={onCheckboxToggled}
+              checked={setAsDefault}
+              onChange={toggleSetAsDefault}
             />
 
             <Text
-              variant="body1"
-              color={setAsDefault ? 'primaryText' : 'secondaryText'}
-              marginLeft="m"
+              size="base"
+              className={`ml-4 ${
+                setAsDefault ? 'text-foreground' : 'text-muted-foreground'
+              }`}
             >
               {t('accountAssign.setDefault')}
             </Text>
-          </Box>
+          </View>
 
-          <Box flex={1} />
+          <View className="flex-1" />
           {!loading && existingNames?.has(alias) ? (
-            <Text mb="m" color="red500">
+            <Text className="mb-4 text-destructive">
               {t('accountAssign.nameExists')}
             </Text>
           ) : null}
           {!loading && error ? (
-            <Text mb="m" color="red500">
-              {error.message}
-            </Text>
+            <Text className="mb-4 text-destructive">{error.message}</Text>
           ) : null}
           {loading ? (
-            <CircleLoader />
+            <Spinner />
           ) : (
             <FabButton
               onPress={() => handlePress()}
@@ -220,14 +179,10 @@ const KeystoneAccountAssignScreen = () => {
               backgroundColorOpacityPressed={0.1}
             />
           )}
-        </Box>
+        </View>
       </KeyboardAvoidingView>
-    </SafeAreaBox>
+    </SafeArea>
   )
 }
 
-const styles = StyleSheet.create({
-  container: { width: '100%', flex: 1 },
-})
-
-export default memo(KeystoneAccountAssignScreen)
+export default KeystoneAccountAssignScreen

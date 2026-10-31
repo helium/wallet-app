@@ -1,9 +1,9 @@
-import Box from '@components/Box'
-import ButtonPressable from '@components/ButtonPressable'
-import Text from '@components/Text'
-import React, { useMemo } from 'react'
+import { Button } from '@ui/Button'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { View } from 'react-native'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { useBN } from '@hooks/useBN'
 import { useSolOwnedAmount } from '@helium/helium-react-hooks'
@@ -34,110 +34,89 @@ export const WalletSignBottomSheetCompact = ({
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
   const { rentExempt, rentExemptLamports } = useRentExempt()
 
-  const estimatedTotalLamports = useMemo(() => {
-    if (!serializedTxs) return TXN_FEE_IN_LAMPORTS
-    return serializedTxs.reduce(
-      (total, tx) => total + estimateTxnFeeLamports(tx),
-      0,
-    )
-  }, [serializedTxs])
+  const estimatedTotalLamports = serializedTxs
+    ? serializedTxs.reduce((total, tx) => total + estimateTxnFeeLamports(tx), 0)
+    : TXN_FEE_IN_LAMPORTS
 
-  const insufficientRentExempt = useMemo(() => {
-    if (solBalance) {
-      return new BN(solBalance.toString())
-        .sub(new BN(estimatedTotalLamports))
-        .lt(new BN(rentExemptLamports))
-    }
-  }, [solBalance, estimatedTotalLamports, rentExemptLamports])
+  const insufficientRentExempt =
+    solBalance &&
+    new BN(solBalance.toString())
+      .sub(new BN(estimatedTotalLamports))
+      .lt(new BN(rentExemptLamports))
 
-  const insufficientFunds = useMemo(
-    () =>
-      new BN(estimatedTotalLamports).gt(new BN(solBalance?.toString() || '0')),
-    [solBalance, estimatedTotalLamports],
+  const insufficientFunds = new BN(estimatedTotalLamports).gt(
+    new BN(solBalance?.toString() || '0'),
   )
 
   return (
-    <Box padding="m" marginBottom="m">
+    <View className="mb-4 p-4">
       {warning && (
-        <Box
-          borderRadius="l"
-          backgroundColor="secondaryBackground"
-          padding="m"
-          marginBottom="m"
-        >
-          <Text variant="body1Medium" color="orange500">
+        <View className="mb-4 rounded-[12px] bg-warning-100 p-4">
+          <Text size="base" className="font-medium">
             {warning}
           </Text>
-        </Box>
+        </View>
       )}
 
-      <Text variant="subtitle2">{header || t('transactions.signTxn')}</Text>
+      <Text size="lg" className="font-medium">
+        {header || t('transactions.signTxn')}
+      </Text>
 
       {message && (
-        <Text variant="body1Medium" color="secondaryText">
+        <Text size="base" className="font-medium text-muted-foreground">
           {message}
         </Text>
       )}
 
       {(insufficientFunds || insufficientRentExempt) && (
-        <Box
-          borderRadius="l"
-          backgroundColor="secondaryBackground"
-          padding="m"
-          marginTop="m"
-        >
-          <Text variant="body1Medium" color="red500">
+        <View className="mt-4 rounded-[12px] bg-secondary p-4">
+          <Text size="base" className="font-medium text-destructive">
             {insufficientFunds
               ? t('browserScreen.insufficientFunds')
               : t('browserScreen.insufficientRentExempt', {
                   amount: rentExempt,
                 })}
           </Text>
-        </Box>
+        </View>
       )}
       {renderer && renderer()}
-      <Box marginTop="m" flexDirection="row">
-        <Box flexGrow={1}>
-          <Text variant="body1Bold">{t('browserScreen.totalNetworkFee')}</Text>
-        </Box>
-        <Text variant="body1Medium" color="blue500">
+      <View className="mt-4 flex-row">
+        <View className="grow">
+          <Text size="base" className="font-bold">
+            {t('browserScreen.totalNetworkFee')}
+          </Text>
+        </View>
+        <Text size="base" className="font-medium text-blue-dark-500">
           {`~${humanReadable(new BN(estimatedTotalLamports), 9)} SOL`}
         </Text>
-      </Box>
-      <Box alignItems="center" py="l">
-        <TouchableOpacity onPress={onSimulate}>
-          <Text variant="body1" color="secondaryText">
+      </View>
+      <View className="items-center py-6">
+        <PressableScale feedback="opacity" onPress={onSimulate}>
+          <Text size="base" className="text-muted-foreground">
             {t('transactions.simulateTxn')}
           </Text>
-        </TouchableOpacity>
-      </Box>
-      <Box flexDirection="row" justifyContent="space-between">
-        <ButtonPressable
-          width="48%"
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacity={0.1}
-          backgroundColorOpacityPressed={0.05}
-          titleColorPressedOpacity={0.3}
-          titleColor="white"
-          title={t('browserScreen.cancel')}
+        </PressableScale>
+      </View>
+      <View className="flex-row gap-2">
+        <Button
+          variant="outline"
+          size="lg"
+          className="flex-1"
           onPress={onCancel}
           testID="WalletSign.Cancel"
-        />
-        <ButtonPressable
-          width="48%"
-          borderRadius="round"
-          backgroundColor="white"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="secondaryText"
-          title={t('browserScreen.approve')}
-          titleColor="black"
+        >
+          {t('browserScreen.cancel')}
+        </Button>
+        <Button
+          variant="cta"
+          size="lg"
+          className="flex-1"
           onPress={onAccept}
           testID="WalletSign.Approve"
-        />
-      </Box>
-    </Box>
+        >
+          {t('browserScreen.approve')}
+        </Button>
+      </View>
+    </View>
   )
 }

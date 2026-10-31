@@ -29,10 +29,42 @@ const legacyImports = {
     { group: ['@components/*'], message: 'Legacy component. Use @ui.' },
   ],
 }
+
+// Shared legacy composites that migrated code may still import. Ticket 136
+// ports them to @ui and removes this list. One name per line, sorted.
+const sharedComposites = [
+  'BackButton',
+  'CloseButton',
+  'ContentColumn',
+  'FabButton',
+  'Pill',
+  'SubmitButton',
+  'TouchableContainer',
+  'WarningPill',
+]
+
+const migratedLegacyImports = {
+  ...legacyImports,
+  patterns: [
+    {
+      group: [
+        '@components/*',
+        ...sharedComposites.map((name) => `!@components/${name}`),
+      ],
+      message: 'Legacy component. Use @ui.',
+    },
+  ],
+}
 const migratedFiles = [
   'src/ui/**',
   'src/features/uiGallery/**',
   'src/features/migration/**',
+  'src/features/ledger/**',
+  'src/features/keystone/**',
+  'src/solana/WalletSign*',
+  'src/solana/WalletSIgnBottomSheetSimulated.tsx',
+  'src/solana/*Preview.tsx',
+  'src/solana/WarningBox.tsx',
 ]
 
 module.exports = [
@@ -118,7 +150,7 @@ module.exports = [
   {
     files: migratedFiles,
     rules: {
-      'no-restricted-imports': ['error', legacyImports],
+      'no-restricted-imports': ['error', migratedLegacyImports],
     },
   },
   {

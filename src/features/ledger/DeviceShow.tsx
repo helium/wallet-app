@@ -1,21 +1,14 @@
-import React, {
-  useCallback,
-  memo,
-  useState,
-  useMemo,
-  useEffect,
-  useEffectEvent,
-} from 'react'
-import { ActivityIndicator, Image, SectionList } from 'react-native'
+import React, { useState, useEffect, useEffectEvent } from 'react'
+import { Image, SectionList, View } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
+import { ChevronRight } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
 import Ledger from '@assets/images/ledger.svg'
-import ArrowRight from '@assets/images/arrowRight.svg'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import Box from '@components/Box'
-import Text from '@components/Text'
-import ButtonPressable from '@components/ButtonPressable'
-import { useColors, useSpacing } from '@theme/themeHooks'
+import { Button } from '@ui/Button'
+import { Spinner } from '@ui/Spinner'
+import { Text } from '@ui/Text'
 import BackButton from '@components/BackButton'
 import { CSAccountVersion, CSAccounts } from '@storage/cloudStorage'
 import useLedger, { LedgerAccount } from '@hooks/useLedger'
@@ -29,6 +22,9 @@ import {
 } from '../../storage/AccountStorageProvider'
 import LedgerAccountListItem, { Section } from './LedgerAccountListItem'
 import { HomeNavigationProp } from '../home/homeTypes'
+
+const ChevronRightIcon = withUniwind(ChevronRight)
+const LedgerIcon = withUniwind(Ledger)
 
 type Route = RouteProp<LedgerNavigatorStackParamList, 'DeviceShow'>
 
@@ -62,12 +58,8 @@ const DeviceShow = () => {
     Record<string, boolean>
   >({})
 
-  const spacing = useSpacing()
-  const colors = useColors()
-  const accountsToAdd = useMemo(
-    () => newLedgerAccounts.filter((a) => selectedAccounts[a.address]),
-
-    [newLedgerAccounts, selectedAccounts],
+  const accountsToAdd = newLedgerAccounts.filter(
+    (a) => selectedAccounts[a.address],
   )
 
   const [prevLedgerAccounts, setPrevLedgerAccounts] = useState(ledgerAccounts)
@@ -83,59 +75,39 @@ const DeviceShow = () => {
     setSelectedAccounts(selected)
   }
 
-  const reachedAccountLimit = useMemo(() => {
-    const { length } = Object.keys(accounts as CSAccounts)
+  const { length: accountCount } = Object.keys(accounts as CSAccounts)
+  const selectedCount = Object.keys(selectedAccounts).filter(
+    (key) => !!selectedAccounts[key],
+  ).length
+  const reachedAccountLimit = accountCount + selectedCount > MAX_ACCOUNTS
 
-    const selectedCount = Object.keys(selectedAccounts).filter(
-      (key) => !!selectedAccounts[key],
-    ).length
+  const canAddAccounts = !reachedAccountLimit && accountsToAdd.length
 
-    return length + selectedCount > MAX_ACCOUNTS
-  }, [accounts, selectedAccounts])
-
-  const canAddAccounts = useMemo(
-    () => !reachedAccountLimit && accountsToAdd.length,
-    [accountsToAdd.length, reachedAccountLimit],
-  )
-
-  const SectionData = useMemo((): {
+  const SectionData: {
     title: string
     index: number
     data: LedgerAccount[]
-  }[] => {
-    const sections = [
-      {
-        title: t('ledger.show.addNewAccount'),
-        index: Section.NEW_ACCOUNT,
-        data: newLedgerAccounts,
-      },
-    ]
+  }[] = [
+    {
+      title: t('ledger.show.addNewAccount'),
+      index: Section.NEW_ACCOUNT,
+      data: newLedgerAccounts,
+    },
+  ]
+  if (existingLedgerAccounts?.length > 0) {
+    SectionData.push({
+      title: t('ledger.show.accountsAlreadyLinked', {
+        count: existingLedgerAccounts.length,
+      }),
+      index: Section.ALREADY_LINKED,
+      data: existingLedgerAccounts,
+    })
+  }
 
-    if (existingLedgerAccounts?.length > 0) {
-      sections.push({
-        title: t('ledger.show.accountsAlreadyLinked', {
-          count: existingLedgerAccounts.length,
-        }),
-        index: Section.ALREADY_LINKED,
-        data: existingLedgerAccounts,
-      })
-    }
-    return sections
-  }, [newLedgerAccounts, existingLedgerAccounts, t])
+  const keyExtractor = (item: { address: string }, index: number) =>
+    item.address + index
 
-  const contentContainer = useMemo(
-    () => ({
-      paddingBottom: spacing.xl,
-    }),
-    [spacing.xl],
-  )
-
-  const keyExtractor = useCallback(
-    (item: { address: string }, index: number) => item.address + index,
-    [],
-  )
-
-  const onSelectAll = useCallback(() => {
+  const onSelectAll = () => {
     setSelectAll((s) => {
       const next = !s
 
@@ -147,10 +119,10 @@ const DeviceShow = () => {
 
       return next
     })
-  }, [ledgerAccounts])
+  }
 
   // Show page header on first section of section list
-  const PageHeader = useCallback(() => {
+  const renderPageHeader = () => {
     return (
       <>
         <BackButton
@@ -159,112 +131,81 @@ const DeviceShow = () => {
           marginHorizontal="s"
           onPress={navigation.goBack}
         />
-        <Box
-          marginBottom="xl"
-          flexDirection="row"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Ledger width={62} height={62} color={colors.primaryText} />
-          <Box marginHorizontal="m">
-            <ArrowRight color="white" />
-          </Box>
+        <View className="mb-8 flex-row items-center justify-center">
+          <LedgerIcon
+            width={62}
+            height={62}
+            colorClassName="accent-foreground"
+          />
+          <View className="mx-4">
+            <ChevronRightIcon colorClassName="accent-foreground" />
+          </View>
           <Image source={require('@assets/images/fingerprintGreen.png')} />
-        </Box>
-        <Text variant="h2" textAlign="center">
+        </View>
+        <Text size="3xl" className="text-center">
           {t('ledger.show.title')}
         </Text>
         <Text
-          variant="subtitle1"
-          color="greenBright500"
-          marginTop="l"
-          textAlign="center"
+          size="xl"
+          className="mt-6 text-center font-medium text-success-500"
         >
           {t('ledger.show.subtitle')}
         </Text>
-        <Text
-          visible={reachedAccountLimit}
-          variant="body1"
-          textAlign="center"
-          color="error"
-          fontWeight="500"
-          marginTop="m"
-        >
-          {t('accountImport.accountLimitLedger')}
-        </Text>
+        {reachedAccountLimit && (
+          <Text
+            size="base"
+            className="mt-4 text-center font-medium text-destructive"
+          >
+            {t('accountImport.accountLimitLedger')}
+          </Text>
+        )}
         {isScanning && (
-          <Box marginVertical="l" backgroundColor="primaryBackground">
-            <Text variant="body1" textAlign="center" marginBottom="m">
+          <View className="my-6 bg-background">
+            <Text size="base" className="mb-4 text-center">
               {t('ledger.show.scanning')}
             </Text>
-            <ActivityIndicator />
-          </Box>
+            <Spinner />
+          </View>
         )}
       </>
     )
-  }, [
-    colors.primaryText,
-    isScanning,
-    navigation.goBack,
-    t,
-    reachedAccountLimit,
-  ])
+  }
 
-  const renderSectionHeader = useCallback(
-    ({ section: { title, index } }: SectionData) => (
-      <Box backgroundColor="primaryBackground">
-        {index === 0 && PageHeader()}
-        <Box
-          marginHorizontal="s"
-          flexDirection="row"
-          alignItems="center"
-          paddingTop="xl"
-          paddingBottom="m"
-          paddingHorizontal="l"
-        >
-          <Text flexGrow={1} variant="body2" fontWeight="bold">
-            {title}
-          </Text>
+  const renderSectionHeader = ({ section: { title, index } }: SectionData) => (
+    <View className="bg-background">
+      {index === 0 && renderPageHeader()}
+      <View className="mx-2 flex-row items-center px-6 pb-4 pt-8">
+        <Text className="grow font-bold">{title}</Text>
 
-          {index === 0 && (
-            <TouchableOpacity onPress={onSelectAll}>
-              <Text variant="body2" fontWeight="bold">
-                {selectAll
-                  ? t('ledger.show.deselectAll')
-                  : t('ledger.show.selectAll')}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </Box>
-      </Box>
-    ),
-    [PageHeader, onSelectAll, selectAll, t],
-  )
-
-  const renderSectionFooter = useCallback(
-    ({ section: { index } }: SectionData) => {
-      if (isScanning || ledgerAccounts.length === 0) return null
-      return (
-        <Box backgroundColor="primaryBackground">
-          {index === 0 && newLedgerAccounts?.length === 0 && (
-            <Text
-              paddingHorizontal="xl"
-              variant="body1"
-              color="grey500"
-              textAlign="left"
-            >
-              {t('ledger.show.emptyAccount', {
-                account:
-                  existingLedgerAccounts[existingLedgerAccounts.length - 1]
-                    ?.alias,
-              })}
+        {index === 0 && (
+          <TouchableOpacity onPress={onSelectAll}>
+            <Text className="font-bold">
+              {selectAll
+                ? t('ledger.show.deselectAll')
+                : t('ledger.show.selectAll')}
             </Text>
-          )}
-        </Box>
-      )
-    },
-    [existingLedgerAccounts, isScanning, ledgerAccounts, newLedgerAccounts, t],
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   )
+
+  const renderSectionFooter = ({ section: { index } }: SectionData) => {
+    if (isScanning || ledgerAccounts.length === 0) return null
+    return (
+      <View className="bg-background">
+        {index === 0 && newLedgerAccounts?.length === 0 && (
+          <Text size="base" className="px-8 text-left text-muted-foreground">
+            {t('ledger.show.emptyAccount', {
+              account:
+                existingLedgerAccounts[existingLedgerAccounts.length - 1]
+                  ?.alias,
+            })}
+          </Text>
+        )}
+      </View>
+    )
+  }
 
   const loadLedgerAccounts = useEffectEvent(async () => {
     try {
@@ -284,7 +225,7 @@ const DeviceShow = () => {
     loadLedgerAccounts().catch((e) => console.error(e))
   }, [])
 
-  const handleNext = useCallback(async () => {
+  const handleNext = async () => {
     if (!accountsToAdd) return
     const accs = accountsToAdd?.map((acc) => {
       return {
@@ -301,41 +242,33 @@ const DeviceShow = () => {
     await upsertAccounts(accs)
 
     navigation.navigate('PairSuccess')
-  }, [accountsToAdd, ledgerDevice, navigation, upsertAccounts])
+  }
 
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     homeNav.navigate('AccountsScreen', undefined, { pop: true })
-  }, [homeNav])
+  }
 
-  const onCheckboxToggled = useCallback(
-    (account: LedgerAccount, value: boolean) => {
-      setSelectedAccounts((selected) => {
-        return { ...selected, [account.address]: value }
-      })
-    },
-    [],
-  )
+  const onCheckboxToggled = (account: LedgerAccount, value: boolean) => {
+    setSelectedAccounts((selected) => {
+      return { ...selected, [account.address]: value }
+    })
+  }
 
   if (!ledgerAccounts) {
     return (
-      <Box
-        flex={1}
-        backgroundColor="primaryBackground"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <ActivityIndicator />
-      </Box>
+      <View className="flex-1 items-center justify-center bg-background">
+        <Spinner />
+      </View>
     )
   }
 
   return (
-    <Box flex={1} backgroundColor="primaryBackground">
-      <Box height="89%">
+    <View className="flex-1 bg-background">
+      <View className="h-[89%]">
         <SectionList
           contentInsetAdjustmentBehavior="automatic"
           stickySectionHeadersEnabled={false}
-          contentContainerStyle={contentContainer}
+          contentContainerClassName="pb-8"
           sections={SectionData}
           keyExtractor={keyExtractor}
           renderItem={(vals) => (
@@ -349,35 +282,19 @@ const DeviceShow = () => {
           renderSectionFooter={renderSectionFooter}
           initialNumToRender={100}
         />
-      </Box>
-      <Box
-        backgroundColor="primaryBackground"
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        borderTopColor="secondaryIcon"
-        borderTopWidth={1}
-        height="11%"
-      >
-        <ButtonPressable
-          marginTop="m"
-          borderRadius="round"
-          backgroundColor="surfaceSecondary"
-          backgroundColorOpacityPressed={0.7}
-          backgroundColorDisabled="surfaceSecondary"
-          backgroundColorDisabledOpacity={0.5}
-          titleColorDisabled="black500"
+      </View>
+      <View className="absolute inset-x-0 bottom-0 h-[11%] border-t border-border bg-background">
+        <Button
+          variant="secondary"
+          size="lg"
+          className="mx-6 mb-1 mt-4"
           onPress={canAddAccounts ? handleNext : handleClose}
-          title={
-            canAddAccounts ? t('ledger.show.next') : t('ledger.show.close')
-          }
-          marginBottom="xs"
-          marginHorizontal="l"
-        />
-      </Box>
-    </Box>
+        >
+          {canAddAccounts ? t('ledger.show.next') : t('ledger.show.close')}
+        </Button>
+      </View>
+    </View>
   )
 }
 
-export default memo(DeviceShow)
+export default DeviceShow

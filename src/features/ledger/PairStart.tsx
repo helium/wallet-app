@@ -1,70 +1,65 @@
-import React, { memo, useCallback } from 'react'
+import React from 'react'
 import Ledger from '@assets/images/ledger.svg'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
+import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
-import Box from '@components/Box'
-import { useColors } from '@theme/themeHooks'
-import Text from '@components/Text'
-import SafeAreaBox from '@components/SafeAreaBox'
-import ButtonPressable from '@components/ButtonPressable'
+import { Button } from '@ui/Button'
+import { Text } from '@ui/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
+const SafeArea = withUniwind(SafeAreaView)
+const LedgerIcon = withUniwind(Ledger)
+
+const EDGES: Edge[] = ['bottom']
+
 const PairStart = () => {
-  const { primaryText } = useColors()
   const { t } = useTranslation()
   const navigation = useNavigation<AddNewAccountNavigationProp>()
   const { reachedAccountLimit } = useAccountStorage()
 
-  const handleStart = useCallback(() => {
+  const handleStart = () => {
     navigation.navigate('LedgerNavigator')
-  }, [navigation])
+  }
 
   return (
-    <SafeAreaBox
-      flex={1}
-      justifyContent="center"
-      marginHorizontal="l"
-      edges={['bottom']}
-    >
-      <Box flex={1} justifyContent="center">
-        <Box alignItems="center">
-          <Ledger color={primaryText} height={61} width={61} />
-          <Text variant="h0" textAlign="center" marginVertical="l">
+    <SafeArea edges={EDGES} className="mx-6 flex-1 justify-center">
+      <View className="flex-1 justify-center">
+        <View className="items-center">
+          <LedgerIcon
+            colorClassName="accent-foreground"
+            height={61}
+            width={61}
+          />
+          <Text size="4xl" className="my-6 text-center">
             {t('ledger.pairStart.title')}
           </Text>
-          <Text variant="subtitle1" textAlign="center">
+          <Text size="xl" className="text-center font-medium">
             {t('ledger.pairStart.subtitle')}
           </Text>
-        </Box>
-      </Box>
-      <Text
-        visible={reachedAccountLimit}
-        variant="body1"
-        textAlign="center"
-        marginHorizontal="l"
-        color="error"
-        fontWeight="500"
-        marginBottom="l"
-      >
-        {t('accountImport.accountLimit')}
-      </Text>
-      <ButtonPressable
+        </View>
+      </View>
+      {reachedAccountLimit && (
+        <Text
+          size="base"
+          className="mx-6 mb-6 text-center font-medium text-destructive"
+        >
+          {t('accountImport.accountLimit')}
+        </Text>
+      )}
+      <Button
+        variant="cta"
+        size="lg"
+        className="mb-6 w-full"
         disabled={reachedAccountLimit}
-        borderRadius="round"
         onPress={handleStart}
-        backgroundColor="primaryText"
-        backgroundColorOpacityPressed={0.7}
-        backgroundColorDisabled="surfaceSecondary"
-        backgroundColorDisabledOpacity={0.5}
-        titleColorDisabled="black500"
-        titleColor="primary"
-        fontWeight="500"
-        title={t('ledger.pairStart.pair')}
-        marginBottom="l"
-      />
-    </SafeAreaBox>
+      >
+        {t('ledger.pairStart.pair')}
+      </Button>
+    </SafeArea>
   )
 }
 
-export default memo(PairStart)
+export default PairStart
