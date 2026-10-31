@@ -1,24 +1,27 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import React, { useRef, useState } from 'react'
+import {
+  Edge,
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import {
   NativeSyntheticEvent,
   SectionList,
   TextInput as RNTextInput,
   TextInputSubmitEditingEventData,
+  View,
 } from 'react-native'
-import CloseCircle from '@assets/images/CloseCircle.svg'
+import { CircleX } from 'lucide-react-native'
+import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import FadeInOut from '@components/FadeInOut'
-import SafeAreaBox from '@components/SafeAreaBox'
-import TextInput from '@components/TextInput'
-import Box from '@components/Box'
-import { ReAnimatedBox } from '@components/AnimatedBox'
-import { useColors, useSpacing } from '@theme/themeHooks'
-import TouchableOpacityBox from '@components/TouchableOpacityBox'
-import Text from '@components/Text'
+import { FADE_IN, FADE_OUT } from '@theme/motion'
+import { Input } from '@ui/Input'
+import { PressableScale } from '@ui/PressableScale'
+import { Text } from '@ui/Text'
+import { twMerge } from '@ui/twMerge'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
 import { BrowserNavigationProp } from './browserTypes'
@@ -26,15 +29,20 @@ import BrowserListItem from './BrowserListItem'
 import { useSolana } from '../../solana/SolanaProvider'
 import { getRecommendedDapps } from '../../utils/walletApiV2'
 
+const SafeArea = withUniwind(SafeAreaView)
+const ClearIcon = withUniwind(CircleX)
+
+const EDGES: Edge[] = ['top']
+
+// The header slides left by this much on focus to make room for Cancel.
+const FOCUSED_MARGIN_END = 48
+
 const BrowserScreen = () => {
   const DEFAULT_URL = ''
   const { cluster } = useSolana()
-  const edges = useMemo(() => ['top'] as Edge[], [])
   const [inputFocused, setInputFocused] = useState(false)
-  const spacing = useSpacing()
   const textInputRef = useRef<RNTextInput | null>(null)
   const { top } = useSafeAreaInsets()
-  const colors = useColors()
   const navigation = useNavigation<BrowserNavigationProp>()
   const { favorites, recents, addRecent } = useBrowser()
   const { t } = useTranslation()
@@ -44,42 +52,38 @@ const BrowserScreen = () => {
     queryFn: getRecommendedDapps,
   })
 
-  const SectionData = useMemo((): {
+  const SectionData: {
     title: string
     data: string[]
-  }[] => {
-    const sections = [
-      {
-        title: t('browserScreen.topPicks'),
-        data: recommendedDappsData ? recommendedDappsData[cluster] : [],
-      },
-      {
-        title: t('browserScreen.myFavorites'),
-        data: [...favorites].reverse(),
-      },
-      {
-        title: t('browserScreen.recentlyVisited'),
-        data: [...recents].reverse(),
-      },
-    ]
+  }[] = [
+    {
+      title: t('browserScreen.topPicks'),
+      data: recommendedDappsData ? recommendedDappsData[cluster] : [],
+    },
+    {
+      title: t('browserScreen.myFavorites'),
+      data: [...favorites].reverse(),
+    },
+    {
+      title: t('browserScreen.recentlyVisited'),
+      data: [...recents].reverse(),
+    },
+  ]
 
-    return sections
-  }, [favorites, recents, t, recommendedDappsData, cluster])
-
-  const onBrowserInputFocus = useCallback(() => {
+  const onBrowserInputFocus = () => {
     setInputFocused(true)
-  }, [])
+  }
 
-  const onBrowserInputBlur = useCallback(() => {
+  const onBrowserInputBlur = () => {
     setInputFocused(false)
-  }, [])
+  }
 
   // Slide browser header to left on focus
   const headerStyles = useAnimatedStyle(() => {
     if (inputFocused) {
       // Animate margin end
       return {
-        marginEnd: withTiming(spacing.xxl, {
+        marginEnd: withTiming(FOCUSED_MARGIN_END, {
           duration: 100,
         }),
       }
@@ -92,180 +96,172 @@ const BrowserScreen = () => {
     }
   }, [inputFocused])
 
-  const onClearPressed = useCallback(() => {
+  const onClearPressed = () => {
     textInputRef.current?.clear()
-  }, [])
+  }
 
-  const onCancelPressed = useCallback(() => {
+  const onCancelPressed = () => {
     textInputRef.current?.blur()
     setInputFocused(false)
-  }, [textInputRef])
+  }
 
-  const onSubmitEditing = useCallback(
-    (event: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => {
-      const browserText = prependHttp(event.nativeEvent.text)
-      addRecent(browserText)
-      navigation.push('BrowserWebViewScreen', {
-        uri: browserText,
-      })
-    },
-    [navigation, addRecent],
-  )
+  const onSubmitEditing = (
+    event: NativeSyntheticEvent<TextInputSubmitEditingEventData>,
+  ) => {
+    const browserText = prependHttp(event.nativeEvent.text)
+    addRecent(browserText)
+    navigation.push('BrowserWebViewScreen', {
+      uri: browserText,
+    })
+  }
 
   const browserHeader = (
-    <Box
-      backgroundColor="black900"
-      padding="s"
-      flexDirection={inputFocused ? 'row' : 'column'}
+    <View
+      className={twMerge(
+        'bg-primary p-2',
+        inputFocused ? 'flex-row' : 'flex-col',
+      )}
     >
-      <ReAnimatedBox
-        backgroundColor="surfaceSecondary"
-        borderRadius="l"
-        marginHorizontal="s"
+      <Animated.View
+        className={twMerge(
+          'mx-2 flex-row items-center rounded-[12px] bg-secondary',
+          inputFocused && 'flex-1',
+        )}
         style={headerStyles}
+        onTouchEnd={onBrowserInputFocus}
       >
-        <TextInput
+        <Input
           ref={textInputRef}
-          variant="transparentSmall"
-          fontSize={14}
-          onTouchEnd={onBrowserInputFocus}
-          TrailingIcon={inputFocused ? CloseCircle : undefined}
-          onTrailingIconPress={onClearPressed}
-          TrailingIconOptions={{
-            paddingStart: 's',
-          }}
-          textInputProps={{
-            placeholder: 'Search or type URL',
-            autoFocus: false,
-            onFocus: onBrowserInputFocus,
-            selectTextOnFocus: true,
-            selectionColor: colors.transparent10,
-            onBlur: onBrowserInputBlur,
-            onSubmitEditing,
-            defaultValue: DEFAULT_URL,
-            autoComplete: 'off',
-            autoCapitalize: 'none',
-            returnKeyType: 'done',
-            autoCorrect: false,
-            textAlign: inputFocused ? 'left' : 'center',
-            keyboardAppearance: 'dark',
-          }}
+          className="h-10 w-auto flex-1 px-4 text-sm"
+          placeholder="Search or type URL"
+          autoFocus={false}
+          onFocus={onBrowserInputFocus}
+          selectTextOnFocus
+          selectionColorClassName="accent-muted-foreground"
+          onBlur={onBrowserInputBlur}
+          onSubmitEditing={onSubmitEditing}
+          defaultValue={DEFAULT_URL}
+          autoComplete="off"
+          autoCapitalize="none"
+          returnKeyType="done"
+          autoCorrect={false}
+          textAlign={inputFocused ? 'left' : 'center'}
+          keyboardAppearance="dark"
         />
-      </ReAnimatedBox>
+        {inputFocused && (
+          <PressableScale
+            feedback="opacity"
+            className="ps-2 pe-4"
+            onPress={onClearPressed}
+          >
+            <ClearIcon size={14} colorClassName="accent-muted-foreground" />
+          </PressableScale>
+        )}
+      </Animated.View>
       {inputFocused && (
-        <TouchableOpacityBox
-          marginStart="n_xxl"
-          justifyContent="center"
-          width={spacing.xxxl + spacing.l}
+        <PressableScale
+          feedback="opacity"
+          className="-ms-12 w-[84px] justify-center"
           onPress={onCancelPressed}
         >
-          <Text textAlign="center" variant="body1Medium">
+          <Text
+            size="base"
+            className="text-center font-medium text-primary-foreground"
+          >
             {t('generic.cancel')}
           </Text>
-        </TouchableOpacityBox>
+        </PressableScale>
       )}
-    </Box>
+    </View>
   )
 
-  const renderSectionHeader = useCallback(({ section: { title } }) => {
+  const renderSectionHeader = ({
+    section: { title },
+  }: {
+    section: { title: string }
+  }) => {
     const firstSection = title === 'My Favorites'
     return (
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        paddingTop={firstSection ? 's' : 'xl'}
-        paddingBottom="m"
-        paddingHorizontal="l"
-        backgroundColor="primaryBackground"
-        justifyContent="center"
+      <View
+        className={twMerge(
+          'flex-row items-center justify-center bg-background px-6 pb-4',
+          firstSection ? 'pt-2' : 'pt-8',
+        )}
       >
-        <Text variant="body3" textAlign="center" color="secondaryText">
+        <Text size="xs" className="text-center text-muted-foreground">
           {title}
         </Text>
-      </Box>
+      </View>
     )
-  }, [])
+  }
 
-  const handleBrowserListItemPress = useCallback(
-    (url: string) => () => {
-      navigation.push('BrowserWebViewScreen', {
-        uri: prependHttp(url),
-      })
-    },
-    [navigation],
-  )
+  const handleBrowserListItemPress = (url: string) => () => {
+    navigation.push('BrowserWebViewScreen', {
+      uri: prependHttp(url),
+    })
+  }
 
-  const renderItem = useCallback(
-    ({ item, index, section }) => {
-      const firstItem = index === 0
-      const lastItem = index === section.data?.length - 1
+  const renderItem = ({
+    item,
+    index,
+    section,
+  }: {
+    item: string
+    index: number
+    section: { data: readonly string[] }
+  }) => {
+    const firstItem = index === 0
+    const lastItem = index === section.data?.length - 1
 
-      return (
-        <FadeInOut>
-          <BrowserListItem
-            borderTopStartRadius={firstItem ? 'xl' : undefined}
-            borderTopEndRadius={firstItem ? 'xl' : undefined}
-            borderBottomStartRadius={lastItem ? 'xl' : undefined}
-            borderBottomEndRadius={lastItem ? 'xl' : undefined}
-            hasDivider={!lastItem || (firstItem && section.data?.length !== 1)}
-            marginHorizontal="m"
-            url={item}
-            onPress={handleBrowserListItemPress(item)}
-          />
-        </FadeInOut>
-      )
-    },
-    [handleBrowserListItemPress],
-  )
+    return (
+      <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
+        <BrowserListItem
+          className={twMerge(
+            'mx-4',
+            firstItem && 'rounded-t-[20px]',
+            lastItem && 'rounded-b-[20px]',
+          )}
+          hasDivider={!lastItem || (firstItem && section.data?.length !== 1)}
+          url={item}
+          onPress={handleBrowserListItemPress(item)}
+        />
+      </Animated.View>
+    )
+  }
 
-  const renderSectionFooter = useCallback(
-    ({ section: { data, title } }) => {
-      if (data?.length !== 0) {
-        return null
-      }
+  const renderSectionFooter = ({
+    section: { data, title },
+  }: {
+    section: { data: readonly string[]; title: string }
+  }) => {
+    if (data?.length !== 0) {
+      return null
+    }
 
-      return (
-        <Box
-          backgroundColor="surfaceSecondary"
-          padding="m"
-          marginHorizontal="m"
-          borderRadius="xl"
-        >
-          <Text variant="body2Medium" color="white" textAlign="center">
-            {title === t('browserScreen.myFavorites')
-              ? t('browserScreen.myFavoritesEmpty')
-              : t('browserScreen.recentlyVisitedEmpty')}
-          </Text>
-        </Box>
-      )
-    },
-    [t],
-  )
+    return (
+      <View className="mx-4 rounded-[20px] bg-secondary p-4">
+        <Text className="text-center font-medium">
+          {title === t('browserScreen.myFavorites')
+            ? t('browserScreen.myFavoritesEmpty')
+            : t('browserScreen.recentlyVisitedEmpty')}
+        </Text>
+      </View>
+    )
+  }
 
-  const contentContainer = useMemo(
-    () => ({
-      paddingTop: spacing.m,
-    }),
-    [spacing.m],
-  )
-
-  const keyExtractor = useCallback((item, index) => item + index, [])
+  const keyExtractor = (item: string, index: number) => item + index
 
   return (
-    <Box flex={1}>
-      <Box
-        backgroundColor="black900"
-        height={top}
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
+    <View className="flex-1">
+      <View
+        className="absolute inset-x-0 top-0 bg-primary"
+        style={{ height: top }}
       />
-      <SafeAreaBox flex={1} edges={edges}>
+      <SafeArea className="flex-1" edges={EDGES}>
         {browserHeader}
         <SectionList
           contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={contentContainer}
+          contentContainerClassName="pt-4"
           sections={SectionData}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
@@ -273,9 +269,9 @@ const BrowserScreen = () => {
           onEndReachedThreshold={0.05}
           renderSectionFooter={renderSectionFooter}
         />
-        <Box />
-      </SafeAreaBox>
-    </Box>
+        <View />
+      </SafeArea>
+    </View>
   )
 }
 
