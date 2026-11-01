@@ -1,44 +1,39 @@
-import type {
-  CameraRef,
-  CameraStop,
-  LngLat,
-  MapRef,
-} from '@maplibre/maplibre-react-native'
-import React, { forwardRef, useImperativeHandle } from 'react'
+// A stand-in for @maplibre/maplibre-react-native, which needs native modules
+// and so cannot load under jest. Use it with
+// jest.mock('@maplibre/maplibre-react-native', () =>
+//   jest.requireActual('./mapLibreMock'))
+// and drive the ref methods through the jest.fn()s exported here.
+import type { CameraRef, MapRef } from '@maplibre/maplibre-react-native'
+import React, {
+  PropsWithChildren,
+  forwardRef,
+  useImperativeHandle,
+} from 'react'
 
-// Stands in for @maplibre/maplibre-react-native, whose native modules do not
-// load under jest. A test mocks the package with
-//   jest.mock('@maplibre/maplibre-react-native', () =>
-//     jest.requireActual('./mapLibreMock'))
-// and drives the handles below. The map's events are the props of the
-// rendered 'MapLibreRN.Map' host element.
-
-export const mapHandle = {
-  getCenter: jest.fn<Promise<LngLat>, []>(),
-  getZoom: jest.fn<Promise<number>, []>(),
+export const mockMapRef = {
+  getCenter: jest.fn(),
+  getZoom: jest.fn(),
 } satisfies Pick<MapRef, 'getCenter' | 'getZoom'>
 
-export const cameraHandle = {
-  setStop: jest.fn<Promise<void>, [CameraStop]>(),
+export const mockCameraRef = {
+  setStop: jest.fn(),
 } satisfies Pick<CameraRef, 'setStop'>
 
-export const Map = forwardRef<typeof mapHandle, object>((props, ref) => {
-  useImperativeHandle(ref, () => mapHandle)
-  return React.createElement('MapLibreRN.Map', props)
+export const Map = forwardRef<typeof mockMapRef, PropsWithChildren>(
+  (props, ref) => {
+    useImperativeHandle(ref, () => mockMapRef)
+    return React.createElement('Map', props)
+  },
+)
+
+export const Camera = forwardRef<typeof mockCameraRef>((props, ref) => {
+  useImperativeHandle(ref, () => mockCameraRef)
+  return React.createElement('Camera', props)
 })
 
-export const Camera = forwardRef<typeof cameraHandle, object>((props, ref) => {
-  useImperativeHandle(ref, () => cameraHandle)
-  return React.createElement('MapLibreRN.Camera', props)
-})
-
-export const UserLocation = 'MapLibreRN.UserLocation'
-export const Marker = 'MapLibreRN.Marker'
-export const Images = 'MapLibreRN.Images'
-export const Layer = 'MapLibreRN.Layer'
-export const GeoJSONSource = 'MapLibreRN.GeoJSONSource'
-
-export const useCurrentPosition = jest.fn<
-  { coords: { longitude: number; latitude: number } } | undefined,
-  []
->()
+export const UserLocation = 'UserLocation'
+export const Marker = 'Marker'
+export const Images = 'Images'
+export const Layer = 'Layer'
+export const GeoJSONSource = 'GeoJSONSource'
+export const useCurrentPosition = jest.fn()

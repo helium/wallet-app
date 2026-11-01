@@ -1,7 +1,7 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import AssertLocationScreen from '../AssertLocationScreen'
-import { cameraHandle, mapHandle, useCurrentPosition } from './mapLibreMock'
+import { mockCameraRef, mockMapRef, useCurrentPosition } from './mapLibreMock'
 
 type AlertButton = { text: string; onPress?: () => void }
 
@@ -172,7 +172,7 @@ const render = () => {
   if (!created) throw new Error('render failed')
   const { root } = created
   const buttons = () => root.findAllByType('Button' as never)
-  const map = () => root.findByType('MapLibreRN.Map' as never)
+  const map = () => root.findByType('Map' as never)
   // A disabled button ignores a tap, as the native Pressable does.
   const tap = (button: TestRenderer.ReactTestInstance) => {
     if (!button.props.disabled)
@@ -203,7 +203,7 @@ const render = () => {
       })
     },
     moveEnds: (center: [number, number]) => {
-      mapHandle.getCenter.mockResolvedValue(center)
+      mockMapRef.getCenter.mockResolvedValue(center)
       act(() => {
         map().props.onRegionDidChange?.({})
       })
@@ -233,7 +233,7 @@ beforeEach(() => {
   mockAlert.mockClear()
   mockImplicitBurn.mockClear()
   mockSubmitUpdateEntityInfo.mockClear()
-  cameraHandle.setStop.mockClear()
+  mockCameraRef.setStop.mockClear()
   useCurrentPosition.mockReturnValue({
     coords: { longitude: USER[0], latitude: USER[1] },
   })
@@ -253,7 +253,7 @@ describe('AssertLocationScreen', () => {
     expect(view.assertButton().props.disabled).toBe(false)
 
     view.tapLocate()
-    expect(cameraHandle.setStop).toHaveBeenLastCalledWith(
+    expect(mockCameraRef.setStop).toHaveBeenLastCalledWith(
       expect.objectContaining({ center: USER, duration: 500 }),
     )
     view.moveStarts()
