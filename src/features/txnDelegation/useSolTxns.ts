@@ -560,7 +560,8 @@ const useSolTxns = ({
       ) {
         const keypair = await getKeypair(heliumAddress)
         if (!keypair) {
-          return
+          await callback({ status: 'token_not_found' })
+          throw new Error('Failed to sign configuration message')
         }
         const configMessage = Uint8Array.from(
           Buffer.from(configMsgStr, 'base64'),
