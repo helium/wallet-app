@@ -58,7 +58,11 @@ const KeystoneModal = ({
   }): Promise<Buffer | undefined> => {
     const requestId = uuid.v4()
     // why need setTimeout? modal mounted --> sleep 1s --> modal present
+    // The request owns the sheet from present to settle. A sheet that is
+    // still animating closed calls onDismiss after the next request is
+    // shown, and must not settle it.
     setTimeout(() => {
+      settleRef.current = settle
       bottomSheetModalRef.current?.present()
       setIsShowing(true)
     }, 1000)
@@ -101,7 +105,6 @@ const KeystoneModal = ({
       bottomSheetModalRef.current?.dismiss()
       promiseResolve(value)
     }
-    settleRef.current = settle
     eventEmitter.on(`keystoneSignature_${requestId}`, onSignature)
     eventEmitter.on('closeKeystoneSignatureModal', onClose)
     return keystonePromise
