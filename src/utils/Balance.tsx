@@ -86,7 +86,8 @@ const useBalanceHook = () => {
     if (!cluster || !anchorProvider || !anchorProvider.publicKey)
       return undefined
 
-    return tokens?.atas || []
+    // Undefined until the first sync, so no list reads as an empty wallet
+    return tokens?.atas
   }, [cluster, anchorProvider, tokens])
 
   const [oraclePrice, setOraclePrice] = useState<OraclePrice>()
