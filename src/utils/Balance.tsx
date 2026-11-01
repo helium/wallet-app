@@ -68,20 +68,25 @@ const useBalanceHook = () => {
   // Use anchorProvider.connection instead of anchorProvider to prevent unnecessary re-syncs
   // when the provider object reference changes but the connection hasn't
   const providerConnection = anchorProvider?.connection
-  const [tokenSyncFailed, setTokenSyncFailed] = useState(false)
-  // Resolves even when the sync fails; tokenSyncFailed records the outcome
+  // The cluster+wallet key of the last failed sync, so a failure of one wallet
+  // does not report another wallet as failed
+  const [failedSyncKey, setFailedSyncKey] = useState<string>()
+  const tokenSyncFailed =
+    failedSyncKey === `${cluster}-${currentAccount?.solanaAddress}`
+  // Resolves even when the sync fails; failedSyncKey records the outcome
   const retryTokenSync = useCallback(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
+    const syncKey = `${cluster}-${currentAccount.solanaAddress}`
     try {
       await syncTokenAccounts(queryClient, {
         cluster,
         acct: currentAccount,
         anchorProvider,
       })
-      setTokenSyncFailed(false)
+      setFailedSyncKey((failed) => (failed === syncKey ? undefined : failed))
     } catch {
       // The sync guard skipped it or the RPC failed; the last balances stay
-      setTokenSyncFailed(true)
+      setFailedSyncKey(syncKey)
     }
   }, [anchorProvider, cluster, currentAccount, locked, queryClient])
   const syncTokens = useEffectEvent(() => {

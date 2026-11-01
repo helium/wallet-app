@@ -16,7 +16,9 @@ jest.mock('../../../../solana/SolanaProvider', () => ({
     anchorProvider: mockAnchorProvider,
   }),
 }))
-const mockAccount = { solanaAddress: mockWallet.toBase58() }
+const mockWalletAccount = { solanaAddress: mockWallet.toBase58() }
+// The current account; a test may switch it to another wallet
+let mockAccount = mockWalletAccount
 jest.mock('../../../../storage/AccountStorageProvider', () => ({
   useAccountStorage: () => ({ currentAccount: mockAccount }),
 }))
@@ -81,6 +83,7 @@ jest.mock('@helium/helium-react-hooks', () => ({
 
 beforeEach(() => {
   jest.useFakeTimers()
+  mockAccount = mockWalletAccount
   mockSync.mockReset()
   mockSync.mockReturnValue(new Promise(() => {}))
 })
@@ -260,6 +263,101 @@ it('clears the token sync failure when a later sync succeeds', async () => {
   await settle()
 
   expect(latest.balance?.tokenSyncFailed).toBe(false)
+  queryClient.clear()
+})
+
+it('does not report a failed sync of one wallet for another wallet whose sync is in flight', async () => {
+  mockSync.mockRejectedValueOnce(new Error('rpc down'))
+  const queryClient = new QueryClient()
+  let latest: ReturnType<typeof useBalance> | undefined
+  const BalanceProbe = () => {
+    const balance = useBalance()
+    React.useEffect(() => {
+      latest = balance
+    })
+    return null
+  }
+  const tree = () => (
+    <QueryClientProvider client={queryClient}>
+      <BalanceProvider>
+        <BalanceProbe />
+      </BalanceProvider>
+    </QueryClientProvider>
+  )
+  let renderer: TestRenderer.ReactTestRenderer | undefined
+  await act(async () => {
+    renderer = TestRenderer.create(tree())
+  })
+  await settle()
+
+  expect(latest?.tokenSyncFailed).toBe(true)
+
+  // B has no stored data, and its sync never answers
+  mockAccount = { solanaAddress: Keypair.generate().publicKey.toBase58() }
+  await act(async () => {
+    renderer?.update(tree())
+  })
+  await settle()
+
+  expect(mockSync).toHaveBeenCalledTimes(2)
+  expect(mockSync.mock.lastCall?.[1].acct).toBe(mockAccount)
+  expect(latest?.tokenSyncFailed).toBe(false)
+  queryClient.clear()
+})
+
+it('keeps the failed sync of a wallet when an earlier sync of another wallet lands after it', async () => {
+  let resolveSyncA: (value: unknown) => void = () => {}
+  mockSync.mockReturnValueOnce(
+    new Promise((resolve) => {
+      resolveSyncA = resolve
+    }),
+  )
+  const queryClient = new QueryClient()
+  const latest: {
+    balance?: ReturnType<typeof useBalance>
+    assets?: ReturnType<typeof useMigrationAssets>
+  } = {}
+  const LatestProbe = () => {
+    const balance = useBalance()
+    const assets = useMigrationAssets(mockAccount.solanaAddress)
+    React.useEffect(() => {
+      latest.balance = balance
+      latest.assets = assets
+    })
+    return null
+  }
+  const tree = () => (
+    <QueryClientProvider client={queryClient}>
+      <BalanceProvider>
+        <LatestProbe />
+      </BalanceProvider>
+    </QueryClientProvider>
+  )
+  let renderer: TestRenderer.ReactTestRenderer | undefined
+  await act(async () => {
+    renderer = TestRenderer.create(tree())
+  })
+  await settle()
+
+  // B has no stored data, and its sync fails while A's is in flight
+  mockSync.mockRejectedValueOnce(new Error('rpc down'))
+  mockAccount = { solanaAddress: Keypair.generate().publicKey.toBase58() }
+  await act(async () => {
+    renderer?.update(tree())
+  })
+  await settle()
+
+  expect(mockSync).toHaveBeenCalledTimes(2)
+  expect(latest.balance?.tokenSyncFailed).toBe(true)
+
+  await act(async () => {
+    resolveSyncA({ atas: [] })
+  })
+  await settle()
+
+  expect(latest.balance?.tokenSyncFailed).toBe(true)
+  expect(latest.assets?.loading).toBe(false)
+  expect(latest.assets?.error).toBeInstanceOf(Error)
   queryClient.clear()
 })
 

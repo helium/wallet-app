@@ -721,6 +721,7 @@ describe('syncTokenAccounts', () => {
           anchorProvider: undefined,
         }).queryKey,
       )?.sol
+    const started: Promise<unknown>[] = []
 
     try {
       const syncA = outcomeOf(
@@ -757,6 +758,7 @@ describe('syncTokenAccounts', () => {
             }),
           ),
         )
+      started.push(syncA, syncB, syncC)
       a.release()
 
       expect(await Promise.all([syncA, syncB, syncC])).toEqual([
@@ -773,6 +775,8 @@ describe('syncTokenAccounts', () => {
         balance: 3000,
       })
     } finally {
+      // Clearing the client under a queued sync keeps jest from exiting
+      await Promise.allSettled(started)
       client.clear()
     }
   })
@@ -948,6 +952,81 @@ describe('syncTokenAccounts', () => {
     // Each RPC read through the cache waits one batch delay
     const settle = (sync: Promise<unknown>) =>
       jest.advanceTimersByTimeAsync(CACHE_DELAY * 10).then(() => sync)
+
+    // The mint read skips the cache, so a failed batch the cache stores as
+    // null does not fail the next sync
+    it('syncs the mint decimals once the RPC recovers from a failed mint read', async () => {
+      const owner = Keypair.generate().publicKey
+      const port = makePort()
+      const { connection, rpcRequest } = wrappedConnection()
+      const answer = rpcRequest.getMockImplementation()
+      if (!answer) throw new Error('rpcRequest has no implementation')
+      rpcRequest.mockImplementation(async (method, params) => {
+        if (method === 'getMultipleAccounts') throw new Error('rpc down')
+        return answer(method, params)
+      })
+      const sync = () =>
+        settle(
+          port.syncTokenAccounts({
+            cluster: 'mainnet-beta',
+            acct: accountFor(owner),
+            anchorProvider: providerFor(connection),
+          }),
+        )
+
+      expect(await sync()).toBe('rejected')
+      expect(port.tokensOf('mainnet-beta', owner.toBase58())).toBeUndefined()
+
+      rpcRequest.mockImplementation(answer)
+      now += 5_000
+      await jest.advanceTimersByTimeAsync(5_000)
+
+      expect(await sync()).toBe('fulfilled')
+      expect(
+        port
+          .tokensOf('mainnet-beta', owner.toBase58())
+          ?.atas.map(({ mint, decimals }) => ({ mint, decimals })),
+      ).toEqual([{ mint: HNT_MINT.toBase58(), decimals: 8 }])
+    })
+
+    // A cache batch that never settles holds every later read through the
+    // cache, so the mint read must not wait on it
+    it('syncs while an unrelated cache read never settles', async () => {
+      const owner = Keypair.generate().publicKey
+      const unrelated = Keypair.generate().publicKey
+      const port = makePort()
+      const { connection, rpcRequest } = wrappedConnection()
+      const answer = rpcRequest.getMockImplementation()
+      if (!answer) throw new Error('rpcRequest has no implementation')
+      rpcRequest.mockImplementation((method, params) => {
+        const [keys] = params
+        if (
+          method === 'getMultipleAccounts' &&
+          (keys as string[]).includes(unrelated.toBase58())
+        ) {
+          return new Promise(() => {})
+        }
+        return answer(method, params)
+      })
+      void connection.getAccountInfo(unrelated)
+      await jest.advanceTimersByTimeAsync(CACHE_DELAY * 10)
+      expect(rpcRequest).toHaveBeenCalledWith(
+        'getMultipleAccounts',
+        expect.arrayContaining([[unrelated.toBase58()]]),
+      )
+
+      const sync = port.syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(owner),
+        anchorProvider: providerFor(connection),
+      })
+      await jest.advanceTimersByTimeAsync(TOKEN_SYNC_TIMEOUT)
+
+      expect(await sync).toBe('fulfilled')
+      expect(port.tokensOf('mainnet-beta', owner.toBase58())?.atas).toEqual([
+        expect.objectContaining({ mint: HNT_MINT.toBase58(), decimals: 8 }),
+      ])
+    })
 
     it.each(['getMultipleAccounts', 'getBalance'] as const)(
       'rejects a sync whose %s request fails and keeps the stored balances',

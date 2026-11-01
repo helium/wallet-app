@@ -64,8 +64,13 @@ const fetchTokens = async (
     const batchMints = uniqueMints.slice(i, i + BATCH_SIZE)
 
     // A failed or missing mint read fails the sync, so the stored balances
-    // keep their decimals
-    const mintAccountInfos = await connection.getMultipleAccountsInfo(batch)
+    // keep their decimals. A commitment other than the account cache's skips
+    // the cache, so a failed read rejects and a cached null cannot fail the
+    // sync; mint decimals never change, so finalized data is enough
+    const mintAccountInfos = await connection.getMultipleAccountsInfo(
+      batch,
+      'finalized',
+    )
 
     const batchMintInfos = batchMints.map((mintStr, index) => {
       const accountInfo = mintAccountInfos[index]
