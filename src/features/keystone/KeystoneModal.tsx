@@ -45,6 +45,7 @@ const KeystoneModal = ({
   const { currentAccount } = useAccountStorage()
   const backgroundStyle = useResolveClassNames('bg-secondary')
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
   const sheetMargins = useSheetMargins()
   const settleRef = useRef<((value: Buffer) => void) | undefined>(undefined)
   const [solSignRequest, setSolSignRequest] = useState<KeystoneSolSignRequest>()
@@ -59,6 +60,7 @@ const KeystoneModal = ({
     // why need setTimeout? modal mounted --> sleep 1s --> modal present
     setTimeout(() => {
       bottomSheetModalRef.current?.present()
+      setIsShowing(true)
     }, 1000)
     if (transaction) {
       setSolSignRequest({
@@ -109,7 +111,6 @@ const KeystoneModal = ({
     <BottomSheetBackdrop disappearsOnIndex={-1} appearsOnIndex={0} {...props} />
   )
   const sheetHandleStyle = useResolveClassNames('p-4')
-  const { handleDismiss } = useBackHandler(bottomSheetModalRef)
   // Backdrop tap, swipe down and back button dismiss the sheet without an
   // event, so the pending sign request has to be settled here.
   const handleSheetDismiss = () => {

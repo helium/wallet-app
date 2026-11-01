@@ -16,7 +16,8 @@ export type ButtonProps = PressableScaleProps & {
 }
 
 // World's Button on the press primitive. A text child (strings and numbers)
-// renders as the variant's label; other children render as given.
+// renders as the variant's label; in mixed children each string and number
+// renders as a label, and other children render as given.
 export const Button = ({
   variant,
   size,
@@ -34,7 +35,13 @@ export const Button = ({
     {isTextLabel(children) ? (
       <Text className={buttonTextVariants({ variant })}>{children}</Text>
     ) : (
-      children
+      React.Children.map(children, (child) =>
+        typeof child === 'string' || typeof child === 'number' ? (
+          <Text className={buttonTextVariants({ variant })}>{child}</Text>
+        ) : (
+          child
+        ),
+      )
     )}
   </PressableScale>
 )

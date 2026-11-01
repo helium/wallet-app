@@ -126,6 +126,20 @@ describe('Button', () => {
     expect(labels[0].props.className).toBeUndefined()
   })
 
+  // React Native throws on a string outside <Text>.
+  it('wraps the text of mixed children in the variant label', () => {
+    const Icon = () => null
+    const view = render(
+      <Button onPress={jest.fn()}>{[<Icon key="icon" />, 'Send']}</Button>,
+    )
+
+    const labels = view.labels()
+    expect(labels).toHaveLength(1)
+    expect(labels[0].props.children).toBe('Send')
+    expect(labels[0].props.className).toContain('text-primary-foreground')
+    expect(view.pressable().findAllByType(Icon)).toHaveLength(1)
+  })
+
   it('lets the caller className win over the defaults', () => {
     const view = render(
       <Button onPress={jest.fn()} className="bg-destructive rounded-full">

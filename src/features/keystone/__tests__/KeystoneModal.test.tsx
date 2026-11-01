@@ -8,7 +8,8 @@ import SignTxModal from '../SignTx/SignTxModal'
 // model keeps the part that decides where sheet content renders, as gorhom
 // 5.2.14 does it: the provider wraps its children in
 // <PortalProvider rootHostName={hostName}>, and a presented modal mounts its
-// content with <Portal hostName={hostName}> of the nearest provider.
+// content with <Portal hostName={hostName}> of the nearest provider, and
+// dismiss() unmounts it and calls onDismiss.
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   const { Portal, PortalProvider } = jest.requireActual('@gorhom/portal')
@@ -27,12 +28,21 @@ jest.mock('@gorhom/bottom-sheet', () => {
     )
   }
   const BottomSheetModal = ReactActual.forwardRef(
-    ({ children }: { children: React.ReactNode }, ref: unknown) => {
+    (
+      {
+        children,
+        onDismiss,
+      }: { children: React.ReactNode; onDismiss?: () => void },
+      ref: unknown,
+    ) => {
       const hostName = ReactActual.useContext(HostName)
       const [mount, setMount] = ReactActual.useState(false)
       ReactActual.useImperativeHandle(ref, () => ({
         present: () => setMount(true),
-        dismiss: () => setMount(false),
+        dismiss: () => {
+          setMount(false)
+          onDismiss?.()
+        },
       }))
       return mount
         ? ReactActual.createElement(Portal, { hostName }, children)
@@ -49,7 +59,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
 
 jest.mock(
   '@hooks/useBackHandler',
-  () => () => ({ handleDismiss: () => {}, setIsShowing: () => {} }),
+  () => jest.requireActual('../../../hooks/useBackHandler'),
   { virtual: true },
 )
 jest.mock('@hooks/useAlert', () => () => ({ showOKCancelAlert: () => {} }), {
@@ -85,12 +95,23 @@ jest.mock('expo-camera', () => ({ Camera: {}, CameraView: 'CameraView' }))
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
+const mockPlatform = { OS: 'ios' }
+const mockBackPressListeners = new Set<() => boolean>()
 jest.mock('react-native', () => ({
+  BackHandler: {
+    addEventListener: (_: string, listener: () => boolean) => {
+      mockBackPressListeners.add(listener)
+      return { remove: () => mockBackPressListeners.delete(listener) }
+    },
+  },
   View: 'View',
   Image: 'Image',
   Alert: { alert: () => {} },
   Linking: {},
-  Platform: { OS: 'ios' },
+  // A getter: the hoisted factory runs before mockPlatform is assigned.
+  get Platform() {
+    return mockPlatform
+  },
   StyleSheet: { absoluteFill: {} },
 }))
 jest.mock('react-native-reanimated', () => ({
@@ -116,6 +137,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers()
+  mockPlatform.OS = 'ios'
 })
 
 describe('KeystoneModal', () => {
@@ -191,5 +213,40 @@ describe('KeystoneModal', () => {
     })
 
     await expect(signature).resolves.toEqual(Buffer.from([]))
+  })
+  it('dismisses the sign sheet and settles the request on Android back', async () => {
+    mockPlatform.OS = 'android'
+    const ref = React.createRef<KeystoneModalRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <KeystoneModal ref={ref}>{null}</KeystoneModal>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const { root } = renderer
+
+    let signature: Promise<Buffer | undefined> | undefined
+    act(() => {
+      signature = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('01', 'hex'),
+      })
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    const modal = root.findByType(KeystoneModal)
+    expect(modal.findAllByType(SignTxModal)).toHaveLength(1)
+
+    let handled: boolean[] = []
+    act(() => {
+      handled = [...mockBackPressListeners].map((listener) => listener())
+    })
+
+    expect(handled).toContain(true)
+    await expect(signature).resolves.toEqual(Buffer.from([]))
+    expect(modal.findAllByType(SignTxModal)).toHaveLength(0)
   })
 })
