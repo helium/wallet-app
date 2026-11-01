@@ -10,7 +10,6 @@ export const createSignRequestResolver = () => {
         resolve = r
       })
     },
-    isPending: (): boolean => resolve !== null,
     // Returns false when no request was pending
     settle: (value: boolean): boolean => {
       const pending = resolve

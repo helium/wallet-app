@@ -34,6 +34,11 @@ const WalletSignBottomSheet = ({
   // A request that supersedes an open one waits here while the old sheet
   // closes, so the user never approves it on a sheet that swapped in place
   const supersedingOptsRef = useRef<WalletSignOpts | null>(null)
+  // The sheet's lifecycle, not the resolver, decides how a request shows: a
+  // settled request's sheet may still be closing. Presented from present()
+  // until the dismiss; shown once the first open animation starts
+  const presentedRef = useRef(false)
+  const shownRef = useRef(false)
   // World's phone tray (style guide §9.5), as src/ui/Sheet draws it
   const backgroundStyle = useResolveClassNames('rounded-t-3xl bg-popover')
   const handleIndicatorStyle = useResolveClassNames(
@@ -59,6 +64,7 @@ const WalletSignBottomSheet = ({
   }
 
   const present = (opts: WalletSignOpts) => {
+    presentedRef.current = true
     bottomSheetModalRef.current?.present()
     bottomSheetModalRef.current?.expand()
     setWalletSignOpts(opts)
@@ -66,14 +72,19 @@ const WalletSignBottomSheet = ({
   }
 
   const show = (opts: WalletSignOpts) => {
-    const superseding = signRequestRef.current.isPending()
     const decision = signRequestRef.current.next()
-    if (superseding) {
-      // Staged before hide(): the dismiss presents it in a fresh sheet
+    if (!presentedRef.current) {
+      present(opts)
+    } else if (!shownRef.current) {
+      // Not on screen yet, and gorhom drops a close() before layout: swap the
+      // content so the first frame the user sees is this request
+      setSimulated(false)
+      setWalletSignOpts(opts)
+    } else {
+      // On screen or closing: never swap in place. Staged before hide(): the
+      // dismiss presents it in a fresh sheet
       supersedingOptsRef.current = opts
       hide()
-    } else {
-      present(opts)
     }
     return decision
   }
@@ -81,6 +92,8 @@ const WalletSignBottomSheet = ({
   useImperativeHandle(ref, () => ({ show, hide }))
 
   const handleModalDismiss = () => {
+    presentedRef.current = false
+    shownRef.current = false
     const supersedingOpts = supersedingOptsRef.current
     if (supersedingOpts) {
       supersedingOptsRef.current = null
@@ -113,6 +126,9 @@ const WalletSignBottomSheet = ({
           backgroundStyle={backgroundStyle}
           backdropComponent={SheetBackdrop}
           onDismiss={handleModalDismiss}
+          onAnimate={(_fromIndex: number, toIndex: number) => {
+            if (toIndex >= 0) shownRef.current = true
+          }}
           enableDismissOnClose
           handleIndicatorStyle={handleIndicatorStyle}
           style={sheetMargins}

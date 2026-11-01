@@ -12,7 +12,8 @@ const parseUrl = (url: string) => {
 }
 
 const isOpenableRemoteUrl = (url: URL) =>
-  url.protocol === 'https:' && url.hostname !== WALLET_LINK_HOST
+  url.protocol === 'https:' &&
+  url.hostname.toLowerCase().replace(/\.+$/, '') !== WALLET_LINK_HOST
 
 // Remote content (notification markup and action links) picks the URL, so
 // only https opens, except the wallet's own app-link host. That host and the
