@@ -5,13 +5,33 @@ import useHaptic from '@hooks/useHaptic'
 import useAlert from '@hooks/useAlert'
 import { QrScanner } from '@ui/QrScanner'
 import { parseBurn, parseDelegate, parsePaymentLink } from '../../utils/linking'
-import { HomeNavigationProp } from '../home/homeTypes'
+import { BurnRouteParam, HomeNavigationProp } from '../home/homeTypes'
+import { RootNavigationProp } from '../../navigation/rootTypes'
 
 const PaymentQrScanner = () => {
   const { triggerNotification } = useHaptic()
   const { showOKAlert } = useAlert()
   const { t } = useTranslation()
   const navigation = useNavigation<HomeNavigationProp>()
+  const rootNav = useNavigation<RootNavigationProp>()
+
+  // The Collectables stack hosts this scanner too but has no BurnScreen, so a
+  // burn from there opens the one on the Home stack.
+  const showBurnScreen = useCallback(
+    (params: BurnRouteParam) => {
+      navigation.goBack()
+      if (navigation.getState()?.routeNames.includes('BurnScreen')) {
+        navigation.replace('BurnScreen', params)
+        return
+      }
+      rootNav.navigate('TabBarNavigator', {
+        screen: 'Home',
+        initial: false,
+        params: { screen: 'BurnScreen', params, initial: false },
+      })
+    },
+    [navigation, rootNav],
+  )
 
   const handleBarCodeScanned = useCallback(
     async (data: string) => {
@@ -22,11 +42,9 @@ const PaymentQrScanner = () => {
         triggerNotification('success')
         navigation.navigate('PaymentScreen', payment, { pop: true })
       } else if (burn) {
-        navigation.goBack()
-        navigation.replace('BurnScreen', burn)
+        showBurnScreen(burn)
       } else if (delegate) {
-        navigation.goBack()
-        navigation.replace('BurnScreen', {
+        showBurnScreen({
           isDelegate: true,
           address: delegate.address,
           amount: delegate.amount,
@@ -42,7 +60,7 @@ const PaymentQrScanner = () => {
         navigation.goBack()
       }
     },
-    [navigation, showOKAlert, t, triggerNotification],
+    [navigation, showBurnScreen, showOKAlert, t, triggerNotification],
   )
 
   return (
