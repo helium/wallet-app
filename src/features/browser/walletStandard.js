@@ -1,4 +1,6 @@
-const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid) {
+// The app injects this script into the top frame only, so the token it passes
+// marks the top page's requests: other frames can post but cannot read it
+const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid, token) {
 if (window.heliumWalletInjected) return;
 
 var isConnecting = false
@@ -274,7 +276,7 @@ class HeliumWallet {
     #connect = async ({ silent } = {}) => {
         isConnecting = true
         const id = randomRequestId()
-        window.ReactNativeWebView.postMessage(JSON.stringify({ id, type: 'connect' }))
+        window.ReactNativeWebView.postMessage(JSON.stringify({ id, token, type: 'connect' }))
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
@@ -308,7 +310,7 @@ class HeliumWallet {
         const id = randomRequestId()
 
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ id, type: 'signAndSendTransaction', inputs }),
+            JSON.stringify({ id, token, type: 'signAndSendTransaction', inputs }),
         )
 
         return new Promise((resolve, reject) => {
@@ -344,7 +346,7 @@ class HeliumWallet {
         const id = randomRequestId()
 
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ id, type: 'signTransaction', inputs }),
+            JSON.stringify({ id, token, type: 'signTransaction', inputs }),
         )
 
         return new Promise((resolve, reject) => {
@@ -379,7 +381,7 @@ class HeliumWallet {
         if (!this.#account) throw new Error('not connected')
         const id = randomRequestId()
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ id, type: 'signMessage', inputs }),
+            JSON.stringify({ id, token, type: 'signMessage', inputs }),
         )
 
         return new Promise((resolve, reject) => {

@@ -8,6 +8,7 @@ import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import bs58 from 'bs58'
+import { getRandomValues } from 'expo-crypto'
 import {
   Bookmark,
   ChevronLeft,
@@ -43,7 +44,7 @@ import {
   sendInSequence,
   UNSUPPORTED_VERSION_ERROR,
 } from './dappTransactions'
-import { runOneRequest } from './dappRequestGate'
+import { RequestSender, RequestSlots, runOneRequest } from './dappRequestGate'
 import { DappOrigin, senderOrigin } from './dappMessageOrigin'
 import injectWalletStandard from './walletStandard'
 
@@ -148,8 +149,15 @@ const BrowserWebViewScreen = () => {
   const { anchorProvider, signMsg } = useSolana()
   const webview = useRef<WebView | null>(null)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
-  // True while a dApp request is open; another one is declined meanwhile
-  const pendingRequestRef = useRef<boolean>(false)
+  // Which senders have a dApp request open; see runOneRequest
+  const requestSlotsRef = useRef<RequestSlots>({
+    topFrame: false,
+    otherFrame: false,
+  })
+  // Only the top frame's injected script gets this, so iframes cannot send it
+  const [topFrameToken] = useState(() =>
+    Buffer.from(getRandomValues(new Uint8Array(16))).toString('hex'),
+  )
 
   const [currentUrl, setCurrentUrl] = useState(uri)
   const accountAddress = currentAccount?.solanaAddress
@@ -396,7 +404,9 @@ const BrowserWebViewScreen = () => {
       return
     }
 
-    const { id, type, inputs } = JSON.parse(msg.nativeEvent.data)
+    const { id, type, inputs, token } = JSON.parse(msg.nativeEvent.data)
+    const sender: RequestSender =
+      token === topFrameToken ? 'topFrame' : 'otherFrame'
 
     if (
       !currentAccount?.address ||
@@ -424,22 +434,22 @@ const BrowserWebViewScreen = () => {
         })
       switch (type) {
         case WalletStandardMessageTypes.connect:
-          await runOneRequest(pendingRequestRef, decline, () =>
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
             handleConnect(id, origin),
           )
           break
         case WalletStandardMessageTypes.signAndSendTransaction:
-          await runOneRequest(pendingRequestRef, decline, () =>
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
             handleSignAndSendTransaction(id, origin, inputs),
           )
           break
         case WalletStandardMessageTypes.signTransaction:
-          await runOneRequest(pendingRequestRef, decline, () =>
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
             handleSignTransaction(id, origin, inputs),
           )
           break
         case WalletStandardMessageTypes.signMessage:
-          await runOneRequest(pendingRequestRef, decline, () =>
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
             handleSignMessage(id, origin, inputs),
           )
           break
@@ -467,7 +477,7 @@ const BrowserWebViewScreen = () => {
     // noinspection JSIgnoredPromiseFromCall
     injectWalletStandard("${accountAddress}", [${
       accountAddress && bs58.decode(accountAddress)
-    }], ${isAndroid});
+    }], ${isAndroid}, "${topFrameToken}");
     true;
     `
   }

@@ -1,12 +1,14 @@
 import walletStandard from '../walletStandard'
 
-type Request = { id: number; type: string }
+type Request = { id: number; type: string; token?: string }
 type Reply = { id: number; type: string; data?: unknown; error?: string }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Wallet = { features: Record<string, any> }
 
 const address = 'HeliumAddress1111111111111111111111111111111'
 const pubKey = [1, 2, 3]
+// The app's per-mount token, injected into the top frame only
+const token = 'top-frame-token'
 
 const flush = () => new Promise((resolve) => setImmediate(resolve))
 
@@ -49,7 +51,7 @@ const injectInto = async (isAndroid: boolean, pageScript = '') => {
     'document',
     `${pageScript}; ${walletStandard}; return injectWalletStandard`,
   )(window, document)
-  await inject(address, pubKey, isAndroid)
+  await inject(address, pubKey, isAndroid, token)
 
   const replyTarget = isAndroid ? document : window
   // The native side's postMessage dispatches a MessageEvent with no source
@@ -164,6 +166,11 @@ describe.each([
       setup.nativeReply(request.approved(id))
       await flush()
       expect(settled.state).toBe('resolved')
+    })
+
+    it('sends the top frame token with the request', async () => {
+      await send()
+      expect(setup.lastRequest().token).toBe(token)
     })
 
     it('rejects on a native decline with the request id', async () => {

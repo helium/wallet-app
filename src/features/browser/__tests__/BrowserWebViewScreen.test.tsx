@@ -1,5 +1,6 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
+import { createSignRequestResolver } from '../../../solana/signRequestResolver'
 import BrowserWebViewScreen from '../BrowserWebViewScreen'
 
 const mockShow = jest.fn()
@@ -16,6 +17,10 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
 jest.mock('react-native-webview', () => ({ WebView: 'WebView' }))
+jest.mock('expo-crypto', () => ({
+  getRandomValues: (array: Uint8Array) =>
+    jest.requireActual('crypto').webcrypto.getRandomValues(array),
+}))
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 jest.mock('lucide-react-native', () => ({
   Bookmark: 'Bookmark',
@@ -107,7 +112,40 @@ const render = async () => {
   }
   const replies = () =>
     webViewPostMessage.mock.calls.map(([message]) => JSON.parse(message))
-  return { receive, replies }
+
+  // Runs the script the screen injects into the top frame, in a fake page,
+  // and sends the request it posts to the screen as the top page
+  const topFrameConnect = async () => {
+    const page = new EventTarget() as EventTarget & Record<string, unknown>
+    page.crypto = crypto
+    const posted: string[] = []
+    page.ReactNativeWebView = {
+      postMessage: (message: string) => posted.push(message),
+    }
+    let wallet: { features: Record<string, { connect: () => unknown }> } = {
+      features: {},
+    }
+    page.addEventListener('wallet-standard:register-wallet', (event) =>
+      (event as CustomEvent).detail({
+        register: (registered: typeof wallet) => {
+          wallet = registered
+        },
+      }),
+    )
+    // eslint-disable-next-line no-new-func
+    new Function(
+      'window',
+      'document',
+      root.findByType('WebView' as never).props
+        .injectedJavaScriptBeforeContentLoaded,
+    )(page, new EventTarget())
+    await act(async () => {})
+    wallet.features['standard:connect'].connect()
+    const request = JSON.parse(posted[0])
+    await receive('https://app.example/swap', request)
+    return request.id as number
+  }
+  return { receive, replies, topFrameConnect }
 }
 
 describe('BrowserWebViewScreen dApp messages', () => {
@@ -145,6 +183,67 @@ describe('BrowserWebViewScreen dApp messages', () => {
       url: 'https://ads.example',
     })
     expect(replies()).toEqual([{ id: 8, type: 'signatureDeclined' }])
+  })
+
+  it('runs a top-frame request while an iframe request is pending', async () => {
+    const sheet = createSignRequestResolver()
+    mockShow.mockImplementation(sheet.next)
+    const { receive, replies, topFrameConnect } = await render()
+
+    await receive('https://ads.example/frame', { id: 7, type: 'connect' })
+    const topId = await topFrameConnect()
+    await act(async () => {
+      sheet.settle(true)
+    })
+
+    expect(mockShow).toHaveBeenCalledTimes(2)
+    expect(mockShow.mock.calls[1][0]).toMatchObject({
+      url: 'https://app.example',
+    })
+    // The top request's sheet declines the iframe's
+    expect(replies()).toEqual([
+      { id: 7, type: 'connectDeclined' },
+      { id: topId, type: 'connectApproved' },
+    ])
+  })
+
+  it('declines an iframe request while a top-frame request is pending', async () => {
+    const sheet = createSignRequestResolver()
+    mockShow.mockImplementation(sheet.next)
+    const { receive, replies, topFrameConnect } = await render()
+
+    const topId = await topFrameConnect()
+    await receive('https://ads.example/frame', { id: 7, type: 'connect' })
+    await act(async () => {
+      sheet.settle(true)
+    })
+
+    expect(mockShow).toHaveBeenCalledTimes(1)
+    expect(replies()).toEqual([
+      { id: 7, type: 'signatureDeclined', error: 'Request pending' },
+      { id: topId, type: 'connectApproved' },
+    ])
+  })
+
+  it('treats a request with a wrong token as an iframe request', async () => {
+    const sheet = createSignRequestResolver()
+    mockShow.mockImplementation(sheet.next)
+    const { receive, replies, topFrameConnect } = await render()
+
+    await receive('https://app.example/swap', {
+      id: 7,
+      token: 'guessed',
+      type: 'connect',
+    })
+    const topId = await topFrameConnect()
+    await act(async () => {
+      sheet.settle(true)
+    })
+
+    expect(replies()).toEqual([
+      { id: 7, type: 'connectDeclined' },
+      { id: topId, type: 'connectApproved' },
+    ])
   })
 
   it('drops a message from an opaque origin with no sheet and no reply', async () => {
