@@ -1,7 +1,7 @@
 /**
- * Runs the real payment and delegate mutations of useSubmitTxn. The wallet
- * signs real transactions with a test key; the sign sheet and the blockchain
- * API client are replaced.
+ * Runs the real sign-then-submit mutations of useSubmitTxn. The wallet signs
+ * real transactions with a test key; the sign sheet, the connection and the
+ * blockchain API client are replaced.
  */
 import { ORPCError } from '@orpc/client'
 import { NATIVE_MINT } from '@solana/spl-token'
@@ -21,6 +21,10 @@ import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { UnconfirmedSubmitError } from '../../utils/unconfirmedSubmitError'
+import type {
+  CompressedNFT,
+  HotspotWithPendingRewards,
+} from '../../types/solana'
 import useSubmitTxn from '../useSubmitTxn'
 
 const sender = Keypair.generate()
@@ -31,21 +35,49 @@ const mockWallet = {
     txs.forEach((tx) => (tx as VersionedTransaction).sign([sender]))
     return txs
   },
+  signTransaction: async <T,>(tx: T) => {
+    ;(tx as VersionedTransaction).sign([sender])
+    return tx
+  },
+}
+const mockConnection = {
+  getAccountInfo: async () => null,
+  getLatestBlockhash: async () => ({
+    blockhash: PublicKey.default.toBase58(),
+  }),
+  getAsset: async () => ({ result: {} }),
 }
 const mockSignSheet = { show: jest.fn() }
 const mockClient = {
   tokens: { multiTransfer: jest.fn() },
-  dataCredits: { delegate: jest.fn() },
+  dataCredits: { delegate: jest.fn(), mint: jest.fn() },
+  hotspots: {
+    transferHotspot: jest.fn(),
+    claimHotspotRewards: jest.fn(),
+    claimRewards: jest.fn(),
+    updateRewardsDestination: jest.fn(),
+  },
   transactions: { submit: jest.fn() },
 }
+const mockGetAssertData = jest.fn()
 
-jest.mock('@helium/helium-entity-manager-sdk', () => ({}))
+// Every hotspot resolves to one entity key.
+jest.mock('@helium/helium-entity-manager-sdk', () => ({
+  init: async () => ({
+    account: { keyToAssetV0: { fetch: async () => ({}) } },
+  }),
+  keyToAssetForAsset: () => undefined,
+  decodeEntityKey: () => 'entityKey',
+}))
 jest.mock('@helium/onboarding', () => ({}))
 jest.mock('@helium/react-native-sdk', () => ({
-  useOnboarding: () => ({ getAssertData: jest.fn() }),
+  useOnboarding: () => ({ getAssertData: mockGetAssertData }),
 }))
 jest.mock('@helium/spl-utils', () => ({
   DC_MINT: jest.requireActual('@solana/web3.js').PublicKey.default,
+  populateMissingDraftInfo: async (_connection: unknown, draft: unknown) =>
+    draft,
+  toVersionedTx: () => mockUnsignedTransaction(),
 }))
 // @orpc/client ships ESM only. ORPCError and isDefinedError mirror the real
 // ones; safe() settles the call into { error, data }.
@@ -91,18 +123,39 @@ jest.mock(
 )
 jest.mock('@utils/WrappedConnection', () => ({}), { virtual: true })
 jest.mock('@utils/accountUtils', () => ({}), { virtual: true })
-jest.mock('@utils/constants', () => ({ Mints: {} }), { virtual: true })
+jest.mock(
+  '@utils/constants',
+  () => {
+    const { PublicKey: Key } = jest.requireActual('@solana/web3.js')
+    return {
+      Mints: { IOT: 'iot', MOBILE: 'mobile', HNT: 'hnt' },
+      HNT_LAZY_KEY: Key.default,
+      IOT_LAZY_KEY: Key.unique(),
+      MOBILE_LAZY_KEY: Key.unique(),
+    }
+  },
+  { virtual: true },
+)
 jest.mock('@utils/formatting', () => ({}), { virtual: true })
 jest.mock('@utils/i18n', () => ({ t: (key: string) => key }), {
   virtual: true,
 })
-jest.mock('@utils/solanaUtils', () => ({}), { virtual: true })
+jest.mock(
+  '@utils/solanaUtils',
+  () => ({
+    toAsset: () => ({}),
+    createTreasurySwapTxn: async () => ({}),
+  }),
+  { virtual: true },
+)
 jest.mock('../../solana/CollectablePreview', () => ({}))
 jest.mock('../../solana/MessagePreview', () => ({}))
 jest.mock('../../solana/PaymentPreview', () => ({}))
 jest.mock('../../solana/SwapPreview', () => ({}))
 jest.mock('../../solana/SolanaProvider', () => ({
-  useSolana: () => ({ anchorProvider: { wallet: mockWallet } }),
+  useSolana: () => ({
+    anchorProvider: { wallet: mockWallet, connection: mockConnection },
+  }),
 }))
 jest.mock('../../solana/WalletSignProvider', () => ({
   useWalletSign: () => ({ walletSignBottomSheetRef: mockSignSheet }),
@@ -136,6 +189,9 @@ const unsignedTransfer = () =>
       }).compileToV0Message(),
     ).serialize(),
   ).toString('base64')
+
+const mockUnsignedTransaction = () =>
+  VersionedTransaction.deserialize(Buffer.from(unsignedTransfer(), 'base64'))
 
 const transactionData = () => ({
   transactions: [{ serializedTransaction: unsignedTransfer() }],
@@ -176,6 +232,65 @@ const delegate = () =>
     mint: NATIVE_MINT,
   })
 
+const transferCollectable = () =>
+  hook.collectableMutation.mutateAsync({
+    collectable: { compression: { compressed: true } } as CompressedNFT,
+    payee: alice.toBase58(),
+  })
+
+const jupiterSwap = () =>
+  hook.jupiterSwapMutation.mutateAsync({
+    inputMint: NATIVE_MINT,
+    inputAmount: 1,
+    outputMint: alice,
+    outputAmount: 1,
+    minReceived: 1,
+    swapTxn: mockUnsignedTransaction(),
+  })
+
+const treasurySwap = () =>
+  hook.treasurySwapMutation.mutateAsync({
+    fromMint: NATIVE_MINT,
+    amount: 1,
+    recipient: alice,
+  })
+
+const claimRewards = () =>
+  hook.claimRewardsMutation.mutateAsync({
+    hotspot: {
+      pendingRewards: { iot: '1' },
+    } as unknown as HotspotWithPendingRewards,
+  })
+
+const claimAllRewards = () =>
+  hook.claimAllRewardsMutation.mutateAsync({
+    lazyDistributors: [PublicKey.default],
+    hotspots: [],
+    totalHotspots: undefined,
+  })
+
+const mintDataCredits = () =>
+  hook.mintDataCreditsMutation.mutateAsync({
+    hntAmount: new BN(1),
+    dcAmount: new BN(1),
+    recipient: alice,
+  })
+
+const assertLocation = () =>
+  hook.updateEntityInfoMutation.mutateAsync({
+    type: 'IOT',
+    entityKey: 'entityKey',
+    lat: 1,
+    lng: 1,
+  })
+
+const changeRewardsRecipient = () =>
+  hook.updateRewardsDestinationMutation.mutateAsync({
+    lazyDistributors: [PublicKey.default],
+    destination: alice.toBase58(),
+    assetId: 'assetId',
+  })
+
 describe('useSubmitTxn', () => {
   beforeEach(() => {
     jest.restoreAllMocks()
@@ -186,6 +301,22 @@ describe('useSubmitTxn', () => {
     mockClient.dataCredits.delegate
       .mockReset()
       .mockResolvedValue(transactionData())
+    mockClient.dataCredits.mint.mockReset().mockResolvedValue(transactionData())
+    mockClient.hotspots.transferHotspot
+      .mockReset()
+      .mockResolvedValue({ transactionData: transactionData() })
+    mockClient.hotspots.claimHotspotRewards
+      .mockReset()
+      .mockResolvedValue({ transactionData: transactionData() })
+    mockClient.hotspots.claimRewards
+      .mockReset()
+      .mockResolvedValue({ transactionData: transactionData(), hasMore: false })
+    mockGetAssertData
+      .mockReset()
+      .mockResolvedValue({ solanaTransactions: [unsignedTransfer()] })
+    mockClient.hotspots.updateRewardsDestination
+      .mockReset()
+      .mockResolvedValue({ transactionData: transactionData() })
     mockClient.transactions.submit.mockReset()
     render()
   })
@@ -254,6 +385,14 @@ describe('useSubmitTxn', () => {
   describe.each([
     ['payment', pay],
     ['delegate', delegate],
+    ['collectable transfer', transferCollectable],
+    ['jupiter swap', jupiterSwap],
+    ['treasury swap', treasurySwap],
+    ['hotspot claim', claimRewards],
+    ['claim all', claimAllRewards],
+    ['mint data credits', mintDataCredits],
+    ['location assert', assertLocation],
+    ['rewards recipient change', changeRewardsRecipient],
   ])('a %s submit the server rejects', (_path, send) => {
     // The server raises these before it sends any transaction.
     it.each([
