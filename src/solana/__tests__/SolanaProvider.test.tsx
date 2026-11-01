@@ -103,6 +103,7 @@ const accountsResult = (keys: string[]) => ({
 const rpcError = { error: { code: -32005, message: 'Node is behind' } }
 
 beforeEach(() => {
+  jest.useFakeTimers()
   ;(Connection as unknown as jest.Mock).mockImplementation(() => ({
     getSlot: () => Promise.resolve(CURRENT_SLOT),
     _rpcRequest: rpcRequest,
@@ -116,6 +117,7 @@ beforeEach(() => {
 
 afterEach(() => {
   consoleError.mockRestore()
+  jest.useRealTimers()
 })
 
 // Mount the provider and let its startup account refresh run to its end
@@ -124,9 +126,7 @@ const mountAndRefresh = async () => {
     TestRenderer.create(<SolanaProvider>{null}</SolanaProvider>)
   })
   await act(async () => {
-    await new Promise((resolve) => {
-      setTimeout(resolve, 10)
-    })
+    await jest.advanceTimersByTimeAsync(10)
   })
 }
 

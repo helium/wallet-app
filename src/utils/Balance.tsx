@@ -68,17 +68,27 @@ const useBalanceHook = () => {
   // Use anchorProvider.connection instead of anchorProvider to prevent unnecessary re-syncs
   // when the provider object reference changes but the connection hasn't
   const providerConnection = anchorProvider?.connection
-  const syncTokens = useEffectEvent(() => {
+  const [tokenSyncFailed, setTokenSyncFailed] = useState(false)
+  // Resolves even when the sync fails; tokenSyncFailed records the outcome
+  const retryTokenSync = useCallback(async () => {
     if (!currentAccount?.solanaAddress || !anchorProvider || locked) return
-    syncTokenAccounts(queryClient, {
-      cluster,
-      acct: currentAccount,
-      anchorProvider,
-    }).catch(() => {
+    try {
+      await syncTokenAccounts(queryClient, {
+        cluster,
+        acct: currentAccount,
+        anchorProvider,
+      })
+      setTokenSyncFailed(false)
+    } catch {
       // The sync guard skipped it or the RPC failed; the last balances stay
-    })
+      setTokenSyncFailed(true)
+    }
+  }, [anchorProvider, cluster, currentAccount, locked, queryClient])
+  const syncTokens = useEffectEvent(() => {
+    void retryTokenSync()
   })
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the sync sets its flag only after the RPC answers
     syncTokens()
   }, [providerConnection, cluster, currentAccount, queryClient, locked])
 
@@ -320,8 +330,10 @@ const useBalanceHook = () => {
     networkTokensToDc,
     oraclePrice: hntToDcPrice,
     oraclePriceError,
+    retryTokenSync,
     solanaPrice,
     tokenAccounts,
+    tokenSyncFailed,
   }
 }
 
@@ -337,11 +349,13 @@ const initialState = {
   networkTokensToDc: () => undefined,
   oraclePrice: undefined,
   oraclePriceError: undefined,
+  retryTokenSync: () => Promise.resolve(),
   solanaPrice: undefined,
   solBalancesLoading: false,
   atas: [],
   updating: false,
   tokenAccounts: undefined,
+  tokenSyncFailed: false,
 }
 const BalanceContext =
   createContext<ReturnType<typeof useBalanceHook>>(initialState)
