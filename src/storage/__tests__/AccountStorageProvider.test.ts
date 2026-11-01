@@ -12,6 +12,13 @@ const storedAccount = {
   solanaAddress: 'Bm2vA8wWNmYGUTK3oAXZG8eAWmzwYMfCWm3hwzpEnFd4',
   netType: 0,
 }
+// A second stored wallet the user can open
+const otherAccount = {
+  alias: 'Other',
+  address: '14ivpToFabfUhxpcwQawc49dbK3V63o1t5fGGDbbd1MqyLSppFh',
+  solanaAddress: 'GmaDrppBC7P5ARKV8g3djiwP89vz1jLK23V2GBjuAEGB',
+  netType: 0,
+}
 const newAccount = {
   alias: 'New',
   address: '12zmaz84LWb5zTUkWSCRGMXRRPUypisLygqcUWQgkfES4xUPB7M',
@@ -26,8 +33,14 @@ jest.mock('../cloudStorage', () => ({
   updateCloudAccounts: jest.fn(),
   updateCloudContacts: () => Promise.resolve(),
 }))
+// The provider's listener for changes another device makes to the shared list
+let mockCloudListener: (() => void) | undefined
+const mockUnsubscribeCloud = jest.fn()
 jest.mock('../importLegacyState', () => ({
-  subscribeCloudItemChanges: () => () => {},
+  subscribeCloudItemChanges: (listener: () => void) => {
+    mockCloudListener = listener
+    return mockUnsubscribeCloud
+  },
 }))
 jest.mock('../oneSignalStorage', () => ({
   removeAccountTag: () => Promise.resolve(),
@@ -82,6 +95,29 @@ const renderProvider = async () => {
 
 const writeFailed = new Error('write failed')
 
+// Another device on the Apple ID changes the shared list
+const changeCloudList = () => {
+  if (!mockCloudListener) throw new Error('no cloud listener')
+  mockCloudListener()
+}
+
+const restoreResult = (
+  accounts: (typeof storedAccount)[],
+  current: typeof storedAccount = storedAccount,
+) => ({
+  csAccounts: Object.fromEntries(accounts.map((a) => [a.address, a])),
+  current,
+  contacts: [],
+})
+
+const deferred = <T>() => {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((r) => {
+    resolve = r
+  })
+  return { promise, resolve }
+}
+
 beforeAll(() => {
   ;(
     globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -91,6 +127,8 @@ beforeAll(() => {
 })
 
 beforeEach(async () => {
+  mockCloudListener = undefined
+  mockUnsubscribeCloud.mockReset()
   mockRestoreAccounts.mockReset()
   mockRestoreAccounts.mockResolvedValue({
     csAccounts: { [storedAccount.address]: storedAccount },
@@ -149,5 +187,94 @@ describe('AccountStorageProvider', () => {
     expect(Object.keys(storage.accounts ?? {})).toEqual([storedAccount.address])
     expect(storage.accounts).toBe(accounts)
     expect(storage.currentAccount).toBe(currentAccount)
+  })
+})
+
+describe('AccountStorageProvider reload from the shared list', () => {
+  it('reloads the accounts when another device changes the shared list', async () => {
+    mockRestoreAccounts.mockResolvedValueOnce(
+      restoreResult([storedAccount, otherAccount]),
+    )
+
+    await act(async () => {
+      changeCloudList()
+    })
+
+    expect(mockRestoreAccounts).toHaveBeenCalledTimes(2)
+    expect(Object.keys(storage.accounts ?? {})).toEqual([
+      storedAccount.address,
+      otherAccount.address,
+    ])
+  })
+
+  it('stops listening to the shared list on unmount', () => {
+    act(() => renderer?.unmount())
+    renderer = undefined
+
+    expect(mockUnsubscribeCloud).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the open wallet when the reloaded list still holds it', async () => {
+    mockRestoreAccounts.mockResolvedValueOnce(
+      restoreResult([storedAccount, otherAccount]),
+    )
+    await act(async () => {
+      changeCloudList()
+    })
+    act(() =>
+      storage.setCurrentAccount(storage.accounts?.[otherAccount.address]),
+    )
+
+    mockRestoreAccounts.mockResolvedValueOnce(
+      restoreResult([storedAccount, otherAccount], storedAccount),
+    )
+    await act(async () => {
+      changeCloudList()
+    })
+
+    expect(storage.currentAccount?.address).toBe(otherAccount.address)
+  })
+
+  it('opens the restored current wallet when the reloaded list drops the open one', async () => {
+    mockRestoreAccounts.mockResolvedValueOnce(
+      restoreResult([storedAccount, otherAccount]),
+    )
+    await act(async () => {
+      changeCloudList()
+    })
+    act(() =>
+      storage.setCurrentAccount(storage.accounts?.[otherAccount.address]),
+    )
+
+    mockRestoreAccounts.mockResolvedValueOnce(restoreResult([storedAccount]))
+    await act(async () => {
+      changeCloudList()
+    })
+
+    expect(storage.currentAccount?.address).toBe(storedAccount.address)
+  })
+
+  it('applies only the latest reload when an earlier one resolves after it', async () => {
+    const earlier = deferred<ReturnType<typeof restoreResult>>()
+    const latest = deferred<ReturnType<typeof restoreResult>>()
+    mockRestoreAccounts
+      .mockReturnValueOnce(earlier.promise)
+      .mockReturnValueOnce(latest.promise)
+
+    await act(async () => {
+      changeCloudList()
+      changeCloudList()
+    })
+    await act(async () => {
+      latest.resolve(restoreResult([storedAccount, otherAccount]))
+    })
+    await act(async () => {
+      earlier.resolve(restoreResult([storedAccount]))
+    })
+
+    expect(Object.keys(storage.accounts ?? {})).toEqual([
+      storedAccount.address,
+      otherAccount.address,
+    ])
   })
 })
