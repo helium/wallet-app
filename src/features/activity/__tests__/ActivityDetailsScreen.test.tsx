@@ -8,6 +8,7 @@ const FROM = 'from-wallet-address'
 const TO = 'to-wallet-address'
 
 const mockCopyText = jest.fn()
+const mockUseCopyText = jest.fn()
 
 // The node test runner cannot load gorhom (Reanimated, gesture handler). This
 // model keeps the part that decides where sheet content renders, as gorhom
@@ -100,7 +101,14 @@ jest.mock(
   { virtual: true },
 )
 jest.mock('@theme/motion', () => ({ SHEET_TIMING: {} }), { virtual: true })
-jest.mock('@hooks/useCopyText', () => () => mockCopyText, { virtual: true })
+jest.mock(
+  '@hooks/useCopyText',
+  () => (options: unknown) => {
+    mockUseCopyText(options)
+    return mockCopyText
+  },
+  { virtual: true },
+)
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
@@ -236,5 +244,7 @@ describe('ActivityDetailsScreen', () => {
       message: `short:${TO}`,
       copyText: TO,
     })
+    // An address is no secret: it copies as a plain clip.
+    expect(mockUseCopyText).toHaveBeenLastCalledWith({ haptic: false })
   })
 })

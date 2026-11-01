@@ -32,7 +32,7 @@ export const RevealWords = ({
   ListHeaderComponent,
 }: RevealWordsProps) => {
   const { t } = useTranslation()
-  const copyText = useCopyText({ haptic: false })
+  const copyText = useCopyText({ haptic: false, sensitive: true })
   useSecureWindow()
 
   const handleCopySeedPhrase = () => {
