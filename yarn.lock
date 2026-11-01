@@ -8730,13 +8730,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/tinycolor2@npm:1.4.6":
-  version: 1.4.6
-  resolution: "@types/tinycolor2@npm:1.4.6"
-  checksum: 10/a662fd177135d27779b7ccba39881a85167f969787c71c7bf51903d288a519ad5b9526e0a4af7bde6444df6b7abe88bae893d569c6d804108c03dfec9509bdf6
-  languageName: node
-  linkType: hard
-
 "@types/uuid@npm:^8.3.4":
   version: 8.3.4
   resolution: "@types/uuid@npm:8.3.4"
@@ -14445,7 +14438,6 @@ __metadata:
     "@types/react-native-video": "npm:5.0.21"
     "@types/react-test-renderer": "npm:^19.0.0"
     "@types/semver": "npm:7.3.13"
-    "@types/tinycolor2": "npm:1.4.6"
     "@ungap/structured-clone": "npm:1.3.4"
     "@walletconnect/react-native-compat": "npm:2.26.0"
     "@walletconnect/sign-client": "npm:2.26.0"
@@ -14561,7 +14553,6 @@ __metadata:
     tailwind-merge: "npm:3.3.1"
     tailwindcss: "npm:4.3.3"
     text-encoding-polyfill: "npm:^0.6.7"
-    tinycolor2: "npm:^1.6.0"
     typescript: "npm:~6.0.3"
     typescript-eslint: "npm:8.72.1"
     uniwind: "npm:1.13.1"
@@ -22090,13 +22081,6 @@ __metadata:
   version: 5.0.0
   resolution: "throat@npm:5.0.0"
   checksum: 10/00f7197977d433d1c960edfaa6465c1217652999170ef3ecd8dbefa6add6e2304b321480523ae87354df285474ba2c5feff03842e9f398b4bcdd95cfa18cff9c
-  languageName: node
-  linkType: hard
-
-"tinycolor2@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "tinycolor2@npm:1.6.0"
-  checksum: 10/066c3acf4f82b81c58a0d3ab85f49407efe95ba87afc3c7a16b1d77625193dfbe10dd46c26d0a263c1137361dd5a6a68bff2fb71def5fb9b9aec940fb030bcd4
   languageName: node
   linkType: hard
 

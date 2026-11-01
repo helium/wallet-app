@@ -132,63 +132,62 @@ lucide name visually when you make the swap.
 
 ### Swap for lucide
 
-| SVG                                                                                                   | lucide                                 |
-| ----------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `account`, `createAccount`, `unknownAccount`                                                          | `CircleUser`, `UserPlus`, `CircleHelp` |
-| `add`, `plus`                                                                                         | `Plus`                                 |
-| `addDapp`                                                                                             | `SquarePlus`                           |
-| `alert`, `warning`, `warning2`, `customWarning`                                                       | `TriangleAlert`                        |
-| `arrowRight`, `detailArrow`, `listItemRight`, `carot-right`                                           | `ChevronRight`                         |
-| `arrowUp`                                                                                             | `ArrowUp`                              |
-| `backArrow`                                                                                           | `ChevronLeft`                          |
-| `backspace`                                                                                           | `Delete`                               |
-| `bluetooth`                                                                                           | `Bluetooth`                            |
-| `bookmark` / `bookmarkFilled`                                                                         | `Bookmark` (filled: `fill` set)        |
-| `carot-down`, `carotDownFull`, `chevronDown`, `downArrow`, `remixChevronDown`                         | `ChevronDown`                          |
-| `remixChevronUp`                                                                                      | `ChevronUp`                            |
-| `checkIco`, `checkmark`, `blueCheck`                                                                  | `Check`                                |
-| `checkmarkFill`, `paymentSuccess`                                                                     | `CircleCheck`                          |
-| `close`, `closeModal`, `remixCancel`, `remove`                                                        | `X`                                    |
-| `CloseCircle`, `closeCircleFilled`, `error`, `fail`, `infoError`, `paymentFailure`, `cancelledCircle` | `CircleX`                              |
-| `cog`, `config`                                                                                       | `Settings`                             |
-| `copyAddress`                                                                                         | `Copy`                                 |
-| `courthouse`                                                                                          | `Landmark`                             |
-| `dapp-ellipsis`, `dots`                                                                               | `Ellipsis`                             |
-| `kabob`                                                                                               | `EllipsisVertical`                     |
-| `dollar`                                                                                              | `DollarSign`                           |
-| `earth-globe`, `globe`                                                                                | `Globe`                                |
-| `externalLink`                                                                                        | `ExternalLink`                         |
-| `filter`                                                                                              | `ListFilter`                           |
-| `flag`                                                                                                | `Flag`                                 |
-| `importIcon`                                                                                          | `Import`                               |
-| `indentArrow`                                                                                         | `CornerDownRight`                      |
-| `info`, `questionMark`                                                                                | `Info`, `CircleHelp`                   |
-| `lightningBolt`                                                                                       | `Zap`                                  |
-| `link`                                                                                                | `Link`                                 |
-| `lock`, `lockClosed`                                                                                  | `Lock`                                 |
-| `mapPin`                                                                                              | `MapPin`                               |
-| `mapUserLocation`                                                                                     | `LocateFixed`                          |
-| `menu`                                                                                                | `Menu`                                 |
-| `notificationBell`                                                                                    | `Bell`                                 |
-| `payment`, `send`, `txnSend`, `paymentArrow`                                                          | `ArrowUpRight`                         |
-| `receive`, `txnReceive`                                                                               | `ArrowDownLeft`                        |
-| `pending`, `circleLoader`                                                                             | `Clock`, `LoaderCircle`                |
-| `qr`                                                                                                  | `QrCode`                               |
-| `refresh`                                                                                             | `RefreshCw`                            |
-| `remixArrowRight`                                                                                     | `ArrowRight`                           |
-| `search`                                                                                              | `Search`                               |
-| `share`, `shareAddress`, `userShare`                                                                  | `Share`                                |
-| `swaps`                                                                                               | `ArrowLeftRight`                       |
-| `terminal`                                                                                            | `SquareTerminal`                       |
-| `transactions`                                                                                        | `History`                              |
-| `userStar`, `userX`                                                                                   | `UserStar`, `UserX`                    |
-| `automation`                                                                                          | `Repeat`                               |
-| `airdrop`                                                                                             | `Droplet`                              |
-| `stake`                                                                                               | `Layers`                               |
-| `browseProxies`                                                                                       | `Users`                                |
-| `collectableIcon`, `nft`                                                                              | `Image`                                |
-| `swipeIcon`                                                                                           | `Hand`                                 |
-| `activeCircle`, `majorityCircle`, `minorityCircle`                                                    | `Circle`, `CircleDot`                  |
+| SVG                                                                              | lucide                                 |
+| -------------------------------------------------------------------------------- | -------------------------------------- |
+| `account`, `createAccount`, `unknownAccount`                                     | `CircleUser`, `UserPlus`, `CircleHelp` |
+| `add`, `plus`                                                                    | `Plus`                                 |
+| `addDapp`                                                                        | `SquarePlus`                           |
+| `alert`, `warning2`, `customWarning`                                             | `TriangleAlert`                        |
+| `arrowRight`, `detailArrow`, `listItemRight`, `carot-right`                      | `ChevronRight`                         |
+| `arrowUp`                                                                        | `ArrowUp`                              |
+| `backArrow`                                                                      | `ChevronLeft`                          |
+| `backspace`                                                                      | `Delete`                               |
+| `bluetooth`                                                                      | `Bluetooth`                            |
+| `bookmark` / `bookmarkFilled`                                                    | `Bookmark` (filled: `fill` set)        |
+| `carot-down`, `carotDownFull`, `chevronDown`, `downArrow`, `remixChevronDown`    | `ChevronDown`                          |
+| `remixChevronUp`                                                                 | `ChevronUp`                            |
+| `checkIco`, `checkmark`, `blueCheck`                                             | `Check`                                |
+| `checkmarkFill`, `paymentSuccess`                                                | `CircleCheck`                          |
+| `close`, `closeModal`, `remixCancel`, `remove`                                   | `X`                                    |
+| `CloseCircle`, `error`, `fail`, `infoError`, `paymentFailure`, `cancelledCircle` | `CircleX`                              |
+| `cog`, `config`                                                                  | `Settings`                             |
+| `copyAddress`                                                                    | `Copy`                                 |
+| `courthouse`                                                                     | `Landmark`                             |
+| `dapp-ellipsis`, `dots`                                                          | `Ellipsis`                             |
+| `kabob`                                                                          | `EllipsisVertical`                     |
+| `dollar`                                                                         | `DollarSign`                           |
+| `earth-globe`, `globe`                                                           | `Globe`                                |
+| `externalLink`                                                                   | `ExternalLink`                         |
+| `filter`                                                                         | `ListFilter`                           |
+| `flag`                                                                           | `Flag`                                 |
+| `importIcon`                                                                     | `Import`                               |
+| `indentArrow`                                                                    | `CornerDownRight`                      |
+| `info`, `questionMark`                                                           | `Info`, `CircleHelp`                   |
+| `lightningBolt`                                                                  | `Zap`                                  |
+| `link`                                                                           | `Link`                                 |
+| `lock`, `lockClosed`                                                             | `Lock`                                 |
+| `mapPin`                                                                         | `MapPin`                               |
+| `mapUserLocation`                                                                | `LocateFixed`                          |
+| `menu`                                                                           | `Menu`                                 |
+| `notificationBell`                                                               | `Bell`                                 |
+| `payment`, `send`, `txnSend`, `paymentArrow`                                     | `ArrowUpRight`                         |
+| `receive`, `txnReceive`                                                          | `ArrowDownLeft`                        |
+| `pending`, `circleLoader`                                                        | `Clock`, `LoaderCircle`                |
+| `qr`                                                                             | `QrCode`                               |
+| `refresh`                                                                        | `RefreshCw`                            |
+| `remixArrowRight`                                                                | `ArrowRight`                           |
+| `search`                                                                         | `Search`                               |
+| `share`, `shareAddress`, `userShare`                                             | `Share`                                |
+| `swaps`                                                                          | `ArrowLeftRight`                       |
+| `terminal`                                                                       | `SquareTerminal`                       |
+| `userStar`, `userX`                                                              | `UserStar`, `UserX`                    |
+| `automation`                                                                     | `Repeat`                               |
+| `airdrop`                                                                        | `Droplet`                              |
+| `stake`                                                                          | `Layers`                               |
+| `browseProxies`                                                                  | `Users`                                |
+| `collectableIcon`, `nft`                                                         | `Image`                                |
+| `swipeIcon`                                                                      | `Hand`                                 |
+| `activeCircle`, `majorityCircle`, `minorityCircle`                               | `Circle`, `CircleDot`                  |
 
 ### Keep as SVG
 
