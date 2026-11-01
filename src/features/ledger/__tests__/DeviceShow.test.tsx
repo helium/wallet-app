@@ -81,6 +81,7 @@ jest.mock('../LedgerAccountListItem', () => ({
 let mockAccounts: Record<string, object> = {}
 let mockLedgerAccounts: { address: string }[] = []
 const mockUpsertAccounts = jest.fn()
+const mockUpdateLedgerAccounts = jest.fn()
 jest.mock('../../../storage/AccountStorageProvider', () => {
   const accountStorage = {
     get accounts() {
@@ -94,7 +95,8 @@ jest.mock(
   '@hooks/useLedger',
   () => {
     const ledger = {
-      updateLedgerAccounts: () => Promise.resolve(),
+      updateLedgerAccounts: (...args: unknown[]) =>
+        mockUpdateLedgerAccounts(...args),
       get ledgerAccounts() {
         return mockLedgerAccounts
       },
@@ -163,6 +165,8 @@ beforeEach(() => {
   mockNavigate.mockReset()
   mockUpsertAccounts.mockReset()
   mockUpsertAccounts.mockResolvedValue(undefined)
+  mockUpdateLedgerAccounts.mockReset()
+  mockUpdateLedgerAccounts.mockResolvedValue(undefined)
 })
 
 describe('DeviceShow', () => {
@@ -229,5 +233,38 @@ describe('DeviceShow', () => {
 
     expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
     expect(navigatedToPairSuccess()).toBe(1)
+  })
+
+  it('goes back to the device scan with the error when the Ledger accounts fail to load', async () => {
+    storeAccounts([])
+    mockLedgerAccounts = []
+    const loadFailed = new Error('open the Helium app')
+    mockUpdateLedgerAccounts.mockRejectedValue(loadFailed)
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    await renderDeviceShow()
+    consoleError.mockRestore()
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      'DeviceScan',
+      { error: loadFailed },
+      { pop: true },
+    )
+  })
+
+  it('goes back to the accounts screen on Close', async () => {
+    storeAccounts([])
+    mockLedgerAccounts = []
+    const renderer = await renderDeviceShow()
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockNavigate).toHaveBeenCalledWith('AccountsScreen', undefined, {
+      pop: true,
+    })
   })
 })
