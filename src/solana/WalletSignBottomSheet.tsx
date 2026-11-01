@@ -31,6 +31,9 @@ const WalletSignBottomSheet = ({
   // A ref, not state: context callers hold a stale show(), so settling
   // the pending request must not depend on a re-render
   const signRequestRef = useRef(createSignRequestResolver())
+  // A request that supersedes an open one waits here while the old sheet
+  // closes, so the user never approves it on a sheet that swapped in place
+  const supersedingOptsRef = useRef<WalletSignOpts | null>(null)
   // World's phone tray (style guide §9.5), as src/ui/Sheet draws it
   const backgroundStyle = useResolveClassNames('rounded-t-3xl bg-popover')
   const handleIndicatorStyle = useResolveClassNames(
@@ -55,29 +58,49 @@ const WalletSignBottomSheet = ({
     setSimulated(false)
   }
 
-  const show = (opts: WalletSignOpts) => {
-    const decision = signRequestRef.current.next()
+  const present = (opts: WalletSignOpts) => {
     bottomSheetModalRef.current?.present()
     bottomSheetModalRef.current?.expand()
     setWalletSignOpts(opts)
     bottomSheetModalRef.current?.snapToIndex(0)
+  }
+
+  const show = (opts: WalletSignOpts) => {
+    const superseding = signRequestRef.current.isPending()
+    const decision = signRequestRef.current.next()
+    if (superseding) {
+      // Staged before hide(): the dismiss presents it in a fresh sheet
+      supersedingOptsRef.current = opts
+      hide()
+    } else {
+      present(opts)
+    }
     return decision
   }
 
   useImperativeHandle(ref, () => ({ show, hide }))
 
   const handleModalDismiss = () => {
+    const supersedingOpts = supersedingOptsRef.current
+    if (supersedingOpts) {
+      supersedingOptsRef.current = null
+      present(supersedingOpts)
+      return
+    }
     signRequestRef.current.settle(false)
     if (onClose) {
       onClose()
     }
   }
 
+  // The closing sheet still shows the superseded request's buttons
   const onAcceptHandler = () => {
+    if (supersedingOptsRef.current) return
     if (signRequestRef.current.settle(true)) hide()
   }
 
   const onCancelHandler = () => {
+    if (supersedingOptsRef.current) return
     if (signRequestRef.current.settle(false)) hide()
   }
 

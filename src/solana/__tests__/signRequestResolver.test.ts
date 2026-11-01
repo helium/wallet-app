@@ -17,4 +17,13 @@ describe('createSignRequestResolver', () => {
     expect(resolver.settle(false)).toBe(false)
     await expect(request).resolves.toBe(true)
   })
+
+  it('reports a pending request until it settles', () => {
+    const resolver = createSignRequestResolver()
+    expect(resolver.isPending()).toBe(false)
+    void resolver.next()
+    expect(resolver.isPending()).toBe(true)
+    resolver.settle(false)
+    expect(resolver.isPending()).toBe(false)
+  })
 })
