@@ -49,6 +49,12 @@ jest.mock('@react-native-community/hooks', () => ({
 }))
 jest.mock('../../store/authStore', () => ({ useAuthStore: {} }))
 jest.mock('../../utils/makeApiToken', () => () => Promise.resolve(''))
+// The provider shows sign-out errors with Alert and i18n
+jest.mock('react-native', () => ({ Alert: { alert: () => {} } }))
+jest.mock('../../utils/i18n', () => ({
+  __esModule: true,
+  default: { t: (key: string) => key },
+}))
 
 const mockRestoreAccounts = restoreAccounts as jest.Mock
 const mockUpdateCloudAccounts = updateCloudAccounts as jest.Mock
