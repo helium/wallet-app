@@ -57,11 +57,13 @@ const KeystoneModal = ({
     message?: Buffer
   }): Promise<Buffer | undefined> => {
     const requestId = uuid.v4()
+    let settled = false
     // why need setTimeout? modal mounted --> sleep 1s --> modal present
-    // The request owns the sheet from present to settle. A sheet that is
-    // still animating closed calls onDismiss after the next request is
-    // shown, and must not settle it.
+    // The request owns the sheet from present to settle, so an onDismiss
+    // from the previous sheet that lands before this timer settles nothing.
+    // A close that runs past the timer still settles this request.
     setTimeout(() => {
+      if (settled) return
       settleRef.current = settle
       bottomSheetModalRef.current?.present()
       setIsShowing(true)
@@ -99,6 +101,7 @@ const KeystoneModal = ({
       settle(Buffer.from([]))
     }
     const settle = (value: Buffer) => {
+      settled = true
       eventEmitter.off(`keystoneSignature_${requestId}`, onSignature)
       eventEmitter.off('closeKeystoneSignatureModal', onClose)
       settleRef.current = undefined

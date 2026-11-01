@@ -10,7 +10,9 @@ import SignTxModal from '../SignTx/SignTxModal'
 // <PortalProvider rootHostName={hostName}>, and a presented modal mounts its
 // content with <Portal hostName={hostName}> of the nearest provider, and
 // dismiss() unmounts it and calls onDismiss when its close animation ends.
-const mockCloseAnimationMs = 250 // ANIMATION_DURATION in gorhom constants.ts
+// 250 ms is gorhom's Android ANIMATION_DURATION (constants.ts). iOS uses a
+// spring that settles near 500 ms. Both end before the 1 s present timer.
+const mockCloseAnimationMs = 250
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   const { Portal, PortalProvider } = jest.requireActual('@gorhom/portal')
@@ -319,5 +321,53 @@ describe('KeystoneModal', () => {
       emitSignature('bb')
     })
     await expect(second).resolves.toEqual(Buffer.from('bb', 'hex'))
+  })
+
+  // SignTxModal emits the close event without a request id, so a close tap
+  // on the previous sheet while it animates closed reaches the next request
+  // before its present timer fires.
+  it('does not present the sheet for a request that settles before its present timer', async () => {
+    const ref = React.createRef<KeystoneModalRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <KeystoneModal ref={ref}>{null}</KeystoneModal>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const modal = renderer.root.findByType(KeystoneModal)
+
+    let first: Promise<Buffer | undefined> | undefined
+    act(() => {
+      first = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('01', 'hex'),
+      })
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    const { eventEmitter, solSignRequest } = modal.findByType(SignTxModal).props
+    act(() => {
+      eventEmitter.emit(`keystoneSignature_${solSignRequest.requestId}`, 'aa')
+    })
+    await expect(first).resolves.toEqual(Buffer.from('aa', 'hex'))
+
+    let second: Promise<Buffer | undefined> | undefined
+    act(() => {
+      second = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('02', 'hex'),
+      })
+    })
+    act(() => {
+      eventEmitter.emit('closeKeystoneSignatureModal')
+    })
+    await expect(second).resolves.toEqual(Buffer.from([]))
+
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    expect(modal.findAllByType(SignTxModal)).toHaveLength(0)
   })
 })
