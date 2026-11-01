@@ -42,4 +42,22 @@ describe('proposalSummary', () => {
   it('returns null when there is no paragraph', () => {
     expect(proposalSummary('# Only a heading')).toBeNull()
   })
+
+  it('decodes HTML entities in the summary', () => {
+    expect(proposalSummary('Fees & rewards for "DC" < 1.')).toBe(
+      'Fees & rewards for "DC" < 1.',
+    )
+  })
+
+  it('joins a first paragraph that wraps across source lines', () => {
+    expect(
+      proposalSummary('# HIP 2\n\nFirst line\nsecond line.\n\nShort.'),
+    ).toBe('First line second line.')
+  })
+
+  it('returns null when the first paragraph holds only an image', () => {
+    expect(
+      proposalSummary('![logo](https://example.com/a.png)\n\nText.'),
+    ).toBeNull()
+  })
 })

@@ -16,6 +16,7 @@ const packageDirs = (nodeModules: string): string[] =>
         .map((scoped) => path.join(dir, scoped.name))
     })
 
+// Walks node_modules/<pkg>/node_modules chains; copies under a package subfolder (protobufjs/cli/node_modules, build tooling) are not walked.
 export const findInstalledCopies = (
   nodeModules: string,
   file: string,
