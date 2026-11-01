@@ -42,8 +42,12 @@ jest.mock('react-native', () => {
     )
   return { View: 'View', Image: 'Image', SectionList }
 })
+const mockNavigate = jest.fn()
 jest.mock('@react-navigation/native', () => {
-  const navigation = { navigate: () => {}, goBack: () => {} }
+  const navigation = {
+    navigate: (...args: unknown[]) => mockNavigate(...args),
+    goBack: () => {},
+  }
   const route = {
     params: { ledgerDevice: { id: 'device-id', name: 'Nano X', type: 'usb' } },
   }
@@ -76,12 +80,13 @@ jest.mock('../LedgerAccountListItem', () => ({
 // Each test sets the stored accounts and the accounts the Ledger shows.
 let mockAccounts: Record<string, object> = {}
 let mockLedgerAccounts: { address: string }[] = []
+const mockUpsertAccounts = jest.fn()
 jest.mock('../../../storage/AccountStorageProvider', () => {
   const accountStorage = {
     get accounts() {
       return mockAccounts
     },
-    upsertAccounts: () => Promise.resolve(),
+    upsertAccounts: (...args: unknown[]) => mockUpsertAccounts(...args),
   }
   return { useAccountStorage: () => accountStorage, MAX_ACCOUNTS: 50 }
 })
@@ -140,13 +145,25 @@ const pressSelectAll = async (renderer: TestRenderer.ReactTestRenderer) => {
 const buttonLabel = (renderer: TestRenderer.ReactTestRenderer) =>
   renderer.root.findByType('Button' as never).props.children
 
-const showsAccountLimit = (renderer: TestRenderer.ReactTestRenderer) =>
+const shows = (renderer: TestRenderer.ReactTestRenderer, key: string) =>
   renderer.root
     .findAllByType('Text' as never)
-    .some((n) => n.props.children === 'accountImport.accountLimitLedger')
+    .some((n) => n.props.children === key)
+
+const showsAccountLimit = (renderer: TestRenderer.ReactTestRenderer) =>
+  shows(renderer, 'accountImport.accountLimitLedger')
+
+const navigatedToPairSuccess = () =>
+  mockNavigate.mock.calls.filter(([screen]) => screen === 'PairSuccess').length
 
 const others = (count: number) =>
   Array.from({ length: count }, (_, i) => `other${i}`)
+
+beforeEach(() => {
+  mockNavigate.mockReset()
+  mockUpsertAccounts.mockReset()
+  mockUpsertAccounts.mockResolvedValue(undefined)
+})
 
 describe('DeviceShow', () => {
   it('does not count already-linked accounts against the limit on Select All', async () => {
@@ -170,5 +187,47 @@ describe('DeviceShow', () => {
 
     expect(buttonLabel(renderer)).toBe('ledger.show.close')
     expect(showsAccountLimit(renderer)).toBe(true)
+  })
+
+  it('shows an error and stays on the screen when the accounts fail to save', async () => {
+    storeAccounts(others(2))
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    mockUpsertAccounts.mockRejectedValue(new Error('write failed'))
+    const renderer = await renderDeviceShow()
+    await pressSelectAll(renderer)
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
+    expect(navigatedToPairSuccess()).toBe(0)
+    expect(shows(renderer, 'generic.somethingWentWrong')).toBe(true)
+
+    // A retry saves again and moves on
+    mockUpsertAccounts.mockResolvedValue(undefined)
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(2)
+    expect(navigatedToPairSuccess()).toBe(1)
+    expect(shows(renderer, 'generic.somethingWentWrong')).toBe(false)
+  })
+
+  it('saves and navigates once when Next is pressed twice in one tick', async () => {
+    storeAccounts(others(2))
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    const renderer = await renderDeviceShow()
+    await pressSelectAll(renderer)
+
+    await act(async () => {
+      const { onPress } = renderer.root.findByType('Button' as never).props
+      onPress()
+      onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
+    expect(navigatedToPairSuccess()).toBe(1)
   })
 })
