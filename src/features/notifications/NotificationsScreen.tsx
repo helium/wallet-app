@@ -1,6 +1,6 @@
 import React, { useEffect, useEffectEvent } from 'react'
 import { useIsFocused } from '@react-navigation/native'
-import { Linking, View } from 'react-native'
+import { View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
@@ -9,6 +9,7 @@ import { Text } from '@ui/Text'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationsList from './NotificationsList'
+import { openHttpsUrl } from '../../utils/openHttpsUrl'
 
 const SafeArea = withUniwind(SafeAreaView)
 
@@ -27,10 +28,7 @@ const NotificationsScreen = () => {
     onFocus()
   }, [isFocused])
 
-  const onActionPress = () => {
-    if (!selectedNotification?.actionUrl) return
-    void Linking.openURL(selectedNotification.actionUrl).catch(console.error)
-  }
+  const onActionPress = () => openHttpsUrl(selectedNotification?.actionUrl)
 
   const HeaderComponent = (
     <>

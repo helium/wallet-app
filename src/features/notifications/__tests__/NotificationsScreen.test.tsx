@@ -256,6 +256,30 @@ describe('NotificationsScreen', () => {
     expect(mockOpenURL).toHaveBeenCalledWith('https://example.com/read')
   })
 
+  it.each([
+    // eslint-disable-next-line no-script-url -- the scheme under test
+    'javascript:alert(1)',
+    'tel:+15555550100',
+    'sms:+15555550100',
+    'file:///etc/passwd',
+    'intent://scan/#Intent;scheme=zxing;end',
+    'heliumwallet://import_key/abc',
+    'zcash://pay',
+    'not a url',
+  ])('opens nothing for an action link to %s', async (actionUrl) => {
+    mockStorage.selectedNotification = notification(8, '2026-10-01T18:00:00Z', {
+      actionTitle: 'Read more',
+      actionUrl,
+    })
+
+    const view = await render()
+
+    act(() => {
+      view.buttons()[0].props.onPress()
+    })
+    expect(mockOpenURL).not.toHaveBeenCalled()
+  })
+
   it('shows no action button without an action link', async () => {
     mockStorage.selectedNotification = notification(5, '2026-10-01T18:00:00Z', {
       actionTitle: 'Read more',

@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { Linking, View, ViewStyle } from 'react-native'
+import { View, ViewStyle } from 'react-native'
 import parse5, {
   DefaultTreeElement,
   DefaultTreeNode,
@@ -10,6 +10,7 @@ import get from 'lodash/get'
 import isEmpty from 'lodash/isEmpty'
 import { Text } from '@ui/Text'
 import * as Logger from './logger'
+import { openHttpsUrl } from './openHttpsUrl'
 
 const MarkupLink = ({
   children,
@@ -18,12 +19,7 @@ const MarkupLink = ({
   children?: ReactNode
   href?: string
 }) => (
-  <Text
-    accessibilityRole="link"
-    onPress={() => {
-      if (href) void Linking.openURL(href).catch(console.error)
-    }}
-  >
+  <Text accessibilityRole="link" onPress={() => openHttpsUrl(href)}>
     {children}
   </Text>
 )
