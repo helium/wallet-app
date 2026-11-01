@@ -524,6 +524,15 @@ export const removeAccountChangeListener = (
   return conn.removeAccountChangeListener(id)
 }
 
+export const removeOnLogsListener = (
+  anchorProvider: AnchorProvider,
+  id: number,
+) => {
+  const conn = anchorProvider.connection as WrappedConnection
+
+  return conn.removeOnLogsListener(id)
+}
+
 export const createTransferCollectableMessage = async (
   anchorProvider: AnchorProvider,
   solanaAddress: string,

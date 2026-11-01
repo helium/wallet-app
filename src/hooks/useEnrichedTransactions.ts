@@ -15,7 +15,7 @@ import { EnrichedTransaction } from '../types/solana'
 import {
   getAllTransactions,
   onLogs,
-  removeAccountChangeListener,
+  removeOnLogsListener,
 } from '../utils/solanaUtils'
 
 const useEnrichedTransactions = (): {
@@ -38,7 +38,6 @@ const useEnrichedTransactions = (): {
   const [fetchingMore, setFetchingMore] = useState<boolean>(false)
   const [onEndReached, setOnEndReached] = useState<boolean>(false)
   const [hasNewTransactions, setHasNewTransactions] = useState(false)
-  const accountSubscriptionId = useRef<number | undefined>(undefined)
   const activeKeyRef = useRef('')
   const firstSig = useMemo(
     () => (transactions[0] ? transactions[0].signature : ''),
@@ -215,13 +214,9 @@ const useEnrichedTransactions = (): {
       onNewLogs()
     })
 
-    if (accountSubscriptionId.current !== undefined) {
-      void removeAccountChangeListener(
-        anchorProvider,
-        accountSubscriptionId.current,
-      )
+    return () => {
+      void removeOnLogsListener(anchorProvider, subId)
     }
-    accountSubscriptionId.current = subId
   }, [anchorProvider, cluster, currentAccount, refresh])
 
   const resetNewTransactions = useCallback(() => {
