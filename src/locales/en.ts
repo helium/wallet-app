@@ -1120,6 +1120,10 @@ export default {
           body: 'You are removing your wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your HNT\n- your Wallet',
           bodyLastAccount:
             'You are removing your only wallet, {{alias}}. Do you have your recovery words? If you don’t, you will lose access to:\n\n- your Address Book\n- your HNT\n- your Wallet',
+          deleteFailed:
+            'Cannot remove the key of this wallet from this device. The wallet stays on this device. Try again.',
+          deleteFailedAll:
+            'Your wallets are removed from this device, but the keychain still holds the key of one or more of them.',
           iCloudMessage:
             '\n\nAny device using the same iCloud account will also be signed out.',
           iCloudMessageOneWallet:

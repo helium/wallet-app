@@ -211,4 +211,5 @@ export const signoutSecureStore = (addresses: string[]) => [
   SecureStore.deleteItemAsync(SecureStorageKeys.PIN),
   SecureStore.deleteItemAsync(SecureStorageKeys.LAST_IDLE),
   SecureStore.deleteItemAsync(SecureStorageKeys.HIDE_PRIVATE_KEY_ALERT),
+  SecureStore.deleteItemAsync(SecureStorageKeys.WALLET_API_TOKEN),
 ]

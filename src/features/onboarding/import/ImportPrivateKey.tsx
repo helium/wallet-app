@@ -231,6 +231,7 @@ const ImportPrivateKey = () => {
             keyboardAppearance="dark"
             autoCorrect={false}
             onChangeText={onChangePassword}
+            secureTextEntry
             autoComplete="off"
             returnKeyType="done"
             placeholderTextColorClassName="accent-navy-foreground/50"

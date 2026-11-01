@@ -290,6 +290,10 @@ const useSolanaHook = () => {
             })
           })
 
+          // A failed chunk keeps the old slot, so the next run asks for its
+          // changes again
+          if (responses.some(({ response }) => response.error)) return
+
           // Store the current slot as the last checked slot for next time
           await saveCacheThenSlot(asyncCache, currentSlot)
         } catch (e) {

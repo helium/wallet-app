@@ -10,6 +10,7 @@ import { AccountInfo, Keypair, PublicKey } from '@solana/web3.js'
 import { CSAccount } from '../../../storage/cloudStorage'
 import { AccountBalance } from '../../../types/balance'
 import {
+  TOKEN_SYNC_TIMEOUT,
   syncTokenAccounts,
   tokenAccountsQueryOptions,
 } from '../../../utils/balances'
@@ -221,7 +222,7 @@ describe('syncTokenAccounts', () => {
     expect(port.isSyncing()).toBe(false)
   })
 
-  it('reads decimals as 0 when the mint fetch fails', async () => {
+  it('rejects a sync whose mint fetch fails and stores nothing', async () => {
     const owner = Keypair.generate().publicKey
     const { connection } = fakeConnection({
       owner,
@@ -232,16 +233,43 @@ describe('syncTokenAccounts', () => {
     })
     const port = makePort()
 
-    await port.syncTokenAccounts({
+    const sync = await port.syncTokenAccounts({
       cluster: 'mainnet-beta',
       acct: accountFor(owner),
       anchorProvider: providerFor(connection),
     })
 
+    expect(sync).toBe('rejected')
+    expect(port.tokensOf('mainnet-beta', owner.toBase58())).toBeUndefined()
+  })
+
+  it('keeps the stored mint decimals when a later mint fetch fails', async () => {
+    const owner = Keypair.generate().publicKey
+    const { connection } = fakeConnection({
+      owner,
+      lamports: 0,
+      holdings: [{ mint: HNT_MINT, amount: BigInt(100) }],
+      decimalsByMint: { [HNT_MINT.toBase58()]: 8 },
+    })
+    const port = makePort()
+    const sync = () =>
+      port.syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(owner),
+        anchorProvider: providerFor(connection),
+      })
+
+    expect(await sync()).toBe('fulfilled')
+    now += 5_000
+    connection.getMultipleAccountsInfo.mockRejectedValueOnce(
+      new Error('rpc down'),
+    )
+
+    expect(await sync()).toBe('rejected')
     const tokens = port.tokensOf('mainnet-beta', owner.toBase58())
     expect(
       tokens?.atas.map(({ mint, decimals }) => ({ mint, decimals })),
-    ).toEqual([{ mint: HNT_MINT.toBase58(), decimals: 0 }])
+    ).toEqual([{ mint: HNT_MINT.toBase58(), decimals: 8 }])
   })
 
   it('reads decimals as 0 for a mint with no account, and SOL as 0 for a wallet with no account', async () => {
@@ -467,6 +495,68 @@ describe('syncTokenAccounts', () => {
 
     expect(await first).toBe('fulfilled')
     expect(a.connection.getTokenAccountsByOwner).toHaveBeenCalledTimes(1)
+  })
+
+  it('times out a hung sync, runs the waiting one, and syncs the hung wallet again', async () => {
+    // Date stays on the test clock above
+    jest.useFakeTimers({ doNotFake: ['Date'] })
+    const ownerA = Keypair.generate().publicKey
+    const ownerB = Keypair.generate().publicKey
+    const fakeA = () =>
+      fakeConnection({
+        owner: ownerA,
+        lamports: 1000,
+        holdings: [],
+        decimalsByMint: {},
+      }).connection
+    // Never released: the token account read hangs, as with no fetch timeout
+    const hungA = hangingConnection(fakeA())
+    const b = fakeConnection({
+      owner: ownerB,
+      lamports: 2000,
+      holdings: [],
+      decimalsByMint: {},
+    })
+    const port = makePort()
+
+    const syncA = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerA),
+      anchorProvider: providerFor(hungA.connection),
+    })
+    const syncB = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerB),
+      anchorProvider: providerFor(b.connection),
+    })
+    await jest.advanceTimersByTimeAsync(TOKEN_SYNC_TIMEOUT)
+
+    // The pull-to-refresh spinner ends when its sync settles
+    expect(await syncA).toBe('rejected')
+    expect(await syncB).toBe('fulfilled')
+    expect(port.tokensOf('mainnet-beta', ownerB.toBase58())?.sol).toEqual({
+      tokenAccount: ownerB.toBase58(),
+      balance: 2000,
+    })
+    expect(port.isSyncing()).toBe(false)
+
+    // The next sync of the hung wallet asks the RPC again
+    now += 5_000
+    const retryA = fakeA()
+    const retry = port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(ownerA),
+      anchorProvider: providerFor(retryA),
+    })
+    await jest.advanceTimersByTimeAsync(0)
+
+    expect(await retry).toBe('fulfilled')
+    expect(retryA.getTokenAccountsByOwner).toHaveBeenCalledTimes(1)
+    expect(port.tokensOf('mainnet-beta', ownerA.toBase58())?.sol).toEqual({
+      tokenAccount: ownerA.toBase58(),
+      balance: 1000,
+    })
+    jest.useRealTimers()
   })
 
   it('runs a waiting sync when the sync before it fails', async () => {

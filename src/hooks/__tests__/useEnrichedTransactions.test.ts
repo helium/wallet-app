@@ -36,6 +36,10 @@ const mockGetItem = (key: string) => {
 }
 // Latest onLogs callback per subscribed address
 const mockOnLogsCallbacks: Record<string, () => void> = {}
+// Log subscriptions still live on the connection, keyed by subscription id
+const mockLiveLogs: Map<number, { address: string; callback: () => void }> =
+  new Map()
+let mockNextSubId = 1
 const mockGetAllTransactions = (
   address: string,
   _provider: unknown,
@@ -71,8 +75,16 @@ jest.mock('../../utils/solanaUtils', () => ({
   ) => mockGetAllTransactions(address, provider, cluster, before),
   onLogs: (_provider: unknown, address: string, callback: () => void) => {
     mockOnLogsCallbacks[address] = callback
-    return 1
+    const id = mockNextSubId
+    mockNextSubId += 1
+    mockLiveLogs.set(id, { address, callback })
+    return id
   },
+  removeOnLogsListener: (_provider: unknown, id: number) => {
+    mockLiveLogs.delete(id)
+    return Promise.resolve()
+  },
+  // The account-change API does not remove a logs subscription
   removeAccountChangeListener: () => Promise.resolve(),
 }))
 
@@ -121,6 +133,7 @@ describe('useEnrichedTransactions', () => {
     Object.keys(mockOnLogsCallbacks).forEach(
       (key) => delete mockOnLogsCallbacks[key],
     )
+    mockLiveLogs.clear()
     mockStorage['txs-devnet-addressA'] = JSON.stringify(A_TXS)
     mockState.cluster = 'devnet'
     mockState.currentAccount = ACCOUNT_A
@@ -285,5 +298,36 @@ describe('useEnrichedTransactions', () => {
     })
     expect(hookResult?.loading).toBe(false)
     expect(hookResult?.fetchingMore).toBe(false)
+  })
+
+  it('removes the logs subscription on unmount', async () => {
+    const renderer = await renderProbe()
+    expect([...mockLiveLogs.values()].map((s) => s.address)).toEqual([
+      'addressA',
+    ])
+
+    await act(async () => {
+      renderer.unmount()
+    })
+
+    expect(mockLiveLogs.size).toBe(0)
+  })
+
+  it('removes the old logs subscription on an account switch', async () => {
+    const renderer = await renderProbe()
+
+    mockState.currentAccount = ACCOUNT_B
+    await rerenderProbe(renderer)
+    expect([...mockLiveLogs.values()].map((s) => s.address)).toEqual([
+      'addressB',
+    ])
+
+    // A log for account A still reaching the hook would flag B as having news
+    await act(async () => {
+      mockLiveLogs.forEach(({ address, callback }) => {
+        if (address === 'addressA') callback()
+      })
+    })
+    expect(hookResult?.hasNewTransactions).toBe(false)
   })
 })
