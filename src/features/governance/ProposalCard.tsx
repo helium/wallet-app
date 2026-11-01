@@ -12,7 +12,6 @@ import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/formatting'
 import axios from 'axios'
 import BN from 'bn.js'
-import MarkdownIt from 'markdown-it'
 import { useQuery } from '@tanstack/react-query'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -24,6 +23,7 @@ import useNowAfter from '@hooks/useNowAfter'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 import { ProposalTags } from './ProposalTags'
+import { renderProposalMarkdown } from './proposalMarkdown'
 
 interface IProposalCardProps {
   filter: ProposalFilter
@@ -33,7 +33,6 @@ interface IProposalCardProps {
   className?: string
 }
 
-const markdownParser = MarkdownIt()
 const StatusChip = ({
   dotClassName,
   label,
@@ -90,7 +89,7 @@ export const ProposalCard = ({
         // Force HTTPS for security - convert any HTTP URLs to HTTPS
         const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
         const { data } = await axios.get(secureUri)
-        const htmlContent = markdownParser.render(data)
+        const htmlContent = renderProposalMarkdown(data)
         const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
         return firstParagraphMatch
           ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')

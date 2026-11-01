@@ -8,7 +8,7 @@ const ORPC_CLIENT = path.resolve(
 
 describe('Hermes syntax in patched dependencies', () => {
   it('has no destructured rest parameter in an async arrow in @orpc/client', () => {
-    // Hermes V1 rejects a destructured rest parameter in an async arrow; patches/@orpc+client+1.13.4.patch removes it.
+    // Hermes V1 rejects a destructured rest parameter in an async arrow; patches/@orpc+client+1.16.1.patch removes it.
     expect(fs.readFileSync(ORPC_CLIENT, 'utf8')).not.toMatch(
       /async\s*\(\s*\.\.\.\s*\[/,
     )
