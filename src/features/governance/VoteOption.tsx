@@ -5,7 +5,7 @@ import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { shortenAddress } from '@utils/formatting'
-import React from 'react'
+import React, { useRef } from 'react'
 import { View } from 'react-native'
 import { VoteChoiceWithMeta, VotingResultColors } from './governanceTypes'
 
@@ -40,6 +40,19 @@ export const VoteOption = ({
     : canRelinquishVote
       ? onRelinquishVote
       : undefined
+  // `voting` renders a tick late, so a ref holds the option until its call settles
+  const sending = useRef(false)
+  const send =
+    handleVote &&
+    (() => {
+      if (sending.current) return
+      sending.current = true
+      void handleVote()
+        .catch(console.error)
+        .finally(() => {
+          sending.current = false
+        })
+    })
 
   return (
     <PressableScale
@@ -48,7 +61,7 @@ export const VoteOption = ({
         'grow flex-col rounded-md bg-secondary p-3',
         className,
       )}
-      onPress={handleVote && (() => void handleVote().catch(console.error))}
+      onPress={send}
     >
       <View className="flex-row">
         {!voting ? (

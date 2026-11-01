@@ -1,6 +1,18 @@
+import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import SwapNavigator from '../SwapNavigator'
+
+// The ATA fee query, the cluster, and the mint accounts. The defaults leave
+// the fee read and the mints unloaded on mainnet; a test may change them.
+let mockAtaFeeQuery: { data?: BN; isLoading: boolean }
+let mockIsDevnet: boolean
+let mockMintsLoaded: boolean
+beforeEach(() => {
+  mockAtaFeeQuery = { data: undefined, isLoading: false }
+  mockIsDevnet = false
+  mockMintsLoaded = false
+})
 
 // The stack renders its first screen, as the native stack does on open.
 jest.mock('@react-navigation/native-stack', () => {
@@ -54,10 +66,9 @@ jest.mock('../SwappingScreen', () => 'SwappingScreen')
 jest.mock('../logic/ataCreationFeeQuery', () => ({
   ataCreationFeeQuery: () => ({}),
 }))
-jest.mock('@tanstack/react-query', () => {
-  const query = { data: undefined }
-  return { useQuery: () => query }
-})
+jest.mock('@tanstack/react-query', () => ({
+  useQuery: () => mockAtaFeeQuery,
+}))
 jest.mock('@react-navigation/native', () => {
   const navigation = { goBack: () => {}, push: () => {} }
   return { useNavigation: () => navigation }
@@ -65,8 +76,8 @@ jest.mock('@react-navigation/native', () => {
 
 // Stable hook values: the screen's effects depend on them.
 jest.mock('../../../solana/SolanaProvider', () => {
-  const solana = { isDevnet: false, connection: {} }
-  return { useSolana: () => solana }
+  const connection = {}
+  return { useSolana: () => ({ isDevnet: mockIsDevnet, connection }) }
 })
 jest.mock('../../../utils/accountUtils', () => ({
   solAddressIsValid: () => true,
@@ -90,8 +101,16 @@ jest.mock(
 jest.mock('@storage/cloudStorage', () => ({}), { virtual: true })
 jest.mock('@helium/helium-react-hooks', () => {
   const owned = { amount: undefined }
+  // One stable account per mint, with 6 decimals.
+  const mints = new Map<string, unknown>()
+  const mint = (address: { toBase58: () => string }) => {
+    const key = address.toBase58()
+    if (!mints.has(key)) mints.set(key, { info: { address, decimals: 6 } })
+    return mints.get(key)
+  }
   return {
-    useMint: () => undefined,
+    useMint: (address: { toBase58: () => string }) =>
+      mockMintsLoaded ? mint(address) : undefined,
     useOwnedAmount: () => owned,
     useSolOwnedAmount: () => owned,
   }
@@ -103,8 +122,10 @@ jest.mock('@helium/spl-utils', () => {
     HNT_MINT: new PublicKey('hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux'),
     IOT_MINT: new PublicKey('iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns'),
     MOBILE_MINT: new PublicKey('mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6'),
-    toBN: () => undefined,
-    toNumber: () => 0,
+    toBN: (amount: number, decimals: number) =>
+      new (jest.requireActual('bn.js'))(Math.round(amount * 10 ** decimals)),
+    toNumber: (amount: BN, decimals: number) =>
+      amount.toNumber() / 10 ** decimals,
     truthy: Boolean,
   }
 })
@@ -429,6 +450,31 @@ describe('SwapNavigator', () => {
     )
     expect(addressBook).toHaveLength(1)
   })
+
+  // The ATA fee feeds the insufficient-SOL check, so a swap before it loads
+  // skips that check. Devnet prices the swap without a Jupiter route.
+  it.each([
+    [true, true],
+    [false, false],
+  ])(
+    'with the ATA fee loading %s, disables the submit: %s',
+    async (isLoading, disabled) => {
+      mockIsDevnet = true
+      mockMintsLoaded = true
+      mockAtaFeeQuery = { data: undefined, isLoading }
+      const view = await render()
+
+      const keyboard = view.root.find(
+        (n) => typeof n.props.onConfirmBalance === 'function',
+      )
+      await act(async () => {
+        keyboard.props.onConfirmBalance({ balance: new BN(1_000_000) })
+      })
+
+      const [submit] = view.byTestID('Swap.Submit')
+      expect(submit.props.disabled).toBe(disabled)
+    },
+  )
 
   it('switches the amount keyboard back to the paid token when the pay item is pressed', async () => {
     const view = await render()

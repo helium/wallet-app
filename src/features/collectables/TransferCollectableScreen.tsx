@@ -292,7 +292,12 @@ const TransferCollectableScreen = () => {
                     variant="cta"
                     size="lg"
                     className="flex-1"
-                    disabled={!solAddressIsValid(recipient) || transferring}
+                    disabled={
+                      !solAddressIsValid(recipient) ||
+                      transferring ||
+                      hasInsufficientBalance ||
+                      !!feeError
+                    }
                     onPress={() => void handleTransfer().catch(console.error)}
                   >
                     {transferring ? (
