@@ -1,3 +1,4 @@
+import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { WalletSignBottomSheetSimulated } from '../WalletSIgnBottomSheetSimulated'
@@ -35,7 +36,9 @@ jest.mock('@helium/sus', () => ({ sus: () => Promise.resolve([]) }))
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
-jest.mock('@hooks/useBN', () => ({ useBN: () => undefined }), {
+// The SOL balance; unloaded unless a test sets it.
+let mockSolBalance: BN | undefined
+jest.mock('@hooks/useBN', () => ({ useBN: () => mockSolBalance }), {
   virtual: true,
 })
 jest.mock(
@@ -144,5 +147,40 @@ describe('WalletSignBottomSheetSimulated', () => {
     })
     expect(onAccept).toHaveBeenCalledTimes(1)
     expect(onCancel).not.toHaveBeenCalled()
+  })
+
+  describe('insufficient-funds pill', () => {
+    const insufficientFundsPills = () => {
+      let renderer: TestRenderer.ReactTestRenderer | undefined
+      act(() => {
+        renderer = TestRenderer.create(
+          <WalletSignBottomSheetSimulated
+            type={WalletStandardMessageTypes.signTransaction}
+            serializedTxs={[Buffer.from('tx')]}
+            onAccept={() => {}}
+            onCancel={() => {}}
+          />,
+        )
+      })
+      if (!renderer) throw new Error('render failed')
+      return renderer.root
+        .findAllByType('WarningPill' as never)
+        .filter((n) => n.props.text === 'browserScreen.insufficientFunds')
+    }
+    afterEach(() => {
+      mockSolBalance = undefined
+    })
+
+    it('shows no insufficient-funds pill while the SOL balance loads', () => {
+      mockSolBalance = undefined
+
+      expect(insufficientFundsPills()).toHaveLength(0)
+    })
+
+    it('shows the insufficient-funds pill when the SOL balance is short of the fee', () => {
+      mockSolBalance = new BN(4999)
+
+      expect(insufficientFundsPills()).toHaveLength(1)
+    })
   })
 })

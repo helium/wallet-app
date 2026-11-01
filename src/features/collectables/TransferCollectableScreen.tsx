@@ -293,6 +293,7 @@ const TransferCollectableScreen = () => {
                     size="lg"
                     className="flex-1"
                     disabled={
+                      !feeData ||
                       !solAddressIsValid(recipient) ||
                       transferring ||
                       hasInsufficientBalance ||

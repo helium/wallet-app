@@ -8,10 +8,13 @@ import SwapNavigator from '../SwapNavigator'
 let mockAtaFeeQuery: { data?: BN; isLoading: boolean }
 let mockIsDevnet: boolean
 let mockMintsLoaded: boolean
+// The SOL balance in lamports; unloaded unless a test sets it.
+let mockSolAmount: bigint | undefined
 beforeEach(() => {
   mockAtaFeeQuery = { data: undefined, isLoading: false }
   mockIsDevnet = false
   mockMintsLoaded = false
+  mockSolAmount = undefined
 })
 
 // The stack renders its first screen, as the native stack does on open.
@@ -112,7 +115,7 @@ jest.mock('@helium/helium-react-hooks', () => {
     useMint: (address: { toBase58: () => string }) =>
       mockMintsLoaded ? mint(address) : undefined,
     useOwnedAmount: () => owned,
-    useSolOwnedAmount: () => owned,
+    useSolOwnedAmount: () => ({ amount: mockSolAmount }),
   }
 })
 jest.mock('@helium/spl-utils', () => {
@@ -135,9 +138,16 @@ jest.mock('@solana/spl-token', () => {
     NATIVE_MINT: new PublicKey('So11111111111111111111111111111111111111112'),
   }
 })
-jest.mock('@hooks/useBN', () => ({ useBN: () => undefined }), {
-  virtual: true,
-})
+jest.mock(
+  '@hooks/useBN',
+  () => ({
+    useBN: (amount?: bigint) =>
+      amount === undefined
+        ? undefined
+        : new (jest.requireActual('bn.js'))(amount.toString()),
+  }),
+  { virtual: true },
+)
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
@@ -461,7 +471,11 @@ describe('SwapNavigator', () => {
     async (isLoading, disabled) => {
       mockIsDevnet = true
       mockMintsLoaded = true
-      mockAtaFeeQuery = { data: undefined, isLoading }
+      mockAtaFeeQuery = {
+        data: isLoading ? undefined : new BN(2_039_280),
+        isLoading,
+      }
+      mockSolAmount = BigInt(1_000_000_000)
       const view = await render()
 
       const keyboard = view.root.find(
@@ -475,6 +489,24 @@ describe('SwapNavigator', () => {
       expect(submit.props.disabled).toBe(disabled)
     },
   )
+
+  // With no SOL balance there is no fee check, so the swap cannot go out.
+  it('disables the submit when the ATA fee loaded but the SOL balance has not', async () => {
+    mockIsDevnet = true
+    mockMintsLoaded = true
+    mockAtaFeeQuery = { data: new BN(2_039_280), isLoading: false }
+    const view = await render()
+
+    const keyboard = view.root.find(
+      (n) => typeof n.props.onConfirmBalance === 'function',
+    )
+    await act(async () => {
+      keyboard.props.onConfirmBalance({ balance: new BN(1_000_000) })
+    })
+
+    const [submit] = view.byTestID('Swap.Submit')
+    expect(submit.props.disabled).toBe(true)
+  })
 
   it('switches the amount keyboard back to the paid token when the pay item is pressed', async () => {
     const view = await render()

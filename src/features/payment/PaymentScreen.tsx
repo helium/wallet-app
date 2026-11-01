@@ -339,14 +339,19 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
+  const submitting = useRef(false)
   const submitPayments = useCallback(
     async (toPay: PaymentInput[], paymentMint: PublicKey) => {
+      if (submitting.current) return
+      submitting.current = true
       // Reset mutation state on retry
       paymentMutation.reset()
       try {
         await submitPayment(toPay, paymentMint)
       } catch (e) {
         logger.error(e)
+      } finally {
+        submitting.current = false
       }
     },
     [submitPayment, paymentMutation],
@@ -889,7 +894,7 @@ const PaymentScreen = () => {
                   mint={mint}
                   totalBalance={paymentState.totalAmount}
                   feeTokenBalance={paymentState.networkFee}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || paymentMutation.isPending}
                   onSubmit={() => void handleSubmit().catch(console.error)}
                   payments={payments}
                   errors={errors}

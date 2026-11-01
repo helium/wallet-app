@@ -188,19 +188,26 @@ const BurnScreen = () => {
     t,
   ])
 
+  const submitting = useRef(false)
   const handleSubmit = async () => {
-    // Reset mutation state on retry
-    delegateDataCreditsMutation.reset()
-    if (!isDelegate || !amountBalance) return
+    if (submitting.current) return
+    submitting.current = true
     try {
-      await submitDelegateDataCredits(
-        delegateAddress,
-        amountBalance.toNumber(),
-        mint,
-        memo,
-      )
-    } catch (e) {
-      setSubmitError(errorMessage(e))
+      // Reset mutation state on retry
+      delegateDataCreditsMutation.reset()
+      if (!isDelegate || !amountBalance) return
+      try {
+        await submitDelegateDataCredits(
+          delegateAddress,
+          amountBalance.toNumber(),
+          mint,
+          memo,
+        )
+      } catch (e) {
+        setSubmitError(errorMessage(e))
+      }
+    } finally {
+      submitting.current = false
     }
   }
 
@@ -455,7 +462,8 @@ const BurnScreen = () => {
                     disabled={
                       amountBalance.isZero() ||
                       hasError ||
-                      (!delegateAddress && isDelegate)
+                      (!delegateAddress && isDelegate) ||
+                      delegateDataCreditsMutation.isPending
                     }
                     className="mt-6"
                     title={t(

@@ -358,3 +358,55 @@ describe('BurnScreen Retry', () => {
     expect(buttons('generic.retry').length).toBe(0)
   })
 })
+
+describe('BurnScreen Send', () => {
+  beforeEach(() => {
+    mockDelegate.mockReset()
+    mockBatchStore.batches = {}
+  })
+  afterEach(() => act(() => renderer.unmount()))
+
+  it('delegates once for two swipes in one tick, and again after the delegate settles', async () => {
+    render()
+    let settle!: (batchId: string) => void
+    mockDelegate.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve
+      }),
+    )
+
+    const button = renderer.root.find(
+      (node) => (node.type as string) === 'SubmitButton',
+    )
+    await act(async () => {
+      button.props.onSubmit()
+      button.props.onSubmit()
+    })
+    expect(mockDelegate).toHaveBeenCalledTimes(1)
+
+    await act(async () => settle('first'))
+    mockDelegate.mockReturnValueOnce(new Promise(() => undefined))
+    await submit()
+    expect(mockDelegate).toHaveBeenCalledTimes(2)
+  })
+
+  it('disables the swipe rail while the delegate is pending', async () => {
+    render()
+    const disabled = () =>
+      renderer.root.find((node) => (node.type as string) === 'SubmitButton')
+        .props.disabled
+    expect(disabled()).toBe(false)
+
+    let settle!: (batchId: string) => void
+    mockDelegate.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve
+      }),
+    )
+    await submit()
+    expect(disabled()).toBe(true)
+
+    await act(async () => settle('first'))
+    expect(disabled()).toBe(false)
+  })
+})

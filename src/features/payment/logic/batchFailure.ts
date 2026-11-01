@@ -1,4 +1,5 @@
 import { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
+import { CHECK_ACTIVITY_MESSAGE } from '../../../utils/unconfirmedSubmitError'
 import { batchSubmitError } from './batchSubmitError'
 
 export type TransactionStatus = { signature: string; status: BatchStatus }
@@ -12,9 +13,7 @@ export type BatchFailure<T> =
 
 export const checkActivity = <T>(): BatchFailure<T> => ({
   kind: 'checkActivity',
-  error: new Error(
-    'Could not confirm which transactions went through. Check your activity.',
-  ),
+  error: new Error(CHECK_ACTIVITY_MESSAGE),
 })
 
 // A failed batch offers Retry only for the items it knows did not land: every

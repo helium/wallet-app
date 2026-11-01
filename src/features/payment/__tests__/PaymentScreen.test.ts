@@ -43,6 +43,8 @@ const mockSend = jest.fn<
   Promise<NonNullable<PaymentMutation['data']>>,
   [SendVariables]
 >()
+// The wallet's balance of every mint; unloaded unless a test sets it.
+let mockOwnedAmount: bigint | undefined
 const mockBatchStore = {
   batches: {} as Record<string, Batch>,
   listeners: new Set<() => void>(),
@@ -170,7 +172,7 @@ jest.mock(
   '@helium/helium-react-hooks',
   () => ({
     useMint: () => undefined,
-    useOwnedAmount: () => ({ amount: undefined }),
+    useOwnedAmount: () => ({ amount: mockOwnedAmount }),
   }),
   { virtual: true },
 )
@@ -461,5 +463,56 @@ describe('PaymentScreen Retry', () => {
 
     expect(buttons('generic.cancel').length).toBe(1)
     expect(buttons('generic.retry').length).toBe(0)
+  })
+})
+
+const paymentCard = () =>
+  renderer.root.find((node) => (node.type as string) === 'PaymentCard')
+
+describe('PaymentScreen Send', () => {
+  beforeEach(() => {
+    mockSend.mockReset()
+    mockBatchStore.batches = {}
+  })
+  afterEach(() => act(() => renderer.unmount()))
+
+  it('sends once for two swipes in one tick, and again after the send settles', async () => {
+    render()
+    let settle!: (sent: Awaited<ReturnType<typeof mockSend>>) => void
+    mockSend.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve
+      }),
+    )
+
+    const card = paymentCard()
+    await act(async () => {
+      card.props.onSubmit()
+      card.props.onSubmit()
+    })
+    expect(mockSend).toHaveBeenCalledTimes(1)
+
+    await act(async () =>
+      settle({ batchId: 'first', payments: [], transactions: [] }),
+    )
+    mockSend.mockReturnValueOnce(new Promise(() => undefined))
+    await submit()
+    expect(mockSend).toHaveBeenCalledTimes(2)
+  })
+
+  it('disables Send while the payment is pending', async () => {
+    // A balance that covers the payments and the fee, so the form is valid.
+    mockOwnedAmount = BigInt(1_000_000)
+    try {
+      render()
+      mockSend.mockReturnValueOnce(new Promise(() => undefined))
+      expect(paymentCard().props.disabled).toBe(false)
+
+      await submit()
+
+      expect(paymentCard().props.disabled).toBe(true)
+    } finally {
+      mockOwnedAmount = undefined
+    }
   })
 })
