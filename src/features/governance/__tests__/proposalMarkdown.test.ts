@@ -1,4 +1,4 @@
-import { renderProposalMarkdown } from '../proposalMarkdown'
+import { proposalSummary, renderProposalMarkdown } from '../proposalMarkdown'
 
 describe('renderProposalMarkdown', () => {
   it('renders a heading, a link and a list as CommonMark HTML', () => {
@@ -22,5 +22,24 @@ describe('renderProposalMarkdown', () => {
         '',
       ].join('\n'),
     )
+  })
+
+  it('escapes raw HTML instead of passing it through', () => {
+    expect(renderProposalMarkdown('<img src=x onerror=alert(1)>')).toBe(
+      '<p>&lt;img src=x onerror=alert(1)&gt;</p>\n',
+    )
+  })
+})
+
+describe('proposalSummary', () => {
+  it('returns the first paragraph as plain text', () => {
+    const markdown =
+      '# HIP 1\n\nRead [the spec](https://example.com/hip-1).\n\nSecond paragraph.'
+
+    expect(proposalSummary(markdown)).toBe('Read the spec.')
+  })
+
+  it('returns null when there is no paragraph', () => {
+    expect(proposalSummary('# Only a heading')).toBeNull()
   })
 })

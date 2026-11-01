@@ -5442,18 +5442,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/client@npm:1.13.4":
-  version: 1.13.4
-  resolution: "@orpc/client@npm:1.13.4"
-  dependencies:
-    "@orpc/shared": "npm:1.13.4"
-    "@orpc/standard-server": "npm:1.13.4"
-    "@orpc/standard-server-fetch": "npm:1.13.4"
-    "@orpc/standard-server-peer": "npm:1.13.4"
-  checksum: 10/556910bcbcf840b3da3fcb572300333efe1920f71bc1eb3b233df49fcb73a8e7a21bd97c25c30e3263df3a537177641fc2697a844e2f5f8218a4492f01d0d33c
-  languageName: node
-  linkType: hard
-
 "@orpc/client@npm:1.16.1":
   version: 1.16.1
   resolution: "@orpc/client@npm:1.16.1"
@@ -5466,19 +5454,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/contract@npm:^1.13.2":
-  version: 1.13.4
-  resolution: "@orpc/contract@npm:1.13.4"
-  dependencies:
-    "@orpc/client": "npm:1.13.4"
-    "@orpc/shared": "npm:1.13.4"
-    "@standard-schema/spec": "npm:^1.1.0"
-    openapi-types: "npm:^12.1.3"
-  checksum: 10/10fd4f5e429c2a00aaa7f2402462caa29e7e60163e046e9117c01574367506ea8be1a11768b03485c79bffb79d294fde724cc6b18267247aa6eb42490db47363
-  languageName: node
-  linkType: hard
-
-"@orpc/contract@npm:^1.16.1":
+"@orpc/contract@npm:^1.13.2, @orpc/contract@npm:^1.16.1":
   version: 1.16.1
   resolution: "@orpc/contract@npm:1.16.1"
   dependencies:
@@ -5487,21 +5463,6 @@ __metadata:
     "@standard-schema/spec": "npm:^1.1.0"
     openapi-types: "npm:^12.1.3"
   checksum: 10/e4d862a4a945713c44ee45f2ba05868cd288cd11111f459d793a4d782a9cc02806b2b93fda8942a64ac55b0b354700dcd3b2a413e7819bac46bb0cf623c903d3
-  languageName: node
-  linkType: hard
-
-"@orpc/shared@npm:1.13.4":
-  version: 1.13.4
-  resolution: "@orpc/shared@npm:1.13.4"
-  dependencies:
-    radash: "npm:^12.1.1"
-    type-fest: "npm:^5.3.1"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.9.0"
-  peerDependenciesMeta:
-    "@opentelemetry/api":
-      optional: true
-  checksum: 10/180212d778b3c7e0cd49a45d0e4b0dca22cec705847a7149e1db1c63f43c1e6de6301879ce699646b525717e653a8bdb4303428afb4c9e2b6f4300988de278c6
   languageName: node
   linkType: hard
 
@@ -5520,16 +5481,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/standard-server-fetch@npm:1.13.4":
-  version: 1.13.4
-  resolution: "@orpc/standard-server-fetch@npm:1.13.4"
-  dependencies:
-    "@orpc/shared": "npm:1.13.4"
-    "@orpc/standard-server": "npm:1.13.4"
-  checksum: 10/b75bf35db34524e9b6c7b9b99080af694b89324372af7f97f4d311c276b73f3780bfae5dc099767d865fb46bae4780e6524ff540c7ed81d5f9fee0515aeb1f9b
-  languageName: node
-  linkType: hard
-
 "@orpc/standard-server-fetch@npm:1.16.1":
   version: 1.16.1
   resolution: "@orpc/standard-server-fetch@npm:1.16.1"
@@ -5540,16 +5491,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@orpc/standard-server-peer@npm:1.13.4":
-  version: 1.13.4
-  resolution: "@orpc/standard-server-peer@npm:1.13.4"
-  dependencies:
-    "@orpc/shared": "npm:1.13.4"
-    "@orpc/standard-server": "npm:1.13.4"
-  checksum: 10/de774587ac5242236a78ed10fde27321e8229e284ed25780aec2af19d5376e45e5d2d6d232059f8bc463d131fb12c93a1f1026444e186cf0f29729adcaf85afe
-  languageName: node
-  linkType: hard
-
 "@orpc/standard-server-peer@npm:1.16.1":
   version: 1.16.1
   resolution: "@orpc/standard-server-peer@npm:1.16.1"
@@ -5557,15 +5498,6 @@ __metadata:
     "@orpc/shared": "npm:1.16.1"
     "@orpc/standard-server": "npm:1.16.1"
   checksum: 10/ae34d8b199ae3a7129ee2c9a8caa0ce7d4e5a6847a3365f966db53099906ad487712e7efc960d7e5e229675dbcbfb109dfe05adac259ada2cba50916c47c550f
-  languageName: node
-  linkType: hard
-
-"@orpc/standard-server@npm:1.13.4":
-  version: 1.13.4
-  resolution: "@orpc/standard-server@npm:1.13.4"
-  dependencies:
-    "@orpc/shared": "npm:1.13.4"
-  checksum: 10/ca67463b86ce7ad66dd5a883ed5fa6b2b2cd369fafdf182e9842482a701a2723680253e8e9a342c058eab0c8a7f3a587558038170faa64a636a8e05f26d0a978
   languageName: node
   linkType: hard
 
@@ -10127,7 +10059,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.21.0":
+"axios@npm:^1.21.0, axios@npm:^1.3.0, axios@npm:^1.5.0, axios@npm:^1.9.0":
   version: 1.21.0
   resolution: "axios@npm:1.21.0"
   dependencies:
@@ -10136,17 +10068,6 @@ __metadata:
     https-proxy-agent: "npm:^5.0.1"
     proxy-from-env: "npm:^2.1.0"
   checksum: 10/1d350436e2bcda52ea62607452bbefa17fa04c43192ecb989d5650215306f9aabfd98bbd1690fcf24ee4c9587630af2e7795feab4e7931f80c43ddd6eceeecc9
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.3.0, axios@npm:^1.5.0, axios@npm:^1.9.0":
-  version: 1.11.0
-  resolution: "axios@npm:1.11.0"
-  dependencies:
-    follow-redirects: "npm:^1.15.6"
-    form-data: "npm:^4.0.4"
-    proxy-from-env: "npm:^1.1.0"
-  checksum: 10/232df4af7a4e4e07baa84621b9cc4b0c518a757b4eacc7f635c0eb3642cb98dff347326739f24b891b3b4481b7b838c79a3a0c4819c9fbc1fc40232431b9c5dc
   languageName: node
   linkType: hard
 
@@ -13920,7 +13841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.0, follow-redirects@npm:^1.15.6":
+"follow-redirects@npm:^1.14.0":
   version: 1.15.11
   resolution: "follow-redirects@npm:1.15.11"
   peerDependenciesMeta:
@@ -13986,19 +13907,6 @@ __metadata:
     cross-spawn: "npm:^7.0.6"
     signal-exit: "npm:^4.0.1"
   checksum: 10/427b33f997a98073c0424e5c07169264a62cda806d8d2ded159b5b903fdfc8f0a1457e06b5fc35506497acb3f1e353f025edee796300209ac6231e80edece835
-  languageName: node
-  linkType: hard
-
-"form-data@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "form-data@npm:4.0.4"
-  dependencies:
-    asynckit: "npm:^0.4.0"
-    combined-stream: "npm:^1.0.8"
-    es-set-tostringtag: "npm:^2.1.0"
-    hasown: "npm:^2.0.2"
-    mime-types: "npm:^2.1.12"
-  checksum: 10/a4b62e21932f48702bc468cc26fb276d186e6b07b557e3dd7cc455872bdbb82db7db066844a64ad3cf40eaf3a753c830538183570462d3649fdfd705601cbcfb
   languageName: node
   linkType: hard
 
@@ -17030,17 +16938,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.18.1":
+"lodash@npm:4.18.1, lodash@npm:^4.17.21":
   version: 4.18.1
   resolution: "lodash@npm:4.18.1"
   checksum: 10/306fea53dfd39dad1f03d45ba654a2405aebd35797b673077f401edb7df2543623dc44b9effbb98f69b32152295fff725a4cec99c684098947430600c6af0c3f
-  languageName: node
-  linkType: hard
-
-"lodash@npm:^4.17.21":
-  version: 4.17.23
-  resolution: "lodash@npm:4.17.23"
-  checksum: 10/82504c88250f58da7a5a4289f57a4f759c44946c005dd232821c7688b5fcfbf4a6268f6a6cdde4b792c91edd2f3b5398c1d2a0998274432cff76def48735e233
   languageName: node
   linkType: hard
 
@@ -17904,7 +17805,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mime-types@npm:^2.1.12, mime-types@npm:^2.1.35, mime-types@npm:~2.1.24, mime-types@npm:~2.1.34":
+"mime-types@npm:^2.1.35, mime-types@npm:~2.1.24, mime-types@npm:~2.1.34":
   version: 2.1.35
   resolution: "mime-types@npm:2.1.35"
   dependencies:
@@ -19564,13 +19465,6 @@ __metadata:
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
   checksum: 10/88d677bb6f11a2ecec63fdd053dfe6d31120844d04e865efa9c8fbe0674cd077d6624ecfdf014018a20dcb114ae2a59c1b21966dd8073e920650c71370966439
-  languageName: node
-  linkType: hard
-
-"proxy-from-env@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "proxy-from-env@npm:1.1.0"
-  checksum: 10/f0bb4a87cfd18f77bc2fba23ae49c3b378fb35143af16cc478171c623eebe181678f09439707ad80081d340d1593cd54a33a0113f3ccb3f4bc9451488780ee23
   languageName: node
   linkType: hard
 
@@ -22480,15 +22374,6 @@ __metadata:
   dependencies:
     tagged-tag: "npm:^1.0.0"
   checksum: 10/299a575a3d2bbc74f70da508629c448806dd5c51cbd2c5adf05b1755636f9f3b12c803b2c52c0eac561d4472ddc5e8ab42b88954cb238b101c9d4595906aea7f
-  languageName: node
-  linkType: hard
-
-"type-fest@npm:^5.3.1":
-  version: 5.4.0
-  resolution: "type-fest@npm:5.4.0"
-  dependencies:
-    tagged-tag: "npm:^1.0.0"
-  checksum: 10/7012a9d6031420e41b39546c713d2d91a08959e76343273e13ccc44ea76ef17efda2779e690549b453ecb3170c1b5e46ce3b0a5d0234443ecfd227e47c4bf781
   languageName: node
   linkType: hard
 

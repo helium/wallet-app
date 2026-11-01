@@ -23,7 +23,7 @@ import useNowAfter from '@hooks/useNowAfter'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
 import { ProposalTags } from './ProposalTags'
-import { renderProposalMarkdown } from './proposalMarkdown'
+import { proposalSummary } from './proposalMarkdown'
 
 interface IProposalCardProps {
   filter: ProposalFilter
@@ -89,11 +89,7 @@ export const ProposalCard = ({
         // Force HTTPS for security - convert any HTTP URLs to HTTPS
         const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
         const { data } = await axios.get(secureUri)
-        const htmlContent = renderProposalMarkdown(data)
-        const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
-        return firstParagraphMatch
-          ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
-          : null
+        return proposalSummary(data)
       }
       return null
     },
