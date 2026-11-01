@@ -19,8 +19,7 @@
     "bump-minor": "npm version minor --no-git-tag-version",
     "bump-major": "npm version major --no-git-tag-version",
     "prettier": "prettier --write *.ts*",
-    "gen-types:all": "yarn gen-types",
-    "prepare": "husky install"
+    "gen-types:all": "yarn gen-types"
   },
   "engines": {
     "node": ">=22.13"
@@ -240,7 +239,6 @@
     "eslint-plugin-prettier": "5.5.7",
     "eslint-plugin-react-hooks": "7.1.1",
     "expo-build-properties": "~58.0.12",
-    "husky": "7.0.4",
     "jest": "~30.5.2",
     "onesignal-expo-plugin": "2.7.2",
     "prettier": "3.9.10",
