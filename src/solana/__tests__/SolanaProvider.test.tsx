@@ -107,7 +107,10 @@ beforeEach(() => {
     getSlot: () => Promise.resolve(CURRENT_SLOT),
     _rpcRequest: rpcRequest,
   }))
-  ;(getLastCheckedSlot as jest.Mock).mockResolvedValue(100)
+  // Each cluster's cache keeps its own slot
+  ;(getLastCheckedSlot as jest.Mock).mockImplementation((cacheKey: string) =>
+    Promise.resolve(cacheKey === 'accounts-mainnet-beta' ? 100 : undefined),
+  )
   saveSlot.mockReset()
   saveSlot.mockResolvedValue(undefined)
   rpcRequest.mockReset()
