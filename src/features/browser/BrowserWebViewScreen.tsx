@@ -188,7 +188,9 @@ const BrowserWebViewScreen = () => {
   ) => {
     Logger.breadcrumb('signAndSendTransaction')
 
-    try {
+    // A promise catch, not try/catch: the React Compiler skips a component
+    // with a throw or a conditional inside a try block
+    await (async () => {
       const { transactions } = await deserializeTransactionInputs(inputs)
 
       if (hasUnsupportedTransaction(transactions)) {
@@ -257,13 +259,13 @@ const BrowserWebViewScreen = () => {
           signature: bs58.decode(signature),
         })),
       })
-    } catch (e) {
+    })().catch((e) => {
       postMessage({
         id,
         type: 'signatureDeclined',
         error: (e as Error).message,
       })
-    }
+    })
   }
 
   const handleSignTransaction = async (
@@ -273,7 +275,7 @@ const BrowserWebViewScreen = () => {
   ) => {
     Logger.breadcrumb('signTransaction')
 
-    try {
+    await (async () => {
       const { transactions } = await deserializeTransactionInputs(inputs)
 
       if (hasUnsupportedTransaction(transactions)) {
@@ -333,13 +335,13 @@ const BrowserWebViewScreen = () => {
       }))
 
       postMessage({ id, type: 'transactionSigned', data: outputs })
-    } catch (e) {
+    })().catch((e) => {
       postMessage({
         id,
         type: 'signatureDeclined',
         error: (e as Error).message,
       })
-    }
+    })
   }
 
   const handleSignMessage = async (

@@ -25,10 +25,11 @@ const track = (promise: Promise<unknown>) => {
 }
 
 // Runs the injected script in a fake WebView: iOS replies arrive on window,
-// Android replies on document
-const injectInto = async (isAndroid: boolean) => {
+// Android replies on document. The page script runs first in the same scope.
+const injectInto = async (isAndroid: boolean, pageScript = '') => {
   const window = new EventTarget() as EventTarget & Record<string, unknown>
   const document = new EventTarget()
+  window.crypto = crypto
   const requests: Request[] = []
   window.ReactNativeWebView = {
     postMessage: (message: string) => requests.push(JSON.parse(message)),
@@ -46,7 +47,7 @@ const injectInto = async (isAndroid: boolean) => {
   const inject = new Function(
     'window',
     'document',
-    `${walletStandard}; return injectWalletStandard`,
+    `${pageScript}; ${walletStandard}; return injectWalletStandard`,
   )(window, document)
   await inject(address, pubKey, isAndroid)
 
@@ -216,6 +217,15 @@ describe.each([
       fillRandomBytes(0)
       setup.wallet.features['standard:connect'].connect()
       expect(setup.lastRequest().id).toBeGreaterThan(0)
+    })
+
+    it('draws the id when the page declares its own crypto', async () => {
+      // A top-level let in a page script hides the global from later scripts
+      const page = await injectInto(isAndroid, 'let crypto')
+      const settled = track(page.wallet.features['standard:connect'].connect())
+      await flush()
+      expect(settled.state).toBe('pending')
+      expect(page.lastRequest().id).toBeGreaterThan(0)
     })
   })
 })

@@ -6,7 +6,8 @@ var isConnecting = false
 // Ids are random: an iframe can make the app decline any id it sends, so a
 // guessable id would let it end the page's pending request.
 const randomRequestId = () => {
-    const words = crypto.getRandomValues(new Uint32Array(2))
+    // window.crypto: a top-level let crypto in a page script hides the global name
+    const words = window.crypto.getRandomValues(new Uint32Array(2))
     // 53 bits, the most JSON carries exactly; never 0, which the app's not-ready reply skips
     return (words[0] >>> 11) * 2 ** 32 + words[1] || 1
 }
