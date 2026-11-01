@@ -3,6 +3,7 @@
  * signs real transactions with a test key; the sign sheet and the blockchain
  * API client are replaced.
  */
+import { ORPCError } from '@orpc/client'
 import { NATIVE_MINT } from '@solana/spl-token'
 import {
   Keypair,
@@ -46,15 +47,34 @@ jest.mock('@helium/react-native-sdk', () => ({
 jest.mock('@helium/spl-utils', () => ({
   DC_MINT: jest.requireActual('@solana/web3.js').PublicKey.default,
 }))
-// @orpc/client ships ESM only; safe() settles the call into { error, data }.
-jest.mock('@orpc/client', () => ({
-  isDefinedError: () => false,
-  safe: (call: Promise<unknown>) =>
-    call.then(
-      (data) => ({ error: null, data }),
-      (error) => ({ error, data: undefined }),
-    ),
-}))
+// @orpc/client ships ESM only. ORPCError and isDefinedError mirror the real
+// ones; safe() settles the call into { error, data }.
+jest.mock('@orpc/client', () => {
+  class MockORPCError extends Error {
+    code: string
+
+    defined: boolean
+
+    constructor(
+      code: string,
+      options: { defined?: boolean; message?: string } = {},
+    ) {
+      super(options.message ?? code)
+      this.code = code
+      this.defined = options.defined ?? false
+    }
+  }
+  return {
+    ORPCError: MockORPCError,
+    isDefinedError: (error: unknown) =>
+      error instanceof MockORPCError && error.defined,
+    safe: (call: Promise<unknown>) =>
+      call.then(
+        (data) => ({ error: null, data }),
+        (error) => ({ error, data: undefined }),
+      ),
+  }
+})
 jest.mock(
   '@storage/AccountStorageProvider',
   () => ({
@@ -228,6 +248,56 @@ describe('useSubmitTxn', () => {
 
     await act(async () => {
       await expect(delegate()).rejects.toBeInstanceOf(UnconfirmedSubmitError)
+    })
+  })
+
+  describe.each([
+    ['payment', pay],
+    ['delegate', delegate],
+  ])('a %s submit the server rejects', (_path, send) => {
+    // The server raises these before it sends any transaction.
+    it.each([
+      ['SIMULATION_FAILED', 'Transaction simulation failed.'],
+      [
+        'BLOCKHASH_EXPIRED',
+        'Transaction blockhash has expired. Rebuild the transaction and sign it again.',
+      ],
+    ])(
+      'with a defined %s keeps the rejection and its reason',
+      async (code, message) => {
+        const rejection = new ORPCError(code, { defined: true, message })
+        mockClient.transactions.submit.mockRejectedValue(rejection)
+
+        await act(async () => {
+          const error = await send().catch((e: unknown) => e)
+          expect(error).toBe(rejection)
+          expect((error as Error).message).toBe(message)
+        })
+      },
+    )
+
+    // The server reports a failed or lost send as BAD_REQUEST, so it and
+    // every other rejection may have landed the transactions.
+    it.each([
+      [
+        'a defined BAD_REQUEST',
+        new ORPCError('BAD_REQUEST', { defined: true }),
+      ],
+      ['a defined CONFLICT', new ORPCError('CONFLICT', { defined: true })],
+      [
+        'an undefined SIMULATION_FAILED',
+        new ORPCError('SIMULATION_FAILED', { defined: false }),
+      ],
+      [
+        'an undefined server error',
+        new ORPCError('INTERNAL_SERVER_ERROR', { defined: false }),
+      ],
+    ])('with %s reports it as unconfirmed', async (_name, rejection) => {
+      mockClient.transactions.submit.mockRejectedValue(rejection)
+
+      await act(async () => {
+        await expect(send()).rejects.toBeInstanceOf(UnconfirmedSubmitError)
+      })
     })
   })
 })

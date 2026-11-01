@@ -45,12 +45,12 @@ import {
   CompressedNFT,
   HotspotWithPendingRewards,
 } from '../types/solana'
+import { submitFailure } from '../utils/submitFailure'
 import {
   hashTagParams,
   signTransactionData,
   toTransactionData,
 } from '../utils/transactionUtils'
-import { UnconfirmedSubmitError } from '../utils/unconfirmedSubmitError'
 import { pollForCompletion } from './useSubmitAndAwait'
 
 // Helper to get entityKey from a CompressedNFT
@@ -191,7 +191,7 @@ export default () => {
       const { batchId } = await client.transactions
         .submit(signedTxnData)
         .catch((e: unknown) => {
-          throw new UnconfirmedSubmitError(e)
+          throw submitFailure(e)
         })
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
@@ -839,7 +839,7 @@ export default () => {
       const { batchId } = await client.transactions
         .submit(signedTxnData)
         .catch((e: unknown) => {
-          throw new UnconfirmedSubmitError(e)
+          throw submitFailure(e)
         })
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
