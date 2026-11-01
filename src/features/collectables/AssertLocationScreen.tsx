@@ -84,6 +84,9 @@ const AssertLocationScreen = () => {
   const cameraRef = useRef<CameraRef>(null)
   const { showOKAlert } = useAlert()
   const [mapCenter, setMapCenter] = useState<number[]>()
+  // An assert reads the centre stored last, not the one its render saw.
+  const mapCenterRef = useRef<number[]>(undefined)
+  const [cameraMoving, setCameraMoving] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
@@ -237,12 +240,21 @@ const AssertLocationScreen = () => {
     if (mapRef?.current) {
       const center = await mapRef?.current.getCenter()
       if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
+        mapCenterRef.current = center
         setMapCenter(center)
         setTransactionError(undefined)
         hideSearch()
       }
+      setCameraMoving(false)
     }
   }, 200)
+
+  // A new move drops the last move's pending centre, so it cannot end the
+  // move early.
+  const handleRegionWillChange = () => {
+    handleRegionChanged.cancel()
+    setCameraMoving(true)
+  }
 
   const handleUserLocationPress = () => {
     if (cameraRef?.current && userLocation?.coords) {
@@ -258,8 +270,9 @@ const AssertLocationScreen = () => {
   const iotNumLocationAsserts = iotInfoAcc?.numLocationAsserts
   const mobileNumLocationAsserts = mobileInfoAcc?.numLocationAsserts
   const assertLocation = async (type: NetworkType) => {
+    const center = mapCenterRef.current
     if (
-      !mapCenter ||
+      !center ||
       !entityKey ||
       loadingMakerDc ||
       loadingLocationAssertDcRequirements ||
@@ -307,8 +320,8 @@ const AssertLocationScreen = () => {
       await submitUpdateEntityInfo({
         type,
         entityKey,
-        lng: mapCenter[0],
-        lat: mapCenter[1],
+        lng: center[0],
+        lat: center[1],
         elevation,
         decimalGain: gain,
         payer: isPayer ? wallet.toBase58() : undefined,
@@ -372,6 +385,7 @@ const AssertLocationScreen = () => {
 
   const disabled =
     !mapCenter ||
+    cameraMoving ||
     reverseGeo.loading ||
     asserting ||
     loadingLocationAssertDcRequirements ||
@@ -406,6 +420,7 @@ const AssertLocationScreen = () => {
             centerCoordinate={initialCenter}
             mapProps={{
               onPress: hideSearch,
+              onRegionWillChange: handleRegionWillChange,
               onRegionDidChange: () => void handleRegionChanged(),
             }}
           >
