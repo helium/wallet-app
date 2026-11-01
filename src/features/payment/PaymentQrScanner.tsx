@@ -15,19 +15,37 @@ const PaymentQrScanner = () => {
   const navigation = useNavigation<HomeNavigationProp>()
   const rootNav = useNavigation<RootNavigationProp>()
 
-  // The Collectables stack hosts this scanner too but has no BurnScreen, so a
-  // burn from there opens the one on the Home stack.
+  // A burn replaces the form the scan came from, or pushes over the account
+  // screen so close still works. Collectables has no BurnScreen, so it drops
+  // its form and resets Home, giving BurnScreen a new route that reseeds.
   const showBurnScreen = useCallback(
     (params: BurnRouteParam) => {
-      navigation.goBack()
-      if (navigation.getState()?.routeNames.includes('BurnScreen')) {
-        navigation.replace('BurnScreen', params)
+      const state = navigation.getState()
+      const below = state?.routes[state.index - 1]?.name
+      if (state?.routeNames.includes('BurnScreen')) {
+        navigation.goBack()
+        if (below === 'PaymentScreen' || below === 'BurnScreen') {
+          navigation.replace('BurnScreen', params)
+        } else {
+          navigation.push('BurnScreen', params)
+        }
         return
+      }
+      if (below === 'PaymentScreen') {
+        navigation.pop(2)
+      } else {
+        navigation.goBack()
       }
       rootNav.navigate('TabBarNavigator', {
         screen: 'Home',
-        initial: false,
-        params: { screen: 'BurnScreen', params, initial: false },
+        params: {
+          state: {
+            routes: [
+              { name: 'AccountsScreen' },
+              { name: 'BurnScreen', params },
+            ],
+          },
+        },
       })
     },
     [navigation, rootNav],

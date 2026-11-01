@@ -6,6 +6,7 @@ import {
   BaseNavigationContainer,
   createNavigationContainerRef,
   createNavigatorFactory,
+  NavigationContainerRefWithCurrent,
   NavigationState,
   ParamListBase,
   StackRouter,
@@ -54,8 +55,8 @@ jest.mock('../../../utils/accountUtils', () => ({
   solAddressIsValid: () => false,
 }))
 
-// A navigator on the routers the native stack and bottom tabs use. It
-// renders the focused route, as both do for the screen on top.
+// A navigator on the routers the native stack and bottom tabs use. It keeps
+// every route mounted, as both do, so an unfocused tab keeps its stack.
 const makeNavigator = (router: typeof StackRouter | typeof TabRouter) =>
   createNavigatorFactory(
     (props: Parameters<typeof useNavigationBuilder>[1]) => {
@@ -65,7 +66,11 @@ const makeNavigator = (router: typeof StackRouter | typeof TabRouter) =>
       )
       return (
         <NavigationContent>
-          {descriptors[state.routes[state.index].key].render()}
+          {state.routes.map((route) => (
+            <React.Fragment key={route.key}>
+              {descriptors[route.key].render()}
+            </React.Fragment>
+          ))}
         </NavigationContent>
       )
     },
@@ -111,7 +116,13 @@ const TabBar = () => (
 
 const RootStack = makeNavigator(StackRouter)
 
-const renderAt = (tab: 'Home' | 'Collectables', underScanner: string[]) => {
+const renderAt = (
+  tab: 'Home' | 'Collectables',
+  underScanner: string[],
+  prepare: (
+    ref: NavigationContainerRefWithCurrent<ParamListBase>,
+  ) => void = () => {},
+) => {
   const ref = createNavigationContainerRef<ParamListBase>()
   act(() => {
     TestRenderer.create(
@@ -122,6 +133,7 @@ const renderAt = (tab: 'Home' | 'Collectables', underScanner: string[]) => {
       </BaseNavigationContainer>,
     )
   })
+  prepare(ref)
   act(() => {
     ref.navigate('TabBarNavigator', { screen: tab })
   })
@@ -137,14 +149,17 @@ const renderAt = (tab: 'Home' | 'Collectables', underScanner: string[]) => {
   return ref
 }
 
-const homeRoutes = (ref: ReturnType<typeof renderAt>) => {
+const tabStack = (ref: ReturnType<typeof renderAt>, tab: string) => {
   const tabs = ref.getRootState()?.routes[0]?.state as NavigationState
-  const home = tabs.routes.find((r) => r.name === 'Home')
-  return (home?.state as NavigationState | undefined)?.routes.map((r) => ({
+  const route = tabs.routes.find((r) => r.name === tab)
+  return route?.state as NavigationState | undefined
+}
+
+const homeRoutes = (ref: ReturnType<typeof renderAt>) =>
+  tabStack(ref, 'Home')?.routes.map((r) => ({
     name: r.name,
     params: r.params,
   }))
-}
 
 const burnQr = { type: 'dc_burn', address: 'burn-address', amount: '10' }
 const delegateQr = {
@@ -220,6 +235,74 @@ describe('PaymentQrScanner', () => {
     expect(ref.getCurrentRoute()).toMatchObject({
       name: 'BurnScreen',
       params: delegateParams,
+    })
+  })
+
+  it('opens a new Home burn screen over an open one for a delegate QR scanned on the Collectables stack', async () => {
+    const delegateA = { ...delegateParams, address: 'delegate-a', amount: '1' }
+    let keyA: string | undefined
+    const ref = renderAt('Collectables', ['PaymentScreen'], (r) => {
+      act(() => {
+        r.navigate('TabBarNavigator', { screen: 'Home' })
+      })
+      act(() => {
+        r.navigate('BurnScreen', delegateA)
+      })
+      keyA = r.getCurrentRoute()?.key
+    })
+
+    await act(async () => {
+      scan(JSON.stringify(delegateQr))
+    })
+
+    expect(homeRoutes(ref)).toEqual([
+      { name: 'AccountsScreen', params: undefined },
+      { name: 'BurnScreen', params: delegateParams },
+    ])
+    expect(keyA).toBeDefined()
+    expect(ref.getCurrentRoute()?.key).not.toBe(keyA)
+  })
+
+  it('replaces the Home burn screen the scanner opened from with a new burn screen', async () => {
+    const ref = renderAt('Home', ['BurnScreen'])
+
+    await act(async () => {
+      scan(JSON.stringify(burnQr))
+    })
+
+    expect(homeRoutes(ref)).toEqual([
+      { name: 'AccountsScreen', params: undefined },
+      { name: 'BurnScreen', params: burnQr },
+    ])
+  })
+
+  it('keeps the account screen under the burn screen when the scanner sits on it', async () => {
+    const ref = renderAt('Home', [])
+
+    await act(async () => {
+      scan(JSON.stringify(burnQr))
+    })
+
+    expect(homeRoutes(ref)).toEqual([
+      { name: 'AccountsScreen', params: undefined },
+      { name: 'BurnScreen', params: burnQr },
+    ])
+    expect(ref.canGoBack()).toBe(true)
+  })
+
+  it('closes the Collectables payment screen when a burn QR opens the Home burn screen', async () => {
+    const ref = renderAt('Collectables', ['PaymentScreen'])
+
+    await act(async () => {
+      scan(JSON.stringify(burnQr))
+    })
+
+    expect(tabStack(ref, 'Collectables')?.routes.map((r) => r.name)).toEqual([
+      'CollectablesTopTab',
+    ])
+    expect(ref.getCurrentRoute()).toMatchObject({
+      name: 'BurnScreen',
+      params: burnQr,
     })
   })
 })
