@@ -263,7 +263,9 @@
     "@helium/account-fetch-cache-hooks": "0.11.16",
     "@helium/helium-react-hooks": "0.12.1",
     "@helium/voter-stake-registry-sdk": "0.13.1",
-    "@keystonehq/bc-ur-registry": "0.8.1"
+    "@keystonehq/bc-ur-registry": "0.8.1",
+    "axios@npm:^0.21.1": "0.34.0",
+    "markdown-it@npm:^10.0.0": "14.3.3"
   },
   "packageManager": "yarn@4.9.2"
 }
