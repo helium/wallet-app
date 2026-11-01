@@ -73,14 +73,21 @@ describe('useCopyText', () => {
   })
 
   // Android 13+ shows any copy in the clipboard preview unless the clip
-  // carries ClipDescription.EXTRA_IS_SENSITIVE.
-  it('marks a sensitive copy so Android hides it from the clipboard preview', () => {
+  // carries ClipDescription.EXTRA_IS_SENSITIVE. iOS syncs any copy through
+  // Universal Clipboard and keeps it until the next copy unless the item is
+  // local-only with an expiration date.
+  it('marks a sensitive copy as hidden on Android and local-only and expiring on iOS', () => {
+    const now = 1_700_000_000_000
+    const dateNow = jest.spyOn(Date, 'now').mockReturnValue(now)
+
     copyWith({ sensitive: true })
 
     expect(mockSetStringAsync).toHaveBeenCalledWith('address', {
       android: { isSensitive: true },
+      ios: { localOnly: true, expiresAt: new Date(now + 60 * 1000) },
     })
     expect(mockSetString).not.toHaveBeenCalled()
+    dateNow.mockRestore()
   })
 
   it('shows no copied toast when the sensitive copy fails', async () => {

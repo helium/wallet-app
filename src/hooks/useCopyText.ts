@@ -8,7 +8,8 @@ import useHaptic from './useHaptic'
 // A caller whose pressable already fires a haptic passes haptic: false, so
 // one press fires one haptic. A caller that copies a secret (seed phrase,
 // private key) passes sensitive: true, so Android 13+ hides the copy from the
-// clipboard preview.
+// clipboard preview, and iOS keeps it off Universal Clipboard and clears it
+// after one minute.
 export default ({
   haptic = true,
   sensitive = false,
@@ -36,7 +37,10 @@ export default ({
       const toastMessage = message ?? copyText
       if (sensitive) {
         // The toast waits for the copy, so a failed copy shows no "copied"
-        setStringAsync(copyText, { android: { isSensitive: true } })
+        setStringAsync(copyText, {
+          android: { isSensitive: true },
+          ios: { localOnly: true, expiresAt: new Date(Date.now() + 60 * 1000) },
+        })
           .then(() => showToast(toastMessage))
           .catch((e) => console.warn('Clipboard.setStringAsync failed', e))
       } else {
