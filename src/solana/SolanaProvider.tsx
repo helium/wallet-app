@@ -60,7 +60,6 @@ const useSolanaHook = () => {
   const { data: secureAcctOrNull } = useQuery({
     queryKey: ['solanaKeypair', address, secureAccountsVersion],
     enabled: !!address,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     queryFn: async () => (await getSolanaKeypair(address!)) ?? null,
     retry: false,
     // A secret: drop it from the cache once no screen uses it

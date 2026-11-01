@@ -68,17 +68,14 @@ jest.mock('@walletconnect/sign-client', () => {
         )
       }
       if (response.error) {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         relay.errors.push({ topic, id: response.id, error: response.error })
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         relay.responses.push({
           topic,
           id: response.id,
           result: response.result,
         })
       }
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       relay.finishRequest(response.id)
     }
 

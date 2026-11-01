@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dequelabs/axe-linter-action@v1
         # Deque subscription for AXE_LINTER_API_KEY is expired; the action executes
         # the API error message and fails every run. Non-blocking until renewed.

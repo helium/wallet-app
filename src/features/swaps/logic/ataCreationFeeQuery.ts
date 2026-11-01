@@ -27,9 +27,7 @@ export const ataCreationFeeQuery = ({
     ],
     queryFn: () =>
       getAtaAccountCreationFee({
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         connection: connection!,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         solanaAddress: solanaAddress!,
         mint,
       }),

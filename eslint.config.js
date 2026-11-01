@@ -46,6 +46,9 @@ module.exports = [
       'uniwind-types.d.ts',
     ],
   },
+  {
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
+  },
   ...reactNativeConfig,
   // eslint-plugin-ft-flow 2 calls context APIs that ESLint 9 removed, and the
   // app has no Flow code.

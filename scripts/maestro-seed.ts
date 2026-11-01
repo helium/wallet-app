@@ -23,8 +23,7 @@ const { DC_MINT, HNT_MINT, MOBILE_MINT }: typeof import('@helium/spl-utils') =
 const RPC_URL = process.env.SURFPOOL_RPC_URL || 'http://127.0.0.1:8899'
 const API_URL = process.env.BLOCKCHAIN_API_URL || 'http://127.0.0.1:3000'
 const DATASOURCE_RPC_URL =
-  process.env.SURFPOOL_DATASOURCE_RPC_URL ||
-  'https://api.mainnet-beta.solana.com'
+  process.env.SURFPOOL_DATASOURCE_RPC_URL || 'https://solana-rpc.web.helium.io'
 // The path the import screen derives first (DEFAULT_DERIVATION_PATH).
 const DERIVATION_PATH = "m/44'/501'/0'/0'"
 const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -101,7 +100,6 @@ const signAndSend = async (
 ) => {
   const { blockhash, lastValidBlockHeight } =
     await connection.getLatestBlockhash('confirmed')
-  // eslint-disable-next-line no-restricted-syntax
   for (const { serializedTransaction } of transactions) {
     const tx = VersionedTransaction.deserialize(
       Buffer.from(serializedTransaction, 'base64'),
@@ -111,9 +109,7 @@ const signAndSend = async (
       tx.message.recentBlockhash = blockhash
     }
     tx.sign([signer])
-    // eslint-disable-next-line no-await-in-loop
     const signature = await connection.sendRawTransaction(tx.serialize())
-    // eslint-disable-next-line no-await-in-loop
     const { value } = await connection.confirmTransaction(
       { signature, blockhash, lastValidBlockHeight },
       'confirmed',

@@ -13,7 +13,6 @@ export const solanaHealthQuery = (connection?: WrappedConnection) =>
   queryOptions({
     queryKey: ['solanaHealth', connection?.rpcEndpoint],
     queryFn: async (): Promise<string | null> => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const health = await connection!.getHealth()
       if (!health) throw new Error('getHealth failed')
       return health.result ?? null
@@ -25,7 +24,6 @@ export const solanaHealthQuery = (connection?: WrappedConnection) =>
 export const solanaTpsQuery = (connection?: WrappedConnection) =>
   queryOptions({
     queryKey: ['solanaTps', connection?.rpcEndpoint],
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     queryFn: () => getCurrentTPS(connection!),
     staleTime: HEALTH_STALE_TIME_MS,
     enabled: !!connection,

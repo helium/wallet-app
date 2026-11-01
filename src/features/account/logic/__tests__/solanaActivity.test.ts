@@ -149,7 +149,6 @@ describe('updateActivityHead', () => {
       await tick()
       while (calls.length || queryClient.isFetching()) {
         calls.shift()?.resolve()
-        // eslint-disable-next-line no-await-in-loop
         await tick()
       }
     }
@@ -213,7 +212,6 @@ describe('updateActivityHead', () => {
       await tick()
       while (calls.length || queryClient.isFetching()) {
         calls.shift()?.resolve()
-        // eslint-disable-next-line no-await-in-loop
         await tick()
       }
     }

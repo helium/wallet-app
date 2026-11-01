@@ -28,9 +28,7 @@ export const transferCollectableFeeQuery = ({
       (collectable as Collectable).address || (collectable as CompressedNFT).id,
     ],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const provider = anchorProvider!
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const payer = solanaAddress!
       try {
         const { message } = await createTransferCollectableMessage(

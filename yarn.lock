@@ -5704,14 +5704,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@privy-io/expo-native-extensions@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "@privy-io/expo-native-extensions@npm:0.0.7"
+"@privy-io/expo-native-extensions@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "@privy-io/expo-native-extensions@npm:0.0.8"
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10/e569b4a8cfecc62973ed666a27f169168ae12337e27684a5b94fa13ee11b5c1e2f6fb2c5d7b420cd561ecdf0c666ad078a52af356ce5acc9ee58e71c1d4a941e
+  checksum: 10/2d9a1d067ae6aee90b78654050e3fc3330044a68467f96bf887909dde7445428be6560f38b08321287bd27fc0464204b48160f36499394dbfd92d0c855d7498e
   languageName: node
   linkType: hard
 
@@ -14406,7 +14406,7 @@ __metadata:
     "@orpc/client": "npm:1.13.4"
     "@orpc/contract": "npm:^1.13.2"
     "@privy-io/expo": "npm:^0.63.9"
-    "@privy-io/expo-native-extensions": "npm:^0.0.7"
+    "@privy-io/expo-native-extensions": "npm:^0.0.8"
     "@react-native-async-storage/async-storage": "npm:2.2.0"
     "@react-native-clipboard/clipboard": "npm:1.16.3"
     "@react-native-community/checkbox": "npm:0.5.20"

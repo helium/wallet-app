@@ -143,7 +143,6 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { isLoading: loadingSubdaos, data: fallbackSubDaos } = useQuery({
     queryKey: ['governanceSubDaos', anchorProvider?.connection.rpcEndpoint],
     enabled: !!anchorProvider && governanceData === undefined,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     queryFn: () => getSubDaos(anchorProvider!),
   })
   const subDaos = governanceData?.subDaos ?? fallbackSubDaos

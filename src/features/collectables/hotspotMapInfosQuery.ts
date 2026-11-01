@@ -43,7 +43,6 @@ export const hotspotMapInfosQuery = ({
       hotspots.map((h) => h.id),
     ],
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const hemProgram = await init(anchorProvider!)
 
       const infos = (

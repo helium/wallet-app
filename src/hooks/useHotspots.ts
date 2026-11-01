@@ -117,7 +117,6 @@ export const allHotspotsQueryOptions = ({
       while (
         hotspots.length < (fetchedHotspots.grandTotal ?? fetchedHotspots.total)
       ) {
-        // eslint-disable-next-line no-plusplus
         pageNumber++
         fetchedHotspots = await solUtils.getCompressedCollectablesByCreator(
           pubKey,

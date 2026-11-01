@@ -84,7 +84,7 @@
     "@orpc/client": "1.13.4",
     "@orpc/contract": "^1.13.2",
     "@privy-io/expo": "^0.63.9",
-    "@privy-io/expo-native-extensions": "^0.0.7",
+    "@privy-io/expo-native-extensions": "^0.0.8",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-clipboard/clipboard": "1.16.3",
     "@react-native-community/checkbox": "0.5.20",

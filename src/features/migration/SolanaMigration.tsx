@@ -143,7 +143,6 @@ const SolanaMigration = ({
           !manual)
       )
         return
-      // eslint-disable-next-line no-console
       try {
         await migrateWallet(
           client,
