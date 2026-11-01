@@ -10,7 +10,7 @@ export type BatchFailure<T> =
   | { kind: 'retry'; error: Error; failed: T[] }
   | { kind: 'checkActivity'; error: Error }
 
-const checkActivity = <T>(): BatchFailure<T> => ({
+export const checkActivity = <T>(): BatchFailure<T> => ({
   kind: 'checkActivity',
   error: new Error(
     'Could not confirm which transactions went through. Check your activity.',

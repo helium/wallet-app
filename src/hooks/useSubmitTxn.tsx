@@ -50,6 +50,7 @@ import {
   signTransactionData,
   toTransactionData,
 } from '../utils/transactionUtils'
+import { UnconfirmedSubmitError } from '../utils/unconfirmedSubmitError'
 import { pollForCompletion } from './useSubmitAndAwait'
 
 // Helper to get entityKey from a CompressedNFT
@@ -186,7 +187,12 @@ export default () => {
           Buffer.from(tx.serializedTransaction, 'base64'),
         ),
       )
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      // A submit that fails may still have sent the transactions.
+      const { batchId } = await client.transactions
+        .submit(signedTxnData)
+        .catch((e: unknown) => {
+          throw new UnconfirmedSubmitError(e)
+        })
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
       // any max-send shave, and the signed transactions so a failed batch can
@@ -829,7 +835,12 @@ export default () => {
         anchorProvider.wallet,
         transactionData,
       )
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      // A submit that fails may still have sent the transaction.
+      const { batchId } = await client.transactions
+        .submit(signedTxnData)
+        .catch((e: unknown) => {
+          throw new UnconfirmedSubmitError(e)
+        })
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },

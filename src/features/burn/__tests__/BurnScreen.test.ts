@@ -16,6 +16,7 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import type useSubmitTxn from '../../../hooks/useSubmitTxn'
 import type { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
+import { UnconfirmedSubmitError } from '../../../utils/unconfirmedSubmitError'
 import BurnScreen from '../BurnScreen'
 
 type Batch = {
@@ -308,6 +309,39 @@ describe('BurnScreen Retry', () => {
 
     const delegate = ['routerKey', 100, IOT_MINT.toBase58(), 'memo']
     expect(sentDelegates()).toEqual([delegate, delegate, delegate])
+  })
+
+  it('offers no Retry after a Retry whose submit got no answer', async () => {
+    render()
+
+    delegatesAs('first')
+    await submit()
+    setBatch('first', {
+      status: 'failed',
+      transactions: [{ signature: 'delegateSig', status: 'failed' }],
+    })
+
+    // The resent delegate reached the cluster, but its answer was lost.
+    mockDelegate.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await retry()
+
+    expect(mockDelegate).toHaveBeenCalledTimes(2)
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
+  it('shows the error with no Retry when the first submit got no answer', async () => {
+    render()
+
+    mockDelegate.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await submit()
+
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
   })
 
   it('offers no Retry when the batch expired', async () => {

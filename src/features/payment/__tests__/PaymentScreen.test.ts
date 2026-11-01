@@ -27,6 +27,7 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import type useSubmitTxn from '../../../hooks/useSubmitTxn'
 import type { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
+import { UnconfirmedSubmitError } from '../../../utils/unconfirmedSubmitError'
 import PaymentScreen from '../PaymentScreen'
 import type usePaymentsReducer from '../usePaymentsReducer'
 
@@ -386,6 +387,47 @@ describe('PaymentScreen Retry', () => {
     } finally {
       mockPaymentState.mint = NATIVE_MINT
     }
+  })
+
+  it('offers no Retry after a Retry whose submit got no answer', async () => {
+    const toAlice = signed([sol(alice, 1)])
+    const toBob = signed([sol(bob, 2)])
+    render()
+
+    sendsAs('first', [toAlice, toBob])
+    await submit()
+    setBatch('first', {
+      status: 'partial',
+      transactions: [
+        { signature: signatureOf(toAlice), status: 'confirmed' },
+        { signature: signatureOf(toBob), status: 'failed' },
+      ],
+    })
+
+    // The resent payment to Bob reached the cluster, but its answer was lost.
+    mockSend.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await retry()
+
+    expect(sentPayees()).toEqual([
+      [alice.toBase58(), bob.toBase58()],
+      [bob.toBase58()],
+    ])
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
+  it('shows the error with no Retry when the first submit got no answer', async () => {
+    render()
+
+    mockSend.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await submit()
+
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
   })
 
   it('offers no Retry when a batch transaction loads accounts from a lookup table', async () => {

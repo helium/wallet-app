@@ -60,12 +60,13 @@ import {
 } from '../../utils/accountUtils'
 import { SendDetails } from '../../utils/linking'
 import * as logger from '../../utils/logger'
+import { UnconfirmedSubmitError } from '../../utils/unconfirmedSubmitError'
 import {
   HomeNavigationProp,
   HomeStackParamList,
   PaymentRouteParam,
 } from '../home/homeTypes'
-import { batchFailure } from './logic/batchFailure'
+import { batchFailure, checkActivity } from './logic/batchFailure'
 import { paymentTransactions } from './logic/paymentTransactions'
 import { retrySet } from './logic/retrySet'
 import PaymentCard from './PaymentCard'
@@ -352,8 +353,7 @@ const PaymentScreen = () => {
   )
 
   // What the last Retry was sending, so a Retry after it failed sends the
-  // same set and never a payment a settled batch reported landed. A lost
-  // submit response still resends that set.
+  // same set and never a payment a settled batch reported landed.
   const [unsent, setUnsent] = useState<{
     payments: PaymentInput[]
     mint: PublicKey
@@ -377,23 +377,20 @@ const PaymentScreen = () => {
   }, [submitPayments, allPayments, paymentState.mint])
 
   // After a failed batch, Retry resends only the payments that did not land,
-  // and is not offered when the app cannot tell which did.
-  const { data: sent, variables: sentWith } = paymentMutation
-  const failure = useMemo(
-    () =>
-      sent && sentWith
-        ? batchFailure(
-            status,
-            transactions,
-            paymentTransactions(
-              sent.payments,
-              sentWith.mint,
-              sent.transactions,
-            ),
-          )
-        : undefined,
-    [sent, sentWith, status, transactions],
-  )
+  // and is not offered when the app cannot tell which did: a submit with no
+  // answer may have landed them all.
+  const { data: sent, variables: sentWith, error: sendError } = paymentMutation
+  const unconfirmed = sendError instanceof UnconfirmedSubmitError
+  const failure = useMemo(() => {
+    if (unconfirmed) return checkActivity<PaymentInput>()
+    return sent && sentWith
+      ? batchFailure(
+          status,
+          transactions,
+          paymentTransactions(sent.payments, sentWith.mint, sent.transactions),
+        )
+      : undefined
+  }, [unconfirmed, sent, sentWith, status, transactions])
   const toRetry = useMemo(
     () => retrySet(failure, unsent?.payments, allPayments),
     [failure, unsent, allPayments],
@@ -905,7 +902,7 @@ const PaymentScreen = () => {
       </HNTKeyboard>
       <PaymentSubmit
         mint={mint}
-        submitLoading={isSubmitting}
+        submitLoading={isSubmitting || unconfirmed}
         submitSucceeded={status === 'confirmed'}
         submitError={paymentMutation.error || failure?.error}
         totalBalance={submittedTotal}

@@ -52,8 +52,9 @@ import {
   solAddressIsValid,
 } from '../../utils/accountUtils'
 import { TXN_FEE_IN_SOL } from '../../utils/solanaUtils'
+import { UnconfirmedSubmitError } from '../../utils/unconfirmedSubmitError'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
-import { batchFailure } from '../payment/logic/batchFailure'
+import { batchFailure, checkActivity } from '../payment/logic/batchFailure'
 import { retrySet } from '../payment/logic/retrySet'
 import PaymentItem from '../payment/PaymentItem'
 import PaymentSubmit from '../payment/PaymentSubmit'
@@ -93,13 +94,18 @@ const BurnScreen = () => {
   } = useTransactionBatchStatus(batchId || null)
 
   // The delegate goes out as one transaction, so it is retried only when every
-  // transaction the batch reports failed.
-  const batchFailed = batchFailure(status, transactions, [
-    {
-      item: 'delegate',
-      signatures: transactions.map((tx) => tx.signature),
-    },
-  ])
+  // transaction the batch reports failed. A submit with no answer may have
+  // landed it, so it is not retried.
+  const unconfirmed =
+    delegateDataCreditsMutation.error instanceof UnconfirmedSubmitError
+  const batchFailed = unconfirmed
+    ? checkActivity<'delegate'>()
+    : batchFailure(status, transactions, [
+        {
+          item: 'delegate',
+          signatures: transactions.map((tx) => tx.signature),
+        },
+      ])
 
   // Only show loading after we have a batchId (transaction submitted)
   const isSubmitting = batchId ? batchLoading || status === 'pending' : false
@@ -462,7 +468,7 @@ const BurnScreen = () => {
             </SafeArea>
             <PaymentSubmit
               mint={DC_MINT}
-              submitLoading={isSubmitting}
+              submitLoading={isSubmitting || unconfirmed}
               submitSucceeded={status === 'confirmed'}
               submitError={
                 delegateDataCreditsMutation.error || batchFailed?.error
