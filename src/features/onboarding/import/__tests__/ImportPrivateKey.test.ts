@@ -35,10 +35,11 @@ jest.mock('expo', () => ({
       : null,
 }))
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: String }) }))
+// a password-protected key arrives as route.params.key
+const mockRoute: { params: { key?: string } } = { params: {} }
 jest.mock('@react-navigation/native', () => {
   const navigation = { canGoBack: () => false }
-  const route = { params: {} }
-  return { useNavigation: () => navigation, useRoute: () => route }
+  return { useNavigation: () => navigation, useRoute: () => mockRoute }
 })
 jest.mock('@solana/web3.js', () => ({ Keypair: {} }))
 jest.mock('@helium/crypto-react-native', () => ({ Mnemonic: {} }))
@@ -93,6 +94,7 @@ describe('ImportPrivateKey', () => {
   beforeEach(() => {
     mockPlatform.OS = 'android'
     mockSetSecure.mockClear()
+    mockRoute.params = {}
   })
 
   it('hides the app from capture on Android while the key shows', () => {
@@ -100,5 +102,18 @@ describe('ImportPrivateKey', () => {
     expect(mockSetSecure.mock.calls).toEqual([[true]])
     act(() => renderer.unmount())
     expect(mockSetSecure.mock.calls).toEqual([[true], [false]])
+  })
+
+  // The password must not show in clear text or reach keyboard caches.
+  it('masks the password of a password-protected key', () => {
+    mockRoute.params = { key: 'encoded-key' }
+    const renderer = render()
+    const password = renderer.root.find(
+      (n) =>
+        n.type === ('Input' as never) &&
+        n.props.placeholder === 'accountImport.privateKey.passwordPlaceholder',
+    )
+    expect(password.props.secureTextEntry).toBe(true)
+    act(() => renderer.unmount())
   })
 })
