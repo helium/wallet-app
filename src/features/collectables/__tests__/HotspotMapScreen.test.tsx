@@ -184,4 +184,28 @@ describe('HotspotMapScreen hex source', () => {
       before.features[0].geometry,
     )
   })
+
+  // Zoom 16 is the last MOBILE zoom drawn at resolution 10.
+  it('draws MOBILE hexes at resolution 10 at zoom 16 and 12 at zoom 17', async () => {
+    const { cellToBoundary, cellToLatLng, latLngToCell } =
+      jest.requireActual('h3-js')
+    const [lat, lng] = cellToLatLng(latLngToCell(37.7749, -122.4194, 8))
+    const polygonAt = (res: number) => [
+      cellToBoundary(latLngToCell(lat, lng, res)).map(
+        ([pLat, pLng]: [number, number]) => [pLng, pLat],
+      ),
+    ]
+    const view = render()
+    view.toggleNetwork()
+
+    await view.endCameraMoveAt(16)
+    expect(view.hexData().features[0].geometry.coordinates).toEqual(
+      polygonAt(10),
+    )
+
+    await view.endCameraMoveAt(17)
+    expect(view.hexData().features[0].geometry.coordinates).toEqual(
+      polygonAt(12),
+    )
+  })
 })

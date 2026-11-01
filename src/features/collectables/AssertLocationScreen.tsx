@@ -86,6 +86,8 @@ const AssertLocationScreen = () => {
   const [mapCenter, setMapCenter] = useState<number[]>()
   // An assert reads the centre stored last, not the one its render saw.
   const mapCenterRef = useRef<number[]>(undefined)
+  const moveGeneration = useRef(0)
+  const cameraMovingRef = useRef(false)
   const [cameraMoving, setCameraMoving] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
@@ -238,21 +240,26 @@ const AssertLocationScreen = () => {
 
   const handleRegionChanged = useDebouncedCallback(async () => {
     if (mapRef?.current) {
+      const generation = moveGeneration.current
       const center = await mapRef?.current.getCenter()
-      if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
+      if (generation !== moveGeneration.current) return
+      if (JSON.stringify(center) !== JSON.stringify(mapCenterRef.current)) {
         mapCenterRef.current = center
         setMapCenter(center)
         setTransactionError(undefined)
         hideSearch()
       }
+      cameraMovingRef.current = false
       setCameraMoving(false)
     }
   }, 200)
 
-  // A new move drops the last move's pending centre, so it cannot end the
-  // move early.
+  // A new move drops the pending centre and any centre read still in flight,
+  // so only a centre read after the camera settles is stored.
   const handleRegionWillChange = () => {
+    moveGeneration.current += 1
     handleRegionChanged.cancel()
+    cameraMovingRef.current = true
     setCameraMoving(true)
   }
 
@@ -273,6 +280,7 @@ const AssertLocationScreen = () => {
     const center = mapCenterRef.current
     if (
       !center ||
+      cameraMovingRef.current ||
       !entityKey ||
       loadingMakerDc ||
       loadingLocationAssertDcRequirements ||
@@ -707,7 +715,7 @@ const AssertLocationScreen = () => {
                       variant="outline"
                       size="lg"
                       className="grow"
-                      disabled={asserting}
+                      disabled={asserting || cameraMoving}
                       onPress={() =>
                         void handleAssertLocationPress().catch(console.error)
                       }

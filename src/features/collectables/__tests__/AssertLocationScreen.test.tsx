@@ -186,6 +186,7 @@ const render = () => {
     return button
   }
   return {
+    buttons,
     assertButton,
     tapAssert: () => tap(assertButton()),
     tapLocate: () => {
@@ -309,5 +310,83 @@ describe('AssertLocationScreen', () => {
     expect(mockSubmitUpdateEntityInfo).toHaveBeenCalledWith(
       expect.objectContaining({ lng: USER[0], lat: USER[1] }),
     )
+  })
+
+  // A centre read that resolves after a new move began is stale; storing it
+  // would end the new move early and assert the old centre.
+  it('drops a centre read still in flight when a new move starts', async () => {
+    const view = render()
+    view.moveStarts()
+    view.moveEnds(SETTLED)
+    await settle()
+    view.tapAssert()
+    expect(mockAlert).toHaveBeenCalledTimes(1)
+
+    let readCenter: (center: [number, number]) => void = () => {}
+    view.moveStarts()
+    view.moveEnds(USER)
+    mockMapRef.getCenter.mockReturnValueOnce(
+      new Promise((resolve) => {
+        readCenter = resolve
+      }),
+    )
+    await settle()
+    view.moveStarts()
+    await act(async () => {
+      readCenter(USER)
+    })
+
+    expect(view.assertButton().props.disabled).toBe(true)
+    view.tapAssert()
+    await chooseMobile()
+    expect(mockImplicitBurn).not.toHaveBeenCalled()
+    expect(mockSubmitUpdateEntityInfo).not.toHaveBeenCalled()
+  })
+
+  // The Alert stays open while the user drags the map; Mobile must not send
+  // the centre the camera is leaving.
+  it('blocks Mobile from the open Alert once the camera starts moving', async () => {
+    const view = render()
+    view.moveStarts()
+    view.moveEnds(SETTLED)
+    await settle()
+    view.tapAssert()
+    expect(mockAlert).toHaveBeenCalledTimes(1)
+
+    view.moveStarts()
+    await chooseMobile()
+
+    expect(mockImplicitBurn).not.toHaveBeenCalled()
+    expect(mockSubmitUpdateEntityInfo).not.toHaveBeenCalled()
+  })
+
+  // The Iot overlay has its own Assert button; it must wait for the camera too.
+  it('blocks the Iot overlay assert while the camera moves', async () => {
+    const view = render()
+    view.moveStarts()
+    view.moveEnds(SETTLED)
+    await settle()
+    view.tapAssert()
+    const iot = mockAlert.mock.lastCall?.[2].find(
+      (button) => button.text === 'Iot',
+    )
+    await act(async () => {
+      iot?.onPress?.()
+    })
+    const overlayAssert = () => {
+      const button = view
+        .buttons()
+        .find((node) => node.props.variant === 'outline')
+      if (!button) throw new Error('no overlay assert button')
+      return button
+    }
+    expect(overlayAssert().props.disabled).toBe(false)
+
+    view.moveStarts()
+    expect(overlayAssert().props.disabled).toBe(true)
+
+    view.moveEnds(USER)
+    await settle()
+    expect(overlayAssert().props.disabled).toBe(false)
   })
 })
