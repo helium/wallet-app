@@ -14494,7 +14494,6 @@ __metadata:
     expo-web-browser: "npm:~58.0.7"
     fuse.js: "npm:6.6.2"
     h3-js: "npm:4.1.0"
-    husky: "npm:7.0.4"
     i18next: "npm:26.5.12"
     jest: "npm:~30.5.2"
     lodash: "npm:4.17.23"
@@ -14714,15 +14713,6 @@ __metadata:
   dependencies:
     ms: "npm:^2.0.0"
   checksum: 10/9c7a74a2827f9294c009266c82031030eae811ca87b0da3dceb8d6071b9bde22c9f3daef0469c3c533cc67a97d8a167cd9fc0389350e5f415f61a79b171ded16
-  languageName: node
-  linkType: hard
-
-"husky@npm:7.0.4":
-  version: 7.0.4
-  resolution: "husky@npm:7.0.4"
-  bin:
-    husky: lib/bin.js
-  checksum: 10/8fecb619ab924bd99b2c9ce494bff88e45369c1125e07a603dfacb4bd60ef86840e08c689794c476189183e6223f0ea93aadebf78e3508479453c219358ca787
   languageName: node
   linkType: hard
 
