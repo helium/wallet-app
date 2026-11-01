@@ -1,5 +1,6 @@
-// The app injects this script into the top frame only, so the token it passes
-// marks the top page's requests: other frames can post but cannot read it
+// The app injects this script into the top frame only, so only it gets the
+// token that marks the top page's requests. A cross-origin iframe cannot read
+// it; a same-origin iframe can, but it can already script the top page.
 const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid, token) {
 if (window.heliumWalletInjected) return;
 

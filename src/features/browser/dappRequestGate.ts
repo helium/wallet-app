@@ -6,8 +6,9 @@ export type RequestSlots = Record<RequestSender, boolean>
 
 // Runs one dApp request at a time per slot. A request that arrives while its
 // slot is held is declined at once, so the pending one keeps its sheet and
-// reply. Another frame's request also waits out the top page's, and a top
-// page request runs over another frame's: its sheet declines that one.
+// reply. Another frame's request is also declined while the top page's is
+// pending, and a top-page request runs over another frame's: its sheet
+// declines that one.
 export const runOneRequest = async (
   slots: RequestSlots,
   sender: RequestSender,

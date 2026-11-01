@@ -1,3 +1,8 @@
+import {
+  Keypair,
+  TransactionMessage,
+  VersionedTransaction,
+} from '@solana/web3.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { createSignRequestResolver } from '../../../solana/signRequestResolver'
@@ -46,7 +51,10 @@ jest.mock('../../../hooks/useBrowser', () => () => ({
 jest.mock('../../../solana/SolanaProvider', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => children,
-  useSolana: () => ({ anchorProvider: {}, signMsg: () => {} }),
+  useSolana: () => ({
+    anchorProvider: { wallet: { publicKey: {} } },
+    signMsg: () => {},
+  }),
 }))
 // The sheet's show() resolves with the user's decision
 jest.mock('../../../solana/WalletSignBottomSheet', () => {
@@ -89,6 +97,28 @@ jest.mock('../../../utils/solanaUtils', () => ({
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true
 
+// A transaction the screen decodes, as JSON carries a Uint8Array
+const transactionInput = () => ({
+  transaction: new VersionedTransaction(
+    new TransactionMessage({
+      payerKey: Keypair.generate().publicKey,
+      recentBlockhash: Keypair.generate().publicKey.toBase58(),
+      instructions: [],
+    }).compileToV0Message(),
+  ).serialize(),
+})
+
+// Bytes the screen cannot decode, and the error decoding them throws
+const malformedInput = { transaction: new Uint8Array([1]) }
+const malformedInputError = () => {
+  try {
+    VersionedTransaction.deserialize(malformedInput.transaction)
+  } catch (e) {
+    return (e as Error).message
+  }
+  throw new Error('malformed input decoded')
+}
+
 const render = async () => {
   const webViewPostMessage = jest.fn()
   let renderer: TestRenderer.ReactTestRenderer | undefined
@@ -103,19 +133,21 @@ const render = async () => {
   if (!renderer) throw new Error('render failed')
   const { root } = renderer
   // The native side reports the url of the frame that posted the message
+  const post = (senderUrl: string, request: object) =>
+    root.findByType('WebView' as never).props.onMessage({
+      nativeEvent: { url: senderUrl, data: JSON.stringify(request) },
+    })
   const receive = async (senderUrl: string, request: object) => {
     await act(async () => {
-      root.findByType('WebView' as never).props.onMessage({
-        nativeEvent: { url: senderUrl, data: JSON.stringify(request) },
-      })
+      post(senderUrl, request)
     })
   }
   const replies = () =>
     webViewPostMessage.mock.calls.map(([message]) => JSON.parse(message))
 
   // Runs the script the screen injects into the top frame, in a fake page,
-  // and sends the request it posts to the screen as the top page
-  const topFrameConnect = async () => {
+  // and returns the connect request it posts
+  const topFrameRequest = async () => {
     const page = new EventTarget() as EventTarget & Record<string, unknown>
     page.crypto = crypto
     const posted: string[] = []
@@ -141,11 +173,15 @@ const render = async () => {
     )(page, new EventTarget())
     await act(async () => {})
     wallet.features['standard:connect'].connect()
-    const request = JSON.parse(posted[0])
-    await receive('https://app.example/swap', request)
-    return request.id as number
+    return JSON.parse(posted[0]) as { id: number; token: string }
   }
-  return { receive, replies, topFrameConnect }
+  // Sends the top frame's connect request to the screen as the top page
+  const topFrameConnect = async () => {
+    const request = await topFrameRequest()
+    await receive('https://app.example/swap', request)
+    return request.id
+  }
+  return { root, post, receive, replies, topFrameRequest, topFrameConnect }
 }
 
 describe('BrowserWebViewScreen dApp messages', () => {
@@ -245,6 +281,103 @@ describe('BrowserWebViewScreen dApp messages', () => {
       { id: topId, type: 'connectApproved' },
     ])
   })
+
+  it.each(['signTransaction', 'signAndSendTransaction'])(
+    'runs a top-frame request that arrives with an iframe %s request in one task',
+    async (type) => {
+      const sheet = createSignRequestResolver()
+      mockShow.mockImplementation(sheet.next)
+      const { post, replies, topFrameRequest } = await render()
+      const topRequest = await topFrameRequest()
+
+      await act(async () => {
+        post('https://ads.example/frame', {
+          id: 7,
+          type,
+          inputs: [transactionInput()],
+        })
+        post('https://app.example/swap', topRequest)
+      })
+      await act(async () => {
+        sheet.settle(true)
+      })
+
+      expect(mockShow).toHaveBeenCalledTimes(1)
+      expect(mockShow.mock.calls[0][0]).toMatchObject({
+        type: 'connect',
+        url: 'https://app.example',
+      })
+      expect(replies()).toEqual([
+        { id: 7, type: 'signatureDeclined' },
+        { id: topRequest.id, type: 'connectApproved' },
+      ])
+    },
+  )
+
+  it('runs a top-frame request from the page the WebView navigated to', async () => {
+    const sheet = createSignRequestResolver()
+    mockShow.mockImplementation(sheet.next)
+    const { root, receive, replies, topFrameRequest } = await render()
+    await act(async () => {
+      root
+        .findByType('WebView' as never)
+        .props.onNavigationStateChange({ url: 'https://other.example/home' })
+    })
+    const topRequest = await topFrameRequest()
+
+    await receive('https://ads.example/frame', { id: 7, type: 'connect' })
+    await receive('https://other.example/home', topRequest)
+    await act(async () => {
+      sheet.settle(true)
+    })
+
+    expect(replies()).toEqual([
+      { id: 7, type: 'connectDeclined' },
+      { id: topRequest.id, type: 'connectApproved' },
+    ])
+  })
+
+  it('treats a top-frame token from another origin as an iframe request', async () => {
+    const sheet = createSignRequestResolver()
+    mockShow.mockImplementation(sheet.next)
+    const { receive, replies, topFrameRequest, topFrameConnect } =
+      await render()
+    // A former top page kept the token and posts it from an iframe
+    const { token } = await topFrameRequest()
+
+    await receive('https://ads.example/frame', {
+      id: 7,
+      token,
+      type: 'connect',
+    })
+    const topId = await topFrameConnect()
+    await act(async () => {
+      sheet.settle(true)
+    })
+
+    expect(replies()).toEqual([
+      { id: 7, type: 'connectDeclined' },
+      { id: topId, type: 'connectApproved' },
+    ])
+  })
+
+  it.each(['signAndSendTransaction', 'signTransaction'])(
+    'declines a %s request whose transaction cannot be decoded',
+    async (type) => {
+      const { receive, replies } = await render()
+      const error = malformedInputError()
+
+      await receive('https://app.example/swap', {
+        id: 7,
+        type,
+        inputs: [malformedInput],
+      })
+
+      expect(error).toBeTruthy()
+      expect(mockShow).not.toHaveBeenCalled()
+      expect(replies()).toEqual([{ id: 7, type: 'signatureDeclined', error }])
+    },
+  )
 
   it('drops a message from an opaque origin with no sheet and no reply', async () => {
     const { receive, replies } = await render()

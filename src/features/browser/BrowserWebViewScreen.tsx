@@ -154,10 +154,13 @@ const BrowserWebViewScreen = () => {
     topFrame: false,
     otherFrame: false,
   })
-  // Only the top frame's injected script gets this, so iframes cannot send it
+  // Only the top frame's injected script gets this token. A cross-origin
+  // iframe cannot read it; a same-origin iframe can, but it can already
+  // script the top page.
   const [topFrameToken] = useState(() =>
     Buffer.from(getRandomValues(new Uint8Array(16))).toString('hex'),
   )
+  const topOriginRef = useRef<DappOrigin | undefined>(senderOrigin(uri))
 
   const [currentUrl, setCurrentUrl] = useState(uri)
   const accountAddress = currentAccount?.solanaAddress
@@ -173,8 +176,21 @@ const BrowserWebViewScreen = () => {
     webview.current?.postMessage(JSON.stringify(message))
   }
 
-  const handleConnect = async (id: number, origin: DappOrigin) => {
+  // An iframe request that reaches its sheet after a top-page request began
+  // would decline the top page's sheet, so it gives way instead
+  const isBehindTopFrame = (sender: RequestSender) =>
+    sender === 'otherFrame' && requestSlotsRef.current.topFrame
+
+  const handleConnect = async (
+    id: number,
+    origin: DappOrigin,
+    sender: RequestSender,
+  ) => {
     Logger.breadcrumb('connect')
+    if (isBehindTopFrame(sender)) {
+      postMessage({ id, type: 'connectDeclined' })
+      return
+    }
     const decision = await walletSignBottomSheetRef.current?.show({
       type: WalletStandardMessageTypes.connect,
       url: origin,
@@ -192,6 +208,7 @@ const BrowserWebViewScreen = () => {
   const handleSignAndSendTransaction = async (
     id: number,
     origin: DappOrigin,
+    sender: RequestSender,
     inputs: SolanaSignAndSendTransactionInput[],
   ) => {
     Logger.breadcrumb('signAndSendTransaction')
@@ -231,6 +248,11 @@ const BrowserWebViewScreen = () => {
           Object.keys(transaction).map((k) => (transaction as any)[k]),
         ),
       )
+
+      if (isBehindTopFrame(sender)) {
+        postMessage({ id, type: 'signatureDeclined' })
+        return
+      }
 
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signAndSendTransaction,
@@ -279,6 +301,7 @@ const BrowserWebViewScreen = () => {
   const handleSignTransaction = async (
     id: number,
     origin: DappOrigin,
+    sender: RequestSender,
     inputs: SolanaSignAndSendTransactionInput[],
   ) => {
     Logger.breadcrumb('signTransaction')
@@ -316,6 +339,11 @@ const BrowserWebViewScreen = () => {
           Object.keys(transaction).map((k) => (transaction as any)[k]),
         ),
       )
+
+      if (isBehindTopFrame(sender)) {
+        postMessage({ id, type: 'signatureDeclined' })
+        return
+      }
 
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signTransaction,
@@ -355,6 +383,7 @@ const BrowserWebViewScreen = () => {
   const handleSignMessage = async (
     id: number,
     origin: DappOrigin,
+    sender: RequestSender,
     inputs: SolanaSignMessageInput[],
   ) => {
     Logger.breadcrumb('signMessage')
@@ -367,6 +396,11 @@ const BrowserWebViewScreen = () => {
         type: 'signatureDeclined',
         error: 'Refusing to sign a transaction as a message',
       })
+      return
+    }
+
+    if (isBehindTopFrame(sender)) {
+      postMessage({ id, type: 'signatureDeclined' })
       return
     }
 
@@ -405,8 +439,11 @@ const BrowserWebViewScreen = () => {
     }
 
     const { id, type, inputs, token } = JSON.parse(msg.nativeEvent.data)
+    // A token a former top page kept does not make its iframe the top frame
     const sender: RequestSender =
-      token === topFrameToken ? 'topFrame' : 'otherFrame'
+      token === topFrameToken && origin === topOriginRef.current
+        ? 'topFrame'
+        : 'otherFrame'
 
     if (
       !currentAccount?.address ||
@@ -435,22 +472,22 @@ const BrowserWebViewScreen = () => {
       switch (type) {
         case WalletStandardMessageTypes.connect:
           await runOneRequest(requestSlotsRef.current, sender, decline, () =>
-            handleConnect(id, origin),
+            handleConnect(id, origin, sender),
           )
           break
         case WalletStandardMessageTypes.signAndSendTransaction:
           await runOneRequest(requestSlotsRef.current, sender, decline, () =>
-            handleSignAndSendTransaction(id, origin, inputs),
+            handleSignAndSendTransaction(id, origin, sender, inputs),
           )
           break
         case WalletStandardMessageTypes.signTransaction:
           await runOneRequest(requestSlotsRef.current, sender, decline, () =>
-            handleSignTransaction(id, origin, inputs),
+            handleSignTransaction(id, origin, sender, inputs),
           )
           break
         case WalletStandardMessageTypes.signMessage:
           await runOneRequest(requestSlotsRef.current, sender, decline, () =>
-            handleSignMessage(id, origin, inputs),
+            handleSignMessage(id, origin, sender, inputs),
           )
           break
         default:
@@ -519,6 +556,7 @@ const BrowserWebViewScreen = () => {
   }
 
   const onNavigationChange = (event: WebViewNavigation) => {
+    topOriginRef.current = senderOrigin(event.url)
     const baseUrl = event.url.replace('https://', '').split('/')
     setCurrentUrl(baseUrl[0])
   }

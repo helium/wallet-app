@@ -54,6 +54,8 @@ describe('parseMarkup', () => {
     'heliumwallet://import_key/abc',
     'zcash://pay',
     'not a url',
+    'https://wallet.helium.com/import_key/abc',
+    'https://WALLET.helium.com/payment?payee=x',
   ])('opens nothing for a link to %s', (href) => {
     const link = textWith(render(`<a href="${href}">go</a>`), 'go')
 

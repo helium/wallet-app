@@ -266,6 +266,8 @@ describe('NotificationsScreen', () => {
     'heliumwallet://import_key/abc',
     'zcash://pay',
     'not a url',
+    'https://wallet.helium.com/import_key/abc',
+    'https://WALLET.helium.com/payment?payee=x',
   ])('opens nothing for an action link to %s', async (actionUrl) => {
     mockStorage.selectedNotification = notification(8, '2026-10-01T18:00:00Z', {
       actionTitle: 'Read more',
