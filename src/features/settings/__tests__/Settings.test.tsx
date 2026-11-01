@@ -66,6 +66,8 @@ jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
 
+const mockAlert = jest.fn()
+
 jest.mock('@helium/spl-utils', () => ({ truthy: Boolean }))
 jest.mock(
   '@hooks/useAlert',
@@ -95,7 +97,8 @@ jest.mock('react-native', () => {
     View: 'View',
     Image: 'Image',
     Switch: 'Switch',
-    Alert: { alert: () => {} },
+    // read at call time: the import of Settings runs before mockAlert is set
+    Alert: { alert: (...args: unknown[]) => mockAlert(...args) },
     Linking: { openURL: () => Promise.resolve() },
     Platform: { OS: 'ios' },
     useWindowDimensions: () => ({ width: 400, height: 800 }),
@@ -151,7 +154,9 @@ jest.mock('../../../storage/ModalsProvider', () => ({
 jest.mock('../../../storage/LanguageProvider', () => ({
   useLanguageStorage: () => ({ language: 'en' }),
 }))
-jest.mock('../../../storage/secureStorage', () => ({}))
+jest.mock('../../../storage/secureStorage', () => ({
+  getSecureAccount: async () => undefined,
+}))
 jest.mock('../../../utils/i18n', () => ({ SUPPORTED_LANGUAGUES: [] }))
 jest.mock('../../../utils/queryClient', () => ({ queryClient: {} }))
 jest.mock('../../../utils/supportedCurrencies', () => ({
@@ -218,5 +223,26 @@ describe('Settings', () => {
 
     expect(texts).toContain('USD')
     expect(texts).not.toContain('USD US Dollar')
+  })
+
+  it('warns an iOS user that sign-out reaches other devices on the same iCloud account', async () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const signOutRow = renderer.root.find(
+      (node) => node.props.item?.title === 'settings.sections.account.signOut',
+    )
+
+    await act(async () => {
+      signOutRow.findByType('PressableScale' as never).props.onPress()
+    })
+
+    expect(mockAlert).toHaveBeenCalledTimes(1)
+    expect(mockAlert.mock.calls[0][1]).toBe(
+      'settings.sections.account.signOutAlert.body' +
+        'settings.sections.account.signOutAlert.iCloudMessageOneWallet',
+    )
   })
 })

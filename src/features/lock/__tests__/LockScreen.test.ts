@@ -58,10 +58,17 @@ jest.mock('react-native-reanimated', () => ({
 jest.mock('@ui/ConfirmPinView', () => ({ ConfirmPinView: 'ConfirmPinView' }), {
   virtual: true,
 })
+const mockShowOKCancelAlert = jest.fn(
+  async (_options: { title: string; message?: string }) => false,
+)
 jest.mock(
   '@hooks/useAlert',
   () => {
-    const alert = { showOKCancelAlert: jest.fn() }
+    // read at call time: the import of LockScreen runs before the mock is set
+    const alert = {
+      showOKCancelAlert: (options: { title: string; message?: string }) =>
+        mockShowOKCancelAlert(options),
+    }
     return () => alert
   },
   { virtual: true },
@@ -164,5 +171,32 @@ describe('LockScreen overlay', () => {
     const renderer = await render()
     act(() => renderer.unmount())
     expect(mockSetSecure).not.toHaveBeenCalled()
+  })
+})
+
+describe('LockScreen sign-out', () => {
+  beforeEach(() => {
+    mockPlatform.OS = 'ios'
+    mockStorage.locked = true
+    mockShowOKCancelAlert.mockClear()
+  })
+
+  afterEach(() => {
+    act(() => mounted.splice(0).forEach((renderer) => renderer.unmount()))
+  })
+
+  it('warns an iOS user that other devices on the same iCloud account are signed out', async () => {
+    const { root } = await render()
+
+    await act(async () => {
+      root.findByType('ConfirmPinView' as never).props.onCancel()
+    })
+
+    expect(mockShowOKCancelAlert).toHaveBeenCalledWith({
+      title: 'auth.signOutAlert.title',
+      message:
+        'auth.signOutAlert.body' +
+        'settings.sections.account.signOutAlert.iCloudMessage',
+    })
   })
 })

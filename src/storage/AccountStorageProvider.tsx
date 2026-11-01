@@ -12,12 +12,14 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import { Alert } from 'react-native'
 import { useAuthStore } from '../store/authStore'
 import {
   accountNetType,
   AccountNetTypeOpt,
   heliumAddressToSolAddress,
 } from '../utils/accountUtils'
+import i18n from '../utils/i18n'
 import makeApiToken from '../utils/makeApiToken'
 import {
   CSAccount,
@@ -407,7 +409,17 @@ const useAccountStorageHook = () => {
       if (account?.address) {
         // sign out of specific account
         await removeAccountTag(account.address)
-        await deleteSecureAccount(account)
+        try {
+          await deleteSecureAccount(account)
+        } catch (e) {
+          // The key stays on this device, so the wallet stays listed for a retry
+          console.error(e)
+          Alert.alert(
+            i18n.t('generic.error'),
+            i18n.t('settings.sections.account.signOutAlert.deleteFailed'),
+          )
+          return
+        }
         let newAccounts: CSAccounts = {}
         if (accounts && accounts[account.address]) {
           newAccounts = { ...accounts }
@@ -424,8 +436,9 @@ const useAccountStorageHook = () => {
           await updateDefaultAccountAddress(newCurrentAccount?.address)
         }
       } else {
-        // sign out of all accounts
-        await Promise.all([
+        // sign out of all accounts. A failed keychain delete does not stop the
+        // others, and the list still clears.
+        const results = await Promise.allSettled([
           ...Object.keys(accounts || {}).map((key) => {
             return SecureStore.deleteItemAsync(key)
           }),
@@ -442,6 +455,14 @@ const useAccountStorageHook = () => {
         setAccounts({})
         setContacts([])
         setCurrentAccount(undefined)
+        const failures = results.filter((r) => r.status === 'rejected')
+        if (failures.length) {
+          console.error(failures.map((r) => r.reason))
+          Alert.alert(
+            i18n.t('generic.error'),
+            i18n.t('settings.sections.account.signOutAlert.deleteFailedAll'),
+          )
+        }
       }
     },
     [
