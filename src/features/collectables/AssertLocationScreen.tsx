@@ -715,7 +715,12 @@ const AssertLocationScreen = () => {
                       variant="outline"
                       size="lg"
                       className="grow"
-                      disabled={asserting || cameraMoving}
+                      disabled={
+                        asserting ||
+                        cameraMoving ||
+                        loadingMyDc ||
+                        waitingOnPrice
+                      }
                       onPress={() =>
                         void handleAssertLocationPress().catch(console.error)
                       }

@@ -31,7 +31,7 @@ jest.mock(
   '@hooks/useOnboardingBalances',
   () => {
     const BN = jest.requireActual('bn.js')
-    const balances = {
+    const ready = {
       // No maker, so the wallet pays and the DC burn runs.
       maker: undefined,
       makerDc: new BN(0),
@@ -46,7 +46,19 @@ jest.mock(
       },
       loadingLocationAssertDcRequirements: false,
     }
-    return { useOnboardingBalnces: () => balances }
+    // The HNT price is unset and DC alone is below the cost.
+    const waitingOnPrice = {
+      ...ready,
+      myDc: new BN(0),
+      myDcWithHnt: undefined,
+      loadingMyDcWithHnt: true,
+    }
+    const balances = { ...ready }
+    return {
+      useOnboardingBalnces: () => balances,
+      mockPriceReady: () => Object.assign(balances, ready),
+      mockPriceWaiting: () => Object.assign(balances, waitingOnPrice),
+    }
   },
   { virtual: true },
 )
@@ -164,13 +176,19 @@ jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 // React Native defines window; use-debounce never calls back without it.
 ;(globalThis as { window?: unknown }).window = globalThis
 
+const balances = jest.requireMock('@hooks/useOnboardingBalances') as {
+  mockPriceReady: () => void
+  mockPriceWaiting: () => void
+}
+
 const render = () => {
   let created: TestRenderer.ReactTestRenderer | undefined
   act(() => {
     created = TestRenderer.create(<AssertLocationScreen />)
   })
   if (!created) throw new Error('render failed')
-  const { root } = created
+  const renderer = created
+  const { root } = renderer
   const buttons = () => root.findAllByType('Button' as never)
   const map = () => root.findByType('Map' as never)
   // A disabled button ignores a tap, as the native Pressable does.
@@ -188,6 +206,12 @@ const render = () => {
   return {
     buttons,
     assertButton,
+    // The balance hook returns new values on the next render.
+    rerender: () => {
+      act(() => {
+        renderer.update(<AssertLocationScreen />)
+      })
+    },
     tapAssert: () => tap(assertButton()),
     tapLocate: () => {
       const button = buttons().find(
@@ -235,6 +259,7 @@ beforeEach(() => {
   mockImplicitBurn.mockClear()
   mockSubmitUpdateEntityInfo.mockClear()
   mockCameraRef.setStop.mockClear()
+  balances.mockPriceReady()
   useCurrentPosition.mockReturnValue({
     coords: { longitude: USER[0], latitude: USER[1] },
   })
@@ -388,5 +413,28 @@ describe('AssertLocationScreen', () => {
     view.moveEnds(USER)
     await settle()
     expect(overlayAssert().props.disabled).toBe(false)
+  })
+
+  // The Iot overlay has its own Assert button; it must wait for the price too.
+  it('blocks the Iot overlay assert while the HNT price is unset', async () => {
+    const view = render()
+    view.moveStarts()
+    view.moveEnds(SETTLED)
+    await settle()
+    view.tapAssert()
+    const iot = mockAlert.mock.lastCall?.[2].find(
+      (button) => button.text === 'Iot',
+    )
+    await act(async () => {
+      iot?.onPress?.()
+    })
+
+    balances.mockPriceWaiting()
+    view.rerender()
+    const overlayAssert = view
+      .buttons()
+      .find((node) => node.props.variant === 'outline')
+    if (!overlayAssert) throw new Error('no overlay assert button')
+    expect(overlayAssert.props.disabled).toBe(true)
   })
 })
