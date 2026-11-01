@@ -5,7 +5,13 @@ import AddGatewayBle from '../iot-ble/AddGatewayBle'
 
 // The onboard run starts by loading the entity manager program. Each test
 // settles that load when it chooses, so a run stays in flight until then.
-const mockInit = jest.fn<Promise<never>, [unknown]>()
+const mockInit = jest.fn<Promise<unknown>, [unknown]>()
+const mockGetOnboardTransactions = jest.fn()
+const mockImplicitBurn = jest.fn()
+const mockSubmitAndAwait = jest.fn()
+const mockNavigate = jest.fn()
+// When set, the maker is short on SOL, so the owner can pay the onboard fee.
+let mockMakerShortOnSol = false
 
 jest.mock('@helium/helium-entity-manager-sdk', () => ({
   init: (provider: unknown) => mockInit(provider),
@@ -17,7 +23,8 @@ jest.mock('@helium/helium-sub-daos-sdk', () => ({ daoKey: () => [{}] }))
 jest.mock('@helium/react-native-sdk', () => {
   const onboarding = {
     onboardingClient: { createHotspot: () => Promise.resolve({}) },
-    getOnboardTransactions: () => Promise.resolve({}),
+    getOnboardTransactions: (...args: unknown[]) =>
+      mockGetOnboardTransactions(...args),
   }
   return { useOnboarding: () => onboarding }
 })
@@ -43,7 +50,9 @@ jest.mock(
 jest.mock(
   '@hooks/useImplicitBurn',
   () => ({
-    useImplicitBurn: () => ({ implicitBurn: () => Promise.resolve() }),
+    useImplicitBurn: () => ({
+      implicitBurn: (...args: unknown[]) => mockImplicitBurn(...args),
+    }),
   }),
   { virtual: true },
 )
@@ -74,17 +83,33 @@ jest.mock(
       locationAssertDcRequirements: {},
       loadingOnboardingDcRequirements: false,
     }
-    return { useOnboardingBalnces: () => balances }
+    const makerShortOnSol = {
+      ...balances,
+      makerSol: new BNActual(0),
+      onboardingDcRequirements: {
+        iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns: new BNActual(500),
+      },
+    }
+    return {
+      useOnboardingBalnces: () =>
+        mockMakerShortOnSol ? makerShortOnSol : balances,
+    }
   },
   { virtual: true },
 )
 jest.mock(
   '@hooks/useSubmitAndAwait',
-  () => ({ useSubmitAndAwait: () => ({ submitAndAwait: () => {} }) }),
+  () => ({
+    useSubmitAndAwait: () => ({
+      submitAndAwait: (...args: unknown[]) => mockSubmitAndAwait(...args),
+    }),
+  }),
   { virtual: true },
 )
 jest.mock('@react-navigation/native', () => {
-  const navigation = { navigate: () => {} }
+  const navigation = {
+    navigate: (...args: unknown[]) => mockNavigate(...args),
+  }
   const route = {
     params: {
       createGatewayTx: undefined,
@@ -115,7 +140,8 @@ jest.mock(
   '@utils/solanaUtils',
   () => ({
     calculateRequiredSol: () => Promise.resolve(undefined),
-    getHotspotWithRewards: () => Promise.resolve(undefined),
+    getHotspotWithRewards: (asset: string) =>
+      Promise.resolve({ id: `collectable-${asset}` }),
   }),
   { virtual: true },
 )
@@ -189,6 +215,98 @@ const render = async () => {
 describe('AddGatewayBle', () => {
   beforeEach(() => {
     mockInit.mockReset()
+    mockGetOnboardTransactions.mockReset()
+    mockGetOnboardTransactions.mockResolvedValue({
+      solanaTransactions: ['AQ=='],
+    })
+    mockImplicitBurn.mockReset()
+    mockImplicitBurn.mockResolvedValue(undefined)
+    mockSubmitAndAwait.mockReset()
+    mockSubmitAndAwait.mockResolvedValue(undefined)
+    mockNavigate.mockReset()
+    mockMakerShortOnSol = false
+  })
+
+  // The entity manager program as the onboard run reads it. The Hotspot's
+  // asset shows up on the second key-to-asset read, after the onboard lands.
+  const hemProgram = (networkInfo: unknown) => {
+    const keyToAssetFetch = jest
+      .fn()
+      .mockResolvedValueOnce(null)
+      .mockResolvedValue({ asset: 'asset' })
+    return {
+      account: {
+        iotHotspotInfoV0: { fetchNullable: () => Promise.resolve(networkInfo) },
+        keyToAssetV0: { fetchNullable: keyToAssetFetch },
+      },
+    }
+  }
+
+  it('onboards a new Hotspot, waits for its asset and pops to the location step', async () => {
+    const program = hemProgram(null)
+    mockInit.mockResolvedValue(program)
+    const { onboardButton } = await render()
+
+    await act(async () => {
+      onboardButton().props.onPress()
+    })
+
+    expect(mockImplicitBurn).not.toHaveBeenCalled()
+    expect(mockGetOnboardTransactions).toHaveBeenCalledWith({
+      hotspotAddress: 'hotspot',
+      payer: undefined,
+      networkDetails: [{ hotspotType: 'IOT' }],
+    })
+    expect(mockSubmitAndAwait).toHaveBeenCalledTimes(1)
+    expect(program.account.keyToAssetV0.fetchNullable).toHaveBeenCalledTimes(2)
+    expect(mockNavigate).toHaveBeenCalledWith(
+      'AssertLocationScreen',
+      { collectable: { id: 'collectable-asset' } },
+      { pop: true },
+    )
+  })
+
+  it('skips the onboard of a Hotspot already on the network and pops to its map', async () => {
+    mockInit.mockResolvedValue(hemProgram({ hotspot: 'info' }))
+    const { onboardButton } = await render()
+
+    await act(async () => {
+      onboardButton().props.onPress()
+    })
+
+    expect(mockGetOnboardTransactions).not.toHaveBeenCalled()
+    expect(mockSubmitAndAwait).not.toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith(
+      'HotspotMapScreen',
+      { hotspot: { id: 'collectable-asset' }, network: 'IOT' },
+      { pop: true },
+    )
+  })
+
+  it('burns HNT to DC and onboards with the owner as payer when the owner pays', async () => {
+    mockMakerShortOnSol = true
+    mockInit.mockResolvedValue(hemProgram(null))
+    const { renderer } = await render()
+
+    // The second option is the owner paying the fee.
+    const payOption = renderer.root.findAllByType('PressableScale' as never)[1]
+    await act(async () => {
+      payOption.props.onPress()
+    })
+    const payButton = renderer.root.findByProps({ variant: 'destructive' })
+    await act(async () => {
+      payButton.props.onPress()
+    })
+
+    expect(mockImplicitBurn).toHaveBeenCalledWith(500)
+    expect(mockGetOnboardTransactions).toHaveBeenCalledWith({
+      hotspotAddress: 'hotspot',
+      payer: '11111111111111111111111111111112',
+      networkDetails: [{ hotspotType: 'IOT' }],
+    })
+    expect(mockImplicitBurn.mock.invocationCallOrder[0]).toBeLessThan(
+      mockGetOnboardTransactions.mock.invocationCallOrder[0],
+    )
   })
 
   it('starts one onboard run for two presses in one tick', async () => {
