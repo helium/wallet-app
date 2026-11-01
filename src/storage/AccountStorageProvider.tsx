@@ -263,13 +263,12 @@ const useAccountStorageHook = () => {
         [csAccount.address]: nextAccount,
       }
 
+      // State follows the write, so a failed write can be retried as new
+      await updateCloudAccounts(nextAccounts)
       setAccounts(nextAccounts)
       setCurrentAccount(nextAccount)
 
-      await Promise.all([
-        updateCloudAccounts(nextAccounts),
-        tagAccount(csAccount.address),
-      ])
+      await tagAccount(csAccount.address)
     },
     [accounts],
   )
@@ -300,11 +299,11 @@ const useAccountStorageHook = () => {
 
       const nextAccounts: CSAccounts = { ...accounts, ...bulkAccounts }
 
+      await updateCloudAccounts(nextAccounts)
       setAccounts(nextAccounts)
       setCurrentAccount(
         nextAccounts[accountBulk[accountBulk.length - 1].address],
       )
-      await updateCloudAccounts(nextAccounts)
 
       await Promise.all(Object.keys(bulkAccounts).map(tagAccount))
     },
