@@ -187,6 +187,15 @@ describe('DeviceShow', () => {
 
     expect(buttonLabel(renderer)).toBe('ledger.show.close')
     expect(showsAccountLimit(renderer)).toBe(true)
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).not.toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith('AccountsScreen', undefined, {
+      pop: true,
+    })
   })
 
   it('shows an error and stays on the screen when the accounts fail to save', async () => {
@@ -229,5 +238,46 @@ describe('DeviceShow', () => {
 
     expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
     expect(navigatedToPairSuccess()).toBe(1)
+  })
+
+  it('ignores Close while the save is pending and navigates only to PairSuccess', async () => {
+    storeAccounts(others(2))
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    // The provider lists the new accounts before the save resolves
+    let resolveSave: () => void = () => {}
+    mockUpsertAccounts.mockImplementation(
+      (accs: { address: string }[]) =>
+        new Promise<void>((resolve) => {
+          storeAccounts([
+            ...Object.keys(mockAccounts),
+            ...accs.map((a) => a.address),
+          ])
+          resolveSave = resolve
+        }),
+    )
+    const renderer = await renderDeviceShow()
+    await pressSelectAll(renderer)
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+    await act(async () => {
+      renderer.update(<DeviceShow />)
+    })
+    expect(buttonLabel(renderer)).toBe('ledger.show.close')
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+    await act(async () => {
+      resolveSave()
+    })
+
+    expect(mockNavigate.mock.calls.map(([screen]) => screen)).toEqual([
+      'PairSuccess',
+    ])
+    expect(mockNavigate).not.toHaveBeenCalledWith('AccountsScreen', undefined, {
+      pop: true,
+    })
   })
 })

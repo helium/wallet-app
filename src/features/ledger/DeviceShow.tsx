@@ -250,6 +250,7 @@ const DeviceShow = () => {
   }
 
   const handleClose = () => {
+    if (saving.current) return
     homeNav.navigate('AccountsScreen', undefined, { pop: true })
   }
 

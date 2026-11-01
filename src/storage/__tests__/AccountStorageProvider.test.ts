@@ -3,6 +3,7 @@ import { act, create, ReactTestRenderer } from 'react-test-renderer'
 import AccountStorageProvider, {
   useAccountStorage,
 } from '../AccountStorageProvider'
+import * as SecureStore from 'expo-secure-store'
 import { restoreAccounts, updateCloudAccounts } from '../cloudStorage'
 
 // A real Helium/Solana address pair, so the restore keeps its solana address
@@ -37,12 +38,16 @@ jest.mock('../resetAppState', () => ({
   resetAppState: () => Promise.resolve(),
 }))
 jest.mock('../secureStorage', () => ({
-  deleteSecureAccount: () => Promise.resolve(),
+  // As the real one: delete the keychain item named by the address
+  deleteSecureAccount: (account: { address: string }) =>
+    jest.requireMock('expo-secure-store').deleteItemAsync(account.address),
   signoutSecureStore: () => [],
   storeSecureAccount: () => Promise.resolve(),
   storeSecureItem: () => Promise.resolve(),
 }))
-jest.mock('expo-secure-store', () => ({}))
+jest.mock('expo-secure-store', () => ({
+  deleteItemAsync: jest.fn(() => Promise.resolve()),
+}))
 jest.mock('bcrypt-react-native', () => ({}))
 jest.mock('@react-native-community/hooks', () => ({
   useAppState: () => 'background',
@@ -58,6 +63,7 @@ jest.mock('../../utils/i18n', () => ({
 
 const mockRestoreAccounts = restoreAccounts as jest.Mock
 const mockUpdateCloudAccounts = updateCloudAccounts as jest.Mock
+const mockDeleteItemAsync = SecureStore.deleteItemAsync as jest.Mock
 
 let storage: ReturnType<typeof useAccountStorage>
 let renderer: ReactTestRenderer | undefined
@@ -99,6 +105,7 @@ beforeEach(async () => {
   })
   mockUpdateCloudAccounts.mockReset()
   mockUpdateCloudAccounts.mockResolvedValue(undefined)
+  mockDeleteItemAsync.mockClear()
   await renderProvider()
   // Every later write is the one under test
   mockUpdateCloudAccounts.mockRejectedValue(writeFailed)
@@ -135,6 +142,38 @@ describe('AccountStorageProvider', () => {
     expect(Object.keys(storage.accounts ?? {})).toEqual([storedAccount.address])
     expect(storage.accounts).toBe(accounts)
     expect(storage.currentAccount).toBe(currentAccount)
+  })
+
+  it('deletes the stored key of a new account when upsertAccount fails to write', async () => {
+    await act(async () => {
+      await expect(
+        storage.upsertAccount({
+          ...newAccount,
+          secureAccount: {
+            address: newAccount.address,
+            keypair: { pk: 'pk', sk: 'sk' },
+          },
+        }),
+      ).rejects.toBe(writeFailed)
+    })
+
+    expect(mockDeleteItemAsync).toHaveBeenCalledWith(newAccount.address)
+  })
+
+  it('keeps the stored key of a listed account when upsertAccount fails to write', async () => {
+    await act(async () => {
+      await expect(
+        storage.upsertAccount({
+          ...storedAccount,
+          secureAccount: {
+            address: storedAccount.address,
+            keypair: { pk: 'pk', sk: 'sk' },
+          },
+        }),
+      ).rejects.toBe(writeFailed)
+    })
+
+    expect(mockDeleteItemAsync).not.toHaveBeenCalled()
   })
 
   it('keeps accounts and the current account when upsertAccounts fails to write', async () => {

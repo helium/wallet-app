@@ -266,7 +266,15 @@ const useAccountStorageHook = () => {
       }
 
       // State follows the write, so a failed write can be retried as new
-      await updateCloudAccounts(nextAccounts)
+      try {
+        await updateCloudAccounts(nextAccounts)
+      } catch (e) {
+        // A key stored for an unlisted account would outlive sign-out
+        if (secureAccount && !accounts?.[csAccount.address]) {
+          await deleteSecureAccount(nextAccount).catch(console.error)
+        }
+        throw e
+      }
       setAccounts(nextAccounts)
       setCurrentAccount(nextAccount)
 
@@ -407,7 +415,6 @@ const useAccountStorageHook = () => {
     async (account?: CSAccount | null) => {
       if (account?.address) {
         // sign out of specific account
-        await removeAccountTag(account.address)
         try {
           await deleteSecureAccount(account)
         } catch (e) {
@@ -419,6 +426,7 @@ const useAccountStorageHook = () => {
           )
           return
         }
+        await removeAccountTag(account.address)
         let newAccounts: CSAccounts = {}
         if (accounts && accounts[account.address]) {
           newAccounts = { ...accounts }
@@ -437,16 +445,21 @@ const useAccountStorageHook = () => {
       } else {
         // sign out of all accounts. A failed keychain delete does not stop the
         // others, and the list still clears.
-        const results = await Promise.allSettled([
+        const sortedAddresses = sortedAccounts.map(({ address: addr }) => addr)
+        const secureStoreDeletes = signoutSecureStore(sortedAddresses)
+        // signoutSecureStore returns the per-address key deletes first
+        const keyDeletes = [
           ...Object.keys(accounts || {}).map((key) => {
             return SecureStore.deleteItemAsync(key)
           }),
+          ...secureStoreDeletes.slice(0, sortedAddresses.length),
+        ]
+        const results = await Promise.allSettled([
+          ...keyDeletes,
           ...Object.keys(accounts || {}).map((key) => {
             return removeAccountTag(key)
           }),
-          ...signoutSecureStore(
-            sortedAccounts.map(({ address: addr }) => addr),
-          ),
+          ...secureStoreDeletes.slice(sortedAddresses.length),
           updateDefaultAccountAddress(undefined),
         ])
         // After the writes above, so none of them lands in the cleared state
@@ -457,6 +470,12 @@ const useAccountStorageHook = () => {
         const failures = results.filter((r) => r.status === 'rejected')
         if (failures.length) {
           console.error(failures.map((r) => r.reason))
+        }
+        // Only a wallet key left in the keychain warrants the alert
+        const keyDeleteFailed = results
+          .slice(0, keyDeletes.length)
+          .some((r) => r.status === 'rejected')
+        if (keyDeleteFailed) {
           Alert.alert(
             i18n.t('generic.error'),
             i18n.t('settings.sections.account.signOutAlert.deleteFailedAll'),

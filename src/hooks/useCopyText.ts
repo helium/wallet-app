@@ -33,15 +33,16 @@ export default ({
     ({ copyText, message }: { copyText: string; message?: string }) => {
       if (!copyText) return
 
+      const toastMessage = message ?? copyText
       if (sensitive) {
-        setStringAsync(copyText, { android: { isSensitive: true } }).catch(
-          (e) => console.warn('Clipboard.setStringAsync failed', e),
-        )
+        // The toast waits for the copy, so a failed copy shows no "copied"
+        setStringAsync(copyText, { android: { isSensitive: true } })
+          .then(() => showToast(toastMessage))
+          .catch((e) => console.warn('Clipboard.setStringAsync failed', e))
       } else {
         Clipboard.setString(copyText)
+        showToast(toastMessage)
       }
-      const toastMessage = message ?? copyText
-      showToast(toastMessage)
       if (haptic) triggerNavHaptic()
     },
     [haptic, sensitive, showToast, triggerNavHaptic],
