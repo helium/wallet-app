@@ -592,6 +592,7 @@ export default {
       'Solana wallets must have a minimum of ~{{amount}} SOL to cover rent. The result of this transaction would leave your wallet with less than the rent-exempt minimum.',
     unableToSimulate:
       'Unable to simulate. Make sure you trust this app since approving can lead to loss of funds.',
+    approveWithoutSimulation: 'Approve without simulation',
     networkFee: 'Network Fee',
     totalPriorityFee: 'Total Priority Fee',
     totalNetworkFee: 'Total Network Fee',

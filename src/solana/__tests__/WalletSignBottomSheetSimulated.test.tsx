@@ -264,15 +264,84 @@ describe('WalletSignBottomSheetSimulated', () => {
       expect(approveDisabled(renderSheet())).toBe(true)
     })
 
-    it('enables once the simulation fails', () => {
-      mockSimulation = {
+    describe('when the simulation fails', () => {
+      const failedSimulation: MockSimulation = {
         data: undefined,
         error: new Error('Simulation failed'),
         isLoading: false,
         isPending: false,
       }
+      const texts = (renderer: TestRenderer.ReactTestRenderer) =>
+        renderer.root
+          .findAllByType('Text' as never)
+          .map((n) => n.props.children)
+      const approveWithoutSimulationButtons = (
+        renderer: TestRenderer.ReactTestRenderer,
+      ) =>
+        renderer.root.findAll(
+          (n) =>
+            (n.type as unknown) === 'Button' &&
+            n.props.children === 'browserScreen.approveWithoutSimulation',
+        )
 
-      expect(approveDisabled(renderSheet())).toBe(false)
+      it('keeps a dApp request disabled under the caution until the user approves without simulation', () => {
+        mockSimulation = failedSimulation
+        const renderer = renderSheet({ url: 'https://dapp.example' })
+
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts(renderer)).toContain('browserScreen.unableToSimulate')
+        expect(texts(renderer)).toContain('Simulation failed')
+
+        act(() => {
+          approveWithoutSimulationButtons(renderer)[0].props.onPress()
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+        expect(texts(renderer)).toContain('browserScreen.unableToSimulate')
+      })
+
+      it('enables an in-app request at once', () => {
+        mockSimulation = failedSimulation
+        const renderer = renderSheet({ url: '' })
+
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+      })
+
+      it('needs the step again for a new dApp request', () => {
+        mockSimulation = failedSimulation
+        const renderer = renderSheet({ url: 'https://dapp.example' })
+        act(() => {
+          approveWithoutSimulationButtons(renderer)[0].props.onPress()
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+
+        act(() => {
+          renderer.update(
+            <WalletSignBottomSheetSimulated
+              type={WalletStandardMessageTypes.signTransaction}
+              url="https://dapp.example"
+              serializedTxs={[Buffer.from('another tx')]}
+              opened
+              onAccept={() => {}}
+              onCancel={() => {}}
+            />,
+          )
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(1)
+      })
+
+      it('offers no step for a dApp request whose simulation returned or is pending', () => {
+        const returned = renderSheet({ url: 'https://dapp.example' })
+        mockSimulation = pendingSimulation
+        const pending = renderSheet({ url: 'https://dapp.example' })
+
+        expect(approveWithoutSimulationButtons(returned)).toHaveLength(0)
+        expect(approveWithoutSimulationButtons(pending)).toHaveLength(0)
+        expect(texts(returned)).not.toContain('browserScreen.unableToSimulate')
+        expect(texts(pending)).not.toContain('browserScreen.unableToSimulate')
+      })
     })
 
     it('does not wait for a simulation when the request has no transactions', () => {

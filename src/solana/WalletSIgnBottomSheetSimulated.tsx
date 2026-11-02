@@ -78,6 +78,9 @@ export const WalletSignBottomSheetSimulated = ({
   // The transactions whose simulation timed out, so a new request waits again
   const [timedOutTxs, setTimedOutTxs] =
     useState<WalletSignOpts['serializedTxs']>()
+  // The transactions the user chose to approve without a simulation
+  const [unsimulatedApprovalTxs, setUnsimulatedApprovalTxs] =
+    useState<WalletSignOpts['serializedTxs']>()
 
   const { data: accountBlacklist } = useQuery({
     queryKey: ['wellKnownCanopyBlacklist'],
@@ -188,7 +191,15 @@ export const WalletSignBottomSheetSimulated = ({
   // but not loading. A request without transactions has nothing to simulate
   const simulationPending = !!serializedTxs && isPending
   const simulationTimedOut = simulationPending && timedOutTxs === serializedTxs
-  const approveDisabled = !opened || (simulationPending && !simulationTimedOut)
+  // A dApp can make its own simulation fail, so its request needs an explicit
+  // approve-without-simulation step. In-app requests have no url
+  const dappSimulationFailed = !!url && !!error
+  const needsApproveWithoutSimulation =
+    dappSimulationFailed && unsimulatedApprovalTxs !== serializedTxs
+  const approveDisabled =
+    !opened ||
+    (simulationPending && !simulationTimedOut) ||
+    needsApproveWithoutSimulation
 
   useEffect(() => {
     if (!simulationPending) return undefined
@@ -372,6 +383,25 @@ export const WalletSignBottomSheetSimulated = ({
                       >
                         {error.message || error.toString()}
                       </Text>
+                      {dappSimulationFailed ? (
+                        <Text
+                          size="base"
+                          className="mt-2 font-medium text-destructive"
+                        >
+                          {t('browserScreen.unableToSimulate')}
+                        </Text>
+                      ) : null}
+                      {needsApproveWithoutSimulation ? (
+                        <Button
+                          variant="outline"
+                          className="mt-4 rounded-full"
+                          onPress={() =>
+                            setUnsimulatedApprovalTxs(serializedTxs)
+                          }
+                        >
+                          {t('browserScreen.approveWithoutSimulation')}
+                        </Button>
+                      ) : null}
                     </View>
                   </View>
                 ) : null}
