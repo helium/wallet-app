@@ -1,10 +1,11 @@
 import React, { useEffect, useEffectEvent } from 'react'
-import { useIsFocused } from '@react-navigation/native'
+import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Linking, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { Button } from '@ui/Button'
+import { CloseButton } from '@ui/CloseButton'
 import { Text } from '@ui/Text'
 import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
@@ -17,6 +18,7 @@ const NotificationsScreen = () => {
   const { selectedNotification, updateAllNotifications } =
     useNotificationStorage()
   const isFocused = useIsFocused()
+  const navigation = useNavigation()
 
   const onFocus = useEffectEvent(() => {
     updateAllNotifications()
@@ -34,9 +36,17 @@ const NotificationsScreen = () => {
 
   const HeaderComponent = (
     <>
-      <Text size="xl" className="mb-6 mt-4 text-center">
-        {t('notifications.title')}
-      </Text>
+      <View className="mb-6 mt-4 flex-row items-center px-4">
+        <CloseButton
+          testID="Notifications.Close"
+          accessibilityLabel={t('generic.close')}
+          onPress={navigation.goBack}
+        />
+        <Text size="xl" className="flex-1 text-center">
+          {t('notifications.title')}
+        </Text>
+        <View className="size-11" />
+      </View>
       <AccountSlider />
     </>
   )
