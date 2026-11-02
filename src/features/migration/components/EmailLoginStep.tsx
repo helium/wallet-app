@@ -57,11 +57,17 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
     if (isReady && hasLinkedEmail) onSuccess()
   }, [isReady, hasLinkedEmail, onSuccess])
 
+  // One interval runs while the countdown is on, so a late render does not
+  // drop a tick.
+  const counting = secondsLeft > 0
   useEffect(() => {
-    if (secondsLeft <= 0) return undefined
-    const id = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000)
-    return () => clearTimeout(id)
-  }, [secondsLeft])
+    if (!counting) return undefined
+    const id = setInterval(
+      () => setSecondsLeft((s) => (s > 0 ? s - 1 : s)),
+      1000,
+    )
+    return () => clearInterval(id)
+  }, [counting])
 
   const sendCodeFor = async (count: number) => {
     if (!email) return

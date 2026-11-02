@@ -130,7 +130,10 @@ export const CollapsibleWritableAccountPreview = ({
     !accountExists(writableAccount.post.account)
 
   return (
-    <PressableScale feedback="opacity" onPress={() => setExpanded(!expanded)}>
+    <PressableScale
+      feedback="opacity"
+      onPress={() => setExpanded((prev) => !prev)}
+    >
       <View className="flex-row items-center justify-between p-2">
         <View className="flex-row items-center">
           {writableAccount.metadata ? (

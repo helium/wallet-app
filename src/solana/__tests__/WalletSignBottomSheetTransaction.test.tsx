@@ -82,4 +82,52 @@ describe('WalletSignBottomSheetTransaction', () => {
     expect(image.props.source).toEqual({ uri: 'https://x/cnft.png' })
     expect(image.props.className).toBe('size-6')
   })
+
+  it('hides the unknown accounts when the toggle is pressed twice before a render', () => {
+    // One unowned account with only an "Unchanged" warning, so it collapses.
+    const address = { toBase58: () => 'acct1' }
+    const withUnknownAccount = {
+      ...transaction,
+      possibleCNftChanges: [],
+      writableAccounts: [
+        {
+          address,
+          name: 'Unknown Account',
+          pre: { type: 'Unknown' },
+          post: { type: 'Unknown' },
+        },
+      ],
+      warnings: [{ account: address, shortMessage: 'Unchanged' }],
+    } as unknown as SusResult
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(
+        <WalletSignBottomSheetTransaction
+          transaction={withUnknownAccount}
+          transactionIdx={0}
+          totalTransactions={1}
+        />,
+      )
+    })
+    const previews = () =>
+      renderer.root.findAllByType('CollapsibleWritableAccountPreview' as never)
+    const toggle = () =>
+      renderer.root.find(
+        (n) =>
+          (n.type as unknown) === 'PressableScale' &&
+          n.findAll((c) => c.props.text === 'Unknown Changes').length > 0,
+      ).props.onPress
+    const onPress = toggle()
+
+    act(() => {
+      onPress()
+      onPress()
+    })
+    expect(previews().length).toBe(0)
+
+    act(() => {
+      toggle()()
+    })
+    expect(previews().length).toBe(1)
+  })
 })

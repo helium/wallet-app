@@ -186,7 +186,7 @@ const AssertLocationScreen = () => {
     setElevation(iotInfoAcc?.elevation ? `${iotInfoAcc.elevation}` : undefined)
 
   const handleSearchPress = () => {
-    setSearchVisible(!searchVisible)
+    setSearchVisible((prev) => !prev)
   }
 
   const hideSearch = () => {

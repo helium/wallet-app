@@ -366,7 +366,7 @@ export const WalletSignBottomSheetSimulated = ({
               <View className="flex-col">
                 <PressableScale
                   feedback="opacity"
-                  onPress={() => setFeesExpanded(!feesExpanded)}
+                  onPress={() => setFeesExpanded((prev) => !prev)}
                   className="mt-2 flex-row justify-between"
                 >
                   <Text size="base" className="font-bold">

@@ -220,7 +220,7 @@ const WalletSignBottomSheetTransaction = ({
             <>
               <PressableScale
                 feedback="opacity"
-                onPress={() => setExpanded(!expanded)}
+                onPress={() => setExpanded((prev) => !prev)}
               >
                 <View className="flex-row items-center justify-between p-2">
                   <View className="flex-row items-center">

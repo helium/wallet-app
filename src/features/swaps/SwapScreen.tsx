@@ -166,8 +166,8 @@ const SwapScreen = () => {
 
   const handleRecipientClick = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-    setRecipientOpen(!isRecipientOpen)
-  }, [isRecipientOpen, setRecipientOpen])
+    setRecipientOpen((prev) => !prev)
+  }, [setRecipientOpen])
 
   const handleAddressBookSelected = useCallback(() => {
     addressBookRef?.current?.showAddressBook({})

@@ -98,8 +98,7 @@ const AccountImportScreen = () => {
       ...w.slice(wordIndex + 1),
     ])
 
-    if (wordIndex === wordCount - 1) return
-    setWordIndex(wordIndex + 1)
+    setWordIndex((i) => (i === wordCount - 1 ? i : i + 1))
   }
 
   const handleContentSizeChanged = () => {

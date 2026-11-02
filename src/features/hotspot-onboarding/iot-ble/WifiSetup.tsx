@@ -32,7 +32,7 @@ const WifiSetup = () => {
   }
 
   const toggleSecureEntry = () => {
-    setSecureTextEntry(!secureTextEntry)
+    setSecureTextEntry((prev) => !prev)
   }
 
   const handleSetWifi = async () => {

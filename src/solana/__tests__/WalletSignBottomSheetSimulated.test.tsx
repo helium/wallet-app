@@ -148,6 +148,42 @@ describe('WalletSignBottomSheetSimulated', () => {
     expect(onCancel).not.toHaveBeenCalled()
   })
 
+  it('collapses the fee breakdown when the toggle is pressed twice before a render', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <WalletSignBottomSheetSimulated
+          type={WalletStandardMessageTypes.signTransaction}
+          serializedTxs={[Buffer.from('tx')]}
+          onAccept={() => {}}
+          onCancel={() => {}}
+        />,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const texts = () =>
+      renderer!.root.findAllByType('Text' as never).map((n) => n.props.children)
+    const feeToggle = () =>
+      renderer!.root.find(
+        (n) =>
+          (n.type as unknown) === 'PressableScale' &&
+          n.findAll((c) => c.props.children === 'browserScreen.totalNetworkFee')
+            .length > 0,
+      ).props.onPress
+    const onPress = feeToggle()
+
+    act(() => {
+      onPress()
+      onPress()
+    })
+    expect(texts()).not.toContain('browserScreen.totalBaseFee')
+
+    act(() => {
+      feeToggle()()
+    })
+    expect(texts()).toContain('browserScreen.totalBaseFee')
+  })
+
   it('shows a non-empty warning and message', () => {
     // 1 SOL covers the 5000-lamport fee, so the message shows.
     mockSolBalance = { toString: () => '1000000000' }
