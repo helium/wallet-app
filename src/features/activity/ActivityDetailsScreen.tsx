@@ -52,7 +52,7 @@ const ScamWarningImage = (props: ImageProps) => {
         </Text>
         <Button
           variant="outline"
-          size="lg"
+          size="dashboard"
           className="mt-6"
           onPress={() => setDismissed(true)}
         >
@@ -313,7 +313,7 @@ const ActivityDetailsScreen = () => {
               {accountAddressListItems}
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mt-8 w-full"
                 onPress={() => void handleOpenExplorer().catch(console.error)}
               >

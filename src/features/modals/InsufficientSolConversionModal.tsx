@@ -269,7 +269,7 @@ const InsufficientSolConversionModal: FC = () => {
               <View className="mx-4 flex-row justify-between gap-3">
                 <Button
                   variant="secondary"
-                  size="lg"
+                  size="dashboard"
                   className="flex-1"
                   disabled={loading}
                   onPress={() => void handleCancel().catch(console.error)}
@@ -279,7 +279,7 @@ const InsufficientSolConversionModal: FC = () => {
                 {hasAtLeastOne && (
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     disabled={!inputMint}
                     onPress={() => void handleSwapTokens().catch(console.error)}

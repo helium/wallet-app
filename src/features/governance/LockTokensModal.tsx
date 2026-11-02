@@ -680,7 +680,7 @@ export const LockTokensModal = ({
             {!showLockupKindInfo ? (
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="flex-1"
                 onPress={() => void handleSubmit().catch(console.error)}
                 disabled={
@@ -719,7 +719,7 @@ export const LockTokensModal = ({
             ) : (
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="flex-1"
                 onPress={() => {
                   setShowLockupKindInfo(false)
@@ -734,7 +734,7 @@ export const LockTokensModal = ({
           <View className="flex-row pt-3">
             <Button
               variant="cta"
-              size="lg"
+              size="dashboard"
               className="flex-1"
               onPress={() => void handleSubmit().catch(console.error)}
               disabled={isSubmitting || insufficientBalance}

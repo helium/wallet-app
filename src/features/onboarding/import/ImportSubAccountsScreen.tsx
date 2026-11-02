@@ -240,7 +240,7 @@ const ImportSubAccountsScreen = () => {
       {!!derivationAccounts.length && (
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mx-6 my-6"
           disabled={!selected || selected.size === 0 || !!error || loading}
           onPress={onNext}

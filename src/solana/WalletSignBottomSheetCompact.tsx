@@ -100,7 +100,7 @@ export const WalletSignBottomSheetCompact = ({
       <View className="flex-row gap-2">
         <Button
           variant="outline"
-          size="lg"
+          size="dashboard"
           className="flex-1"
           onPress={onCancel}
           testID="WalletSign.Cancel"
@@ -109,7 +109,7 @@ export const WalletSignBottomSheetCompact = ({
         </Button>
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1"
           onPress={onAccept}
           testID="WalletSign.Approve"

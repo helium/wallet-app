@@ -336,7 +336,7 @@ const RequestScreen = () => {
                 <View className="mt-6 flex-row gap-4 pb-12">
                   <Button
                     variant="outline"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     onPress={navigation.goBack}
                   >
@@ -344,7 +344,7 @@ const RequestScreen = () => {
                   </Button>
                   <Button
                     variant="secondary"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     onPress={() => void handleShare().catch(console.error)}
                   >

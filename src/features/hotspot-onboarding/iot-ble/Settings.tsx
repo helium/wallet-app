@@ -187,7 +187,7 @@ const Settings = () => {
       {!loadingInfo && !loadingKta && (
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mt-6 w-full"
           disabled={loading || !!error || !address}
           onPress={() => void navNext().catch(console.error)}

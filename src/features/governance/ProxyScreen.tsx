@@ -153,7 +153,7 @@ export const ProxyScreen = () => {
               <View className="mb-4 flex-row items-center">
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="dashboard"
                   className="h-[50px] flex-1 rounded-full"
                   disabled={!unproxiedPositions?.length}
                   onPress={handleAssignProxy}
@@ -166,7 +166,7 @@ export const ProxyScreen = () => {
                 {proxiedPositions?.length ? (
                   <Button
                     variant="outline"
-                    size="lg"
+                    size="dashboard"
                     className="ml-4 h-[50px] flex-1 rounded-full"
                     onPress={handleRevokeProxy}
                   >

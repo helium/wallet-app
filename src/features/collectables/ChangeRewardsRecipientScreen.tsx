@@ -404,7 +404,7 @@ const ChangeRewardsRecipientScreen = () => {
         <View className="flex-row items-center justify-center px-4 pb-4">
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="flex-1"
             onPress={
               removing || updating

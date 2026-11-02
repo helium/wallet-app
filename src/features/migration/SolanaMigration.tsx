@@ -308,7 +308,7 @@ const SolanaMigration = ({
             {retry > 0 && (
               <Button
                 variant="secondary"
-                size="lg"
+                size="dashboard"
                 className="flex-1"
                 onPress={() =>
                   void handleManualMigration().catch(console.error)
@@ -319,7 +319,7 @@ const SolanaMigration = ({
             )}
             <Button
               variant="secondary"
-              size="lg"
+              size="dashboard"
               className="flex-1"
               onPress={handleUpdateRetry}
             >

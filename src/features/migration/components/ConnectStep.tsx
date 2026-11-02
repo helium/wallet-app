@@ -87,7 +87,7 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
       <View className="px-6 pb-6">
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="w-full"
           onPress={() => void Linking.openURL(WORLD_URL).catch(console.error)}
         >
@@ -96,7 +96,7 @@ const ConnectStep: FC<{ onBack: () => void; onDismiss?: () => void }> = ({
         {onDismiss ? (
           <Button
             variant="ghost"
-            size="lg"
+            size="dashboard"
             className="mt-2 w-full"
             onPress={onDismiss}
           >
