@@ -1,5 +1,6 @@
 import React from 'react'
-import { Image, View } from 'react-native'
+import { View } from 'react-native'
+import { Image } from '@ui/Image'
 import { useContentWidth } from '../../utils/layout'
 
 const bannerSource = (icon: string) => {
@@ -35,7 +36,7 @@ const NotificationDetailBanner = ({ icon }: { icon: string }) => {
     <View className="items-center justify-center">
       <Image
         source={bannerSource(icon)}
-        resizeMode="contain"
+        contentFit="contain"
         style={{ width: contentWidth - BANNER_MARGIN * 2 }}
       />
     </View>

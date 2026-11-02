@@ -259,6 +259,7 @@
     ],
     "@bacons/apple-targets",
     "./plugins/withHeliumNative",
+    "expo-image",
     "expo-secure-store",
     "expo-web-browser"
   ],

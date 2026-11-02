@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
-import { Image, View } from 'react-native'
+import { View } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { PressableScale } from '@ui/PressableScale'
@@ -43,9 +44,10 @@ const NftListItem = ({
         <Image
           className="w-full rounded-lg"
           style={{ height: collectableHeight }}
+          contentFit="cover"
+          recyclingKey={collectables[0].id}
           source={{
             uri: json?.image || '',
-            cache: 'force-cache',
           }}
         />
         <View className="absolute bottom-5 right-4 flex-row items-center justify-center rounded-full bg-background p-2">

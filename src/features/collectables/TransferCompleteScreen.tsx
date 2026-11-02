@@ -13,7 +13,8 @@ import { BlurView } from 'expo-blur'
 import { ChevronLeft, CircleCheck } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, LogBox, Platform, View } from 'react-native'
+import { LogBox, Platform, View } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -83,8 +84,8 @@ const TransferCollectableScreen = () => {
         <>
           <Image
             className="absolute inset-0 opacity-70"
-            source={{ uri: backgroundImageUri, cache: 'force-cache' }}
-            resizeMode="cover"
+            source={{ uri: backgroundImageUri }}
+            contentFit="cover"
           />
           <Blur
             className="absolute inset-0"
@@ -104,7 +105,7 @@ const TransferCollectableScreen = () => {
                     metadata.image ? 'bg-primary' : 'bg-secondary',
                   )}
                   style={{ height: imageSize, width: imageSize }}
-                  source={{ uri: metadata.image, cache: 'force-cache' }}
+                  source={{ uri: metadata.image }}
                 />
               </View>
             )}

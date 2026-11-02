@@ -4,7 +4,8 @@ import { TokenIcon } from '../TokenIcon'
 
 // The node test runner cannot load react-native. The host components render
 // as named elements so the test reads their props.
-jest.mock('react-native', () => ({ Image: 'Image', View: 'View' }))
+jest.mock('../Image', () => ({ Image: 'Image' }))
+jest.mock('react-native', () => ({ View: 'View' }))
 
 // Tell React that this runner wraps renders in act().
 ;(
@@ -23,10 +24,7 @@ describe('TokenIcon', () => {
   it('renders the token image as a circle of the given size', () => {
     const { root } = create(<TokenIcon size={32} img="https://x/icon.png" />)
     const image = root.findByType('Image' as unknown as React.ElementType)
-    expect(image.props.source).toEqual({
-      uri: 'https://x/icon.png',
-      cache: 'force-cache',
-    })
+    expect(image.props.source).toEqual({ uri: 'https://x/icon.png' })
     expect(image.props.style).toEqual({ width: 32, height: 32 })
     expect(image.props.className).toContain('rounded-full')
   })

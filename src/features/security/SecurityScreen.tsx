@@ -1,5 +1,6 @@
 import React, { useEffect, memo, useMemo, useRef, useState } from 'react'
-import { Animated, ImageStyle, Image, Platform, View } from 'react-native'
+import { Animated, ImageStyle, Platform, View } from 'react-native'
+import { Image } from '@ui/Image'
 import { FullWindowOverlay } from 'react-native-screens'
 
 const AnimatedImage = Animated.createAnimatedComponent(Image)

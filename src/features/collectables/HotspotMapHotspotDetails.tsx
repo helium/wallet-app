@@ -36,7 +36,8 @@ import { BlurView } from 'expo-blur'
 import { CircleCheck, Copy } from 'lucide-react-native'
 import React, { ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, Linking, View } from 'react-native'
+import { Linking, View } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { SvgUri } from 'react-native-svg'
 import { withUniwind } from 'uniwind'
@@ -452,7 +453,6 @@ export const HotspotMapHotspotDetails = ({
                 className="mr-3 h-[60px] w-[60px] rounded-lg"
                 source={{
                   uri: metadata?.image,
-                  cache: 'force-cache',
                 }}
               />
               <View className="flex-1">

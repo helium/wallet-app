@@ -20,7 +20,8 @@ import {
 } from 'lucide-react-native'
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, ImageProps, Linking, ScrollView, View } from 'react-native'
+import { Linking, ScrollView, View } from 'react-native'
+import { Image, type ImageProps } from '@ui/Image'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
@@ -127,7 +128,6 @@ const ActivityDetailsScreen = () => {
         <ScamWarningImage
           source={{
             uri: nft?.metadata?.image || '',
-            cache: 'force-cache',
           }}
           className="size-[250px] rounded-[35px]"
         />
@@ -142,7 +142,6 @@ const ActivityDetailsScreen = () => {
         <Image
           source={{
             uri: tokenTransfers[0].tokenMetadata.json.image,
-            cache: 'force-cache',
           }}
           className="size-[250px] rounded-[35px]"
         />

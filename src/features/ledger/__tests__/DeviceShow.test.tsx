@@ -9,6 +9,7 @@ const mockUpsertAccounts = jest.fn((_accounts: unknown) => Promise.resolve())
 
 // SectionList renders every section header and item, so the test can reach
 // the Select All control and each account row.
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native', () => {
   const ReactActual = jest.requireActual('react')
   const SectionList = ({
@@ -44,7 +45,7 @@ jest.mock('react-native', () => {
       ),
     )
   }
-  return { View: 'View', Image: 'Image', SectionList }
+  return { View: 'View', SectionList }
 })
 jest.mock('@react-navigation/native', () => {
   const navigation = { navigate: () => {}, goBack: () => {} }

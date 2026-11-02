@@ -48,7 +48,8 @@ jest.mock(
 jest.mock('@assets/images/hipBanner.png', () => 'hipBanner.png', {
   virtual: true,
 })
-jest.mock('react-native', () => ({ View: 'View', Image: 'Image' }))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
+jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))

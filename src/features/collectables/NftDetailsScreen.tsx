@@ -7,7 +7,8 @@ import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { BlurView } from 'expo-blur'
 import { ChevronRight, Info } from 'lucide-react-native'
-import { Image, Platform, ScrollView, View } from 'react-native'
+import { Platform, ScrollView, View } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -62,8 +63,8 @@ const NftDetailsScreen = () => {
         <>
           <Image
             className="absolute inset-0 opacity-70"
-            source={{ uri: backgroundImageUri, cache: 'force-cache' }}
-            resizeMode="cover"
+            source={{ uri: backgroundImageUri }}
+            contentFit="cover"
           />
           <Blur
             className="absolute inset-0"
@@ -94,7 +95,7 @@ const NftDetailsScreen = () => {
                     json.image ? 'bg-primary' : 'bg-secondary',
                   )}
                   style={{ height: imageSize, width: imageSize }}
-                  source={{ uri: json.image, cache: 'force-cache' }}
+                  source={{ uri: json.image }}
                 />
               </View>
             )}

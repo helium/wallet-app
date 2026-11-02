@@ -1,7 +1,8 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native'
+import { ImageSourcePropType, StyleSheet, View } from 'react-native'
+import { Image } from '@ui/Image'
 import { useSharedValue } from 'react-native-reanimated'
 import { Edge, SafeAreaView } from 'react-native-safe-area-context'
 import { Carousel, Pagination } from 'react-native-reanimated-carousel'
@@ -77,7 +78,7 @@ const DAppTutorial = () => {
         <Image
           className="shrink self-center"
           source={item.image}
-          resizeMode="contain"
+          contentFit="contain"
           style={{ width: Math.round(contentWidth * 0.5) }}
         />
         <Text size="4xl" className={`text-center ${item.imageVerticalOffset}`}>

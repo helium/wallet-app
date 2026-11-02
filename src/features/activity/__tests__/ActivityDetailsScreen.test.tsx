@@ -135,9 +135,9 @@ jest.mock('react-i18next', () => {
   }
   return { useTranslation: () => translation }
 })
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native', () => ({
   View: 'View',
-  Image: 'Image',
   ScrollView: 'ScrollView',
   Linking: { openURL: () => Promise.resolve() },
 }))

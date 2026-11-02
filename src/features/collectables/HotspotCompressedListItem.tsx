@@ -10,7 +10,8 @@ import { ellipsizeAddress, formatLargeNumber } from '@utils/accountUtils'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import React from 'react'
-import { Image, View } from 'react-native'
+import { View } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { PublicKey } from '@solana/web3.js'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
@@ -126,9 +127,10 @@ const HotspotListItem = ({
         <View className="flex-1 flex-row items-center">
           <Image
             className="h-[72px] w-[62px] rounded-lg"
+            contentFit="cover"
+            recyclingKey={hotspot.id}
             source={{
               uri: metadata?.image,
-              cache: 'force-cache',
             }}
           />
           <View className="ml-3 flex-1">

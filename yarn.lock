@@ -13213,6 +13213,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-image@npm:~58.0.18":
+  version: 58.0.18
+  resolution: "expo-image@npm:58.0.18"
+  dependencies:
+    sf-symbols-typescript: "npm:^2.2.0"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+    react-native-web: "*"
+  peerDependenciesMeta:
+    react-native-web:
+      optional: true
+  checksum: 10/4f4e9bcd773391099ec187d3a05c25583d8c1989f4a8d384e6a5426fd3a54940e7cf7f5cbb2f1194097f92780ae1fbfaa067c69c47aecbefa83f149d198d509d
+  languageName: node
+  linkType: hard
+
 "expo-keep-awake@npm:~58.0.3":
   version: 58.0.3
   resolution: "expo-keep-awake@npm:58.0.3"
@@ -14487,6 +14504,7 @@ __metadata:
     expo-crypto: "npm:~58.0.7"
     expo-font: "npm:~58.0.11"
     expo-haptics: "npm:~58.0.7"
+    expo-image: "npm:~58.0.18"
     expo-linking: "npm:~58.0.15"
     expo-local-authentication: "npm:~58.0.2"
     expo-secure-store: "npm:~58.0.2"
@@ -21201,7 +21219,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sf-symbols-typescript@npm:^2.1.0":
+"sf-symbols-typescript@npm:^2.1.0, sf-symbols-typescript@npm:^2.2.0":
   version: 2.2.0
   resolution: "sf-symbols-typescript@npm:2.2.0"
   checksum: 10/8623e148bf86151692d3ccb3149122c091b256162a39f4c4f78472811ffe92e3c77a83841a7381a5dc0bc6505ebb73e7ca8901cb077004872d7ee1cb4e5be9d4

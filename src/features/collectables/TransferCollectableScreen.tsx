@@ -13,7 +13,6 @@ import { ChevronRight, Info, Menu } from 'lucide-react-native'
 import React, { useRef, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import {
-  Image,
   KeyboardAvoidingView,
   LogBox,
   NativeSyntheticEvent,
@@ -22,6 +21,7 @@ import {
   TextInputEndEditingEventData,
   View,
 } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -166,8 +166,8 @@ const TransferCollectableScreen = () => {
         <>
           <Image
             className="absolute inset-0 opacity-70"
-            source={{ uri: backgroundImageUri, cache: 'force-cache' }}
-            resizeMode="cover"
+            source={{ uri: backgroundImageUri }}
+            contentFit="cover"
           />
           <Blur
             className="absolute inset-0"
@@ -211,7 +211,6 @@ const TransferCollectableScreen = () => {
                       style={{ height: imageSize, width: imageSize }}
                       source={{
                         uri: metadata?.image,
-                        cache: 'force-cache',
                       }}
                     />
                   </View>

@@ -4,7 +4,8 @@ import { Text } from '@ui/Text'
 import { Bluetooth } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { FlatList, Image } from 'react-native'
+import { FlatList } from 'react-native'
+import { Image } from '@ui/Image'
 import { withUniwind } from 'uniwind'
 import OnboardingScreen from './components/OnboardingScreen'
 import { OnboardableDevice, OnboardingNavProp } from './navTypes'
@@ -54,7 +55,6 @@ const SelectOnboardableDevice = () => {
             className="mr-2 size-[50px]"
             source={{
               uri: item.image,
-              cache: 'force-cache',
             }}
           />
         )}

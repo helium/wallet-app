@@ -89,11 +89,11 @@ jest.mock('@tanstack/react-query', () => ({ useQuery: () => ({}) }))
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native', () => {
   const ReactActual = jest.requireActual('react')
   return {
     View: 'View',
-    Image: 'Image',
     Switch: 'Switch',
     Alert: { alert: () => {} },
     Linking: { openURL: () => Promise.resolve() },

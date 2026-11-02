@@ -21,13 +21,13 @@ const mockTimings: number[] = []
 
 // read at render time: the import of SecurityScreen runs before mockPlatform
 // is set
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native', () => ({
   Platform: {
     get OS() {
       return mockPlatform.OS
     },
   },
-  Image: 'Image',
   View: 'View',
   Animated: {
     Value: class {},

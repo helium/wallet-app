@@ -85,8 +85,8 @@ jest.mock('lucide-react-native', () => ({
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native', () => ({
-  Image: 'Image',
   LogBox: { ignoreLogs: () => {} },
   Platform: { OS: 'ios' },
   View: 'View',

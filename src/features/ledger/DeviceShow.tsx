@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect, useEffectEvent } from 'react'
-import { Image, SectionList, View } from 'react-native'
+import { SectionList, View } from 'react-native'
+import { Image } from '@ui/Image'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react-native'

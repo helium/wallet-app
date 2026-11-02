@@ -85,9 +85,9 @@ jest.mock('expo-camera', () => ({ Camera: {}, CameraView: 'CameraView' }))
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native', () => ({
   View: 'View',
-  Image: 'Image',
   Alert: { alert: () => {} },
   Linking: {},
   Platform: { OS: 'ios' },

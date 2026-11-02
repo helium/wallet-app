@@ -65,7 +65,8 @@ jest.mock('react-i18next', () => {
   const translation = { t: (key: string) => key }
   return { useTranslation: () => translation }
 })
-jest.mock('react-native', () => ({ Image: 'Image', View: 'View' }))
+jest.mock('react-native', () => ({ View: 'View' }))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,
   default: { View: 'Animated.View' },
@@ -119,5 +120,27 @@ describe('HotspotCompressedListItem', () => {
       root.findByType('PressableScale' as never).props.onPress()
     })
     expect(onPress).toHaveBeenCalledWith(hotspot)
+  })
+
+  it('keys the recycled image to the hotspot and covers a fixed 62x72 box', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <HotspotCompressedListItem
+          hotspot={hotspot}
+          onPress={jest.fn()}
+          iotDecimals={6}
+          mobileDecimals={6}
+          hntDecimals={8}
+        />,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const image = renderer.root.findByType('Image' as never)
+
+    expect(image.props.recyclingKey).toBe('hotspot-1')
+    expect(image.props.contentFit).toBe('cover')
+    expect(image.props.source).toEqual({ uri: 'cat.png' })
+    expect(image.props.className).toContain('h-[72px] w-[62px]')
   })
 })

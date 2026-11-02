@@ -41,13 +41,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Alert,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
   View,
 } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { Edge, SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -560,7 +560,6 @@ const AssertLocationScreen = () => {
                 className="mr-3 h-[60px] w-[60px] rounded-lg"
                 source={{
                   uri: metadata?.image,
-                  cache: 'force-cache',
                 }}
               />
               <View className="flex-1">

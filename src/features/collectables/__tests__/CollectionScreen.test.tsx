@@ -20,7 +20,6 @@ const mockCollection = [
 jest.mock('react-native', () => {
   const ReactActual = jest.requireActual('react')
   return {
-    Image: 'Image',
     LogBox: { ignoreLogs: () => {} },
     FlatList: ({
       data,
@@ -62,6 +61,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }))
 jest.mock('text-encoding-polyfill', () => ({}))
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
@@ -119,6 +119,14 @@ describe('CollectionScreen', () => {
 
     expect(images[0].props.style).toEqual({ height: 180 })
     expect(images[0].props.style).toBe(images[1].props.style)
+  })
+
+  it('keys each recycled image to its collectable and covers the tile', () => {
+    const renderer = render()
+    const images = renderer.root.findAllByType('Image' as never)
+
+    expect(images.map((i) => i.props.recyclingKey)).toEqual(['nft1', 'nft2'])
+    expect(images.map((i) => i.props.contentFit)).toEqual(['cover', 'cover'])
   })
 
   it('keeps the row renderer when the screen re-renders', () => {

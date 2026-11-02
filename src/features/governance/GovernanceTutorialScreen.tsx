@@ -7,7 +7,8 @@ import { useContentWidth } from '@utils/layout'
 import { X } from 'lucide-react-native'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Image, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
+import { Image } from '@ui/Image'
 import { useSharedValue } from 'react-native-reanimated'
 import { Carousel, Pagination } from 'react-native-reanimated-carousel'
 import { Edge, SafeAreaView } from 'react-native-safe-area-context'
@@ -93,7 +94,7 @@ export const GovernanceTutorialScreen = () => {
           <Image
             className="shrink self-center"
             source={item.image as never}
-            resizeMode="contain"
+            contentFit="contain"
           />
           <Text
             size="3xl"

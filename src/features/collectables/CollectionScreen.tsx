@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { Image, LogBox, FlatList } from 'react-native'
+import { LogBox, FlatList } from 'react-native'
+import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
@@ -40,6 +41,8 @@ const CollectableTile = ({
       <Image
         className="w-full rounded-lg"
         style={imageStyle}
+        contentFit="cover"
+        recyclingKey={collectable.id}
         source={{
           uri: collectable.json?.image || '',
         }}
