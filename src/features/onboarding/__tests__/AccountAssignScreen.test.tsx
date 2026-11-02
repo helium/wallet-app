@@ -82,8 +82,10 @@ jest.mock('@tanstack/react-query', () => ({
     isPending: false,
   }),
 }))
+// Each test may set an RPC connection; without one every balance reads 0
+let mockConnection: { getBalance: () => Promise<number> } | undefined
 jest.mock('../../../solana/SolanaProvider', () => ({
-  useSolana: () => ({ connection: undefined }),
+  useSolana: () => ({ connection: mockConnection }),
 }))
 
 // Each test sets the import's keypairs and the stored account list.
@@ -149,6 +151,7 @@ const storedAddresses = () => [...mockKeychain.keys()]
 beforeEach(() => {
   mockKeychain.clear()
   mockAccounts = {}
+  mockConnection = undefined
   mockUpsertAccounts.mockReset()
   jest.spyOn(console, 'error').mockImplementation(() => {})
 })
@@ -179,6 +182,18 @@ describe('AccountAssignScreen', () => {
 
     expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
     expect(storedAddresses()).toEqual([listed.publicKey.toBase58()])
+  })
+
+  it('stores no key when a balance read fails', async () => {
+    mockPaths = [path(Keypair.generate()), path(Keypair.generate())]
+    mockConnection = {
+      getBalance: () => Promise.reject(new Error('rpc failed')),
+    }
+
+    await assignAccounts()
+
+    expect(mockUpsertAccounts).not.toHaveBeenCalled()
+    expect(storedAddresses()).toEqual([])
   })
 
   it('keeps every new key when the save succeeds', async () => {

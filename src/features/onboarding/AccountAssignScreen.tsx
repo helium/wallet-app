@@ -136,8 +136,8 @@ const AccountAssignScreen = () => {
   const { mutate: handlePress, isPending: loading } = useMutation({
     mutationFn: async () => {
       try {
-        await storeAllSecureAccounts()
         const mnemonicHash = generateMnemonicHash(words)
+        // Reads balances first, so a failed read stores no key
         const newAccounts = await createNewAccounts(
           allPaths,
           alias,
@@ -156,6 +156,7 @@ const AccountAssignScreen = () => {
         )
 
         try {
+          await storeAllSecureAccounts()
           await upsertAccounts(newAccounts)
         } catch (e) {
           // A key stored for an unlisted account would outlive sign-out
