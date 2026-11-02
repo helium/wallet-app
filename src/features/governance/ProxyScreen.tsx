@@ -26,6 +26,7 @@ import {
 
 const ShareIcon = withUniwind(Share)
 const UserXIcon = withUniwind(UserX)
+const dateFormat = new Intl.DateTimeFormat()
 
 type Route = RouteProp<GovernanceStackParamList, 'ProxyScreen'>
 
@@ -146,7 +147,7 @@ export const ProxyScreen = () => {
                   className="items-center"
                   value={
                     proxy.lastVotedAt
-                      ? new Date(proxy.lastVotedAt).toLocaleDateString()
+                      ? dateFormat.format(new Date(proxy.lastVotedAt))
                       : 'Never'
                   }
                 />

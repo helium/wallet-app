@@ -94,4 +94,14 @@ describe('TransactionLineItem', () => {
     expect(texts('$5')).toEqual(['Fee', '1 HNT', '$5'])
     expect(texts('')).toEqual(['Fee', '1 HNT'])
   })
+
+  it('groups a numeric bodyText for the device locale', () => {
+    const texts = render(
+      <TransactionLineItem title="Amount" bodyText={1234567.5} />,
+    )
+      .root.findAllByType('Text' as never)
+      .map((n) => n.props.children)
+
+    expect(texts).toEqual(['Amount', '1,234,567.5'])
+  })
 })

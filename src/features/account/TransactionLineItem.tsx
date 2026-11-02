@@ -16,6 +16,7 @@ import { locale } from '../../utils/i18n'
 import { AddressBookNavigationProp } from '../addressBook/addressBookTypes'
 
 const DetailIcon = withUniwind(ChevronRight)
+const amountFormat = new Intl.NumberFormat(locale)
 
 type Props = {
   title: string
@@ -72,7 +73,7 @@ const TransactionLineItem = ({
 
   let body: string
   if (typeof bodyText === 'number') {
-    body = bodyText.toLocaleString(locale)
+    body = amountFormat.format(bodyText)
   } else if (isAddress) {
     body = account(bodyText)?.alias || ellipsizeAddress(bodyText)
   } else {

@@ -45,6 +45,7 @@ const submitSignedTransactions = async (solana: {
 
 const onboardingClient = new OnboardingClient(`${Config.ONBOARDING_API_URL}/v3`)
 const METERS_TO_FEET = 3.28084
+const heightFormat = new Intl.NumberFormat()
 const SafeArea = withUniwind(SafeAreaView)
 type Route = RouteProp<RootStackParamList, 'SignHotspot'>
 const SignHotspot = () => {
@@ -287,9 +288,9 @@ const SignHotspot = () => {
               size="xl"
               className="mb-4 font-medium text-primary-foreground"
             >
-              {`${(
-                METERS_TO_FEET * solana.configMsg.height
-              ).toLocaleString()}ft/${solana.configMsg.azimuth}° ${degToCompass(
+              {`${heightFormat.format(
+                METERS_TO_FEET * solana.configMsg.height,
+              )}ft/${solana.configMsg.azimuth}° ${degToCompass(
                 solana.configMsg.azimuth,
               )}`}
             </Text>

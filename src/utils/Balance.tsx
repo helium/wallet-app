@@ -374,12 +374,18 @@ export const BalanceProvider = ({ children }: { children: ReactNode }) => {
 
 export const useBalance = () => useContext(BalanceContext)
 
+const currencyFormats = new Map<string, Intl.NumberFormat>()
+
 export const numberFormat = (
   language: string,
   currency: string,
   value: number,
-) =>
-  new Intl.NumberFormat(language, {
-    style: 'currency',
-    currency,
-  }).format(value)
+) => {
+  const key = `${language}|${currency}`
+  let format = currencyFormats.get(key)
+  if (!format) {
+    format = new Intl.NumberFormat(language, { style: 'currency', currency })
+    currencyFormats.set(key, format)
+  }
+  return format.format(value)
+}
