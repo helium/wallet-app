@@ -28,23 +28,7 @@ appId: com.helium.wallet.app
             - extendedWaitUntil:
                 notVisible: Private Key Not Found
                 timeout: 10000
-      # The Migrate to World card shows once per wallet, 1.5 s after home.
-      # On iOS the sheet hides its buttons from Maestro, so a tap on the
-      # backdrop above the sheet closes it. The backdrop fills the screen,
-      # and its center lies under the sheet.
-      - extendedWaitUntil:
-          visible: Bottom sheet backdrop
-          timeout: 10000
-          optional: true
-      - runFlow:
-          when:
-            visible: Bottom sheet backdrop
-          commands:
-            - tapOn:
-                point: 50%,20%
-            - extendedWaitUntil:
-                notVisible: Bottom sheet backdrop
-                timeout: 10000
+      - runFlow: close-migrate-card.yaml
       - tapOn:
           id: AccountsTopNav.Settings
       - extendedWaitUntil:

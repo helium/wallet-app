@@ -14,20 +14,13 @@ appId: com.helium.wallet.app
       visible:
         id: Keypad.1
     file: enter-pin.yaml
+# The Migrate to World card hides home from Maestro on iOS while it shows.
+- extendedWaitUntil:
+    visible:
+      id: AccountView\.Balance|MigrateToWorld\.NotNow
+    timeout: 30000
+- runFlow: close-migrate-card.yaml
 - extendedWaitUntil:
     visible:
       id: AccountView.Balance
-    timeout: 30000
-# The card shows once per wallet, 1.5 s after home appears.
-- extendedWaitUntil:
-    visible:
-      id: MigrateToWorld.NotNow
     timeout: 10000
-    optional: true
-- runFlow:
-    when:
-      visible:
-        id: MigrateToWorld.NotNow
-    commands:
-      - tapOn:
-          id: MigrateToWorld.NotNow

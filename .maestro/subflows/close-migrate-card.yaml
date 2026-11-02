@@ -1,0 +1,24 @@
+# Closes the Migrate to World card with its Maybe later button.
+# The card shows once per wallet, 1.5 s after home appears, so it gets a
+# wait, not one check.
+appId: com.helium.wallet.app
+---
+- extendedWaitUntil:
+    visible:
+      id: MigrateToWorld.NotNow
+    timeout: 10000
+    optional: true
+- runFlow:
+    when:
+      visible:
+        id: MigrateToWorld.NotNow
+    commands:
+      # A tap while the card slides up does not close it.
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          id: MigrateToWorld.NotNow
+      - extendedWaitUntil:
+          notVisible:
+            id: MigrateToWorld.NotNow
+          timeout: 10000
