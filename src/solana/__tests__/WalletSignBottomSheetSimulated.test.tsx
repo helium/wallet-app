@@ -35,7 +35,9 @@ jest.mock('@helium/sus', () => ({ sus: () => Promise.resolve([]) }))
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
-jest.mock('@hooks/useBN', () => ({ useBN: () => undefined }), {
+// The SOL balance, unknown unless a test sets it.
+let mockSolBalance: { toString: () => string } | undefined
+jest.mock('@hooks/useBN', () => ({ useBN: () => mockSolBalance }), {
   virtual: true,
 })
 jest.mock(
@@ -144,5 +146,29 @@ describe('WalletSignBottomSheetSimulated', () => {
     })
     expect(onAccept).toHaveBeenCalledTimes(1)
     expect(onCancel).not.toHaveBeenCalled()
+  })
+
+  it('shows a non-empty warning and message', () => {
+    // 1 SOL covers the 5000-lamport fee, so the message shows.
+    mockSolBalance = { toString: () => '1000000000' }
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <WalletSignBottomSheetSimulated
+          type={WalletStandardMessageTypes.signTransaction}
+          serializedTxs={[Buffer.from('tx')]}
+          warning="Check the recipient"
+          message="Send 1 HNT"
+          onAccept={() => {}}
+          onCancel={() => {}}
+        />,
+      )
+    })
+    mockSolBalance = undefined
+    if (!renderer) throw new Error('render failed')
+
+    expect(
+      renderer.root.findAllByType('Text' as never).map((n) => n.props.children),
+    ).toEqual(expect.arrayContaining(['Check the recipient', 'Send 1 HNT']))
   })
 })

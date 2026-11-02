@@ -225,7 +225,7 @@ const SignHotspot = () => {
             })}
           </Text>
         </View>
-        {parsedToken?.callbackUrl && (
+        {!!parsedToken?.callbackUrl && (
           <View className="flex-1 justify-end">
             <Button
               variant="ghost"
@@ -265,7 +265,7 @@ const SignHotspot = () => {
         <Text size="xl" className="mb-4 font-medium text-primary-foreground">
           {name}
         </Text>
-        {locationData?.location && (
+        {!!locationData?.location && (
           <>
             <Text size="base" className="text-primary-foreground">
               {t('signHotspot.location')}
@@ -349,7 +349,7 @@ const SignHotspot = () => {
             )}
           </>
         )}
-        {transferData?.newOwner && (
+        {!!transferData?.newOwner && (
           <>
             <Text size="base" className="text-primary-foreground">
               {t('signHotspot.newOwner')}

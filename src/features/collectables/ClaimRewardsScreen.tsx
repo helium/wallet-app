@@ -114,7 +114,7 @@ const ClaimRewardsScreen = () => {
               />
             )}
           </View>
-          {claimError && (
+          {!!claimError && (
             <View>
               <Text
                 className="mt-8 text-center text-destructive"

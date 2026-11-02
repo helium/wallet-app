@@ -923,7 +923,7 @@ export const PositionCard = ({
                 </View>
               </View>
             </PressableScale>
-            {transactionError && (
+            {!!transactionError && (
               <View className="w-full flex-1 flex-row justify-center rounded-b-[12px] bg-destructive/10 py-3">
                 <View className="mr-2 flex-row self-center">
                   <Text className="ml-2 text-[10px] text-destructive">

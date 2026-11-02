@@ -136,7 +136,7 @@ const TransactionLineItem = ({
           </Text>
         </PressableScale>
 
-        {bodyTextEnd && (
+        {bodyTextEnd != null && bodyTextEnd !== '' && (
           <Text
             numberOfLines={2}
             adjustsFontSizeToFit
@@ -150,7 +150,7 @@ const TransactionLineItem = ({
             {bodyTextEnd}
           </Text>
         )}
-        {navTo && (
+        {!!navTo && (
           <View className="w-full flex-1 flex-row justify-end">
             <PressableScale
               feedback="opacity"

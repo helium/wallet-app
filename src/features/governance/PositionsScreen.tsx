@@ -394,7 +394,7 @@ export const PositionsScreen = () => {
         <View className="flex-1">
           <PositionsList header={<VotingPowerCard className="mb-6" />} />
         </View>
-        {showError && (
+        {!!showError && (
           <View className="flex-row items-center justify-center pt-3">
             <Text className="font-medium text-destructive">{showError}</Text>
           </View>

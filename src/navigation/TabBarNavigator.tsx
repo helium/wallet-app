@@ -71,7 +71,7 @@ const TabBarNavigator = () => {
   // keystone account do not need to migrate
   return (
     <>
-      {currentAccount?.solanaAddress &&
+      {!!currentAccount?.solanaAddress &&
         !currentAccount?.keystoneDevice &&
         anchorProvider &&
         !doneSolanaMigration[cluster]?.includes(currentAccount.solanaAddress) &&

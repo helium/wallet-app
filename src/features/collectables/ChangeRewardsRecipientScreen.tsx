@@ -395,7 +395,7 @@ const ChangeRewardsRecipientScreen = () => {
           </TouchableWithoutFeedback>
         </AddressBookSelector>
         <View className="min-h-10 flex-row items-center justify-center">
-          {showError && (
+          {!!showError && (
             <Text size="xs" className="font-medium text-destructive">
               {showError}
             </Text>

@@ -261,7 +261,7 @@ const AccountsScreen = () => {
           </View>
           <AccountActionBar mint={HNT_MINT} maxCompact hasSwaps />
         </Animated.View>
-        {currentAccount?.address && (
+        {!!currentAccount?.address && (
           <Animated.View className="flex-1" style={animatedStyle}>
             <AccountView
               className="grow justify-center"

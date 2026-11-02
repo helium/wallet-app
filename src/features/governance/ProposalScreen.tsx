@@ -425,7 +425,7 @@ export const ProposalScreen = () => {
                     </Button>
                   </View>
                   <View className="mt-4 grow justify-center gap-3">
-                    {showError && (
+                    {!!showError && (
                       <View className="flex-row rounded-[12px] bg-secondary p-4">
                         <Text
                           size="xs"
@@ -462,7 +462,7 @@ export const ProposalScreen = () => {
                   </View>
                 </>
               )}
-              {markdown && (
+              {!!markdown && (
                 <View className="mt-4 grow justify-center rounded-[12px] bg-secondary p-4">
                   <Markdown markdown={markdown} />
                 </View>

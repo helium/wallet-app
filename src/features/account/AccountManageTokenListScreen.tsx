@@ -92,7 +92,7 @@ const CheckableTokenListItem = ({
             {symbol}
           </Text>
         </View>
-        {symbol && (
+        {!!symbol && (
           <AccountTokenCurrencyBalance
             className="font-medium text-muted-foreground"
             ticker={symbol.toUpperCase()}

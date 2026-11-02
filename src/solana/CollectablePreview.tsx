@@ -24,7 +24,7 @@ export const CollectablePreview = ({
     <Card className="mt-4 gap-2 px-4 py-3">
       <View className="flex-row content-center justify-between">
         <View className="flex-row items-center gap-1">
-          {metadata && (
+          {!!metadata && (
             <View className="shadow-stat-box">
               <Image
                 className={

@@ -427,7 +427,7 @@ const BurnScreen = () => {
                   </>
                 )}
               </KeyboardAwareScrollView>
-              {submitError && (
+              {!!submitError && (
                 <View className="mb-2">
                   <Text
                     size="xs"

@@ -253,7 +253,7 @@ export const HNTKeyboard = ({
             </View>
           </>
         )}
-        {payeeAddress && (
+        {!!payeeAddress && (
           <AccountIcon size={40} address={payeeAddress || '1'} />
         )}
       </View>

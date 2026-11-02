@@ -250,7 +250,7 @@ const SolanaMigration = ({
             </Animated.View>
           )}
 
-          {(error || migrationError) && (
+          {!!(error || migrationError) && (
             <Animated.View
               style={{ alignItems: 'center' }}
               entering={FADE_IN}
@@ -303,7 +303,7 @@ const SolanaMigration = ({
           )}
         </View>
 
-        {(error || migrationError) && (
+        {!!(error || migrationError) && (
           <View className="absolute inset-x-0 bottom-0 mx-4 mb-6 flex-row items-end justify-center gap-4">
             {retry > 0 && (
               <Button

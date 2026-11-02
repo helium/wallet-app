@@ -453,7 +453,7 @@ const DeprecatedTokensModal: FC = () => {
                     {hasMobile && (
                       <View className="mb-2 rounded-[12px] bg-secondary p-4">
                         <View className="flex-row items-center gap-4">
-                          {mobileJson?.image && (
+                          {!!mobileJson?.image && (
                             <TokenIcon img={mobileJson.image} size={30} />
                           )}
                           <View className="flex-1">
@@ -468,7 +468,7 @@ const DeprecatedTokensModal: FC = () => {
                                 mobileDecimals || 6,
                               )}
                             </Text>
-                            {mobileUsdValue && (
+                            {!!mobileUsdValue && (
                               <Text size="xs" className="text-muted-foreground">
                                 ~{mobileUsdValue}
                               </Text>
@@ -481,7 +481,7 @@ const DeprecatedTokensModal: FC = () => {
                     {hasIot && (
                       <View className="mb-2 rounded-[12px] bg-secondary p-4">
                         <View className="flex-row items-center gap-4">
-                          {iotJson?.image && (
+                          {!!iotJson?.image && (
                             <TokenIcon img={iotJson.image} size={30} />
                           )}
                           <View className="flex-1">
@@ -496,7 +496,7 @@ const DeprecatedTokensModal: FC = () => {
                                 iotDecimals || 6,
                               )}
                             </Text>
-                            {iotUsdValue && (
+                            {!!iotUsdValue && (
                               <Text size="xs" className="text-muted-foreground">
                                 ~{iotUsdValue}
                               </Text>
@@ -519,7 +519,7 @@ const DeprecatedTokensModal: FC = () => {
                           >
                             ~{estimatedHnt.toFixed(4)} HNT
                           </Text>
-                          {estimatedUsdValue && (
+                          {!!estimatedUsdValue && (
                             <Text className="mt-1 text-center text-muted-foreground">
                               ~{estimatedUsdValue}
                             </Text>
@@ -539,7 +539,7 @@ const DeprecatedTokensModal: FC = () => {
                         </View>
                       )}
 
-                      {error && (
+                      {!!error && (
                         <View>
                           <Text
                             size="xs"

@@ -130,7 +130,7 @@ const AntennaSetupScreen = () => {
                 </Card>
               </View>
               <View className="my-2 min-h-10 flex-row items-center justify-center">
-                {transactionError && (
+                {!!transactionError && (
                   <Text size="xs" className="font-medium text-destructive">
                     {transactionError}
                   </Text>

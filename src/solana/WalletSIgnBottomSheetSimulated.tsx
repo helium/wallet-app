@@ -227,7 +227,7 @@ export const WalletSignBottomSheetSimulated = ({
         type === WalletStandardMessageTypes.signAndSendTransaction ||
         type === WalletStandardMessageTypes.signTransaction) && (
         <View className="grow justify-center">
-          {warning && (
+          {!!warning && (
             <View className="mb-4 rounded-xl bg-secondary p-4">
               <Text size="base" className="font-medium text-warning-500">
                 {warning}
@@ -257,7 +257,7 @@ export const WalletSignBottomSheetSimulated = ({
                 </Text>
               )}
 
-              {!(insufficientFunds || insufficientRentExempt) && message && (
+              {!(insufficientFunds || insufficientRentExempt) && !!message && (
                 <Text
                   size="base"
                   className="my-2 font-medium text-muted-foreground"

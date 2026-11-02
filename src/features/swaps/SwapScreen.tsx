@@ -816,7 +816,7 @@ const SwapScreen = () => {
                           </View>
                         </View>
                       )}
-                      {showError && (
+                      {!!showError && (
                         <View className="mt-2">
                           <Text
                             size="xs"

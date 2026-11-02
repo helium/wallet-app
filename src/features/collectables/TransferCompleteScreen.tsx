@@ -79,7 +79,7 @@ const TransferCollectableScreen = () => {
   return (
     <Animated.View className="flex-1 bg-background">
       {/* The blurred NFT image fills the screen behind the content. */}
-      {backgroundImageUri && (
+      {!!backgroundImageUri && (
         <>
           <Image
             className="absolute inset-0 opacity-70"
@@ -96,7 +96,7 @@ const TransferCollectableScreen = () => {
         <BackHeader hideBack onClose={onReturn} className="mt-6" />
         <View className="flex-1 items-center justify-center p-4">
           <View className="mb-8 grow items-center justify-center">
-            {metadata && (
+            {!!metadata && (
               <View className="shadow-lg">
                 <Image
                   className={twMerge(

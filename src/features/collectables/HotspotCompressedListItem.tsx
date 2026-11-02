@@ -130,7 +130,7 @@ const HotspotListItem = ({
             }}
           />
           <View className="ml-3 flex-1">
-            {metadata?.name && (
+            {!!metadata?.name && (
               <Text
                 size="lg"
                 className="text-left font-medium"
@@ -141,7 +141,7 @@ const HotspotListItem = ({
               </Text>
             )}
 
-            {streetAddress && (
+            {!!streetAddress && (
               <Text numberOfLines={1} adjustsFontSizeToFit>
                 {streetAddress}
               </Text>

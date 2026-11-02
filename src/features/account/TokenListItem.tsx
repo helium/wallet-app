@@ -117,7 +117,7 @@ export const TokenListItem = ({ mint }: Props) => {
                 {symbol}
               </Text>
             </View>
-            {symbol && (
+            {!!symbol && (
               <AccountTokenCurrencyBalance
                 className="font-medium text-muted-foreground"
                 ticker={symbol.toUpperCase()}

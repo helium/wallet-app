@@ -146,7 +146,7 @@ const ClaimAllRewardsScreen = () => {
               ) : null}
             </View>
           </ScrollView>
-          {claimError && (
+          {!!claimError && (
             <View>
               <Text
                 className="mt-8 text-center text-destructive"

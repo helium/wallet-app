@@ -348,7 +348,7 @@ const AutomationSetupScreen = () => {
                   onChange={handleDurationChange}
                 />
 
-                {estimate.estimate && duration && (
+                {estimate.estimate && !!duration && (
                   <EstimateDisplay
                     estimate={estimate.estimate}
                     showRecipientFee
@@ -419,7 +419,7 @@ const AutomationSetupScreen = () => {
               </View>
             )}
 
-            {!hasExistingAutomation && estimate.estimate && duration && (
+            {!hasExistingAutomation && estimate.estimate && !!duration && (
               <EstimateDisplay
                 estimate={estimate.estimate}
                 showRecipientFee={
@@ -433,7 +433,7 @@ const AutomationSetupScreen = () => {
 
             {hasExistingAutomation ? (
               <>
-                {duration && (
+                {!!duration && (
                   <Button
                     variant="cta"
                     size="lg"

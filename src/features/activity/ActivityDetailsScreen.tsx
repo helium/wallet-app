@@ -185,7 +185,7 @@ const ActivityDetailsScreen = () => {
 
     return (
       <View className="mt-6 w-full flex-1 justify-center">
-        {fromAccount && (
+        {!!fromAccount && (
           <AddressActivityItem
             accountAddress={fromAccount}
             className="mx-6 mb-1"
@@ -193,7 +193,7 @@ const ActivityDetailsScreen = () => {
             onMenuPress={onAddressItemPress(fromAccount)}
           />
         )}
-        {toAccount && (
+        {!!toAccount && (
           <AddressActivityItem
             accountAddress={toAccount}
             className="mx-6"

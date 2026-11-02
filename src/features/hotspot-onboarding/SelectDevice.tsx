@@ -49,7 +49,7 @@ const SelectOnboardableDevice = () => {
           index === 0 ? '' : 'border-t'
         }`}
       >
-        {item.image && (
+        {!!item.image && (
           <Image
             className="mr-2 size-[50px]"
             source={{

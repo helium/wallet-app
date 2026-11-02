@@ -142,10 +142,10 @@ export const DelegateTokensModal = ({
 
               {!revLoading &&
                 !delegationLoading &&
-                mobileDataUsageRev &&
-                iotDataUsageRev &&
-                mobileDelegationPercentage &&
-                iotDelegationPercentage && (
+                !!mobileDataUsageRev &&
+                !!iotDataUsageRev &&
+                mobileDelegationPercentage != null &&
+                iotDelegationPercentage != null && (
                   <View className="my-6">
                     <SplitBar
                       title={t('gov.automation.networkRevenue')}

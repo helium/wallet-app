@@ -489,12 +489,12 @@ const AssertLocationScreen = () => {
                     <Spinner colorClassName="accent-white" />
                   </View>
                 )}
-                {showError && (
+                {!!showError && (
                   <Text size="xs" className="font-medium text-destructive">
                     {showError}
                   </Text>
                 )}
-                {!reverseGeo.loading && !showError && reverseGeo.result && (
+                {!reverseGeo.loading && !showError && !!reverseGeo.result && (
                   <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
                     <View className="min-h-9 shrink flex-row items-center rounded-full bg-white/30 px-3 py-1.5">
                       <Text
@@ -565,7 +565,7 @@ const AssertLocationScreen = () => {
               />
               <View className="flex-1">
                 <View className="flex-row items-center">
-                  {metadata?.name && (
+                  {!!metadata?.name && (
                     <Text
                       size="2xl"
                       className="font-bold text-foreground"

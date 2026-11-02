@@ -191,7 +191,7 @@ const ScanHotspots = () => {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
       />
-      {error && (
+      {!!error && (
         <Text size="base" className="font-medium text-destructive">
           {error}
         </Text>

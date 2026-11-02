@@ -120,7 +120,7 @@ const SettingsListItem = ({
       {!onToggle && !select && onPress && (
         <ChevronIcon size={16} colorClassName="accent-muted-foreground" />
       )}
-      {openUrl && (
+      {!!openUrl && (
         <LinkIcon size={16} colorClassName="accent-muted-foreground" />
       )}
       {onToggle && (

@@ -469,7 +469,7 @@ export const HotspotMapHotspotDetails = ({
                   </View>
                 </View>
                 <View className="flex-1 flex-row items-center">
-                  {streetAddress && (
+                  {!!streetAddress && (
                     <>
                       <View className="shrink flex-row">
                         <Text numberOfLines={1} size="base">
@@ -479,7 +479,7 @@ export const HotspotMapHotspotDetails = ({
                       <View className="mx-3 h-1.5 w-1.5 rounded-full bg-primary" />
                     </>
                   )}
-                  {eccCompact && (
+                  {!!eccCompact && (
                     <PressableScale
                       feedback="opacity"
                       className="flex-row items-center"

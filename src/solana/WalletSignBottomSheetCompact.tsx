@@ -50,7 +50,7 @@ export const WalletSignBottomSheetCompact = ({
 
   return (
     <View className="mb-4 p-4">
-      {warning && (
+      {!!warning && (
         <View className="mb-4 rounded-[12px] bg-warning-100 p-4">
           <Text size="base" className="font-medium">
             {warning}
@@ -62,7 +62,7 @@ export const WalletSignBottomSheetCompact = ({
         {header || t('transactions.signTxn')}
       </Text>
 
-      {message && (
+      {!!message && (
         <Text size="base" className="font-medium text-muted-foreground">
           {message}
         </Text>
