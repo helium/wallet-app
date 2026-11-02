@@ -196,7 +196,7 @@ const PaymentItem = ({
   return (
     <View
       className={twMerge(
-        'mx-6 overflow-hidden rounded-[20px] bg-secondary',
+        'mx-6 overflow-hidden rounded-[20px] border border-border bg-card',
         className,
       )}
     >
@@ -264,7 +264,7 @@ const PaymentItem = ({
         )}
       </View>
 
-      <View className="h-px bg-background" />
+      <View className="h-px bg-border" />
 
       {showAmount && (
         <View className="flex-row" style={{ minHeight: ITEM_HEIGHT }}>
@@ -311,7 +311,7 @@ const PaymentItem = ({
 
       {!hideMemo && (
         <>
-          <View className="h-px bg-background" />
+          <View className="h-px bg-border" />
 
           <View className="justify-center" style={{ minHeight: ITEM_HEIGHT }}>
             <MemoInput value={memo} onChangeText={handleEditMemo} />
