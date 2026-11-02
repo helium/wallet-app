@@ -1,4 +1,4 @@
-import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet'
+import { BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { Checkbox } from '@ui/Checkbox'
 import { Input } from '@ui/Input'
 import { PressableScale } from '@ui/PressableScale'
@@ -120,22 +120,24 @@ const TokensEditSheet = ({ ref, tokens, amounts, onCommit }: Props) => {
       }}
       onDismiss={() => onCommit(draft)}
     >
-      <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
-        <View className="px-6 pb-2">
-          <Text size="xl" className="tracking-tight">
-            {t('migrateToWorld.selectAssets.tokens')}
-          </Text>
-        </View>
-        {tokens.map((tk) => (
+      <View className="px-6 pb-2">
+        <Text size="xl" className="tracking-tight">
+          {t('migrateToWorld.selectAssets.tokens')}
+        </Text>
+      </View>
+      <BottomSheetFlatList<SelectableToken>
+        contentInsetAdjustmentBehavior="automatic"
+        data={tokens}
+        keyExtractor={(tk) => tk.mint}
+        renderItem={({ item: tk }) => (
           <TokenRow
-            key={tk.mint}
             token={tk}
             value={draft[tk.mint] ?? ''}
             onChange={(v) => setAmount(tk.mint, v)}
             onMax={() => setMax(tk)}
           />
-        ))}
-      </BottomSheetScrollView>
+        )}
+      />
     </Sheet>
   )
 }

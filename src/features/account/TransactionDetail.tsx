@@ -1,7 +1,7 @@
 import {
+  BottomSheetFlatList,
   BottomSheetModal,
   BottomSheetModalProvider,
-  BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
 import { PublicKey } from '@solana/web3.js'
 import { Sheet } from '@ui/Sheet'
@@ -15,6 +15,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+import { View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
@@ -29,6 +30,7 @@ const initialState = {
 }
 
 type DetailData = { item: Activity; accountAddress: string; mint: PublicKey }
+type PaymentRow = { key: string; title: string; amount: string; color: string }
 type TransactionDetailSelectorActions = {
   show: (data: DetailData) => void
 }
@@ -63,6 +65,21 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
 
   const snapPoints = ['50%', contentHeight > 0 ? contentHeight : '90%']
 
+  const paymentRows: PaymentRow[] = [
+    ...paymentsSent.map(({ amount: amt }, index) => ({
+      key: `${index}.amountToPayee`,
+      title: t('transactions.amountToPayee', { index: index + 1 }),
+      amount: amt,
+      color: 'text-blue-dark-500',
+    })),
+    ...paymentsReceived.map(({ amount: amt }, index) => ({
+      key: `${index}.amountReceived`,
+      title: t('transactions.amount'),
+      amount: amt,
+      color: 'text-success-500',
+    })),
+  ]
+
   const show = (data: DetailData) => {
     setDetailData(data)
     sheetRef.current?.present()
@@ -77,79 +94,69 @@ const TransactionDetailSelector = ({ children }: { children: ReactNode }) => {
           snapPoints={snapPoints}
           style={sheetMargins}
         >
-          <BottomSheetScrollView contentInsetAdjustmentBehavior="automatic">
-            <SafeArea
-              edges={['bottom']}
-              className="py-6"
-              onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
-            >
+          <BottomSheetFlatList<PaymentRow>
+            contentInsetAdjustmentBehavior="automatic"
+            data={paymentRows}
+            keyExtractor={(row) => row.key}
+            onContentSizeChange={(_, height) => setContentHeight(height)}
+            ListHeaderComponent={
+              <View className="pt-6">
+                <TransactionLineItem
+                  title={t('transactions.transaction')}
+                  bodyText={title}
+                  icon={icon}
+                />
+              </View>
+            }
+            renderItem={({ item: row }) => (
               <TransactionLineItem
-                title={t('transactions.transaction')}
-                bodyText={title}
-                icon={icon}
+                title={row.title}
+                bodyText={row.amount}
+                bodyColor={row.color}
               />
-
-              {paymentsSent.map(({ amount: amt }, index) => (
-                <React.Fragment key={`${index}.amountToPayee`}>
+            )}
+            ListFooterComponent={
+              <SafeArea edges={['bottom']} className="pb-6">
+                {!!amountTitle && (
                   <TransactionLineItem
-                    title={t('transactions.amountToPayee', {
-                      index: index + 1,
-                    })}
-                    bodyText={amt}
-                    bodyColor="text-blue-dark-500"
+                    title={amountTitle}
+                    bodyText={amount}
+                    bodyColor={color}
                   />
-                </React.Fragment>
-              ))}
+                )}
 
-              {paymentsReceived.map(({ amount: amt }, index) => (
-                <React.Fragment key={`${index}.amountToPayee`}>
+                {!!fee && (
                   <TransactionLineItem
-                    title={t('transactions.amount')}
-                    bodyText={amt}
-                    bodyColor="text-success-500"
+                    title={
+                      feePayer
+                        ? t('transactions.txnFeePaidBy', { feePayer })
+                        : t('transactions.txnFee')
+                    }
+                    bodyText={fee}
                   />
-                </React.Fragment>
-              ))}
+                )}
 
-              {!!amountTitle && (
                 <TransactionLineItem
-                  title={amountTitle}
-                  bodyText={amount}
-                  bodyColor={color}
+                  title={t('transactions.date')}
+                  bodyText={time}
                 />
-              )}
 
-              {!!fee && (
+                {!txn?.pending && (
+                  <TransactionLineItem
+                    title={t('transactions.block')}
+                    bodyText={txn?.height || ''}
+                    navTo={createExplorerUrl('block', txn?.height)}
+                  />
+                )}
+
                 <TransactionLineItem
-                  title={
-                    feePayer
-                      ? t('transactions.txnFeePaidBy', { feePayer })
-                      : t('transactions.txnFee')
-                  }
-                  bodyText={fee}
+                  title={t('transactions.hash')}
+                  bodyText={txn?.hash || ''}
+                  navTo={createExplorerUrl('txn', txn?.hash)}
                 />
-              )}
-
-              <TransactionLineItem
-                title={t('transactions.date')}
-                bodyText={time}
-              />
-
-              {!txn?.pending && (
-                <TransactionLineItem
-                  title={t('transactions.block')}
-                  bodyText={txn?.height || ''}
-                  navTo={createExplorerUrl('block', txn?.height)}
-                />
-              )}
-
-              <TransactionLineItem
-                title={t('transactions.hash')}
-                bodyText={txn?.hash || ''}
-                navTo={createExplorerUrl('txn', txn?.hash)}
-              />
-            </SafeArea>
-          </BottomSheetScrollView>
+              </SafeArea>
+            }
+          />
         </Sheet>
         {children}
       </Provider>
