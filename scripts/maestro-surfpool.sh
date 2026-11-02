@@ -66,6 +66,7 @@ echo "[maestro-surfpool] starting blockchain-api" >&2
 # An Android emulator reaches the host ports only through adb reverse.
 if command -v adb >/dev/null && adb get-state >/dev/null 2>&1; then
   adb reverse tcp:8899 tcp:8899 >&2
+  adb reverse tcp:8900 tcp:8900 >&2
   adb reverse tcp:3000 tcp:3000 >&2
 fi
 

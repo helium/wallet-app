@@ -12,12 +12,15 @@ appId: com.helium.wallet.app
       - copyTextFrom:
           id: RevealWords.Word.${output.words.length}
       - evalScript: ${output.words.push(maestro.copiedText.trim().toLowerCase())}
+- scrollUntilVisible:
+    element:
+      id: RevealWords.Next
 - tapOn:
     id: RevealWords.Next
 - runFlow: confirm-words.yaml
 - tapOn:
     id: AccountAssign.Alias
 - inputText: ${ALIAS}
-- hideKeyboard
+- pressKey: Enter
 - tapOn:
     id: AccountAssign.Continue

@@ -33,8 +33,8 @@ script directly).
    ```
 
 2. Start surfpool and blockchain-api, seed the fixture wallet, and export
-   its values. The script also runs `adb reverse` for ports 8899 and 3000
-   when an Android emulator is connected.
+   its values. The script also runs `adb reverse` for ports 8899, 8900 and
+   3000 when an Android emulator is connected.
 
    ```bash
    export JUPITER_API_KEY="<Jupiter API key>"   # swap quotes in flow 04

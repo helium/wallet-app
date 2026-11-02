@@ -1,8 +1,14 @@
 # Relaunches the app and brings it to the home screen:
 # unlocks the PIN screen and closes the Migrate to World card.
+# Both can appear seconds after launch, so each gets a wait, not one check.
 appId: com.helium.wallet.app
 ---
 - launchApp
+- extendedWaitUntil:
+    visible:
+      id: Keypad.1
+    timeout: 60000
+    optional: true
 - runFlow:
     when:
       visible:
@@ -12,6 +18,12 @@ appId: com.helium.wallet.app
     visible:
       id: AccountView.Balance
     timeout: 30000
+# The card shows once per wallet, 1.5 s after home appears.
+- extendedWaitUntil:
+    visible:
+      id: MigrateToWorld.NotNow
+    timeout: 10000
+    optional: true
 - runFlow:
     when:
       visible:

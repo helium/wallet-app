@@ -6,6 +6,10 @@ tags:
 - launchApp:
     clearState: true
     clearKeychain: true
+- extendedWaitUntil:
+    visible:
+      id: CreateImport.Create
+    timeout: 60000
 - tapOn:
     id: CreateImport.Create
 - tapOn:
