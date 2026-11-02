@@ -46,13 +46,12 @@ const SplashScreen = ({ children }: { children: ReactNode }) => {
       {isAppReady && children}
       <Animated.View
         pointerEvents="none"
-        className="absolute inset-0 bg-navy"
+        className="absolute inset-0 items-center justify-center bg-black"
         style={style}
       >
         <Animated.Image
-          className="size-full"
-          resizeMode="cover"
-          source={require('../assets/images/SplashScreen.png')}
+          className="size-[134px]"
+          source={require('../assets/images/SplashLogo.png')}
           onLoadEnd={onImageLoaded}
           fadeDuration={0}
         />
