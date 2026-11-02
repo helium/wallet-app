@@ -5,6 +5,7 @@ import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
+import { submitSigned } from '../utils/submitSigned'
 import { signTransactionData } from '../utils/transactionUtils'
 import { MessagePreview } from '../solana/MessagePreview'
 import {
@@ -113,7 +114,7 @@ export function useGovernanceSubmit(): {
         const tag = options.tag || 'governance'
         const taggedData = { ...signed, tag }
 
-        const { batchId } = await client.transactions.submit(taggedData)
+        const { batchId } = await submitSigned(client, taggedData)
         void queryClient.invalidateQueries({
           queryKey: ['pendingTransactions'],
         })

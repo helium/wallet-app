@@ -18,6 +18,7 @@ import { toTransactionData } from '../utils/transactionUtils'
 import { getBasePriorityFee } from '../utils/walletApiV2'
 import { MessagePreview } from '../solana/MessagePreview'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '../utils/constants'
+import { submitSigned } from '../utils/submitSigned'
 import type { BatchStatus } from './useTransactionBatchStatus'
 
 interface SubmitInstructionsParams {
@@ -176,8 +177,10 @@ export function useSubmitInstructions() {
             },
           })
 
-          const { batchId: currentBatchId } =
-            await client.transactions.submit(txnData)
+          const { batchId: currentBatchId } = await submitSigned(
+            client,
+            txnData,
+          )
 
           batchId = currentBatchId
           // Poll for completion
@@ -228,7 +231,7 @@ export function useSubmitInstructions() {
       })
 
       // Submit via API
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await submitSigned(client, txnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
 
       // Poll for completion
