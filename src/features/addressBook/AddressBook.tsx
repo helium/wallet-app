@@ -1,7 +1,8 @@
 import React from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { X } from 'lucide-react-native'
@@ -15,6 +16,7 @@ const CloseIcon = withUniwind(X)
 
 const AddressBook = () => {
   const { t } = useTranslation()
+  const { top } = useSafeAreaInsets()
   const homeNav = useNavigation<HomeNavigationProp>()
   const addressNav = useNavigation<AddressBookNavigationProp>()
 
@@ -31,7 +33,10 @@ const AddressBook = () => {
   }
 
   return (
-    <View className="flex-1 bg-secondary">
+    <View
+      className="flex-1 bg-secondary"
+      style={{ paddingTop: Platform.OS === 'ios' ? top : undefined }}
+    >
       <View className="mt-2 flex-row items-center android:pt-6">
         <View className="flex-1" />
         <Text size="lg" className="font-medium">

@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ScrollView, View } from 'react-native'
+import { Platform, ScrollView, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CloseButton } from '@ui/CloseButton'
@@ -40,7 +40,10 @@ const AddNewAccountScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-secondary">
+    <View
+      className="flex-1 bg-secondary"
+      style={{ paddingTop: Platform.OS === 'ios' ? insets.top : undefined }}
+    >
       <View className="bg-secondary">
         <View className="flex-row items-center py-4">
           <View className="flex-1" />

@@ -12,13 +12,17 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
-jest.mock('react-native', () => ({ View: 'View', ScrollView: 'ScrollView' }))
+jest.mock('react-native', () => ({
+  Platform: { OS: 'ios' },
+  View: 'View',
+  ScrollView: 'ScrollView',
+}))
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,
   default: { View: 'Animated.View' },
 }))
 jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ bottom: 0 }),
+  useSafeAreaInsets: () => ({ top: 47, bottom: 0 }),
 }))
 jest.mock('@theme/motion', () => ({ FADE_IN: {}, FADE_OUT: {} }), {
   virtual: true,
@@ -60,5 +64,17 @@ describe('AddNewAccountScreen', () => {
       close.props.onPress()
     })
     expect(mockGoBack).toHaveBeenCalledTimes(1)
+  })
+
+  // Home slides this screen up as a full-screen card, so on iOS the header
+  // must clear the status bar.
+  it('sits below the top inset on iOS', () => {
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(<AddNewAccountScreen />)
+    })
+
+    const [root] = renderer.root.findAllByType('View' as never)
+    expect(root.props.style).toEqual({ paddingTop: 47 })
   })
 })
