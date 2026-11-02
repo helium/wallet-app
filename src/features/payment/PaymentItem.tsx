@@ -203,7 +203,7 @@ const PaymentItem = ({
       {hasError && <View className="absolute inset-0 bg-destructive/20" />}
       <View className="flex-row">
         {isDeepLink && address ? (
-          <Text size="lg" className="flex-1 px-6 py-4 font-medium">
+          <Text size="lg" className="flex-1 px-4 py-[15px] font-medium">
             {ellipsizeAddress(address)}
           </Text>
         ) : (
@@ -244,7 +244,7 @@ const PaymentItem = ({
                 </View>
                 <PressableScale
                   feedback="opacity"
-                  className="me-6"
+                  className="me-4"
                   onPress={handleAddressBookSelected}
                 >
                   <AddressIcon address={address} />

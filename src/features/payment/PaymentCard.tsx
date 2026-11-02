@@ -68,7 +68,7 @@ const PaymentCard = ({
 
   return (
     <View
-      className="min-h-[232px] overflow-hidden rounded-t-[20px] border border-border bg-card p-6"
+      className="min-h-[232px] overflow-hidden rounded-t-2xl border border-border bg-card px-4 py-[15px]"
       style={{ height: height || undefined }}
       onLayout={handleLayout}
     >

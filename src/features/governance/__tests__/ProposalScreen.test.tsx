@@ -150,3 +150,27 @@ describe('ProposalScreen', () => {
     })
   })
 })
+
+describe('ProposalScreen cards', () => {
+  it('draws every card with the card radius and panel padding', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<ProposalScreen />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const cards = renderer.root
+      .findAllByType('View' as never)
+      .map((v) => String(v.props.className).split(' '))
+      .filter((classes) => classes.includes('bg-card'))
+
+    // The proposal summary and the no-power row.
+    expect(cards).toHaveLength(2)
+    cards.forEach((classes) => {
+      expect(classes).toEqual(
+        expect.arrayContaining(['rounded-2xl', 'px-4', 'py-[15px]']),
+      )
+      expect(classes).not.toContain('rounded-[12px]')
+      expect(classes).not.toContain('p-4')
+    })
+  })
+})

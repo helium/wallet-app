@@ -42,10 +42,7 @@ const SwapItem = ({
       feedback="opacity"
       className={className}
     >
-      <Card
-        variant="panel"
-        className="h-[120px] items-center justify-center rounded-[20px]"
-      >
+      <Card variant="panel" className="h-[120px] items-center justify-center">
         <View className="absolute -top-[22.5px]">
           <TokenPill mint={mintSelected} hasCarot onPress={onCurrencySelect} />
         </View>

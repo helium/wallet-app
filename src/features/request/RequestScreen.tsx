@@ -250,12 +250,12 @@ const RequestScreen = () => {
               contentInsetAdjustmentBehavior="automatic"
               bottomOffset={75}
             >
-              <View className="mx-6">
+              <View className="mx-4">
                 <View className="h-[220px] items-center justify-center">
                   {/* A QR code needs a light quiet zone in both themes. */}
                   <Animated.View
                     style={qrStyle}
-                    className="absolute aspect-square h-[220px] justify-center self-center rounded-[12px] border border-border bg-white p-6"
+                    className="absolute aspect-square h-[220px] justify-center self-center rounded-2xl border border-border bg-white p-6"
                   >
                     {!isEditing ? (
                       <QRCode
@@ -305,7 +305,7 @@ const RequestScreen = () => {
                   mint={mint}
                 />
                 <Card
-                  className={`mb-6 rounded-[20px] border border-border p-5 ${
+                  className={`mb-6 rounded-2xl border border-border px-4 py-[15px] ${
                     currentAccount?.netType === NetType.TESTNET
                       ? 'bg-warning-100'
                       : ''

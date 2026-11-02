@@ -54,7 +54,7 @@ export const TokenButton = ({
   >
     <View
       className={twMerge(
-        'flex-row items-center rounded-[20px] px-6 py-4',
+        'flex-row items-center rounded-2xl px-4 py-[15px]',
         backgroundClassName,
       )}
     >

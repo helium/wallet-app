@@ -789,7 +789,7 @@ const PaymentScreen = () => {
                 className="flex-1 rounded-t-[20px] bg-secondary"
                 style={containerStyle}
               >
-                <View className="flex-row items-center justify-between rounded-t-[20px]">
+                <View className="flex-row items-center justify-between rounded-t-[20px] px-2">
                   <PressableScale
                     feedback="opacity"
                     hitSlop={hitSlop}
@@ -832,7 +832,7 @@ const PaymentScreen = () => {
                     address={currentAccount?.address}
                     onPress={handleShowAccounts}
                     showBubbleArrow
-                    className="pt-6 mx-6 mb-1"
+                    className="pt-6 mx-4 mb-1"
                   />
 
                   <TokenButton
@@ -843,7 +843,7 @@ const PaymentScreen = () => {
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
                     mint={mint}
-                    className="mx-6"
+                    className="mx-4"
                   />
 
                   {paymentState.payments.map((p, index) => (
@@ -851,7 +851,11 @@ const PaymentScreen = () => {
                       <PaymentItem
                         {...p}
                         hideMemo
-                        className={index === 0 ? 'mb-6 mt-1' : 'mb-6'}
+                        className={
+                          index === 0
+                            ? 'mx-4 mb-6 mt-1 rounded-2xl'
+                            : 'mx-4 mb-6 rounded-2xl'
+                        }
                         hasError={
                           p.address === currentAccount?.address || p.hasError
                         }
@@ -879,7 +883,7 @@ const PaymentScreen = () => {
                     <PressableScale
                       feedback="opacity"
                       onPress={handleAddPayee}
-                      className="mx-6 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-[20px] border border-border bg-card"
+                      className="mx-4 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-card"
                     >
                       <Text size="base" className="text-muted-foreground">
                         {t('payment.addRecipient')}
