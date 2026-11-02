@@ -1,3 +1,4 @@
+import '../../polyfill'
 import React, { useEffect } from 'react'
 import { act, create } from 'react-test-renderer'
 import { NavigationContainer } from '@react-navigation/native'
@@ -76,9 +77,13 @@ jest.mock('@helium/modular-governance-hooks', () => ({
 jest.mock('@helium/organization-sdk', () => ({
   organizationKey: (name: string) => [name],
 }))
+// The real HeliumVsrStateProvider builds anchor Programs, and the anchor
+// Program constructor clones its IDL with the global structuredClone.
 jest.mock('@helium/voter-stake-registry-hooks', () => ({
-  HeliumVsrStateProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
+  HeliumVsrStateProvider: ({ children }: { children: React.ReactNode }) => {
+    structuredClone({ name: 'voter_stake_registry', instructions: [] })
+    return children
+  },
   getSubDaos: () => Promise.resolve([]),
   useHeliumVsrState: () => ({ loading: false, positions: [] }),
   useRegistrar: () => ({ loading: false, info: undefined }),
@@ -139,6 +144,18 @@ describe('GovernanceProvider', () => {
   it('renders inside NavigationContainer with no navigator above it', async () => {
     await renderInContainer()
 
+    expect(network).toBe('hnt')
+  })
+
+  it('renders HeliumVsrStateProvider with the app structuredClone polyfill', async () => {
+    let error: unknown
+    try {
+      await renderInContainer()
+    } catch (e) {
+      error = e
+    }
+
+    expect(error).toBeUndefined()
     expect(network).toBe('hnt')
   })
 
