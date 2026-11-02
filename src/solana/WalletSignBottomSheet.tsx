@@ -143,6 +143,7 @@ const WalletSignBottomSheet = ({
             {hasRenderer && !simulated ? (
               <WalletSignBottomSheetCompact
                 {...walletSignOpts}
+                opened={opened}
                 onSimulate={() => setSimulated(true)}
                 onAccept={onAcceptHandler}
                 onCancel={onCancelHandler}

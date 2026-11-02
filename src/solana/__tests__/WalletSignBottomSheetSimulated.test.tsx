@@ -21,11 +21,18 @@ const returnedSimulation: MockSimulation = {
   isLoading: false,
   isPending: false,
 }
-// A disabled query, or one in flight, has no data and no error yet
+// A query in flight has no data and no error yet
 const pendingSimulation: MockSimulation = {
   data: undefined,
   error: null,
   isLoading: true,
+  isPending: true,
+}
+// A query still waiting to be enabled is pending but not loading
+const disabledSimulation: MockSimulation = {
+  data: undefined,
+  error: null,
+  isLoading: false,
   isPending: true,
 }
 let mockSimulation = returnedSimulation
@@ -251,6 +258,12 @@ describe('WalletSignBottomSheetSimulated', () => {
       expect(approveDisabled(renderSheet())).toBe(true)
     })
 
+    it('stays disabled while the simulation waits to be enabled', () => {
+      mockSimulation = disabledSimulation
+
+      expect(approveDisabled(renderSheet())).toBe(true)
+    })
+
     it('enables once the simulation fails', () => {
       mockSimulation = {
         data: undefined,
@@ -276,6 +289,18 @@ describe('WalletSignBottomSheetSimulated', () => {
       ).toBe(false)
     })
 
+    it('does not wait when the request has no transactions, even while the query is pending', () => {
+      mockSimulation = pendingSimulation
+      const renderer = renderSheet({ serializedTxs: undefined })
+
+      expect(approveDisabled(renderer)).toBe(false)
+      expect(
+        renderer.root
+          .findAllByType('Text' as never)
+          .map((n) => n.props.children),
+      ).not.toContain('browserScreen.unableToSimulate')
+    })
+
     describe('when the simulation never returns', () => {
       it('enables after the simulation times out, and says it could not simulate', () => {
         mockSimulation = pendingSimulation
@@ -285,17 +310,48 @@ describe('WalletSignBottomSheetSimulated', () => {
             .findAllByType('Text' as never)
             .map((n) => n.props.children)
 
+        const spinners = () => renderer.root.findAllByType('Spinner' as never)
+
         act(() => {
           jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS - 1)
         })
         expect(approveDisabled(renderer)).toBe(true)
         expect(texts()).not.toContain('browserScreen.unableToSimulate')
+        expect(spinners()).toHaveLength(1)
 
         act(() => {
           jest.advanceTimersByTime(1)
         })
         expect(approveDisabled(renderer)).toBe(false)
         expect(texts()).toContain('browserScreen.unableToSimulate')
+        expect(spinners()).toHaveLength(0)
+      })
+
+      it('a timeout counts only while the simulation is pending', () => {
+        const serializedTxs = [Buffer.from('tx')]
+        const renderer = renderSheet({ serializedTxs })
+        act(() => {
+          jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS + 1)
+        })
+
+        mockSimulation = pendingSimulation
+        act(() => {
+          renderer.update(
+            <WalletSignBottomSheetSimulated
+              type={WalletStandardMessageTypes.signTransaction}
+              serializedTxs={serializedTxs}
+              opened
+              onAccept={() => {}}
+              onCancel={() => {}}
+            />,
+          )
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(
+          renderer.root
+            .findAllByType('Text' as never)
+            .map((n) => n.props.children),
+        ).not.toContain('browserScreen.unableToSimulate')
       })
 
       it('waits again for a new request after a timeout', () => {

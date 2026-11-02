@@ -346,7 +346,7 @@ export const WalletSignBottomSheetSimulated = ({
               )}
 
               <View className="flex-1 pt-4">
-                {loading && <Spinner />}
+                {loading && !simulationTimedOut && <Spinner />}
                 {simulationTimedOut ? (
                   <View className="mb-4">
                     <View className="rounded-b-xl bg-secondary p-4">

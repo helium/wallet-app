@@ -278,6 +278,33 @@ describe('WalletSignBottomSheet', () => {
     expect(mockSimulatedProps?.opened).toBe(true)
   })
 
+  it('keeps the compact sheet Approve disabled until its open animation ends', () => {
+    const sheetRef = React.createRef<WalletSignBottomSheetRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree sheetRef={sheetRef} />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const { root } = renderer
+    const approveDisabled = () =>
+      root.findByProps({ testID: 'WalletSign.Approve' }).props.disabled
+    const advance = (ms: number) =>
+      act(() => {
+        jest.advanceTimersByTime(ms)
+      })
+
+    act(() => {
+      void sheetRef.current?.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        renderer: () => null,
+      })
+    })
+    advance(MOUNT_MS)
+    expect(approveDisabled()).toBe(true)
+    advance(OPEN_ANIMATION_MS)
+    expect(approveDisabled()).toBe(false)
+  })
+
   describe('when a new request supersedes the open one', () => {
     const requestFrom = (name: string) => ({
       type: WalletStandardMessageTypes.signTransaction,
