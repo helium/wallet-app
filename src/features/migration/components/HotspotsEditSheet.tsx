@@ -3,7 +3,7 @@ import { Checkbox } from '@ui/Checkbox'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
 import { Text } from '@ui/Text'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { MigratableHotspot } from '../hooks/useMigrationAssets'
@@ -49,8 +49,20 @@ const HotspotRow = ({
   </PressableScale>
 )
 
+const keyExtractor = (h: MigratableHotspot) => h.entityKey
+
 const HotspotsEditSheet = ({ ref, hotspots, selected, onToggle }: Props) => {
   const { t } = useTranslation()
+  const renderItem = useCallback(
+    ({ item }: { item: MigratableHotspot }) => (
+      <HotspotRow
+        {...item}
+        isSelected={selected.has(item.entityKey)}
+        onToggle={onToggle}
+      />
+    ),
+    [selected, onToggle],
+  )
   return (
     <Sheet ref={ref} snapPoints={['70%']} enablePanDownToClose>
       <View className="px-6 pb-2">
@@ -61,14 +73,8 @@ const HotspotsEditSheet = ({ ref, hotspots, selected, onToggle }: Props) => {
       <BottomSheetFlatList<MigratableHotspot>
         contentInsetAdjustmentBehavior="automatic"
         data={hotspots}
-        keyExtractor={(h) => h.entityKey}
-        renderItem={({ item }) => (
-          <HotspotRow
-            {...item}
-            isSelected={selected.has(item.entityKey)}
-            onToggle={onToggle}
-          />
-        )}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
       />
     </Sheet>
   )

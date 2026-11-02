@@ -222,7 +222,7 @@ jest.mock('react-native', () => {
     }) =>
       ReactActual.createElement(
         'SectionList',
-        null,
+        { sections },
         sections.flatMap((section) =>
           section.data.map((item, index) => renderItem({ item, index })),
         ),
@@ -275,5 +275,22 @@ describe('PositionsList', () => {
       },
     )
     expect(mockRefetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the sections when the list re-renders', () => {
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(<PositionsList />)
+    })
+    const sections = () =>
+      renderer.root.findByType('SectionList' as never).props.sections
+    const before = sections()
+    expect(before[0].data).toEqual([mockPosition])
+
+    act(() => {
+      renderer.update(<PositionsList className="mt-2" />)
+    })
+
+    expect(sections()).toBe(before)
   })
 })

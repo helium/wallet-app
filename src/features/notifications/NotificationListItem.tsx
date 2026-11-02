@@ -12,7 +12,7 @@ export type NotificationListItemProps = {
   viewed?: boolean
   hasDivider?: boolean
   className?: string
-  onPress: () => void
+  onPress: (notification: Notification) => void
 }
 
 const NotificationListItem = ({
@@ -31,7 +31,7 @@ const NotificationListItem = ({
     <View className="mx-4">
       <PressableScale
         feedback="opacity"
-        onPress={onPress}
+        onPress={() => onPress(notification)}
         className={twMerge(
           'flex-row bg-secondary p-4',
           hasDivider && 'border-b border-border',

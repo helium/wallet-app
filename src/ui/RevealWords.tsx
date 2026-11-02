@@ -18,6 +18,9 @@ const DELAYED_FADE_IN = FadeIn.duration(DUR.enter)
   .delay(300)
   .reduceMotion(ReduceMotion.Never)
 
+// A mnemonic can repeat a word, so a row is keyed by its place
+const keyExtractor = (_word: string, index: number) => String(index)
+
 export type RevealWordsProps = {
   mnemonic: string[]
   onDone: () => void
@@ -102,6 +105,7 @@ export const RevealWords = ({
         ListFooterComponent={footer}
         ListFooterComponentClassName="grow justify-end"
         renderItem={renderItem}
+        keyExtractor={keyExtractor}
         contentContainerClassName="grow px-6"
         scrollEnabled
         removeClippedSubviews={false}

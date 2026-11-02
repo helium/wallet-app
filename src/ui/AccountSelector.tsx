@@ -8,7 +8,9 @@ import type { CSAccount } from '@storage/cloudStorage'
 import type { AccountNetTypeOpt } from '@utils/accountUtils'
 import React, {
   type ReactNode,
+  useCallback,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -57,10 +59,31 @@ export const AccountSelector = ({ ref, children }: AccountSelectorProps) => {
     showAccountTypes: (type: AccountNetTypeOpt) => () => show(type),
   }))
 
-  const handleAccountPress = (account: CSAccount) => {
-    setCurrentAccount(account)
-    sheetRef.current?.dismiss()
-  }
+  const accounts = useMemo(
+    () => sortedAccountsForNetType(accountsType),
+    [sortedAccountsForNetType, accountsType],
+  )
+
+  const handleAccountPress = useCallback(
+    (account: CSAccount) => {
+      setCurrentAccount(account)
+      sheetRef.current?.dismiss()
+    },
+    [setCurrentAccount],
+  )
+
+  const currentAddress = currentAccount?.address
+  const renderItem = useCallback(
+    ({ item: account }: { item: CSAccount }) => (
+      <AccountListItem
+        account={account}
+        selected={account.address === currentAddress}
+        onPress={handleAccountPress}
+        disabled={account.address === currentAddress}
+      />
+    ),
+    [currentAddress, handleAccountPress],
+  )
 
   return (
     <BottomSheetModalProvider>
@@ -72,15 +95,8 @@ export const AccountSelector = ({ ref, children }: AccountSelectorProps) => {
       >
         <BottomSheetFlatList
           contentInsetAdjustmentBehavior="automatic"
-          data={sortedAccountsForNetType(accountsType)}
-          renderItem={({ item: account }: { item: CSAccount }) => (
-            <AccountListItem
-              account={account}
-              selected={account.address === currentAccount?.address}
-              onPress={handleAccountPress}
-              disabled={account.address === currentAccount?.address}
-            />
-          )}
+          data={accounts}
+          renderItem={renderItem}
           keyExtractor={keyExtractor}
           contentContainerStyle={LIST_CONTENT_STYLE}
         />

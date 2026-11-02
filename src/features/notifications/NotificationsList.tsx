@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
 import { SectionList, View } from 'react-native'
@@ -15,6 +15,8 @@ export type NotificationsListProps = {
   HeaderComponent: React.JSX.Element
   FooterComponent: React.JSX.Element
 }
+
+const keyExtractor = (item: Notification, index: number) => item.time + index
 
 const NotificationsList = ({
   HeaderComponent,
@@ -47,36 +49,42 @@ const NotificationsList = ({
     data: grouped[date],
   }))
 
-  const renderItem = ({
-    index,
-    item,
-    section,
-  }: {
-    index: number
-    item: Notification
-    section: { data: Notification[] }
-  }) => {
-    const isFirst = index === 0
-    const isLast = index === section.data.length - 1
+  const handleNotificationPress = useCallback(
+    (notification: Notification) => {
+      navigator.navigate('NotificationDetails', { notification })
+      setSelectedNotification(notification)
+    },
+    [navigator, setSelectedNotification],
+  )
 
-    const onItemSelected = () => {
-      navigator.navigate('NotificationDetails', { notification: item })
-      setSelectedNotification(item)
-    }
+  const renderItem = useCallback(
+    ({
+      index,
+      item,
+      section,
+    }: {
+      index: number
+      item: Notification
+      section: { data: Notification[] }
+    }) => {
+      const isFirst = index === 0
+      const isLast = index === section.data.length - 1
 
-    return (
-      <NotificationListItem
-        className={twMerge(
-          isFirst && 'rounded-t-[20px]',
-          isLast && 'rounded-b-[20px]',
-        )}
-        notification={item}
-        viewed={!!item.viewedAt}
-        hasDivider={!isLast || (isFirst && section.data.length !== 1)}
-        onPress={onItemSelected}
-      />
-    )
-  }
+      return (
+        <NotificationListItem
+          className={twMerge(
+            isFirst && 'rounded-t-[20px]',
+            isLast && 'rounded-b-[20px]',
+          )}
+          notification={item}
+          viewed={!!item.viewedAt}
+          hasDivider={!isLast || (isFirst && section.data.length !== 1)}
+          onPress={handleNotificationPress}
+        />
+      )
+    },
+    [handleNotificationPress],
+  )
 
   const emptyList = (
     <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
@@ -101,7 +109,7 @@ const NotificationsList = ({
       {HeaderComponent}
       <SectionList
         contentInsetAdjustmentBehavior="automatic"
-        keyExtractor={(item, index) => item.time + index}
+        keyExtractor={keyExtractor}
         ListFooterComponent={FooterComponent}
         renderSectionHeader={renderSectionHeader}
         contentContainerClassName="pb-15"

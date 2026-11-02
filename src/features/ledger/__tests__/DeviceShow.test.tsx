@@ -4,6 +4,8 @@ import DeviceShow from '../DeviceShow'
 
 type MockItem = { address: string }
 type MockSection = { index: number; data: MockItem[] }
+const mockRenderItems: unknown[] = []
+const mockUpsertAccounts = jest.fn((_accounts: unknown) => Promise.resolve())
 
 // SectionList renders every section header and item, so the test can reach
 // the Select All control and each account row.
@@ -21,8 +23,9 @@ jest.mock('react-native', () => {
       section: MockSection
     }) => React.ReactNode
     renderSectionHeader: (info: { section: MockSection }) => React.ReactNode
-  }) =>
-    ReactActual.createElement(
+  }) => {
+    mockRenderItems.push(renderItem)
+    return ReactActual.createElement(
       'SectionList',
       null,
       sections.map((section) =>
@@ -40,6 +43,7 @@ jest.mock('react-native', () => {
         ),
       ),
     )
+  }
   return { View: 'View', Image: 'Image', SectionList }
 })
 jest.mock('@react-navigation/native', () => {
@@ -81,7 +85,7 @@ jest.mock('../../../storage/AccountStorageProvider', () => {
     get accounts() {
       return mockAccounts
     },
-    upsertAccounts: () => Promise.resolve(),
+    upsertAccounts: (accs: unknown) => mockUpsertAccounts(accs),
   }
   return { useAccountStorage: () => accountStorage, MAX_ACCOUNTS: 50 }
 })
@@ -170,5 +174,40 @@ describe('DeviceShow', () => {
 
     expect(buttonLabel(renderer)).toBe('ledger.show.close')
     expect(showsAccountLimit(renderer)).toBe(true)
+  })
+
+  it('keeps the row renderer when the screen re-renders', async () => {
+    storeAccounts([])
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    const renderer = await renderDeviceShow()
+    const before = mockRenderItems[mockRenderItems.length - 1]
+
+    await act(async () => {
+      renderer.update(<DeviceShow />)
+    })
+
+    expect(mockRenderItems[mockRenderItems.length - 1]).toBe(before)
+  })
+
+  it('adds the account that was checked', async () => {
+    storeAccounts([])
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    const renderer = await renderDeviceShow()
+    const rows = renderer.root.findAllByType('LedgerAccountListItem' as never)
+    expect(rows[0].props.onCheckboxToggled).toBe(
+      rows[1].props.onCheckboxToggled,
+    )
+
+    await act(async () => {
+      rows[1].props.onCheckboxToggled(rows[1].props.item, true)
+    })
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
+    expect(mockUpsertAccounts).toHaveBeenCalledWith([
+      expect.objectContaining({ address: 'N1', ledgerIndex: 1 }),
+    ])
   })
 })

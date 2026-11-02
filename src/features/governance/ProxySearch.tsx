@@ -26,6 +26,12 @@ import { GovernanceNavigationProp } from './governanceTypes'
 
 const UsersIcon = withUniwind(Users)
 
+type ProxyOption = { value: string; label: string }
+
+const NO_RESULTS: ProxyOption[] = []
+
+const keyExtractor = (item: ProxyOption) => item.value
+
 export const ProxySearch = React.forwardRef<
   TextInput,
   {
@@ -154,8 +160,9 @@ export const ProxySearch = React.forwardRef<
     <FlatList
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
-      data={focused ? result || [] : []}
+      data={focused ? result : NO_RESULTS}
       renderItem={renderItem}
+      keyExtractor={keyExtractor}
       style={{ maxHeight: maxListHeight }}
       nestedScrollEnabled
       onScrollBeginDrag={() => {

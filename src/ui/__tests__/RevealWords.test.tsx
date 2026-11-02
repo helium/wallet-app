@@ -38,15 +38,17 @@ jest.mock('react-native', () => {
     FlatList: ({
       data,
       renderItem,
+      keyExtractor,
       ListFooterComponent,
     }: {
       data: string[]
       renderItem: (info: { item: string; index: number }) => React.ReactNode
+      keyExtractor?: (item: string, index: number) => string
       ListFooterComponent: React.ReactNode
     }) =>
       ReactActual.createElement(
         'FlatList',
-        null,
+        { keyExtractor },
         data.map((item, index) =>
           ReactActual.createElement(
             ReactActual.Fragment,
@@ -121,5 +123,22 @@ describe('RevealWords', () => {
       next.props.onPress()
     })
     expect(onDone).toHaveBeenCalledTimes(1)
+  })
+
+  it('keys each word by its place, so a repeated word keeps its own row', () => {
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(
+        <RevealWords
+          mnemonic={['apple', 'banana', 'cherry']}
+          onDone={jest.fn()}
+        />,
+      )
+    })
+    const { keyExtractor } = renderer.root.findByType('FlatList' as never)
+      .props as { keyExtractor?: (item: string, index: number) => string }
+
+    expect(keyExtractor).toBeDefined()
+    expect(keyExtractor?.('apple', 0)).not.toBe(keyExtractor?.('apple', 5))
   })
 })

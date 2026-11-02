@@ -10,6 +10,8 @@ import {
 // The node test runner cannot load gorhom (Reanimated) or react-native. The
 // sheet renders its content only while presented, and the list renders one
 // row per item.
+const mockRenderItems: unknown[] = []
+
 jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ bottom: 20 }),
@@ -27,14 +29,16 @@ jest.mock('@gorhom/bottom-sheet', () => {
       data: unknown[]
       renderItem: (info: { item: unknown }) => React.ReactNode
       keyExtractor: (item: unknown) => string
-    }) =>
-      data.map((item) =>
+    }) => {
+      mockRenderItems.push(renderItem)
+      return data.map((item) =>
         ReactActual.createElement(
           ReactActual.Fragment,
           { key: keyExtractor(item) },
           renderItem({ item }),
         ),
-      ),
+      )
+    },
   }
 })
 jest.mock('../Sheet', () => {
@@ -141,5 +145,31 @@ describe('TokenSelector', () => {
 
     expect(onTokenSelected).toHaveBeenCalledWith(tokenData[1].mint)
     expect(rows()).toHaveLength(0)
+  })
+
+  it('keeps the row renderer and hands every row one press handler', () => {
+    const onTokenSelected = jest.fn()
+    const { ref, renderer } = setup(onTokenSelected)
+    act(() => ref.current?.showTokens())
+    const before = mockRenderItems[mockRenderItems.length - 1]
+    act(() => {
+      renderer.update(
+        <TokenSelector
+          ref={ref}
+          tokenData={tokenData}
+          onTokenSelected={onTokenSelected}
+          className="bg-background"
+        >
+          next screen
+        </TokenSelector>,
+      )
+    })
+
+    expect(mockRenderItems[mockRenderItems.length - 1]).toBe(before)
+    const tokenRows = renderer.root.findAll(
+      (n) => typeof n.type === 'function' && n.props.mint !== undefined,
+    )
+    expect(tokenRows).toHaveLength(2)
+    expect(tokenRows[0].props.onPress).toBe(tokenRows[1].props.onPress)
   })
 })

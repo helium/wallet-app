@@ -5,7 +5,12 @@ import {
 } from '@gorhom/bottom-sheet'
 import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import type { PublicKey } from '@solana/web3.js'
-import React, { type ReactNode, useImperativeHandle, useRef } from 'react'
+import React, {
+  type ReactNode,
+  useCallback,
+  useImperativeHandle,
+  useRef,
+} from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSheetMargins } from './ContentColumn'
@@ -25,7 +30,7 @@ const TokenRow = ({
   selected,
 }: {
   mint: PublicKey
-  onPress: () => void
+  onPress: (mint: PublicKey) => void
   selected: boolean
 }) => {
   const { symbol, json } = useMetaplexMetadata(mint)
@@ -33,7 +38,7 @@ const TokenRow = ({
     <ListItem
       title={symbol || ''}
       Icon={json?.image ? <TokenIcon size={30} img={json.image} /> : undefined}
-      onPress={onPress}
+      onPress={() => onPress(mint)}
       selected={selected}
       className="ps-6"
       hasDivider
@@ -72,10 +77,24 @@ export const TokenSelector = ({
     showTokens: () => sheetRef.current?.present(),
   }))
 
-  const handleTokenPress = (mint: PublicKey) => {
-    sheetRef.current?.dismiss()
-    onTokenSelected(mint)
-  }
+  const handleTokenPress = useCallback(
+    (mint: PublicKey) => {
+      sheetRef.current?.dismiss()
+      onTokenSelected(mint)
+    },
+    [onTokenSelected],
+  )
+
+  const renderItem = useCallback(
+    ({ item }: { item: TokenListItem }) => (
+      <TokenRow
+        selected={item.selected}
+        onPress={handleTokenPress}
+        mint={item.mint}
+      />
+    ),
+    [handleTokenPress],
+  )
 
   return (
     <BottomSheetModalProvider>
@@ -89,13 +108,7 @@ export const TokenSelector = ({
           <BottomSheetFlatList
             contentInsetAdjustmentBehavior="automatic"
             data={tokenData}
-            renderItem={({ item }: { item: TokenListItem }) => (
-              <TokenRow
-                selected={item.selected}
-                onPress={() => handleTokenPress(item.mint)}
-                mint={item.mint}
-              />
-            )}
+            renderItem={renderItem}
             keyExtractor={keyExtractor}
           />
         </Sheet>

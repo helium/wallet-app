@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useEffectEvent } from 'react'
+import React, { useCallback, useState, useEffect, useEffectEvent } from 'react'
 import { Image, SectionList, View } from 'react-native'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { useTranslation } from 'react-i18next'
@@ -240,11 +240,29 @@ const DeviceShow = () => {
     homeNav.navigate('AccountsScreen', undefined, { pop: true })
   }
 
-  const onCheckboxToggled = (account: LedgerAccount, value: boolean) => {
-    setSelectedAccounts((selected) => {
-      return { ...selected, [account.address]: value }
-    })
-  }
+  const onCheckboxToggled = useCallback(
+    (account: LedgerAccount, value: boolean) => {
+      setSelectedAccounts((selected) => {
+        return { ...selected, [account.address]: value }
+      })
+    },
+    [setSelectedAccounts],
+  )
+
+  const renderItem = useCallback(
+    (vals: {
+      item: LedgerAccount
+      index: number
+      section: { title: string; index: number; data: LedgerAccount[] }
+    }) => (
+      <LedgerAccountListItem
+        {...vals}
+        isSelected={selectedAccounts[vals.item.address]}
+        onCheckboxToggled={onCheckboxToggled}
+      />
+    ),
+    [selectedAccounts, onCheckboxToggled],
+  )
 
   if (!ledgerAccounts) {
     return (
@@ -263,13 +281,7 @@ const DeviceShow = () => {
           contentContainerClassName="pb-8"
           sections={SectionData}
           keyExtractor={keyExtractor}
-          renderItem={(vals) => (
-            <LedgerAccountListItem
-              {...vals}
-              isSelected={selectedAccounts[vals.item.address]}
-              onCheckboxToggled={onCheckboxToggled}
-            />
-          )}
+          renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           renderSectionFooter={renderSectionFooter}
           initialNumToRender={100}

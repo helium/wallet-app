@@ -28,6 +28,8 @@ import {
 
 type Route = RouteProp<GovernanceStackParamList, 'AssignProxyScreen'>
 
+const keyExtractor = (item: PositionWithMeta) => item.pubkey.toBase58()
+
 export const AssignProxyScreen = () => {
   const navigation = useNavigation<GovernanceNavigationProp>()
   const route = useRoute<Route>()
@@ -232,6 +234,7 @@ export const AssignProxyScreen = () => {
               contentInsetAdjustmentBehavior="automatic"
               data={selectablePositions}
               renderItem={renderPosition}
+              keyExtractor={keyExtractor}
             />
           </View>
           {error && (

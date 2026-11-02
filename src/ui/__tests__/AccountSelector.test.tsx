@@ -9,6 +9,7 @@ import {
 
 const mockSetCurrentAccount = jest.fn()
 const mockSortedAccountsForNetType = jest.fn()
+const mockListProps: { data: unknown; renderItem: unknown }[] = []
 
 // The node test runner cannot load gorhom (Reanimated). The sheet renders
 // its content only while presented, and the list renders one row per item.
@@ -25,14 +26,16 @@ jest.mock('@gorhom/bottom-sheet', () => {
       data: unknown[]
       renderItem: (info: { item: unknown }) => React.ReactNode
       keyExtractor: (item: unknown) => string
-    }) =>
-      data.map((item) =>
+    }) => {
+      mockListProps.push({ data, renderItem })
+      return data.map((item) =>
         ReactActual.createElement(
           ReactActual.Fragment,
           { key: keyExtractor(item) },
           renderItem({ item }),
         ),
-      ),
+      )
+    },
   }
 })
 jest.mock('../Sheet', () => {
@@ -97,6 +100,7 @@ beforeEach(() => {
   mockSetCurrentAccount.mockClear()
   mockSortedAccountsForNetType.mockReset()
   mockSortedAccountsForNetType.mockReturnValue(accounts)
+  mockListProps.length = 0
 })
 
 describe('AccountSelector', () => {
@@ -139,6 +143,28 @@ describe('AccountSelector', () => {
 
     expect(mockSetCurrentAccount).toHaveBeenCalledWith(accounts[1])
     expect(rows()).toHaveLength(0)
+  })
+
+  it('keeps the list data and row renderer when the screen re-renders', () => {
+    // The storage hands back a new sorted array on each call
+    mockSortedAccountsForNetType.mockImplementation(() => [...accounts])
+    const { ref, renderer } = setup()
+    act(() => ref.current?.show())
+    act(() => {
+      renderer.update(<AccountSelector ref={ref}>next screen</AccountSelector>)
+    })
+
+    const [before, after] = mockListProps.slice(-2)
+    expect(after.data).toBe(before.data)
+    expect(after.renderItem).toBe(before.renderItem)
+  })
+
+  it('hands every row the same press handler', () => {
+    const { ref, rows } = setup()
+    act(() => ref.current?.show())
+
+    const [first, second] = rows()
+    expect(first.props.onPress).toBe(second.props.onPress)
   })
 })
 

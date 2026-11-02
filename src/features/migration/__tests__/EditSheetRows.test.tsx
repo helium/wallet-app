@@ -101,6 +101,38 @@ describe('HotspotsEditSheet', () => {
     expect(onToggle).toHaveBeenCalledTimes(1)
     expect(onToggle).toHaveBeenCalledWith('b')
   })
+
+  it('keeps the row renderer and key extractor when the sheet re-renders', () => {
+    const hotspots = [
+      { entityKey: 'a', name: 'A', type: 'IOT', deviceType: 'x' },
+    ]
+    const selected = new Set(['a'])
+    const onToggle = jest.fn()
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(
+        <HotspotsEditSheet
+          hotspots={hotspots}
+          selected={selected}
+          onToggle={onToggle}
+        />,
+      )
+    })
+    const before = renderer.root.findByType(BottomSheetFlatList).props
+    act(() => {
+      renderer.update(
+        <HotspotsEditSheet
+          hotspots={hotspots}
+          selected={selected}
+          onToggle={onToggle}
+        />,
+      )
+    })
+    const after = renderer.root.findByType(BottomSheetFlatList).props
+
+    expect(after.renderItem).toBe(before.renderItem)
+    expect(after.keyExtractor).toBe(before.keyExtractor)
+  })
 })
 
 describe('TokensEditSheet', () => {

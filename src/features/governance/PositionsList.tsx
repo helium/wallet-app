@@ -12,7 +12,7 @@ import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { times, uniq } from 'lodash'
 import { Zap } from 'lucide-react-native'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl, SectionList, View } from 'react-native'
 import { useCSSVariable, withUniwind } from 'uniwind'
@@ -70,28 +70,32 @@ export const PositionsList = ({ header, className }: IPositionsListProps) => {
 
   const loading = !subDaos || loadingSubDaos || loadingGov
 
-  const sortedPositions = loading
-    ? []
-    : positions?.sort((a, b) => {
-        if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
-          if (b.hasGenesisMultiplier) {
-            return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
-          }
-          return 0
-        }
-
-        if (a.isDelegated || b.isDelegated) {
-          if (a.isDelegated && !b.isDelegated) return -1
-          if (b.isDelegated && !a.isDelegated) return 1
-
+  const sections = useMemo(() => {
+    if (loading) return []
+    const sortedPositions = positions?.sort((a, b) => {
+      if (a.hasGenesisMultiplier || b.hasGenesisMultiplier) {
+        if (b.hasGenesisMultiplier) {
           return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
         }
+        return 0
+      }
+
+      if (a.isDelegated || b.isDelegated) {
+        if (a.isDelegated && !b.isDelegated) return -1
+        if (b.isDelegated && !a.isDelegated) return 1
 
         return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
-      })
+      }
 
-  const proxiedPositions = sortedPositions?.filter((p) => p.isProxiedToMe)
-  const unProxiedPositions = sortedPositions?.filter((p) => !p.isProxiedToMe)
+      return a.amountDepositedNative.gt(b.amountDepositedNative) ? -1 : 1
+    })
+    const proxiedPositions = sortedPositions?.filter((p) => p.isProxiedToMe)
+    const unProxiedPositions = sortedPositions?.filter((p) => !p.isProxiedToMe)
+    return [
+      { title: 'My Positions', data: unProxiedPositions || [], icon: null },
+      { title: 'Proxied To Me', data: proxiedPositions || [], icon: null },
+    ]
+  }, [loading, positions])
 
   const renderItem = ({
     item: p,
@@ -150,11 +154,6 @@ export const PositionsList = ({ header, className }: IPositionsListProps) => {
     )
   }
 
-  const SectionData = [
-    { title: 'My Positions', data: unProxiedPositions || [], icon: null },
-    { title: 'Proxied To Me', data: proxiedPositions || [], icon: null },
-  ]
-
   const renderSectionHeader = ({
     section: { title, icon },
   }: {
@@ -197,7 +196,7 @@ export const PositionsList = ({ header, className }: IPositionsListProps) => {
           </>
         }
         keyExtractor={keyExtractor}
-        sections={loading ? [] : SectionData}
+        sections={sections}
         renderItem={renderItem}
         ListEmptyComponent={renderEmptyComponent}
         refreshControl={

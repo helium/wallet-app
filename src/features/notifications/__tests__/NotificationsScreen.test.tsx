@@ -45,10 +45,16 @@ jest.mock('@helium/spl-utils', () => ({
 
 // @react-navigation ships ESM only, which this jest config does not
 // transform.
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({ navigate: mockNavigate }),
-  useIsFocused: () => true,
-}))
+// The navigation object stays the same across renders, as it does in the app.
+jest.mock('@react-navigation/native', () => {
+  const navigation = {
+    navigate: (...args: unknown[]) => mockNavigate(...args),
+  }
+  return {
+    useNavigation: () => navigation,
+    useIsFocused: () => true,
+  }
+})
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
@@ -70,16 +76,18 @@ jest.mock('react-native', () => {
       renderSectionHeader,
       ListEmptyComponent,
       ListFooterComponent,
+      keyExtractor,
     }: {
       sections: { title: string; data: unknown[] }[]
       renderItem: (i: unknown) => React.ReactNode
+      keyExtractor: unknown
       renderSectionHeader: (s: unknown) => React.ReactNode
       ListEmptyComponent: unknown
       ListFooterComponent: unknown
     }) =>
       ReactActual.createElement(
         'SectionList',
-        null,
+        { renderItem, keyExtractor },
         sections.length === 0 ? render(ListEmptyComponent) : null,
         sections.map((section) =>
           ReactActual.createElement(
@@ -159,6 +167,7 @@ const render = async () => {
   })
   if (!renderer) throw new Error('render failed')
   const { root } = renderer
+  const rendered = renderer
   const texts = () =>
     root
       .findAllByType('Text' as never)
@@ -175,6 +184,17 @@ const render = async () => {
             .some((t) => t.props.children === title),
         ),
     buttons: () => root.findAllByType('Button' as never),
+    list: () => root.findByType('SectionList' as never).props,
+    rows: () =>
+      root.findAll(
+        (n) =>
+          typeof n.type === 'function' &&
+          n.type.name === 'NotificationListItem',
+      ),
+    rerender: () =>
+      act(async () => {
+        rendered.update(<NotificationsScreen />)
+      }),
     accountIcons: () => root.findAllByType('AccountIcon' as never),
   }
 }
@@ -238,6 +258,24 @@ describe('NotificationsScreen', () => {
       notification: second,
     })
     expect(mockSetSelectedNotification).toHaveBeenCalledWith(second)
+  })
+
+  it('keeps the row renderer and keys, and hands every row one press handler', async () => {
+    mockStorage.notifications = [
+      notification(1, '2026-10-01T18:00:00Z'),
+      notification(2, '2026-10-01T20:00:00Z'),
+    ]
+    const view = await render()
+    const before = view.list()
+
+    await view.rerender()
+
+    const after = view.list()
+    expect(after.renderItem).toBe(before.renderItem)
+    expect(after.keyExtractor).toBe(before.keyExtractor)
+    const rows = view.rows()
+    expect(rows).toHaveLength(2)
+    expect(rows[0].props.onPress).toBe(rows[1].props.onPress)
   })
 
   it('opens the action link of the selected notification', async () => {
