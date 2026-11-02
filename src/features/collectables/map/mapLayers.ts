@@ -5,7 +5,7 @@ const COLORS = {
   natural: '#edfdf3', // --success-50
   runway: '#e5e5e5', // --border
   water: '#d1d1d6', // --placeholder-subtle
-  road: '#e5e5e5', // --border
+  road: '#b5b5b5', // --off-white-foreground-faint
   boundary: '#a0a0ab', // --quinary-400
   label: '#575757', // --off-white-foreground
   labelHalo: '#ffffff', // --background

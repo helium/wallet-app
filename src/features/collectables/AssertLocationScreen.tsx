@@ -472,21 +472,21 @@ const AssertLocationScreen = () => {
               className="flex-row items-center justify-center"
               onPress={() => navigation.goBack()}
             >
-              <BackIcon size={24} colorClassName="accent-white" />
-              <Text size="base" className="ml-3 font-medium text-white">
+              <BackIcon size={24} colorClassName="accent-foreground" />
+              <Text size="base" className="ml-3 font-medium text-foreground">
                 Back
               </Text>
             </PressableScale>
           </View>
           <View className="absolute bottom-[50%] flex-col justify-center">
-            <MapPin size={30} colorClassName="accent-white" />
+            <MapPin size={30} colorClassName="accent-foreground" />
           </View>
           {!searchVisible ? (
             <View className="absolute bottom-5 mx-3 w-full flex-row justify-between">
               <View className="mx-3 shrink flex-row items-center">
                 {reverseGeo.loading && (
                   <View className={reverseGeo.result ? 'mr-3' : undefined}>
-                    <Spinner colorClassName="accent-white" />
+                    <Spinner colorClassName="accent-foreground" />
                   </View>
                 )}
                 {showError && (
@@ -496,10 +496,10 @@ const AssertLocationScreen = () => {
                 )}
                 {!reverseGeo.loading && !showError && reverseGeo.result && (
                   <Animated.View entering={FADE_IN} exiting={FADE_OUT}>
-                    <View className="min-h-9 shrink flex-row items-center rounded-full bg-white/30 px-3 py-1.5">
+                    <View className="min-h-9 shrink flex-row items-center rounded-full border border-border bg-card px-3 py-1.5">
                       <Text
                         size="xs"
-                        className="font-medium text-white"
+                        className="font-medium text-foreground"
                         numberOfLines={1}
                       >
                         {reverseGeo.result}
@@ -512,7 +512,7 @@ const AssertLocationScreen = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="mr-3 rounded-full bg-white/30"
+                  className="mr-3 rounded-full border border-border bg-card"
                   onPress={handleSearchPress}
                 >
                   <SearchIcon size={18} colorClassName="accent-foreground" />
@@ -520,7 +520,7 @@ const AssertLocationScreen = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-full bg-white/30"
+                  className="rounded-full border border-border bg-card"
                   onPress={handleUserLocationPress}
                 >
                   <UserLocationIcon

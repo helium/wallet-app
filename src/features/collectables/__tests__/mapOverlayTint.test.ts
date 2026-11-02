@@ -2,7 +2,11 @@ import fs from 'fs'
 import path from 'path'
 
 // The map is light, so the blur overlays drawn over it are light too.
-const MAP_SCREENS = ['AssertLocationScreen.tsx', 'HotspotMapScreen.tsx']
+const MAP_SCREENS = [
+  'AssertLocationScreen.tsx',
+  'HotspotMapHotspotDetails.tsx',
+  'HotspotMapScreen.tsx',
+]
 
 describe('map screen overlays', () => {
   it.each(MAP_SCREENS)('every blur has a light tint in %s', (file) => {

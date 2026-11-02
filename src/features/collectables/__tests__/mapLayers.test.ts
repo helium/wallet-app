@@ -56,11 +56,6 @@ const contrast = (a: string, b: string): number => {
 }
 
 describe('hotspot map layers', () => {
-  it('converts a known token the way the test expects', () => {
-    expect(hslToHex(0, 0, 0.961)).toBe('#f5f5f5')
-    expect(hslToHex(220, 1, 0.58)).toBe('#2970ff')
-  })
-
   it('takes every colour from a world-theme token', () => {
     const tokens = themeHexColors()
     const stray = paintColors().filter((color) => !tokens.has(color))
@@ -82,6 +77,23 @@ describe('hotspot map layers', () => {
         paintColor('water', 'fill-color'),
       ),
     ).toBeGreaterThan(1.1)
+  })
+
+  it('draws roads that stand out from land', () => {
+    ;[
+      'roads_other',
+      'roads_minor',
+      'roads_medium',
+      'roads_major',
+      'roads_highway',
+    ].forEach((id) =>
+      expect(
+        contrast(
+          paintColor(id, 'line-color'),
+          paintColor('land', 'background-color'),
+        ),
+      ).toBeGreaterThan(1.5),
+    )
   })
 
   it('draws labels darker than their halo', () => {

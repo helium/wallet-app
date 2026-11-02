@@ -387,8 +387,8 @@ const HotspotMapScreen = () => {
               className="flex-row items-center justify-center"
               onPress={() => navigation.goBack()}
             >
-              <BackIcon size={24} colorClassName="accent-white" />
-              <Text size="base" className="ml-3 font-medium text-white">
+              <BackIcon size={24} colorClassName="accent-foreground" />
+              <Text size="base" className="ml-3 font-medium text-foreground">
                 {t('collectablesScreen.hotspots.map.back')}
               </Text>
             </PressableScale>
@@ -422,7 +422,7 @@ const HotspotMapScreen = () => {
                 variant="ghost"
                 size="icon"
                 // TODO: Make this visible when modled coverage is available
-                className="mr-3 hidden rounded-full bg-white/30"
+                className="mr-3 hidden rounded-full border border-border bg-card"
                 onPress={handleLegendPress}
               >
                 <LegendIcon size={18} colorClassName="accent-foreground" />
@@ -430,7 +430,7 @@ const HotspotMapScreen = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-white/30"
+                className="rounded-full border border-border bg-card"
                 onPress={handleUserLocationPress}
               >
                 <UserLocationIcon
