@@ -1548,6 +1548,7 @@ export default {
       castVote: 'Vote failed, please try again.',
       relinquishVote: 'Relinquish vote failed, please try again.',
       relinquishVotes: 'Relinquish votes failed, please try again.',
+      invalidProposal: 'This proposal link is not valid.',
     },
   },
   deprecatedTokensModal: {
