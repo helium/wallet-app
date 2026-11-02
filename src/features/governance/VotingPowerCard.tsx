@@ -9,13 +9,14 @@ import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/formatting'
 import BN from 'bn.js'
-import { Zap } from 'lucide-react-native'
+import { ChevronRight, Zap } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { withUniwind } from 'uniwind'
 
+const ChevronIcon = withUniwind(ChevronRight)
 const ZapIcon = withUniwind(Zap)
 
 interface IVotingPowerCardProps {
@@ -93,13 +94,11 @@ export const VotingPowerCard = ({
       <>
         <View className="p-4">
           {!compact && (
-            <View className="mb-4 flex-row justify-between">
+            <View className="mb-4 flex-row items-center justify-between">
               <Text size="xl" className="font-medium">
                 {t('gov.votingPower.yourPower')}
               </Text>
-              <Text size="xl" className="font-medium">
-                &gt;
-              </Text>
+              <ChevronIcon size={20} colorClassName="accent-foreground" />
             </View>
           )}
           {!compact && noVotingPower && (
