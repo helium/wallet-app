@@ -77,7 +77,9 @@ const HotspotMapScreen = () => {
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
-  const [hotspot, setHotspot] = useState(route.params?.hotspot)
+  // The route's hotspot shows until the user switches network.
+  const [hotspotCleared, setHotspotCleared] = useState(false)
+  const hotspot = hotspotCleared ? undefined : route.params?.hotspot
   const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
     route.params?.network || 'IOT',
   )
@@ -299,7 +301,7 @@ const HotspotMapScreen = () => {
 
   const handleToggleNetwork = () => {
     setNetworkType(networkType === 'IOT' ? 'MOBILE' : 'IOT')
-    setHotspot(undefined)
+    setHotspotCleared(true)
   }
 
   const handleHexClick: OnPress = (event) => {
