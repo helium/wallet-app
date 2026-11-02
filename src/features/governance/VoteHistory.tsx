@@ -21,6 +21,8 @@ import { ProposalTags } from './ProposalTags'
 import { ProxyCardStat } from './ProxyCardStat'
 import { GovernanceNavigationProp } from './governanceTypes'
 
+const dateFormat = new Intl.DateTimeFormat()
+
 export const VoteHistory: React.FC<{
   wallet: PublicKey
   header: React.ReactElement
@@ -180,9 +182,7 @@ const ProposalItem: React.FC<{
         <View className="w-full flex-row items-center justify-between px-4">
           <ProxyCardStat
             title={t('gov.history.completed')}
-            value={new Date(
-              (endTs?.toNumber() || 0) * 1000,
-            ).toLocaleDateString()}
+            value={dateFormat.format(new Date((endTs?.toNumber() || 0) * 1000))}
           />
           <ProxyCardStat
             title={t('gov.history.result')}

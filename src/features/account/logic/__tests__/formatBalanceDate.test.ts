@@ -22,4 +22,21 @@ describe('formatBalanceDate', () => {
   it('returns an empty string for a date it cannot parse', () => {
     expect(formatBalanceDate('not a date', 'en-US')).toBe('')
   })
+
+  it('builds one formatter per locale', () => {
+    const construct = jest.spyOn(Intl, 'DateTimeFormat')
+
+    expect(formatBalanceDate('2021-03-24T00:00:00.000Z', 'en-GB')).toBe(
+      '24 March 2021',
+    )
+    expect(formatBalanceDate('2022-01-02T00:00:00.000Z', 'en-GB')).toBe(
+      '02 January 2022',
+    )
+    expect(construct).toHaveBeenCalledTimes(1)
+
+    formatBalanceDate('2021-03-24T00:00:00.000Z', 'fr-FR')
+    expect(construct).toHaveBeenCalledTimes(2)
+
+    construct.mockRestore()
+  })
 })

@@ -18,6 +18,12 @@ import BackHeader from './components/BackHeader'
 import { CollectableNavigationProp } from './collectablesTypes'
 
 const SafeArea = withUniwind(SafeAreaView)
+const nextRunDateFormat = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+})
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
 
@@ -252,12 +258,7 @@ const AutomationSetupScreen = () => {
   }
 
   const formatNextRunDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    })
+    return nextRunDateFormat.format(date)
   }
 
   return (

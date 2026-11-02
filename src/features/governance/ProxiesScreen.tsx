@@ -27,6 +27,7 @@ const CheckIcon = withUniwind(CircleCheck)
 
 const DECENTRALIZATION_RISK_PERCENT = 10
 const VOTER_HEIGHT = 110
+const dateFormat = new Intl.DateTimeFormat()
 
 export const ProxySkeleton = () => {
   return <CardSkeleton height={VOTER_HEIGHT} />
@@ -234,7 +235,7 @@ const ProxyCard: React.FC<{
           className="items-end"
           value={
             proxy.lastVotedAt
-              ? new Date(proxy.lastVotedAt).toLocaleDateString()
+              ? dateFormat.format(new Date(proxy.lastVotedAt))
               : 'Never'
           }
         />

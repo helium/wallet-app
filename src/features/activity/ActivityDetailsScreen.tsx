@@ -37,6 +37,11 @@ const BackIcon = withUniwind(ChevronLeft)
 const SendIcon = withUniwind(ArrowUpRight)
 const ReceiveIcon = withUniwind(ArrowDownLeft)
 const ErrorIcon = withUniwind(CircleX)
+const dateFormat = new Intl.DateTimeFormat('en-US', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
 
 const ScamWarningImage = (props: ImageProps) => {
   const [dismissed, setDismissed] = useState(false)
@@ -91,11 +96,7 @@ const ActivityDetailsScreen = () => {
     }
 
     // Format date in DD/MMMM/YYYY format
-    const formattedString = date.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
+    const formattedString = dateFormat.format(date)
 
     const time = `${date.getHours()}:${
       date.getMinutes() > 9 ? date.getMinutes() : `0${date.getMinutes()}`

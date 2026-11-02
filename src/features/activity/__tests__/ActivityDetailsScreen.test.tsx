@@ -184,6 +184,16 @@ describe('ActivityDetailsScreen', () => {
     expect(scrollView.props.contentInsetAdjustmentBehavior).toBeUndefined()
   })
 
+  it('labels the transaction with its local date and time', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+    // timestamp 1700000000 is 2023-11-14 22:13:20 UTC, 15:13 in Denver (MST).
+    expect(textOf(renderer.root)).toContain('November 14, 2023 | 15:13')
+  })
+
   it('opens the address actions sheet inside the screen and copies the address', () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
     act(() => {
