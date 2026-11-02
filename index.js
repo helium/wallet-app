@@ -45,7 +45,7 @@ if (typeof global !== 'undefined' && global.addEventListener) {
 }
 
 if (__DEV__) {
-  import('./ReactotronConfig')
+  require('./ReactotronConfig')
 }
 
 function fallbackRender(props) {
