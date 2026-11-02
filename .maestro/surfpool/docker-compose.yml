@@ -16,6 +16,11 @@ services:
       timeout: 5s
       retries: 30
 
+  jupiter-proxy:
+    image: nginx:1.28.0-alpine
+    volumes:
+      - ./jupiter-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+
   blockchain-api:
     image: public.ecr.aws/v0j6k5v6/blockchain-api:0.3.15
     platform: linux/amd64
@@ -31,9 +36,12 @@ services:
       PG_PORT: '5432'
       SOLANA_RPC_URL: http://host.docker.internal:8899
       SOLANA_CLUSTER: mainnet
-      # Swap quotes (flow 04) call Jupiter. A placeholder key starts the
-      # server, but quotes then fail.
+      # Swaps (flow 04) call Jupiter. With no JUPITER_API_KEY, the calls go
+      # through jupiter-proxy to the keyless lite-api host, and the
+      # placeholder key only lets the server start. With a key,
+      # scripts/maestro-surfpool.sh sets JUPITER_API_URL to api.jup.ag.
       JUPITER_API_KEY: ${JUPITER_API_KEY:-unset}
+      JUPITER_API_URL: ${JUPITER_API_URL:-http://jupiter-proxy:8080}
       # Optional DAS endpoint for asset reads that surfpool does not serve.
       ASSET_ENDPOINT: ${ASSET_ENDPOINT:-}
     healthcheck:
@@ -48,3 +56,5 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      jupiter-proxy:
+        condition: service_started

@@ -60,6 +60,12 @@ else
   }
 fi
 
+# A real Jupiter key goes to the paid host. With no key, the compose file
+# sends the Jupiter calls through its keyless proxy.
+if [ -n "${JUPITER_API_KEY:-}" ]; then
+  export JUPITER_API_URL="https://api.jup.ag"
+fi
+
 echo "[maestro-surfpool] starting blockchain-api" >&2
 "${COMPOSE[@]}" up -d --wait >&2
 
