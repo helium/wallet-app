@@ -5,7 +5,10 @@ import {
   WrappedConnection,
 } from '../../utils/WrappedConnection'
 import { AsyncAccountCache } from '../AsyncAccountCache'
-import { RejectingAccountFetchCache } from '../RejectingAccountFetchCache'
+import {
+  RejectingAccountFetchCache,
+  createAccountFetchCache,
+} from '../RejectingAccountFetchCache'
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
@@ -76,11 +79,11 @@ afterEach(() => {
 it('caches no null for a failed batch and fetches the key again on the next read', async () => {
   const key = Keypair.generate().publicKey
   let calls = 0
-  const fetchFn: FetchFn = async (_input, init) => {
+  const fetchFn: FetchFn = (_input, init) => {
     calls += 1
     // Only the first request stalls, like one stalled socket on Android
     if (calls === 1) return new Promise(() => {})
-    return accountResponse(String(init?.body))
+    return Promise.resolve(accountResponse(String(init?.body)))
   }
   const connection = new WrappedConnection('https://rpc.test', {
     commitment: 'confirmed',
@@ -89,15 +92,7 @@ it('caches no null for a failed batch and fetches the key again on the next read
   // A found account is watched; keep the websocket closed
   jest.spyOn(connection, 'onAccountChange').mockReturnValue(0)
   const asyncCache = new AsyncAccountCache('accounts-test')
-  // Same options as SolanaProvider
-  cache = new RejectingAccountFetchCache({
-    connection,
-    delay: 100,
-    commitment: 'confirmed',
-    missingRefetchDelay: 60 * 1000,
-    extendConnection: true,
-    cache: asyncCache,
-  })
+  cache = createAccountFetchCache(connection, asyncCache)
 
   const first = settle(connection.getAccountInfo(key))
   await jest.advanceTimersByTimeAsync(100 + RPC_REQUEST_TIMEOUT)
@@ -118,10 +113,10 @@ it('caches no null for a failed batch and fetches the key again on the next read
 it('lets a read issued during a stalled batch fetch its own key after the timeout', async () => {
   const stalledKey = Keypair.generate().publicKey
   const nextKey = Keypair.generate().publicKey
-  const fetchFn: FetchFn = async (_input, init) => {
+  const fetchFn: FetchFn = (_input, init) => {
     const body = String(init?.body)
     if (body.includes(stalledKey.toBase58())) return new Promise(() => {})
-    return accountResponse(body)
+    return Promise.resolve(accountResponse(body))
   }
   cache = new RejectingAccountFetchCache({
     connection: new WrappedConnection('https://rpc.test', { fetch: fetchFn }),
@@ -140,4 +135,109 @@ it('lets a read issued during a stalled batch fetch its own key after the timeou
     (next.value as { account: { data: Buffer }; pubkey: PublicKey }).account
       .data,
   ).toEqual(Buffer.from([7]))
+})
+
+it('rejects a read still in the debounce window when the cache closes', async () => {
+  const key = Keypair.generate().publicKey
+  const connection = new WrappedConnection('https://rpc.test', {
+    commitment: 'confirmed',
+    fetch: (_input, init) =>
+      Promise.resolve(accountResponse(String(init?.body))),
+  })
+  const asyncCache = new AsyncAccountCache('accounts-test')
+  cache = createAccountFetchCache(connection, asyncCache)
+
+  const read = settle(connection.getAccountInfo(key))
+  await jest.advanceTimersByTimeAsync(50)
+  cache.close()
+  await jest.advanceTimersByTimeAsync(0)
+  expect(read.status).toBe('rejected')
+  expect(asyncCache.has(key.toBase58())).toBe(false)
+  // Past the AsyncAccountCache write debounce
+  await jest.advanceTimersByTimeAsync(10 * 1000)
+  expect(storedKeys()).not.toContain(key.toBase58())
+})
+
+it('raises no unhandled rejection for a forceRequery read whose own batch fails', async () => {
+  const unhandled: unknown[] = []
+  const onUnhandled = (e: unknown) => unhandled.push(String(e))
+  process.on('unhandledRejection', onUnhandled)
+  const key = Keypair.generate().publicKey
+  let calls = 0
+  const fetchFn: FetchFn = async (_input, init) => {
+    calls += 1
+    // The first batch (the normal read) succeeds after 50 ms
+    if (calls === 1) {
+      await new Promise((r) => {
+        setTimeout(r, 50)
+      })
+      return accountResponse(String(init?.body))
+    }
+    return new Response('upstream error', { status: 500 })
+  }
+  const connection = new WrappedConnection('https://rpc.test', {
+    commitment: 'confirmed',
+    fetch: fetchFn,
+  })
+  jest.spyOn(connection, 'onAccountChange').mockReturnValue(1)
+  cache = new RejectingAccountFetchCache({
+    connection,
+    delay: 100,
+    commitment: 'confirmed',
+  })
+
+  const read = cache.search(key)
+  await jest.advanceTimersByTimeAsync(100)
+  // A forceRequery read while the first batch is in flight, as
+  // requeryMissingByAccount does
+  const forced = cache.search(key, undefined, false, true)
+  await jest.advanceTimersByTimeAsync(40 * 1000)
+  expect(await read).toBeDefined()
+  expect(await forced).toBeDefined()
+  await jest.advanceTimersByTimeAsync(1000)
+  jest.useRealTimers()
+  await new Promise((r) => {
+    setTimeout(r, 50)
+  })
+  process.off('unhandledRejection', onUnhandled)
+  expect(calls).toBe(2)
+  expect(unhandled).toEqual([])
+})
+
+it('disposes the watched keys of a getMultipleAccountsInfo call that fails', async () => {
+  const cachedKey = Keypair.generate().publicKey
+  const failingKey = Keypair.generate().publicKey
+  const connection = new WrappedConnection('https://rpc.test', {
+    commitment: 'confirmed',
+    fetch: (_input, init) => {
+      const body = String(init?.body)
+      if (body.includes(failingKey.toBase58())) {
+        return Promise.resolve(new Response('upstream error', { status: 500 }))
+      }
+      return Promise.resolve(accountResponse(body))
+    },
+  })
+  jest.spyOn(connection, 'onAccountChange').mockReturnValue(1)
+  jest.spyOn(connection, 'removeAccountChangeListener').mockResolvedValue()
+  cache = new RejectingAccountFetchCache({
+    connection,
+    delay: 100,
+    commitment: 'confirmed',
+    missingRefetchDelay: 60 * 1000,
+    extendConnection: true,
+  })
+  // Put cachedKey in the cache, then let its own 30 s dispose run
+  const primed = connection.getAccountInfo(cachedKey)
+  await jest.advanceTimersByTimeAsync(100)
+  await primed
+  await jest.advanceTimersByTimeAsync(31 * 1000)
+
+  const result = settle(
+    connection.getMultipleAccountsInfo([cachedKey, failingKey]),
+  )
+  await jest.advanceTimersByTimeAsync(40 * 1000)
+  expect(result.status).toBe('rejected')
+  expect(String(result.error)).toContain('upstream error')
+  await jest.advanceTimersByTimeAsync(31 * 1000)
+  expect(cache.accountWatchersCount.get(cachedKey.toBase58()) ?? 0).toBe(0)
 })

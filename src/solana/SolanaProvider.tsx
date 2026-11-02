@@ -39,7 +39,7 @@ import { useAppStore } from '../store/appStore'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
-import { RejectingAccountFetchCache } from './RejectingAccountFetchCache'
+import { createAccountFetchCache } from './RejectingAccountFetchCache'
 import { getLastCheckedSlot, saveCacheThenSlot } from './lastCheckedSlot'
 
 const useSolanaHook = () => {
@@ -194,14 +194,7 @@ const useSolanaHook = () => {
       } catch (e) {
         console.error('Failed to init cache', e)
       }
-      const c = new RejectingAccountFetchCache({
-        connection,
-        delay: 100,
-        commitment: 'confirmed',
-        missingRefetchDelay: 60 * 1000,
-        extendConnection: true,
-        cache: asyncCache,
-      })
+      const c = createAccountFetchCache(connection, asyncCache)
       // Async fetch the cache accounts to check for changes and update account fetch cache
       void (async () => {
         try {
