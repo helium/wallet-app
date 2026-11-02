@@ -4,9 +4,7 @@ appId: com.helium.wallet.app
 tags:
   - onboarding
 ---
-- launchApp:
-    clearState: true
-    clearKeychain: true
+- runFlow: ../subflows/clean-start.yaml
 - evalScript: ${output.words = MAESTRO_FIXTURE_SEED.trim().split(/\s+/)}
 - extendedWaitUntil:
     visible:

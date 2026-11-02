@@ -3,9 +3,7 @@ appId: com.helium.wallet.app
 tags:
   - onboarding
 ---
-- launchApp:
-    clearState: true
-    clearKeychain: true
+- runFlow: ../subflows/clean-start.yaml
 - extendedWaitUntil:
     visible:
       id: CreateImport.Create

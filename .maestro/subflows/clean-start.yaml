@@ -1,0 +1,68 @@
+# Launches the app with no state and brings it to onboarding.
+# On iOS the account list lives in the iCloud key-value store, which
+# clearState and clearKeychain leave in place. The app then opens home with
+# the old wallets and no keys. Removes each wallet in Settings, as a user
+# would, until onboarding shows. Removing the last wallet also clears the
+# iCloud keys.
+appId: com.helium.wallet.app
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- extendedWaitUntil:
+    visible:
+      id: CreateImport\.Create|AccountsTopNav\.Settings
+    timeout: 60000
+- repeat:
+    times: 10
+    while:
+      notVisible:
+        id: CreateImport.Create
+    commands:
+      # The home screen of a wallet with no key asks to restore it.
+      - runFlow:
+          when:
+            visible: Private Key Not Found
+          commands:
+            - tapOn: Cancel
+            - extendedWaitUntil:
+                notVisible: Private Key Not Found
+                timeout: 10000
+      # The Migrate to World card shows once per wallet, 1.5 s after home.
+      # On iOS the sheet hides its buttons from Maestro, so a tap on the
+      # backdrop above the sheet closes it. The backdrop fills the screen,
+      # and its center lies under the sheet.
+      - extendedWaitUntil:
+          visible: Bottom sheet backdrop
+          timeout: 10000
+          optional: true
+      - runFlow:
+          when:
+            visible: Bottom sheet backdrop
+          commands:
+            - tapOn:
+                point: 50%,20%
+            - extendedWaitUntil:
+                notVisible: Bottom sheet backdrop
+                timeout: 10000
+      - tapOn:
+          id: AccountsTopNav.Settings
+      - extendedWaitUntil:
+          visible:
+            id: Settings.Close
+          timeout: 10000
+      - scrollUntilVisible:
+          element: Remove Wallet
+      - tapOn: Remove Wallet
+      - extendedWaitUntil:
+          visible: Remove .*\?
+          timeout: 10000
+      # The row behind the alert has the same text. The alert button sits
+      # right of the alert's Cancel.
+      - tapOn:
+          text: Remove Wallet
+          rightOf: Cancel
+      - extendedWaitUntil:
+          visible:
+            id: CreateImport\.Create|AccountsTopNav\.Settings
+          timeout: 30000
