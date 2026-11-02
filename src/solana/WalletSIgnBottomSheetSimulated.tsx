@@ -22,7 +22,7 @@ import {
   Info,
   X,
 } from 'lucide-react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
@@ -43,7 +43,12 @@ const IndentArrowIcon = withUniwind(CornerDownRight)
 const InfoIcon = withUniwind(Info)
 const CancelIcon = withUniwind(X)
 
+// How long Approve waits for a simulation that does not return or fail
+export const SIMULATION_TIMEOUT_MS = 30_000
+
 type IWalletSignBottomSheetSimulatedProps = WalletSignOpts & {
+  // The sheet's open animation has ended
+  opened: boolean
   onCancel: () => void
   onAccept: () => void
 }
@@ -56,6 +61,7 @@ export const WalletSignBottomSheetSimulated = ({
   serializedTxs,
   suppressWarnings,
   message,
+  opened,
   onAccept,
   onCancel,
 }: IWalletSignBottomSheetSimulatedProps) => {
@@ -69,6 +75,9 @@ export const WalletSignBottomSheetSimulated = ({
   const [writableInfoVisible, setWritableInfoVisible] = useState(false)
   const [feesExpanded, setFeesExpanded] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  // The transactions whose simulation timed out, so a new request waits again
+  const [timedOutTxs, setTimedOutTxs] =
+    useState<WalletSignOpts['serializedTxs']>()
 
   const { data: accountBlacklist } = useQuery({
     queryKey: ['wellKnownCanopyBlacklist'],
@@ -79,6 +88,7 @@ export const WalletSignBottomSheetSimulated = ({
     data: simulationResults,
     error,
     isLoading: loading,
+    isPending,
   } = useQuery({
     queryKey: [
       'walletSignSimulation',
@@ -173,6 +183,21 @@ export const WalletSignBottomSheetSimulated = ({
   const insufficientFunds =
     new BN(estimatedTotalLamports).gt(new BN(solBalance?.toString() || '0')) ||
     simulationResults?.some((r) => r.insufficientFunds)
+
+  // isPending, not isLoading: a query still waiting to be enabled is pending
+  // but not loading. A request without transactions has nothing to simulate
+  const simulationPending = !!serializedTxs && isPending
+  const simulationTimedOut = simulationPending && timedOutTxs === serializedTxs
+  const approveDisabled = !opened || (simulationPending && !simulationTimedOut)
+
+  useEffect(() => {
+    if (!simulationPending) return undefined
+    const timer = setTimeout(
+      () => setTimedOutTxs(serializedTxs),
+      SIMULATION_TIMEOUT_MS,
+    )
+    return () => clearTimeout(timer)
+  }, [simulationPending, serializedTxs])
 
   const Chevron = feesExpanded ? ChevronUpIcon : ChevronDownIcon
   const showWarnings =
@@ -322,6 +347,18 @@ export const WalletSignBottomSheetSimulated = ({
 
               <View className="flex-1 pt-4">
                 {loading && <Spinner />}
+                {simulationTimedOut ? (
+                  <View className="mb-4">
+                    <View className="rounded-b-xl bg-secondary p-4">
+                      <Text
+                        size="base"
+                        className="font-medium text-destructive"
+                      >
+                        {t('browserScreen.unableToSimulate')}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
                 {error ? (
                   <View className="mb-4">
                     <View className="rounded-b-xl bg-secondary p-4">
@@ -446,6 +483,7 @@ export const WalletSignBottomSheetSimulated = ({
                   ? t('browserScreen.connect')
                   : t('browserScreen.swipeToApprove')
               }
+              disabled={approveDisabled}
               onSubmit={onAccept}
             />
           </View>
@@ -480,6 +518,7 @@ export const WalletSignBottomSheetSimulated = ({
             variant="cta"
             size="lg"
             className="w-[48%] rounded-full"
+            disabled={approveDisabled}
             onPress={onAccept}
           >
             {type === WalletStandardMessageTypes.connect

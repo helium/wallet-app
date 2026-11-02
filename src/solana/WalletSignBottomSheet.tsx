@@ -48,6 +48,9 @@ const WalletSignBottomSheet = ({
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
   const sheetMargins = useSheetMargins()
   const [simulated, setSimulated] = useState(false)
+  // The open animation has ended: gorhom calls onChange when it settles,
+  // onAnimate when it starts
+  const [opened, setOpened] = useState(false)
   const [walletSignOpts, setWalletSignOpts] = useState<WalletSignOpts>({
     type: WalletStandardMessageTypes.connect,
     url: undefined,
@@ -94,6 +97,7 @@ const WalletSignBottomSheet = ({
   const handleModalDismiss = () => {
     presentedRef.current = false
     shownRef.current = false
+    setOpened(false)
     const supersedingOpts = supersedingOptsRef.current
     if (supersedingOpts) {
       supersedingOptsRef.current = null
@@ -129,6 +133,7 @@ const WalletSignBottomSheet = ({
           onAnimate={(_fromIndex: number, toIndex: number) => {
             if (toIndex >= 0) shownRef.current = true
           }}
+          onChange={(index: number) => setOpened(index >= 0)}
           enableDismissOnClose
           handleIndicatorStyle={handleIndicatorStyle}
           style={sheetMargins}
@@ -145,6 +150,7 @@ const WalletSignBottomSheet = ({
             ) : (
               <WalletSignBottomSheetSimulated
                 {...walletSignOpts}
+                opened={opened}
                 onAccept={onAcceptHandler}
                 onCancel={onCancelHandler}
               />

@@ -15,13 +15,15 @@ import {
 // <PortalProvider rootHostName={hostName}>, and a presented modal mounts its
 // content with <Portal hostName={hostName}> of the nearest provider.
 // present() mounts on the next frame (a 0 ms timer stands in for
-// requestAnimationFrame), then the open animation starts and calls onAnimate.
+// requestAnimationFrame), then the open animation starts and calls onAnimate;
+// when it ends at index 0, it calls onChange.
 // A present() during a close cancels the close and keeps the sheet mounted, as
 // gorhom's snapToIndex re-opens a closing sheet. close() does nothing before
 // the sheet mounts, as gorhom drops a close before layout. A closed modal
 // keeps its content mounted until the close animation ends; then it unmounts
 // the content and calls onDismiss (enableDismissOnClose).
 const CLOSE_ANIMATION_MS = 250
+const OPEN_ANIMATION_MS = 250
 // The mock mounts on a 0 ms timer; the fake clock fires one that a timer
 // scheduled only once it moves, so tests advance it this far to mount
 const MOUNT_MS = 1
@@ -48,10 +50,12 @@ jest.mock('@gorhom/bottom-sheet', () => {
         children,
         onDismiss,
         onAnimate,
+        onChange,
       }: {
         children: React.ReactNode
         onDismiss?: () => void
         onAnimate?: (fromIndex: number, toIndex: number) => void
+        onChange?: (index: number) => void
       },
       ref: unknown,
     ) => {
@@ -79,6 +83,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
           mounted.current = true
           setMount(true)
           onAnimate?.(-1, 0)
+          setTimeout(() => onChange?.(0), OPEN_ANIMATION_MS)
         }, 0)
       }
       ReactActual.useImperativeHandle(ref, () => ({
@@ -136,8 +141,13 @@ jest.mock(
 jest.mock('@ui/ContentColumn', () => ({ useSheetMargins: () => undefined }), {
   virtual: true,
 })
+// The props of the last render of the simulated sheet
+let mockSimulatedProps: { opened: boolean } | undefined
 jest.mock('../WalletSIgnBottomSheetSimulated', () => ({
-  WalletSignBottomSheetSimulated: () => null,
+  WalletSignBottomSheetSimulated: (props: { opened: boolean }) => {
+    mockSimulatedProps = props
+    return null
+  },
 }))
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
@@ -234,6 +244,38 @@ describe('WalletSignBottomSheet', () => {
     })
 
     await expect(result).resolves.toBe(decision)
+  })
+
+  it('tells the simulated sheet when its open animation ends, on every fresh sheet', () => {
+    const sheetRef = React.createRef<WalletSignBottomSheetRef>()
+    act(() => {
+      TestRenderer.create(<AppTree sheetRef={sheetRef} />)
+    })
+    const showSimulated = () =>
+      act(() => {
+        void sheetRef.current?.show({
+          type: WalletStandardMessageTypes.signTransaction,
+          serializedTxs: [Buffer.from('tx')],
+        })
+      })
+    const advance = (ms: number) =>
+      act(() => {
+        jest.advanceTimersByTime(ms)
+      })
+
+    showSimulated()
+    advance(MOUNT_MS)
+    expect(mockSimulatedProps?.opened).toBe(false)
+    advance(OPEN_ANIMATION_MS)
+    expect(mockSimulatedProps?.opened).toBe(true)
+
+    // A superseding request: the old sheet closes, then a fresh one opens
+    showSimulated()
+    advance(CLOSE_ANIMATION_MS)
+    advance(MOUNT_MS)
+    expect(mockSimulatedProps?.opened).toBe(false)
+    advance(OPEN_ANIMATION_MS)
+    expect(mockSimulatedProps?.opened).toBe(true)
   })
 
   describe('when a new request supersedes the open one', () => {
