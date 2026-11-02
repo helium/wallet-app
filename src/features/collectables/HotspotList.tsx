@@ -267,7 +267,7 @@ const HotspotList = () => {
         <View className="mb-6 mt-4 grow flex-row items-center gap-2">
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="flex-1 rounded-full"
             onPress={handleNavigateToClaimRewards}
             disabled={claimDisabled}

@@ -405,7 +405,7 @@ export const PositionsScreen = () => {
               {positions?.length === 0 ? (
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="dashboard"
                   className="w-full"
                   onPress={() => setIsLockModalOpen(true)}
                 >
@@ -415,7 +415,7 @@ export const PositionsScreen = () => {
                 <>
                   <Button
                     variant="outline"
-                    size="lg"
+                    size="dashboard"
                     className="w-full gap-2"
                     onPress={() => setIsManageSheetOpen(true)}
                     testID="Positions.Manage"

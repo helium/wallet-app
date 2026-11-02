@@ -290,7 +290,7 @@ const TransferCollectableScreen = () => {
                 <View className="mx-8 mt-4 flex-row">
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     disabled={!solAddressIsValid(recipient) || transferring}
                     onPress={() => void handleTransfer().catch(console.error)}

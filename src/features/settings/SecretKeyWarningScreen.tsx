@@ -82,7 +82,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
               </Text>
               <Button
                 variant="outline"
-                size="lg"
+                size="dashboard"
                 className="mt-6 w-full"
                 onPress={() => navigation.goBack()}
               >
@@ -90,7 +90,7 @@ const SecretKeyWarningScreen = ({ children }: { children: ReactNode }) => {
               </Button>
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mt-4 w-full"
                 disabled={secondsPassed < 5}
                 onPress={() => animValue.set(0)}

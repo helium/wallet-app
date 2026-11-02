@@ -65,7 +65,7 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
       <Button
         testID="AccountCreateStart.Create"
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mb-6 w-full"
         disabled={reachedAccountLimit}
         onPress={onCreate}

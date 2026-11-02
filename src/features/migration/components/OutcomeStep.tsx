@@ -61,7 +61,7 @@ const OutcomeStep: FC<{
       ) : null}
       <Button
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mb-4 mt-6 w-full"
         onPress={onPrimary}
       >
@@ -70,7 +70,7 @@ const OutcomeStep: FC<{
       {secondaryAction ? (
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="mb-4 w-full"
           onPress={secondaryAction.onPress}
         >
@@ -80,7 +80,7 @@ const OutcomeStep: FC<{
       {onDismiss ? (
         <Button
           variant="ghost"
-          size="lg"
+          size="dashboard"
           className="w-full"
           onPress={onDismiss}
         >

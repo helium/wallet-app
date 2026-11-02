@@ -337,7 +337,7 @@ const LedgerModal = ({ children, ref }: Props) => {
             </Text>
             <Button
               variant="secondary"
-              size="lg"
+              size="dashboard"
               className="mt-2 w-full"
               onPress={handleRetry}
             >
@@ -353,7 +353,7 @@ const LedgerModal = ({ children, ref }: Props) => {
             </Text>
             <Button
               variant="secondary"
-              size="lg"
+              size="dashboard"
               className="mt-2 w-full"
               onPress={handleRetry}
             >
@@ -375,7 +375,7 @@ const LedgerModal = ({ children, ref }: Props) => {
             </Text>
             <Button
               variant="secondary"
-              size="lg"
+              size="dashboard"
               className="mt-2 w-full"
               onPress={handleRetry}
             >

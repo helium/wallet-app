@@ -265,7 +265,7 @@ const ContactDetails = ({ action, contact }: Props) => {
             {isAddingContact && (
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mx-8 mb-6 mt-15"
                 disabled={!addressIsValid || !nickname}
                 onPress={handleCreateNewContact}
@@ -277,7 +277,7 @@ const ContactDetails = ({ action, contact }: Props) => {
               <View className="mx-8 mt-15 flex-row justify-center gap-4">
                 <Button
                   variant="destructive"
-                  size="lg"
+                  size="dashboard"
                   className="flex-1"
                   onPress={() =>
                     void handleDeleteContact().catch(console.error)
@@ -287,7 +287,7 @@ const ContactDetails = ({ action, contact }: Props) => {
                 </Button>
                 <Button
                   variant="cta"
-                  size="lg"
+                  size="dashboard"
                   className="flex-1"
                   disabled={
                     !addressIsValid ||

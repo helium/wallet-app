@@ -176,7 +176,7 @@ export const RevokeProxyScreen = () => {
           </View>
         )}
         <Button
-          size="lg"
+          size="dashboard"
           className="w-full rounded-full"
           onPress={() => void handleSubmit().catch(console.error)}
           disabled={

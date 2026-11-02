@@ -100,7 +100,7 @@ const LedgerConnectSteps = ({
 
       <Button
         variant="secondary"
-        size="lg"
+        size="dashboard"
         className="mb-6 mt-2 w-full"
         onPress={handleRetry}
         accessibilityRole="button"

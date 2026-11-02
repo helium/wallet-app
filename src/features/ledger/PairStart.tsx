@@ -51,7 +51,7 @@ const PairStart = () => {
       )}
       <Button
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mb-6 w-full"
         disabled={reachedAccountLimit}
         onPress={handleStart}

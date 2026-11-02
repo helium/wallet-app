@@ -112,7 +112,7 @@ const ShareAddressScreen = () => {
       <View className="mx-6 mb-4 flex-row gap-3">
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1 flex-row gap-2"
           onPress={copyAddress}
         >
@@ -121,7 +121,7 @@ const ShareAddressScreen = () => {
         </Button>
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1 flex-row gap-2"
           onPress={handleShare}
         >

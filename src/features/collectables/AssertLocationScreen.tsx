@@ -606,7 +606,7 @@ const AssertLocationScreen = () => {
             </View>
             <Button
               variant="cta"
-              size="lg"
+              size="dashboard"
               className="w-full"
               disabled={disabled}
               onPress={() =>
@@ -690,7 +690,7 @@ const AssertLocationScreen = () => {
                   <View className="p-3">
                     <Button
                       variant="outline"
-                      size="lg"
+                      size="dashboard"
                       className="grow"
                       disabled={asserting}
                       onPress={() =>

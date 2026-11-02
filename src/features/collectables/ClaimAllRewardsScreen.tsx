@@ -159,7 +159,7 @@ const ClaimAllRewardsScreen = () => {
           <View className="grow" />
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mx-6 mb-6"
             onPress={() => void onClaimRewards().catch(console.error)}
             disabled={redeeming}

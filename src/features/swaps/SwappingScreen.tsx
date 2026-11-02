@@ -145,7 +145,7 @@ const SwappingScreen = () => {
         <View className="w-full justify-end pt-6">
           <Button
             variant="secondary"
-            size="lg"
+            size="dashboard"
             className="mx-4 mb-8"
             onPress={onReturn}
           >

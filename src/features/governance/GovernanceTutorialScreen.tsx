@@ -140,7 +140,7 @@ export const GovernanceTutorialScreen = () => {
 
           <View className="mx-7 my-4 flex-row">
             <Button
-              size="lg"
+              size="dashboard"
               className={`flex-1 rounded-full ${
                 viewedSlides ? '' : 'bg-transparent'
               }`}

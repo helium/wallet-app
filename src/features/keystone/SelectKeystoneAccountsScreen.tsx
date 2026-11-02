@@ -214,7 +214,7 @@ const SelectKeystoneAccountsScreen = () => {
 
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mx-6 mt-6 mb-6"
           disabled={selected.size === 0}
           onPress={onNext}

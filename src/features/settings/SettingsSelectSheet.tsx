@@ -82,7 +82,7 @@ const SettingsSelectSheet = ({
         })}
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="my-4 w-full"
           onPress={close}
         >
