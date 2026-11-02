@@ -13,12 +13,16 @@ const UNSENT_REJECTIONS: readonly SubmitRejectionCode[] = [
   'BLOCKHASH_EXPIRED',
 ]
 
+// A submit rejection that proves nothing was sent.
+export const isUnsentRejection = (
+  error: unknown,
+): error is ORPCError<SubmitRejectionCode, unknown> =>
+  error instanceof ORPCError &&
+  error.defined &&
+  UNSENT_REJECTIONS.includes(error.code)
+
 // The error to throw when the submit of signed transactions fails: a rejection
 // that proves nothing was sent keeps its reason, so Retry may sign again. Any
 // other failure may have landed the transactions.
 export const submitFailure = (error: unknown): Error =>
-  error instanceof ORPCError &&
-  error.defined &&
-  UNSENT_REJECTIONS.includes(error.code)
-    ? error
-    : new UnconfirmedSubmitError(error)
+  isUnsentRejection(error) ? error : new UnconfirmedSubmitError(error)

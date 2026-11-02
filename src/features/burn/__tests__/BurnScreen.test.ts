@@ -6,6 +6,7 @@
  * from a store the test sets.
  */
 import { IOT_MINT } from '@helium/spl-utils'
+import { ORPCError } from '@orpc/client'
 import { PublicKey } from '@solana/web3.js'
 import {
   notifyManager,
@@ -58,6 +59,25 @@ const mockAccountStorage = {
   defaultAccountAddress: undefined,
 }
 
+// @orpc/client ships ESM only. ORPCError mirrors the real one's code and
+// defined fields.
+jest.mock('@orpc/client', () => {
+  class MockORPCError extends Error {
+    code: string
+
+    defined: boolean
+
+    constructor(
+      code: string,
+      options: { defined?: boolean; message?: string } = {},
+    ) {
+      super(options.message ?? code)
+      this.code = code
+      this.defined = options.defined ?? false
+    }
+  }
+  return { ORPCError: MockORPCError }
+})
 jest.mock('../../../hooks/useSubmitTxn', () => {
   const { useMutation } = jest.requireActual('@tanstack/react-query')
   return () => {
@@ -408,5 +428,29 @@ describe('BurnScreen Send', () => {
 
     await act(async () => settle('first'))
     expect(disabled()).toBe(false)
+  })
+
+  it('shows a rejection that proves nothing was sent in the form and enables the swipe again', async () => {
+    render()
+    mockDelegate.mockRejectedValueOnce(
+      new ORPCError('SIMULATION_FAILED', {
+        defined: true,
+        message: 'Simulation failed: insufficient funds',
+      }),
+    )
+
+    await submit()
+
+    expect(
+      renderer.root.findAll(
+        (node) =>
+          (node.type as string) === 'UiText' &&
+          node.props.children === 'Simulation failed: insufficient funds',
+      ).length,
+    ).toBe(1)
+    expect(
+      renderer.root.find((node) => (node.type as string) === 'SubmitButton')
+        .props.disabled,
+    ).toBe(false)
   })
 })

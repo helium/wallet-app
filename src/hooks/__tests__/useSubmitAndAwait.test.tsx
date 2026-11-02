@@ -2,6 +2,7 @@
  * Runs the real useSubmitAndAwait mutation. The wallet signs a real
  * transaction with a test key; the blockchain API client is replaced.
  */
+import { ORPCError } from '@orpc/client'
 import {
   Keypair,
   PublicKey,
@@ -31,10 +32,25 @@ const mockClient = {
   transactions: { submit: jest.fn(), get: jest.fn() },
 }
 
-// @orpc/client ships ESM only. ORPCError mirrors the real one.
-jest.mock('@orpc/client', () => ({
-  ORPCError: class MockORPCError extends Error {},
-}))
+// @orpc/client ships ESM only. ORPCError mirrors the real one's code and
+// defined fields.
+jest.mock('@orpc/client', () => {
+  class MockORPCError extends Error {
+    code: string
+
+    defined: boolean
+
+    constructor(
+      code: string,
+      options: { defined?: boolean; message?: string } = {},
+    ) {
+      super(options.message ?? code)
+      this.code = code
+      this.defined = options.defined ?? false
+    }
+  }
+  return { ORPCError: MockORPCError }
+})
 jest.mock('../../solana/SolanaProvider', () => ({
   useSolana: () => ({ anchorProvider: { wallet: mockWallet } }),
 }))
@@ -109,5 +125,58 @@ describe('useSubmitAndAwait', () => {
     })
     expect(mockClient.transactions.submit).toHaveBeenCalledTimes(1)
     expect(mockClient.transactions.get).not.toHaveBeenCalled()
+  })
+
+  it('keeps a rejection that proves nothing was sent', async () => {
+    const rejection = new ORPCError('SIMULATION_FAILED', {
+      defined: true,
+      message: 'Simulation failed: insufficient funds',
+    })
+    mockClient.transactions.submit.mockRejectedValue(rejection)
+
+    await act(async () => {
+      await expect(
+        hook.submitAndAwait({ transactionData: transactionData() }),
+      ).rejects.toBe(rejection)
+    })
+    expect(mockClient.transactions.get).not.toHaveBeenCalled()
+  })
+
+  it('reports a batch still pending past the max poll time as unconfirmed', async () => {
+    jest.useFakeTimers()
+    try {
+      mockClient.transactions.submit.mockResolvedValue({ batchId: 'batch' })
+      mockClient.transactions.get.mockResolvedValue({ status: 'pending' })
+
+      let error: unknown
+      await act(async () => {
+        const outcome = hook
+          .submitAndAwait({ transactionData: transactionData() })
+          .catch((e: unknown) => e)
+        // The poll asks every 2 s and gives up after 60 s.
+        await jest.advanceTimersByTimeAsync(60_000)
+        error = await outcome
+      })
+      expect(error).toBeInstanceOf(UnconfirmedSubmitError)
+      expect(mockClient.transactions.get).toHaveBeenCalledTimes(30)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
+  it('reports a batch status request that failed as unconfirmed', async () => {
+    const lost = new TypeError('Network request failed')
+    mockClient.transactions.submit.mockResolvedValue({ batchId: 'batch' })
+    mockClient.transactions.get.mockRejectedValue(lost)
+
+    let error: unknown
+    await act(async () => {
+      error = await hook
+        .submitAndAwait({ transactionData: transactionData() })
+        .catch((e: unknown) => e)
+    })
+    expect(error).toBeInstanceOf(UnconfirmedSubmitError)
+    expect((error as UnconfirmedSubmitError).cause).toBe(lost)
+    expect(mockClient.transactions.get).toHaveBeenCalledTimes(1)
   })
 })

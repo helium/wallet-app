@@ -431,6 +431,13 @@ describe('useSubmitTxn', () => {
         'an undefined server error',
         new ORPCError('INTERNAL_SERVER_ERROR', { defined: false }),
       ],
+      [
+        'a non-oRPC error shaped like a defined SIMULATION_FAILED',
+        Object.assign(new Error('Transaction simulation failed.'), {
+          code: 'SIMULATION_FAILED',
+          defined: true,
+        }),
+      ],
     ])('with %s reports it as unconfirmed', async (_name, rejection) => {
       mockClient.transactions.submit.mockRejectedValue(rejection)
 

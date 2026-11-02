@@ -4,6 +4,7 @@ import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 import { useSolana } from '../solana/SolanaProvider'
 import { submitSigned } from '../utils/submitSigned'
 import { signTransactionData } from '../utils/transactionUtils'
+import { UnconfirmedSubmitError } from '../utils/unconfirmedSubmitError'
 import type { BatchStatus } from './useTransactionBatchStatus'
 
 interface SubmitAndAwaitParams {
@@ -28,10 +29,12 @@ export async function pollForCompletion(
   const startTime = Date.now()
 
   while (Date.now() - startTime < maxPollTime) {
-    const result = await client.transactions.get({
-      id: batchId,
-      commitment: 'confirmed',
-    })
+    // The submit succeeded, so the batch may still land.
+    const result = await client.transactions
+      .get({ id: batchId, commitment: 'confirmed' })
+      .catch((e: unknown) => {
+        throw new UnconfirmedSubmitError(e)
+      })
 
     const status = result.status as BatchStatus
 
@@ -51,7 +54,7 @@ export async function pollForCompletion(
     await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
   }
 
-  throw new Error('Transaction polling timeout')
+  throw new UnconfirmedSubmitError(new Error('Transaction polling timeout'))
 }
 
 /**

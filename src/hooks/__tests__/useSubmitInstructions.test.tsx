@@ -3,6 +3,7 @@
  * transactions with a test key; the transaction builder, the sign sheet, the
  * connection and the blockchain API client are replaced.
  */
+import { ORPCError } from '@orpc/client'
 import {
   Keypair,
   PublicKey,
@@ -52,10 +53,25 @@ jest.mock('@helium/spl-utils', () => ({
     draft,
   toVersionedTx: () => mockUnsignedTransaction(),
 }))
-// @orpc/client ships ESM only. ORPCError mirrors the real one.
-jest.mock('@orpc/client', () => ({
-  ORPCError: class MockORPCError extends Error {},
-}))
+// @orpc/client ships ESM only. ORPCError mirrors the real one's code and
+// defined fields.
+jest.mock('@orpc/client', () => {
+  class MockORPCError extends Error {
+    code: string
+
+    defined: boolean
+
+    constructor(
+      code: string,
+      options: { defined?: boolean; message?: string } = {},
+    ) {
+      super(options.message ?? code)
+      this.code = code
+      this.defined = options.defined ?? false
+    }
+  }
+  return { ORPCError: MockORPCError }
+})
 jest.mock('../../solana/MessagePreview', () => ({}))
 jest.mock('../../solana/SolanaProvider', () => ({
   useSolana: () => ({
@@ -155,5 +171,35 @@ describe('useSubmitInstructions', () => {
       mockClient.transactions.submit.mock.calls[0][0].transactions,
     ).toHaveLength(5)
     expect(mockClient.transactions.get).not.toHaveBeenCalled()
+  })
+
+  it('keeps a rejection that proves nothing was sent', async () => {
+    mockDraftCount = 1
+    const rejection = new ORPCError('SIMULATION_FAILED', {
+      defined: true,
+      message: 'Simulation failed: insufficient funds',
+    })
+    mockClient.transactions.submit.mockRejectedValue(rejection)
+
+    await act(async () => {
+      await expect(hook.execute(params())).rejects.toBe(rejection)
+    })
+    expect(mockClient.transactions.get).not.toHaveBeenCalled()
+  })
+
+  it('reports a batch status request that failed as unconfirmed', async () => {
+    mockDraftCount = 1
+    const lost = new TypeError('Network request failed')
+    mockClient.transactions.submit.mockResolvedValue({ batchId: 'batch' })
+    mockClient.transactions.get.mockRejectedValue(lost)
+
+    let error: unknown
+    await act(async () => {
+      error = await hook.execute(params()).catch((e: unknown) => e)
+    })
+    expect(error).toBeInstanceOf(UnconfirmedSubmitError)
+    expect((error as UnconfirmedSubmitError).cause).toBe(lost)
+    expect(mockClient.transactions.submit).toHaveBeenCalledTimes(1)
+    expect(mockClient.transactions.get).toHaveBeenCalledTimes(1)
   })
 })

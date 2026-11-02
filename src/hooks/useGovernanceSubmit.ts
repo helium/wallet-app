@@ -8,10 +8,7 @@ import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 import { submitSigned } from '../utils/submitSigned'
 import { signTransactionData } from '../utils/transactionUtils'
 import { MessagePreview } from '../solana/MessagePreview'
-import {
-  TERMINAL_STATUSES,
-  type BatchStatus,
-} from './useTransactionBatchStatus'
+import { pollForCompletion } from './useSubmitAndAwait'
 
 type SubmittableResponse = {
   transactionData: TransactionData
@@ -23,35 +20,6 @@ export interface GovernanceSubmitOptions {
   header: string
   message: string
   tag?: string
-}
-
-async function pollForCompletion(
-  client: ReturnType<typeof useBlockchainApi>,
-  batchId: string,
-  pollIntervalMs = 2000,
-  maxPollTime = 60000,
-): Promise<{ status: BatchStatus; signatures: string[] }> {
-  const startTime = Date.now()
-
-  while (Date.now() - startTime < maxPollTime) {
-    const result = await client.transactions.get({
-      id: batchId,
-      commitment: 'confirmed',
-    })
-
-    const status = result.status as BatchStatus
-
-    if (TERMINAL_STATUSES.includes(status)) {
-      return {
-        status,
-        signatures: result.transactions?.map((t) => t.signature) ?? [],
-      }
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
-  }
-
-  throw new Error('Transaction polling timeout')
 }
 
 export function useGovernanceSubmit(): {

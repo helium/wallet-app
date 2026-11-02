@@ -60,6 +60,7 @@ import {
 } from '../../utils/accountUtils'
 import { SendDetails } from '../../utils/linking'
 import * as logger from '../../utils/logger'
+import { isUnsentRejection } from '../../utils/submitFailure'
 import { UnconfirmedSubmitError } from '../../utils/unconfirmedSubmitError'
 import {
   HomeNavigationProp,
@@ -386,6 +387,7 @@ const PaymentScreen = () => {
   // answer may have landed them all.
   const { data: sent, variables: sentWith, error: sendError } = paymentMutation
   const unconfirmed = sendError instanceof UnconfirmedSubmitError
+  const unsentRejection = isUnsentRejection(sendError)
   const failure = useMemo(() => {
     if (unconfirmed) return checkActivity<PaymentInput>()
     return sent && sentWith
@@ -907,7 +909,7 @@ const PaymentScreen = () => {
       </HNTKeyboard>
       <PaymentSubmit
         mint={mint}
-        submitLoading={isSubmitting || unconfirmed}
+        submitLoading={isSubmitting || unconfirmed || unsentRejection}
         submitSucceeded={status === 'confirmed'}
         submitError={paymentMutation.error || failure?.error}
         totalBalance={submittedTotal}
