@@ -1,13 +1,12 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import HotspotsEditSheet from '../components/HotspotsEditSheet'
 import TokensEditSheet from '../components/TokensEditSheet'
 
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   return {
-    BottomSheetScrollView: ({ children }: { children: React.ReactNode }) =>
-      children,
     BottomSheetFlatList: ({
       data,
       renderItem,
@@ -120,5 +119,20 @@ describe('TokensEditSheet', () => {
     expect(row.props.accessibilityState).toEqual({ checked: true })
     const [checkbox] = root.findAllByType('Checkbox' as never)
     expect(checkbox.props.accessible).toBe(false)
+  })
+
+  it('renders the token rows in a virtualized list', () => {
+    const tokens = ['MintA', 'MintB', 'MintC'].map((mint) => ({
+      mint,
+      label: mint,
+      decimals: 6,
+      maxUi: '1',
+    }))
+    const root = render(
+      <TokensEditSheet tokens={tokens} amounts={{}} onCommit={() => {}} />,
+    )
+
+    expect(root.findByType(BottomSheetFlatList).props.data).toEqual(tokens)
+    expect(root.findAllByType('PressableScale' as never)).toHaveLength(3)
   })
 })
