@@ -822,7 +822,7 @@ const PaymentScreen = () => {
                   keyboardShouldPersistTaps="always"
                 >
                   <AccountButton
-                    backgroundClassName="bg-secondary"
+                    backgroundClassName="bg-card shadow-stat-box"
                     accountIconSize={41}
                     title={formatAccountAlias(currentAccount)}
                     subtitle={t('payment.senderAccount')}
@@ -836,7 +836,7 @@ const PaymentScreen = () => {
                   />
 
                   <TokenButton
-                    backgroundClassName="bg-secondary"
+                    backgroundClassName="bg-card shadow-stat-box"
                     title={t('payment.title', { ticker: symbol })}
                     subtitle={tokenButtonBalance}
                     address={currentAccount?.address}
@@ -879,7 +879,7 @@ const PaymentScreen = () => {
                     <PressableScale
                       feedback="opacity"
                       onPress={handleAddPayee}
-                      className="mx-6 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-[20px] bg-secondary"
+                      className="mx-6 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-[20px] border border-border bg-card"
                     >
                       <Text size="base" className="text-muted-foreground">
                         {t('payment.addRecipient')}
