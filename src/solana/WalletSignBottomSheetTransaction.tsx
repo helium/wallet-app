@@ -2,6 +2,7 @@ import { Pill } from '@ui/Pill'
 import { SusResult, Warning } from '@helium/sus'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
 import { getMetadata } from '@hooks/useMetaplexMetadata'
+import { Image } from '@ui/Image'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import {
@@ -14,7 +15,7 @@ import {
 import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Image, Linking, View } from 'react-native'
+import { Linking, View } from 'react-native'
 import { withUniwind } from 'uniwind'
 import { CollapsibleWritableAccountPreview } from './CollapsibleWritableAccountPreview'
 import { WarningBox } from './WarningBox'
@@ -30,15 +31,7 @@ const AssetImage = ({ uri }: { uri: string }) => {
     queryKey: ['metadataJson', uri],
     queryFn: async () => (await getMetadata(uri)) ?? null,
   })
-  return (
-    <Image
-      className="size-6"
-      source={{
-        uri: metadata?.image,
-        cache: 'force-cache',
-      }}
-    />
-  )
+  return <Image className="size-6" source={{ uri: metadata?.image }} />
 }
 
 function splitArray<T>(arr: T[], predicate: (item: T) => boolean): [T[], T[]] {

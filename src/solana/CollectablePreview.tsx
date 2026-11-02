@@ -1,9 +1,10 @@
 import { Pill } from '@ui/Pill'
 import { Card } from '@ui/Card'
+import { Image } from '@ui/Image'
 import { Text } from '@ui/Text'
 import { ArrowUpRight } from 'lucide-react-native'
 import React from 'react'
-import { Image, View } from 'react-native'
+import { View } from 'react-native'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { Collectable, CompressedNFT, isCompressedNFT } from '../types/solana'
 
@@ -32,10 +33,7 @@ export const CollectablePreview = ({
                     ? 'size-10 rounded-md bg-primary'
                     : 'size-10 rounded-md bg-secondary'
                 }
-                source={{
-                  uri: metadata?.image,
-                  cache: 'force-cache',
-                }}
+                source={{ uri: metadata?.image }}
               />
             </View>
           )}
