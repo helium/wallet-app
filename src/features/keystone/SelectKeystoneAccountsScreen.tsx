@@ -4,7 +4,7 @@ import { Checkbox } from '@ui/Checkbox'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { FlatList, RefreshControl, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { humanReadable } from '@helium/spl-utils'
 import BN from 'bn.js'
@@ -33,7 +33,7 @@ type SelectKeystoneAccountsScreenRouteProp = RouteProp<
   'SelectKeystoneAccounts'
 >
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const SelectKeystoneAccountsScreen = () => {
   const route = useRoute<SelectKeystoneAccountsScreenRouteProp>()

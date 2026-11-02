@@ -4,6 +4,7 @@ import { DUR } from '@theme/motion'
 import { upperCase } from 'lodash'
 import { Copy } from 'lucide-react-native'
 import React from 'react'
+import { TabSafeAreaView } from './TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { FlatList, View } from 'react-native'
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated'
@@ -87,6 +88,7 @@ export const RevealWords = ({
       >
         {t('settings.revealWords.next')}
       </Button>
+      <TabSafeAreaView edges={['bottom']} />
     </View>
   )
 

@@ -3,6 +3,7 @@ import { Checkbox } from '@ui/Checkbox'
 import { Input } from '@ui/Input'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { TokenIcon } from '@ui/TokenIcon'
 import React, { FC, useState } from 'react'
@@ -135,6 +136,7 @@ const TokensEditSheet = ({ ref, tokens, amounts, onCommit }: Props) => {
             onMax={() => setMax(tk)}
           />
         ))}
+        <TabSafeAreaView edges={['bottom']} />
       </BottomSheetScrollView>
     </Sheet>
   )

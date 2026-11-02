@@ -10,6 +10,9 @@ import {
 // The node test runner cannot load gorhom (Reanimated) or react-native. The
 // sheet renders its content only while presented, and the list renders one
 // row per item.
+jest.mock('../TabSafeAreaView', () => ({
+  TabSafeAreaView: 'TabSafeAreaView',
+}))
 jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ bottom: 20 }),

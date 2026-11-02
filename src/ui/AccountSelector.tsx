@@ -16,6 +16,7 @@ import type { GestureResponderEvent } from 'react-native'
 import { AccountListItem } from './AccountListItem'
 import { useSheetMargins } from './ContentColumn'
 import { Sheet } from './Sheet'
+import { TabSafeAreaView } from './TabSafeAreaView'
 
 export type AccountSelectorRef = {
   show: (_type?: AccountNetTypeOpt | GestureResponderEvent) => void
@@ -83,6 +84,7 @@ export const AccountSelector = ({ ref, children }: AccountSelectorProps) => {
           )}
           keyExtractor={keyExtractor}
           contentContainerStyle={LIST_CONTENT_STYLE}
+          ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         />
       </Sheet>
       {children}

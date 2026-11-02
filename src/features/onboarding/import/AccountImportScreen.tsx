@@ -7,6 +7,7 @@ import { Text } from '@ui/Text'
 import { upperCase } from 'lodash'
 import { X } from 'lucide-react-native'
 import React, { useEffect, useRef, useState } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { FlatList, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
@@ -215,7 +216,6 @@ const AccountImportScreen = () => {
         </PressableScale>
       </View>
       <KeyboardAwareScrollView
-        contentInsetAdjustmentBehavior="automatic"
         extraKeyboardSpace={80}
         bottomOffset={155}
         keyboardShouldPersistTaps="always"
@@ -262,6 +262,7 @@ const AccountImportScreen = () => {
             })}
           </Text>
         </PressableScale>
+        <TabSafeAreaView edges={['bottom']} />
       </KeyboardAwareScrollView>
     </View>
   )

@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
 import React from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { withUniwind } from 'uniwind'
@@ -61,6 +62,7 @@ const PairSuccess = () => {
       >
         {t('ledger.success.next')}
       </Button>
+      <TabSafeAreaView edges={['bottom']} />
     </View>
   )
 }

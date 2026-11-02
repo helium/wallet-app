@@ -3,14 +3,14 @@ import { URDecoder } from '@ngraveio/bc-ur'
 import KeystoneSDK, { MultiAccounts, UR } from '@keystonehq/keystone-sdk'
 import { useNavigation } from '@react-navigation/native'
 import { Alert } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useTranslation } from 'react-i18next'
 import DynamicQrScanner from './components/DynamicQrScanner'
 import { KeystoneAccountType } from './SelectKeystoneAccountsScreen'
 import { KeystoneNavigationProp } from './keystoneNavigatorTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const ScanQrCodeScreen = () => {
   const { t } = useTranslation()

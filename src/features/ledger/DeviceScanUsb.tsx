@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import TransportHID from '@ledgerhq/react-native-hid'
 import { useTranslation } from 'react-i18next'
 import { FlatList, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useNavigation } from '@react-navigation/native'
 import { ChevronRight } from 'lucide-react-native'
 import { withUniwind } from 'uniwind'
@@ -12,7 +12,7 @@ import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const ChevronRightIcon = withUniwind(ChevronRight)
 const LedgerIcon = withUniwind(Ledger)
 const LedgerCircleIcon = withUniwind(LedgerCircle)

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
 import Ledger from '@assets/images/ledger.svg'
@@ -9,7 +9,7 @@ import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { LedgerNavigatorNavigationProp } from './ledgerNavigatorTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const LedgerIcon = withUniwind(Ledger)
 
 const DeviceChooseType = () => {

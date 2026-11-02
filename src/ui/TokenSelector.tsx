@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSheetMargins } from './ContentColumn'
 import { LIST_ITEM_HEIGHT, ListItem } from './ListItem'
 import { Sheet } from './Sheet'
+import { TabSafeAreaView } from './TabSafeAreaView'
 import { TokenIcon } from './TokenIcon'
 import { twMerge } from './twMerge'
 
@@ -97,6 +98,7 @@ export const TokenSelector = ({
               />
             )}
             keyExtractor={keyExtractor}
+            ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
           />
         </Sheet>
         {children}

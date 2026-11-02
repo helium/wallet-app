@@ -3,6 +3,7 @@ import { Keypad, type KeypadInput } from '@ui/Keypad'
 import { PinDisplay } from '@ui/PinDisplay'
 import { Text } from '@ui/Text'
 import React, { useEffect, useState } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { SettingsNavigationProp } from './settingsTypes'
@@ -60,6 +61,7 @@ const SettingsCreatePinScreen = () => {
         onPress={handlePress}
       />
       <View className="flex-1" />
+      <TabSafeAreaView edges={['bottom']} />
     </View>
   )
 }

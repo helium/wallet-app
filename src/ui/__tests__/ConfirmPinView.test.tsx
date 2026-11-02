@@ -4,6 +4,9 @@ import { ConfirmPinView } from '../ConfirmPinView'
 
 const mockTriggerImpact = jest.fn()
 
+jest.mock('../TabSafeAreaView', () => ({
+  TabSafeAreaView: 'TabSafeAreaView',
+}))
 jest.mock(
   '@hooks/useHaptic',
   () => () => ({ triggerImpact: mockTriggerImpact }),

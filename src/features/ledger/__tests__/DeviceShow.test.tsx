@@ -7,6 +7,11 @@ type MockSection = { index: number; data: MockItem[] }
 
 // SectionList renders every section header and item, so the test can reach
 // the Select All control and each account row.
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('react-native', () => {
   const ReactActual = jest.requireActual('react')
   const SectionList = ({

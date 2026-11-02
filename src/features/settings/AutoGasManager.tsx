@@ -9,9 +9,9 @@ import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { TokenIcon } from '@ui/TokenIcon'
 import React, { FC, useMemo, useState } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { Switch, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { twMerge } from '@ui/twMerge'
 import SettingsBackHeader from './SettingsBackHeader'
 
@@ -43,7 +43,6 @@ const TokenOption = ({
 const AutoGasManager: FC = () => {
   const { visibleTokens } = useVisibleTokens()
   const navigation = useNavigation()
-  const { bottom } = useSafeAreaInsets()
   const validInputMints = useMemo(
     () =>
       [HNT_MINT, MOBILE_MINT, IOT_MINT].filter((key) =>
@@ -63,7 +62,7 @@ const AutoGasManager: FC = () => {
   }
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingBottom: bottom }}>
+    <View className="flex-1 bg-background">
       <SettingsBackHeader onBack={navigation.goBack} />
       <Text size="lg" className="px-4 pt-2 text-center font-semibold">
         {t('settings.autoGasManagement.title')}
@@ -123,6 +122,7 @@ const AutoGasManager: FC = () => {
           {t('generic.save')}
         </Button>
       </View>
+      <TabSafeAreaView edges={['bottom']} />
     </View>
   )
 }

@@ -501,7 +501,12 @@ const AccountTokenScreen = () => {
               renderItem={renderItem}
               ListHeaderComponent={renderHeader}
               stickyHeaderIndices={STICKY_HEADER_INDICES}
-              ListFooterComponent={renderFooter}
+              ListFooterComponent={
+                <>
+                  {renderFooter()}
+                  <TabSafeAreaView edges={['bottom']} />
+                </>
+              }
               initialNumToRender={10}
               onEndReachedThreshold={0.01}
               onMomentumScrollBegin={handleOnMomentumScrollBegin}

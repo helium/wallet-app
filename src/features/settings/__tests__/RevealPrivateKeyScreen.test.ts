@@ -11,6 +11,11 @@ const mockPlatform = { OS: 'android' }
 const mockSetSecure = jest.fn((_secure: boolean) => Promise.resolve())
 
 // read at render time: the import of the screen runs before mockPlatform is set
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('react-native', () => ({
   View: 'View',
   Platform: {

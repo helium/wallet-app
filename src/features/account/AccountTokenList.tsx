@@ -24,6 +24,7 @@ import { deriveVisibleMints } from './logic/visibleTokens'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
 
 const ManageIcon = withUniwind(SlidersHorizontal)
+const Fade = withUniwind(TabSafeAreaView)
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
@@ -128,30 +129,41 @@ const AccountTokenList = ({ onLayout }: Props) => {
   }
 
   return (
-    <BottomSheetFlatList
-      onLayout={onLayout}
-      data={mints}
-      numColumns={2}
-      refreshControl={
-        <RefreshControl
-          enabled
-          refreshing={refetchingTokens}
-          onRefresh={() => refetchTokens()}
-          title=""
-          tintColorClassName="accent-foreground"
+    <>
+      <BottomSheetFlatList
+        onLayout={onLayout}
+        data={mints}
+        numColumns={2}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={refetchingTokens}
+            onRefresh={() => refetchTokens()}
+            title=""
+            tintColorClassName="accent-foreground"
+          />
+        }
+        refreshing={refetchingTokens}
+        onRefresh={() => refetchTokens()}
+        columnWrapperStyle={{
+          flexDirection: 'column',
+        }}
+        contentContainerStyle={contentContainerStyle}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={renderFooterComponent}
+        keyExtractor={keyExtractor}
+      />
+      {/* The rows after the first two fade out behind the floating tab bar,
+          which blurs them itself. */}
+      {mints.length > 2 && (
+        <Fade
+          edges={['bottom']}
+          pointerEvents="none"
+          className="absolute inset-x-0 bottom-0 bg-linear-to-t from-secondary to-transparent"
         />
-      }
-      refreshing={refetchingTokens}
-      onRefresh={() => refetchTokens()}
-      columnWrapperStyle={{
-        flexDirection: 'column',
-      }}
-      contentContainerStyle={contentContainerStyle}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      ListFooterComponent={renderFooterComponent}
-      keyExtractor={keyExtractor}
-    />
+      )}
+    </>
   )
 }
 
