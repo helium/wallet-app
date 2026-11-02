@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Commitment, Connection, ConnectionConfig } from '@solana/web3.js'
+import {
+  Commitment,
+  Connection,
+  ConnectionConfig,
+  FetchFn,
+} from '@solana/web3.js'
 import * as logger from '@utils/logger'
 import axios from 'axios'
 import type { CompressedNFT } from '../types/solana'
@@ -16,6 +21,30 @@ export type SearchAssetsOpts = {
     'all' | 'compressedNft' | 'regularNft' | 'nonFungible' | 'fungible'
 } & { [key: string]: unknown }
 
+// Android's network client has no timeout, so a stalled RPC request fails
+// after this long instead of blocking every account cache read
+export const RPC_REQUEST_TIMEOUT = 1000 * 60 // 60 seconds
+
+const withTimeout =
+  (fetchFn: FetchFn): FetchFn =>
+  (input, init) => {
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        controller.abort()
+        // web3.js drops a rejection that is not an Error, so the request would hang
+        reject(
+          new Error(`RPC request timed out after ${RPC_REQUEST_TIMEOUT} ms`),
+        )
+      }, RPC_REQUEST_TIMEOUT)
+    })
+    const request = fetchFn(input, { ...init, signal: controller.signal })
+    // The losing side of the race must not become an unhandled rejection
+    request.catch(() => {})
+    return Promise.race([request, timeout]).finally(() => clearTimeout(timer))
+  }
+
 export class WrappedConnection extends Connection {
   baseURL: string
 
@@ -23,7 +52,16 @@ export class WrappedConnection extends Connection {
     endpoint: string,
     commitmentOrConfig?: Commitment | ConnectionConfig,
   ) {
-    super(endpoint, commitmentOrConfig || 'confirmed')
+    const config =
+      typeof commitmentOrConfig === 'object'
+        ? commitmentOrConfig
+        : { commitment: commitmentOrConfig || 'confirmed' }
+    super(endpoint, {
+      ...config,
+      fetch: withTimeout(
+        config.fetch ?? ((input, init) => globalThis.fetch(input, init)),
+      ),
+    })
     /* Hardcoding this rpc url for now as it is the only one that supports
      * Digital Asset RPC API https://github.com/metaplex-foundation/digital-asset-rpc-infrastructure
      * Eventually we want to have a hosted RPC node that supports this API
