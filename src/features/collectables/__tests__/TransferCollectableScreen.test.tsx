@@ -138,4 +138,10 @@ describe('TransferCollectableScreen', () => {
 
     expect(renderWithRecipient().props.disabled).toBe(true)
   })
+
+  it('disables Transfer while the fee loads', () => {
+    mockFeeQuery = { data: undefined, error: null }
+
+    expect(renderWithRecipient().props.disabled).toBe(true)
+  })
 })

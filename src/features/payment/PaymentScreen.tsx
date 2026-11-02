@@ -60,6 +60,7 @@ import {
 } from '../../utils/accountUtils'
 import { SendDetails } from '../../utils/linking'
 import * as logger from '../../utils/logger'
+import { isUnsentRejection } from '../../utils/submitFailure'
 import { UnconfirmedSubmitError } from '../../utils/unconfirmedSubmitError'
 import {
   HomeNavigationProp,
@@ -339,14 +340,19 @@ const PaymentScreen = () => {
     [paymentState.payments],
   )
 
+  const submitting = useRef(false)
   const submitPayments = useCallback(
     async (toPay: PaymentInput[], paymentMint: PublicKey) => {
+      if (submitting.current) return
+      submitting.current = true
       // Reset mutation state on retry
       paymentMutation.reset()
       try {
         await submitPayment(toPay, paymentMint)
       } catch (e) {
         logger.error(e)
+      } finally {
+        submitting.current = false
       }
     },
     [submitPayment, paymentMutation],
@@ -381,6 +387,7 @@ const PaymentScreen = () => {
   // answer may have landed them all.
   const { data: sent, variables: sentWith, error: sendError } = paymentMutation
   const unconfirmed = sendError instanceof UnconfirmedSubmitError
+  const unsentRejection = isUnsentRejection(sendError)
   const failure = useMemo(() => {
     if (unconfirmed) return checkActivity<PaymentInput>()
     return sent && sentWith
@@ -889,7 +896,7 @@ const PaymentScreen = () => {
                   mint={mint}
                   totalBalance={paymentState.totalAmount}
                   feeTokenBalance={paymentState.networkFee}
-                  disabled={!isFormValid}
+                  disabled={!isFormValid || paymentMutation.isPending}
                   onSubmit={() => void handleSubmit().catch(console.error)}
                   payments={payments}
                   errors={errors}
@@ -902,7 +909,7 @@ const PaymentScreen = () => {
       </HNTKeyboard>
       <PaymentSubmit
         mint={mint}
-        submitLoading={isSubmitting || unconfirmed}
+        submitLoading={isSubmitting || unconfirmed || unsentRejection}
         submitSucceeded={status === 'confirmed'}
         submitError={paymentMutation.error || failure?.error}
         totalBalance={submittedTotal}

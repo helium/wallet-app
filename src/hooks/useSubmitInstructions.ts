@@ -18,7 +18,8 @@ import { toTransactionData } from '../utils/transactionUtils'
 import { getBasePriorityFee } from '../utils/walletApiV2'
 import { MessagePreview } from '../solana/MessagePreview'
 import { MAX_TRANSACTIONS_PER_SIGNATURE_BATCH } from '../utils/constants'
-import type { BatchStatus } from './useTransactionBatchStatus'
+import { submitSigned } from '../utils/submitSigned'
+import { pollForCompletion } from './useSubmitAndAwait'
 
 interface SubmitInstructionsParams {
   header: string
@@ -32,41 +33,6 @@ interface SubmitInstructionsParams {
   useFirstEstimateForAll?: boolean
   addressLookupTableAddresses?: PublicKey[]
   onProgress?: (status: Status) => void
-}
-
-async function pollForCompletion(
-  client: ReturnType<typeof useBlockchainApi>,
-  batchId: string,
-  pollIntervalMs = 2000,
-  maxPollTime = 60000,
-): Promise<{ status: BatchStatus; signatures: string[] }> {
-  const startTime = Date.now()
-
-  while (Date.now() - startTime < maxPollTime) {
-    const result = await client.transactions.get({
-      id: batchId,
-      commitment: 'confirmed',
-    })
-
-    const status = result.status as BatchStatus
-
-    if (
-      status === 'confirmed' ||
-      status === 'failed' ||
-      status === 'expired' ||
-      status === 'partial'
-    ) {
-      return {
-        status,
-        signatures: result.transactions?.map((t) => t.signature) ?? [],
-      }
-    }
-
-    // Wait before polling again
-    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
-  }
-
-  throw new Error('Transaction polling timeout')
 }
 
 export function useSubmitInstructions() {
@@ -176,8 +142,10 @@ export function useSubmitInstructions() {
             },
           })
 
-          const { batchId: currentBatchId } =
-            await client.transactions.submit(txnData)
+          const { batchId: currentBatchId } = await submitSigned(
+            client,
+            txnData,
+          )
 
           batchId = currentBatchId
           // Poll for completion
@@ -228,7 +196,7 @@ export function useSubmitInstructions() {
       })
 
       // Submit via API
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await submitSigned(client, txnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
 
       // Poll for completion

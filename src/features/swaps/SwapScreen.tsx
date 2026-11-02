@@ -128,7 +128,7 @@ const SwapScreen = () => {
     inputAmount,
   )
 
-  const { data: ataFee, isLoading: loadingAtaFee } = useQuery(
+  const { data: ataFee } = useQuery(
     ataCreationFeeQuery({
       connection,
       solanaAddress: currentAccount?.solanaAddress,
@@ -859,7 +859,7 @@ const SwapScreen = () => {
                       inputAmount === 0 ||
                       routeNotFound ||
                       hntToDcPriceMissing ||
-                      loadingAtaFee ||
+                      hasInsufficientBalance === undefined ||
                       loading ||
                       swapping
                     }

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { TransactionData } from '@helium/blockchain-api'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 import { useSolana } from '../solana/SolanaProvider'
+import { submitSigned } from '../utils/submitSigned'
 import { signTransactionData } from '../utils/transactionUtils'
 
 interface SubmitTransactionParams {
@@ -30,7 +31,7 @@ export function useSubmitTransaction() {
       )
 
       // Submit to API
-      const { batchId } = await client.transactions.submit(signed)
+      const { batchId } = await submitSigned(client, signed)
 
       // Invalidate getByPayer so global widget updates
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })

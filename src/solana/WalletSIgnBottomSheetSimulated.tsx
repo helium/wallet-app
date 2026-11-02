@@ -171,8 +171,9 @@ export const WalletSignBottomSheetSimulated = ({
     : undefined
 
   const insufficientFunds =
-    new BN(estimatedTotalLamports).gt(new BN(solBalance?.toString() || '0')) ||
-    simulationResults?.some((r) => r.insufficientFunds)
+    (solBalance
+      ? new BN(estimatedTotalLamports).gt(new BN(solBalance.toString()))
+      : false) || simulationResults?.some((r) => r.insufficientFunds)
 
   const Chevron = feesExpanded ? ChevronUpIcon : ChevronDownIcon
   const showWarnings =
