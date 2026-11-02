@@ -22,7 +22,12 @@ if (typeof global.TransformStream === 'undefined') {
 }
 
 global.Buffer = Buffer
-global.structuredClone = structuredClone
+
+// When a native structuredClone exists, @ungap/structured-clone exports a
+// wrapper that calls the global one, so replacing it would recurse.
+if (typeof global.structuredClone === 'undefined') {
+  global.structuredClone = structuredClone
+}
 
 Buffer.prototype.subarray = function subarray(
   begin: number | undefined,
