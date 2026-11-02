@@ -300,12 +300,13 @@ describe('WalletSignBottomSheetSimulated', () => {
         expect(texts(renderer)).toContain('browserScreen.unableToSimulate')
       })
 
-      it('enables an in-app request at once', () => {
+      it('enables an in-app request at once, with no caution', () => {
         mockSimulation = failedSimulation
         const renderer = renderSheet({ url: '' })
 
         expect(approveDisabled(renderer)).toBe(false)
         expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+        expect(texts(renderer)).not.toContain('browserScreen.unableToSimulate')
       })
 
       it('needs the step again for a new dApp request', () => {
