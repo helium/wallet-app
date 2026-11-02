@@ -244,7 +244,7 @@ export const PositionsScreen = () => {
   ])
 
   const [isDelegateAllModalOpen, setIsDelegateAllModalOpen] = useState(false)
-  const [delegateAllSubDao, setDelegateAllSubDao] =
+  const [delegateAllSubDaoChoice, setDelegateAllSubDao] =
     useState<SubDaoWithMeta | null>(null)
   const [delegateAllAutomationEnabled, setDelegateAllAutomationEnabled] =
     useState(true)
@@ -265,21 +265,12 @@ export const PositionsScreen = () => {
     [positions, now],
   )
 
-  const [prevSubDaos, setPrevSubDaos] = useState<SubDaoWithMeta[]>()
-  const [prevDelegatedPositions, setPrevDelegatedPositions] =
-    useState<PositionWithMeta[]>()
-  if (
-    subDaos !== prevSubDaos ||
-    delegatedPositions !== prevDelegatedPositions
-  ) {
-    setPrevSubDaos(subDaos)
-    setPrevDelegatedPositions(delegatedPositions)
-    const defaultSubDao = getDefaultDelegateAllSubDao(
-      subDaos,
-      delegatedPositions,
-    )
-    if (defaultSubDao) setDelegateAllSubDao(defaultSubDao)
-  }
+  // Derived, not adjusted during render: the compiler drops the memo on
+  // delegatedPositions, so a check on its identity sets state on each render.
+  const delegateAllSubDao =
+    delegateAllSubDaoChoice ??
+    getDefaultDelegateAllSubDao(subDaos, delegatedPositions) ??
+    null
 
   const prepareDelegateAll = useEffectEvent(
     (subDao: SubDaoWithMeta, automation: boolean) => {
