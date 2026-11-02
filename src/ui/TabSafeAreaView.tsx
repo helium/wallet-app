@@ -78,5 +78,10 @@ export const TabSafeAreaView = ({
 
 const styles = StyleSheet.create({
   outer: { flex: 0 },
-  inner: { flexGrow: 1 },
+  // The screens SafeAreaView puts flex: 1 before this style. A positive flex
+  // sets the flex basis to 0, so in a parent that sizes to its content the
+  // children collapse and the inset margin is all that is left. flex: 0
+  // clears it, so the basis is the content again. flexBasis: 'auto' does
+  // not, because Yoga reads auto as unset.
+  inner: { flex: 0, flexGrow: 1, flexShrink: 1 },
 })

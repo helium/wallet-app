@@ -76,7 +76,9 @@ describe('TabSafeAreaView', () => {
       padding: 8,
       alignItems: 'center',
       flexDirection: 'row',
+      flex: 0,
       flexGrow: 1,
+      flexShrink: 1,
     })
   })
 
@@ -85,6 +87,15 @@ describe('TabSafeAreaView', () => {
 
     expect(outer.testID).toBe('footer')
     expect(inner.testID).toBeUndefined()
+  })
+
+  it('overrides the flex: 1 that the screens SafeAreaView puts first, so the children keep their size', () => {
+    const { inner } = create(<TabSafeAreaView />)
+    // The screens SafeAreaView renders style={[{ flex: 1 }, props.style]}.
+    const resolved = styleOf({ style: [{ flex: 1 }, ...inner.style] })
+
+    expect(resolved.flex).toBe(0)
+    expect(resolved.flexGrow).toBe(1)
   })
 
   it('does not fill its parent unless its style says so', () => {
