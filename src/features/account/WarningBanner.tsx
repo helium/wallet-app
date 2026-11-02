@@ -3,10 +3,15 @@ import useSolanaHealth from '@hooks/useSolanaHealth'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { CircleX, TriangleAlert } from 'lucide-react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, View } from 'react-native'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import {
   initialWindowMetrics,
   useSafeAreaInsets,
@@ -30,7 +35,7 @@ type Props = {
 }
 
 // The devnet or Solana health banner above the accounts screen. Closing it
-// slides it up out of view.
+// slides it up out of view, then takes it out of the layout.
 const WarningBanner = ({ type, onLayout }: Props) => {
   const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const { top } = useSafeAreaInsets()
@@ -44,12 +49,22 @@ const WarningBanner = ({ type, onLayout }: Props) => {
       ? initialWindowMetrics.insets.top
       : top
 
+  // 1 while shown, 0 once closed.
+  const visible = useSharedValue(showBanner ? 1 : 0)
+
+  useEffect(() => {
+    visible.set(withTiming(showBanner ? 1 : 0))
+  }, [showBanner, visible])
+
   const bannerAnimatedStyles = useAnimatedStyle(() => {
     const hiddenOffset = -Math.max(bannerHeight, MIN_HEIGHT) - bannerTopMargin
     return {
-      transform: [{ translateY: withTiming(showBanner ? 0 : hiddenOffset) }],
+      transform: [
+        { translateY: interpolate(visible.get(), [0, 1], [hiddenOffset, 0]) },
+      ],
+      display: visible.get() === 0 ? 'none' : 'flex',
     }
-  }, [showBanner, bannerTopMargin])
+  }, [bannerHeight, bannerTopMargin])
 
   return (
     <Animated.View

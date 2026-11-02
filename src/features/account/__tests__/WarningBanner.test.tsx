@@ -5,15 +5,36 @@ import WarningBanner, { BannerType } from '../WarningBanner'
 let mockShowBanner = true
 
 // The node test runner cannot load react-native, Reanimated, uniwind or
-// lucide. Host components render as named elements, and a timing is a plain
-// description of its target.
+// lucide. Host components render as named elements. Shared values hold what
+// was set, and a timing is a plain description of its target.
 jest.mock('react-native', () => ({ View: 'View' }))
-jest.mock('react-native-reanimated', () => ({
-  __esModule: true,
-  default: { View: 'Animated.View' },
-  useAnimatedStyle: (style: () => unknown) => style(),
-  withTiming: (toValue: number) => ({ timing: toValue }),
-}))
+jest.mock('react-native-reanimated', () => {
+  const ReactActual = jest.requireActual('react')
+  return {
+    __esModule: true,
+    default: { View: 'Animated.View' },
+    useSharedValue: (initial: unknown) => {
+      const [shared] = ReactActual.useState(() => {
+        let value = initial
+        return {
+          get: () => value,
+          set: (next: unknown) => {
+            value = next
+          },
+        }
+      })
+      return shared
+    },
+    useAnimatedStyle: (style: () => unknown) => style(),
+    // Maps a settled number; describes the mapping of an animation.
+    interpolate: (value: unknown, input: number[], output: number[]) =>
+      typeof value === 'number'
+        ? output[0] +
+          ((value - input[0]) / (input[1] - input[0])) * (output[1] - output[0])
+        : { interpolate: value, input, output },
+    withTiming: (toValue: number) => ({ timing: toValue }),
+  }
+})
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 jest.mock('lucide-react-native', () => ({
   CircleX: 'CircleX',
@@ -61,7 +82,13 @@ const render = () => {
       <WarningBanner type={BannerType.DevnetTokens} />,
     )
   })
-  return renderer.root.findByType('Animated.View' as never).props.style
+  return {
+    rerender: () =>
+      act(() => {
+        renderer.update(<WarningBanner type={BannerType.DevnetTokens} />)
+      }),
+    style: () => renderer.root.findByType('Animated.View' as never).props.style,
+  }
 }
 
 beforeEach(() => {
@@ -69,21 +96,46 @@ beforeEach(() => {
 })
 
 // The banner sits under the status bar inset and slides by transform, so no
-// frame of the slide runs layout.
+// frame of the slide runs layout. Once closed it leaves the layout, so the
+// content below takes its place.
 describe('WarningBanner', () => {
   it('rests in place below the status bar inset', () => {
-    expect(render()).toEqual([
+    expect(render().style()).toEqual([
       { paddingTop: 20 },
-      { transform: [{ translateY: { timing: 0 } }] },
+      { transform: [{ translateY: 0 }], display: 'flex' },
     ])
   })
 
   it('slides up by its 52pt minimum height and the inset when closed', () => {
+    const view = render()
+    mockShowBanner = false
+    view.rerender()
+    // The next render reads the timing set by the effect.
+    view.rerender()
+
+    expect(view.style()).toEqual([
+      { paddingTop: 20 },
+      {
+        transform: [
+          {
+            translateY: {
+              interpolate: { timing: 0 },
+              input: [0, 1],
+              output: [-72, 0],
+            },
+          },
+        ],
+        display: 'flex',
+      },
+    ])
+  })
+
+  it('takes no layout space when it mounts closed', () => {
     mockShowBanner = false
 
-    expect(render()).toEqual([
+    expect(render().style()).toEqual([
       { paddingTop: 20 },
-      { transform: [{ translateY: { timing: -72 } }] },
+      { transform: [{ translateY: -72 }], display: 'none' },
     ])
   })
 })
