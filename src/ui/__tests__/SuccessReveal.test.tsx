@@ -57,6 +57,12 @@ jest.mock('react-native-reanimated', () => {
       return shared
     },
     useAnimatedStyle: (style: () => unknown) => style(),
+    // Maps a settled number; describes the mapping of an animation.
+    interpolate: (value: unknown, input: number[], output: number[]) =>
+      typeof value === 'number'
+        ? output[0] +
+          ((value - input[0]) / (input[1] - input[0])) * (output[1] - output[0])
+        : { interpolate: value, input, output },
     withTiming: (toValue: number, config: object) => ({
       timing: toValue,
       ...config,
@@ -109,6 +115,8 @@ const SPRING = {
   dampingRatio: 0.8,
   reduceMotion: 'system',
 }
+// The scale follows the spring's progress from 0.9 at 0 to full size at 1.
+const SCALE = { interpolate: SPRING, input: [0, 1], output: [0.9, 1] }
 const row = (delay: number) => ({ name: 'FadeInDown', duration: 250, delay })
 
 beforeEach(() => {
@@ -128,7 +136,7 @@ describe('SuccessReveal', () => {
     })
   })
 
-  it('animates opacity and scale to 1 on mount', () => {
+  it('animates the fade and scale progress to 1 on mount', () => {
     const view = render(['a'])
     act(() => {
       view.renderer.update(
@@ -140,7 +148,7 @@ describe('SuccessReveal', () => {
 
     expect(view.icon().style).toEqual({
       opacity: FADE,
-      transform: [{ scale: SPRING }],
+      transform: [{ scale: SCALE }],
     })
   })
 

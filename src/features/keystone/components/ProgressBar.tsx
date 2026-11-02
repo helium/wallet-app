@@ -1,45 +1,37 @@
 import { SPRING } from '@theme/motion'
-import React, { useEffect, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle, View } from 'react-native'
+import React, { useEffect } from 'react'
+import { View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated'
 
+// The fill scales from its left edge, so it grows rightward.
+const LEFT_ORIGIN = { transformOrigin: 'left' }
+
 const ProgressBar = ({ progress: progressIn }: { progress: number }) => {
   const HEIGHT = 15
 
-  const [progressRect, setProgressRect] = useState<LayoutRectangle>()
-
-  const handleLayout = (e: LayoutChangeEvent) => {
-    e.persist()
-
-    setProgressRect(e.nativeEvent.layout)
-  }
-
-  const PROGRESS_WIDTH = progressRect ? progressRect.width : 0
-
-  const width = useSharedValue(0)
+  // The scanned fraction, from 0 to 1.
+  const progress = useSharedValue(0)
 
   useEffect(() => {
-    // withRepeat to repeat the animation
-    width.set(withSpring((progressIn / 100) * PROGRESS_WIDTH, SPRING.settle))
-  }, [PROGRESS_WIDTH, width, progressIn])
+    progress.set(withSpring(progressIn / 100, SPRING.settle))
+  }, [progress, progressIn])
 
-  const progress = useAnimatedStyle(() => {
+  const fillStyle = useAnimatedStyle(() => {
     return {
-      width: width.get(),
+      transform: [{ scaleX: progress.get() }],
     }
   })
 
   return (
     <View
-      onLayout={handleLayout}
       className="w-full flex-row justify-start overflow-hidden rounded-full bg-foreground/10"
       style={{ height: HEIGHT }}
     >
-      <Animated.View style={progress}>
+      <Animated.View className="w-full" style={[LEFT_ORIGIN, fillStyle]}>
         <View
           className="rounded-full bg-primary"
           style={{ height: HEIGHT - 1 }}

@@ -4,7 +4,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import {
   NativeSyntheticEvent,
   SectionList,
@@ -34,9 +34,6 @@ const SafeArea = withUniwind(SafeAreaView)
 const ClearIcon = withUniwind(CircleX)
 
 const EDGES: Edge[] = ['top']
-
-// The header slides left by this much on focus to make room for Cancel.
-const FOCUSED_MARGIN_END = 48
 
 const BrowserScreen = () => {
   const DEFAULT_URL = ''
@@ -79,24 +76,6 @@ const BrowserScreen = () => {
     setInputFocused(false)
   }
 
-  // Slide browser header to left on focus
-  const headerStyles = useAnimatedStyle(() => {
-    if (inputFocused) {
-      // Animate margin end
-      return {
-        marginEnd: withTiming(FOCUSED_MARGIN_END, {
-          duration: 100,
-        }),
-      }
-    }
-
-    return {
-      marginEnd: withTiming(0, {
-        duration: 100,
-      }),
-    }
-  }, [inputFocused])
-
   const onClearPressed = () => {
     textInputRef.current?.clear()
   }
@@ -123,12 +102,12 @@ const BrowserScreen = () => {
         inputFocused ? 'flex-row' : 'flex-col',
       )}
     >
-      <Animated.View
+      {/* On focus the header ends 48pt short to make room for Cancel. */}
+      <View
         className={twMerge(
           'mx-2 flex-row items-center rounded-[12px] bg-secondary',
-          inputFocused && 'flex-1',
+          inputFocused && 'me-12 flex-1',
         )}
-        style={headerStyles}
         onTouchEnd={onBrowserInputFocus}
       >
         <Input
@@ -158,7 +137,7 @@ const BrowserScreen = () => {
             <ClearIcon size={14} colorClassName="accent-muted-foreground" />
           </PressableScale>
         )}
-      </Animated.View>
+      </View>
       {inputFocused && (
         <PressableScale
           feedback="opacity"

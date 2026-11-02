@@ -1,6 +1,7 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import {
+  BottomSheetFlatList,
   BottomSheetModal,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet'
@@ -49,7 +50,30 @@ jest.mock('@gorhom/bottom-sheet', () => {
     BottomSheetModalProvider: ModalProvider,
     BottomSheetModal,
     BottomSheetBackdrop: 'BottomSheetBackdrop',
-    BottomSheetScrollView: 'BottomSheetScrollView',
+    // Renders every row, between the header and the footer.
+    BottomSheetFlatList: ({
+      data,
+      renderItem,
+      keyExtractor,
+      ListHeaderComponent,
+      ListFooterComponent,
+    }: {
+      data: unknown[]
+      renderItem: (info: { item: unknown }) => React.ReactElement
+      keyExtractor: (item: unknown) => string
+      ListHeaderComponent: React.ReactElement
+      ListFooterComponent: React.ReactElement
+    }) => [
+      ListHeaderComponent,
+      ...data.map((item) =>
+        ReactActual.createElement(
+          ReactActual.Fragment,
+          { key: keyExtractor(item) },
+          renderItem({ item }),
+        ),
+      ),
+      ListFooterComponent,
+    ],
   }
 })
 
@@ -102,7 +126,11 @@ jest.mock('@ui/AccountIcon', () => ({ AccountIcon: 'AccountIcon' }), {
   virtual: true,
 })
 
-const txnDetails = {
+const txnDetails: {
+  paymentsReceived: { amount: string }[]
+  paymentsSent: { amount: string }[]
+  [key: string]: unknown
+} = {
   amount: '1 HNT',
   amountTitle: 'transactions.amount',
   color: 'text-success-500',
@@ -201,5 +229,39 @@ describe('TransactionDetail', () => {
     expect(renderer.root.findByType(BottomSheetModal).props.style).toEqual({
       marginLeft: 120,
     })
+  })
+
+  it('lists every sent and received payment in a virtualized list', () => {
+    txnDetails.paymentsSent = [{ amount: '11 HNT' }, { amount: '12 HNT' }]
+    txnDetails.paymentsReceived = [{ amount: '13 HNT' }, { amount: '14 HNT' }]
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer || !showDetail) throw new Error('render failed')
+    const show = showDetail
+    act(() => {
+      show({
+        item: { hash: 'abc', height: 7 } as never,
+        accountAddress: 'addr',
+        mint: {} as never,
+      })
+    })
+    txnDetails.paymentsSent = []
+    txnDetails.paymentsReceived = []
+
+    const { root } = renderer
+    expect(root.findByType(BottomSheetFlatList).props.data).toHaveLength(4)
+    expect(textOf(root)).toEqual(
+      expect.arrayContaining([
+        'transactions.amountToPayee',
+        '11 HNT',
+        '12 HNT',
+        '13 HNT',
+        '14 HNT',
+        'Received HNT',
+        'abc',
+      ]),
+    )
   })
 })

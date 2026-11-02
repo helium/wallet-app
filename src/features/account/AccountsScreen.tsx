@@ -68,8 +68,7 @@ const AccountsScreen = () => {
   const { top } = useSafeAreaInsets()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
-  const [topHeaderHeight, setTopHeaderHeight] = useState(0)
-  const topHeaderRef = useRef<View>(null)
+  const [topHeaderHeight, setTopHeaderHeight] = useLayoutHeight()
   const { triggerImpact } = useHaptic()
   const showBanner = useAppStore((state) => state.showBanner)
   const toggleConnectedWallets = useAppStore(
@@ -160,16 +159,20 @@ const AccountsScreen = () => {
     setSelectedBalance(undefined)
   }
 
+  // The balance and chart rest above the collapsed sheet and slide up with
+  // it, so the drag runs no layout.
+  const contentRestStyle = { paddingBottom: snapPoints?.[0] ?? 0 }
+
   const animatedStyle = useAnimatedStyle(() => {
     if (!snapPoints) {
       return {
         opacity: 1,
-        paddingBottom: 0,
+        transform: [{ translateY: 0 }],
         display: 'flex',
       }
     }
 
-    const diff = pageHeight - listAnimatedPos.get()
+    const sheetRise = pageHeight - snapPoints[0] - listAnimatedPos.get()
     const opacity =
       (listAnimatedPos.get() -
         actualTop -
@@ -181,20 +184,21 @@ const AccountsScreen = () => {
 
     return {
       opacity,
-      paddingBottom: diff,
+      transform: [{ translateY: -sheetRise }],
       display: opacity <= 0 ? 'none' : 'flex',
     }
   })
 
+  const headerPositionStyle = {
+    position: 'absolute',
+    top: actualTop + navLayoutHeight + actualBannerHeight,
+    left: 0,
+    right: 0,
+  } as const
+
   const headerAnimatedStyle = useAnimatedStyle(() => {
     if (!snapPoints) {
-      return {
-        opacity: 0,
-        position: 'absolute',
-        top: actualTop + navLayoutHeight + actualBannerHeight,
-        left: 0,
-        right: 0,
-      }
+      return { opacity: 0 }
     }
 
     const opacity =
@@ -205,23 +209,8 @@ const AccountsScreen = () => {
         actualBannerHeight) /
       (snapPoints[1] - snapPoints[0])
 
-    return {
-      opacity: 1 - opacity,
-      position: 'absolute',
-      top: actualTop + navLayoutHeight + actualBannerHeight,
-      left: 0,
-      right: 0,
-    }
+    return { opacity: 1 - opacity }
   })
-
-  const handleTopHeaderLayout = () => {
-    topHeaderRef.current?.measure((...args) => {
-      const [, , , height, , pageY] = args
-
-      if (!height || !pageY) return
-      setTopHeaderHeight(height)
-    })
-  }
 
   const bannerVisible = cluster === 'devnet' || !isHealthy
 
@@ -243,9 +232,8 @@ const AccountsScreen = () => {
           onLayout={setNavLayoutHeight}
         />
         <Animated.View
-          ref={topHeaderRef}
-          style={headerAnimatedStyle}
-          onLayout={handleTopHeaderLayout}
+          style={[headerPositionStyle, headerAnimatedStyle]}
+          onLayout={setTopHeaderHeight}
           className={
             Platform.OS === 'android'
               ? 'mx-6 grow flex-row items-center pb-6 pt-4'
@@ -262,7 +250,10 @@ const AccountsScreen = () => {
           <AccountActionBar mint={HNT_MINT} maxCompact hasSwaps />
         </Animated.View>
         {!!currentAccount?.address && (
-          <Animated.View className="flex-1" style={animatedStyle}>
+          <Animated.View
+            className="flex-1"
+            style={[contentRestStyle, animatedStyle]}
+          >
             <AccountView
               className="grow justify-center"
               onTouchStart={() => setSelectedBalance(undefined)}

@@ -43,7 +43,23 @@ jest.mock('@gorhom/bottom-sheet', () => {
     BottomSheetModalProvider: ModalProvider,
     BottomSheetModal,
     BottomSheetBackdrop: 'BottomSheetBackdrop',
-    BottomSheetScrollView: 'BottomSheetScrollView',
+    // Renders every row.
+    BottomSheetFlatList: ({
+      data,
+      renderItem,
+      keyExtractor,
+    }: {
+      data: unknown[]
+      renderItem: (info: { item: unknown }) => React.ReactElement
+      keyExtractor: (item: unknown) => string
+    }) =>
+      data.map((item) =>
+        ReactActual.createElement(
+          ReactActual.Fragment,
+          { key: keyExtractor(item) },
+          renderItem({ item }),
+        ),
+      ),
   }
 })
 
