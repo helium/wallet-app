@@ -11,7 +11,7 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { getRegistrarKey } from '@helium/voter-stake-registry-sdk'
-import { useCurrentRoute } from '@hooks/useCurrentRoute'
+import { useCurrentRouteMint } from '@hooks/useCurrentRouteMint'
 import { PublicKey } from '@solana/web3.js'
 import React, {
   FC,
@@ -69,10 +69,9 @@ const GovernanceContext = createContext<IGovernanceContextState>(
 const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { anchorProvider } = useSolana()
   const { upsertAccount, currentAccount } = useAccountStorage()
-  const currentRoute = useCurrentRoute()
-  const { params }: { params?: { mint?: string } } = currentRoute || {}
-  const network: GovNetwork = params?.mint
-    ? (mintsToNetwork[params.mint] as GovNetwork) || 'hnt'
+  const routeMint = useCurrentRouteMint()
+  const network: GovNetwork = routeMint
+    ? (mintsToNetwork[routeMint] as GovNetwork) || 'hnt'
     : 'hnt'
   const networkName = useMemo(() => networkToName[network], [network])
   const mint = useMemo(() => networksToMint[network], [network])

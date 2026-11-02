@@ -44,7 +44,16 @@ jest.mock('@react-navigation/native', () => {
     },
     createNavigationContainerRef: () => ({
       isReady: () => mockContainer.route !== undefined,
-      getCurrentRoute: () => mockContainer.route,
+      // Core returns a new route object on each call while a child navigator
+      // has not mounted. Before the container sets the ref, core logs
+      // NOT_INITIALIZED_ERROR from each ref method except addListener.
+      getCurrentRoute: () => {
+        if (mockContainer.route === undefined) {
+          console.error("The 'navigation' object hasn't been initialized yet.")
+          return undefined
+        }
+        return { ...mockContainer.route }
+      },
       addListener: (_event: 'state', listener: () => void) => {
         mockContainer.listeners.push(listener)
         return () => {
@@ -58,8 +67,8 @@ jest.mock('@react-navigation/native', () => {
 })
 
 jest.mock(
-  '@hooks/useCurrentRoute',
-  () => jest.requireActual('../../hooks/useCurrentRoute'),
+  '@hooks/useCurrentRouteMint',
+  () => jest.requireActual('../../hooks/useCurrentRouteMint'),
   { virtual: true },
 )
 jest.mock('@utils/config', () => ({}), { virtual: true })
@@ -170,6 +179,22 @@ describe('GovernanceProvider', () => {
     })
 
     expect(network).toBe('mobile')
+  })
+
+  it('reads no route before the container is ready', async () => {
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+    try {
+      await renderInContainer()
+
+      expect(network).toBe('hnt')
+      expect(consoleError).not.toHaveBeenCalledWith(
+        expect.stringContaining("hasn't been initialized"),
+      )
+    } finally {
+      consoleError.mockRestore()
+    }
   })
 
   it('reads a route the container focused before it mounted', async () => {

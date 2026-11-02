@@ -244,7 +244,7 @@ export const PositionsScreen = () => {
   ])
 
   const [isDelegateAllModalOpen, setIsDelegateAllModalOpen] = useState(false)
-  const [delegateAllSubDaoChoice, setDelegateAllSubDao] =
+  const [delegateAllSubDaoChoice, setDelegateAllSubDaoChoice] =
     useState<SubDaoWithMeta | null>(null)
   const [delegateAllAutomationEnabled, setDelegateAllAutomationEnabled] =
     useState(true)
@@ -476,7 +476,7 @@ export const PositionsScreen = () => {
               delegateAllMutation.estimatedSolFee,
             )}
             subDao={delegateAllSubDao}
-            setSubDao={setDelegateAllSubDao}
+            setSubDao={setDelegateAllSubDaoChoice}
           />
         )}
         {delegateAllMutation.error && (

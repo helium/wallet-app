@@ -212,4 +212,24 @@ describe('PositionsScreen', () => {
     // Two of three delegate to IOT.
     expect(delegateAllSubDaoName(renderer)).toBe('Helium IOT')
   })
+
+  it('keeps the sub DAO the user picks in delegate all', async () => {
+    mockGovernance = mockGovernanceFor([mockPosition('a')])
+    const renderer = await render()
+    await act(async () => {
+      renderer.root
+        .findByProps({ testID: 'Positions.Manage.delegate' })
+        .props.onPress()
+    })
+
+    expect(delegateAllSubDaoName(renderer)).toBe('Helium Mobile')
+
+    await act(async () => {
+      renderer.root
+        .findByType('DelegateTokensModal' as never)
+        .props.setSubDao(mockSubDaos.result[1])
+    })
+
+    expect(delegateAllSubDaoName(renderer)).toBe('Helium IOT')
+  })
 })
