@@ -214,6 +214,14 @@ describe('WalletSignBottomSheetSimulated', () => {
       renderer.root.find(
         (n) => (n.type as unknown) === 'Button' && n.props.children === label,
       ).props.disabled
+    const approveWithoutSimulationButtons = (
+      renderer: TestRenderer.ReactTestRenderer,
+    ) =>
+      renderer.root.findAll(
+        (n) =>
+          (n.type as unknown) === 'Button' &&
+          n.props.children === 'browserScreen.approveWithoutSimulation',
+      )
 
     it('stays disabled until the open animation ends', () => {
       const renderer = renderSheet({ opened: false })
@@ -275,14 +283,6 @@ describe('WalletSignBottomSheetSimulated', () => {
         renderer.root
           .findAllByType('Text' as never)
           .map((n) => n.props.children)
-      const approveWithoutSimulationButtons = (
-        renderer: TestRenderer.ReactTestRenderer,
-      ) =>
-        renderer.root.findAll(
-          (n) =>
-            (n.type as unknown) === 'Button' &&
-            n.props.children === 'browserScreen.approveWithoutSimulation',
-        )
 
       it('keeps a dApp request disabled under the caution until the user approves without simulation', () => {
         mockSimulation = failedSimulation
@@ -394,6 +394,37 @@ describe('WalletSignBottomSheetSimulated', () => {
         expect(approveDisabled(renderer)).toBe(false)
         expect(texts()).toContain('browserScreen.unableToSimulate')
         expect(spinners()).toHaveLength(0)
+      })
+
+      it('keeps a dApp request disabled under the caution after the timeout until the user approves without simulation', () => {
+        mockSimulation = pendingSimulation
+        const renderer = renderSheet({ url: 'https://dapp.example' })
+        const texts = () =>
+          renderer.root
+            .findAllByType('Text' as never)
+            .map((n) => n.props.children)
+
+        act(() => {
+          jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS - 1)
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts()).not.toContain('browserScreen.unableToSimulate')
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+
+        act(() => {
+          jest.advanceTimersByTime(1)
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts()).toContain('browserScreen.unableToSimulate')
+        expect(renderer.root.findAllByType('Spinner' as never)).toHaveLength(0)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(1)
+
+        act(() => {
+          approveWithoutSimulationButtons(renderer)[0].props.onPress()
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+        expect(texts()).toContain('browserScreen.unableToSimulate')
       })
 
       it('a timeout counts only while the simulation is pending', () => {

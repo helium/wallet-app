@@ -191,11 +191,13 @@ export const WalletSignBottomSheetSimulated = ({
   // but not loading. A request without transactions has nothing to simulate
   const simulationPending = !!serializedTxs && isPending
   const simulationTimedOut = simulationPending && timedOutTxs === serializedTxs
-  // A dApp can make its own simulation fail, so its request needs an explicit
-  // approve-without-simulation step. In-app requests have no url
+  // A dApp can make its own simulation fail or time out, so its request needs
+  // an explicit approve-without-simulation step. In-app requests have no url
   const dappSimulationFailed = !!url && !!error
   const needsApproveWithoutSimulation =
-    dappSimulationFailed && unsimulatedApprovalTxs !== serializedTxs
+    !!url &&
+    (!!error || simulationTimedOut) &&
+    unsimulatedApprovalTxs !== serializedTxs
   const approveDisabled =
     !opened ||
     (simulationPending && !simulationTimedOut) ||
@@ -209,6 +211,16 @@ export const WalletSignBottomSheetSimulated = ({
     )
     return () => clearTimeout(timer)
   }, [simulationPending, serializedTxs])
+
+  const approveWithoutSimulationButton = needsApproveWithoutSimulation ? (
+    <Button
+      variant="outline"
+      className="mt-4 rounded-full"
+      onPress={() => setUnsimulatedApprovalTxs(serializedTxs)}
+    >
+      {t('browserScreen.approveWithoutSimulation')}
+    </Button>
+  ) : null
 
   const Chevron = feesExpanded ? ChevronUpIcon : ChevronDownIcon
   const showWarnings =
@@ -367,6 +379,7 @@ export const WalletSignBottomSheetSimulated = ({
                       >
                         {t('browserScreen.unableToSimulate')}
                       </Text>
+                      {approveWithoutSimulationButton}
                     </View>
                   </View>
                 ) : null}
@@ -391,17 +404,7 @@ export const WalletSignBottomSheetSimulated = ({
                           {t('browserScreen.unableToSimulate')}
                         </Text>
                       ) : null}
-                      {needsApproveWithoutSimulation ? (
-                        <Button
-                          variant="outline"
-                          className="mt-4 rounded-full"
-                          onPress={() =>
-                            setUnsimulatedApprovalTxs(serializedTxs)
-                          }
-                        >
-                          {t('browserScreen.approveWithoutSimulation')}
-                        </Button>
-                      ) : null}
+                      {approveWithoutSimulationButton}
                     </View>
                   </View>
                 ) : null}
