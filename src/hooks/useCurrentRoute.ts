@@ -1,21 +1,14 @@
-import { useNavigationState, NavigationState } from '@react-navigation/native'
-import { useMemo } from 'react'
+import { Route } from '@react-navigation/native'
+import { useSyncExternalStore } from 'react'
+import { navigationRef } from '../navigation/NavigationHelper'
 
-export const useCurrentRoute = () => {
-  const navState = useNavigationState((state) => state)
-  const currentRoute = useMemo(() => {
-    const getCurrentRoute = (
-      state: NavigationState | undefined,
-    ): NavigationState | undefined => {
-      if (!state || !state.routes || state.routes.length === 0) return state
-      const nestedState = state.routes[state.index]?.state as
-        NavigationState | undefined
-      return nestedState ? getCurrentRoute(nestedState) : state
-    }
+const subscribe = (onChange: () => void) =>
+  navigationRef.addListener('state', onChange)
 
-    const routeState = getCurrentRoute(navState)
-    return routeState?.routes[routeState.index]
-  }, [navState])
+const getCurrentRoute = (): Route<string> | undefined =>
+  navigationRef.isReady() ? navigationRef.getCurrentRoute() : undefined
 
-  return currentRoute
-}
+// Reads the focused route from the container ref, not from a navigator, so
+// providers between NavigationContainer and RootNavigator can use it.
+export const useCurrentRoute = () =>
+  useSyncExternalStore(subscribe, getCurrentRoute)
