@@ -1,5 +1,5 @@
 :root {
-  --off-white: hsl(0, 0, 97%);
+  --off-white: hsl(0 0% 97%);
   --off-white-foreground: hsl(0, 0%, 34%);
   --off-white-foreground-faint: hsl(0, 0%, 71%);
   --status-healthy: hsl(137, 100%, 38%);
