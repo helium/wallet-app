@@ -21,7 +21,10 @@ jest.mock('expo-clipboard', () => ({
   setStringAsync: (text: string, options?: unknown) =>
     mockSetStringAsync(text, options),
 }))
-jest.mock('react-native-simple-toast', () => ({ show: () => undefined }))
+const mockToastShow = jest.fn()
+jest.mock('react-native-simple-toast', () => ({
+  show: (...args: unknown[]) => mockToastShow(...args),
+}))
 
 // Tell React that this runner wraps renders in act().
 ;(
@@ -45,6 +48,7 @@ describe('useCopyText', () => {
     mockTriggerNavHaptic.mockClear()
     mockSetString.mockClear()
     mockSetStringAsync.mockClear()
+    mockToastShow.mockClear()
   })
 
   it('fires one haptic per copy by default', () => {
@@ -69,13 +73,38 @@ describe('useCopyText', () => {
   })
 
   // Android 13+ shows any copy in the clipboard preview unless the clip
-  // carries ClipDescription.EXTRA_IS_SENSITIVE.
-  it('marks a sensitive copy so Android hides it from the clipboard preview', () => {
+  // carries ClipDescription.EXTRA_IS_SENSITIVE. iOS syncs any copy through
+  // Universal Clipboard and keeps it until the next copy unless the item is
+  // local-only with an expiration date.
+  it('marks a sensitive copy as hidden on Android and local-only and expiring on iOS', () => {
+    const now = 1_700_000_000_000
+    const dateNow = jest.spyOn(Date, 'now').mockReturnValue(now)
+
     copyWith({ sensitive: true })
 
     expect(mockSetStringAsync).toHaveBeenCalledWith('address', {
       android: { isSensitive: true },
+      ios: { localOnly: true, expiresAt: new Date(now + 60 * 1000) },
     })
     expect(mockSetString).not.toHaveBeenCalled()
+    dateNow.mockRestore()
+  })
+
+  it('shows no copied toast when the sensitive copy fails', async () => {
+    const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    mockSetStringAsync.mockRejectedValueOnce(new Error('copy failed'))
+
+    copyWith({ sensitive: true })
+    await act(async () => {})
+
+    expect(mockToastShow).not.toHaveBeenCalled()
+    consoleWarn.mockRestore()
+  })
+
+  it('shows the copied toast once the sensitive copy succeeds', async () => {
+    copyWith({ sensitive: true })
+    await act(async () => {})
+
+    expect(mockToastShow).toHaveBeenCalledTimes(1)
   })
 })

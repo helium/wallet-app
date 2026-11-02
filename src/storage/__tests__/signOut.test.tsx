@@ -7,6 +7,7 @@ import AccountStorageProvider, {
   useAccountStorage,
 } from '../AccountStorageProvider'
 import type { CSAccount, CSAccounts } from '../cloudStorage'
+import { removeAccountTag } from '../oneSignalStorage'
 import { resetAppState } from '../resetAppState'
 import { storeSecureAccount, storeSecureItem } from '../secureStorage'
 
@@ -80,7 +81,7 @@ jest.mock('../importLegacyState', () => ({
   subscribeCloudItemChanges: () => () => {},
 }))
 jest.mock('../oneSignalStorage', () => ({
-  removeAccountTag: async () => {},
+  removeAccountTag: jest.fn(async () => {}),
   tagAccount: async () => {},
 }))
 jest.mock('../resetAppState', () => ({
@@ -143,6 +144,7 @@ beforeEach(async () => {
   mockCloud.defaultAddress = main.address
   ;(Alert.alert as jest.Mock).mockClear()
   ;(resetAppState as jest.Mock).mockClear()
+  ;(removeAccountTag as jest.Mock).mockClear()
   await storeKey(main)
   await storeKey(other)
   await storeSecureItem('pin', '1234')
@@ -170,6 +172,14 @@ describe('signOut of one wallet', () => {
       'generic.error',
       'settings.sections.account.signOutAlert.deleteFailed',
     )
+    expect(removeAccountTag).not.toHaveBeenCalled()
+  })
+
+  it('removes the wallet tag once the keychain deletes its key', async () => {
+    await act(() => storage().signOut(main))
+
+    expect(mockKeychain.has(main.address)).toBe(false)
+    expect(removeAccountTag).toHaveBeenCalledWith(main.address)
   })
 })
 
@@ -196,5 +206,20 @@ describe('signOut of every wallet', () => {
       'generic.error',
       'settings.sections.account.signOutAlert.deleteFailedAll',
     )
+  })
+
+  it('clears the list without an error alert when only the PIN delete fails', async () => {
+    mockFailingKeys.add('pin')
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    await act(() => storage().signOut())
+
+    expect(storage().accounts).toEqual({})
+    expect(resetAppState).toHaveBeenCalled()
+    expect(consoleError).toHaveBeenCalled()
+    expect(Alert.alert).not.toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 })
