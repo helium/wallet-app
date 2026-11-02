@@ -333,11 +333,11 @@ const HotspotMapScreen = () => {
             className={`absolute h-full w-full flex-1 ${
               isLoading ? 'z-[100]' : 'z-0'
             } ${debouncedIsLoading ? '' : 'hidden'}`}
-            tint="dark"
+            tint="light"
             intensity={80}
           >
             <View className="h-full flex-1 justify-center">
-              <Spinner colorClassName="accent-white" />
+              <Spinner colorClassName="accent-foreground" />
             </View>
           </AnimatedBlurView>
           <Map

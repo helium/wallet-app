@@ -393,11 +393,11 @@ const AssertLocationScreen = () => {
             className={`absolute h-full w-full flex-1 ${
               isLoading ? 'z-[100]' : 'z-0 hidden'
             }`}
-            tint="dark"
+            tint="light"
             intensity={80}
           >
             <View className="h-full flex-1 justify-center">
-              <Spinner colorClassName="accent-white" />
+              <Spinner colorClassName="accent-foreground" />
             </View>
           </Blur>
           <Map
@@ -625,12 +625,12 @@ const AssertLocationScreen = () => {
           <>
             {/* This is because Android sucks and does not support expo blur and the experimental feature is trash :) */}
             {Platform.OS === 'android' && (
-              <View className="absolute left-0 top-0 z-0 h-full w-full bg-black" />
+              <View className="absolute left-0 top-0 z-0 h-full w-full bg-background" />
             )}
             <AnimatedBlurView
               entering={FADE_IN}
               className="absolute bottom-0 h-full w-full flex-row"
-              tint="dark"
+              tint="light"
               intensity={80}
             >
               <TouchableWithoutFeedback
@@ -643,7 +643,7 @@ const AssertLocationScreen = () => {
                       <View className="h-full flex-1 justify-center">
                         <Text
                           size="lg"
-                          className="text-left font-medium text-white"
+                          className="text-left font-medium text-foreground"
                           adjustsFontSizeToFit
                         >
                           {t('assertLocationScreen.antennaSetup')}
@@ -651,7 +651,7 @@ const AssertLocationScreen = () => {
                         <Text className="mb-4 font-medium text-muted-foreground">
                           {t('assertLocationScreen.antennaSetupDescription')}
                         </Text>
-                        <View className="w-full rounded-[12px] bg-secondary px-3 py-1">
+                        <View className="w-full rounded-[12px] border border-border bg-card px-3 py-1">
                           <Text
                             size="xs"
                             className="pt-2 text-muted-foreground"
