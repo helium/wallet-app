@@ -41,8 +41,15 @@ const INSET_USER = /\b(TabSafeAreaView|BackScreen)\b/
 const CLEARING_USER = new RegExp(
   `<(${Object.keys(CLEARING_COMPONENTS).join('|')})\\b`,
 )
+// The source without comments, so a comment that names a component does
+// not count as rendering it.
+const codeOf = (file: string) =>
+  fs
+    .readFileSync(path.join(SRC, file), 'utf8')
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '')
 const clearsBar = (key: string) => {
-  const source = fs.readFileSync(path.join(SRC, key), 'utf8')
+  const source = codeOf(key)
   return INSET_USER.test(source) || CLEARING_USER.test(source)
 }
 const NAVIGATOR = /\bcreate\w*Navigator\s*[(<]/
@@ -139,7 +146,7 @@ describe('screens under the floating tab bar', () => {
 
   it('counts only shared components that clear the bar themselves', () => {
     const notClearing = Object.values(CLEARING_COMPONENTS).filter(
-      (file) => !INSET_USER.test(fs.readFileSync(path.join(SRC, file), 'utf8')),
+      (file) => !INSET_USER.test(codeOf(file)),
     )
     expect(notClearing).toEqual([])
   })
