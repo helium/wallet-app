@@ -1,25 +1,15 @@
-import { useMint } from '@helium/helium-react-hooks'
-import {
-  useProposalConfig,
-  useResolutionSettings,
-} from '@helium/modular-governance-hooks'
 import { PublicKey } from '@solana/web3.js'
-import { useGovernance } from '@storage/GovernanceProvider'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { humanReadable } from '@utils/formatting'
-import axios from 'axios'
 import BN from 'bn.js'
-import MarkdownIt from 'markdown-it'
-import { useQuery } from '@tanstack/react-query'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { getTimeFromNowFmt } from '@utils/dateTools'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
 import useNowAfter from '@hooks/useNowAfter'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { ProposalFilter, ProposalV0 } from './governanceTypes'
@@ -29,11 +19,16 @@ interface IProposalCardProps {
   filter: ProposalFilter
   proposal: ProposalV0
   proposalKey: PublicKey
+  mint: PublicKey
+  decimals?: number
+  hasSeen?: boolean
+  endTs?: BN
+  desc?: string | null
+  descLoading: boolean
   onPress?: (mint: PublicKey, proposal: PublicKey) => Promise<void>
   className?: string
 }
 
-const markdownParser = MarkdownIt()
 const StatusChip = ({
   dotClassName,
   label,
@@ -49,56 +44,22 @@ const StatusChip = ({
   </View>
 )
 
+// A list row. The list fetches the mint, the vote end and the description
+// once for all rows; the row only renders them.
 export const ProposalCard = ({
   proposal,
   proposalKey,
+  mint,
+  decimals,
+  hasSeen,
+  endTs,
+  desc,
+  descLoading,
   onPress,
   className,
 }: IProposalCardProps) => {
   const { t } = useTranslation()
-  const { currentAccount } = useAccountStorage()
-  const { mint } = useGovernance()
-  const { proposalConfig: proposalConfigKey } = proposal
-  const decimals = useMint(mint)?.info?.decimals
-  const { info: proposalConfig } = useProposalConfig(proposalConfigKey)
-  const { info: resolution } = useResolutionSettings(
-    proposalConfig?.stateController,
-  )
-
   const derivedState = getDerivedProposalState(proposal)
-
-  const proposalIdsSeenByMint = currentAccount?.proposalIdsSeenByMint
-  const hasSeen = proposalIdsSeenByMint
-    ? proposalIdsSeenByMint[mint.toBase58()]?.includes(proposalKey.toBase58())
-    : undefined
-
-  const endTs =
-    resolution &&
-    (proposal?.state.resolved
-      ? proposal?.state.resolved.endTs
-      : proposal?.state.voting?.startTs.add(
-          resolution.settings.nodes.find(
-            (node) => typeof node.offsetFromStartTs !== 'undefined',
-          )?.offsetFromStartTs?.offset ?? new BN(0),
-        ))
-
-  const proposalUri = proposal?.uri
-  const { isLoading: descLoading, data: desc } = useQuery({
-    queryKey: ['proposalDescription', proposalUri],
-    queryFn: async () => {
-      if (proposalUri) {
-        // Force HTTPS for security - convert any HTTP URLs to HTTPS
-        const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
-        const { data } = await axios.get(secureUri)
-        const htmlContent = markdownParser.render(data)
-        const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
-        return firstParagraphMatch
-          ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
-          : null
-      }
-      return null
-    },
-  })
 
   const totalVotes: BN = [...(proposal?.choices || [])].reduce(
     (acc, { weight }) => weight.add(acc) as BN,

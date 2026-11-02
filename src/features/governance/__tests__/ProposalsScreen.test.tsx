@@ -113,7 +113,7 @@ jest.mock(
 jest.mock('@helium/modular-governance-hooks', () => {
   const proposal = (name: string) => ({
     publicKey: { toBase58: () => name },
-    info: { name, state: name },
+    info: { name, state: name, uri: `${name}.md` },
   })
   const proposals = {
     loading: false,
@@ -121,6 +121,20 @@ jest.mock('@helium/modular-governance-hooks', () => {
   }
   return { useOrganizationProposals: () => proposals }
 })
+// The list reads the mint, proposal configs and descriptions once for all
+// cards.
+jest.mock('@helium/helium-react-hooks', () => {
+  const mint = { info: { decimals: 8 } }
+  const accounts = { accounts: [] }
+  return { useMint: () => mint, useAnchorAccounts: () => accounts }
+})
+jest.mock('@tanstack/react-query', () => ({
+  useQueries: ({ queries }: { queries: { queryKey: string[] }[] }) =>
+    queries.map(({ queryKey }) => ({
+      isLoading: false,
+      data: `about ${queryKey[1]}`,
+    })),
+}))
 jest.mock(
   '@utils/governanceUtils',
   () => ({
@@ -267,6 +281,17 @@ describe('ProposalsScreen', () => {
 
     const cards = root.findAllByType('ProposalCard' as never)
     expect(cards.map((c) => c.props.filter)).toEqual(['active'])
+  })
+
+  it('passes each card its data from the reads of the list', () => {
+    const root = render()
+    const cards = root.findAllByType('ProposalCard' as never)
+    expect(
+      cards.map(({ props }) => [props.decimals, props.desc, props.hasSeen]),
+    ).toEqual([
+      [8, 'about active.md', false],
+      [8, 'about passed.md', false],
+    ])
   })
 
   // PositionsScreen shape: the position modals and the Manage menus are

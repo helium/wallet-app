@@ -1,18 +1,23 @@
 import { CardSkeleton } from '@ui/CardSkeleton'
+import { useMint, useSolanaUnixNow } from '@helium/helium-react-hooks'
 import {
   PositionWithMeta,
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
+import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
+import { PublicKey } from '@solana/web3.js'
 import { useGovernance } from '@storage/GovernanceProvider'
+import { useQuery } from '@tanstack/react-query'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
-import { times } from 'lodash'
+import { times, uniq } from 'lodash'
 import { Zap } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl, SectionList, View } from 'react-native'
 import { useCSSVariable, withUniwind } from 'uniwind'
 import { PositionCard } from './PositionCard'
+import { usePositionActions } from './usePositionActions'
 
 const ZapIcon = withUniwind(Zap)
 
@@ -22,8 +27,44 @@ interface IPositionsListProps {
 }
 
 export const PositionsList = ({ header, className }: IPositionsListProps) => {
-  const { loading: loadingGov, positions, refetch } = useGovernance()
+  const {
+    loading: loadingGov,
+    positions,
+    refetch,
+    mint,
+    voteService,
+  } = useGovernance()
   const { loading: loadingSubDaos, result: subDaos } = useSubDaos()
+  // One fetch for all rows: each row used to fetch these itself
+  const unixNow = useSolanaUnixNow(60 * 5 * 1000) || 0
+  const { info: mintAcc } = useMint(mint)
+  const { loading: loadingMetadata, symbol, json } = useMetaplexMetadata(mint)
+  const proxyVoters = uniq(
+    (positions || [])
+      .filter((p) => p.proxy && !p.proxy.nextVoter.equals(PublicKey.default))
+      .map((p) => p.proxy!.nextVoter.toBase58()),
+  )
+  // The first proxy that matches each voter, as useKnownProxy finds it
+  const { data: knownProxyNames } = useQuery({
+    queryKey: ['knownProxyNames', voteService?.config, proxyVoters],
+    enabled: !!voteService && proxyVoters.length > 0,
+    queryFn: async () => {
+      const found = await Promise.all(
+        proxyVoters.map((voter) =>
+          voteService!.getProxies({ page: 1, limit: 1, query: voter }),
+        ),
+      )
+      return Object.fromEntries(
+        proxyVoters.map((voter, i) => [voter, found[i][0]?.name]),
+      ) as Record<string, string | undefined>
+    },
+  })
+  const { openActions, statusOf, sheets } = usePositionActions({
+    subDaos,
+    unixNow,
+    mintAcc,
+    symbol,
+  })
   const foreground = useCSSVariable('--color-foreground')
   const { t } = useTranslation()
 
@@ -62,12 +103,24 @@ export const PositionsList = ({ header, className }: IPositionsListProps) => {
     if (!p.votingMint) {
       return null
     }
+    const { loadingText, transactionError } = statusOf(p)
     return (
       <PositionCard
         key={`${p.pubkey.toBase58()}-${p.amountDepositedNative.toString()}-${idx}`}
         position={p}
         className={idx > 0 ? 'mt-4' : undefined}
         subDaos={subDaos}
+        onPress={() => openActions(p)}
+        unixNow={unixNow}
+        decimals={mintAcc?.decimals}
+        symbol={symbol}
+        image={json?.image}
+        loadingMetadata={loadingMetadata}
+        knownProxyName={
+          p.proxy ? knownProxyNames?.[p.proxy.nextVoter.toBase58()] : undefined
+        }
+        loadingText={loadingText}
+        transactionError={transactionError}
       />
     )
   }
@@ -116,45 +169,48 @@ export const PositionsList = ({ header, className }: IPositionsListProps) => {
   )
 
   return (
-    <SectionList
-      contentInsetAdjustmentBehavior="automatic"
-      renderSectionHeader={renderSectionHeader}
-      ListHeaderComponent={
-        <>
-          {header}
-          <View className="flex-row items-center justify-center py-5">
-            <Text size="xs" className="text-muted-foreground">
-              Positions
-            </Text>
-          </View>
-          <View
-            className={twMerge(
-              'mb-4 flex-1 flex-row items-center justify-center gap-3 rounded-[12px] bg-secondary p-3',
-              className,
-            )}
-          >
-            <ZapIcon size={24} colorClassName="accent-blue-dark-500" />
-            <View className="shrink">
-              <Text className="text-muted-foreground">
-                Increase your voting power by locking tokens
+    <>
+      <SectionList
+        contentInsetAdjustmentBehavior="automatic"
+        renderSectionHeader={renderSectionHeader}
+        ListHeaderComponent={
+          <>
+            {header}
+            <View className="flex-row items-center justify-center py-5">
+              <Text size="xs" className="text-muted-foreground">
+                Positions
               </Text>
             </View>
-          </View>
-        </>
-      }
-      keyExtractor={keyExtractor}
-      sections={loading ? [] : SectionData}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      refreshControl={
-        <RefreshControl
-          refreshing={loading}
-          onRefresh={refetch}
-          title=""
-          tintColor={typeof foreground === 'string' ? foreground : undefined}
-        />
-      }
-    />
+            <View
+              className={twMerge(
+                'mb-4 flex-1 flex-row items-center justify-center gap-3 rounded-[12px] bg-secondary p-3',
+                className,
+              )}
+            >
+              <ZapIcon size={24} colorClassName="accent-blue-dark-500" />
+              <View className="shrink">
+                <Text className="text-muted-foreground">
+                  Increase your voting power by locking tokens
+                </Text>
+              </View>
+            </View>
+          </>
+        }
+        keyExtractor={keyExtractor}
+        sections={loading ? [] : SectionData}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={refetch}
+            title=""
+            tintColor={typeof foreground === 'string' ? foreground : undefined}
+          />
+        }
+      />
+      {sheets}
+    </>
   )
 }
 

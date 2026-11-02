@@ -40,6 +40,9 @@
       "@helium/modular-governance-idls/lib/types/nft_proxy": [
         "./node_modules/@helium/modular-governance-idls/lib/types/nft_proxy.d.ts"
       ],
+      "@helium/modular-governance-idls/lib/types/state_controller": [
+        "./node_modules/@helium/modular-governance-idls/lib/types/state_controller.d.ts"
+      ],
       "@helium/crypto": ["./node_modules/@helium/crypto-react-native"],
       "@assets": ["./src/assets"],
       "@constants/*": ["./src/constants/*"],

@@ -1,8 +1,7 @@
 import IotSymbolSvg from '@assets/images/iotSymbol.svg'
 import MobileSymbolSvg from '@assets/images/mobileSymbol.svg'
 import HntSymbolSvg from '@assets/images/hnt.svg'
-import { useMint } from '@helium/helium-react-hooks'
-import { HNT_MINT, IOT_MINT, MOBILE_MINT, toNumber } from '@helium/spl-utils'
+import { toNumber } from '@helium/spl-utils'
 import { useHotspotAddress } from '@hooks/useHotspotAddress'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
@@ -29,6 +28,10 @@ export type HotspotListItemProps = {
   hotspot: HotspotWithPendingRewards
   onPress: (hotspot: HotspotWithPendingRewards) => void
   className?: string
+  // The list reads the reward mints once for all rows.
+  iotDecimals: number
+  mobileDecimals: number
+  hntDecimals: number
 }
 
 const pendingRewardsString = (
@@ -45,6 +48,9 @@ const HotspotListItem = ({
   hotspot,
   onPress,
   className,
+  iotDecimals,
+  mobileDecimals,
+  hntDecimals,
 }: HotspotListItemProps) => {
   const {
     content: { metadata },
@@ -52,10 +58,6 @@ const HotspotListItem = ({
   const { t } = useTranslation()
   const wallet = useCurrentWallet()
   const streetAddress = useHotspotAddress(hotspot)
-
-  const { info: iotMint } = useMint(IOT_MINT)
-  const { info: mobileMint } = useMint(MOBILE_MINT)
-  const { info: hntMint } = useMint(HNT_MINT)
 
   const pendingIotRewards =
     hotspot.pendingRewards && new BN(hotspot.pendingRewards[Mints.IOT])
@@ -67,17 +69,17 @@ const HotspotListItem = ({
   const pendingIotRewardsString = pendingRewardsString(
     hotspot,
     Mints.IOT,
-    iotMint?.decimals || 6,
+    iotDecimals,
   )
   const pendingMobileRewardsString = pendingRewardsString(
     hotspot,
     Mints.MOBILE,
-    mobileMint?.decimals || 6,
+    mobileDecimals,
   )
   const pendingHntRewardsString = pendingRewardsString(
     hotspot,
     Mints.HNT,
-    hntMint?.decimals || 8,
+    hntDecimals,
   )
 
   const eccCompact = metadata?.attributes?.length

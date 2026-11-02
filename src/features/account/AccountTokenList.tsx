@@ -21,6 +21,7 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { deriveVisibleMints } from './logic/visibleTokens'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
+import { useLockedAmounts, useTokenRows } from './useTokenRows'
 
 const ManageIcon = withUniwind(SlidersHorizontal)
 
@@ -75,18 +76,36 @@ const AccountTokenList = ({ onLayout }: Props) => {
     (mint) => new PublicKey(mint),
   )
 
+  const tokenRows = useTokenRows(mints)
+  const lockedRows = useLockedAmounts(
+    mints.filter((mint) => GovMints.some((m) => new PublicKey(m).equals(mint))),
+  )
+
   const bottomSpace = bottom * 2
 
   const renderItem = ({ item }: { item: PublicKey }) => {
+    const mintStr = item.toBase58()
+    const row = tokenRows[mintStr] ?? {
+      loadingMetadata: true,
+      loadingOwned: true,
+    }
     if (GovMints.some((m) => new PublicKey(m).equals(item)))
       return (
         <View>
-          <TokenListItem mint={item} />
-          <TokenListGovItem mint={item} />
+          <TokenListItem mint={item} {...row} />
+          <TokenListGovItem
+            mint={item}
+            symbol={row.symbol}
+            image={row.image}
+            loadingMetadata={row.loadingMetadata}
+            decimals={row.decimals}
+            amountLocked={lockedRows[mintStr]?.amountLocked}
+            loadingAmount={lockedRows[mintStr]?.loadingAmount ?? true}
+          />
         </View>
       )
 
-    return <TokenListItem mint={item} />
+    return <TokenListItem mint={item} {...row} />
   }
 
   const renderEmptyComponent = () => {

@@ -1,7 +1,4 @@
-import { useOwnedAmount } from '@helium/helium-react-hooks'
 import { DC_MINT } from '@helium/spl-utils'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
 import { usePublicKey } from '@hooks/usePublicKey'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -27,27 +24,31 @@ import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { getSortValue } from './logic/visibleTokens'
+import { TokenRowData, useTokenRows } from './useTokenRows'
 
 const SafeArea = withUniwind(SafeAreaView)
 const CloseIcon = withUniwind(X)
 
 const HIT_SLOP = { top: 24, bottom: 24, left: 24, right: 24 }
 
-const CheckableTokenListItem = ({
+// A list row. The screen reads the metadata and balances of all rows once
+// (useTokenRows); the row only renders them.
+export const CheckableTokenListItem = ({
   bottomBorder,
   mint: token,
   checked,
   onUpdateTokens,
+  symbol,
+  image,
+  amount,
+  decimals,
 }: {
   bottomBorder: boolean
   mint: string
   checked: boolean
   onUpdateTokens: (_token: PublicKey, _value: boolean) => void
-}) => {
+} & Pick<TokenRowData, 'symbol' | 'image' | 'amount' | 'decimals'>) => {
   const mint = usePublicKey(token)
-  const wallet = useCurrentWallet()
-  const { amount, decimals } = useOwnedAmount(wallet, mint)
-  const { json, symbol } = useMetaplexMetadata(mint)
   const isMountedRef = useRef(true)
 
   const balanceToDisplay =
@@ -79,7 +80,7 @@ const CheckableTokenListItem = ({
         !bottomBorder && 'border-b',
       )}
     >
-      <TokenIcon img={json?.image} />
+      <TokenIcon img={image} />
       <View className="flex-1 px-4">
         <View className="flex-row items-center">
           <Text size="base" maxFontSizeMultiplier={1.3}>
@@ -119,6 +120,7 @@ const AccountManageTokenListScreen: React.FC = () => {
     .sort((a, b) => {
       return getSortValue(b) - getSortValue(a)
     })
+  const tokenRows = useTokenRows((mints || []).map((m) => new PublicKey(m)))
   const queryClient = useQueryClient()
   const { anchorProvider, cluster } = useSolana()
   const { currentAccount } = useAccountStorage()
@@ -144,12 +146,17 @@ const AccountManageTokenListScreen: React.FC = () => {
     index: number
     item: string
   }) => {
+    const row = tokenRows[token]
     return (
       <CheckableTokenListItem
         mint={token}
         bottomBorder={index === (mints?.length || 0) - 1}
         checked={visibleTokens.has(token)}
         onUpdateTokens={setVisibleTokens}
+        symbol={row?.symbol}
+        image={row?.image}
+        amount={row?.amount}
+        decimals={row?.decimals}
       />
     )
   }

@@ -85,6 +85,9 @@ const HotspotList = () => {
     onEndReached,
     totalHotspots,
   } = useHotspots()
+  const iotDecimals = useMint(IOT_MINT)?.info?.decimals || 6
+  const mobileDecimals = useMint(MOBILE_MINT)?.info?.decimals || 6
+  const hntDecimals = useMint(HNT_MINT)?.info?.decimals || 8
 
   const handleOnEndReached = () => {
     if (!fetchingMore && isFocused && !onEndReached) {
@@ -178,6 +181,9 @@ const HotspotList = () => {
       onPress={handleNavigateToHotspot}
       key={item.id}
       className="mb-2"
+      iotDecimals={iotDecimals}
+      mobileDecimals={mobileDecimals}
+      hntDecimals={hntDecimals}
     />
   )
 

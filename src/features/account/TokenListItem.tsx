@@ -1,18 +1,7 @@
-import { useMint, useOwnedAmount } from '@helium/helium-react-hooks'
 import { IOT_MINT, MOBILE_MINT } from '@helium/spl-utils'
-import {
-  useHeliumVsrState,
-  usePositions,
-  useRegistrarForMint,
-} from '@helium/voter-stake-registry-hooks'
-import { getPositionKeysForOwner } from '@helium/voter-stake-registry-sdk'
-import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useMetaplexMetadata } from '@hooks/useMetaplexMetadata'
-import usePrevious from '@hooks/usePrevious'
 import { useNavigation } from '@react-navigation/native'
 import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
-import { useQuery } from '@tanstack/react-query'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
@@ -25,9 +14,9 @@ import React from 'react'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { withUniwind } from 'uniwind'
-import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
 import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
+import { LockedRowData, TokenRowData } from './useTokenRows'
 
 const Arrow = withUniwind(ChevronRight)
 const LockIcon = withUniwind(Lock)
@@ -39,7 +28,7 @@ const ROW_CLASS =
 export const ITEM_HEIGHT = 72
 type Props = {
   mint: PublicKey
-}
+} & TokenRowData
 
 export const TokenSkeleton = () => {
   return (
@@ -56,15 +45,18 @@ export const TokenSkeleton = () => {
   )
 }
 
-export const TokenListItem = ({ mint }: Props) => {
+// A list row. The list reads the metadata and balances of all rows once
+// (useTokenRows); the row only renders them.
+export const TokenListItem = ({
+  mint,
+  symbol,
+  image,
+  loadingMetadata,
+  amount,
+  decimals,
+  loadingOwned,
+}: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
-  const wallet = useCurrentWallet()
-  const {
-    amount,
-    decimals,
-    loading: loadingOwned,
-  } = useOwnedAmount(wallet, mint)
-  const { json, symbol, loading } = useMetaplexMetadata(mint)
   const mintStr = mint.toBase58()
 
   const handleNavigation = () => {
@@ -92,10 +84,10 @@ export const TokenListItem = ({ mint }: Props) => {
       onPress={handleNavigation}
       className={ROW_CLASS}
     >
-      {loading ? (
+      {loadingMetadata ? (
         <View className="h-10 w-10 rounded-full bg-card" />
       ) : (
-        <TokenIcon img={json?.image} />
+        <TokenIcon img={image} />
       )}
 
       <View className="flex-1 px-4">
@@ -136,70 +128,22 @@ export const TokenListItem = ({ mint }: Props) => {
   )
 }
 
-export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
+// A list row for the tokens locked in voting positions. The list reads the
+// positions of all governance mints once (useLockedAmounts).
+export const TokenListGovItem = ({
+  mint,
+  symbol,
+  image,
+  loadingMetadata,
+  decimals,
+  amountLocked,
+  loadingAmount,
+}: {
+  mint: PublicKey
+} & Omit<TokenRowData, 'amount' | 'loadingOwned'> &
+  LockedRowData) => {
   const navigation = useNavigation()
-  const { connection } = useSolana()
-  const wallet = useCurrentWallet()
-  const { json, symbol, loading } = useMetaplexMetadata(mint)
-  const decimals = useMint(mint)?.info?.decimals
   const mintStr = mint.toBase58()
-  const {
-    positions: contextPositions,
-    mint: govMint,
-    loading: loadingContext,
-  } = useHeliumVsrState()
-  const useContextPositions = !!govMint?.equals(mint)
-
-  const { registrarKey } = useRegistrarForMint(mint)
-
-  const registrarKeyStr = registrarKey?.toBase58()
-  const walletStr = wallet?.toBase58()
-  const args = walletStr &&
-    connection &&
-    registrarKeyStr && {
-      registrar: new PublicKey(registrarKeyStr),
-      owner: new PublicKey(walletStr),
-      connection,
-    }
-
-  const { data: result, isLoading: loadingPositionKeys } = useQuery({
-    queryKey: [
-      'positionKeysForOwner',
-      connection?.rpcEndpoint,
-      registrarKey?.toBase58(),
-      wallet?.toBase58(),
-    ],
-    queryFn: async () => (args ? getPositionKeysForOwner(args) : null),
-    enabled: !!args && !useContextPositions,
-    staleTime: 0,
-  })
-
-  const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
-    usePositions(result?.positions)
-  const loadingPositions = loadingFetchedPositions || loadingContext
-  const positions = useContextPositions
-    ? contextPositions
-    : fetchedPositions?.map((fetched) => fetched.info)
-
-  const getAmountLocked = () => {
-    if (positions && positions.length) {
-      let amountLocked = new BN(0)
-      positions.forEach((position) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        if (position && !position.isProxiedToMe) {
-          amountLocked = amountLocked.add(position.amountDepositedNative)
-        }
-      })
-
-      return amountLocked
-    }
-
-    return undefined
-  }
-  const amountLocked = getAmountLocked()
-
-  const prevLocked = usePrevious(amountLocked)
 
   const handleNavigation = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -215,8 +159,6 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
       ? humanReadable(new BN(amountLocked.toString()), decimals)
       : '0'
 
-  const loadingAmount = !prevLocked && (loadingPositionKeys || loadingPositions)
-
   if (
     (mint.equals(MOBILE_MINT) || mint.equals(IOT_MINT)) &&
     balanceToDisplay === '0'
@@ -230,11 +172,11 @@ export const TokenListGovItem = ({ mint }: { mint: PublicKey }) => {
       onPress={handleNavigation}
       className={ROW_CLASS}
     >
-      {loading ? (
+      {loadingMetadata ? (
         <View className="h-10 w-10 rounded-full bg-card" />
       ) : (
         <View className="relative">
-          <TokenIcon img={json?.image} />
+          <TokenIcon img={image} />
           <View className="absolute -right-2 top-[-6px] h-[22px] w-[22px] items-center justify-center rounded-full bg-popover">
             <View className="h-[18px] w-[18px] items-center justify-center rounded-full bg-warning-500">
               <LockIcon size={12} colorClassName="accent-secondary" />

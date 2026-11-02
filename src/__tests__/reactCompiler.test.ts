@@ -29,8 +29,10 @@ const transformAppCode = (relativePath: string, code: string) =>
 // error. Sibling functions in the file still compile.
 const COMPILED_FILES = [
   'src/features/governance/PositionCard.tsx',
+  'src/features/governance/usePositionActions.tsx',
   'src/features/ledger/DeviceShow.tsx',
   'src/features/account/useTxn.tsx',
+  'src/features/account/useTokenRows.ts',
   'src/features/account/AccountsScreen.tsx',
   'src/ui/AutoGasBanner.tsx',
   'src/features/keystone/components/DynamicQrScanner.tsx',
