@@ -46,7 +46,7 @@ jest.mock('@react-navigation/native', () => {
       isReady: () => mockContainer.route !== undefined,
       // Core returns a new route object on each call while a child navigator
       // has not mounted. Before the container sets the ref, core logs
-      // NOT_INITIALIZED_ERROR from each ref method except addListener.
+      // NOT_INITIALIZED_ERROR from each ref method except addListener, removeListener, and isReady.
       getCurrentRoute: () => {
         if (mockContainer.route === undefined) {
           console.error("The 'navigation' object hasn't been initialized yet.")
@@ -206,5 +206,22 @@ describe('GovernanceProvider', () => {
     await renderInContainer()
 
     expect(network).toBe('iot')
+  })
+
+  it('falls back to hnt for a route mint that names an Object.prototype member', async () => {
+    mockContainer.route = {
+      name: 'ProposalsScreen',
+      params: { mint: 'constructor' },
+    }
+
+    let error: unknown
+    try {
+      await renderInContainer()
+    } catch (e) {
+      error = e
+    }
+
+    expect(error).toBeUndefined()
+    expect(network).toBe('hnt')
   })
 })

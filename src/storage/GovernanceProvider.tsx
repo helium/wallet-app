@@ -70,9 +70,10 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { anchorProvider } = useSolana()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const routeMint = useCurrentRouteMint()
-  const network: GovNetwork = routeMint
-    ? (mintsToNetwork[routeMint] as GovNetwork) || 'hnt'
-    : 'hnt'
+  const network: GovNetwork =
+    routeMint && Object.prototype.hasOwnProperty.call(mintsToNetwork, routeMint)
+      ? mintsToNetwork[routeMint]
+      : 'hnt'
   const networkName = useMemo(() => networkToName[network], [network])
   const mint = useMemo(() => networksToMint[network], [network])
   const registrarKey = useMemo(() => mint && getRegistrarKey(mint), [mint])
