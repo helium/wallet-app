@@ -22,7 +22,11 @@ if (typeof global.TransformStream === 'undefined') {
 }
 
 global.Buffer = Buffer
-global.structuredClone = structuredClone
+// When a global structuredClone exists, the @ungap/structured-clone export
+// calls it. Replacing that global with the export makes it call itself.
+if (typeof global.structuredClone !== 'function') {
+  global.structuredClone = structuredClone
+}
 
 Buffer.prototype.subarray = function subarray(
   begin: number | undefined,
