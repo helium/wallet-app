@@ -42,6 +42,15 @@ describe('CloseButton', () => {
     expect(byType(renderer, 'X')[0].props.size).toBe(24)
   })
 
+  it('puts the accessibility label on the press target', () => {
+    const [target] = byType(
+      create(<CloseButton accessibilityLabel="Close" />),
+      'PressableScale',
+    )
+
+    expect(target.props.accessibilityLabel).toBe('Close')
+  })
+
   it('passes the caller className to the wrapper', () => {
     const [wrapper] = byType(create(<CloseButton className="ms-4" />), 'View')
 
