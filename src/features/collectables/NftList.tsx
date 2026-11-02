@@ -8,7 +8,7 @@ import { useCSSVariable } from 'uniwind'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 
-const CONTENT_CONTAINER_STYLE = { marginTop: 16 }
+const CONTENT_CONTAINER_STYLE = { marginTop: 16, paddingHorizontal: 8 }
 
 const COLUMN_WRAPPER_STYLE = { flexDirection: 'row' } as const
 

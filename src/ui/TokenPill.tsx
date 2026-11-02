@@ -45,8 +45,8 @@ export const TokenPill = ({
           isActive && 'border-primary',
         )}
       >
-        <View className="me-1 size-8 items-center justify-center rounded-full bg-primary">
-          <TokenIcon img={json?.image} size={24} />
+        <View className="me-1">
+          <TokenIcon img={json?.image} size={32} />
         </View>
         <Text className="grow text-center font-medium">{symbol}</Text>
         {hasCarot && (
