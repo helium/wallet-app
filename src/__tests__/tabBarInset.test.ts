@@ -27,7 +27,6 @@ const NOT_NEEDED: Record<string, string> = {
 // Shared components that clear the bar for the screens that render them.
 const CLEARING_COMPONENTS: Record<string, string> = {
   AccountTokenList: 'features/account/AccountTokenList.tsx',
-  ConfirmPinView: 'ui/ConfirmPinView.tsx',
   ContactDetails: 'features/addressBook/ContactDetails.tsx',
   ContactsList: 'features/addressBook/ContactsList.tsx',
   ConfirmWordsScreen: 'features/onboarding/create/ConfirmWordsScreen.tsx',

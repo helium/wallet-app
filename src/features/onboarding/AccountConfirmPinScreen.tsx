@@ -3,6 +3,8 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import { toSecureAccount } from '@storage/secureStorage'
 import { ConfirmPinView } from '@ui/ConfirmPinView'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
+import { View } from 'react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { RootNavigationProp } from '../../navigation/rootTypes'
@@ -64,13 +66,16 @@ const AccountConfirmPinScreen = () => {
   }
 
   return (
-    <ConfirmPinView
-      originalPin={params.pin}
-      title={t('accountSetup.confirmPin.title')}
-      subtitle={t('accountSetup.confirmPin.subtitle')}
-      pinSuccess={(pin) => void pinSuccess(pin).catch(console.error)}
-      onCancel={navigation.goBack}
-    />
+    <View className="flex-1">
+      <ConfirmPinView
+        originalPin={params.pin}
+        title={t('accountSetup.confirmPin.title')}
+        subtitle={t('accountSetup.confirmPin.subtitle')}
+        pinSuccess={(pin) => void pinSuccess(pin).catch(console.error)}
+        onCancel={navigation.goBack}
+      />
+      <TabSafeAreaView edges={['bottom']} />
+    </View>
   )
 }
 

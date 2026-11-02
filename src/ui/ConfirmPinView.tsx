@@ -1,6 +1,5 @@
 import useHaptic from '@hooks/useHaptic'
 import React, { useEffect, useEffectEvent, useState } from 'react'
-import { TabSafeAreaView } from './TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { Animated, View } from 'react-native'
 import { Keypad, type KeypadInput } from './Keypad'
@@ -108,7 +107,6 @@ export const ConfirmPinView = ({
         )}
       </View>
       <View className="flex-1" />
-      <TabSafeAreaView edges={['bottom']} />
     </View>
   )
 }

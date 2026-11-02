@@ -1,12 +1,11 @@
+import fs from 'fs'
+import path from 'path'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { ConfirmPinView } from '../ConfirmPinView'
 
 const mockTriggerImpact = jest.fn()
 
-jest.mock('../TabSafeAreaView', () => ({
-  TabSafeAreaView: 'TabSafeAreaView',
-}))
 jest.mock(
   '@hooks/useHaptic',
   () => () => ({ triggerImpact: mockTriggerImpact }),
@@ -149,4 +148,15 @@ describe('ConfirmPinView', () => {
     })
     expect(onCancel).toHaveBeenCalledTimes(1)
   })
+})
+
+// The lock screen renders this view outside the tab navigator, where the
+// tab bar inset is wrong. Only the tab-stack screens that render it may add
+// that inset.
+test('does not add the tab bar inset itself', () => {
+  const source = fs.readFileSync(
+    path.join(__dirname, '..', 'ConfirmPinView.tsx'),
+    'utf8',
+  )
+  expect(source).not.toMatch(/TabSafeAreaView/)
 })

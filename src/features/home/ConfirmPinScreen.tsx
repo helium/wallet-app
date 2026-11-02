@@ -1,8 +1,10 @@
+import { View } from 'react-native'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import * as LocalAuthentication from 'expo-local-authentication'
 import { ConfirmPinView } from '@ui/ConfirmPinView'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { HomeNavigationProp, HomeStackParamList } from './homeTypes'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 
@@ -55,13 +57,16 @@ const ConfirmPinScreen = () => {
   if (!pin || !pin.value) return null
 
   return (
-    <ConfirmPinView
-      originalPin={pin.value}
-      title={title}
-      subtitle={subtitle}
-      pinSuccess={() => void pinSuccess().catch(console.error)}
-      onCancel={navigation.goBack}
-    />
+    <View className="flex-1">
+      <ConfirmPinView
+        originalPin={pin.value}
+        title={title}
+        subtitle={subtitle}
+        pinSuccess={() => void pinSuccess().catch(console.error)}
+        onCancel={navigation.goBack}
+      />
+      <TabSafeAreaView edges={['bottom']} />
+    </View>
   )
 }
 

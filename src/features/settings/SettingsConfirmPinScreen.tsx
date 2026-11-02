@@ -1,7 +1,9 @@
+import { View } from 'react-native'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native'
 import { ConfirmPinView } from '@ui/ConfirmPinView'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useAppStorage } from '../../storage/AppStorageProvider'
 import { SettingsNavigationProp, SettingsStackParamList } from './settingsTypes'
 
@@ -76,13 +78,16 @@ const SettingsConfirmPinScreen = () => {
   }, [params.action, t])
 
   return (
-    <ConfirmPinView
-      originalPin={params.pin}
-      title={title}
-      subtitle={subtitle}
-      pinSuccess={() => void pinSuccess().catch(console.error)}
-      onCancel={navigation.goBack}
-    />
+    <View className="flex-1">
+      <ConfirmPinView
+        originalPin={params.pin}
+        title={title}
+        subtitle={subtitle}
+        pinSuccess={() => void pinSuccess().catch(console.error)}
+        onCancel={navigation.goBack}
+      />
+      <TabSafeAreaView edges={['bottom']} />
+    </View>
   )
 }
 
