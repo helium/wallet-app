@@ -73,6 +73,8 @@ jest.mock('../KeystoneOnboardingProvider', () => {
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true
 
+const renderers: TestRenderer.ReactTestRenderer[] = []
+
 const render = async () => {
   let renderer!: TestRenderer.ReactTestRenderer
   await act(async () => {
@@ -82,6 +84,7 @@ const render = async () => {
       </QueryClientProvider>,
     )
   })
+  renderers.push(renderer)
   return renderer
 }
 
@@ -92,6 +95,13 @@ const nameAndContinue = async (renderer: TestRenderer.ReactTestRenderer) => {
   await act(async () => {
     renderer.root.findByType('FabButton' as never).props.onPress()
   })
+  // react-query notifies observers on a 0 ms timer; flush it inside act.
+  await act(
+    () =>
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, 0)
+      }),
+  )
 }
 
 const shows = (renderer: TestRenderer.ReactTestRenderer, text: string) =>
@@ -103,6 +113,13 @@ beforeEach(() => {
   mockReset.mockReset()
   mockReplace.mockReset()
   mockUpsertAccounts.mockReset()
+})
+
+afterEach(async () => {
+  await act(async () => {
+    renderers.forEach((renderer) => renderer.unmount())
+  })
+  renderers.length = 0
 })
 
 describe('KeystoneAccountAssignScreen', () => {
