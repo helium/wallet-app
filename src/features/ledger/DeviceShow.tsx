@@ -278,7 +278,7 @@ const DeviceShow = () => {
       <View className="absolute inset-x-0 bottom-0 h-[11%] border-t border-border bg-background">
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="mx-6 mb-1 mt-4"
           onPress={canAddAccounts ? handleNext : handleClose}
         >

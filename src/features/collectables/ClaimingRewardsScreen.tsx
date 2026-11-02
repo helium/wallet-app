@@ -156,7 +156,7 @@ const ClaimingRewardsScreen = () => {
         <View className="w-full justify-end" style={{ marginBottom: bottom }}>
           <Button
             variant="secondary"
-            size="lg"
+            size="dashboard"
             className="mx-4 mb-4"
             onPress={onReturn}
           >

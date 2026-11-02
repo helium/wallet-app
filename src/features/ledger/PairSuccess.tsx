@@ -53,7 +53,12 @@ const PairSuccess = () => {
           </Text>
         </View>
       </View>
-      <Button variant="cta" size="lg" className="mb-4 w-full" onPress={next}>
+      <Button
+        variant="cta"
+        size="dashboard"
+        className="mb-4 w-full"
+        onPress={next}
+      >
         {t('ledger.success.next')}
       </Button>
     </View>

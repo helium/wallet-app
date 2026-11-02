@@ -188,7 +188,7 @@ const AirdropScreen = () => {
       </Text>
       <Button
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mx-6 my-6"
         disabled={loading}
         onPress={() => void onAirdrop().catch(console.error)}

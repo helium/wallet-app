@@ -128,7 +128,7 @@ const MigrateToWorldCard: FC = () => {
           </View>
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mt-6 w-full"
             onPress={handleGetStarted}
             testID="MigrateToWorld.GetStarted"
@@ -137,7 +137,7 @@ const MigrateToWorldCard: FC = () => {
           </Button>
           <Button
             variant="ghost"
-            size="lg"
+            size="dashboard"
             className="mt-2 w-full"
             onPress={handleNotNow}
             testID="MigrateToWorld.NotNow"

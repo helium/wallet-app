@@ -108,7 +108,7 @@ const AutoGasManager: FC = () => {
       <View className="mx-4 mb-4 flex-row gap-3">
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1"
           onPress={navigation.goBack}
         >
@@ -116,7 +116,7 @@ const AutoGasManager: FC = () => {
         </Button>
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1"
           onPress={() => void handleSave().catch(console.error)}
         >

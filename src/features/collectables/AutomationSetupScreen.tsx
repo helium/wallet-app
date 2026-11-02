@@ -436,7 +436,7 @@ const AutomationSetupScreen = () => {
                 {duration && (
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="mb-4 w-full"
                     disabled={
                       !duration || fundAutomationLoading || !estimate.estimate
@@ -454,7 +454,7 @@ const AutomationSetupScreen = () => {
                 )}
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="dashboard"
                   className="mb-4 w-full"
                   disabled={closeAutomationLoading}
                   onPress={() =>
@@ -473,7 +473,7 @@ const AutomationSetupScreen = () => {
             ) : (
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mb-4 w-full"
                 disabled={
                   insufficientSol ||

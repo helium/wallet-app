@@ -111,7 +111,7 @@ const NftDetailsScreen = () => {
               {collectable.model === 'nft' && (
                 <Button
                   variant="cta"
-                  size="lg"
+                  size="dashboard"
                   className="flex-1"
                   onPress={handleSend}
                 >

@@ -87,7 +87,7 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
         <View className="flex-row gap-4">
           <Button
             variant="outline"
-            size="lg"
+            size="dashboard"
             className="flex-1"
             onPress={onCancel}
           >
@@ -95,7 +95,7 @@ const DappLogin = ({ onLogin, onCancel, appName, loading }: Props) => {
           </Button>
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="flex-1"
             onPress={onLogin}
             disabled={loading}

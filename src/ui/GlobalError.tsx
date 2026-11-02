@@ -52,7 +52,7 @@ export const GlobalError = ({
         </ScrollView>
         <Button
           variant="outline"
-          size="lg"
+          size="dashboard"
           className="mb-2 mt-4 w-full"
           onPress={handleCopyError}
         >
@@ -63,7 +63,7 @@ export const GlobalError = ({
         </Button>
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="w-full"
           onPress={resetErrorBoundary}
         >

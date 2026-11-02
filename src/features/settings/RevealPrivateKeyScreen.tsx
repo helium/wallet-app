@@ -83,7 +83,7 @@ const RevealPrivateKeyScreen = () => {
             </View>
             <Button
               variant="cta"
-              size="lg"
+              size="dashboard"
               className="w-full"
               onPress={() =>
                 copyText({
@@ -116,7 +116,7 @@ const RevealPrivateKeyScreen = () => {
         <View className="flex-1" />
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="mb-4 w-full"
           onPress={navigation.goBack}
         >

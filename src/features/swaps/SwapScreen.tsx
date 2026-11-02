@@ -852,7 +852,7 @@ const SwapScreen = () => {
                 <View className="mx-4 mb-8">
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="w-full"
                     disabled={
                       hasInsufficientBalance ||

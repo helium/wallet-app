@@ -218,7 +218,7 @@ jest.mock('react-native-keyboard-controller', () => ({
   KeyboardAwareScrollView: 'KeyboardAwareScrollView',
 }))
 jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 0 }),
+  useSafeAreaInsets: () => ({ top: 47 }),
 }))
 jest.mock('react-native-simple-toast', () => ({ show: () => undefined }))
 jest.mock('../../../navigation/NavigationHelper', () => ({
@@ -419,5 +419,22 @@ describe('PaymentScreen Retry', () => {
 
     expect(buttons('generic.cancel').length).toBe(1)
     expect(buttons('generic.retry').length).toBe(0)
+  })
+})
+
+describe('PaymentScreen header', () => {
+  afterEach(() => act(() => renderer.unmount()))
+
+  // Home slides Send up as a full-screen card, so on iOS the header must clear
+  // the status bar even when the screen can go back.
+  it('sits below the top inset on iOS when it can go back', () => {
+    render()
+
+    const header = renderer.root.find(
+      (node) =>
+        (node.type as string) === 'View' &&
+        node.props.className === 'flex-1 rounded-t-[20px] bg-secondary',
+    )
+    expect(header.props.style).toEqual({ marginTop: 47 })
   })
 })

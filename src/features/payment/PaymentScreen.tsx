@@ -41,7 +41,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Keyboard, Platform, View } from 'react-native'
+import { Keyboard, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
@@ -727,13 +727,8 @@ const PaymentScreen = () => {
     dispatch({ type: 'addPayee' })
   }, [dispatch])
 
-  const containerStyle = useMemo(() => {
-    // if navigation cannot go back then this is not being presented in a modal so we need top margin
-    return {
-      marginTop:
-        Platform.OS === 'android' || !navigation.canGoBack() ? top : undefined,
-    }
-  }, [navigation, top])
+  // Every stack shows Send as a full-screen card, so clear the status bar.
+  const containerStyle = useMemo(() => ({ marginTop: top }), [top])
 
   const handleShowAccounts = useCallback(() => {
     if (!accountSelectorRef?.current) return

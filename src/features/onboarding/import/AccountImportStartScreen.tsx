@@ -118,7 +118,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       <View className="mx-6 mb-6 flex-row gap-1">
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1 px-2"
           onPress={navNext}
           testID="AccountImportStart.SecretPhrase"
@@ -128,7 +128,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         </Button>
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1 px-2"
           onPress={importPrivateKey}
           disabled={reachedAccountLimit}
@@ -137,7 +137,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         </Button>
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1 px-2"
           onPress={cliExport}
           disabled={reachedAccountLimit}

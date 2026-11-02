@@ -397,7 +397,7 @@ const AddGatewayBle = () => {
             {selectedOption === 'contact' && (
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mt-6 w-full"
                 onPress={() =>
                   void (async () => {
@@ -447,7 +447,7 @@ const AddGatewayBle = () => {
                     </Text>
                     <Button
                       variant="destructive"
-                      size="lg"
+                      size="dashboard"
                       className="mt-6 w-full"
                       onPress={() => handleAddGateway()}
                       disabled={!!disabled}
@@ -467,7 +467,7 @@ const AddGatewayBle = () => {
         {!wrongOwner && !balError ? (
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mt-6 w-full"
             onPress={() => handleAddGateway()}
             disabled={!!disabled}

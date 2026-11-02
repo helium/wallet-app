@@ -138,7 +138,7 @@ const AntennaSetupScreen = () => {
               </View>
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="w-full"
                 disabled={updating}
                 onPress={() => void handleUpdateElevGain().catch(console.error)}

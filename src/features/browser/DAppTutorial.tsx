@@ -121,7 +121,7 @@ const DAppTutorial = () => {
 
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mx-6 mb-6"
             onPress={handleEnterDAppPressed}
             disabled={!viewedSlides}

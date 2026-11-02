@@ -142,7 +142,7 @@ const ReviewStep: FC<{
         ) : null}
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mb-6 mt-4 w-full"
           testID="MigrateReview.Confirm"
           onPress={onConfirm}

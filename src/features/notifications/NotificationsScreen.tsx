@@ -56,7 +56,7 @@ const NotificationsScreen = () => {
       <View className="absolute bottom-0 mb-8 w-full px-4">
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mt-4 w-full"
           onPress={onActionPress}
         >

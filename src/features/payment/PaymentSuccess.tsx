@@ -58,7 +58,7 @@ const PaymentSuccess = ({
           <Button
             testID="PaymentSuccess.Done"
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mb-4 mt-12 w-full"
             onPress={onSuccess}
           >

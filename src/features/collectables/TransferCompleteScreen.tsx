@@ -182,7 +182,7 @@ const TransferCollectableScreen = () => {
           <View className="w-full flex-1 justify-end">
             <Button
               variant="secondary"
-              size="lg"
+              size="dashboard"
               className="mx-4 mb-4"
               onPress={onReturn}
             >

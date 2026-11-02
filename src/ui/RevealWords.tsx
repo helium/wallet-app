@@ -81,7 +81,7 @@ export const RevealWords = ({
       <Button
         testID="RevealWords.Next"
         variant="secondary"
-        size="lg"
+        size="dashboard"
         className="mb-4 w-full"
         onPress={onDone}
       >

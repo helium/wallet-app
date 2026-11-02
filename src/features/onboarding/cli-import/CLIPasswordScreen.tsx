@@ -113,7 +113,7 @@ const CLIPasswordScreen = () => {
 
       <Button
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mb-4 w-full"
         onPress={() => void handleNext().catch(console.error)}
       >

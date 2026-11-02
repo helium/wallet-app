@@ -188,6 +188,23 @@ describe('Button', () => {
     },
   )
 
+  it('fills a disabled cta pill with purple-400 and a normal-leading label', () => {
+    const view = render(
+      <Button variant="cta" size="dashboard" onPress={jest.fn()} disabled>
+        Send
+      </Button>,
+    )
+
+    const className = view.pressable().props.className.split(' ')
+    expect(className).toEqual(
+      expect.arrayContaining(['bg-purple-400', 'h-[43px]', 'rounded-[30px]']),
+    )
+    expect(className).not.toContain('opacity-50')
+    expect(view.labels()[0].props.className.split(' ')).toEqual(
+      expect.arrayContaining(['leading-normal', 'text-white']),
+    )
+  })
+
   it('gives the link variant opacity feedback, not scale', () => {
     const view = render(
       <Button variant="link" onPress={jest.fn()}>

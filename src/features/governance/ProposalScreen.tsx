@@ -409,7 +409,7 @@ export const ProposalScreen = () => {
                     </View>
                     <Text>{t('gov.proposals.assignProxy')}</Text>
                     <Button
-                      size="lg"
+                      size="dashboard"
                       className="mt-4 w-full rounded-full"
                       onPress={handleBrowseProxies}
                     >

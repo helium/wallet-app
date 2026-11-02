@@ -568,7 +568,7 @@ const DeprecatedTokensModal: FC = () => {
               <View className="px-4">
                 <Button
                   variant="cta"
-                  size="lg"
+                  size="dashboard"
                   className="mb-4 w-full"
                   onPress={() => void handleSwapAll().catch(console.error)}
                   disabled={!hasAnyTokens}
@@ -580,7 +580,7 @@ const DeprecatedTokensModal: FC = () => {
 
                 <Button
                   variant="secondary"
-                  size="lg"
+                  size="dashboard"
                   className="mb-4 w-full"
                   onPress={handleRemindLater}
                 >

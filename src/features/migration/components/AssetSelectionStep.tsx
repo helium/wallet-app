@@ -177,7 +177,7 @@ const AssetSelectionStep: FC<{
         <View className="flex-1" />
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mb-6 w-full"
           testID="MigrateSelect.Review"
           onPress={() => onReview({ hotspotKeys, tokenAmounts })}

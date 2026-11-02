@@ -144,7 +144,7 @@ const EmailLoginStep: FC<{ onBack: () => void; onSuccess: () => void }> = ({
           />
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mt-4 w-full"
             testID={codeSent ? 'MigrateLogin.Verify' : 'MigrateLogin.SendCode'}
             onPress={() =>
