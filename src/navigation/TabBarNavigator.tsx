@@ -26,10 +26,9 @@ const Tab = createNativeBottomTabNavigator()
 const DOT_BADGE = Platform.select({ ios: ' ', default: '' })
 
 const TabBarNavigator = () => {
-  const [active, inactive, tabBar, badge] = useCSSVariable([
-    '--color-primary-foreground',
+  const [active, inactive, badge] = useCSSVariable([
+    '--color-foreground',
     '--color-muted-foreground',
-    '--color-primary',
     '--color-success-500',
   ]).map(String)
   const { triggerImpact } = useHaptic()
@@ -81,14 +80,18 @@ const TabBarNavigator = () => {
           </Portal>
         )}
       <Tab.Navigator
-        screenOptions={{
+        // Icon-only tabs: an empty label hides the text on iOS, the unlabeled
+        // mode on Android. The route name stays the spoken name.
+        screenOptions={({ route }) => ({
           headerShown: false,
           lazy: true,
+          tabBarLabel: '',
+          tabBarLabelVisibilityMode: 'unlabeled',
+          tabBarAccessibilityLabel: route.name,
           tabBarActiveTintColor: active,
           tabBarInactiveTintColor: inactive,
-          tabBarStyle: { backgroundColor: tabBar },
           tabBarBadgeStyle: { backgroundColor: badge },
-        }}
+        })}
         // Native tabs draw screens under the tab bar. Pad them clear of it.
         screenLayout={({ children }) => (
           <SafeAreaView edges={{ bottom: true }}>
