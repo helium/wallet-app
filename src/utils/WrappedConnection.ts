@@ -23,6 +23,7 @@ export type SearchAssetsOpts = {
 
 // Android's network client has no timeout, so a stalled RPC request fails
 // after this long instead of blocking every account cache read
+// The DAS calls through axios use the same bound
 export const RPC_REQUEST_TIMEOUT = 1000 * 60 // 60 seconds
 
 const withTimeout =
@@ -40,8 +41,6 @@ const withTimeout =
       }, RPC_REQUEST_TIMEOUT)
     })
     const request = fetchFn(input, { ...init, signal: controller.signal })
-    // The losing side of the race must not become an unhandled rejection
-    request.catch(() => {})
     return Promise.race([request, timeout]).finally(() => clearTimeout(timer))
   }
 
@@ -71,11 +70,15 @@ export class WrappedConnection extends Connection {
 
   async getHealth(): Promise<any> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getHealth',
-        id: 'rpd-op-123',
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getHealth',
+          id: 'rpd-op-123',
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
       return { result: response.data.result, error: response.data.error }
     } catch (error) {
       logger.error(error)
@@ -109,17 +112,21 @@ export class WrappedConnection extends Connection {
     }
 
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'searchAssets',
-        id: 'get-assets-op-1',
-        params,
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          Expires: '0',
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'searchAssets',
+          id: 'get-assets-op-1',
+          params,
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
         },
-      })
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
 
       return response.data.result?.items
     } catch (error) {
@@ -130,12 +137,16 @@ export class WrappedConnection extends Connection {
 
   async getAsset<T>(assetId: string): Promise<T> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getAsset',
-        id: 'rpd-op-123',
-        params: { id: assetId },
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getAsset',
+          id: 'rpd-op-123',
+          params: { id: assetId },
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
       return response.data
     } catch (error) {
       logger.error(error)
@@ -155,12 +166,16 @@ export class WrappedConnection extends Connection {
     },
   ): Promise<T> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getAssetsByOwner',
-        id: 'rpd-op-123',
-        params: [assetId, sortBy, limit, page, before, after, options],
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getAssetsByOwner',
+          id: 'rpd-op-123',
+          params: [assetId, sortBy, limit, page, before, after, options],
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
 
       return response.data.result
     } catch (error) {
@@ -171,12 +186,16 @@ export class WrappedConnection extends Connection {
 
   async getAssetProof(assetId: any): Promise<any> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getAssetProof',
-        id: 'rpd-op-123',
-        params: { id: assetId },
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getAssetProof',
+          id: 'rpd-op-123',
+          params: { id: assetId },
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
       return response.data.result
     } catch (error) {
       console.error(error)
