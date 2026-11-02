@@ -31,7 +31,8 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { Alert, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useCSSVariable, withUniwind } from 'uniwind'
 import { useDebounce } from 'use-debounce'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -46,7 +47,7 @@ import { HexInfoBuckets, hotspotMapInfosQuery } from './hotspotMapInfosQuery'
 import Map from './map/Map'
 import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from './map/utils'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const AnimatedBlurView = withUniwind(Animated.createAnimatedComponent(BlurView))
 const Hex = withUniwind(HexArt)
 const BackIcon = withUniwind(ChevronLeft)
@@ -58,7 +59,7 @@ type OnPress = NonNullable<
   Pick<ComponentProps<typeof GeoJSONSource>, 'onPress'>['onPress']
 >
 
-const BACK_EDGES: Edge[] = ['top']
+const BACK_EDGES: Edge[] = ['top', 'bottom']
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
 const NO_HEX_INFO_BUCKETS: HexInfoBuckets = {}
 const HotspotMapScreen = () => {

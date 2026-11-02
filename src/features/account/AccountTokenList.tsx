@@ -10,6 +10,7 @@ import { syncTokenAccounts } from '@utils/balances'
 import { times } from 'lodash'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SlidersHorizontal } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -101,16 +102,19 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const renderFooterComponent = () => {
     return (
-      <PressableScale
-        feedback="opacity"
-        onPress={onManageTokenList}
-        className="mt-4 flex-row items-center justify-center"
-      >
-        <ManageIcon colorClassName="accent-muted-foreground" />
-        <Text className="ml-2 font-medium text-muted-foreground">
-          {t('accountTokenList.manage')}
-        </Text>
-      </PressableScale>
+      <>
+        <PressableScale
+          feedback="opacity"
+          onPress={onManageTokenList}
+          className="mt-4 flex-row items-center justify-center"
+        >
+          <ManageIcon colorClassName="accent-muted-foreground" />
+          <Text className="ml-2 font-medium text-muted-foreground">
+            {t('accountTokenList.manage')}
+          </Text>
+        </PressableScale>
+        <TabSafeAreaView edges={['bottom']} />
+      </>
     )
   }
 
@@ -125,7 +129,6 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   return (
     <BottomSheetFlatList
-      contentInsetAdjustmentBehavior="automatic"
       onLayout={onLayout}
       data={mints}
       numColumns={2}

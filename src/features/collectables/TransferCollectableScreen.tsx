@@ -23,7 +23,7 @@ import {
   View,
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import 'text-encoding-polyfill'
 import { withUniwind } from 'uniwind'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
@@ -49,7 +49,7 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const Blur = withUniwind(BlurView)
 const KeyboardAvoiding = withUniwind(KeyboardAvoidingView)
 const InfoIcon = withUniwind(Info)

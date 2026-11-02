@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { Image, LogBox, Platform, View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import 'text-encoding-polyfill'
 import { withUniwind } from 'uniwind'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
@@ -30,7 +30,7 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const Blur = withUniwind(BlurView)
 const BackIcon = withUniwind(ChevronLeft)
 const SuccessIcon = withUniwind(CircleCheck)
@@ -92,7 +92,7 @@ const TransferCollectableScreen = () => {
           />
         </>
       )}
-      <SafeArea edges={['top']} className="flex-1">
+      <SafeArea edges={['top', 'bottom']} className="flex-1">
         <BackHeader hideBack onClose={onReturn} className="mt-6" />
         <View className="flex-1 items-center justify-center p-4">
           <View className="mb-8 grow items-center justify-center">

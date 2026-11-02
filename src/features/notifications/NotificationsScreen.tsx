@@ -2,7 +2,7 @@ import React, { useEffect, useEffectEvent } from 'react'
 import { useIsFocused, useNavigation } from '@react-navigation/native'
 import { Linking, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { Button } from '@ui/Button'
 import { CloseButton } from '@ui/CloseButton'
@@ -11,7 +11,7 @@ import AccountSlider from './AccountSlider'
 import { useNotificationStorage } from '../../storage/NotificationStorageProvider'
 import NotificationsList from './NotificationsList'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const NotificationsScreen = () => {
   const { t } = useTranslation()
@@ -68,7 +68,7 @@ const NotificationsScreen = () => {
     )
 
   return (
-    <SafeArea className="flex-1 bg-background" edges={['top']}>
+    <SafeArea className="flex-1 bg-background" edges={['top', 'bottom']}>
       <NotificationsList
         HeaderComponent={HeaderComponent}
         FooterComponent={FooterComponent}

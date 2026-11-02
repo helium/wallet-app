@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native'
 import React from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { ScrollView } from 'react-native'
 import GovernanceWrapper from './GovernanceWrapper'
 import { ProposalsList } from './ProposalsList'
@@ -19,8 +20,9 @@ export const ProposalsScreen = () => {
           })
         }
       />
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
+      <ScrollView>
         <ProposalsList />
+        <TabSafeAreaView edges={['bottom']} />
       </ScrollView>
     </GovernanceWrapper>
   )

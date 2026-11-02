@@ -16,7 +16,7 @@ import {
 import Animated from 'react-native-reanimated'
 import { useEntityKey } from '@hooks/useEntityKey'
 import { useIotInfo } from '@hooks/useIotInfo'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import BackHeader from './components/BackHeader'
 import {
@@ -26,7 +26,7 @@ import {
 import { parseH3BNLocation } from '../../utils/h3'
 import * as Logger from '../../utils/logger'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 type Route = RouteProp<CollectableStackParamList, 'AntennaSetupScreen'>
 const AntennaSetupScreen = () => {

@@ -29,7 +29,7 @@ import {
   View,
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { Mints } from '../../utils/constants'
 import * as Logger from '../../utils/logger'
@@ -43,7 +43,7 @@ import {
   CollectableStackParamList,
 } from './collectablesTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const HntIcon = withUniwind(HntSymbol)
 const MobileIcon = withUniwind(MobileSymbol)
 const IotIcon = withUniwind(IotSymbol)

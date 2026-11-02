@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable'
-import { SafeAreaView } from 'react-native-screens/experimental'
 import { useCSSVariable } from 'uniwind'
 import { Portal } from '@gorhom/portal'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
@@ -17,7 +16,7 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useAppStore } from '../store/appStore'
 import { useSolana } from '../solana/SolanaProvider'
-import { ContentColumn } from '../ui/ContentColumn'
+import { contentColumnLayout } from '../ui/ContentColumn'
 
 const Tab = createNativeBottomTabNavigator()
 
@@ -91,13 +90,12 @@ const TabBarNavigator = () => {
           tabBarActiveTintColor: active,
           tabBarInactiveTintColor: inactive,
           tabBarBadgeStyle: { backgroundColor: badge },
+          // The bar floats over the screens. Each list pads its own end and
+          // each footer sits in a TabSafeAreaView, on iOS and Android alike,
+          // so iOS must not also inset the first scroll view.
+          overrideScrollViewContentInsetAdjustmentBehavior: false,
         })}
-        // Native tabs draw screens under the tab bar. Pad them clear of it.
-        screenLayout={({ children }) => (
-          <SafeAreaView edges={{ bottom: true }}>
-            <ContentColumn>{children}</ContentColumn>
-          </SafeAreaView>
-        )}
+        screenLayout={contentColumnLayout}
         screenListeners={({ navigation }) => ({
           tabPress: () => {
             triggerImpact('light')

@@ -26,12 +26,12 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp, HomeStackParamList } from '../home/homeTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 
 const DROP_HEIGHT = 79

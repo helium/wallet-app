@@ -1,13 +1,14 @@
 import { useNavigation } from '@react-navigation/native'
 import React from 'react'
 import { View } from 'react-native'
-import { type Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { type Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from './TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { BackButton } from './BackButton'
 import { Text } from './Text'
 import { twMerge } from './twMerge'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 export type BackScreenProps = {
   children?: React.ReactNode

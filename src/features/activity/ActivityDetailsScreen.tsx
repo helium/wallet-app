@@ -21,7 +21,7 @@ import {
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, ImageProps, Linking, ScrollView, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
@@ -31,7 +31,7 @@ import { ActivityStackParamList } from './activityTypes'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 const SendIcon = withUniwind(ArrowUpRight)
 const ReceiveIcon = withUniwind(ArrowDownLeft)

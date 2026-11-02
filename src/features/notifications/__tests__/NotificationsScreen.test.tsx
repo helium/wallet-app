@@ -25,6 +25,9 @@ const notification = (
 // Each test sets the storage this screen reads. The object stays the same
 // across renders, as the provider's memoised value does.
 let mockStorage: Record<string, unknown> = {}
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('../../../storage/NotificationStorageProvider', () => ({
   useNotificationStorage: () => mockStorage,
 }))

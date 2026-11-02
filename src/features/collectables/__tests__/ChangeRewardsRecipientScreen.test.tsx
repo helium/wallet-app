@@ -14,6 +14,9 @@ const mockSubmitUpdateRewardsDestination = jest.fn(
     }),
 )
 
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock(
   '@hooks/useSubmitTxn',
   () => () => ({

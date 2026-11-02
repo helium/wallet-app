@@ -46,14 +46,14 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import Share, { ShareOptions } from 'react-native-share'
 import Toast from 'react-native-simple-toast'
 import { useDebounce } from 'use-debounce'
 import { Share as ShareGlyph } from 'lucide-react-native'
 import { withUniwind } from 'uniwind'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const ShareIcon = withUniwind(ShareGlyph)
 
 const QR_CONTAINER_SIZE = 220
@@ -235,7 +235,7 @@ const RequestScreen = () => {
           <SafeArea
             className="flex-1 rounded-t-[20px] border border-border bg-secondary"
             onLayout={handleContainerLayout}
-            edges={['top']}
+            edges={['top', 'bottom']}
           >
             <Text size="lg" className="pt-6 text-center font-medium">
               {t('request.title')}

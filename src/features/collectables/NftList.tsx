@@ -5,6 +5,7 @@ import { RefreshControl, View } from 'react-native'
 import useCollectables from '@hooks/useCollectables'
 import { useNavigation } from '@react-navigation/native'
 import { useCSSVariable } from 'uniwind'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import NFTListItem, { NFTSkeleton } from './NftListItem'
 import { CollectableNavigationProp } from './collectablesTypes'
 
@@ -56,7 +57,6 @@ const NftList = () => {
 
   return (
     <FlatList
-      contentInsetAdjustmentBehavior="automatic"
       enabled
       data={flatListItems}
       numColumns={2}
@@ -73,6 +73,7 @@ const NftList = () => {
       renderItem={renderItem}
       ListEmptyComponent={renderEmptyComponent}
       keyExtractor={keyExtractor}
+      ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
     />
   )
 }

@@ -4,6 +4,9 @@ import ProposalScreen from '../ProposalScreen'
 
 const mockPush = jest.fn()
 
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('@react-navigation/native', () => {
   const navigation = {
     push: (...args: unknown[]) => mockPush(...args),

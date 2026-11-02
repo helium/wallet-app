@@ -57,6 +57,9 @@ const mockAccountStorage = {
   defaultAccountAddress: undefined,
 }
 
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('../../../hooks/useSubmitTxn', () => {
   const { useMutation } = jest.requireActual('@tanstack/react-query')
   return () => {

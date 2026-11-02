@@ -9,7 +9,7 @@ import { BlurView } from 'expo-blur'
 import { ChevronRight, Info } from 'lucide-react-native'
 import { Image, Platform, ScrollView, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import 'text-encoding-polyfill'
 import { useTranslation } from 'react-i18next'
 import { withUniwind } from 'uniwind'
@@ -20,7 +20,7 @@ import {
   CollectableStackParamList,
 } from './collectablesTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const Blur = withUniwind(BlurView)
 const InfoIcon = withUniwind(Info)
 const NextIcon = withUniwind(ChevronRight)

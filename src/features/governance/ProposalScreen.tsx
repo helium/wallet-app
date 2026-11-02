@@ -34,7 +34,8 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { Markdown } from './Markdown'
 import { VoteOption, votingResultColor } from './VoteOption'
@@ -45,7 +46,7 @@ import {
   VoteChoiceWithMeta,
 } from './governanceTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BrowseProxiesIcon = withUniwind(Users)
 const ChevronIcon = withUniwind(ChevronRight)
 

@@ -7,7 +7,7 @@ import { X } from 'lucide-react-native'
 import React, { useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Image, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
@@ -16,7 +16,7 @@ import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigato
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 
 const SUBTITLE_COMPONENTS = {

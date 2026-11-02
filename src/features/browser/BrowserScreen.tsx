@@ -22,6 +22,7 @@ import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { Input } from '@ui/Input'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { twMerge } from '@ui/twMerge'
 import useBrowser from '@hooks/useBrowser'
 import { prependHttp } from '@utils/url'
@@ -262,7 +263,6 @@ const BrowserScreen = () => {
       <SafeArea className="flex-1" edges={EDGES}>
         {browserHeader}
         <SectionList
-          contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="pt-4"
           sections={SectionData}
           keyExtractor={keyExtractor}
@@ -270,6 +270,7 @@ const BrowserScreen = () => {
           renderSectionHeader={renderSectionHeader}
           onEndReachedThreshold={0.05}
           renderSectionFooter={renderSectionFooter}
+          ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         />
         <View />
       </SafeArea>

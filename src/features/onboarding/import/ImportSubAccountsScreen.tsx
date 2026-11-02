@@ -19,12 +19,12 @@ import BN from 'bn.js'
 import React, { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, RefreshControl, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
 import { withUniwind } from 'uniwind'
 import { useOnboarding } from '../OnboardingProvider'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const TokenItem = ({ mint, amount }: { mint: PublicKey; amount: bigint }) => {
   const decimals = useMint(mint).info?.decimals

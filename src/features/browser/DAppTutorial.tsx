@@ -3,19 +3,20 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Image, ImageSourcePropType, StyleSheet, View } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
 import { Carousel, Pagination } from 'react-native-reanimated-carousel'
 import { useResolveClassNames, withUniwind } from 'uniwind'
 import { useAppStorage } from '@storage/AppStorageProvider'
 import { useContentWidth } from '@utils/layout'
 import { Button } from '@ui/Button'
 import { Text } from '@ui/Text'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { BrowserNavigationProp } from './browserTypes'
 import { useSolana } from '../../solana/SolanaProvider'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
-const EDGES: Edge[] = ['top']
+const EDGES: Edge[] = ['top', 'bottom']
 
 type CarouselItem = {
   titleKey: string

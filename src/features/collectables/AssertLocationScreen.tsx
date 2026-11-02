@@ -49,7 +49,8 @@ import {
   View,
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import 'text-encoding-polyfill'
 import { withUniwind } from 'uniwind'
 import { useDebouncedCallback } from 'use-debounce'
@@ -60,7 +61,7 @@ import {
 import Map from './map/Map'
 import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from './map/utils'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const Blur = withUniwind(BlurView)
 const AnimatedBlurView = withUniwind(Animated.createAnimatedComponent(BlurView))
 const Hex = withUniwind(HexArt)
@@ -69,7 +70,7 @@ const MapPin = withUniwind(MapPinGlyph)
 const SearchIcon = withUniwind(Search)
 const UserLocationIcon = withUniwind(LocateFixed)
 
-const BACK_EDGES: Edge[] = ['top']
+const BACK_EDGES: Edge[] = ['top', 'bottom']
 
 type Route = RouteProp<CollectableStackParamList, 'AssertLocationScreen'>
 

@@ -2,6 +2,9 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import HotspotList from '../HotspotList'
 
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('@helium/helium-react-hooks', () => ({ useMint: () => undefined }), {
   virtual: true,
 })

@@ -24,6 +24,9 @@ const mockDerivation = {
   fetchMore: () => undefined,
 }
 
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('react-native', () => ({
   FlatList: 'FlatList',
   RefreshControl: 'RefreshControl',

@@ -2,6 +2,9 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import NftList from '../NftList'
 
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock(
   '@hooks/useCollectables',
   () => () => ({

@@ -17,7 +17,8 @@ import {
 } from 'lucide-react-native'
 import React, { useRef, useState } from 'react'
 import { Platform, View } from 'react-native'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import {
   WebView,
@@ -47,7 +48,7 @@ import { runOneRequest } from './dappRequestGate'
 import { DappOrigin, senderOrigin } from './dappMessageOrigin'
 import injectWalletStandard from './walletStandard'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 const ForwardIcon = withUniwind(ChevronRight)
 // Lucide strokes the outline; a favorite also fills it
@@ -58,7 +59,7 @@ const BookmarkIcon = withUniwind(Bookmark, {
 const CloseIcon = withUniwind(X)
 const RefreshIcon = withUniwind(RefreshCw)
 
-const EDGES: Edge[] = ['top']
+const EDGES: Edge[] = ['top', 'bottom']
 
 type Route = RouteProp<BrowserStackParamList, 'BrowserWebViewScreen'>
 

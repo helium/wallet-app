@@ -3,6 +3,9 @@ import TestRenderer, { act } from 'react-test-renderer'
 import SwapNavigator from '../SwapNavigator'
 
 // The stack renders its first screen, as the native stack does on open.
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('@react-navigation/native-stack', () => {
   const ReactActual = jest.requireActual('react')
   return {

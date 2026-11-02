@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native'
 import { useKeyboard } from '@react-native-community/hooks'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { Check, X } from 'lucide-react-native'
 import { AccountIcon } from '@ui/AccountIcon'
@@ -34,7 +34,7 @@ import AddressExtra from './AddressExtra'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useSolana } from '../../solana/SolanaProvider'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CheckIcon = withUniwind(Check)
 const CloseIcon = withUniwind(X)
 

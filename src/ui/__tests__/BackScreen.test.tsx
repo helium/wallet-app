@@ -6,6 +6,7 @@ const mockGoBack = jest.fn()
 
 // The node test runner cannot load react-native, safe-area or uniwind. The
 // host components render as named elements so the test reads their props.
+jest.mock('../TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }))
 jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
