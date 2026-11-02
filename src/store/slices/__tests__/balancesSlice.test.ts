@@ -1,4 +1,5 @@
 import { AnchorProvider } from '@anchor-lang/core'
+import { AccountFetchCache } from '@helium/account-fetch-cache'
 import { DC_MINT, HNT_MINT } from '@helium/spl-utils'
 import {
   AccountLayout,
@@ -6,7 +7,13 @@ import {
   MintLayout,
   TOKEN_PROGRAM_ID,
 } from '@solana/spl-token'
-import { AccountInfo, Keypair, PublicKey } from '@solana/web3.js'
+import {
+  AccountInfo,
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+} from '@solana/web3.js'
 import { CSAccount } from '../../../storage/cloudStorage'
 import { AccountBalance } from '../../../types/balance'
 import {
@@ -87,7 +94,8 @@ type Holding = {
 }
 
 // An RPC connection holding one wallet's token accounts, its lamports, and the
-// mints' decimals. A mint absent from `decimalsByMint` has no account on chain.
+// mints' decimals. A mint absent from `decimalsByMint` has no account on chain,
+// and `lamports: null` is a wallet with no account, which getBalance reads as 0.
 const fakeConnection = (args: {
   owner: PublicKey
   lamports: number | null
@@ -111,11 +119,7 @@ const fakeConnection = (args: {
       context: { slot: 1 },
       value: tokenAccounts,
     })),
-    getAccountInfo: jest.fn(async () =>
-      args.lamports === null
-        ? null
-        : accountInfo(Buffer.alloc(0), args.lamports),
-    ),
+    getBalance: jest.fn(async () => args.lamports ?? 0),
     getMultipleAccountsInfo: jest.fn(async (mints: PublicKey[]) => {
       if (args.mintFetchError) throw args.mintFetchError
       return mints.map((mint) => {
@@ -148,6 +152,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  jest.useRealTimers()
   jest.restoreAllMocks()
   clearBalancesPorts()
 })
@@ -178,7 +183,7 @@ describe('syncTokenAccounts', () => {
     expect(connection.getTokenAccountsByOwner).toHaveBeenCalledWith(owner, {
       programId: TOKEN_PROGRAM_ID,
     })
-    expect(connection.getAccountInfo).toHaveBeenCalledWith(owner)
+    expect(connection.getBalance).toHaveBeenCalledWith(owner)
     expect(port.isSyncing()).toBe(false)
     expect(port.tokensOf('mainnet-beta', owner.toBase58())).toEqual({
       atas: [
@@ -272,12 +277,32 @@ describe('syncTokenAccounts', () => {
     ).toEqual([{ mint: HNT_MINT.toBase58(), decimals: 8 }])
   })
 
-  it('reads decimals as 0 for a mint with no account, and SOL as 0 for a wallet with no account', async () => {
+  it('rejects a sync whose mint has no account and stores nothing', async () => {
+    const owner = Keypair.generate().publicKey
+    const { connection } = fakeConnection({
+      owner,
+      lamports: 0,
+      holdings: [{ mint: HNT_MINT, amount: BigInt(100) }],
+      decimalsByMint: {},
+    })
+    const port = makePort()
+
+    const sync = await port.syncTokenAccounts({
+      cluster: 'mainnet-beta',
+      acct: accountFor(owner),
+      anchorProvider: providerFor(connection),
+    })
+
+    expect(sync).toBe('rejected')
+    expect(port.tokensOf('mainnet-beta', owner.toBase58())).toBeUndefined()
+  })
+
+  it('reads SOL as 0 for a wallet with no account', async () => {
     const owner = Keypair.generate().publicKey
     const { connection } = fakeConnection({
       owner,
       lamports: null,
-      holdings: [{ mint: HNT_MINT, amount: BigInt(100) }],
+      holdings: [],
       decimalsByMint: {},
     })
     const port = makePort()
@@ -289,7 +314,6 @@ describe('syncTokenAccounts', () => {
     })
 
     const tokens = port.tokensOf('mainnet-beta', owner.toBase58())
-    expect(tokens?.atas[0].decimals).toBe(0)
     expect(tokens?.sol).toEqual({ tokenAccount: owner.toBase58(), balance: 0 })
   })
 
@@ -556,7 +580,6 @@ describe('syncTokenAccounts', () => {
       tokenAccount: ownerA.toBase58(),
       balance: 1000,
     })
-    jest.useRealTimers()
   })
 
   it('runs a waiting sync when the sync before it fails', async () => {
@@ -572,7 +595,7 @@ describe('syncTokenAccounts', () => {
     )
     const failingA = {
       ...a.connection,
-      getAccountInfo: jest.fn(async () => {
+      getBalance: jest.fn(async () => {
         throw new Error('rpc down')
       }),
     }
@@ -698,6 +721,7 @@ describe('syncTokenAccounts', () => {
           anchorProvider: undefined,
         }).queryKey,
       )?.sol
+    const started: Promise<unknown>[] = []
 
     try {
       const syncA = outcomeOf(
@@ -734,6 +758,7 @@ describe('syncTokenAccounts', () => {
             }),
           ),
         )
+      started.push(syncA, syncB, syncC)
       a.release()
 
       expect(await Promise.all([syncA, syncB, syncC])).toEqual([
@@ -750,6 +775,8 @@ describe('syncTokenAccounts', () => {
         balance: 3000,
       })
     } finally {
+      // Clearing the client under a queued sync keeps jest from exiting
+      await Promise.allSettled(started)
       client.clear()
     }
   })
@@ -816,6 +843,234 @@ describe('syncTokenAccounts', () => {
       tokenAccount: owner.toBase58(),
       balance: 1000,
     })
+  })
+
+  describe('through the account cache the app wraps its connection with', () => {
+    const CACHE_DELAY = 10
+    const caches: AccountFetchCache[] = []
+
+    beforeEach(() => {
+      // Date stays on the test clock above
+      jest.useFakeTimers({ doNotFake: ['Date'] })
+    })
+
+    afterEach(() => {
+      caches.splice(0).forEach((cache) => cache.close())
+    })
+
+    const rpcResult = (result: unknown) => ({ jsonrpc: '2.0', id: '1', result })
+
+    // A real web3.js Connection, wrapped as SolanaProvider wraps it, whose RPC
+    // holds one HNT account (8 decimals) and 1000 lamports per wallet and
+    // fails every `failingMethod` request. Before the SOL balance read moved
+    // to getBalance it went through the cache's getMultipleAccounts, so a
+    // failing getBalance also fails that read of a wallet.
+    const wrappedConnection = (
+      failingMethod?: 'getMultipleAccounts' | 'getBalance',
+    ) => {
+      const connection = new Connection('http://localhost', 'confirmed')
+      const rpcRequest = jest.fn(async (method: string, params: unknown[]) => {
+        const [first] = params
+        const keys = method === 'getMultipleAccounts' ? (first as string[]) : []
+        const owner = method === 'getMultipleAccounts' ? undefined : first
+        const readsWallet = keys.some((key) => key !== HNT_MINT.toBase58())
+        if (
+          method === failingMethod ||
+          (failingMethod === 'getBalance' && readsWallet)
+        ) {
+          throw new Error(`rpc down: ${method}`)
+        }
+        const slot = { slot: 1 }
+        if (method === 'getTokenAccountsByOwner') {
+          const data = encodeTokenAccount({
+            mint: HNT_MINT,
+            owner: new PublicKey(owner as string),
+            amount: BigInt(100),
+            state: AccountState.Initialized,
+          })
+          return rpcResult({
+            context: slot,
+            value: [
+              {
+                pubkey: Keypair.generate().publicKey.toBase58(),
+                account: {
+                  data: [data.toString('base64'), 'base64'],
+                  executable: false,
+                  lamports: 1,
+                  owner: TOKEN_PROGRAM_ID.toBase58(),
+                  rentEpoch: 0,
+                },
+              },
+            ],
+          })
+        }
+        if (method === 'getBalance') {
+          return rpcResult({ context: slot, value: 1000 })
+        }
+        if (method === 'getMultipleAccounts') {
+          return rpcResult({
+            context: slot,
+            value: keys.map((key) =>
+              key === HNT_MINT.toBase58()
+                ? {
+                    data: [encodeMint(8).toString('base64'), 'base64'],
+                    executable: false,
+                    lamports: 1,
+                    owner: TOKEN_PROGRAM_ID.toBase58(),
+                    rentEpoch: 0,
+                  }
+                : {
+                    data: ['', 'base64'],
+                    executable: false,
+                    lamports: 1000,
+                    owner: SystemProgram.programId.toBase58(),
+                    rentEpoch: 0,
+                  },
+            ),
+          })
+        }
+        throw new Error(`unexpected RPC method ${method}`)
+      })
+      // The cache watches each account it fetches; no websocket in a unit test
+      Object.assign(connection, {
+        _rpcRequest: rpcRequest,
+        onAccountChange: jest.fn(() => 1),
+        removeAccountChangeListener: jest.fn(async () => {}),
+      })
+      caches.push(
+        new AccountFetchCache({
+          connection,
+          delay: CACHE_DELAY,
+          commitment: 'confirmed',
+          missingRefetchDelay: 60_000,
+          extendConnection: true,
+        }),
+      )
+      return { connection, rpcRequest }
+    }
+
+    // Each RPC read through the cache waits one batch delay
+    const settle = (sync: Promise<unknown>) =>
+      jest.advanceTimersByTimeAsync(CACHE_DELAY * 10).then(() => sync)
+
+    // The mint read skips the cache, so a failed batch the cache stores as
+    // null does not fail the next sync
+    it('syncs the mint decimals once the RPC recovers from a failed mint read', async () => {
+      const owner = Keypair.generate().publicKey
+      const port = makePort()
+      const { connection, rpcRequest } = wrappedConnection()
+      const answer = rpcRequest.getMockImplementation()
+      if (!answer) throw new Error('rpcRequest has no implementation')
+      rpcRequest.mockImplementation(async (method, params) => {
+        if (method === 'getMultipleAccounts') throw new Error('rpc down')
+        return answer(method, params)
+      })
+      const sync = () =>
+        settle(
+          port.syncTokenAccounts({
+            cluster: 'mainnet-beta',
+            acct: accountFor(owner),
+            anchorProvider: providerFor(connection),
+          }),
+        )
+
+      expect(await sync()).toBe('rejected')
+      expect(port.tokensOf('mainnet-beta', owner.toBase58())).toBeUndefined()
+
+      rpcRequest.mockImplementation(answer)
+      now += 5_000
+      await jest.advanceTimersByTimeAsync(5_000)
+
+      expect(await sync()).toBe('fulfilled')
+      expect(
+        port
+          .tokensOf('mainnet-beta', owner.toBase58())
+          ?.atas.map(({ mint, decimals }) => ({ mint, decimals })),
+      ).toEqual([{ mint: HNT_MINT.toBase58(), decimals: 8 }])
+    })
+
+    // A cache batch that never settles holds every later read through the
+    // cache, so the mint read must not wait on it
+    it('syncs while an unrelated cache read never settles', async () => {
+      const owner = Keypair.generate().publicKey
+      const unrelated = Keypair.generate().publicKey
+      const port = makePort()
+      const { connection, rpcRequest } = wrappedConnection()
+      const answer = rpcRequest.getMockImplementation()
+      if (!answer) throw new Error('rpcRequest has no implementation')
+      rpcRequest.mockImplementation((method, params) => {
+        const [keys] = params
+        if (
+          method === 'getMultipleAccounts' &&
+          (keys as string[]).includes(unrelated.toBase58())
+        ) {
+          return new Promise(() => {})
+        }
+        return answer(method, params)
+      })
+      void connection.getAccountInfo(unrelated)
+      await jest.advanceTimersByTimeAsync(CACHE_DELAY * 10)
+      expect(rpcRequest).toHaveBeenCalledWith(
+        'getMultipleAccounts',
+        expect.arrayContaining([[unrelated.toBase58()]]),
+      )
+
+      const sync = port.syncTokenAccounts({
+        cluster: 'mainnet-beta',
+        acct: accountFor(owner),
+        anchorProvider: providerFor(connection),
+      })
+      await jest.advanceTimersByTimeAsync(TOKEN_SYNC_TIMEOUT)
+
+      expect(await sync).toBe('fulfilled')
+      expect(port.tokensOf('mainnet-beta', owner.toBase58())?.atas).toEqual([
+        expect.objectContaining({ mint: HNT_MINT.toBase58(), decimals: 8 }),
+      ])
+    })
+
+    it.each(['getMultipleAccounts', 'getBalance'] as const)(
+      'rejects a sync whose %s request fails and keeps the stored balances',
+      async (failingMethod) => {
+        const seeded = Keypair.generate().publicKey
+        const unsynced = Keypair.generate().publicKey
+        const port = makePort()
+        // Its own cache, so the failing sync below finds nothing cached
+        const seed = wrappedConnection()
+        expect(
+          await settle(
+            port.syncTokenAccounts({
+              cluster: 'mainnet-beta',
+              acct: accountFor(seeded),
+              anchorProvider: providerFor(seed.connection),
+            }),
+          ),
+        ).toBe('fulfilled')
+        const stored = port.tokensOf('mainnet-beta', seeded.toBase58())
+        expect(stored?.atas[0].decimals).toBe(8)
+        expect(stored?.sol.balance).toBe(1000)
+        now += 5_000
+        const { connection, rpcRequest } = wrappedConnection(failingMethod)
+
+        const syncOf = (owner: PublicKey) =>
+          settle(
+            port.syncTokenAccounts({
+              cluster: 'mainnet-beta',
+              acct: accountFor(owner),
+              anchorProvider: providerFor(connection),
+            }),
+          )
+
+        expect(await syncOf(seeded)).toBe('rejected')
+        expect(await syncOf(unsynced)).toBe('rejected')
+        expect(rpcRequest.mock.calls.map(([method]) => method)).toContain(
+          failingMethod,
+        )
+        expect(port.tokensOf('mainnet-beta', seeded.toBase58())).toEqual(stored)
+        expect(
+          port.tokensOf('mainnet-beta', unsynced.toBase58()),
+        ).toBeUndefined()
+      },
+    )
   })
 
   it('rejects a wallet with no Solana address and stores nothing', async () => {

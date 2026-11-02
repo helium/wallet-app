@@ -21,7 +21,7 @@ const NO_HOTSPOTS: MigratableHotspot[] = []
 
 export const useMigrationAssets = (sourceWallet: string | undefined) => {
   const client = useBlockchainApi()
-  const { tokenAccounts } = useBalance()
+  const { tokenAccounts, tokenSyncFailed, retryTokenSync } = useBalance()
   const { visibleTokens } = useVisibleTokens()
   const balancesLoading =
     useIsFetching({ queryKey: TOKEN_ACCOUNTS_QUERY_KEY }) > 0
@@ -59,6 +59,10 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
     [tokenAccounts, visibleTokens, lamports],
   )
 
+  // A failed first sync with nothing fetching leaves no token list to wait for
+  const tokensFailed =
+    tokenSyncFailed && tokenAccounts === undefined && !balancesLoading
+
   return {
     // The kick-off effect fires after the first render with a wallet, so count
     // that not-yet-started gap as loading — an empty pre-fetch snapshot must
@@ -70,9 +74,11 @@ export const useMigrationAssets = (sourceWallet: string | undefined) => {
       (!!sourceWallet && !result && !error) ||
       !!balancesLoading ||
       solLoading ||
-      tokenAccounts === undefined,
-    error,
-    reload: () => refetch(),
+      (!tokensFailed && tokenAccounts === undefined),
+    error:
+      error ??
+      (tokensFailed ? new Error('Token balances failed to load') : null),
+    reload: () => Promise.all([retryTokenSync(), refetch()]),
     hotspots: result ?? NO_HOTSPOTS,
     tokens: migratableTokens,
     leftBehindMints,

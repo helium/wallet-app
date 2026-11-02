@@ -40,7 +40,7 @@ const fetchTokens = async (
     programId: TOKEN_PROGRAM_ID,
   })
 
-  const solAcct = await connection.getAccountInfo(pubKey)
+  const solBalance = await connection.getBalance(pubKey)
 
   // Decode all token account data first
   const tokenAccountsData = tokenAccounts.value.map((tokenAccount) => ({
@@ -63,22 +63,23 @@ const fetchTokens = async (
     const batch = uniqueMintPubkeys.slice(i, i + BATCH_SIZE)
     const batchMints = uniqueMints.slice(i, i + BATCH_SIZE)
 
-    // A failed batch fails the sync, so the stored balances keep their decimals
-    const mintAccountInfos = await connection.getMultipleAccountsInfo(batch)
+    // A failed or missing mint read fails the sync, so the stored balances
+    // keep their decimals. A commitment other than the account cache's skips
+    // the cache, so a failed read rejects and a cached null cannot fail the
+    // sync; mint decimals never change, so finalized data is enough
+    const mintAccountInfos = await connection.getMultipleAccountsInfo(
+      batch,
+      'finalized',
+    )
 
     const batchMintInfos = batchMints.map((mintStr, index) => {
-      try {
-        const accountInfo = mintAccountInfos[index]
-        if (accountInfo && accountInfo.data) {
-          // Parse mint account data to get decimals (decimals is at offset 44)
-          const decimals = accountInfo.data[44]
-          return { mint: mintStr, decimals }
-        }
-        return { mint: mintStr, decimals: 0 }
-      } catch (error) {
-        console.warn(`Failed to parse mint info for ${mintStr}:`, error)
-        return { mint: mintStr, decimals: 0 }
+      const accountInfo = mintAccountInfos[index]
+      if (!accountInfo || !accountInfo.data) {
+        throw new Error(`Mint account ${mintStr} not found`)
       }
+      // Parse mint account data to get decimals (decimals is at offset 44)
+      const decimals = accountInfo.data[44]
+      return { mint: mintStr, decimals }
     })
 
     mintInfos.push(...batchMintInfos)
@@ -98,7 +99,6 @@ const fetchTokens = async (
     frozen: tokenAccountData.frozen,
   }))
 
-  const solBalance = solAcct?.lamports || 0
   const sol = {
     tokenAccount: solanaAddress,
     balance: solBalance,

@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Commitment, Connection, ConnectionConfig } from '@solana/web3.js'
+import {
+  Commitment,
+  Connection,
+  ConnectionConfig,
+  FetchFn,
+} from '@solana/web3.js'
 import * as logger from '@utils/logger'
 import axios from 'axios'
 import type { CompressedNFT } from '../types/solana'
@@ -16,6 +21,29 @@ export type SearchAssetsOpts = {
     'all' | 'compressedNft' | 'regularNft' | 'nonFungible' | 'fungible'
 } & { [key: string]: unknown }
 
+// Android's network client has no timeout, so a stalled RPC request fails
+// after this long instead of blocking every account cache read
+// The DAS calls through axios use the same bound
+export const RPC_REQUEST_TIMEOUT = 1000 * 60 // 60 seconds
+
+const withTimeout =
+  (fetchFn: FetchFn): FetchFn =>
+  (input, init) => {
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        controller.abort()
+        // web3.js drops a rejection that is not an Error, so the request would hang
+        reject(
+          new Error(`RPC request timed out after ${RPC_REQUEST_TIMEOUT} ms`),
+        )
+      }, RPC_REQUEST_TIMEOUT)
+    })
+    const request = fetchFn(input, { ...init, signal: controller.signal })
+    return Promise.race([request, timeout]).finally(() => clearTimeout(timer))
+  }
+
 export class WrappedConnection extends Connection {
   baseURL: string
 
@@ -23,7 +51,16 @@ export class WrappedConnection extends Connection {
     endpoint: string,
     commitmentOrConfig?: Commitment | ConnectionConfig,
   ) {
-    super(endpoint, commitmentOrConfig || 'confirmed')
+    const config =
+      typeof commitmentOrConfig === 'object'
+        ? commitmentOrConfig
+        : { commitment: commitmentOrConfig || 'confirmed' }
+    super(endpoint, {
+      ...config,
+      fetch: withTimeout(
+        config.fetch ?? ((input, init) => globalThis.fetch(input, init)),
+      ),
+    })
     /* Hardcoding this rpc url for now as it is the only one that supports
      * Digital Asset RPC API https://github.com/metaplex-foundation/digital-asset-rpc-infrastructure
      * Eventually we want to have a hosted RPC node that supports this API
@@ -33,11 +70,15 @@ export class WrappedConnection extends Connection {
 
   async getHealth(): Promise<any> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getHealth',
-        id: 'rpd-op-123',
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getHealth',
+          id: 'rpd-op-123',
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
       return { result: response.data.result, error: response.data.error }
     } catch (error) {
       logger.error(error)
@@ -71,17 +112,21 @@ export class WrappedConnection extends Connection {
     }
 
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'searchAssets',
-        id: 'get-assets-op-1',
-        params,
-        headers: {
-          'Cache-Control': 'no-cache',
-          Pragma: 'no-cache',
-          Expires: '0',
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'searchAssets',
+          id: 'get-assets-op-1',
+          params,
+          headers: {
+            'Cache-Control': 'no-cache',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
         },
-      })
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
 
       return response.data.result?.items
     } catch (error) {
@@ -92,12 +137,16 @@ export class WrappedConnection extends Connection {
 
   async getAsset<T>(assetId: string): Promise<T> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getAsset',
-        id: 'rpd-op-123',
-        params: { id: assetId },
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getAsset',
+          id: 'rpd-op-123',
+          params: { id: assetId },
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
       return response.data
     } catch (error) {
       logger.error(error)
@@ -117,12 +166,16 @@ export class WrappedConnection extends Connection {
     },
   ): Promise<T> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getAssetsByOwner',
-        id: 'rpd-op-123',
-        params: [assetId, sortBy, limit, page, before, after, options],
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getAssetsByOwner',
+          id: 'rpd-op-123',
+          params: [assetId, sortBy, limit, page, before, after, options],
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
 
       return response.data.result
     } catch (error) {
@@ -133,12 +186,16 @@ export class WrappedConnection extends Connection {
 
   async getAssetProof(assetId: any): Promise<any> {
     try {
-      const response = await axios.post(this.baseURL, {
-        jsonrpc: '2.0',
-        method: 'getAssetProof',
-        id: 'rpd-op-123',
-        params: { id: assetId },
-      })
+      const response = await axios.post(
+        this.baseURL,
+        {
+          jsonrpc: '2.0',
+          method: 'getAssetProof',
+          id: 'rpd-op-123',
+          params: { id: assetId },
+        },
+        { timeout: RPC_REQUEST_TIMEOUT },
+      )
       return response.data.result
     } catch (error) {
       console.error(error)
