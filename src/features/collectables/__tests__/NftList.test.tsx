@@ -2,9 +2,13 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import NftList from '../NftList'
 
-jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
-  virtual: true,
-})
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  {
+    virtual: true,
+  },
+)
 jest.mock(
   '@hooks/useCollectables',
   () => () => ({
@@ -47,5 +51,19 @@ describe('NftList', () => {
     expect(
       renderer.root.findByType('FlatList' as never).props.contentContainerStyle,
     ).toEqual({ marginTop: 16, paddingHorizontal: 8 })
+  })
+
+  // Native tabs draw the screen under the tab bar; only the screen's own
+  // safe area lets the last row scroll clear of it.
+  it('ends the list with a footer that clears the tab bar', () => {
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(<NftList />)
+    })
+    const footer = renderer.root.findByType('FlatList' as never).props
+      .ListFooterComponent
+
+    expect(footer?.type).toBe('TabSafeAreaView')
+    expect(footer?.props.edges).toContain('bottom')
   })
 })

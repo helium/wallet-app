@@ -122,7 +122,7 @@ export const RevokeProxyScreen = () => {
     refetch,
     t,
   ])
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
+  const safeEdges = useMemo(() => ['top', 'bottom'] as Edge[], [])
 
   if (loading) return null
 

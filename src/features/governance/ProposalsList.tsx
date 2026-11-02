@@ -6,6 +6,7 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import { getDerivedProposalState } from '@utils/governanceUtils'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
@@ -13,7 +14,6 @@ import { CircleCheck } from 'lucide-react-native'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { ProposalCard } from './ProposalCard'
 import {
@@ -22,7 +22,7 @@ import {
   ProposalV0,
 } from './governanceTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const SelectedIcon = withUniwind(CircleCheck)
 
 const FILTERS: ProposalFilter[] = [

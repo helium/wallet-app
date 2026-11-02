@@ -6,6 +6,7 @@ import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'
 import { buttonTextVariants } from '@ui/buttonVariants'
 import { Spinner } from '@ui/Spinner'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SuccessReveal } from '@ui/SuccessReveal'
 import { Text } from '@ui/Text'
 import { parseTransactionError } from '@utils/solanaUtils'
@@ -15,7 +16,6 @@ import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import 'text-encoding-polyfill'
 import { withUniwind } from 'uniwind'
 import { useTransactionBatchesStatus } from '../../hooks/useTransactionBatchStatus'
@@ -25,6 +25,7 @@ import { CollectableStackParamList } from './collectablesTypes'
 
 const BackIcon = withUniwind(ChevronLeft)
 const SuccessIcon = withUniwind(CircleCheck)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const ClaimingRewardsScreen = () => {
   const route =
@@ -33,7 +34,6 @@ const ClaimingRewardsScreen = () => {
   const navigation = useNavigation<TabBarNavigationProp>()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
-  const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
   const {
     status,
@@ -153,7 +153,7 @@ const ClaimingRewardsScreen = () => {
             </Animated.View>
           ) : null}
         </View>
-        <View className="w-full justify-end" style={{ marginBottom: bottom }}>
+        <SafeArea edges={['bottom']} className="w-full justify-end">
           <Button
             variant="secondary"
             size="dashboard"
@@ -165,7 +165,7 @@ const ClaimingRewardsScreen = () => {
               {t('collectablesScreen.returnToCollectables')}
             </Text>
           </Button>
-        </View>
+        </SafeArea>
       </View>
     </Animated.View>
   )

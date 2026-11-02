@@ -279,7 +279,9 @@ export const ProposalScreen = () => {
                           <Text
                             size="xs"
                             className={
-                              tempCheck ? 'text-white' : 'text-muted-foreground'
+                              tempCheck
+                                ? 'text-foreground'
+                                : 'text-muted-foreground'
                             }
                           >
                             {tag.toUpperCase()}

@@ -1,16 +1,17 @@
 import { Portal } from '@gorhom/portal'
 import { FADE_IN } from '@theme/motion'
 import { PressableScale } from '@ui/PressableScale'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { BlurView } from 'expo-blur'
 import { X } from 'lucide-react-native'
 import React, { ReactNode } from 'react'
 import { Platform, StyleSheet, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { type Edge } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 
 type Props = {

@@ -148,6 +148,11 @@ jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('@theme/motion', () => ({ FADE_IN: {} }), { virtual: true })
 jest.mock('lucide-react-native', () => ({
   CircleX: 'CircleX',

@@ -5,7 +5,14 @@ import { TabSafeAreaView } from '../TabSafeAreaView'
 // The node test runner cannot load react-native or react-native-screens. The
 // host components render as named elements so the test reads their props.
 jest.mock('react-native', () => ({
-  StyleSheet: { create: <T,>(styles: T) => styles },
+  View: 'View',
+  StyleSheet: {
+    create: <T,>(styles: T) => styles,
+    flatten: (style: unknown): object | undefined =>
+      Array.isArray(style)
+        ? Object.assign({}, ...style.map((s) => s ?? {}))
+        : (style as object | undefined),
+  },
 }))
 jest.mock('react-native-screens/experimental', () => ({
   SafeAreaView: 'SafeAreaView',
@@ -16,19 +23,23 @@ jest.mock('react-native-screens/experimental', () => ({
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true
 
-const render = (element: React.ReactElement) => {
+const create = (element: React.ReactElement) => {
   let renderer!: TestRenderer.ReactTestRenderer
   act(() => {
     renderer = TestRenderer.create(element)
   })
-  return renderer.root.findByType(
-    'SafeAreaView' as unknown as React.ElementType,
-  ).props
+  const find = (type: string) =>
+    renderer.root.findByType(type as unknown as React.ElementType).props
+  return { outer: find('View'), inner: find('SafeAreaView') }
 }
+
+// The flattened style of a host element.
+const styleOf = (props: { [prop: string]: unknown }) =>
+  Object.assign({}, ...(props.style as object[]))
 
 describe('TabSafeAreaView', () => {
   it('pads every edge when no edges are given', () => {
-    expect(render(<TabSafeAreaView />).edges).toEqual({
+    expect(create(<TabSafeAreaView />).inner.edges).toEqual({
       top: true,
       right: true,
       bottom: true,
@@ -37,16 +48,46 @@ describe('TabSafeAreaView', () => {
   })
 
   it('pads only the edges it is given', () => {
-    expect(render(<TabSafeAreaView edges={['bottom']} />).edges).toEqual({
+    expect(create(<TabSafeAreaView edges={['bottom']} />).inner.edges).toEqual({
       bottom: true,
     })
   })
 
+  it('puts the sizing, margin and background on the outer view and the layout on the inner one', () => {
+    const { outer, inner } = create(
+      <TabSafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: 'red',
+          marginTop: 4,
+          padding: 8,
+          alignItems: 'center',
+          flexDirection: 'row',
+        }}
+      />,
+    )
+
+    expect(styleOf(outer)).toEqual({
+      flex: 1,
+      backgroundColor: 'red',
+      marginTop: 4,
+    })
+    expect(styleOf(inner)).toEqual({
+      padding: 8,
+      alignItems: 'center',
+      flexDirection: 'row',
+      flexGrow: 1,
+    })
+  })
+
+  it('passes the other props to the outer view', () => {
+    const { outer, inner } = create(<TabSafeAreaView testID="footer" />)
+
+    expect(outer.testID).toBe('footer')
+    expect(inner.testID).toBeUndefined()
+  })
+
   it('does not fill its parent unless its style says so', () => {
-    expect(render(<TabSafeAreaView />).style).toEqual([{ flex: 0 }, undefined])
-    expect(render(<TabSafeAreaView style={{ flex: 1 }} />).style).toEqual([
-      { flex: 0 },
-      { flex: 1 },
-    ])
+    expect(styleOf(create(<TabSafeAreaView />).outer)).toEqual({ flex: 0 })
   })
 })

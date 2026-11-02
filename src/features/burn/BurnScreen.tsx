@@ -27,9 +27,9 @@ import { BN } from 'bn.js'
 import { QrCode, X } from 'lucide-react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Platform, View } from 'react-native'
+import { View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import { Edge, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
 import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import {
@@ -73,7 +73,6 @@ const BurnScreen = () => {
     setCurrentAccount,
     defaultAccountAddress,
   } = useAccountStorage()
-  const { top } = useSafeAreaInsets()
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const hitSlop = 24
@@ -120,10 +119,6 @@ const BurnScreen = () => {
   const tokenSelectorRef = useRef<TokenSelectorRef>(null)
 
   const { isDelegate } = route.params
-
-  const containerStyle = {
-    marginTop: Platform.OS === 'android' ? top : undefined,
-  }
 
   const networkType = accountNetType(route.params.address)
 
@@ -300,7 +295,6 @@ const BurnScreen = () => {
           >
             <SafeArea
               className="flex-1 bg-secondary"
-              style={containerStyle}
               edges={['top', 'bottom'] as Edge[]}
             >
               <View className="flex-row items-center justify-between">

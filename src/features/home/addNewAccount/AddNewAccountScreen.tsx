@@ -29,7 +29,7 @@ const AddNewAccountScreen = () => {
 
   const [selectedOption, setSelectedOption] = useState(tabData[0].value)
 
-  const contentContainerStyle = { flex: 1, paddingBottom: insets.bottom }
+  const contentContainerStyle = { flex: 1 }
 
   const handleItemSelected = (value: string) => {
     setSelectedOption(value as OnboardingOpt)

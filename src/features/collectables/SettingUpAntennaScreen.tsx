@@ -6,10 +6,10 @@ import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'
 import { buttonTextVariants } from '@ui/buttonVariants'
 import { Spinner } from '@ui/Spinner'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { ChevronLeft } from 'lucide-react-native'
 import { View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useTranslation } from 'react-i18next'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
@@ -22,6 +22,7 @@ import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus
 import { CollectableStackParamList } from './collectablesTypes'
 
 const BackIcon = withUniwind(ChevronLeft)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const SettingUpAntennaScreen = () => {
   const route =
@@ -30,8 +31,6 @@ const SettingUpAntennaScreen = () => {
   const navigation = useNavigation<TabBarNavigationProp>()
   const wallet = useCurrentWallet()
   const solBalance = useBN(useSolOwnedAmount(wallet).amount)
-  const { bottom } = useSafeAreaInsets()
-
   const { t } = useTranslation()
   const {
     status,
@@ -126,7 +125,7 @@ const SettingUpAntennaScreen = () => {
             </Animated.View>
           )}
         </View>
-        <View className="w-full justify-end" style={{ marginBottom: bottom }}>
+        <SafeArea edges={['bottom']} className="w-full justify-end">
           <Button
             variant="secondary"
             size="dashboard"
@@ -139,7 +138,7 @@ const SettingUpAntennaScreen = () => {
               {t('collectablesScreen.returnToCollectables')}
             </Text>
           </Button>
-        </View>
+        </SafeArea>
       </View>
     </Animated.View>
   )

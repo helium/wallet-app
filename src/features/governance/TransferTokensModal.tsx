@@ -94,7 +94,7 @@ export const TransferTokensModal = ({
   const hasTransferablePositions = positions.length > 0
 
   return (
-    <GovernanceModal onClose={handleOnClose}>
+    <GovernanceModal onClose={handleOnClose} edges={['top', 'bottom']}>
       <HNTKeyboard
         usePortal
         ref={hntKeyboardRef}

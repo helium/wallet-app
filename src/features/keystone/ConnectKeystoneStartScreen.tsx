@@ -1,14 +1,14 @@
 import { useNavigation } from '@react-navigation/native'
 import { Button } from '@ui/Button'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import React from 'react'
 import { t } from 'i18next'
 import { Image, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const ConnectKeystoneStart = () => {
   const navigation = useNavigation<AddNewAccountNavigationProp>()

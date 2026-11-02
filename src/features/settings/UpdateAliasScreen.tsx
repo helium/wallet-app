@@ -3,6 +3,7 @@ import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'
 import { Input } from '@ui/Input'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { ArrowRight } from 'lucide-react-native'
 import React, { useState } from 'react'
@@ -14,6 +15,7 @@ import SettingsBackHeader from './SettingsBackHeader'
 import { SettingsNavigationProp } from './settingsTypes'
 
 const ArrowIcon = withUniwind(ArrowRight)
+const SafeArea = withUniwind(TabSafeAreaView)
 const StyledKeyboardAvoidingView = withUniwind(KeyboardAvoidingView)
 
 // the back header (top inset + its row) sits above the avoiding view
@@ -38,10 +40,7 @@ const UpdateAliasScreen = () => {
   }
 
   return (
-    <View
-      className="flex-1 bg-background"
-      style={{ paddingBottom: insets.bottom }}
-    >
+    <SafeArea edges={['bottom']} className="flex-1 bg-background">
       <SettingsBackHeader onBack={navigation.goBack} />
       <StyledKeyboardAvoidingView
         keyboardVerticalOffset={insets.top + HEADER_OFFSET}
@@ -77,7 +76,7 @@ const UpdateAliasScreen = () => {
           <ArrowIcon size={24} colorClassName="accent-white" />
         </Button>
       </StyledKeyboardAvoidingView>
-    </View>
+    </SafeArea>
   )
 }
 

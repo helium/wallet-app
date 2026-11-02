@@ -21,6 +21,7 @@ import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { PressableScale } from '@ui/PressableScale'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { Mints } from '@utils/constants'
 import { fetchDomainOwner } from '@utils/getDomainOwner'
@@ -887,16 +888,18 @@ const PaymentScreen = () => {
                   )}
                 </KeyboardAwareScrollView>
 
-                <PaymentCard
-                  mint={mint}
-                  totalBalance={paymentState.totalAmount}
-                  feeTokenBalance={paymentState.networkFee}
-                  disabled={!isFormValid}
-                  onSubmit={() => void handleSubmit().catch(console.error)}
-                  payments={payments}
-                  errors={errors}
-                  handleCancel={navBack}
-                />
+                <TabSafeAreaView edges={['bottom']}>
+                  <PaymentCard
+                    mint={mint}
+                    totalBalance={paymentState.totalAmount}
+                    feeTokenBalance={paymentState.networkFee}
+                    disabled={!isFormValid}
+                    onSubmit={() => void handleSubmit().catch(console.error)}
+                    payments={payments}
+                    errors={errors}
+                    handleCancel={navBack}
+                  />
+                </TabSafeAreaView>
               </View>
             </TokenSelector>
           </AddressBookSelector>

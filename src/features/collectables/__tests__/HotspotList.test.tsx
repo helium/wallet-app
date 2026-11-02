@@ -2,9 +2,13 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import HotspotList from '../HotspotList'
 
-jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
-  virtual: true,
-})
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  {
+    virtual: true,
+  },
+)
 jest.mock('@helium/helium-react-hooks', () => ({ useMint: () => undefined }), {
   virtual: true,
 })
@@ -108,5 +112,13 @@ describe('HotspotList', () => {
     expect(list.props.contentContainerStyle).toEqual({ paddingHorizontal: 16 })
     expect(list.findAllByType('Globe' as never)).toHaveLength(1)
     expect(list.findAllByType('Plus' as never)).toHaveLength(1)
+  })
+
+  // Native tabs draw the screen under the tab bar; only the screen's own
+  // safe area lifts the rewards footer above it.
+  it('lifts the rewards footer above the tab bar', () => {
+    const [footer] = render().findAllByType('TabSafeAreaView' as never)
+
+    expect(footer.props.edges).toContain('bottom')
   })
 })
