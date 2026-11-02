@@ -65,6 +65,8 @@ function RewardItem({
 
 const COLUMN_WRAPPER_STYLE = { flexDirection: 'column' } as const
 
+const CONTENT_CONTAINER_STYLE = { paddingHorizontal: 16 }
+
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
   const { t } = useTranslation()
@@ -226,6 +228,7 @@ const HotspotList = () => {
         data={hotspotsWithMeta}
         numColumns={2}
         columnWrapperStyle={COLUMN_WRAPPER_STYLE}
+        contentContainerStyle={CONTENT_CONTAINER_STYLE}
         ListHeaderComponent={header}
         refreshControl={
           <RefreshControl
