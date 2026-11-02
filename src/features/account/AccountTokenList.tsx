@@ -1,4 +1,4 @@
-import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { BottomSheetFlatList, useBottomSheet } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -14,7 +14,12 @@ import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SlidersHorizontal } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, View } from 'react-native'
+import { RefreshControl, StyleSheet, View } from 'react-native'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { GovMints } from '../../utils/constants'
@@ -37,6 +42,16 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const { animatedIndex } = useBottomSheet()
+  // Full at the collapsed snap, gone once the drawer is open.
+  const fadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      animatedIndex.value,
+      [0, 1],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }))
 
   const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
     mutationFn: async () => {
@@ -158,16 +173,21 @@ const AccountTokenList = ({ onLayout }: Props) => {
           which blurs them itself. The fade starts a little above the bar,
           so the row at the fold washes out too. */}
       {mints.length > 2 && (
-        <Fade
-          edges={['bottom']}
-          pointerEvents="none"
-          className="absolute inset-x-0 bottom-0 bg-linear-to-t from-secondary via-secondary/80 to-transparent"
-        >
-          <View className="h-12" />
-        </Fade>
+        <Animated.View pointerEvents="none" style={[styles.fade, fadeStyle]}>
+          <Fade
+            edges={['bottom']}
+            className="bg-linear-to-t from-secondary via-secondary/80 to-transparent"
+          >
+            <View className="h-12" />
+          </Fade>
+        </Animated.View>
       )}
     </>
   )
 }
+
+const styles = StyleSheet.create({
+  fade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+})
 
 export default AccountTokenList
