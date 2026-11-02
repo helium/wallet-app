@@ -155,13 +155,16 @@ const AccountTokenList = ({ onLayout }: Props) => {
         keyExtractor={keyExtractor}
       />
       {/* The rows after the first two fade out behind the floating tab bar,
-          which blurs them itself. */}
+          which blurs them itself. The fade starts a little above the bar,
+          so the row at the fold washes out too. */}
       {mints.length > 2 && (
         <Fade
           edges={['bottom']}
           pointerEvents="none"
-          className="absolute inset-x-0 bottom-0 bg-linear-to-t from-secondary to-transparent"
-        />
+          className="absolute inset-x-0 bottom-0 bg-linear-to-t from-secondary via-secondary/80 to-transparent"
+        >
+          <View className="h-12" />
+        </Fade>
       )}
     </>
   )
