@@ -3,6 +3,7 @@ import TestRenderer, { act } from 'react-test-renderer'
 import NotificationsScreen from '../NotificationsScreen'
 
 const mockNavigate = jest.fn()
+const mockGoBack = jest.fn()
 const mockOpenURL = jest.fn((_url: string) => Promise.resolve())
 const mockUpdateAllNotifications = jest.fn()
 const mockSetSelectedNotification = jest.fn()
@@ -46,7 +47,7 @@ jest.mock('@helium/spl-utils', () => ({
 // @react-navigation ships ESM only, which this jest config does not
 // transform.
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({ navigate: mockNavigate }),
+  useNavigation: () => ({ navigate: mockNavigate, goBack: mockGoBack }),
   useIsFocused: () => true,
 }))
 jest.mock('react-i18next', () => ({
@@ -143,6 +144,9 @@ jest.mock('@ui/AccountIcon', () => ({ AccountIcon: 'AccountIcon' }), {
 })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
+  virtual: true,
+})
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
@@ -176,6 +180,7 @@ const render = async () => {
         ),
     buttons: () => root.findAllByType('Button' as never),
     accountIcons: () => root.findAllByType('AccountIcon' as never),
+    closeButton: () => root.findByType('CloseButton' as never),
   }
 }
 
@@ -208,6 +213,17 @@ describe('NotificationsScreen', () => {
     expect(view.accountIcons().map((i) => i.props.address)).toEqual([
       'account-a',
     ])
+  })
+
+  it('shows a labelled close control that goes back', async () => {
+    const view = await render()
+
+    const close = view.closeButton()
+    expect(close.props.accessibilityLabel).toBe('generic.close')
+    act(() => {
+      close.props.onPress()
+    })
+    expect(mockGoBack).toHaveBeenCalledTimes(1)
   })
 
   it('shows the empty title when there are no notifications', async () => {
