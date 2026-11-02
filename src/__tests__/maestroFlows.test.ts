@@ -33,6 +33,39 @@ describe('Maestro flows', () => {
     },
   )
 
+  // A cold debug launch on the Android emulator takes about 90 s.
+  it('clean-start waits at least 120 s for the first screen', () => {
+    const flow = read('.maestro/subflows/clean-start.yaml')
+    const match = flow.match(
+      /^- extendedWaitUntil:\n {4}visible:\n {6}id: CreateImport\\\.Create\|AccountsTopNav\\\.Settings\n {4}timeout: (\d+)$/m,
+    )
+    expect(match).not.toBeNull()
+    expect(Number(match?.[1])).toBeGreaterThanOrEqual(120000)
+  })
+
+  // Key generation takes about 53 s on an Android release build.
+  it('create-words waits at least 90 s for the first word', () => {
+    const flow = read('.maestro/subflows/create-words.yaml')
+    const match = flow.match(
+      /^- extendedWaitUntil:\n {4}visible:\n {6}id: RevealWords\.Word\.0\n {4}timeout: (\d+)$/m,
+    )
+    expect(match).not.toBeNull()
+    expect(Number(match?.[1])).toBeGreaterThanOrEqual(90000)
+  })
+
+  // On an Android release build, one tap on Maybe later can leave the card
+  // open. The tap repeats while the card shows, and a card that never shows
+  // skips the loop.
+  it('close-migrate-card taps Maybe later again while the card shows', () => {
+    const flow = read('.maestro/subflows/close-migrate-card.yaml')
+    expect(flow).toMatch(
+      /^- repeat:\n {4}times: \d+\n {4}while:\n {6}visible:\n {8}id: MigrateToWorld\.NotNow\n {4}commands:\n[\s\S]*?- tapOn:\n {10}id: MigrateToWorld\.NotNow\n/m,
+    )
+    expect(flow).toMatch(
+      /^- extendedWaitUntil:\n {4}notVisible:\n {6}id: MigrateToWorld\.NotNow\n {4}timeout: \d+\n$/m,
+    )
+  })
+
   // The app opens a websocket to surfpool on 8900. Without the reverse, an
   // Android emulator shows "ws error" toasts that block taps.
   it.each(['scripts/maestro-surfpool.sh', '.github/workflows/maestro.yml'])(

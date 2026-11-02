@@ -2,6 +2,11 @@
 # Copies the 24 words, confirms them and names the wallet.
 appId: com.helium.wallet.app
 ---
+# Key generation takes about 53 s on an Android release build.
+- extendedWaitUntil:
+    visible:
+      id: RevealWords.Word.0
+    timeout: 90000
 - evalScript: ${output.words = []}
 - repeat:
     times: 24

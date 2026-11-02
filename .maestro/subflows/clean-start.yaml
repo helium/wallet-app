@@ -9,10 +9,11 @@ appId: com.helium.wallet.app
 - launchApp:
     clearState: true
     clearKeychain: true
+# A cold debug launch on the Android emulator takes about 90 s.
 - extendedWaitUntil:
     visible:
       id: CreateImport\.Create|AccountsTopNav\.Settings
-    timeout: 60000
+    timeout: 120000
 - repeat:
     times: 10
     while:

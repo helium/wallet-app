@@ -8,8 +8,11 @@ appId: com.helium.wallet.app
       id: MigrateToWorld.NotNow
     timeout: 10000
     optional: true
-- runFlow:
-    when:
+# On an Android release build, one tap can leave the card open, so the tap
+# repeats while the card shows. A card that never shows skips the loop.
+- repeat:
+    times: 3
+    while:
       visible:
         id: MigrateToWorld.NotNow
     commands:
@@ -22,3 +25,8 @@ appId: com.helium.wallet.app
           notVisible:
             id: MigrateToWorld.NotNow
           timeout: 10000
+          optional: true
+- extendedWaitUntil:
+    notVisible:
+      id: MigrateToWorld.NotNow
+    timeout: 10000
