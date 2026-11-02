@@ -255,7 +255,7 @@ const RequestScreen = () => {
                   {/* A QR code needs a light quiet zone in both themes. */}
                   <Animated.View
                     style={qrStyle}
-                    className="absolute aspect-square h-[220px] justify-center self-center rounded-[12px] bg-white p-6"
+                    className="absolute aspect-square h-[220px] justify-center self-center rounded-[12px] border border-border bg-white p-6"
                   >
                     {!isEditing ? (
                       <QRCode
@@ -287,7 +287,7 @@ const RequestScreen = () => {
 
                 <AccountButton
                   accountIconSize={41}
-                  backgroundClassName="bg-secondary"
+                  backgroundClassName="bg-card shadow-stat-box"
                   showBubbleArrow
                   title={currentAccount?.alias}
                   address={currentAccount?.address}
@@ -298,15 +298,14 @@ const RequestScreen = () => {
                   title={t('request.requestType', {
                     ticker: symbol || '',
                   })}
-                  backgroundClassName="bg-secondary"
+                  backgroundClassName="bg-card shadow-stat-box"
                   address={currentAccount?.address}
                   onPress={handleTickerSelected}
                   showBubbleArrow
                   mint={mint}
                 />
                 <Card
-                  variant="panel"
-                  className={`mb-6 rounded-[20px] p-5 ${
+                  className={`mb-6 rounded-[20px] border border-border p-5 ${
                     currentAccount?.netType === NetType.TESTNET
                       ? 'bg-warning-100'
                       : ''
