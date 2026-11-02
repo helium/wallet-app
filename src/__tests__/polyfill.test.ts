@@ -1,6 +1,6 @@
-// Hermes ships a native structuredClone. When one is present at load,
-// @ungap/structured-clone exports a wrapper that calls the global
-// structuredClone, so the polyfill must not put that wrapper on the global.
+// A global structuredClone can already exist at load: Hermes native, or the
+// one Expo's winter runtime installs. Then @ungap/structured-clone exports a
+// wrapper that calls the global one, so replacing the global would recurse.
 const nativeStructuredClone = global.structuredClone
 const nativeSubarray = Buffer.prototype.subarray
 

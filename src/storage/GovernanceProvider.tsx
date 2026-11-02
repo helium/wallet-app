@@ -84,9 +84,10 @@ const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
     readRouteMint()
     return navigationRef.addListener('state', readRouteMint)
   }, [])
-  const network: GovNetwork = routeMint
-    ? (mintsToNetwork[routeMint] as GovNetwork) || 'hnt'
-    : 'hnt'
+  const network: GovNetwork =
+    routeMint && Object.prototype.hasOwnProperty.call(mintsToNetwork, routeMint)
+      ? (mintsToNetwork[routeMint] as GovNetwork) || 'hnt'
+      : 'hnt'
   const networkName = useMemo(() => networkToName[network], [network])
   const mint = useMemo(() => networksToMint[network], [network])
   const registrarKey = useMemo(() => mint && getRegistrarKey(mint), [mint])

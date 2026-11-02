@@ -12,6 +12,12 @@ const mockRef: {
   listeners: Set<() => void>
 } = { ready: false, route: undefined, listeners: new Set() }
 
+// Like the real ref, the route read throws before the container is ready.
+const mockGetCurrentRoute = jest.fn(() => {
+  if (!mockRef.ready) throw new Error('The navigation container is not ready')
+  return mockRef.route
+})
+
 // @react-navigation ships ESM only, which this jest config does not
 // transform. The container here provides no navigation state, as the real
 // NavigationContainer does until a navigator mounts. useNavigationState keeps
@@ -31,7 +37,7 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('../../navigation/NavigationHelper', () => ({
   navigationRef: {
     isReady: () => mockRef.ready,
-    getCurrentRoute: () => mockRef.route,
+    getCurrentRoute: () => mockGetCurrentRoute(),
     addListener: (_type: 'state', listener: () => void) => {
       mockRef.listeners.add(listener)
       return () => mockRef.listeners.delete(listener)
@@ -81,9 +87,10 @@ const Probe = () => {
 }
 const lastNetwork = () => mockOnNetwork.mock.lastCall?.[0]
 
-const renderOutsideNavigator = () =>
+const renderOutsideNavigator = () => {
+  let renderer!: TestRenderer.ReactTestRenderer
   act(() => {
-    TestRenderer.create(
+    renderer = TestRenderer.create(
       <NavigationContainer>
         <GovernanceProvider>
           <Probe />
@@ -91,6 +98,8 @@ const renderOutsideNavigator = () =>
       </NavigationContainer>,
     )
   })
+  return renderer
+}
 
 const emitState = (route: Route) =>
   act(() => {
@@ -101,6 +110,7 @@ const emitState = (route: Route) =>
 
 beforeEach(() => {
   mockOnNetwork.mockClear()
+  mockGetCurrentRoute.mockClear()
   mockRef.ready = false
   mockRef.route = undefined
   mockRef.listeners.clear()
@@ -134,5 +144,24 @@ describe('GovernanceProvider inside a NavigationContainer with no navigator', ()
       params: { mint: 'So11111111111111111111111111111111111111112' },
     })
     expect(lastNetwork()).toBe('hnt')
+  })
+
+  it('falls back to hnt for a mint that is an Object.prototype key', () => {
+    renderOutsideNavigator()
+
+    emitState({ name: 'ProposalsScreen', params: { mint: 'constructor' } })
+    expect(lastNetwork()).toBe('hnt')
+  })
+
+  it('stops reading the route after unmount', () => {
+    const renderer = renderOutsideNavigator()
+    act(() => renderer.unmount())
+    mockGetCurrentRoute.mockClear()
+
+    emitState({
+      name: 'ProposalsScreen',
+      params: { mint: MOBILE_MINT.toBase58() },
+    })
+    expect(mockGetCurrentRoute).not.toHaveBeenCalled()
   })
 })

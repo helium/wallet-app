@@ -19,6 +19,9 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 jest.mock('../PressableScale', () => ({ PressableScale: 'PressableScale' }))
+// Keeps the file loading if the view imports TabSafeAreaView again, so the
+// source check below reports it.
+jest.mock('../TabSafeAreaView', () => ({ TabSafeAreaView: 'TabSafeAreaView' }))
 // The node test runner cannot load react-native. The shake runs to its end at
 // once.
 jest.mock('react-native', () => {
@@ -158,5 +161,5 @@ test('does not add the tab bar inset itself', () => {
     path.join(__dirname, '..', 'ConfirmPinView.tsx'),
     'utf8',
   )
-  expect(source).not.toMatch(/TabSafeAreaView/)
+  expect(source).not.toMatch(/TabSafeAreaView|BackScreen|useBottomTabBarHeight/)
 })

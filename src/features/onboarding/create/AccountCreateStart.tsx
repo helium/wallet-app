@@ -23,7 +23,10 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   const navigation = useNavigation<CreateAccountNavigationProp>()
 
   return (
-    <SafeAreaView className="flex-1 bg-navy px-6">
+    <SafeAreaView
+      edges={inline ? ['bottom'] : undefined}
+      className="flex-1 bg-navy px-6"
+    >
       <FocusAwareStatusBar barStyle="light-content" />
       {!inline && (
         <View className="w-full items-end">
