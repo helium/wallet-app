@@ -17,7 +17,7 @@ import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LayoutChangeEvent, View } from 'react-native'
 import Config from '@utils/config'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import {
   initialWindowMetrics,
   useSafeAreaInsets,
@@ -175,18 +175,10 @@ const Banner = ({ onLayout, className }: BannerProps) => {
       ? initialWindowMetrics?.insets.top
       : top
 
-  const bannerAnimatedStyles = useAnimatedStyle(() => {
-    // Animate margin
-    return {
-      marginTop: withTiming(0),
-      paddingTop: bannerTopMargin,
-    }
-  }, [bannerTopMargin])
-
   return (
     <Animated.View
       className={twMerge('bg-primary', !swapping && 'hidden', className)}
-      style={bannerAnimatedStyles}
+      style={{ paddingTop: bannerTopMargin }}
       onLayout={onLayout}
     >
       <View className="min-h-[52px] flex-row items-center px-4 py-2">

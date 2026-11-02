@@ -3,6 +3,7 @@ import { DUR, EASE_OUT, FADE_IN, SPRING, useReducedMotion } from '@theme/motion'
 import React, { useEffect, useEffectEvent } from 'react'
 import Animated, {
   FadeInDown,
+  interpolate,
   ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
@@ -34,16 +35,22 @@ const ROW_ENTERING = Array.from({ length: 6 }, (_, index) =>
 export const SuccessReveal = ({ icon, children }: SuccessRevealProps) => {
   const reducedMotion = useReducedMotion()
   const { triggerNotification } = useHaptic()
-  const opacity = useSharedValue(0)
-  const scale = useSharedValue(reducedMotion ? 1 : ICON_START_SCALE)
+  // The fade runs on a timing curve and the scale on a spring, so each has
+  // its own 0-to-1 progress.
+  const fadeProgress = useSharedValue(0)
+  const scaleProgress = useSharedValue(reducedMotion ? 1 : 0)
   const iconStyle = useAnimatedStyle(() => ({
-    opacity: opacity.get(),
-    transform: [{ scale: scale.get() }],
+    opacity: fadeProgress.get(),
+    transform: [
+      {
+        scale: interpolate(scaleProgress.get(), [0, 1], [ICON_START_SCALE, 1]),
+      },
+    ],
   }))
 
   const reveal = useEffectEvent(() => {
-    opacity.set(withTiming(1, ICON_FADE))
-    if (!reducedMotion) scale.set(withSpring(1, SPRING.snap))
+    fadeProgress.set(withTiming(1, ICON_FADE))
+    if (!reducedMotion) scaleProgress.set(withSpring(1, SPRING.snap))
     triggerNotification('success')
   })
 

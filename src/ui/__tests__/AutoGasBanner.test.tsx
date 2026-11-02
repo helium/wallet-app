@@ -94,8 +94,6 @@ jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,
   default: { View: 'Animated.View' },
-  useAnimatedStyle: () => ({}),
-  withTiming: (v: number) => v,
 }))
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 jest.mock('lucide-react-native', () => ({

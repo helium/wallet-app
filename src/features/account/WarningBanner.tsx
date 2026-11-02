@@ -45,24 +45,16 @@ const WarningBanner = ({ type, onLayout }: Props) => {
       : top
 
   const bannerAnimatedStyles = useAnimatedStyle(() => {
-    if (!showBanner) {
-      return {
-        marginTop: withTiming(
-          -Math.max(bannerHeight, MIN_HEIGHT) - bannerTopMargin,
-        ),
-        paddingTop: bannerTopMargin,
-      }
-    }
+    const hiddenOffset = -Math.max(bannerHeight, MIN_HEIGHT) - bannerTopMargin
     return {
-      marginTop: withTiming(0),
-      paddingTop: bannerTopMargin,
+      transform: [{ translateY: withTiming(showBanner ? 0 : hiddenOffset) }],
     }
   }, [showBanner, bannerTopMargin])
 
   return (
     <Animated.View
       className="bg-secondary"
-      style={bannerAnimatedStyles}
+      style={[{ paddingTop: bannerTopMargin }, bannerAnimatedStyles]}
       onLayout={onLayout}
     >
       <View
