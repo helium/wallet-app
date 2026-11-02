@@ -69,7 +69,7 @@ export const VoteOption = ({
       </View>
 
       {voters && voters.length > 0 && (
-        <View className="mt-3 flex-1 border-t-2 border-background pt-2">
+        <View className="mt-3 flex-1 border-t-2 border-border pt-2">
           <View className="flex-1 flex-row flex-wrap items-center gap-1">
             <Text className="text-muted-foreground">Voted by -</Text>
             {voters.map((voter, idx) => (
