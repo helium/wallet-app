@@ -400,9 +400,12 @@ const HotspotMapScreen = () => {
             </PressableScale>
           </View>
         </View>
-        <View className="absolute bottom-0 w-full">
+        <View pointerEvents="box-none" className="absolute bottom-0 w-full">
           {/* px-[21px] lines the controls up with the floating tab bar edges */}
-          <View className="mb-[10px] w-full flex-row items-center justify-between px-[21px]">
+          <View
+            pointerEvents="box-none"
+            className="mb-[10px] w-full flex-row items-center justify-between px-[21px]"
+          >
             <View>
               <PressableScale
                 className={`flex-row items-center justify-center rounded-full py-1.5 pl-2 pr-3 opacity-80 ${
@@ -451,6 +454,7 @@ const HotspotMapScreen = () => {
           </View>
           <TabSafeAreaView
             edges={['bottom']}
+            pointerEvents="none"
             onLayout={(e) => setTabBarInset(e.nativeEvent.layout.height)}
           />
         </View>
