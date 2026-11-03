@@ -397,12 +397,12 @@ export const usePositionActions = ({
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
-    if (!position) return
+    if (!position || !mintAcc) return
     await splitMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
         amount: BN.min(
-          toBN(values.amount, mintAcc!.decimals),
+          toBN(values.amount, mintAcc.decimals),
           position.amountDepositedNative,
         ).toString(),
         lockupKind: values.lockupKind.value,
@@ -425,13 +425,13 @@ export const usePositionActions = ({
     targetPosition: PositionWithMeta,
     amount: number,
   ) => {
-    if (!position) return
+    if (!position || !mintAcc) return
     await transferMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
         targetPositionMint: targetPosition.mint.toBase58(),
         amount: BN.min(
-          toBN(amount, mintAcc!.decimals),
+          toBN(amount, mintAcc.decimals),
           position.amountDepositedNative,
         ).toString(),
       },
@@ -442,7 +442,7 @@ export const usePositionActions = ({
           symbol,
           targetAmount: humanReadable(
             targetPosition.amountDepositedNative,
-            mintAcc!.decimals,
+            mintAcc.decimals,
           ),
         }),
       },
