@@ -1560,7 +1560,7 @@ export const getAllTransactions = async (
     const rows: ActivityRow[] =
       cluster === 'devnet'
         ? attachSigners(data as EnrichedTransaction[], txList)
-        : toActivityRows(data as ParsedEventsItem[], txList)
+        : await toActivityRows(data as ParsedEventsItem[], txList)
 
     const allTxnsWithMetadata: ActivityRow[] = await Promise.all(
       rows.map(async (tx) => {

@@ -169,6 +169,8 @@ export type EnrichedTransaction = {
       leafIndex: number
       treeId: string
       type: string
+      oldLeafOwner?: string
+      newLeafOwner?: string
       metadata: any
     }[]
     nft?: {

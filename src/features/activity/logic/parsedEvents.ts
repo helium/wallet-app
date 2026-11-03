@@ -1,8 +1,12 @@
 import { PROGRAM_ID as HELIUM_ENTITY_MANAGER_PROGRAM_ID } from '@helium/helium-entity-manager-sdk'
 import { PROGRAM_ID as LAZY_DISTRIBUTOR_PROGRAM_ID } from '@helium/lazy-distributor-sdk'
-import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from '@metaplex-foundation/mpl-bubblegum'
+import {
+  PROGRAM_ID as BUBBLEGUM_PROGRAM_ID,
+  getLeafAssetId,
+} from '@metaplex-foundation/mpl-bubblegum'
+import { BN } from '@anchor-lang/core'
 import { sha256 } from '@noble/hashes/sha256'
-import { ConfirmedSignatureInfo } from '@solana/web3.js'
+import { ConfirmedSignatureInfo, PublicKey } from '@solana/web3.js'
 import bs58 from 'bs58'
 import { EnrichedTransaction } from '../../../types/solana'
 
@@ -16,6 +20,10 @@ export type ParsedInstruction = {
   programName: string | null
   instructionName: string | null
   rawData: string
+  decoded: {
+    args: Record<string, unknown>
+    accounts: { name: string; pubkey: string }[]
+  } | null
 }
 
 export type ParsedTransaction = {
@@ -116,11 +124,95 @@ const classify = (parsed: ParsedTransaction): string => {
   )
 }
 
-const toEnrichedTransaction = (
+type CompressedEvent = NonNullable<
+  EnrichedTransaction['events']['compressed']
+>[number]
+
+// Where a decoded cNFT transfer keeps its leaf index, tree and owners.
+const CNFT_TRANSFER_FIELDS: Record<
+  string,
+  { leafIndex: string; tree: string; oldOwner: string; newOwner: string }
+> = {
+  [`${TRANSFER_PROXY_PROGRAM_ID}:transfer_cnft`]: {
+    leafIndex: 'leaf_index',
+    tree: 'merkle_tree',
+    oldOwner: 'current_owner',
+    newOwner: 'new_leaf_owner',
+  },
+  [`${BUBBLEGUM_PROGRAM_ID.toBase58()}:transfer`]: {
+    leafIndex: 'index',
+    tree: 'merkle_tree',
+    oldOwner: 'leaf_owner',
+    newOwner: 'new_leaf_owner',
+  },
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const leafIndexOf = (value: unknown): number | undefined => {
+  if (typeof value !== 'number' && (typeof value !== 'string' || !value)) {
+    return undefined
+  }
+  const index = Number(value)
+  return Number.isSafeInteger(index) && index >= 0 ? index : undefined
+}
+
+const publicKeyOf = (value: unknown): PublicKey | undefined => {
+  if (typeof value !== 'string') return undefined
+  try {
+    return new PublicKey(value)
+  } catch {
+    return undefined
+  }
+}
+
+// The asset id is not in the response, so derive it from the tree and leaf.
+// Without a valid tree and leaf index, the row has no compressed event.
+const compressedEventsOf = async (
+  parsed: ParsedTransaction,
+): Promise<CompressedEvent[] | undefined> => {
+  const found = parsed.instructions
+    .map((ix, instructionIndex) => ({
+      ix,
+      instructionIndex,
+      fields: CNFT_TRANSFER_FIELDS[`${ix.programId}:${ix.instructionName}`],
+    }))
+    .find(({ ix, fields }) => fields && ix.decoded)
+  if (!found?.ix.decoded) return undefined
+  const { instructionIndex, fields } = found
+  const { args, accounts } = found.ix.decoded
+  if (!isRecord(args) || !Array.isArray(accounts)) return undefined
+  const account = (name: string): unknown =>
+    accounts.find((acc) => isRecord(acc) && acc.name === name)?.pubkey
+  const owner = (name: string) => {
+    const pubkey = account(name)
+    return typeof pubkey === 'string' ? pubkey : ''
+  }
+  const leafIndex = leafIndexOf(args[fields.leafIndex])
+  const tree = publicKeyOf(account(fields.tree))
+  if (leafIndex === undefined || !tree) return undefined
+  const assetId = await getLeafAssetId(tree, new BN(leafIndex))
+  return [
+    {
+      type: 'COMPRESSED_NFT_TRANSFER',
+      assetId: assetId.toBase58(),
+      treeId: tree.toBase58(),
+      leafIndex,
+      instructionIndex,
+      innerInstructionIndex: 0,
+      oldLeafOwner: owner(fields.oldOwner),
+      newLeafOwner: owner(fields.newOwner),
+      metadata: null,
+    },
+  ]
+}
+
+const toEnrichedTransaction = async (
   signature: string,
   parsed: ParsedTransaction,
   signers: string[],
-): EnrichedTransaction => ({
+): Promise<EnrichedTransaction> => ({
   signature,
   signers,
   description: '',
@@ -142,29 +234,52 @@ const toEnrichedTransaction = (
     tokenAmount: transfer.rawTokenAmount / 10 ** transfer.decimals,
     mint: transfer.mint,
   })),
-  events: {},
+  events: { compressed: await compressedEventsOf(parsed) },
 })
 
-// A row per Parsed Events item. A transaction the parser failed on keeps its
-// bare signature row, so history never loses it.
-export const toActivityRows = (
-  items: ParsedEventsItem[],
+// The response is untrusted. Check the fields the adapter depends on.
+const isReadableItem = (value: unknown): value is ParsedEventsItem => {
+  if (!isRecord(value) || typeof value.signature !== 'string') return false
+  if (value.parserStatus === 'ERROR') return true
+  const { parsed } = value
+  return (
+    value.parserStatus === 'OK' &&
+    isRecord(parsed) &&
+    Array.isArray(parsed.instructions) &&
+    Array.isArray(parsed.nativeTransfers) &&
+    Array.isArray(parsed.tokenTransfers)
+  )
+}
+
+// A row per Parsed Events item. A transaction the parser failed on, or one
+// the wallet cannot read, keeps its bare signature row, so history never
+// loses it. No single item can throw out of here.
+export const toActivityRows = async (
+  items: unknown[],
   signatureRows: SignatureRow[],
-): ActivityRow[] => {
+): Promise<ActivityRow[]> => {
   const rowsBySignature = new Map(
     signatureRows.map((row) => [row.signature, row]),
   )
-  return items.flatMap((item): ActivityRow[] => {
-    const signatureRow = rowsBySignature.get(item.signature)
-    if (item.parserStatus === 'ERROR') {
-      return signatureRow ? [signatureRow] : []
-    }
-    return [
-      toEnrichedTransaction(
-        item.signature,
-        item.parsed,
-        signatureRow?.signers ?? [],
-      ),
-    ]
-  })
+  const rows = await Promise.all(
+    items.map(async (item): Promise<ActivityRow | undefined> => {
+      const signatureRow =
+        isRecord(item) && typeof item.signature === 'string'
+          ? rowsBySignature.get(item.signature)
+          : undefined
+      if (!isReadableItem(item) || item.parserStatus === 'ERROR') {
+        return signatureRow
+      }
+      try {
+        return await toEnrichedTransaction(
+          item.signature,
+          item.parsed,
+          signatureRow?.signers ?? [],
+        )
+      } catch {
+        return signatureRow
+      }
+    }),
+  )
+  return rows.filter((row): row is ActivityRow => row !== undefined)
 }
