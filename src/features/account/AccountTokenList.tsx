@@ -44,9 +44,15 @@ type Props = {
     (e: LayoutChangeEvent) => void,
     (e: LayoutChangeEvent) => void,
   ]
+  // Counts the drawer's settled snaps.
+  drawerSnaps?: number
 }
 
-const AccountTokenList = ({ onLayout, onFirstRowsLayout }: Props) => {
+const AccountTokenList = ({
+  onLayout,
+  onFirstRowsLayout,
+  drawerSnaps = 0,
+}: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { visibleTokens } = useVisibleTokens()
@@ -154,7 +160,13 @@ const AccountTokenList = ({ onLayout, onFirstRowsLayout }: Props) => {
 
   return (
     <>
+      {/* iOS 26 places the tab bar's scroll edge effect on this list in the
+          list's own coordinates. The sheet moves by transform, which iOS does
+          not track, so after a snap the effect sits over the rows instead of
+          the bar. iOS places it again only when the list's position changes,
+          so each snap moves the list by a hairline. */}
       <BottomSheetFlatList
+        style={drawerSnaps % 2 ? styles.nudged : undefined}
         onLayout={onLayout}
         data={mints}
         numColumns={2}
@@ -195,6 +207,7 @@ const AccountTokenList = ({ onLayout, onFirstRowsLayout }: Props) => {
 
 const styles = StyleSheet.create({
   fade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  nudged: { top: StyleSheet.hairlineWidth },
 })
 
 export default AccountTokenList

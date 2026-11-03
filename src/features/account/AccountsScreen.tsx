@@ -77,6 +77,7 @@ const AccountsScreen = () => {
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
+  const [drawerSnaps, setDrawerSnaps] = useState(0)
   const topHeaderRef = useRef<View>(null)
   const { triggerImpact } = useHaptic()
   const showBanner = useAppStore((state) => state.showBanner)
@@ -310,9 +311,11 @@ const AccountsScreen = () => {
         handleComponent={DrawerHandle}
         detached
         animatedPosition={listAnimatedPos}
+        onChange={() => setDrawerSnaps((n) => n + 1)}
       >
         <AccountTokenList
           onFirstRowsLayout={[setFirstRowHeight, setSecondRowHeight]}
+          drawerSnaps={drawerSnaps}
         />
       </BottomSheet>
     </View>
