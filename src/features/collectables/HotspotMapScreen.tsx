@@ -218,6 +218,10 @@ const HotspotMapScreen = () => {
 
   const iconSize = 0.17 * (zoomLevel / MAX_MAP_ZOOM)
 
+  // MOBILE hexes get finer past zoom 16; the polygons depend on this, not the raw zoom.
+  const hexResolution =
+    networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8
+
   // The React Compiler skips this file, so the hex polygons are memoized by hand.
   const hexsFeature = useMemo(
     () =>
@@ -229,11 +233,7 @@ const HotspotMapScreen = () => {
               type: 'Polygon',
               coordinates: [
                 cellToBoundary(
-                  latLngToCell(
-                    center[0],
-                    center[1],
-                    networkType === 'MOBILE' ? (zoomLevel > 16 ? 12 : 10) : 8,
-                  ),
+                  latLngToCell(center[0], center[1], hexResolution),
                 ).map((p) => p.reverse()),
               ],
             } as Polygon,
@@ -248,10 +248,10 @@ const HotspotMapScreen = () => {
     [
       activeHex,
       hexInfoBuckets,
+      hexResolution,
       iotHexColor,
       mobileHexColor,
       networkType,
-      zoomLevel,
     ],
   )
 

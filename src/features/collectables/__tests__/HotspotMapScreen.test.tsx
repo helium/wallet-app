@@ -1,78 +1,96 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
-import type { HotspotWithPendingRewards } from '../../../types/solana'
 import HotspotMapScreen from '../HotspotMapScreen'
+import { mockMapRef } from './mapLibreMock'
 
-// The route params, as the navigator holds them for the open screen.
-let mockParams:
-  | { hotspot?: HotspotWithPendingRewards; network?: 'IOT' | 'MOBILE' }
-  | undefined
-jest.mock('@react-navigation/native', () => ({
-  useRoute: () => ({ params: mockParams }),
-  useNavigation: () => ({ goBack: () => {} }),
-}))
-// No hotspot has map info, so the screen shows the route's hotspot alone.
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: () => ({ data: undefined, isLoading: false }),
-}))
 jest.mock(
-  '@hooks/useHotspots',
-  () => () => ({
-    hotspots: [],
-    fetchAll: () => {},
-    loading: false,
-    onEndReached: true,
-  }),
-  { virtual: true },
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  {
+    virtual: true,
+  },
 )
-jest.mock('../../../solana/SolanaProvider', () => ({
-  useSolana: () => ({ anchorProvider: {} }),
-}))
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
+jest.mock('@maplibre/maplibre-react-native', () =>
+  jest.requireActual('./mapLibreMock'),
+)
+// One hex in San Francisco, keyed as the decimal BN string the screen parses.
+jest.mock('@tanstack/react-query', () => {
+  const { latLngToCell } = jest.requireActual('h3-js')
+  const { BN } = jest.requireActual('bn.js')
+  const hex = new BN(latLngToCell(37.7749, -122.4194, 8), 16).toString()
+  const result = { data: { [hex]: [] }, isLoading: false }
+  return { useQuery: () => result }
+})
 jest.mock('../hotspotMapInfosQuery', () => ({
   hotspotMapInfosQuery: () => ({}),
 }))
+jest.mock(
+  '@hooks/useHotspots',
+  () => {
+    const hotspots = {
+      hotspots: [],
+      fetchAll: () => {},
+      loading: false,
+      onEndReached: true,
+    }
+    return { __esModule: true, default: () => hotspots }
+  },
+  { virtual: true },
+)
+jest.mock('../../../solana/SolanaProvider', () => {
+  const solana = { anchorProvider: {} }
+  return { useSolana: () => solana }
+})
+jest.mock('@react-navigation/native', () => {
+  const navigation = { goBack: jest.fn() }
+  const route = { params: {} }
+  return { useNavigation: () => navigation, useRoute: () => route }
+})
+jest.mock('@utils/h3', () => jest.requireActual('../../../utils/h3'), {
+  virtual: true,
+})
+jest.mock('@utils/config', () => ({ __esModule: true, default: {} }), {
+  virtual: true,
+})
+jest.mock('@theme/motion', () => ({ FADE_OUT_STATE: {} }), { virtual: true })
+jest.mock('@assets/images/hex.svg', () => 'Hex', { virtual: true })
+jest.mock('@assets/images/mapIotHex.png', () => 1, { virtual: true })
+jest.mock('@assets/images/mapIotHexActive.png', () => 2, { virtual: true })
+jest.mock('@assets/images/mapMobileHex.png', () => 3, { virtual: true })
+jest.mock('@assets/images/mapMobileHexActive.png', () => 4, { virtual: true })
+jest.mock('@gorhom/bottom-sheet', () => {
+  const { createElement, forwardRef, useImperativeHandle } =
+    jest.requireActual('react')
+  return {
+    BottomSheetModal: forwardRef(
+      (props: object, ref: React.Ref<{ present(): void; dismiss(): void }>) => {
+        useImperativeHandle(ref, () => ({ present() {}, dismiss() {} }))
+        return createElement('BottomSheetModal', props)
+      },
+    ),
+    BottomSheetModalProvider: ({ children }: { children: React.ReactNode }) =>
+      children,
+    BottomSheetScrollView: 'BottomSheetScrollView',
+  }
+})
 jest.mock('../HotspotMapHotspotDetails', () => ({
   HotspotMapHotspotDetails: 'HotspotMapHotspotDetails',
 }))
 jest.mock('../HotspotMapLegend', () => ({
   HotspotMapLegend: 'HotspotMapLegend',
 }))
-jest.mock('../map/Map', () => 'Map')
-jest.mock('../map/utils', () => ({
-  INITIAL_MAP_VIEW_STATE: { zoomLevel: 10, centerCoordinate: [0, 0] },
-  MAX_MAP_ZOOM: 20,
-}))
-jest.mock('@maplibre/maplibre-react-native', () => ({
-  useCurrentPosition: () => undefined,
-  Images: 'Images',
-  GeoJSONSource: 'GeoJSONSource',
-  Layer: 'Layer',
-}))
-jest.mock('@gorhom/bottom-sheet', () => ({
-  BottomSheetModal: 'BottomSheetModal',
-  BottomSheetModalProvider: 'BottomSheetModalProvider',
-  BottomSheetScrollView: 'BottomSheetScrollView',
-}))
-jest.mock('@assets/images/hex.svg', () => 'HexArt', { virtual: true })
-jest.mock('@assets/images/mapIotHex.png', () => 1, { virtual: true })
-jest.mock('@assets/images/mapIotHexActive.png', () => 1, { virtual: true })
-jest.mock('@assets/images/mapMobileHex.png', () => 1, { virtual: true })
-jest.mock('@assets/images/mapMobileHexActive.png', () => 1, { virtual: true })
-jest.mock('@theme/motion', () => ({ FADE_OUT_STATE: undefined }), {
-  virtual: true,
-})
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
-jest.mock('@ui/Sheet', () => ({ SheetBackground: 'SB', SheetHandle: 'SH' }), {
-  virtual: true,
-})
+jest.mock(
+  '@ui/Sheet',
+  () => ({ SheetBackground: 'SheetBackground', SheetHandle: 'SheetHandle' }),
+  { virtual: true },
+)
 jest.mock('@ui/Spinner', () => ({ Spinner: 'Spinner' }), { virtual: true })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
-jest.mock('@utils/h3', () => ({ parseH3BNLocation: () => [0, 0] }), {
-  virtual: true,
-})
 jest.mock('expo-blur', () => ({ BlurView: 'BlurView' }))
 jest.mock('lucide-react-native', () => ({
   ChevronLeft: 'ChevronLeft',
@@ -82,7 +100,7 @@ jest.mock('lucide-react-native', () => ({
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
-jest.mock('react-native', () => ({ Alert: { alert: () => {} }, View: 'View' }))
+jest.mock('react-native', () => ({ Alert: { alert: jest.fn() }, View: 'View' }))
 jest.mock('react-native-reanimated', () => ({
   __esModule: true,
   default: { createAnimatedComponent: (c: unknown) => c },
@@ -90,76 +108,112 @@ jest.mock('react-native-reanimated', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
-jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
-  virtual: true,
+jest.mock('uniwind', () => {
+  const colors = ['#0000ff', '#00ff00']
+  return { useCSSVariable: () => colors, withUniwind: (c: unknown) => c }
 })
-jest.mock('use-debounce', () => ({ useDebounce: (value: unknown) => [value] }))
-jest.mock('uniwind', () => ({
-  withUniwind: (c: unknown) => c,
-  useCSSVariable: () => ['blue', 'green'],
-}))
 
 // Tell React that this runner wraps renders and presses in act().
 ;(
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true
 
-const hotspotWithId = (id: string) =>
-  ({ id }) as unknown as HotspotWithPendingRewards
-
-const renderScreen = () => {
-  let renderer!: TestRenderer.ReactTestRenderer
+const render = () => {
+  let created: TestRenderer.ReactTestRenderer | undefined
   act(() => {
-    renderer = TestRenderer.create(<HotspotMapScreen />)
+    created = TestRenderer.create(<HotspotMapScreen />)
   })
-  return renderer
-}
-const shownHotspots = (renderer: TestRenderer.ReactTestRenderer) =>
-  renderer.root
-    .findAllByType('HotspotMapHotspotDetails' as never)
-    .map((n) => ({ id: n.props.hotspot.id, network: n.props.network }))
-const switchNetwork = (renderer: TestRenderer.ReactTestRenderer) =>
-  act(() => {
-    renderer.root
-      .find(
-        (n) =>
-          (n.type as unknown) === 'PressableScale' &&
-          n.findAll(
-            (c) => c.props.children === 'collectablesScreen.hotspots.map.type',
-          ).length > 0,
-      )
-      .props.onPress()
-  })
-const navigateTo = (
-  renderer: TestRenderer.ReactTestRenderer,
-  params: typeof mockParams,
-) => {
-  mockParams = params
-  act(() => {
-    renderer.update(<HotspotMapScreen />)
-  })
+  if (!created) throw new Error('render failed')
+  const { root } = created
+  const node = (type: string) => root.findByType(type as never)
+  return {
+    hexData: () => node('GeoJSONSource').props.data,
+    // The network toggle is the only PressableScale holding a Hex icon.
+    toggleNetwork: () =>
+      act(() => {
+        root
+          .findAllByType('PressableScale' as never)
+          .find((p) => p.findAllByType('Hex' as never).length)
+          ?.props.onPress()
+      }),
+    snapSheet: (index: number) =>
+      act(() => {
+        node('BottomSheetModal').props.onChange(index)
+      }),
+    // The map reports its zoom when a camera move ends.
+    endCameraMoveAt: async (zoom: number) => {
+      mockMapRef.getZoom.mockResolvedValue(zoom)
+      await act(async () => {
+        node('Map').props.onRegionDidChange()
+      })
+    },
+  }
 }
 
-describe('HotspotMapScreen', () => {
-  it('shows the hotspot and network of new route params', () => {
-    mockParams = { hotspot: hotspotWithId('h1') }
-    const renderer = renderScreen()
-    expect(shownHotspots(renderer)).toEqual([{ id: 'h1', network: 'IOT' }])
+describe('HotspotMapScreen hex source', () => {
+  it('keeps its data when the bottom sheet snaps', () => {
+    const view = render()
+    const before = view.hexData()
 
-    // The hotspot list opens the same screen with a mobile hotspot.
-    navigateTo(renderer, { hotspot: hotspotWithId('h2'), network: 'MOBILE' })
+    view.snapSheet(1)
 
-    expect(shownHotspots(renderer)).toEqual([{ id: 'h2', network: 'MOBILE' }])
+    expect(view.hexData()).toBe(before)
   })
 
-  it('shows the hotspot of new route params after a network switch', () => {
-    mockParams = { hotspot: hotspotWithId('h1') }
-    const renderer = renderScreen()
-    switchNetwork(renderer)
-    expect(shownHotspots(renderer)).toEqual([])
+  // IOT hexes are drawn at one resolution whatever the zoom.
+  it('keeps its data across an IOT zoom', async () => {
+    const view = render()
+    const before = view.hexData()
 
-    navigateTo(renderer, { hotspot: hotspotWithId('h3') })
+    await view.endCameraMoveAt(13)
 
-    expect(shownHotspots(renderer)).toEqual([{ id: 'h3', network: 'IOT' }])
+    expect(view.hexData()).toBe(before)
+  })
+
+  // MOBILE hexes switch resolution only past zoom 16.
+  it('keeps its data across a MOBILE zoom that stays under 16', async () => {
+    const view = render()
+    view.toggleNetwork()
+    const before = view.hexData()
+
+    await view.endCameraMoveAt(14)
+
+    expect(view.hexData()).toBe(before)
+  })
+
+  it('redraws MOBILE hexes when a zoom crosses 16', async () => {
+    const view = render()
+    view.toggleNetwork()
+    const before = view.hexData()
+
+    await view.endCameraMoveAt(17)
+
+    expect(view.hexData().features[0].geometry).not.toEqual(
+      before.features[0].geometry,
+    )
+  })
+
+  // Zoom 16 is the last MOBILE zoom drawn at resolution 10.
+  it('draws MOBILE hexes at resolution 10 at zoom 16 and 12 at zoom 17', async () => {
+    const { cellToBoundary, cellToLatLng, latLngToCell } =
+      jest.requireActual('h3-js')
+    const [lat, lng] = cellToLatLng(latLngToCell(37.7749, -122.4194, 8))
+    const polygonAt = (res: number) => [
+      cellToBoundary(latLngToCell(lat, lng, res)).map(
+        ([pLat, pLng]: [number, number]) => [pLng, pLat],
+      ),
+    ]
+    const view = render()
+    view.toggleNetwork()
+
+    await view.endCameraMoveAt(16)
+    expect(view.hexData().features[0].geometry.coordinates).toEqual(
+      polygonAt(10),
+    )
+
+    await view.endCameraMoveAt(17)
+    expect(view.hexData().features[0].geometry.coordinates).toEqual(
+      polygonAt(12),
+    )
   })
 })

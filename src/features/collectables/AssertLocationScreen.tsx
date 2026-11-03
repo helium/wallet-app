@@ -85,6 +85,11 @@ const AssertLocationScreen = () => {
   const cameraRef = useRef<CameraRef>(null)
   const { showOKAlert } = useAlert()
   const [mapCenter, setMapCenter] = useState<number[]>()
+  // An assert reads the centre stored last, not the one its render saw.
+  const mapCenterRef = useRef<number[]>(undefined)
+  const moveGeneration = useRef(0)
+  const cameraMovingRef = useRef(false)
+  const [cameraMoving, setCameraMoving] = useState(false)
   const [searchVisible, setSearchVisible] = useState(false)
   const [searchValue, setSearchValue] = useState<string>()
   const [elevGainVisible, setElevGainVisible] = useState(false)
@@ -236,14 +241,28 @@ const AssertLocationScreen = () => {
 
   const handleRegionChanged = useDebouncedCallback(async () => {
     if (mapRef?.current) {
+      const generation = moveGeneration.current
       const center = await mapRef?.current.getCenter()
-      if (JSON.stringify(center) !== JSON.stringify(mapCenter)) {
+      if (generation !== moveGeneration.current) return
+      if (JSON.stringify(center) !== JSON.stringify(mapCenterRef.current)) {
+        mapCenterRef.current = center
         setMapCenter(center)
         setTransactionError(undefined)
         hideSearch()
       }
+      cameraMovingRef.current = false
+      setCameraMoving(false)
     }
   }, 200)
+
+  // A new move drops the pending centre and any centre read still in flight,
+  // so only a centre read after the camera settles is stored.
+  const handleRegionWillChange = () => {
+    moveGeneration.current += 1
+    handleRegionChanged.cancel()
+    cameraMovingRef.current = true
+    setCameraMoving(true)
+  }
 
   const handleUserLocationPress = () => {
     if (cameraRef?.current && userLocation?.coords) {
@@ -259,8 +278,10 @@ const AssertLocationScreen = () => {
   const iotNumLocationAsserts = iotInfoAcc?.numLocationAsserts
   const mobileNumLocationAsserts = mobileInfoAcc?.numLocationAsserts
   const assertLocation = async (type: NetworkType) => {
+    const center = mapCenterRef.current
     if (
-      !mapCenter ||
+      !center ||
+      cameraMovingRef.current ||
       !entityKey ||
       loadingMakerDc ||
       loadingLocationAssertDcRequirements ||
@@ -308,8 +329,8 @@ const AssertLocationScreen = () => {
       await submitUpdateEntityInfo({
         type,
         entityKey,
-        lng: mapCenter[0],
-        lat: mapCenter[1],
+        lng: center[0],
+        lat: center[1],
         elevation,
         decimalGain: gain,
         payer: isPayer ? wallet.toBase58() : undefined,
@@ -373,6 +394,7 @@ const AssertLocationScreen = () => {
 
   const disabled =
     !mapCenter ||
+    cameraMoving ||
     reverseGeo.loading ||
     asserting ||
     loadingLocationAssertDcRequirements ||
@@ -407,6 +429,7 @@ const AssertLocationScreen = () => {
             centerCoordinate={initialCenter}
             mapProps={{
               onPress: hideSearch,
+              onRegionWillChange: handleRegionWillChange,
               onRegionDidChange: () => void handleRegionChanged(),
             }}
           >
@@ -692,7 +715,12 @@ const AssertLocationScreen = () => {
                       variant="outline"
                       size="dashboard"
                       className="grow"
-                      disabled={asserting}
+                      disabled={
+                        asserting ||
+                        cameraMoving ||
+                        loadingMyDc ||
+                        waitingOnPrice
+                      }
                       onPress={() =>
                         void handleAssertLocationPress().catch(console.error)
                       }

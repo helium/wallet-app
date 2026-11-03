@@ -9,6 +9,14 @@ let mockFeeQuery: {
   error: Error | null
 }
 
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  {
+    virtual: true,
+  },
+)
+jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
 jest.mock('@tanstack/react-query', () => ({
   useQuery: () => mockFeeQuery,
 }))
