@@ -16,8 +16,6 @@ const NOT_YET_SPLIT: Record<string, string> = {
     'a short keyboard-aware form under a fixed header; it does not scroll under the bars',
   'features/request/RequestScreen.tsx':
     'a short keyboard-aware form under a fixed header and tabs; it does not scroll under the bars',
-  'features/collectables/HotspotMapScreen.tsx':
-    'the scroller is in the bottom sheet over the map, which does not reach the bars',
 }
 
 const SCROLLER = /(ScrollView|FlatList|SectionList|FlashList)$/

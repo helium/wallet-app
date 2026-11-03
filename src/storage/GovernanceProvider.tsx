@@ -11,6 +11,7 @@ import {
   useSubDaos,
 } from '@helium/voter-stake-registry-hooks'
 import { getRegistrarKey } from '@helium/voter-stake-registry-sdk'
+import { useCurrentRouteMint } from '@hooks/useCurrentRouteMint'
 import { PublicKey } from '@solana/web3.js'
 import React, {
   FC,
@@ -19,11 +20,9 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Config from '@utils/config'
-import { navigationRef } from '../navigation/NavigationHelper'
 import { useSolana } from '../solana/SolanaProvider'
 import { useAppStore } from '../store/appStore'
 import { useAccountStorage } from './AccountStorageProvider'
@@ -70,23 +69,10 @@ const GovernanceContext = createContext<IGovernanceContextState>(
 const GovernanceProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { anchorProvider } = useSolana()
   const { upsertAccount, currentAccount } = useAccountStorage()
-  // This provider sits inside the NavigationContainer but outside every
-  // navigator, where useNavigationState throws. Read the focused route from
-  // the container ref instead, on mount and on each 'state' event.
-  const [routeMint, setRouteMint] = useState<string>()
-  useEffect(() => {
-    const readRouteMint = () => {
-      if (!navigationRef.isReady()) return
-      const params = navigationRef.getCurrentRoute()?.params as
-        { mint?: string } | undefined
-      setRouteMint(params?.mint)
-    }
-    readRouteMint()
-    return navigationRef.addListener('state', readRouteMint)
-  }, [])
+  const routeMint = useCurrentRouteMint()
   const network: GovNetwork =
     routeMint && Object.prototype.hasOwnProperty.call(mintsToNetwork, routeMint)
-      ? (mintsToNetwork[routeMint] as GovNetwork) || 'hnt'
+      ? mintsToNetwork[routeMint]
       : 'hnt'
   const networkName = useMemo(() => networkToName[network], [network])
   const mint = useMemo(() => networksToMint[network], [network])

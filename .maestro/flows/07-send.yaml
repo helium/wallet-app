@@ -15,7 +15,7 @@ tags:
 - tapOn:
     id: PaymentItem.Address
 - inputText: ${MAESTRO_RECIPIENT}
-- hideKeyboard
+- pressKey: Enter
 - tapOn:
     id: PaymentItem.Amount
 - tapOn:

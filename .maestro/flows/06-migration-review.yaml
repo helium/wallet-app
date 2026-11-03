@@ -31,7 +31,7 @@ tags:
       - tapOn:
           id: MigrateLogin.Input
       - inputText: ${MAESTRO_PRIVY_TEST_EMAIL}
-      - hideKeyboard
+      - pressKey: Enter
       - tapOn:
           id: MigrateLogin.SendCode
       - extendedWaitUntil:
@@ -41,7 +41,7 @@ tags:
       - tapOn:
           id: MigrateLogin.Input
       - inputText: ${MAESTRO_PRIVY_TEST_OTP}
-      - hideKeyboard
+      - pressKey: Enter
       - tapOn:
           id: MigrateLogin.Verify
 - extendedWaitUntil:

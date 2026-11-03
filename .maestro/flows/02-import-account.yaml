@@ -4,10 +4,12 @@ appId: com.helium.wallet.app
 tags:
   - onboarding
 ---
-- launchApp:
-    clearState: true
-    clearKeychain: true
+- runFlow: ../subflows/clean-start.yaml
 - evalScript: ${output.words = MAESTRO_FIXTURE_SEED.trim().split(/\s+/)}
+- extendedWaitUntil:
+    visible:
+      id: CreateImport.Import
+    timeout: 60000
 - tapOn:
     id: CreateImport.Import
 - tapOn:
@@ -28,7 +30,7 @@ tags:
 - tapOn:
     id: AccountAssign.Alias
 - inputText: Maestro Fixture
-- hideKeyboard
+- pressKey: Enter
 - tapOn:
     id: AccountAssign.Continue
 - runFlow: ../subflows/enter-pin.yaml

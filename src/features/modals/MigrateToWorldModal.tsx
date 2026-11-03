@@ -96,9 +96,12 @@ const MigrateToWorldCard: FC = () => {
     [],
   )
 
+  // gorhom makes the sheet one accessible element by default, which on iOS
+  // hides the buttons from VoiceOver and Maestro.
   return (
     <BottomSheet
       ref={sheetRef}
+      accessible={false}
       style={sheetMargins}
       enableDynamicSizing
       enablePanDownToClose

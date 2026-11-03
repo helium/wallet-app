@@ -60,12 +60,19 @@ else
   }
 fi
 
+# A real Jupiter key goes to the paid host. With no key, the compose file
+# sends the Jupiter calls through its keyless proxy.
+if [ -n "${JUPITER_API_KEY:-}" ]; then
+  export JUPITER_API_URL="https://api.jup.ag"
+fi
+
 echo "[maestro-surfpool] starting blockchain-api" >&2
 "${COMPOSE[@]}" up -d --wait >&2
 
 # An Android emulator reaches the host ports only through adb reverse.
 if command -v adb >/dev/null && adb get-state >/dev/null 2>&1; then
   adb reverse tcp:8899 tcp:8899 >&2
+  adb reverse tcp:8900 tcp:8900 >&2
   adb reverse tcp:3000 tcp:3000 >&2
 fi
 

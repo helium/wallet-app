@@ -3,9 +3,11 @@ appId: com.helium.wallet.app
 tags:
   - onboarding
 ---
-- launchApp:
-    clearState: true
-    clearKeychain: true
+- runFlow: ../subflows/clean-start.yaml
+- extendedWaitUntil:
+    visible:
+      id: CreateImport.Create
+    timeout: 60000
 - tapOn:
     id: CreateImport.Create
 - tapOn:
@@ -16,7 +18,13 @@ tags:
       ALIAS: Maestro Created
 - runFlow: ../subflows/enter-pin.yaml
 - runFlow: ../subflows/enter-pin.yaml
+# The Migrate to World card hides home from Maestro on iOS while it shows.
+- extendedWaitUntil:
+    visible:
+      id: AccountView\.Balance|MigrateToWorld\.NotNow
+    timeout: 30000
+- runFlow: ../subflows/close-migrate-card.yaml
 - extendedWaitUntil:
     visible:
       id: AccountView.Balance
-    timeout: 30000
+    timeout: 10000

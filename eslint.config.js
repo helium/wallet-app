@@ -76,6 +76,15 @@ module.exports = [
       'import-x/no-duplicates': 'error',
       'import-x/no-extraneous-dependencies': 'error',
       'no-restricted-imports': ['error', legacyImports],
+      // In a native dev build, Expo's split-bundle loader calls an HMR client
+      // that only web sets up, so each import() rejects.
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportExpression',
+          message: 'import() rejects in native dev builds. Use require.',
+        },
+      ],
       'no-restricted-properties': [
         'error',
         {

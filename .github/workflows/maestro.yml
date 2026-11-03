@@ -105,8 +105,9 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # The emulator reaches surfpool (8899) and blockchain-api (3000) on the
-      # runner only through adb reverse. It reaches Metro at 10.0.2.2:8081.
+      # The emulator reaches surfpool (8899, websocket 8900) and blockchain-api
+      # (3000) on the runner only through adb reverse. It reaches Metro at
+      # 10.0.2.2:8081.
       - name: Run Maestro
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         env:
@@ -120,6 +121,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             adb reverse tcp:8899 tcp:8899
+            adb reverse tcp:8900 tcp:8900
             adb reverse tcp:3000 tcp:3000
             adb install android/app/build/outputs/apk/debug/app-debug.apk
             maestro test .maestro

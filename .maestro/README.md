@@ -33,15 +33,18 @@ script directly).
    ```
 
 2. Start surfpool and blockchain-api, seed the fixture wallet, and export
-   its values. The script also runs `adb reverse` for ports 8899 and 3000
-   when an Android emulator is connected.
+   its values. The script also runs `adb reverse` for ports 8899, 8900 and
+   3000 when an Android emulator is connected.
 
    ```bash
-   export JUPITER_API_KEY="<Jupiter API key>"   # swap quotes in flow 04
    eval "$(scripts/maestro-surfpool.sh)"
    ```
 
    This exports `MAESTRO_FIXTURE_SEED` and `MAESTRO_RECIPIENT`.
+
+   Flow 04 needs no Jupiter API key. With no `JUPITER_API_KEY`, a proxy in
+   the compose file sends the swap calls to the keyless `lite-api.jup.ag`
+   host. Export `JUPITER_API_KEY` to use `api.jup.ag` with your key.
 
 3. Export the Privy test account values:
 
@@ -79,7 +82,8 @@ holds the `MAESTRO_*` values in plaintext. It needs these repository secrets,
 none of which may hold funds:
 
 - `DOT_ENV`: the app `.env` file, as EAS builds use it
-- `JUPITER_API_KEY`: swap quotes in flow 04
+- `JUPITER_API_KEY` (optional): a key for `api.jup.ag`. With no key, flow 04
+  uses the keyless `lite-api.jup.ag` host
 - `ASSET_ENDPOINT`: a mainnet DAS RPC, for asset reads that surfpool does
   not serve
 - `MAESTRO_PRIVY_TEST_EMAIL` and `MAESTRO_PRIVY_TEST_OTP`: flow 06

@@ -55,13 +55,33 @@ type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
 export const ProposalScreen = () => {
   const { t } = useTranslation()
   const route = useRoute<Route>()
+  // A deep link can carry any string as the proposal param.
+  const proposalKey = useMemo(() => {
+    try {
+      return new PublicKey(route.params.proposal)
+    } catch {
+      return undefined
+    }
+  }, [route.params.proposal])
+
+  if (!proposalKey) {
+    return (
+      <BackScreen title="Proposal Overview" edges={backEdges}>
+        <Text className="text-destructive">
+          {t('gov.errors.invalidProposal')}
+        </Text>
+      </BackScreen>
+    )
+  }
+
+  return <ProposalOverview proposalKey={proposalKey} />
+}
+
+const ProposalOverview = ({ proposalKey }: { proposalKey: PublicKey }) => {
+  const { t } = useTranslation()
   const navigation = useNavigation<GovernanceNavigationProp>()
   const { upsertAccount, currentAccount } = useAccountStorage()
   const [currVote, setCurrVote] = useState(0)
-  const proposalKey = useMemo(
-    () => new PublicKey(route.params.proposal),
-    [route.params.proposal],
-  )
   const {
     mint,
     loading,

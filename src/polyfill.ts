@@ -26,7 +26,7 @@ global.Buffer = Buffer
 // A global structuredClone can already exist at load: Hermes native, or the
 // one Expo's winter runtime installs. Then @ungap/structured-clone exports a
 // wrapper that calls the global one, so replacing the global would recurse.
-if (typeof global.structuredClone === 'undefined') {
+if (typeof global.structuredClone !== 'function') {
   global.structuredClone = structuredClone
 }
 

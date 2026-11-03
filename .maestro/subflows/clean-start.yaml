@@ -1,0 +1,53 @@
+# Launches the app with no state and brings it to onboarding.
+# On iOS the account list lives in the iCloud key-value store, which
+# clearState and clearKeychain leave in place. The app then opens home with
+# the old wallets and no keys. Removes each wallet in Settings, as a user
+# would, until onboarding shows. Removing the last wallet also clears the
+# iCloud keys.
+appId: com.helium.wallet.app
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+# A cold debug launch on the Android emulator takes about 90 s.
+- extendedWaitUntil:
+    visible:
+      id: CreateImport\.Create|AccountsTopNav\.Settings
+    timeout: 120000
+- repeat:
+    times: 10
+    while:
+      notVisible:
+        id: CreateImport.Create
+    commands:
+      # The home screen of a wallet with no key asks to restore it.
+      - runFlow:
+          when:
+            visible: Private Key Not Found
+          commands:
+            - tapOn: Cancel
+            - extendedWaitUntil:
+                notVisible: Private Key Not Found
+                timeout: 10000
+      - runFlow: close-migrate-card.yaml
+      - tapOn:
+          id: AccountsTopNav.Settings
+      - extendedWaitUntil:
+          visible:
+            id: Settings.Close
+          timeout: 10000
+      - scrollUntilVisible:
+          element: Remove Wallet
+      - tapOn: Remove Wallet
+      - extendedWaitUntil:
+          visible: Remove .*\?
+          timeout: 10000
+      # The row behind the alert has the same text. The alert button sits
+      # right of the alert's Cancel.
+      - tapOn:
+          text: Remove Wallet
+          rightOf: Cancel
+      - extendedWaitUntil:
+          visible:
+            id: CreateImport\.Create|AccountsTopNav\.Settings
+          timeout: 30000
