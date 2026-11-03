@@ -39,7 +39,8 @@ const useOnboardingHook = ({ baseUrl }: { baseUrl: string }) => {
   useEffect(() => {
     void new OnboardingClient(`${baseUrl}/v3`)
       .getMakers()
-      .then(({ data }) => setMakers(data || []))
+      .then((response) => setMakers(response?.data || []))
+      .catch((e) => console.warn('Failed to load makers', e))
   }, [baseUrl])
 
   return {

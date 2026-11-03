@@ -76,7 +76,9 @@ const useStatusPage = () => {
 
   useAppear(() => {
     if (!summary) {
-      void fetchSummary().then(setSummary)
+      void fetchSummary()
+        .then(setSummary)
+        .catch((e) => console.warn('Failed to load status summary', e))
     }
     const now = Date.now()
     if (now - FETCH_INTERVAL < lastFetchTime) {
@@ -84,7 +86,9 @@ const useStatusPage = () => {
     }
 
     setLastFetchTime(now)
-    void fetchUnresolved().then(setUnresolved)
+    void fetchUnresolved()
+      .then(setUnresolved)
+      .catch((e) => console.warn('Failed to load status incidents', e))
   })
 
   const [incidents, setIncidents] = useState<Incident[]>([])

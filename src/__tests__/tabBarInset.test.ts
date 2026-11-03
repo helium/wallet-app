@@ -182,6 +182,7 @@ describe('screens under the floating tab bar', () => {
     )
     expect(stale).toEqual([])
   })
+
   // iOS adds the bar to the automatic inset of any scroller that asks for
   // it, and Android ignores the prop. A screen that asks and also clears the
   // bar with TabSafeAreaView pads the end twice on iOS.
@@ -198,5 +199,18 @@ describe('screens under the floating tab bar', () => {
       (key) => !tabScreens.includes(key) || !AUTOMATIC_INSET.test(codeOf(key)),
     )
     expect(stale).toEqual([])
+  })
+
+  // A scroller inside TabSafeAreaView, or one that asks iOS for the
+  // automatic inset, stops at the bar's top edge. The proposal rows scroll
+  // under the bar, and a bottom spacer as the last scroll child lets the
+  // last row clear it.
+  it('lets the proposal overview scroll under the bar', () => {
+    const source = codeOf('features/governance/ProposalScreen.tsx')
+    expect(source).not.toMatch(/contentInsetAdjustmentBehavior="automatic"/)
+    expect(source).not.toMatch(/withUniwind\(TabSafeAreaView\)/)
+    expect(source).toMatch(
+      /<TabSafeAreaView edges=\{\['bottom'\]\} \/>\s*<\/ScrollView>/,
+    )
   })
 })
