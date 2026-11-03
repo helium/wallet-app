@@ -18,12 +18,12 @@ import { useQueries } from '@tanstack/react-query'
 import axios from 'axios'
 import BN from 'bn.js'
 import { CircleCheck } from 'lucide-react-native'
-import MarkdownIt from 'markdown-it'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { withUniwind } from 'uniwind'
 import { ProposalCard } from './ProposalCard'
+import { proposalSummary } from './proposalMarkdown'
 import {
   GovernanceNavigationProp,
   ProposalFilter,
@@ -33,19 +33,13 @@ import {
 const SafeArea = withUniwind(TabSafeAreaView)
 const SelectedIcon = withUniwind(CircleCheck)
 
-const markdownParser = MarkdownIt()
-
 // The first paragraph of the markdown at a proposal uri.
 const fetchProposalDescription = async (proposalUri?: string) => {
   if (proposalUri) {
     // Force HTTPS for security - convert any HTTP URLs to HTTPS
     const secureUri = proposalUri.replace(/^http:\/\//, 'https://')
     const { data } = await axios.get(secureUri)
-    const htmlContent = markdownParser.render(data)
-    const firstParagraphMatch = htmlContent.match(/<p>(.*?)<\/p>/i)
-    return firstParagraphMatch
-      ? firstParagraphMatch[0].replace(/<[^>]+>/g, '')
-      : null
+    return proposalSummary(data)
   }
   return null
 }
