@@ -151,25 +151,33 @@ export function useMetaplexMetadata(
   }
 }
 
-// The metadata of many mints in one account read, for a list. Each JSON uses
-// the same per-URI query as useMetaplexMetadata, so the two share a cache and
-// each mint loads on its own.
-export function useMetaplexMetadatas(
-  mints: PublicKey[],
-): Record<string, MetaplexMetadata> {
+// The same PublicKey list while the mints stay the same, so the account
+// reads that take it do not restart on each render.
+export const useStableKeys = (mints: PublicKey[]) => {
   const mintsKey = mints.map((m) => m.toBase58()).join(',')
-  const mintKeys = useMemo(
+  return useMemo(
     () => (mintsKey ? mintsKey.split(',').map((m) => new PublicKey(m)) : []),
     [mintsKey],
   )
+}
+
+// The metadata of many mints in one account read, for a list. Each JSON uses
+// the same per-URI query as useMetaplexMetadata, so the two share a cache and
+// each mint loads on its own.
+export const useMetaplexMetadatas = (
+  mints: PublicKey[],
+): Record<string, MetaplexMetadata> => {
+  const mintKeys = useStableKeys(mints)
   const metadataAddrs = useMemo(
     () => mintKeys.map((m) => getMetadataId(m)),
     [mintKeys],
   )
   const { accounts, loading } = useAccounts(metadataAddrs, METADATA_PARSER)
-  const metadataAccs = mintKeys.map(
-    (_, index) =>
-      accounts?.find((a) => a.publicKey.equals(metadataAddrs[index]))?.info,
+  const accountsByAddr = new Map(
+    accounts?.map((a) => [a.publicKey.toBase58(), a.info]),
+  )
+  const metadataAccs = mintKeys.map((_, index) =>
+    accountsByAddr.get(metadataAddrs[index].toBase58()),
   )
   const jsons = useQueries({
     queries: metadataAccs.map((metadataAcc) => {

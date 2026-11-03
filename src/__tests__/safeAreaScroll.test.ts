@@ -12,10 +12,12 @@ const SRC = path.join(__dirname, '..')
 
 // Screens that still nest a scroller in a safe area, with the reason.
 const NOT_YET_SPLIT: Record<string, string> = {
-  'features/burn/BurnScreen.tsx': 'not yet split; outside this change',
-  'features/request/RequestScreen.tsx': 'not yet split; outside this change',
+  'features/burn/BurnScreen.tsx':
+    'a short keyboard-aware form under a fixed header; it does not scroll under the bars',
+  'features/request/RequestScreen.tsx':
+    'a short keyboard-aware form under a fixed header and tabs; it does not scroll under the bars',
   'features/collectables/HotspotMapScreen.tsx':
-    'not yet split; outside this change',
+    'the scroller is in the bottom sheet over the map, which does not reach the bars',
 }
 
 const SCROLLER = /(ScrollView|FlatList|SectionList|FlashList)$/

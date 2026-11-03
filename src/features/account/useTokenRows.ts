@@ -9,7 +9,7 @@ import {
   getRegistrarKey,
 } from '@helium/voter-stake-registry-sdk'
 import { useCurrentWallet } from '@hooks/useCurrentWallet'
-import { useMetaplexMetadatas } from '@hooks/useMetaplexMetadata'
+import { useMetaplexMetadatas, useStableKeys } from '@hooks/useMetaplexMetadata'
 import usePrevious from '@hooks/usePrevious'
 import {
   getAssociatedTokenAddressSync,
@@ -37,16 +37,6 @@ export type TokenRowData = {
 export type LockedRowData = {
   amountLocked?: BN
   loadingAmount: boolean
-}
-
-// The same PublicKey list while the mints stay the same, so the account
-// reads below do not restart on each render.
-const useStableKeys = (mints: PublicKey[]) => {
-  const mintsKey = mints.map((m) => m.toBase58()).join(',')
-  return useMemo(
-    () => (mintsKey ? mintsKey.split(',').map((m) => new PublicKey(m)) : []),
-    [mintsKey],
-  )
 }
 
 // The metadata, balance and decimals of each mint of a token list, read once
@@ -134,7 +124,7 @@ export const useLockedAmounts = (
     ],
     queryFn: async () => {
       if (!walletStr || !connection) return null
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         otherMints.map((mint) =>
           getPositionKeysForOwner({
             registrar: getRegistrarKey(mint),
@@ -143,9 +133,18 @@ export const useLockedAmounts = (
           }),
         ),
       )
+      // A failed mint reads as no positions; the other mints keep theirs
       return otherMints.reduce(
         (acc, mint, index) => {
-          acc[mint.toBase58()] = results[index].positions
+          const result = results[index]
+          if (result.status === 'fulfilled') {
+            acc[mint.toBase58()] = result.value.positions
+          } else {
+            console.warn(
+              `Position keys for mint ${mint.toBase58()} failed`,
+              result.reason,
+            )
+          }
           return acc
         },
         {} as Record<string, PublicKey[]>,

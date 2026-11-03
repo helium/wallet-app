@@ -127,16 +127,19 @@ jest.mock('@helium/voter-stake-registry-hooks', () => {
     calcLockupMultiplier: () => 1,
   }
 })
-jest.mock('@helium/automation-hooks', () => {
-  const bot = { info: undefined }
-  return { TASK_QUEUE: 'queue', useDelegationClaimBot: () => bot }
-})
+// Every position gets the same claim bot key here. A test sets `info` to give
+// the positions a claim bot.
+const mockClaimBot: { info: object | undefined } = { info: undefined }
+jest.mock('@helium/automation-hooks', () => ({
+  TASK_QUEUE: 'queue',
+  useDelegationClaimBot: () => mockClaimBot,
+}))
 jest.mock('@helium/helium-sub-daos-sdk', () => ({
   EPOCH_LENGTH: 86400,
   delegatedPositionKey: () => ['delegated-position'],
 }))
 jest.mock('@helium/hpl-crons-sdk', () => ({
-  delegationClaimBotKey: () => ['claim-bot'],
+  delegationClaimBotKey: () => [{ toBase58: () => 'claim-bot' }],
 }))
 jest.mock('@helium/organization-sdk', () => ({
   organizationKey: () => ['organization'],
@@ -275,6 +278,133 @@ describe('PositionsList', () => {
       },
     )
     expect(mockRefetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('offers only own positions as transfer targets', () => {
+    // Positions still locked past the chain time, so transfer is an action
+    const locked = {
+      ...mockPosition,
+      lockup: { kind: { cliff: {} }, startTs: new BN(0), endTs: new BN(1e6) },
+    }
+    const source = {
+      ...locked,
+      pubkey: new PublicKey('SysvarS1otHashes111111111111111111111111111'),
+    }
+    const ownTarget = {
+      ...locked,
+      pubkey: new PublicKey('SysvarStakeHistory1111111111111111111111111'),
+    }
+    const proxiedTarget = {
+      ...locked,
+      pubkey: new PublicKey('SysvarRecentB1ockHashes11111111111111111111'),
+      isProxiedToMe: true,
+    }
+    const delegatedTarget = {
+      ...locked,
+      pubkey: new PublicKey('SysvarFees111111111111111111111111111111111'),
+      isDelegated: true,
+    }
+    const { positions } = mockGovernance
+    mockGovernance.positions = [
+      source,
+      ownTarget,
+      proxiedTarget,
+      delegatedTarget,
+    ]
+    try {
+      let renderer!: TestRenderer.ReactTestRenderer
+      act(() => {
+        renderer = TestRenderer.create(<PositionsList />)
+      })
+      const { root } = renderer
+      const card = root
+        .findAllByType('PositionCard' as never)
+        .find((c) => c.props.position === source)
+      if (!card) throw new Error('no source card')
+      act(() => {
+        card.props.onPress()
+      })
+      const transfer = root.find(
+        (n) =>
+          (n.type as unknown) === 'ListItem' && n.props.title === 'Transfer',
+      )
+      act(() => {
+        transfer.props.onPress()
+      })
+
+      const modal = root.findByType('TransferTokensModal' as never)
+      expect(modal.props.positions).not.toContain(source)
+      expect(modal.props.positions).not.toContain(delegatedTarget)
+      expect(modal.props.positions).toEqual([ownTarget])
+    } finally {
+      mockGovernance.positions = positions
+    }
+  })
+
+  it('turns automation on for each position with a claim bot', () => {
+    // Positions still locked past the chain time, in HNT, so delegate is an
+    // action
+    const delegatable = {
+      ...mockPosition,
+      lockup: { kind: { cliff: {} }, startTs: new BN(0), endTs: new BN(1e6) },
+      votingMint: {
+        ...mockPosition.votingMint,
+        mint: new PublicKey('hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux'),
+      },
+    }
+    const first = {
+      ...delegatable,
+      pubkey: new PublicKey('SysvarS1otHashes111111111111111111111111111'),
+    }
+    const second = {
+      ...delegatable,
+      pubkey: new PublicKey('SysvarStakeHistory1111111111111111111111111'),
+    }
+    const { positions } = mockGovernance
+    mockGovernance.positions = [first, second]
+    mockClaimBot.info = {}
+    try {
+      let renderer!: TestRenderer.ReactTestRenderer
+      act(() => {
+        renderer = TestRenderer.create(<PositionsList />)
+      })
+      const { root } = renderer
+      const openDelegateModal = (position: typeof first) => {
+        const card = root
+          .findAllByType('PositionCard' as never)
+          .find((c) => c.props.position === position)
+        if (!card) throw new Error('no position card')
+        act(() => {
+          card.props.onPress()
+        })
+        const delegate = root.find(
+          (n) =>
+            (n.type as unknown) === 'ListItem' &&
+            n.props.testID === 'PositionCard.Delegate',
+        )
+        act(() => {
+          delegate.props.onPress()
+        })
+        return root.findByType('DelegateTokensModal' as never)
+      }
+      const closeModal = (modal: TestRenderer.ReactTestInstance) => {
+        act(() => {
+          modal.props.onClose()
+        })
+      }
+
+      const firstModal = openDelegateModal(first)
+      expect(firstModal.props.automationEnabled).toBe(true)
+      closeModal(firstModal)
+      const secondModal = openDelegateModal(second)
+      expect(secondModal.props.automationEnabled).toBe(true)
+      closeModal(secondModal)
+      const againModal = openDelegateModal(first)
+      expect(againModal.props.automationEnabled).toBe(true)
+    } finally {
+      mockGovernance.positions = positions
+      mockClaimBot.info = undefined
+    }
   })
 
   it('keeps the sections when the list re-renders', () => {

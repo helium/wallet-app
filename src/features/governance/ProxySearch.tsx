@@ -74,7 +74,10 @@ export const ProxySearch = React.forwardRef<
           label: `${r.name} | ${shortenAddress(r.wallet)}`,
         }
       }) || []
-    if (isValidPublicKey(debouncedInput)) {
+    if (
+      isValidPublicKey(debouncedInput) &&
+      !resultsAsOptions.some((o) => o.value === debouncedInput)
+    ) {
       resultsAsOptions.push({
         value: debouncedInput || '',
         label: debouncedInput || '',

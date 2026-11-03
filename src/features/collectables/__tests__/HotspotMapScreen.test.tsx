@@ -4,7 +4,9 @@ import type { HotspotWithPendingRewards } from '../../../types/solana'
 import HotspotMapScreen from '../HotspotMapScreen'
 
 // The route params, as the navigator holds them for the open screen.
-let mockParams: { hotspot?: HotspotWithPendingRewards } | undefined
+let mockParams:
+  | { hotspot?: HotspotWithPendingRewards; network?: 'IOT' | 'MOBILE' }
+  | undefined
 jest.mock('@react-navigation/native', () => ({
   useRoute: () => ({ params: mockParams }),
   useNavigation: () => ({ goBack: () => {} }),
@@ -105,44 +107,59 @@ jest.mock('uniwind', () => ({
 const hotspotWithId = (id: string) =>
   ({ id }) as unknown as HotspotWithPendingRewards
 
+const renderScreen = () => {
+  let renderer!: TestRenderer.ReactTestRenderer
+  act(() => {
+    renderer = TestRenderer.create(<HotspotMapScreen />)
+  })
+  return renderer
+}
+const shownHotspots = (renderer: TestRenderer.ReactTestRenderer) =>
+  renderer.root
+    .findAllByType('HotspotMapHotspotDetails' as never)
+    .map((n) => ({ id: n.props.hotspot.id, network: n.props.network }))
+const switchNetwork = (renderer: TestRenderer.ReactTestRenderer) =>
+  act(() => {
+    renderer.root
+      .find(
+        (n) =>
+          (n.type as unknown) === 'PressableScale' &&
+          n.findAll(
+            (c) => c.props.children === 'collectablesScreen.hotspots.map.type',
+          ).length > 0,
+      )
+      .props.onPress()
+  })
+const navigateTo = (
+  renderer: TestRenderer.ReactTestRenderer,
+  params: typeof mockParams,
+) => {
+  mockParams = params
+  act(() => {
+    renderer.update(<HotspotMapScreen />)
+  })
+}
+
 describe('HotspotMapScreen', () => {
-  it('shows a new hotspot from the route until the user switches network', () => {
+  it('shows the hotspot and network of new route params', () => {
     mockParams = { hotspot: hotspotWithId('h1') }
-    let renderer!: TestRenderer.ReactTestRenderer
-    act(() => {
-      renderer = TestRenderer.create(<HotspotMapScreen />)
-    })
-    const shownHotspots = () =>
-      renderer.root
-        .findAllByType('HotspotMapHotspotDetails' as never)
-        .map((n) => n.props.hotspot.id)
-    expect(shownHotspots()).toEqual(['h1'])
+    const renderer = renderScreen()
+    expect(shownHotspots(renderer)).toEqual([{ id: 'h1', network: 'IOT' }])
 
-    // The hotspot list opens the same screen with another hotspot.
-    mockParams = { hotspot: hotspotWithId('h2') }
-    act(() => {
-      renderer.update(<HotspotMapScreen />)
-    })
-    expect(shownHotspots()).toEqual(['h2'])
+    // The hotspot list opens the same screen with a mobile hotspot.
+    navigateTo(renderer, { hotspot: hotspotWithId('h2'), network: 'MOBILE' })
 
-    // The user switches network, and a later param does not bring it back.
-    act(() => {
-      renderer.root
-        .find(
-          (n) =>
-            (n.type as unknown) === 'PressableScale' &&
-            n.findAll(
-              (c) =>
-                c.props.children === 'collectablesScreen.hotspots.map.type',
-            ).length > 0,
-        )
-        .props.onPress()
-    })
-    expect(shownHotspots()).toEqual([])
-    mockParams = { hotspot: hotspotWithId('h3') }
-    act(() => {
-      renderer.update(<HotspotMapScreen />)
-    })
-    expect(shownHotspots()).toEqual([])
+    expect(shownHotspots(renderer)).toEqual([{ id: 'h2', network: 'MOBILE' }])
+  })
+
+  it('shows the hotspot of new route params after a network switch', () => {
+    mockParams = { hotspot: hotspotWithId('h1') }
+    const renderer = renderScreen()
+    switchNetwork(renderer)
+    expect(shownHotspots(renderer)).toEqual([])
+
+    navigateTo(renderer, { hotspot: hotspotWithId('h3') })
+
+    expect(shownHotspots(renderer)).toEqual([{ id: 'h3', network: 'IOT' }])
   })
 })

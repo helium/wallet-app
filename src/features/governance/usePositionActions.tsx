@@ -113,14 +113,20 @@ export const usePositionActions = ({
         delegatedPositionKey(position.pubkey)[0],
       )[0]
     : undefined
-  const { info: delegationClaimBot } =
+  const { info: delegationClaimBot, loading: loadingClaimBot } =
     useDelegationClaimBot(delegationClaimBotK)
   const [automationEnabled, setAutomationEnabled] =
     useState(!!delegationClaimBot)
-  const [prevDelegationClaimBot, setPrevDelegationClaimBot] =
-    useState(delegationClaimBot)
-  if (prevDelegationClaimBot !== delegationClaimBot) {
-    setPrevDelegationClaimBot(delegationClaimBot)
+  const claimBotKeyStr = delegationClaimBotK?.toBase58()
+  const [seenClaimBot, setSeenClaimBot] = useState({
+    key: claimBotKeyStr,
+    bot: delegationClaimBot,
+  })
+  if (seenClaimBot.key !== claimBotKeyStr) {
+    setSeenClaimBot({ key: claimBotKeyStr, bot: undefined })
+    setAutomationEnabled(false)
+  } else if (!loadingClaimBot && seenClaimBot.bot !== delegationClaimBot) {
+    setSeenClaimBot({ key: claimBotKeyStr, bot: delegationClaimBot })
     setAutomationEnabled(!!delegationClaimBot)
   }
   const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
@@ -139,8 +145,7 @@ export const usePositionActions = ({
       if (isPending) return
       mutations.forEach((m) => m.reset())
       setActiveKey(nextKey)
-      setPrevDelegationClaimBot(undefined)
-      setAutomationEnabled(false)
+      setSeenClaimBot({ key: undefined, bot: undefined })
       setSubDao(null)
     }
     setActionsOpen(true)
@@ -246,6 +251,7 @@ export const usePositionActions = ({
             position.votingMint.genesisVotePowerMultiplierExpirationTs.toNumber() ||
           !pos.hasGenesisMultiplier) &&
         !pos.isDelegated &&
+        !pos.isProxiedToMe &&
         !position.pubkey.equals(pos.pubkey) &&
         lockupPeriodInDays >= positionLockupPeriodInDays
       )
@@ -399,7 +405,10 @@ export const usePositionActions = ({
     await splitMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
-        amount: toBN(values.amount, mintAcc!.decimals).toString(),
+        amount: BN.min(
+          toBN(values.amount, mintAcc!.decimals),
+          position.amountDepositedNative,
+        ).toString(),
         lockupKind: values.lockupKind.value,
         lockupPeriodsInDays: values.lockupPeriodInDays,
       },
@@ -425,7 +434,10 @@ export const usePositionActions = ({
       {
         sourcePositionMint: position.mint.toBase58(),
         targetPositionMint: targetPosition.mint.toBase58(),
-        amount: toBN(amount, mintAcc!.decimals).toString(),
+        amount: BN.min(
+          toBN(amount, mintAcc!.decimals),
+          position.amountDepositedNative,
+        ).toString(),
       },
       {
         header: t('gov.transactions.transferPosition'),

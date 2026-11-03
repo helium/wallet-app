@@ -75,7 +75,7 @@ const ConfirmWordsScreen: React.FC<Props> = ({
         ...w.slice(wordIndex + 1),
       ])
 
-      setWordIndex((i) => (i === wordCount - 1 ? i : i + 1))
+      setWordIndex(wordIndex === wordCount - 1 ? wordIndex : wordIndex + 1)
     } else {
       wordFailure()
     }

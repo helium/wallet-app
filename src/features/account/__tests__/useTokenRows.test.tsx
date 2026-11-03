@@ -53,6 +53,8 @@ jest.mock(
 jest.mock(
   '@hooks/useMetaplexMetadata',
   () => ({
+    useStableKeys: jest.requireActual('../../../hooks/useMetaplexMetadata')
+      .useStableKeys,
     useMetaplexMetadatas: (mints: PublicKey[]) =>
       Object.fromEntries(
         mints.map((mint) => [
@@ -176,5 +178,40 @@ describe('useLockedAmounts', () => {
       owner: mockWallet,
       connection: { rpcEndpoint: 'rpc' },
     })
+  })
+
+  it('keeps the locked amount of the other mints when one mint fails', async () => {
+    const mockIOT = new PublicKey('iotEVVZLEywoTn1QdwNPddxPWszn3zFhEot3MfL9fns')
+    const iotPosition = new PublicKey(
+      'SysvarC1ock11111111111111111111111111111111',
+    )
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: true })
+    mockPositions.mockImplementation((keys: PublicKey[] | undefined) => ({
+      loading: false,
+      accounts: keys?.map((publicKey) => ({
+        publicKey,
+        info: { amountDepositedNative: new BN(12) },
+      })),
+    }))
+    mockGetPositionKeys.mockImplementation(
+      ({ registrar }: { registrar: PublicKey }) =>
+        registrar.equals(mockMOBILE)
+          ? Promise.reject(new Error('rpc down'))
+          : Promise.resolve({ positions: [iotPosition] }),
+    )
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const mints = [mockHNT, mockMOBILE, mockIOT]
+
+    renderHook(() => useLockedAmounts(mints))
+    const [options] = mockUseQuery.mock.calls[0]
+    const keysByMint = await options.queryFn()
+    mockUseQuery.mockReturnValue({ data: keysByMint, isLoading: false })
+    const result = renderHook(() => useLockedAmounts(mints))
+    const rows = result.current as Record<string, LockedRowData>
+
+    expect(rows[mockIOT.toBase58()].amountLocked?.toString()).toBe('12')
+    expect(rows[mockMOBILE.toBase58()].amountLocked).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
   })
 })

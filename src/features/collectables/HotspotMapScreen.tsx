@@ -78,12 +78,14 @@ const HotspotMapScreen = () => {
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
-  // The route's hotspot shows until the user switches network.
-  const [hotspotCleared, setHotspotCleared] = useState(false)
-  const hotspot = hotspotCleared ? undefined : route.params?.hotspot
-  const [networkType, setNetworkType] = useState<'IOT' | 'MOBILE'>(
-    route.params?.network || 'IOT',
-  )
+  // A network switch applies to the params it was made on; new params reset it.
+  const [edit, setEdit] = useState<{
+    params: typeof route.params
+    network: 'IOT' | 'MOBILE'
+  }>()
+  const currentEdit = edit && edit.params === route.params ? edit : undefined
+  const hotspot = currentEdit ? undefined : route.params?.hotspot
+  const networkType = currentEdit?.network ?? route.params?.network ?? 'IOT'
   const [activeHex, setActiveHex] = useState<string>()
   const [activeHotspotIndex, setActiveHotspotIndex] = useState(0)
   const [legendVisible, setLegendVisible] = useState(false)
@@ -300,10 +302,11 @@ const HotspotMapScreen = () => {
     setLegendVisible(true)
   }
 
-  const handleToggleNetwork = () => {
-    setNetworkType(networkType === 'IOT' ? 'MOBILE' : 'IOT')
-    setHotspotCleared(true)
-  }
+  const handleToggleNetwork = () =>
+    setEdit({
+      params: route.params,
+      network: networkType === 'IOT' ? 'MOBILE' : 'IOT',
+    })
 
   const handleHexClick: OnPress = (event) => {
     event.stopPropagation()

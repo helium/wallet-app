@@ -132,7 +132,7 @@ export const ProposalScreen = () => {
         // Force HTTPS for security - convert any HTTP URLs to HTTPS
         const secureUri = proposal.uri.replace(/^http:\/\//, 'https://')
         const { data } = await axios.get(secureUri)
-        return data
+        return typeof data === 'string' ? data : null
       }
       return null
     },

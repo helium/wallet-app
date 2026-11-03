@@ -107,4 +107,26 @@ describe('ProxySearch', () => {
     ])
     expect(list().keyExtractor?.(list().data[0], 0)).toBe('WalletA')
   })
+
+  it('lists a pasted wallet once when it is also a result', () => {
+    const wallet = 'SysvarRent111111111111111111111111111111111'
+    const { data } = mockResult
+    mockResult.data = { pages: [[{ wallet, name: 'Alice' }]] }
+    try {
+      const { renderer, list } = render()
+      const input = renderer.root.findByType('SearchInput' as never)
+      act(() => {
+        input.props.textInputProps.onFocus()
+      })
+      act(() => {
+        input.props.onChangeText(wallet)
+      })
+
+      expect(list().data).toEqual([
+        { value: wallet, label: `Alice | ${wallet}` },
+      ])
+    } finally {
+      mockResult.data = data
+    }
+  })
 })

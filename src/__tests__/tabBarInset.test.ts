@@ -26,7 +26,8 @@ const NOT_NEEDED: Record<string, string> = {
 
 // Tab-stack screens that still ask iOS for the automatic inset, with the
 // reason.
-const PENDING = 'not yet moved to one inset; outside this change'
+const PENDING =
+  'a known double bar inset on iOS: the scroller still asks for the automatic inset'
 const STILL_AUTOMATIC: Record<string, string> = {
   'features/burn/BurnScreen.tsx': PENDING,
   'features/collectables/HotspotList.tsx': PENDING,

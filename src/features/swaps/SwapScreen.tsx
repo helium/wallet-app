@@ -65,6 +65,7 @@ import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
+import { errorMessage } from '../../utils/errorMessage'
 import SwapItem from './SwapItem'
 import { ataCreationFeeQuery } from './logic/ataCreationFeeQuery'
 import { swapRoute } from './logic/swapRoute'
@@ -208,14 +209,13 @@ const SwapScreen = () => {
     [oraclePriceError, t],
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const showError: any = useMemo(() => {
+  const showError: string | undefined = useMemo(() => {
     if (hasRecipientError) return t('generic.notValidSolanaAddress')
     if (insufficientTokensToSwap)
       return t('swapsScreen.insufficientTokensToSwap')
     if (hasInsufficientBalance) return t('generic.insufficientBalance')
     if (networkError) return networkError
-    if (jupiterError) return jupiterError
+    if (jupiterError) return errorMessage(jupiterError)
     if (transactionError) return transactionError
     if (routeNotFound) return t('swapsScreen.routeNotFound')
     if (isHntToDc && !oraclePrice && oraclePriceError)

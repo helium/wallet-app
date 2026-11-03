@@ -21,6 +21,9 @@ jest.mock('@react-navigation/native-stack', () => {
   }
 })
 
+// The error of the Jupiter quote, as JupiterProvider holds it.
+let mockJupiterError: unknown
+
 // useJupiter reads the context that JupiterProvider supplies and throws
 // outside it, as the real hook does. The value is stable across renders.
 jest.mock(
@@ -30,7 +33,9 @@ jest.mock(
     const JupiterContext = ReactActual.createContext(null)
     const jupiter = {
       loading: false,
-      error: undefined,
+      get error() {
+        return mockJupiterError
+      },
       getRoute: () => Promise.resolve(undefined),
       getSwapTx: () => Promise.resolve(undefined),
     }
@@ -451,5 +456,16 @@ describe('SwapNavigator', () => {
     })
 
     expect(keyboard().props.allowOverdraft).toBe(false)
+  })
+
+  it('shows the message of a failed Jupiter quote', async () => {
+    mockJupiterError = new Error('No route found')
+    try {
+      const view = await render()
+
+      expect(view.texts()).toContain('No route found')
+    } finally {
+      mockJupiterError = undefined
+    }
   })
 })
