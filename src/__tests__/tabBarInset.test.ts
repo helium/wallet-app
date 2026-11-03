@@ -174,10 +174,13 @@ describe('screens under the floating tab bar', () => {
   // The map draws under the bar, so only the top edge insets it. A bottom
   // spacer under the map controls lifts them above the bar and measures the
   // bar inset, which lifts the details sheet and recentres the camera.
-  it('lets the hotspot map draw under the bar', () => {
+  it('lets the hotspot map draw under the bar and the Dynamic Island', () => {
     const source = codeOf('features/collectables/HotspotMapScreen.tsx')
     expect(source).not.toMatch(/'top',\s*'bottom'/)
-    expect(source).toMatch(/<SafeArea edges=\{\['top'\]\}/)
+    expect(source).not.toMatch(/<SafeArea\b/)
+    expect(source).toMatch(
+      /<View pointerEvents="box-none" className="absolute top-0 w-full">\s*<TabSafeAreaView edges=\{\['top'\]\} \/>/,
+    )
     expect(source).toMatch(
       /<TabSafeAreaView\s+edges=\{\['bottom'\]\}\s+onLayout=\{\(e\) =>\s*setTabBarInset\(e\.nativeEvent\.layout\.height\)\s*\}\s*\/>/,
     )
