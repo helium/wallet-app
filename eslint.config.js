@@ -87,6 +87,20 @@ module.exports = [
           selector: 'ImportExpression',
           message: 'import() rejects in native dev builds. Use require.',
         },
+        // Under a nested BottomSheetModalProvider, a gorhom Portal with no
+        // hostName renders nothing.
+        {
+          selector:
+            "JSXOpeningElement[name.name='Portal']:not(:has(> JSXAttribute[name.name='hostName']))",
+          message:
+            'A Portal with no hostName renders nothing under a nested BottomSheetModalProvider. Use RootPortal (src/ui/RootPortal.tsx).',
+        },
+        {
+          selector:
+            "ImportDeclaration[source.value='@gorhom/portal'] > ImportSpecifier[imported.name='Portal'][local.name!='Portal']",
+          message:
+            'Do not rename Portal: the lint check for a Portal with no hostName matches its name.',
+        },
       ],
       'no-restricted-properties': [
         'error',
