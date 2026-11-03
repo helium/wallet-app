@@ -72,8 +72,8 @@ const NftDetailsScreen = () => {
           />
         </>
       )}
-      <SafeArea edges={['top']} className="flex-1">
-        <View className="mt-6">
+      <View className="flex-1">
+        <SafeArea edges={['top']} className="mt-6">
           <BackHeader title={t('collectablesScreen.nfts.nftDetialTitle')} />
           <PressableScale
             onPress={handleInfoPress}
@@ -84,8 +84,8 @@ const NftDetailsScreen = () => {
           >
             <InfoIcon size={24} colorClassName="accent-foreground" />
           </PressableScale>
-        </View>
-        <ScrollView contentInsetAdjustmentBehavior="automatic">
+        </SafeArea>
+        <ScrollView>
           <SafeArea edges={['bottom']} className="flex-1 items-center p-4">
             {!!json && (
               <View className="shadow-lg">
@@ -125,7 +125,7 @@ const NftDetailsScreen = () => {
             </View>
           </SafeArea>
         </ScrollView>
-      </SafeArea>
+      </View>
     </Animated.View>
   )
 }

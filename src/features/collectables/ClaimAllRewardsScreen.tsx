@@ -105,8 +105,10 @@ const ClaimAllRewardsScreen = () => {
 
   return (
     <Animated.View className="flex-1 bg-background">
-      <SafeArea className="flex-1">
-        <BackHeader title={title} />
+      <View className="flex-1">
+        <SafeArea edges={['top']}>
+          <BackHeader title={title} />
+        </SafeArea>
         <View className="grow px-4">
           <View className="grow-[2] items-center">
             <View className="grow">
@@ -116,7 +118,7 @@ const ClaimAllRewardsScreen = () => {
               {t('collectablesScreen.hotspots.hotspotsClaimMessage')}
             </Text>
           </View>
-          <ScrollView contentInsetAdjustmentBehavior="automatic" horizontal>
+          <ScrollView horizontal>
             <View className="grow flex-row items-center justify-center">
               {hasMore ||
               (pendingHntRewards && pendingHntRewards.gt(new BN(0))) ? (
@@ -157,21 +159,23 @@ const ClaimAllRewardsScreen = () => {
             </View>
           )}
           <View className="grow" />
-          <Button
-            variant="cta"
-            size="dashboard"
-            className="mx-6 mb-6"
-            onPress={() => void onClaimRewards().catch(console.error)}
-            disabled={redeeming}
-          >
-            {redeeming ? (
-              <Spinner colorClassName="accent-white" />
-            ) : (
-              t('collectablesScreen.hotspots.claimAllRewards')
-            )}
-          </Button>
+          <SafeArea edges={['bottom']}>
+            <Button
+              variant="cta"
+              size="dashboard"
+              className="mx-6 mb-6"
+              onPress={() => void onClaimRewards().catch(console.error)}
+              disabled={redeeming}
+            >
+              {redeeming ? (
+                <Spinner colorClassName="accent-white" />
+              ) : (
+                t('collectablesScreen.hotspots.claimAllRewards')
+              )}
+            </Button>
+          </SafeArea>
         </View>
-      </SafeArea>
+      </View>
     </Animated.View>
   )
 }

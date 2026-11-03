@@ -109,43 +109,42 @@ const ActivityScreen = () => {
 
   return (
     <View className="flex-1">
-      <SafeArea edges={['top']}>
-        <SectionList
-          contentContainerClassName="pb-15"
-          sections={sections}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          renderSectionHeader={renderSectionHeader}
-          ListHeaderComponent={
-            <View className="bg-background px-6 pb-4 pt-12">
-              <Text size="xl" className="text-center">
-                {t('activityScreen.title')}
-              </Text>
-            </View>
-          }
-          refreshControl={
-            <RefreshControl
-              enabled
-              refreshing={loading}
-              onRefresh={() => void refresh().catch(console.error)}
-              title=""
-              tintColorClassName="accent-foreground"
-            />
-          }
-          onEndReachedThreshold={0.05}
-          onEndReached={() => void fetchMore().catch(console.error)}
-          ListFooterComponent={
-            <>
-              {fetchingMore && (
-                <View className="mt-4">
-                  <Spinner size="large" />
-                </View>
-              )}
-              <TabSafeAreaView edges={['bottom']} />
-            </>
-          }
-        />
-      </SafeArea>
+      <SafeArea edges={['top']} />
+      <SectionList
+        contentContainerClassName="pb-15"
+        sections={sections}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
+        ListHeaderComponent={
+          <View className="bg-background px-6 pb-4 pt-12">
+            <Text size="xl" className="text-center">
+              {t('activityScreen.title')}
+            </Text>
+          </View>
+        }
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={loading}
+            onRefresh={() => void refresh().catch(console.error)}
+            title=""
+            tintColorClassName="accent-foreground"
+          />
+        }
+        onEndReachedThreshold={0.05}
+        onEndReached={() => void fetchMore().catch(console.error)}
+        ListFooterComponent={
+          <>
+            {fetchingMore && (
+              <View className="mt-4">
+                <Spinner size="large" />
+              </View>
+            )}
+            <TabSafeAreaView edges={['bottom']} />
+          </>
+        }
+      />
     </View>
   )
 }

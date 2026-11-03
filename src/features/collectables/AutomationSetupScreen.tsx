@@ -262,11 +262,12 @@ const AutomationSetupScreen = () => {
   }
 
   return (
-    <SafeArea edges={['top', 'bottom']} className="flex-1 bg-background">
-      <BackHeader onClose={() => navigation.goBack()} />
+    <View className="flex-1 bg-background">
+      <SafeArea edges={['top']}>
+        <BackHeader onClose={() => navigation.goBack()} />
+      </SafeArea>
       <View className="flex-1 bg-secondary p-2">
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           contentContainerClassName="grow"
         >
@@ -495,9 +496,10 @@ const AutomationSetupScreen = () => {
               </Button>
             )}
           </View>
+          <SafeArea edges={['bottom']} />
         </ScrollView>
       </View>
-    </SafeArea>
+    </View>
   )
 }
 

@@ -16,23 +16,28 @@ const mockCollection = [
   },
 ]
 
-// The list renders one row per collectable.
+// The list renders one row per collectable, then its footer.
 jest.mock('react-native', () => {
   const ReactActual = jest.requireActual('react')
   return {
     LogBox: { ignoreLogs: () => {} },
+    View: 'View',
     FlatList: ({
       data,
       renderItem,
       keyExtractor,
+      contentInsetAdjustmentBehavior,
+      ListFooterComponent,
     }: {
       data: { id: string }[]
       renderItem: (info: { item: unknown }) => React.ReactNode
       keyExtractor: (item: unknown) => string
+      contentInsetAdjustmentBehavior?: string
+      ListFooterComponent?: React.ReactNode
     }) =>
       ReactActual.createElement(
         'FlatList',
-        { renderItem, keyExtractor },
+        { renderItem, keyExtractor, contentInsetAdjustmentBehavior },
         data.map((item) =>
           ReactActual.createElement(
             ReactActual.Fragment,
@@ -40,6 +45,7 @@ jest.mock('react-native', () => {
             renderItem({ item }),
           ),
         ),
+        ListFooterComponent,
       ),
   }
 })
@@ -130,6 +136,21 @@ describe('CollectionScreen', () => {
 
     expect(images.map((i) => i.props.recyclingKey)).toEqual(['nft1', 'nft2'])
     expect(images.map((i) => i.props.contentFit)).toEqual(['cover', 'cover'])
+  })
+
+  // The bar floats over the list. The list fills the screen so the rows
+  // scroll under the bar, and its last child is the one bottom inset.
+  it('lets the grid scroll under the tab bar and clears its end once', () => {
+    const renderer = render()
+    const list = renderer.root.findByType('FlatList' as never)
+    const ancestors: TestRenderer.ReactTestInstance[] = []
+    for (let node = list.parent; node; node = node.parent) ancestors.push(node)
+    const footer = list.children[list.children.length - 1]
+
+    expect(ancestors.map((node) => node.type)).not.toContain('SafeAreaView')
+    expect(list.props.contentInsetAdjustmentBehavior).toBeUndefined()
+    expect(typeof footer !== 'string' && footer.type).toBe('SafeAreaView')
+    expect(typeof footer !== 'string' && footer.props.edges).toEqual(['bottom'])
   })
 
   it('keeps the row renderer when the screen re-renders', () => {

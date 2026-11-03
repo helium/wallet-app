@@ -31,14 +31,16 @@ export const GlobalError = ({
     })
   }
   return (
-    <SafeArea className="flex-1 bg-secondary">
+    <View className="flex-1 bg-secondary">
       <View className="flex-1 items-center justify-center">
-        <Text size="4xl" className="font-medium">
-          {t('crash.title')}
-        </Text>
-        <Text size="base" className="mb-6 mt-2">
-          {t('crash.subTitle')}
-        </Text>
+        <SafeArea edges={['top']} className="items-center">
+          <Text size="4xl" className="font-medium">
+            {t('crash.title')}
+          </Text>
+          <Text size="base" className="mb-6 mt-2">
+            {t('crash.subTitle')}
+          </Text>
+        </SafeArea>
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="grow"
@@ -50,26 +52,28 @@ export const GlobalError = ({
             {error.stack}
           </Text>
         </ScrollView>
-        <Button
-          variant="outline"
-          size="dashboard"
-          className="mb-2 mt-4 w-full"
-          onPress={handleCopyError}
-        >
-          <CopyIcon size={16} colorClassName="accent-foreground" />
-          <Text className={buttonTextVariants({ variant: 'outline' })}>
-            {t('generic.copyToClipboard')}
-          </Text>
-        </Button>
-        <Button
-          variant="cta"
-          size="dashboard"
-          className="w-full"
-          onPress={resetErrorBoundary}
-        >
-          {t('crash.resetApp')}
-        </Button>
+        <SafeArea edges={['bottom']} className="self-stretch">
+          <Button
+            variant="outline"
+            size="dashboard"
+            className="mb-2 mt-4 w-full"
+            onPress={handleCopyError}
+          >
+            <CopyIcon size={16} colorClassName="accent-foreground" />
+            <Text className={buttonTextVariants({ variant: 'outline' })}>
+              {t('generic.copyToClipboard')}
+            </Text>
+          </Button>
+          <Button
+            variant="cta"
+            size="dashboard"
+            className="w-full"
+            onPress={resetErrorBoundary}
+          >
+            {t('crash.resetApp')}
+          </Button>
+        </SafeArea>
       </View>
-    </SafeArea>
+    </View>
   )
 }

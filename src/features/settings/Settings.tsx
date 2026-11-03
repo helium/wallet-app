@@ -642,8 +642,11 @@ const Settings = () => {
     // one keeps them inside the app's providers (the App-root one sits outside
     // NavigationContainer).
     <BottomSheetModalProvider>
-      <SafeArea className="flex-1 bg-secondary">
-        <View className="flex-row items-center justify-between px-6">
+      <View className="flex-1 bg-secondary">
+        <SafeArea
+          edges={['top']}
+          className="flex-row items-center justify-between px-6"
+        >
           <Text size="4xl" className="font-semibold">
             {t('settings.title')}
           </Text>
@@ -658,9 +661,8 @@ const Settings = () => {
           >
             <CloseIcon size={24} colorClassName="accent-foreground" />
           </PressableScale>
-        </View>
+        </SafeArea>
         <SectionList
-          contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="pb-15"
           sections={SectionData}
           keyExtractor={keyExtractor}
@@ -671,8 +673,9 @@ const Settings = () => {
           stickySectionHeadersEnabled={false}
           // ^ Sometimes on initial page load there is a bug with SectionList
           // where it won't render all items right away. This seems to fix it.
+          ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         />
-      </SafeArea>
+      </View>
     </BottomSheetModalProvider>
   )
 }

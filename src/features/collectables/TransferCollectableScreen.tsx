@@ -175,8 +175,8 @@ const TransferCollectableScreen = () => {
           />
         </>
       )}
-      <SafeArea edges={['top']} className="flex-1">
-        <View className="mt-6">
+      <View className="flex-1">
+        <SafeArea edges={['top']} className="mt-6">
           <BackHeader title={t('collectablesScreen.transferCollectable')} />
           <PressableScale
             onPress={handleInfoPress}
@@ -187,7 +187,7 @@ const TransferCollectableScreen = () => {
           >
             <InfoIcon size={24} colorClassName="accent-foreground" />
           </PressableScale>
-        </View>
+        </SafeArea>
         <AddressBookSelector
           ref={addressBookRef}
           onContactSelected={handleContactSelected}
@@ -199,7 +199,7 @@ const TransferCollectableScreen = () => {
             enabled
             keyboardVerticalOffset={100}
           >
-            <ScrollView contentInsetAdjustmentBehavior="automatic">
+            <ScrollView>
               <SafeArea edges={['bottom']} className="flex-1 items-center p-4">
                 {!!metadata && (
                   <View className="shadow-lg">
@@ -312,7 +312,7 @@ const TransferCollectableScreen = () => {
             </ScrollView>
           </KeyboardAvoiding>
         </AddressBookSelector>
-      </SafeArea>
+      </View>
     </Animated.View>
   )
 }

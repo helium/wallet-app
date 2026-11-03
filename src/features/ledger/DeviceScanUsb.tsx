@@ -77,8 +77,11 @@ const DeviceScanUsb = () => {
   }
 
   return (
-    <SafeArea className="mt-6 flex-1 bg-secondary px-6">
-      <View className="mb-6 flex-1 items-center justify-end">
+    <View className="mt-6 flex-1 bg-secondary px-6">
+      <SafeArea
+        edges={['top']}
+        className="mb-6 flex-1 items-center justify-end"
+      >
         <LedgerIcon width={61} height={61} colorClassName="accent-foreground" />
         <Text size="4xl" className="my-6 text-center">
           {t('ledger.scan.title')}
@@ -89,16 +92,16 @@ const DeviceScanUsb = () => {
         >
           {t('ledger.scan.subtitleUsb')}
         </Text>
-      </View>
+      </SafeArea>
       <View className="mt-6 flex-1">
         <FlatList
-          contentInsetAdjustmentBehavior="automatic"
           data={devices}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
+          ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         />
       </View>
-    </SafeArea>
+    </View>
   )
 }
 

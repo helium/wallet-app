@@ -166,8 +166,11 @@ const AccountManageTokenListScreen: React.FC = () => {
   }
 
   return (
-    <SafeArea className="flex-1 bg-background" edges={['top', 'bottom']}>
-      <View className="mb-4 flex-row items-center justify-between">
+    <View className="flex-1 bg-background">
+      <SafeArea
+        edges={['top']}
+        className="mb-4 flex-row items-center justify-between"
+      >
         <PressableScale
           feedback="opacity"
           onPress={navigation.goBack}
@@ -176,10 +179,9 @@ const AccountManageTokenListScreen: React.FC = () => {
         >
           <CloseIcon colorClassName="accent-foreground" />
         </PressableScale>
-      </View>
+      </SafeArea>
 
       <FlatList
-        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             enabled
@@ -192,8 +194,9 @@ const AccountManageTokenListScreen: React.FC = () => {
         data={mints}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
       />
-    </SafeArea>
+    </View>
   )
 }
 

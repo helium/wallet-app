@@ -239,8 +239,8 @@ const BrowserScreen = () => {
         className="absolute inset-x-0 top-0 bg-primary"
         style={{ height: top }}
       />
-      <SafeArea className="flex-1" edges={EDGES}>
-        {browserHeader}
+      <View className="flex-1">
+        <SafeArea edges={EDGES}>{browserHeader}</SafeArea>
         <SectionList
           contentContainerClassName="pt-4"
           sections={SectionData}
@@ -252,7 +252,7 @@ const BrowserScreen = () => {
           ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         />
         <View />
-      </SafeArea>
+      </View>
     </View>
   )
 }

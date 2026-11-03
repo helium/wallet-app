@@ -24,6 +24,29 @@ const NOT_NEEDED: Record<string, string> = {
     'Settings presents it as a transparent modal over the bar, and the tab navigator portals it to the root, where the tab inset is zero',
 }
 
+// Tab-stack screens that still ask iOS for the automatic inset, with the
+// reason.
+const PENDING = 'not yet moved to one inset; outside this change'
+const STILL_AUTOMATIC: Record<string, string> = {
+  'features/burn/BurnScreen.tsx': PENDING,
+  'features/collectables/HotspotList.tsx': PENDING,
+  'features/collectables/HotspotMapScreen.tsx': PENDING,
+  'features/governance/AssignProxyScreen.tsx': PENDING,
+  'features/governance/RevokeProxyScreen.tsx': PENDING,
+  'features/home/addNewAccount/AddNewAccountScreen.tsx': PENDING,
+  'features/hotspot-onboarding/SelectDevice.tsx': PENDING,
+  'features/hotspot-onboarding/iot-ble/AddGatewayBle.tsx': PENDING,
+  'features/hotspot-onboarding/iot-ble/Diagnostics.tsx': PENDING,
+  'features/hotspot-onboarding/iot-ble/ScanHotspots.tsx': PENDING,
+  'features/hotspot-onboarding/iot-ble/Settings.tsx': PENDING,
+  'features/hotspot-onboarding/iot-ble/WifiSettings.tsx': PENDING,
+  'features/ledger/DeviceScan.tsx': PENDING,
+  'features/ledger/DeviceShow.tsx': PENDING,
+  'features/onboarding/import/AccountImportScreen.tsx': PENDING,
+  'features/payment/PaymentScreen.tsx': PENDING,
+  'features/request/RequestScreen.tsx': PENDING,
+}
+
 // Shared components that clear the bar for the screens that render them.
 const CLEARING_COMPONENTS: Record<string, string> = {
   AccountTokenList: 'features/account/AccountTokenList.tsx',
@@ -52,6 +75,7 @@ const clearsBar = (key: string) => {
   const source = codeOf(key)
   return INSET_USER.test(source) || CLEARING_USER.test(source)
 }
+const AUTOMATIC_INSET = /contentInsetAdjustmentBehavior="automatic"/
 const NAVIGATOR = /\bcreate\w*Navigator\s*[(<]/
 
 const resolveFile = (from: string, spec: string) => {
@@ -154,6 +178,23 @@ describe('screens under the floating tab bar', () => {
   it('exempts only screens that are in a tab stack and skip the inset', () => {
     const stale = Object.keys(NOT_NEEDED).filter(
       (key) => !tabScreens.includes(key) || clearsBar(key),
+    )
+    expect(stale).toEqual([])
+  })
+  // iOS adds the bar to the automatic inset of any scroller that asks for
+  // it, and Android ignores the prop. A screen that asks and also clears the
+  // bar with TabSafeAreaView pads the end twice on iOS.
+  it('takes the bar inset from TabSafeAreaView alone, never from the automatic inset', () => {
+    const automatic = tabScreens.filter(
+      (key) =>
+        STILL_AUTOMATIC[key] === undefined && AUTOMATIC_INSET.test(codeOf(key)),
+    )
+    expect(automatic).toEqual([])
+  })
+
+  it('exempts only screens that still ask for the automatic inset', () => {
+    const stale = Object.keys(STILL_AUTOMATIC).filter(
+      (key) => !tabScreens.includes(key) || !AUTOMATIC_INSET.test(codeOf(key)),
     )
     expect(stale).toEqual([])
   })

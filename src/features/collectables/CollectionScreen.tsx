@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
-import { LogBox, FlatList } from 'react-native'
+import { LogBox, FlatList, View } from 'react-native'
 import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
 import { TabSafeAreaView } from '@ui/TabSafeAreaView'
@@ -85,22 +85,24 @@ const CollectionScreen = () => {
   )
 
   return (
-    <SafeArea className="flex-1 bg-background" edges={['top', 'bottom']}>
-      <BackHeader
-        className="mt-6"
-        title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
-      />
+    <View className="flex-1 bg-background">
+      <SafeArea edges={['top']}>
+        <BackHeader
+          className="mt-6"
+          title={`${collectables[0]?.content?.metadata?.symbol} ${collectables.length}`}
+        />
+      </SafeArea>
       <Animated.View className="mt-2 flex-1">
         <FlatList
-          contentInsetAdjustmentBehavior="automatic"
           scrollEnabled
           data={collectables}
           numColumns={2}
           renderItem={renderCollectable}
           keyExtractor={keyExtractor}
+          ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         />
       </Animated.View>
-    </SafeArea>
+    </View>
   )
 }
 

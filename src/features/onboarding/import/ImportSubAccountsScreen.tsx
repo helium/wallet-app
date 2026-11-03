@@ -204,24 +204,25 @@ const ImportSubAccountsScreen = () => {
   }
 
   return (
-    <SafeArea className="flex-1 bg-navy">
+    <View className="flex-1 bg-navy">
       <FocusAwareStatusBar barStyle="light-content" />
-      <Text
-        size="4xl"
-        className="mb-2 mt-8 text-center font-medium leading-[44px] text-navy-foreground"
-      >
-        {t('accountImport.privateKey.selectAccounts')}
-      </Text>
-      <Text size="base" className="mb-6 p-2 text-center text-navy-foreground">
-        {t('accountImport.privateKey.selectAccountsBody')}
-      </Text>
-      {error && (
-        <Text className="mb-6 text-center text-destructive">
-          {error.message}
+      <SafeArea edges={['top']}>
+        <Text
+          size="4xl"
+          className="mb-2 mt-8 text-center font-medium leading-[44px] text-navy-foreground"
+        >
+          {t('accountImport.privateKey.selectAccounts')}
         </Text>
-      )}
+        <Text size="base" className="mb-6 p-2 text-center text-navy-foreground">
+          {t('accountImport.privateKey.selectAccountsBody')}
+        </Text>
+        {error && (
+          <Text className="mb-6 text-center text-destructive">
+            {error.message}
+          </Text>
+        )}
+      </SafeArea>
       <FlatList
-        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           <RefreshControl
             enabled
@@ -237,19 +238,21 @@ const ImportSubAccountsScreen = () => {
         refreshing={loading}
         onEndReached={fetchMore}
       />
-      {!!derivationAccounts.length && (
-        <Button
-          variant="cta"
-          size="dashboard"
-          className="mx-6 my-6"
-          disabled={!selected || selected.size === 0 || !!error || loading}
-          onPress={onNext}
-          testID="ImportSubAccounts.Next"
-        >
-          {t('generic.next')}
-        </Button>
-      )}
-    </SafeArea>
+      <SafeArea edges={['bottom']}>
+        {!!derivationAccounts.length && (
+          <Button
+            variant="cta"
+            size="dashboard"
+            className="mx-6 my-6"
+            disabled={!selected || selected.size === 0 || !!error || loading}
+            onPress={onNext}
+            testID="ImportSubAccounts.Next"
+          >
+            {t('generic.next')}
+          </Button>
+        )}
+      </SafeArea>
+    </View>
   )
 }
 

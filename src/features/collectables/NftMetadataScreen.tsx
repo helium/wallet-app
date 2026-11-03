@@ -51,11 +51,13 @@ const NftMetadataScreen = () => {
   )
 
   return (
-    <SafeArea className="flex-1 bg-background">
-      <BackHeader title={t('collectablesScreen.metadata')} className="mt-6" />
+    <View className="flex-1 bg-background">
+      <SafeArea edges={['top']}>
+        <BackHeader title={t('collectablesScreen.metadata')} className="mt-6" />
+      </SafeArea>
       <View className="flex-1">
-        <ScrollView contentInsetAdjustmentBehavior="automatic">
-          <SafeArea className="flex-1 items-center">
+        <ScrollView>
+          <SafeArea edges={['bottom']} className="flex-1 items-center">
             <Text size="xl" className="mb-6 font-medium text-muted-foreground">
               {t('collectablesScreen.collectables.properties')}
             </Text>
@@ -73,7 +75,7 @@ const NftMetadataScreen = () => {
           </SafeArea>
         </ScrollView>
       </View>
-    </SafeArea>
+    </View>
   )
 }
 

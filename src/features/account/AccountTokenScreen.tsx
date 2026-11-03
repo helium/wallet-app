@@ -362,27 +362,28 @@ const AccountTokenScreen = () => {
 
   return (
     <View className="flex-1" onLayout={setActualHeight}>
-      <SafeArea className="flex-1">
-        <View className="flex-row px-6 py-3" onLayout={setBackHeaderHeight}>
-          <View className="absolute inset-0 items-center justify-center">
-            <Text size="xl" className="font-medium">
-              {t('accountsScreen.title', {
-                ticker: symbol,
-              })}
-            </Text>
+      <View className="flex-1">
+        <SafeArea edges={['top']}>
+          <View className="flex-row px-6 py-3" onLayout={setBackHeaderHeight}>
+            <View className="absolute inset-0 items-center justify-center">
+              <Text size="xl" className="font-medium">
+                {t('accountsScreen.title', {
+                  ticker: symbol,
+                })}
+              </Text>
+            </View>
+            <PressableScale
+              feedback="opacity"
+              onPress={navigation.goBack}
+              hitSlop={24}
+              className="flex-row items-center gap-1"
+            >
+              <BackIcon size={16} colorClassName="accent-muted-foreground" />
+              <Text className="text-muted-foreground">{t('generic.back')}</Text>
+            </PressableScale>
           </View>
-          <PressableScale
-            feedback="opacity"
-            onPress={navigation.goBack}
-            hitSlop={24}
-            className="flex-row items-center gap-1"
-          >
-            <BackIcon size={16} colorClassName="accent-muted-foreground" />
-            <Text className="text-muted-foreground">{t('generic.back')}</Text>
-          </PressableScale>
-        </View>
+        </SafeArea>
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
           className="grow"
           contentContainerClassName="grow justify-center"
         >
@@ -483,7 +484,8 @@ const AccountTokenScreen = () => {
             )}
           </View>
         </ScrollView>
-      </SafeArea>
+        <TabSafeAreaView edges={['bottom']} />
+      </View>
       {!!canShowList && (
         <BottomSheet
           animateOnMount={false}
@@ -494,7 +496,6 @@ const AccountTokenScreen = () => {
         >
           <Animated.View className="flex-1" entering={delayedAnimation}>
             <BottomSheetFlatList
-              contentInsetAdjustmentBehavior="automatic"
               onLayout={setListHeight}
               keyExtractor={keyExtractor}
               directionalLockEnabled

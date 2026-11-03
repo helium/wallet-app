@@ -186,16 +186,17 @@ const SelectKeystoneAccountsScreen = () => {
     )
   }
   return (
-    <SafeArea className="flex-1 bg-secondary">
+    <View className="flex-1 bg-secondary">
       <View className="h-full flex-1 bg-secondary">
-        <Text size="4xl" className="mt-8 mb-2 text-center">
-          {t('keystone.selectKeystoneAccounts.title')}
-        </Text>
-        <Text size="base" className="mb-6 p-2 text-center">
-          {t('keystone.selectKeystoneAccounts.subtitle')}
-        </Text>
+        <SafeArea edges={['top']}>
+          <Text size="4xl" className="mt-8 mb-2 text-center">
+            {t('keystone.selectKeystoneAccounts.title')}
+          </Text>
+          <Text size="base" className="mb-6 p-2 text-center">
+            {t('keystone.selectKeystoneAccounts.subtitle')}
+          </Text>
+        </SafeArea>
         <FlatList
-          contentInsetAdjustmentBehavior="automatic"
           refreshControl={
             <RefreshControl
               enabled
@@ -212,17 +213,19 @@ const SelectKeystoneAccountsScreen = () => {
           onEndReached={() => {}}
         />
 
-        <Button
-          variant="cta"
-          size="dashboard"
-          className="mx-6 mt-6 mb-6"
-          disabled={selected.size === 0}
-          onPress={onNext}
-        >
-          Next
-        </Button>
+        <SafeArea edges={['bottom']}>
+          <Button
+            variant="cta"
+            size="dashboard"
+            className="mx-6 mt-6 mb-6"
+            disabled={selected.size === 0}
+            onPress={onNext}
+          >
+            Next
+          </Button>
+        </SafeArea>
       </View>
-    </SafeArea>
+    </View>
   )
 }
 

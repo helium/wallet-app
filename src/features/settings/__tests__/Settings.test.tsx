@@ -102,17 +102,22 @@ jest.mock('react-native', () => {
     Linking: { openURL: () => Promise.resolve() },
     Platform: { OS: 'ios' },
     useWindowDimensions: () => ({ width: 400, height: 800 }),
-    // renders every row, as the screen asks with initialNumToRender
+    // renders every row, as the screen asks with initialNumToRender, then
+    // the footer
     SectionList: ({
       sections,
       renderItem,
+      contentInsetAdjustmentBehavior,
+      ListFooterComponent,
     }: {
       sections: { title: string; data: unknown[] }[]
       renderItem: (info: { item: unknown; index: number }) => React.ReactNode
+      contentInsetAdjustmentBehavior?: string
+      ListFooterComponent?: React.ReactNode
     }) =>
       ReactActual.createElement(
         'SectionList',
-        null,
+        { contentInsetAdjustmentBehavior },
         sections.flatMap((section) =>
           section.data.map((item, index) =>
             ReactActual.createElement(
@@ -122,6 +127,7 @@ jest.mock('react-native', () => {
             ),
           ),
         ),
+        ListFooterComponent,
       ),
   }
 })
@@ -206,6 +212,25 @@ describe('Settings', () => {
       .map((node) => node.props.children)
 
     expect(texts).toContain('Mainnet-Beta')
+  })
+
+  // The bar floats over the list. The list fills the screen so the rows
+  // scroll under the bar, and its last child is the one bottom inset.
+  it('lets the list scroll under the tab bar and clears its end once', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const list = renderer.root.findByType('SectionList' as never)
+    const ancestors: TestRenderer.ReactTestInstance[] = []
+    for (let node = list.parent; node; node = node.parent) ancestors.push(node)
+    const footer = list.children[list.children.length - 1]
+
+    expect(ancestors.map((node) => node.type)).not.toContain('SafeAreaView')
+    expect(list.props.contentInsetAdjustmentBehavior).toBeUndefined()
+    expect(typeof footer !== 'string' && footer.type).toBe('SafeAreaView')
+    expect(typeof footer !== 'string' && footer.props.edges).toEqual(['bottom'])
   })
 
   it('shows the short label of the selected currency', () => {
