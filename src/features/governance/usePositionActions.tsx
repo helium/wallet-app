@@ -272,13 +272,6 @@ export const usePositionActions = ({
 
   const { info: registrar = null } = useRegistrar(position?.registrar)
 
-  const handleCalcLockupMultiplier = (lockupPeriodInDays: number) =>
-    calcLockupMultiplier({
-      lockupSecs: daysToSecs(lockupPeriodInDays),
-      mint: position!.votingMint.mint,
-      registrar,
-    })
-
   const handlePrepareExtend = (values: LockTokensModalFormValues) => {
     if (!position) return
     extendMutation
@@ -542,6 +535,14 @@ export const usePositionActions = ({
         ? currentEpoch.gt(decayedEpoch)
         : lockup.endTs.lte(new BN(unixNow)))
     const canDelegate = votingMint.mint.equals(HNT_MINT)
+    // Here, not in the hook body: there the compiler reads the mint on each
+    // render, with no position open
+    const handleCalcLockupMultiplier = (lockupPeriodInDays: number) =>
+      calcLockupMultiplier({
+        lockupSecs: daysToSecs(lockupPeriodInDays),
+        mint: votingMint.mint,
+        registrar,
+      })
     const showProxyExpiringWarning =
       position.isProxyRenewable && !position.isProxyExpired
     const showProxyExpiredWarning = position.isProxyExpired

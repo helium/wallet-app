@@ -247,6 +247,19 @@ jest.mock('lucide-react-native', () => ({ Zap: 'Zap' }))
 ).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('PositionsList', () => {
+  it('renders the rows before a position is tapped', () => {
+    let renderer!: TestRenderer.ReactTestRenderer
+    act(() => {
+      renderer = TestRenderer.create(<PositionsList />)
+    })
+
+    expect(
+      renderer.root
+        .findAllByType('PositionCard' as never)
+        .map((c) => c.props.position),
+    ).toEqual([mockPosition])
+  })
+
   it('closes a decayed position from the list action sheet', async () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
     act(() => {
