@@ -14,7 +14,12 @@ import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SlidersHorizontal } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, StyleSheet, View } from 'react-native'
+import {
+  LayoutChangeEvent,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -34,9 +39,15 @@ const Fade = withUniwind(TabSafeAreaView)
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
+  // Reports the heights of the first two token rows, which the collapsed
+  // drawer shows above the tab bar.
+  onFirstRowsLayout?: readonly [
+    (e: LayoutChangeEvent) => void,
+    (e: LayoutChangeEvent) => void,
+  ]
 }
 
-const AccountTokenList = ({ onLayout }: Props) => {
+const AccountTokenList = ({ onLayout, onFirstRowsLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { visibleTokens } = useVisibleTokens()
@@ -100,16 +111,17 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const bottomSpace = bottom * 2
 
-  const renderItem = ({ item }: { item: PublicKey }) => {
+  // A governance token and its locked row count as one token.
+  const renderItem = ({ item, index }: { item: PublicKey; index: number }) => {
     const mintStr = item.toBase58()
     const row = tokenRows[mintStr] ?? {
       loadingMetadata: true,
       loadingOwned: true,
     }
-    if (GovMints.some((m) => new PublicKey(m).equals(item)))
-      return (
-        <View>
-          <TokenListItem mint={item} {...row} />
+    return (
+      <View onLayout={onFirstRowsLayout?.[index]}>
+        <TokenListItem mint={item} {...row} />
+        {GovMints.some((m) => new PublicKey(m).equals(item)) && (
           <TokenListGovItem
             mint={item}
             symbol={row.symbol}
@@ -119,10 +131,9 @@ const AccountTokenList = ({ onLayout }: Props) => {
             amountLocked={lockedRows[mintStr]?.amountLocked}
             loadingAmount={lockedRows[mintStr]?.loadingAmount ?? true}
           />
-        </View>
-      )
-
-    return <TokenListItem mint={item} {...row} />
+        )}
+      </View>
+    )
   }
 
   const renderEmptyComponent = () => {
@@ -189,16 +200,14 @@ const AccountTokenList = ({ onLayout }: Props) => {
         keyExtractor={keyExtractor}
       />
       {/* The rows after the first two fade out behind the floating tab bar,
-          which blurs them itself. The fade starts a little above the bar,
-          so the row at the fold washes out too. */}
+          which blurs them itself. The fade stops at the bar's top edge, so
+          the first two rows show in full. */}
       {mints.length > 2 && (
         <Animated.View pointerEvents="none" style={[styles.fade, fadeStyle]}>
           <Fade
             edges={['bottom']}
             className="bg-linear-to-t from-secondary via-secondary/80 to-transparent"
-          >
-            <View className="h-12" />
-          </Fade>
+          />
         </Animated.View>
       )}
     </>

@@ -65,6 +65,8 @@ const AccountsScreen = () => {
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const [tabBarInset, setTabBarInset] = useLayoutHeight(0)
+  const [firstRowHeight, setFirstRowHeight] = useLayoutHeight(0)
+  const [secondRowHeight, setSecondRowHeight] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
   const { balanceHistory } = useBalance()
   const { locked, currency } = useAppStorage()
@@ -87,7 +89,14 @@ const AccountsScreen = () => {
 
   const snapPoints = pageHeight
     ? [
-        collapsedDrawerSnap({ rowHeight: ITEM_HEIGHT, tabBarInset }),
+        // Until the rows lay out, the skeleton rows' height stands in.
+        collapsedDrawerSnap({
+          rowHeights: [
+            firstRowHeight || ITEM_HEIGHT,
+            secondRowHeight || ITEM_HEIGHT,
+          ],
+          tabBarInset,
+        }),
         pageHeight -
           navLayoutHeight -
           actualTop -
@@ -293,7 +302,9 @@ const AccountsScreen = () => {
         detached
         animatedPosition={listAnimatedPos}
       >
-        <AccountTokenList />
+        <AccountTokenList
+          onFirstRowsLayout={[setFirstRowHeight, setSecondRowHeight]}
+        />
       </BottomSheet>
     </View>
   )
