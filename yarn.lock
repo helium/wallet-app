@@ -5704,14 +5704,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@privy-io/expo-native-extensions@npm:^0.0.7":
-  version: 0.0.7
-  resolution: "@privy-io/expo-native-extensions@npm:0.0.7"
+"@privy-io/expo-native-extensions@npm:^0.0.8":
+  version: 0.0.8
+  resolution: "@privy-io/expo-native-extensions@npm:0.0.8"
   peerDependencies:
     expo: "*"
     react: "*"
     react-native: "*"
-  checksum: 10/e569b4a8cfecc62973ed666a27f169168ae12337e27684a5b94fa13ee11b5c1e2f6fb2c5d7b420cd561ecdf0c666ad078a52af356ce5acc9ee58e71c1d4a941e
+  checksum: 10/2d9a1d067ae6aee90b78654050e3fc3330044a68467f96bf887909dde7445428be6560f38b08321287bd27fc0464204b48160f36499394dbfd92d0c855d7498e
   languageName: node
   linkType: hard
 
@@ -8737,13 +8737,6 @@ __metadata:
   version: 2.0.3
   resolution: "@types/stack-utils@npm:2.0.3"
   checksum: 10/72576cc1522090fe497337c2b99d9838e320659ac57fa5560fcbdcbafcf5d0216c6b3a0a8a4ee4fdb3b1f5e3420aa4f6223ab57b82fef3578bec3206425c6cf5
-  languageName: node
-  linkType: hard
-
-"@types/tinycolor2@npm:1.4.6":
-  version: 1.4.6
-  resolution: "@types/tinycolor2@npm:1.4.6"
-  checksum: 10/a662fd177135d27779b7ccba39881a85167f969787c71c7bf51903d288a519ad5b9526e0a4af7bde6444df6b7abe88bae893d569c6d804108c03dfec9509bdf6
   languageName: node
   linkType: hard
 
@@ -14440,7 +14433,7 @@ __metadata:
     "@orpc/client": "npm:1.16.1"
     "@orpc/contract": "npm:^1.16.1"
     "@privy-io/expo": "npm:^0.63.9"
-    "@privy-io/expo-native-extensions": "npm:^0.0.7"
+    "@privy-io/expo-native-extensions": "npm:^0.0.8"
     "@react-native-async-storage/async-storage": "npm:2.2.0"
     "@react-native-clipboard/clipboard": "npm:1.16.3"
     "@react-native-community/checkbox": "npm:0.5.20"
@@ -14480,7 +14473,6 @@ __metadata:
     "@types/react-native-video": "npm:5.0.21"
     "@types/react-test-renderer": "npm:^19.0.0"
     "@types/semver": "npm:7.3.13"
-    "@types/tinycolor2": "npm:1.4.6"
     "@ungap/structured-clone": "npm:1.3.4"
     "@walletconnect/react-native-compat": "npm:2.26.0"
     "@walletconnect/sign-client": "npm:2.26.0"
@@ -14530,7 +14522,6 @@ __metadata:
     expo-web-browser: "npm:~58.0.7"
     fuse.js: "npm:6.6.2"
     h3-js: "npm:4.1.0"
-    husky: "npm:7.0.4"
     i18next: "npm:26.5.12"
     jest: "npm:~30.5.2"
     lodash: "npm:4.18.1"
@@ -14597,7 +14588,6 @@ __metadata:
     tailwind-merge: "npm:3.3.1"
     tailwindcss: "npm:4.3.3"
     text-encoding-polyfill: "npm:^0.6.7"
-    tinycolor2: "npm:^1.6.0"
     typescript: "npm:~6.0.3"
     typescript-eslint: "npm:8.72.1"
     uniwind: "npm:1.13.1"
@@ -14760,15 +14750,6 @@ __metadata:
   dependencies:
     ms: "npm:^2.0.0"
   checksum: 10/9c7a74a2827f9294c009266c82031030eae811ca87b0da3dceb8d6071b9bde22c9f3daef0469c3c533cc67a97d8a167cd9fc0389350e5f415f61a79b171ded16
-  languageName: node
-  linkType: hard
-
-"husky@npm:7.0.4":
-  version: 7.0.4
-  resolution: "husky@npm:7.0.4"
-  bin:
-    husky: lib/bin.js
-  checksum: 10/8fecb619ab924bd99b2c9ce494bff88e45369c1125e07a603dfacb4bd60ef86840e08c689794c476189183e6223f0ea93aadebf78e3508479453c219358ca787
   languageName: node
   linkType: hard
 
@@ -22127,13 +22108,6 @@ __metadata:
   version: 5.0.0
   resolution: "throat@npm:5.0.0"
   checksum: 10/00f7197977d433d1c960edfaa6465c1217652999170ef3ecd8dbefa6add6e2304b321480523ae87354df285474ba2c5feff03842e9f398b4bcdd95cfa18cff9c
-  languageName: node
-  linkType: hard
-
-"tinycolor2@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "tinycolor2@npm:1.6.0"
-  checksum: 10/066c3acf4f82b81c58a0d3ab85f49407efe95ba87afc3c7a16b1d77625193dfbe10dd46c26d0a263c1137361dd5a6a68bff2fb71def5fb9b9aec940fb030bcd4
   languageName: node
   linkType: hard
 

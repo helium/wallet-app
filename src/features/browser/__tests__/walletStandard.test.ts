@@ -45,7 +45,7 @@ const injectInto = async (isAndroid: boolean, pageScript = '') => {
     }),
   )
   // The app injects this script as source text, so the test evaluates it too
-  // eslint-disable-next-line no-new-func, @typescript-eslint/no-implied-eval
+  // eslint-disable-next-line no-new-func
   const inject = new Function(
     'window',
     'document',

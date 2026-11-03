@@ -44,7 +44,6 @@ export const updateActivityHead = async (
   // it would overwrite the prepend. Wait for it to land, then prepend.
   const query = queryClient.getQueryCache().find({ queryKey })
   while (query?.promise && query.state.fetchStatus === 'fetching') {
-    // eslint-disable-next-line no-await-in-loop
     await query.promise.catch(() => undefined)
   }
   queryClient.setQueryData(queryKey, (data) => {
