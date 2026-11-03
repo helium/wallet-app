@@ -1,5 +1,5 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { PortalHost, PortalProvider } from '@gorhom/portal'
+import { PortalProvider } from '@gorhom/portal'
 import { OnboardingProvider as HotspotOnboardingProvider } from '@helium/react-native-sdk'
 import { NavigationContainer } from '@react-navigation/native'
 import { BlockchainApiProvider } from '@storage/BlockchainApiProvider'
@@ -36,6 +36,7 @@ import { navigationRef } from './navigation/NavigationHelper'
 import { navigationTheme } from './navigation/navigationTheme'
 import RootNavigator from './navigation/RootNavigator'
 import SolanaProvider from './solana/SolanaProvider'
+import { RootPortalProvider } from './ui/RootPortal'
 import { RootStatusBar } from './ui/RootStatusBar'
 import WalletSignProvider from './solana/WalletSignProvider'
 import { useAccountStorage } from './storage/AccountStorageProvider'
@@ -143,20 +144,26 @@ const App = () => {
                                                     races "proxy not initialized".
                                                 */}
                                                 <PrivyAppProvider>
-                                                  <AutoGasBanner />
-                                                  <RootStatusBar />
-                                                  <RootNavigator />
+                                                  {/* RootPortals render at its
+                                                    host: inside every app
+                                                    provider, above the
+                                                    navigators. */}
+                                                  <RootPortalProvider>
+                                                    <AutoGasBanner />
+                                                    <RootStatusBar />
+                                                    <RootNavigator />
 
-                                                  {/* place app specific modals here */}
-                                                  <InsufficientSolConversionModal />
-                                                  <MigrateToWorldModal />
-                                                  <MigrateToWorldCheck />
-                                                  <JupiterProvider>
-                                                    <DeprecatedTokensProvider>
-                                                      <DeprecatedTokensModal />
-                                                      <DeprecatedTokensCheck />
-                                                    </DeprecatedTokensProvider>
-                                                  </JupiterProvider>
+                                                    {/* place app specific modals here */}
+                                                    <InsufficientSolConversionModal />
+                                                    <MigrateToWorldModal />
+                                                    <MigrateToWorldCheck />
+                                                    <JupiterProvider>
+                                                      <DeprecatedTokensProvider>
+                                                        <DeprecatedTokensModal />
+                                                        <DeprecatedTokensCheck />
+                                                      </DeprecatedTokensProvider>
+                                                    </JupiterProvider>
+                                                  </RootPortalProvider>
                                                 </PrivyAppProvider>
                                               </GovernanceProvider>
                                             </WalletSignProvider>
@@ -180,10 +187,6 @@ const App = () => {
                     </SplashScreen>
                   </BlockchainApiProvider>
                 </SolanaProvider>
-                {/* BottomSheetModalProvider wraps its children in its own
-                      PortalProvider, which has no 'root' host. Default
-                      <Portal>s register there and need this host. */}
-                <PortalHost name="root" />
               </BottomSheetModalProvider>
             </PortalProvider>
           </SafeAreaProvider>

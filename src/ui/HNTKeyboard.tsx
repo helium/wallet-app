@@ -5,7 +5,6 @@ import {
   BottomSheetModalProvider,
   BottomSheetView,
 } from '@gorhom/bottom-sheet'
-import { Portal } from '@gorhom/portal'
 import {
   useMint,
   useOwnedAmount,
@@ -38,6 +37,7 @@ import { Button } from './Button'
 import { useSheetMargins } from './ContentColumn'
 import { Keypad, type KeypadInput } from './Keypad'
 import { PressableScale } from './PressableScale'
+import { RootPortal } from './RootPortal'
 import { SheetBackground, SheetHandle } from './Sheet'
 import { Text } from './Text'
 import { twMerge } from './twMerge'
@@ -474,7 +474,7 @@ export const HNTKeyboard = ({
 
   return (
     <View className={twMerge('flex-1', className)}>
-      {usePortal ? <Portal>{sheet}</Portal> : sheet}
+      {usePortal ? <RootPortal>{sheet}</RootPortal> : sheet}
       {usePortal && children}
     </View>
   )

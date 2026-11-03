@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable'
 import { useCSSVariable } from 'uniwind'
-import { Portal } from '@gorhom/portal'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import useHaptic from '@hooks/useHaptic'
 import { useGovernance } from '@storage/GovernanceProvider'
@@ -17,6 +16,7 @@ import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useAppStore } from '../store/appStore'
 import { useSolana } from '../solana/SolanaProvider'
 import { contentColumnLayout } from '../ui/ContentColumn'
+import { RootPortal } from '../ui/RootPortal'
 
 const Tab = createNativeBottomTabNavigator()
 
@@ -74,9 +74,9 @@ const TabBarNavigator = () => {
         anchorProvider &&
         !doneSolanaMigration[cluster]?.includes(currentAccount.solanaAddress) &&
         !manualMigration[cluster]?.includes(currentAccount.solanaAddress) && (
-          <Portal>
+          <RootPortal>
             <SolanaMigration className="absolute inset-0" />
-          </Portal>
+          </RootPortal>
         )}
       <Tab.Navigator
         // Icon-only tabs: an empty label hides the text on iOS, the unlabeled

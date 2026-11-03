@@ -3,12 +3,12 @@ import {
   BottomSheetModalProvider,
   BottomSheetScrollView,
 } from '@gorhom/bottom-sheet'
-import { Portal } from '@gorhom/portal'
 import { useContentColumnMargins } from '@utils/layout'
 import React, { useEffect, useRef, useState } from 'react'
 import { useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
+import { RootPortal } from './RootPortal'
 import { Sheet } from './Sheet'
 import { Text } from './Text'
 
@@ -48,7 +48,7 @@ export const BlurActionSheet = ({
   ]
 
   return (
-    <Portal>
+    <RootPortal>
       <BottomSheetModalProvider>
         <Sheet
           ref={sheetRef}
@@ -72,6 +72,6 @@ export const BlurActionSheet = ({
           </BottomSheetScrollView>
         </Sheet>
       </BottomSheetModalProvider>
-    </Portal>
+    </RootPortal>
   )
 }

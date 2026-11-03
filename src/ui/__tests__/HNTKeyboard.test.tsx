@@ -46,7 +46,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
     BottomSheetView: 'BottomSheetView',
   }
 })
-jest.mock('@gorhom/portal', () => ({ Portal: 'Portal' }))
+jest.mock('../RootPortal', () => ({ RootPortal: 'RootPortal' }))
 jest.mock('@helium/helium-react-hooks', () => ({
   useMint: () => ({ info: { decimals: 8 } }),
   // 500 HNT
@@ -291,14 +291,14 @@ describe('HNTKeyboard', () => {
     expect(root.props.className).toContain('bg-secondary')
     expect(byTestID(renderer, 'child')).toBeTruthy()
     expect(
-      renderer.root.findAllByType('Portal' as unknown as React.ElementType),
+      renderer.root.findAllByType('RootPortal' as unknown as React.ElementType),
     ).toHaveLength(0)
   })
 
   it('mounts the sheet in a portal and keeps children outside it with usePortal', () => {
     const { renderer } = render({ usePortal: true })
     const portal = renderer.root.findByType(
-      'Portal' as unknown as React.ElementType,
+      'RootPortal' as unknown as React.ElementType,
     )
 
     expect(

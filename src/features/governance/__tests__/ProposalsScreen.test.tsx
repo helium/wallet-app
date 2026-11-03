@@ -1,7 +1,6 @@
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
-import { Portal } from '@gorhom/portal'
 import { NavigationContainer } from '@react-navigation/native'
 import { Text } from '@ui/Text'
 import { GovernanceModal } from '../components/GovernanceModal'
@@ -297,9 +296,9 @@ describe('ProposalsScreen', () => {
     ])
   })
 
-  // PositionsScreen shape: the position modals and the Manage menus are
-  // portals in the wrapper's children, under the wrapper's sheet provider.
-  it('renders governance modals and default portals from its children', () => {
+  // PositionsScreen shape: the position modals are portals in the wrapper's
+  // children, under the wrapper's sheet provider.
+  it('renders governance modals from its children', () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
     act(() => {
       renderer = TestRenderer.create(
@@ -309,9 +308,6 @@ describe('ProposalsScreen', () => {
               <GovernanceModal onClose={() => {}}>
                 <Text>governance-modal</Text>
               </GovernanceModal>
-              <Portal>
-                <Text>default-portal</Text>
-              </Portal>
             </GovernanceWrapper>
           </NavigationContainer>
         </BottomSheetModalProvider>,
@@ -319,13 +315,6 @@ describe('ProposalsScreen', () => {
     })
     if (!renderer) throw new Error('render failed')
 
-    const texts = textOf(renderer.root)
-    expect(texts).toContain('governance-modal')
-    expect(texts).toContain('default-portal')
-    // The root host comes after the modal host, so the keyboard sheet that a
-    // position modal portals to root draws over the modal.
-    expect(texts.indexOf('default-portal')).toBeGreaterThan(
-      texts.indexOf('governance-modal'),
-    )
+    expect(textOf(renderer.root)).toContain('governance-modal')
   })
 })

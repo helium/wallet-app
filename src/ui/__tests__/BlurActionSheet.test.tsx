@@ -19,7 +19,7 @@ jest.mock('@gorhom/bottom-sheet', () => ({
   BottomSheetModalProvider: 'BottomSheetModalProvider',
   BottomSheetScrollView: 'BottomSheetScrollView',
 }))
-jest.mock('@gorhom/portal', () => ({ Portal: 'Portal' }))
+jest.mock('../RootPortal', () => ({ RootPortal: 'RootPortal' }))
 jest.mock(
   '@utils/layout',
   () => ({ useContentColumnMargins: () => ({ marginHorizontal: 0 }) }),
