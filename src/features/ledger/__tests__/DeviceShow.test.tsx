@@ -5,7 +5,6 @@ import DeviceShow from '../DeviceShow'
 type MockItem = { address: string }
 type MockSection = { index: number; data: MockItem[] }
 const mockRenderItems: unknown[] = []
-const mockUpsertAccounts = jest.fn((_accounts: unknown) => Promise.resolve())
 
 // SectionList renders every section header and item, so the test can reach
 // the Select All control and each account row.
@@ -52,8 +51,12 @@ jest.mock('react-native', () => {
   }
   return { View: 'View', SectionList }
 })
+const mockNavigate = jest.fn()
 jest.mock('@react-navigation/native', () => {
-  const navigation = { navigate: () => {}, goBack: () => {} }
+  const navigation = {
+    navigate: (...args: unknown[]) => mockNavigate(...args),
+    goBack: () => {},
+  }
   const route = {
     params: { ledgerDevice: { id: 'device-id', name: 'Nano X', type: 'usb' } },
   }
@@ -86,12 +89,14 @@ jest.mock('../LedgerAccountListItem', () => ({
 // Each test sets the stored accounts and the accounts the Ledger shows.
 let mockAccounts: Record<string, object> = {}
 let mockLedgerAccounts: { address: string }[] = []
+const mockUpsertAccounts = jest.fn()
+const mockUpdateLedgerAccounts = jest.fn()
 jest.mock('../../../storage/AccountStorageProvider', () => {
   const accountStorage = {
     get accounts() {
       return mockAccounts
     },
-    upsertAccounts: (accs: unknown) => mockUpsertAccounts(accs),
+    upsertAccounts: (...args: unknown[]) => mockUpsertAccounts(...args),
   }
   return { useAccountStorage: () => accountStorage, MAX_ACCOUNTS: 50 }
 })
@@ -99,7 +104,8 @@ jest.mock(
   '@hooks/useLedger',
   () => {
     const ledger = {
-      updateLedgerAccounts: () => Promise.resolve(),
+      updateLedgerAccounts: (...args: unknown[]) =>
+        mockUpdateLedgerAccounts(...args),
       get ledgerAccounts() {
         return mockLedgerAccounts
       },
@@ -150,13 +156,27 @@ const pressSelectAll = async (renderer: TestRenderer.ReactTestRenderer) => {
 const buttonLabel = (renderer: TestRenderer.ReactTestRenderer) =>
   renderer.root.findByType('Button' as never).props.children
 
-const showsAccountLimit = (renderer: TestRenderer.ReactTestRenderer) =>
+const shows = (renderer: TestRenderer.ReactTestRenderer, key: string) =>
   renderer.root
     .findAllByType('Text' as never)
-    .some((n) => n.props.children === 'accountImport.accountLimitLedger')
+    .some((n) => n.props.children === key)
+
+const showsAccountLimit = (renderer: TestRenderer.ReactTestRenderer) =>
+  shows(renderer, 'accountImport.accountLimitLedger')
+
+const navigatedToPairSuccess = () =>
+  mockNavigate.mock.calls.filter(([screen]) => screen === 'PairSuccess').length
 
 const others = (count: number) =>
   Array.from({ length: count }, (_, i) => `other${i}`)
+
+beforeEach(() => {
+  mockNavigate.mockReset()
+  mockUpsertAccounts.mockReset()
+  mockUpsertAccounts.mockResolvedValue(undefined)
+  mockUpdateLedgerAccounts.mockReset()
+  mockUpdateLedgerAccounts.mockResolvedValue(undefined)
+})
 
 describe('DeviceShow', () => {
   it('does not count already-linked accounts against the limit on Select All', async () => {
@@ -180,6 +200,131 @@ describe('DeviceShow', () => {
 
     expect(buttonLabel(renderer)).toBe('ledger.show.close')
     expect(showsAccountLimit(renderer)).toBe(true)
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).not.toHaveBeenCalled()
+    expect(mockNavigate).toHaveBeenCalledWith('AccountsScreen', undefined, {
+      pop: true,
+    })
+  })
+
+  it('shows an error and stays on the screen when the accounts fail to save', async () => {
+    storeAccounts(others(2))
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    mockUpsertAccounts.mockRejectedValue(new Error('write failed'))
+    const renderer = await renderDeviceShow()
+    await pressSelectAll(renderer)
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
+    expect(navigatedToPairSuccess()).toBe(0)
+    expect(shows(renderer, 'generic.somethingWentWrong')).toBe(true)
+
+    // A retry saves again and moves on
+    mockUpsertAccounts.mockResolvedValue(undefined)
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(2)
+    expect(navigatedToPairSuccess()).toBe(1)
+    expect(shows(renderer, 'generic.somethingWentWrong')).toBe(false)
+  })
+
+  it('saves and navigates once when Next is pressed twice in one tick', async () => {
+    storeAccounts(others(2))
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    const renderer = await renderDeviceShow()
+    await pressSelectAll(renderer)
+
+    await act(async () => {
+      const { onPress } = renderer.root.findByType('Button' as never).props
+      onPress()
+      onPress()
+    })
+
+    expect(mockUpsertAccounts).toHaveBeenCalledTimes(1)
+    expect(navigatedToPairSuccess()).toBe(1)
+  })
+
+  it('goes back to the device scan with the error when the Ledger accounts fail to load', async () => {
+    storeAccounts([])
+    mockLedgerAccounts = []
+    const loadFailed = new Error('open the Helium app')
+    mockUpdateLedgerAccounts.mockRejectedValue(loadFailed)
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    await renderDeviceShow()
+    consoleError.mockRestore()
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      'DeviceScan',
+      { error: loadFailed },
+      { pop: true },
+    )
+  })
+
+  it('goes back to the accounts screen on Close', async () => {
+    storeAccounts([])
+    mockLedgerAccounts = []
+    const renderer = await renderDeviceShow()
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+
+    expect(mockNavigate).toHaveBeenCalledWith('AccountsScreen', undefined, {
+      pop: true,
+    })
+  })
+
+  it('ignores Close while the save is pending and navigates only to PairSuccess', async () => {
+    storeAccounts(others(2))
+    mockLedgerAccounts = ['N0', 'N1'].map(ledgerAccount)
+    // The provider lists the new accounts before the save resolves
+    let resolveSave: () => void = () => {}
+    mockUpsertAccounts.mockImplementation(
+      (accs: { address: string }[]) =>
+        new Promise<void>((resolve) => {
+          storeAccounts([
+            ...Object.keys(mockAccounts),
+            ...accs.map((a) => a.address),
+          ])
+          resolveSave = resolve
+        }),
+    )
+    const renderer = await renderDeviceShow()
+    await pressSelectAll(renderer)
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+    await act(async () => {
+      renderer.update(<DeviceShow />)
+    })
+    expect(buttonLabel(renderer)).toBe('ledger.show.close')
+
+    await act(async () => {
+      renderer.root.findByType('Button' as never).props.onPress()
+    })
+    await act(async () => {
+      resolveSave()
+    })
+
+    expect(mockNavigate.mock.calls.map(([screen]) => screen)).toEqual([
+      'PairSuccess',
+    ])
+    expect(mockNavigate).not.toHaveBeenCalledWith('AccountsScreen', undefined, {
+      pop: true,
+    })
   })
 
   it('keeps the row renderer when the screen re-renders', async () => {

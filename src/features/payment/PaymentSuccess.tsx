@@ -4,7 +4,7 @@ import { SuccessReveal } from '@ui/SuccessReveal'
 import { Text } from '@ui/Text'
 import BN from 'bn.js'
 import { CircleCheck } from 'lucide-react-native'
-import React, { memo } from 'react'
+import React, { memo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { withUniwind } from 'uniwind'
@@ -31,6 +31,13 @@ const PaymentSuccess = ({
   mint,
 }: Props) => {
   const { t } = useTranslation()
+  // The success view is the end of the flow, so Done leaves it once.
+  const left = useRef(false)
+  const handleDone = () => {
+    if (left.current) return
+    left.current = true
+    onSuccess()
+  }
   return (
     <View className="flex-1 justify-end">
       <SuccessReveal
@@ -60,7 +67,7 @@ const PaymentSuccess = ({
             variant="cta"
             size="dashboard"
             className="mb-4 mt-12 w-full"
-            onPress={onSuccess}
+            onPress={handleDone}
           >
             {actionTitle}
           </Button>

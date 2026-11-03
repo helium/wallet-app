@@ -45,6 +45,7 @@ import {
   CompressedNFT,
   HotspotWithPendingRewards,
 } from '../types/solana'
+import { submitSigned } from '../utils/submitSigned'
 import {
   hashTagParams,
   signTransactionData,
@@ -186,7 +187,7 @@ export default () => {
           Buffer.from(tx.serializedTransaction, 'base64'),
         ),
       )
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      const { batchId } = await submitSigned(client, signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       // Return the payments actually submitted so the success UI can reflect
       // any max-send shave, and the signed transactions so a failed batch can
@@ -298,7 +299,7 @@ export default () => {
         txnData,
       )
 
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      const { batchId } = await submitSigned(client, signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -370,7 +371,7 @@ export default () => {
         metadata: { type: 'swap', description: 'Jupiter swap' },
       })
 
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await submitSigned(client, txnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -452,7 +453,7 @@ export default () => {
         metadata: { type: 'swap', description: 'Treasury swap' },
       })
 
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await submitSigned(client, txnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -539,7 +540,7 @@ export default () => {
               anchorProvider.wallet,
               transactionData,
             )
-            const { batchId } = await client.transactions.submit({
+            const { batchId } = await submitSigned(client, {
               ...signed,
               tag: signed.tag || `claim-rewards-${network}`,
             })
@@ -636,7 +637,7 @@ export default () => {
           )
 
           const tag = transactionData.tag || `claim-rewards-${network}`
-          const { batchId } = await client.transactions.submit({
+          const { batchId } = await submitSigned(client, {
             ...signed,
             tag,
           })
@@ -754,7 +755,7 @@ export default () => {
         transactionData,
       )
 
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      const { batchId } = await submitSigned(client, signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -829,7 +830,7 @@ export default () => {
         anchorProvider.wallet,
         transactionData,
       )
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      const { batchId } = await submitSigned(client, signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -943,7 +944,7 @@ export default () => {
         metadata: { type: 'assert', description: 'Assert hotspot location' },
       })
 
-      const { batchId } = await client.transactions.submit(txnData)
+      const { batchId } = await submitSigned(client, txnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },
@@ -1039,7 +1040,7 @@ export default () => {
         transactionData,
       )
 
-      const { batchId } = await client.transactions.submit(signedTxnData)
+      const { batchId } = await submitSigned(client, signedTxnData)
       void queryClient.invalidateQueries({ queryKey: ['pendingTransactions'] })
       return batchId
     },

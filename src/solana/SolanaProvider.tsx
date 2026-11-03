@@ -39,6 +39,7 @@ import { useAppStore } from '../store/appStore'
 import { getConnection, isRequiredSigner } from '../utils/solanaUtils'
 import { AccountSigners, signAsAccount, signMessageAsAccount } from './signing'
 import { AsyncAccountCache } from './AsyncAccountCache'
+import { createAccountFetchCache } from './RejectingAccountFetchCache'
 import { getLastCheckedSlot, saveCacheThenSlot } from './lastCheckedSlot'
 
 const useSolanaHook = () => {
@@ -193,14 +194,7 @@ const useSolanaHook = () => {
       } catch (e) {
         console.error('Failed to init cache', e)
       }
-      const c = new AccountFetchCache({
-        connection,
-        delay: 100,
-        commitment: 'confirmed',
-        missingRefetchDelay: 60 * 1000,
-        extendConnection: true,
-        cache: asyncCache,
-      })
+      const c = createAccountFetchCache(connection, asyncCache)
       // Async fetch the cache accounts to check for changes and update account fetch cache
       void (async () => {
         try {
@@ -289,6 +283,10 @@ const useSolanaHook = () => {
               }
             })
           })
+
+          // A failed chunk keeps the old slot, so the next run asks for its
+          // changes again
+          if (responses.some(({ response }) => response.error)) return
 
           // Store the current slot as the last checked slot for next time
           await saveCacheThenSlot(asyncCache, currentSlot)

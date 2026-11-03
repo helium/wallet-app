@@ -113,8 +113,12 @@ describe('RevealWords', () => {
     act(() => {
       root.findByType('PressableScale' as never).props.onPress()
     })
-    // The copy pressable fires its own haptic.
-    expect(mockUseCopyText).toHaveBeenCalledWith({ haptic: false })
+    // The copy pressable fires its own haptic. The seed phrase is a secret, so
+    // Android hides the copy from the clipboard preview.
+    expect(mockUseCopyText).toHaveBeenCalledWith({
+      haptic: false,
+      sensitive: true,
+    })
     expect(mockCopyText).toHaveBeenCalledWith({
       message: 'generic.seedPhrase',
       copyText: 'apple banana cherry',

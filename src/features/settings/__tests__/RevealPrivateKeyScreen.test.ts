@@ -9,6 +9,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const mockPlatform = { OS: 'android' }
 const mockSetSecure = jest.fn((_secure: boolean) => Promise.resolve())
+const mockUseCopyText = jest.fn()
 
 // read at render time: the import of the screen runs before mockPlatform is set
 jest.mock(
@@ -55,7 +56,14 @@ jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
 jest.mock('../SettingsBackHeader', () => 'SettingsBackHeader')
-jest.mock('@hooks/useCopyText', () => () => jest.fn(), { virtual: true })
+jest.mock(
+  '@hooks/useCopyText',
+  () => (options: unknown) => {
+    mockUseCopyText(options)
+    return jest.fn()
+  },
+  { virtual: true },
+)
 jest.mock(
   '@hooks/useAlert',
   () => {
@@ -92,6 +100,17 @@ describe('RevealPrivateKeyScreen', () => {
     expect(mockSetSecure.mock.calls).toEqual([[true]])
     act(() => renderer.unmount())
     expect(mockSetSecure.mock.calls).toEqual([[true], [false]])
+  })
+
+  // The private key is a secret, so Android hides the copy from the clipboard
+  // preview.
+  it('copies the private key as a sensitive clip', () => {
+    const renderer = render()
+    expect(mockUseCopyText).toHaveBeenCalledWith({
+      haptic: false,
+      sensitive: true,
+    })
+    act(() => renderer.unmount())
   })
 
   it('sets no flag on iOS', () => {

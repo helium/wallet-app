@@ -44,9 +44,10 @@ export const WalletSignBottomSheetCompact = ({
       .sub(new BN(estimatedTotalLamports))
       .lt(new BN(rentExemptLamports))
 
-  const insufficientFunds = new BN(estimatedTotalLamports).gt(
-    new BN(solBalance?.toString() || '0'),
-  )
+  // Unknown until the SOL balance has loaded
+  const insufficientFunds =
+    solBalance &&
+    new BN(estimatedTotalLamports).gt(new BN(solBalance.toString()))
 
   return (
     <View className="mb-4 p-4">

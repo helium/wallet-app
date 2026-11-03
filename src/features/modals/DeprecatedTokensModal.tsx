@@ -34,6 +34,7 @@ import { Edge, SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import * as Logger from '../../utils/logger'
+import { swapError } from './swapError'
 import { FADE_IN } from '@theme/motion'
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
@@ -329,7 +330,7 @@ const DeprecatedTokensModal: FC = () => {
             swapTxn: iotSwapTxn,
           })
         } catch (err) {
-          throw new Error(`Failed to swap IOT: ${(err as Error).message}`)
+          throw swapError('IOT', err)
         }
 
         // Wait for transaction to be confirmed
@@ -374,7 +375,7 @@ const DeprecatedTokensModal: FC = () => {
             swapTxn: mobileSwapTxn,
           })
         } catch (err) {
-          throw new Error(`Failed to swap MOBILE: ${(err as Error).message}`)
+          throw swapError('MOBILE', err)
         }
 
         // Wait for transaction to be confirmed

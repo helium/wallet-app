@@ -6,6 +6,7 @@
  * from a store the test sets.
  */
 import { IOT_MINT } from '@helium/spl-utils'
+import { ORPCError } from '@orpc/client'
 import { PublicKey } from '@solana/web3.js'
 import {
   notifyManager,
@@ -16,6 +17,7 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import type useSubmitTxn from '../../../hooks/useSubmitTxn'
 import type { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
+import { UnconfirmedSubmitError } from '../../../utils/unconfirmedSubmitError'
 import BurnScreen from '../BurnScreen'
 
 type Batch = {
@@ -59,6 +61,25 @@ const mockAccountStorage = {
 
 jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
   virtual: true,
+})
+// @orpc/client ships ESM only. ORPCError mirrors the real one's code and
+// defined fields.
+jest.mock('@orpc/client', () => {
+  class MockORPCError extends Error {
+    code: string
+
+    defined: boolean
+
+    constructor(
+      code: string,
+      options: { defined?: boolean; message?: string } = {},
+    ) {
+      super(options.message ?? code)
+      this.code = code
+      this.defined = options.defined ?? false
+    }
+  }
+  return { ORPCError: MockORPCError }
 })
 jest.mock('../../../hooks/useSubmitTxn', () => {
   const { useMutation } = jest.requireActual('@tanstack/react-query')
@@ -313,6 +334,39 @@ describe('BurnScreen Retry', () => {
     expect(sentDelegates()).toEqual([delegate, delegate, delegate])
   })
 
+  it('offers no Retry after a Retry whose submit got no answer', async () => {
+    render()
+
+    delegatesAs('first')
+    await submit()
+    setBatch('first', {
+      status: 'failed',
+      transactions: [{ signature: 'delegateSig', status: 'failed' }],
+    })
+
+    // The resent delegate reached the cluster, but its answer was lost.
+    mockDelegate.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await retry()
+
+    expect(mockDelegate).toHaveBeenCalledTimes(2)
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
+  it('shows the error with no Retry when the first submit got no answer', async () => {
+    render()
+
+    mockDelegate.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await submit()
+
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
   it('offers no Retry when the batch expired', async () => {
     render()
 
@@ -325,5 +379,81 @@ describe('BurnScreen Retry', () => {
 
     expect(buttons('generic.cancel').length).toBe(1)
     expect(buttons('generic.retry').length).toBe(0)
+  })
+})
+
+describe('BurnScreen Send', () => {
+  beforeEach(() => {
+    mockDelegate.mockReset()
+    mockBatchStore.batches = {}
+  })
+  afterEach(() => act(() => renderer.unmount()))
+
+  it('delegates once for two swipes in one tick, and again after the delegate settles', async () => {
+    render()
+    let settle!: (batchId: string) => void
+    mockDelegate.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve
+      }),
+    )
+
+    const button = renderer.root.find(
+      (node) => (node.type as string) === 'SubmitButton',
+    )
+    await act(async () => {
+      button.props.onSubmit()
+      button.props.onSubmit()
+    })
+    expect(mockDelegate).toHaveBeenCalledTimes(1)
+
+    await act(async () => settle('first'))
+    mockDelegate.mockReturnValueOnce(new Promise(() => undefined))
+    await submit()
+    expect(mockDelegate).toHaveBeenCalledTimes(2)
+  })
+
+  it('disables the swipe rail while the delegate is pending', async () => {
+    render()
+    const disabled = () =>
+      renderer.root.find((node) => (node.type as string) === 'SubmitButton')
+        .props.disabled
+    expect(disabled()).toBe(false)
+
+    let settle!: (batchId: string) => void
+    mockDelegate.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve
+      }),
+    )
+    await submit()
+    expect(disabled()).toBe(true)
+
+    await act(async () => settle('first'))
+    expect(disabled()).toBe(false)
+  })
+
+  it('shows a rejection that proves nothing was sent in the form and enables the swipe again', async () => {
+    render()
+    mockDelegate.mockRejectedValueOnce(
+      new ORPCError('SIMULATION_FAILED', {
+        defined: true,
+        message: 'Simulation failed: insufficient funds',
+      }),
+    )
+
+    await submit()
+
+    expect(
+      renderer.root.findAll(
+        (node) =>
+          (node.type as string) === 'UiText' &&
+          node.props.children === 'Simulation failed: insufficient funds',
+      ).length,
+    ).toBe(1)
+    expect(
+      renderer.root.find((node) => (node.type as string) === 'SubmitButton')
+        .props.disabled,
+    ).toBe(false)
   })
 })

@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useEffect, useEffectEvent } from 'react'
+import React, {
+  useCallback,
+  useState,
+  useEffect,
+  useEffectEvent,
+  useRef,
+} from 'react'
 import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SectionList, View } from 'react-native'
 import { Image } from '@ui/Image'
@@ -219,8 +225,12 @@ const DeviceShow = () => {
     loadLedgerAccounts().catch((e) => console.error(e))
   }, [])
 
+  // A ref, not state, so a second press in the same tick sees the first
+  const saving = useRef(false)
+  const [saveFailed, setSaveFailed] = useState(false)
+
   const handleNext = async () => {
-    if (!accountsToAdd) return
+    if (!accountsToAdd || saving.current) return
     const accs = accountsToAdd?.map((acc) => {
       return {
         alias: acc.alias,
@@ -233,12 +243,22 @@ const DeviceShow = () => {
       }
     })
 
-    await upsertAccounts(accs)
+    saving.current = true
+    setSaveFailed(false)
+    try {
+      await upsertAccounts(accs)
+    } catch (error) {
+      console.error(error)
+      saving.current = false
+      setSaveFailed(true)
+      return
+    }
 
     navigation.navigate('PairSuccess')
   }
 
   const handleClose = () => {
+    if (saving.current) return
     homeNav.navigate('AccountsScreen', undefined, { pop: true })
   }
 
@@ -290,6 +310,11 @@ const DeviceShow = () => {
         />
       </View>
       <View className="absolute inset-x-0 bottom-0 min-h-[11%] border-t border-border bg-background">
+        {saveFailed && (
+          <Text size="base" className="mx-6 mt-2 text-center text-destructive">
+            {t('generic.somethingWentWrong')}
+          </Text>
+        )}
         <Button
           variant="secondary"
           size="dashboard"

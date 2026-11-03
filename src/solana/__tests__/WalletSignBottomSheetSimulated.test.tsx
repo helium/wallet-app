@@ -1,3 +1,4 @@
+import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import { WalletSignBottomSheetSimulated } from '../WalletSIgnBottomSheetSimulated'
@@ -35,8 +36,8 @@ jest.mock('@helium/sus', () => ({ sus: () => Promise.resolve([]) }))
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
-// The SOL balance, unknown unless a test sets it.
-let mockSolBalance: { toString: () => string } | undefined
+// The SOL balance; unloaded unless a test sets it.
+let mockSolBalance: BN | undefined
 jest.mock('@hooks/useBN', () => ({ useBN: () => mockSolBalance }), {
   virtual: true,
 })
@@ -186,7 +187,7 @@ describe('WalletSignBottomSheetSimulated', () => {
 
   it('shows a non-empty warning and message', () => {
     // 1 SOL covers the 5000-lamport fee, so the message shows.
-    mockSolBalance = { toString: () => '1000000000' }
+    mockSolBalance = new BN('1000000000')
     let renderer: TestRenderer.ReactTestRenderer | undefined
     act(() => {
       renderer = TestRenderer.create(
@@ -206,5 +207,40 @@ describe('WalletSignBottomSheetSimulated', () => {
     expect(
       renderer.root.findAllByType('Text' as never).map((n) => n.props.children),
     ).toEqual(expect.arrayContaining(['Check the recipient', 'Send 1 HNT']))
+  })
+
+  describe('insufficient-funds pill', () => {
+    const insufficientFundsPills = () => {
+      let renderer: TestRenderer.ReactTestRenderer | undefined
+      act(() => {
+        renderer = TestRenderer.create(
+          <WalletSignBottomSheetSimulated
+            type={WalletStandardMessageTypes.signTransaction}
+            serializedTxs={[Buffer.from('tx')]}
+            onAccept={() => {}}
+            onCancel={() => {}}
+          />,
+        )
+      })
+      if (!renderer) throw new Error('render failed')
+      return renderer.root
+        .findAllByType('WarningPill' as never)
+        .filter((n) => n.props.text === 'browserScreen.insufficientFunds')
+    }
+    afterEach(() => {
+      mockSolBalance = undefined
+    })
+
+    it('shows no insufficient-funds pill while the SOL balance loads', () => {
+      mockSolBalance = undefined
+
+      expect(insufficientFundsPills()).toHaveLength(0)
+    })
+
+    it('shows the insufficient-funds pill when the SOL balance is short of the fee', () => {
+      mockSolBalance = new BN(4999)
+
+      expect(insufficientFundsPills()).toHaveLength(1)
+    })
   })
 })

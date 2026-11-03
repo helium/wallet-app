@@ -155,6 +155,18 @@ describe('PaymentSubmit', () => {
     expect(onSuccess).toHaveBeenCalledTimes(1)
   })
 
+  it('leaves once when Done is pressed twice in one tick', () => {
+    const onSuccess = jest.fn()
+    const root = render({ succeeded: true }, { onSuccess })
+
+    const done = byTestID(root, 'PaymentSuccess.Done')
+    act(() => {
+      done.props.onPress()
+      done.props.onPress()
+    })
+    expect(onSuccess).toHaveBeenCalledTimes(1)
+  })
+
   it('shows the error with Cancel and Retry', () => {
     const onRetry = jest.fn()
     const root = render({ error: new Error('boom') }, { onRetry })

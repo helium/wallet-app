@@ -10,8 +10,11 @@ import { humanReadable } from '@helium/spl-utils'
 import BN from 'bn.js'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { RootNavigationProp } from 'src/navigation/rootTypes'
-import { useAccountStorage } from '@storage/AccountStorageProvider'
-import { ellipsizeAddress } from '@utils/accountUtils'
+import {
+  MAX_ACCOUNTS,
+  useAccountStorage,
+} from '@storage/AccountStorageProvider'
+import { ellipsizeAddress, solAddressToHelium } from '@utils/accountUtils'
 import base58 from 'bs58'
 import { retryWithBackoff } from '@utils/retryWithBackoff'
 import { PublicKey } from '@solana/web3.js'
@@ -38,7 +41,7 @@ const SafeArea = withUniwind(TabSafeAreaView)
 const SelectKeystoneAccountsScreen = () => {
   const route = useRoute<SelectKeystoneAccountsScreenRouteProp>()
   const { setKeystoneOnboardingData } = useKeystoneOnboarding()
-  const { hasAccounts } = useAccountStorage()
+  const { hasAccounts, accounts: storedAccounts } = useAccountStorage()
   const { derivationAccounts } = route.params
   const [selected, setSelected] = React.useState<Set<string>>(
     new Set(derivationAccounts.map((item) => item.path)),
@@ -51,6 +54,16 @@ const SelectKeystoneAccountsScreen = () => {
   }>()
   const loading = loaded?.source !== derivationAccounts
   const accounts = (!loading && loaded?.accounts) || derivationAccounts
+  // Only selected accounts that are not stored yet count against the limit
+  const newAccountCount = accounts.filter(
+    ({ path, publicKey }) =>
+      selected.has(path) &&
+      !storedAccounts?.[
+        solAddressToHelium(base58.encode(Buffer.from(publicKey, 'hex')))
+      ],
+  ).length
+  const reachedAccountLimit =
+    Object.keys(storedAccounts || {}).length + newAccountCount > MAX_ACCOUNTS
   // storage the selected accounts
   const storageSelectedAccounts = () => {
     const selectedAccounts: KeystoneAccountType[] = Array.from(selected).map(
@@ -213,12 +226,20 @@ const SelectKeystoneAccountsScreen = () => {
           onEndReached={() => {}}
         />
 
+        {reachedAccountLimit && (
+          <Text
+            size="base"
+            className="mx-6 mt-4 text-center font-medium text-destructive"
+          >
+            {t('accountImport.accountLimitLedger')}
+          </Text>
+        )}
         <SafeArea edges={['bottom']}>
           <Button
             variant="cta"
             size="dashboard"
             className="mx-6 mt-6 mb-6"
-            disabled={selected.size === 0}
+            disabled={selected.size === 0 || reachedAccountLimit}
             onPress={onNext}
           >
             Next

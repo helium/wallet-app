@@ -4,7 +4,11 @@ import { heliumAddressFromSolAddress } from '@helium/spl-utils'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
 import { Keypair } from '@solana/web3.js'
 import { CSAccountVersion } from '@storage/cloudStorage'
-import { storeSecureAccount, toSecureAccount } from '@storage/secureStorage'
+import {
+  deleteSecureAccount,
+  storeSecureAccount,
+  toSecureAccount,
+} from '@storage/secureStorage'
 import { useMutation } from '@tanstack/react-query'
 import { AccountIcon } from '@ui/AccountIcon'
 import { Button } from '@ui/Button'
@@ -130,8 +134,8 @@ const AccountAssignScreen = () => {
   const { mutate: handlePress, isPending: loading } = useMutation({
     mutationFn: async () => {
       try {
-        await storeAllSecureAccounts()
         const mnemonicHash = generateMnemonicHash(words)
+        // Reads balances first, so a failed read stores no key
         const newAccounts = await createNewAccounts(
           allPaths,
           alias,
@@ -149,7 +153,23 @@ const AccountAssignScreen = () => {
           newAccounts[0],
         )
 
-        await upsertAccounts(newAccounts)
+        try {
+          await storeAllSecureAccounts()
+          await upsertAccounts(newAccounts)
+        } catch (e) {
+          // A key stored for an unlisted account would outlive sign-out
+          await Promise.all(
+            newAccounts
+              .filter((acc) => !accounts?.[acc.address])
+              .map((acc) =>
+                deleteSecureAccount({
+                  ...acc,
+                  netType: accountNetType(acc.address),
+                }),
+              ),
+          ).catch(console.error)
+          throw e
+        }
 
         if (setAsDefault) {
           await updateDefaultAccountAddress(highestBalanceAcc.address)

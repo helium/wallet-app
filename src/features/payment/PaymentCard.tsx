@@ -109,6 +109,7 @@ const PaymentCard = ({
               ticker: symbol,
             })}
             onSubmit={handleSubmit}
+            disabled={disabled}
           />
         )}
       </View>

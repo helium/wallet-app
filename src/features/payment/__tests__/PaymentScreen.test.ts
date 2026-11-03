@@ -6,6 +6,7 @@
  * test sets.
  */
 import { NetTypes } from '@helium/address'
+import { ORPCError } from '@orpc/client'
 import { NATIVE_MINT } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
@@ -27,6 +28,11 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import type useSubmitTxn from '../../../hooks/useSubmitTxn'
 import type { BatchStatus } from '../../../hooks/useTransactionBatchStatus'
+import { submitFailure } from '../../../utils/submitFailure'
+import {
+  CHECK_ACTIVITY_MESSAGE,
+  UnconfirmedSubmitError,
+} from '../../../utils/unconfirmedSubmitError'
 import PaymentScreen from '../PaymentScreen'
 import type usePaymentsReducer from '../usePaymentsReducer'
 
@@ -42,6 +48,8 @@ const mockSend = jest.fn<
   Promise<NonNullable<PaymentMutation['data']>>,
   [SendVariables]
 >()
+// The wallet's balance of every mint; unloaded unless a test sets it.
+let mockOwnedAmount: bigint | undefined
 const mockBatchStore = {
   batches: {} as Record<string, Batch>,
   listeners: new Set<() => void>(),
@@ -79,6 +87,25 @@ const mockPaymentState: ReturnType<typeof usePaymentsReducer>[0] = {
   rentExemptLamports: 0,
 }
 
+// @orpc/client ships ESM only. ORPCError mirrors the real one's code and
+// defined fields.
+jest.mock('@orpc/client', () => {
+  class MockORPCError extends Error {
+    code: string
+
+    defined: boolean
+
+    constructor(
+      code: string,
+      options: { defined?: boolean; message?: string } = {},
+    ) {
+      super(options.message ?? code)
+      this.code = code
+      this.defined = options.defined ?? false
+    }
+  }
+  return { ORPCError: MockORPCError }
+})
 jest.mock('../../../hooks/useSubmitTxn', () => {
   const { useMutation } = jest.requireActual('@tanstack/react-query')
   return () => {
@@ -174,7 +201,7 @@ jest.mock(
   '@helium/helium-react-hooks',
   () => ({
     useMint: () => undefined,
-    useOwnedAmount: () => ({ amount: undefined }),
+    useOwnedAmount: () => ({ amount: mockOwnedAmount }),
   }),
   { virtual: true },
 )
@@ -322,6 +349,12 @@ const retry = async () => {
   await act(async () => retryButtons[0]?.props.onPress())
 }
 
+const texts = (message: string) =>
+  renderer.root.findAll(
+    (node) =>
+      (node.type as string) === 'Text' && node.props.children === message,
+  )
+
 const sentPayees = () =>
   mockSend.mock.calls.map(([{ payments }]) => payments.map((p) => p.payee))
 
@@ -393,6 +426,85 @@ describe('PaymentScreen Retry', () => {
     }
   })
 
+  it('offers no Retry after a Retry whose submit got no answer', async () => {
+    const toAlice = signed([sol(alice, 1)])
+    const toBob = signed([sol(bob, 2)])
+    render()
+
+    sendsAs('first', [toAlice, toBob])
+    await submit()
+    setBatch('first', {
+      status: 'partial',
+      transactions: [
+        { signature: signatureOf(toAlice), status: 'confirmed' },
+        { signature: signatureOf(toBob), status: 'failed' },
+      ],
+    })
+
+    // The resent payment to Bob reached the cluster, but its answer was lost.
+    mockSend.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await retry()
+
+    expect(sentPayees()).toEqual([
+      [alice.toBase58(), bob.toBase58()],
+      [bob.toBase58()],
+    ])
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
+  it('shows the error with no Retry when the first submit got no answer', async () => {
+    render()
+
+    mockSend.mockRejectedValueOnce(
+      new UnconfirmedSubmitError(new TypeError('Network request failed')),
+    )
+    await submit()
+
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
+  it('shows the reason and resends every payment when the first submit was rejected before sending', async () => {
+    render()
+
+    // What the payment hook throws for this rejection.
+    mockSend.mockRejectedValueOnce(
+      submitFailure(
+        new ORPCError('SIMULATION_FAILED', {
+          defined: true,
+          message: 'Simulation failed: insufficient funds',
+        }),
+      ),
+    )
+    await submit()
+
+    expect(texts('Simulation failed: insufficient funds').length).toBe(1)
+    mockSend.mockReturnValueOnce(new Promise(() => undefined))
+    await retry()
+
+    expect(sentPayees()).toEqual([
+      [alice.toBase58(), bob.toBase58()],
+      [alice.toBase58(), bob.toBase58()],
+    ])
+  })
+
+  it('shows the check-activity message with no Retry when the first submit got an undefined rejection', async () => {
+    render()
+
+    // What the payment hook throws for this rejection.
+    mockSend.mockRejectedValueOnce(
+      submitFailure(new ORPCError('SIMULATION_FAILED', { defined: false })),
+    )
+    await submit()
+
+    expect(texts(CHECK_ACTIVITY_MESSAGE).length).toBe(1)
+    expect(buttons('generic.cancel').length).toBe(1)
+    expect(buttons('generic.retry').length).toBe(0)
+  })
+
   it('offers no Retry when a batch transaction loads accounts from a lookup table', async () => {
     const lookupTable = new AddressLookupTableAccount({
       key: Keypair.generate().publicKey,
@@ -441,5 +553,56 @@ describe('PaymentScreen header', () => {
         node.props.className === 'flex-1 rounded-t-[20px] bg-secondary',
     )
     expect(header.props.style).toEqual({ marginTop: 47 })
+  })
+})
+
+const paymentCard = () =>
+  renderer.root.find((node) => (node.type as string) === 'PaymentCard')
+
+describe('PaymentScreen Send', () => {
+  beforeEach(() => {
+    mockSend.mockReset()
+    mockBatchStore.batches = {}
+  })
+  afterEach(() => act(() => renderer.unmount()))
+
+  it('sends once for two swipes in one tick, and again after the send settles', async () => {
+    render()
+    let settle!: (sent: Awaited<ReturnType<typeof mockSend>>) => void
+    mockSend.mockReturnValueOnce(
+      new Promise((resolve) => {
+        settle = resolve
+      }),
+    )
+
+    const card = paymentCard()
+    await act(async () => {
+      card.props.onSubmit()
+      card.props.onSubmit()
+    })
+    expect(mockSend).toHaveBeenCalledTimes(1)
+
+    await act(async () =>
+      settle({ batchId: 'first', payments: [], transactions: [] }),
+    )
+    mockSend.mockReturnValueOnce(new Promise(() => undefined))
+    await submit()
+    expect(mockSend).toHaveBeenCalledTimes(2)
+  })
+
+  it('disables Send while the payment is pending', async () => {
+    // A balance that covers the payments and the fee, so the form is valid.
+    mockOwnedAmount = BigInt(1_000_000)
+    try {
+      render()
+      mockSend.mockReturnValueOnce(new Promise(() => undefined))
+      expect(paymentCard().props.disabled).toBe(false)
+
+      await submit()
+
+      expect(paymentCard().props.disabled).toBe(true)
+    } finally {
+      mockOwnedAmount = undefined
+    }
   })
 })

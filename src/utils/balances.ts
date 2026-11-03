@@ -6,6 +6,7 @@ import { CSAccount } from '../storage/cloudStorage'
 import { decodeTokenAccount } from '../store/logic/tokenAccounts'
 import { AccountBalance, Prices, TokenAccount } from '../types/balance'
 import { PersistedQueryRoot } from './queryClient'
+import { withTimeout } from './oraclePrice'
 import { SyncGuard } from './syncGuard'
 import { getBalanceHistory, getTokenPrices } from './walletApiV2'
 
@@ -39,7 +40,7 @@ const fetchTokens = async (
     programId: TOKEN_PROGRAM_ID,
   })
 
-  const solAcct = await connection.getAccountInfo(pubKey)
+  const solBalance = await connection.getBalance(pubKey)
 
   // Decode all token account data first
   const tokenAccountsData = tokenAccounts.value.map((tokenAccount) => ({
@@ -62,34 +63,26 @@ const fetchTokens = async (
     const batch = uniqueMintPubkeys.slice(i, i + BATCH_SIZE)
     const batchMints = uniqueMints.slice(i, i + BATCH_SIZE)
 
-    try {
-      const mintAccountInfos = await connection.getMultipleAccountsInfo(batch)
+    // A failed or missing mint read fails the sync, so the stored balances
+    // keep their decimals. A commitment other than the account cache's skips
+    // the cache, so a failed read rejects and a cached null cannot fail the
+    // sync; mint decimals never change, so finalized data is enough
+    const mintAccountInfos = await connection.getMultipleAccountsInfo(
+      batch,
+      'finalized',
+    )
 
-      const batchMintInfos = batchMints.map((mintStr, index) => {
-        try {
-          const accountInfo = mintAccountInfos[index]
-          if (accountInfo && accountInfo.data) {
-            // Parse mint account data to get decimals (decimals is at offset 44)
-            const decimals = accountInfo.data[44]
-            return { mint: mintStr, decimals }
-          }
-          return { mint: mintStr, decimals: 0 }
-        } catch (error) {
-          console.warn(`Failed to parse mint info for ${mintStr}:`, error)
-          return { mint: mintStr, decimals: 0 }
-        }
-      })
+    const batchMintInfos = batchMints.map((mintStr, index) => {
+      const accountInfo = mintAccountInfos[index]
+      if (!accountInfo || !accountInfo.data) {
+        throw new Error(`Mint account ${mintStr} not found`)
+      }
+      // Parse mint account data to get decimals (decimals is at offset 44)
+      const decimals = accountInfo.data[44]
+      return { mint: mintStr, decimals }
+    })
 
-      mintInfos.push(...batchMintInfos)
-    } catch (error) {
-      console.warn(`Failed to fetch mint batch ${i}-${i + BATCH_SIZE}:`, error)
-      // Add fallback entries for this batch
-      const fallbackInfos = batchMints.map((mint) => ({
-        mint,
-        decimals: 0,
-      }))
-      mintInfos.push(...fallbackInfos)
-    }
+    mintInfos.push(...batchMintInfos)
   }
 
   // Create mint info lookup map
@@ -106,7 +99,6 @@ const fetchTokens = async (
     frozen: tokenAccountData.frozen,
   }))
 
-  const solBalance = solAcct?.lamports || 0
   const sol = {
     tokenAccount: solanaAddress,
     balance: solBalance,
@@ -140,6 +132,9 @@ export const tokenAccountsQueryOptions = ({
       return fetchTokens(solanaAddress, anchorProvider)
     },
   })
+
+// A sync still waiting on the RPC after this long fails, so the next one runs
+export const TOKEN_SYNC_TIMEOUT = 1000 * 30 // 30 seconds
 
 // Global sync guard to prevent overlapping syncs from ANY source
 const balancesSyncGuard = new SyncGuard()
@@ -189,15 +184,24 @@ export const syncTokenAccounts = async (
     balancesSyncGuard.startSync(syncKey)
     syncingKey = syncKey
 
+    const options = tokenAccountsQueryOptions({
+      cluster,
+      solanaAddress,
+      anchorProvider,
+    })
     try {
-      return await queryClient.fetchQuery({
-        ...tokenAccountsQueryOptions({
-          cluster,
-          solanaAddress,
-          anchorProvider,
-        }),
-        staleTime: 0,
+      return await withTimeout(
+        queryClient.fetchQuery({ ...options, staleTime: 0 }),
+        TOKEN_SYNC_TIMEOUT,
+        'Token account sync timed out',
+      )
+    } catch (e) {
+      // Drop a hung fetch, or the next sync of this wallet joins it
+      await queryClient.cancelQueries({
+        queryKey: options.queryKey,
+        exact: true,
       })
+      throw e
     } finally {
       balancesSyncGuard.endSync()
       syncingKey = undefined

@@ -35,7 +35,7 @@ import { PressableScale } from '@ui/PressableScale'
 import { RadioButton } from '@ui/RadioButton'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, Linking, ScrollView, View } from 'react-native'
 import { useSolana } from '../../../solana/SolanaProvider'
@@ -160,6 +160,10 @@ const AddGatewayBle = () => {
         : undefined
     : undefined
 
+  // A ref, not render state, so a second press in the same tick sees the
+  // first run. A second run would burn HNT to DC again before the onboard
+  // fails on chain.
+  const onboarding = useRef(false)
   const {
     mutate: handleAddGateway,
     isPending: callbackLoading,
@@ -293,7 +297,15 @@ const AddGatewayBle = () => {
         )
       }
     },
+    onSettled: () => {
+      onboarding.current = false
+    },
   })
+  const onboard = () => {
+    if (onboarding.current) return
+    onboarding.current = true
+    handleAddGateway()
+  }
   const error =
     onboardBalError ||
     callbackError ||
@@ -449,7 +461,7 @@ const AddGatewayBle = () => {
                       variant="destructive"
                       size="dashboard"
                       className="mt-6 w-full"
-                      onPress={() => handleAddGateway()}
+                      onPress={onboard}
                       disabled={!!disabled}
                     >
                       {loading ? (
@@ -469,7 +481,7 @@ const AddGatewayBle = () => {
             variant="cta"
             size="dashboard"
             className="mt-6 w-full"
-            onPress={() => handleAddGateway()}
+            onPress={onboard}
             disabled={!!disabled}
           >
             {loading && <Spinner size="small" colorClassName="accent-white" />}

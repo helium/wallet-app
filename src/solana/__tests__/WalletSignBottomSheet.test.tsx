@@ -149,6 +149,33 @@ describe('WalletSignBottomSheet', () => {
     expect(testIDs()).toEqual(['WalletSign.Cancel', 'WalletSign.Approve'])
   })
 
+  // The SOL balance is still loading (useBN gives undefined), so the sheet
+  // cannot know the wallet is short of the fee.
+  it('shows no insufficient-funds warning while the SOL balance loads', () => {
+    const sheetRef = React.createRef<WalletSignBottomSheetRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<AppTree sheetRef={sheetRef} />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const { root } = renderer
+
+    act(() => {
+      void sheetRef.current?.show({
+        type: WalletStandardMessageTypes.signTransaction,
+        renderer: () => null,
+      })
+    })
+
+    expect(root.findAllByProps({ testID: 'WalletSign.Approve' })).toHaveLength(
+      1,
+    )
+    const texts = root
+      .findAllByType('Text' as never)
+      .map((node) => node.props.children)
+    expect(texts).not.toContain('browserScreen.insufficientFunds')
+  })
+
   it.each([
     ['WalletSign.Approve', true],
     ['WalletSign.Cancel', false],

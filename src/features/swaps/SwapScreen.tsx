@@ -860,6 +860,7 @@ const SwapScreen = () => {
                       inputAmount === 0 ||
                       routeNotFound ||
                       hntToDcPriceMissing ||
+                      hasInsufficientBalance === undefined ||
                       loading ||
                       swapping
                     }
