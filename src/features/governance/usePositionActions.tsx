@@ -397,7 +397,8 @@ export const usePositionActions = ({
   }
 
   const handleSplitTokens = async (values: LockTokensModalFormValues) => {
-    if (!position || !mintAcc) return
+    if (!position || !mintAcc)
+      throw new Error('Position is still loading. Try again.')
     await splitMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
@@ -425,7 +426,8 @@ export const usePositionActions = ({
     targetPosition: PositionWithMeta,
     amount: number,
   ) => {
-    if (!position || !mintAcc) return
+    if (!position || !mintAcc)
+      throw new Error('Position is still loading. Try again.')
     await transferMutation.submit(
       {
         sourcePositionMint: position.mint.toBase58(),
