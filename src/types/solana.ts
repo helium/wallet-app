@@ -162,25 +162,15 @@ export type EnrichedTransaction = {
     tokenBalanceChanges: TokenBalanceChange[]
   }
   events: {
-    compressed: [
-      {
-        assetId: string
-        innerInstructionIndex: number
-        instructionIndex: number
-        leafIndex: number
-        treeId: string
-        type: string
-        metadata: any
-      },
-      {
-        assetId: string
-        innerInstructionIndex: number
-        instructionIndex: number
-        leafIndex: number
-        treeId: string
-        type: string
-      },
-    ]
+    compressed: {
+      assetId: string
+      innerInstructionIndex: number
+      instructionIndex: number
+      leafIndex: number
+      treeId: string
+      type: string
+      metadata: any
+    }[]
     nft: {
       description: string
       type: string

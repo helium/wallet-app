@@ -110,6 +110,7 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
+import { attachSigners } from '../features/activity/logic/signers'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -1607,9 +1608,7 @@ export const getAllTransactions = async (
     })
 
     const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
-      data.map(async (tx: EnrichedTransaction, index: number) => {
-        // eslint-disable-next-line no-param-reassign
-        tx.signers = txList[index].signers
+      attachSigners(data as EnrichedTransaction[], txList).map(async (tx) => {
         try {
           const firstTokenTransfer = tx.tokenTransfers[0]
           if (firstTokenTransfer && firstTokenTransfer.mint) {
