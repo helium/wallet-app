@@ -20,42 +20,39 @@ index 916ab3b..d379c62 100644
    maven { url 'https://www.jitpack.io' }
  
 diff --git a/node_modules/@helium/react-native-sdk/lib/commonjs/utils/httpClient.js b/node_modules/@helium/react-native-sdk/lib/commonjs/utils/httpClient.js
-index adfc568..97d8ab1 100644
+index adfc568..c721cc7 100644
 --- a/node_modules/@helium/react-native-sdk/lib/commonjs/utils/httpClient.js
 +++ b/node_modules/@helium/react-native-sdk/lib/commonjs/utils/httpClient.js
-@@ -45,5 +45,7 @@ const configChainVars = async () => {
+@@ -45,5 +45,6 @@ const configChainVars = async () => {
    const vars = await heliumHttpClient.vars.get();
    _transactions.Transaction.config(vars);
  };
 -configChainVars();
-+configChainVars().catch(() => {
-+  // api.helium.io is retired; Transaction keeps its default chain vars
-+});
++// api.helium.io no longer resolves, so this request always fails.
++configChainVars().catch(() => {});
  //# sourceMappingURL=httpClient.js.map
 \ No newline at end of file
 diff --git a/node_modules/@helium/react-native-sdk/lib/module/utils/httpClient.js b/node_modules/@helium/react-native-sdk/lib/module/utils/httpClient.js
-index 68e04ca..c7121e8 100644
+index 68e04ca..0fffe9f 100644
 --- a/node_modules/@helium/react-native-sdk/lib/module/utils/httpClient.js
 +++ b/node_modules/@helium/react-native-sdk/lib/module/utils/httpClient.js
-@@ -37,5 +37,7 @@ const configChainVars = async () => {
+@@ -37,5 +37,6 @@ const configChainVars = async () => {
    const vars = await heliumHttpClient.vars.get();
    Transaction.config(vars);
  };
 -configChainVars();
-+configChainVars().catch(() => {
-+  // api.helium.io is retired; Transaction keeps its default chain vars
-+});
++// api.helium.io no longer resolves, so this request always fails.
++configChainVars().catch(() => {});
  //# sourceMappingURL=httpClient.js.map
 \ No newline at end of file
 diff --git a/node_modules/@helium/react-native-sdk/src/utils/httpClient.ts b/node_modules/@helium/react-native-sdk/src/utils/httpClient.ts
-index 9aeb0d9..b72caaa 100644
+index 9aeb0d9..28a9382 100644
 --- a/node_modules/@helium/react-native-sdk/src/utils/httpClient.ts
 +++ b/node_modules/@helium/react-native-sdk/src/utils/httpClient.ts
-@@ -35,4 +35,6 @@ const configChainVars = async () => {
+@@ -35,4 +35,5 @@ const configChainVars = async () => {
    const vars = await heliumHttpClient.vars.get()
    Transaction.config(vars)
  }
 -configChainVars()
-+configChainVars().catch(() => {
-+  // api.helium.io is retired; Transaction keeps its default chain vars
-+})
++// api.helium.io no longer resolves, so this request always fails.
++configChainVars().catch(() => {})
