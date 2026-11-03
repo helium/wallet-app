@@ -25,13 +25,14 @@ const modalPresentation: NativeStackNavigationOptions = {
 const BrowserStackScreen = () => {
   const { dAppTutorialShown } = useAppStorage()
   const { cluster } = useSolana()
+  const showTutorial = !dAppTutorialShown[cluster]
 
   return (
     <BrowserStack.Navigator
       screenOptions={cardPresentation}
-      initialRouteName="DAppTutorial"
+      initialRouteName={showTutorial ? 'DAppTutorial' : 'BrowserScreen'}
     >
-      {!dAppTutorialShown[cluster] && (
+      {showTutorial && (
         <BrowserStack.Screen name="DAppTutorial" component={DAppTutorial} />
       )}
       <BrowserStack.Screen name="BrowserScreen" component={BrowserScreen} />

@@ -10,7 +10,13 @@ import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
 import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { CSAccount } from '@storage/cloudStorage'
-import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react'
 import { Platform, View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -37,7 +43,11 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
-import { collapsedDrawerSnap } from './logic/drawerSnap'
+import {
+  collapsedDrawerSnap,
+  drawerFadeOpacity,
+  firstTwoTokenHeights,
+} from './logic/drawerSnap'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { withTransactionDetail } from './TransactionDetail'
 import WarningBanner, { BannerType } from './WarningBanner'
@@ -65,8 +75,15 @@ const AccountsScreen = () => {
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const [tabBarInset, setTabBarInset] = useLayoutHeight(0)
-  const [firstRowHeight, setFirstRowHeight] = useLayoutHeight(0)
-  const [secondRowHeight, setSecondRowHeight] = useLayoutHeight(0)
+  const [cellHeights, setCellHeights] = useState<(number | undefined)[]>([])
+  const setCellHeight = useCallback((index: number, height: number) => {
+    setCellHeights((prev) => {
+      if (prev[index] === height) return prev
+      const next = [...prev]
+      next[index] = height
+      return next
+    })
+  }, [])
   const { openedNotification } = useNotificationStorage()
   const { balanceHistory } = useBalance()
   const { locked, currency } = useAppStorage()
@@ -76,6 +93,10 @@ const AccountsScreen = () => {
   const { top } = useSafeAreaInsets()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
+  const drawerIndex = useSharedValue<number>(0)
+  const drawerFadeStyle = useAnimatedStyle(() => ({
+    opacity: drawerFadeOpacity(drawerIndex.value),
+  }))
   const [topHeaderHeight, setTopHeaderHeight] = useLayoutHeight()
   const { triggerImpact } = useHaptic()
   const showBanner = useAppStore((state) => state.showBanner)
@@ -91,10 +112,7 @@ const AccountsScreen = () => {
     ? [
         // Until the rows lay out, the skeleton rows' height stands in.
         collapsedDrawerSnap({
-          rowHeights: [
-            firstRowHeight || ITEM_HEIGHT,
-            secondRowHeight || ITEM_HEIGHT,
-          ],
+          rowHeights: firstTwoTokenHeights(cellHeights, ITEM_HEIGHT),
           tabBarInset,
         }),
         pageHeight -
@@ -287,12 +305,6 @@ const AccountsScreen = () => {
         )}
         <StatusBanner />
       </View>
-      <TabBarInset
-        edges={['bottom']}
-        pointerEvents="none"
-        className="absolute inset-x-0 bottom-0"
-        onLayout={setTabBarInset}
-      />
       <BottomSheet
         enableDynamicSizing={false}
         ref={bottomSheetRef}
@@ -301,11 +313,25 @@ const AccountsScreen = () => {
         handleComponent={DrawerHandle}
         detached
         animatedPosition={listAnimatedPos}
+        animatedIndex={drawerIndex}
       >
-        <AccountTokenList
-          onFirstRowsLayout={[setFirstRowHeight, setSecondRowHeight]}
-        />
+        <AccountTokenList onRowLayout={setCellHeight} />
       </BottomSheet>
+      {/* The rows behind the floating tab bar fade out, in place of the native
+          edge effect the drawer list hides. The fade sits outside the sheet,
+          so it stays over the bar while the sheet moves, and fades out as the
+          drawer opens. */}
+      <Animated.View
+        pointerEvents="none"
+        className="absolute inset-x-0 bottom-0"
+        style={drawerFadeStyle}
+      >
+        <TabBarInset
+          edges={['bottom']}
+          onLayout={setTabBarInset}
+          className="bg-linear-to-t from-secondary via-secondary/80 to-transparent"
+        />
+      </Animated.View>
     </View>
   )
 }

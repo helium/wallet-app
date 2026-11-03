@@ -213,4 +213,51 @@ describe('screens under the floating tab bar', () => {
       /<TabSafeAreaView edges=\{\['bottom'\]\} \/>\s*<\/ScrollView>/,
     )
   })
+
+  // The map draws under the bar, so only the top edge insets it. A bottom
+  // spacer under the map controls lifts them above the bar and measures the
+  // bar inset, which lifts the details sheet and recentres the camera.
+  it('lets the hotspot map draw under the bar and the Dynamic Island', () => {
+    const source = codeOf('features/collectables/HotspotMapScreen.tsx')
+    expect(source).not.toMatch(/'top',\s*'bottom'/)
+    expect(source).not.toMatch(/<SafeArea\b/)
+    expect(source).toMatch(
+      /<View pointerEvents="box-none" className="absolute top-0 w-full">\s*<TabSafeAreaView edges=\{\['top'\]\} \/>/,
+    )
+    expect(source).toMatch(
+      /<View\s+pointerEvents="box-none"\s+className="flex-row items-center pl-3 pt-6"/,
+    )
+    expect(source).toMatch(
+      /<TabSafeAreaView\s+edges=\{\['bottom'\]\}\s+pointerEvents="none"\s+onLayout=\{\(e\) =>\s*setTabBarInset\(e\.nativeEvent\.layout\.height\)\s*\}\s*\/>/,
+    )
+    // The bottom controls overlay covers the map's lower edge. Without
+    // box-none on the wrapper and the row, and none on the spacer, it eats
+    // the map's pans and taps.
+    expect(source).toMatch(
+      /<View pointerEvents="box-none" className="absolute bottom-0 w-full">/,
+    )
+    expect(source).toMatch(
+      /<View\s+pointerEvents="box-none"\s+className="mb-\[10px\] w-full flex-row items-center justify-between px-\[21px\]"\s*>/,
+    )
+    expect(source).toMatch(
+      /<BottomSheetModal[^>]*\bbottomInset=\{tabBarInset\}/,
+    )
+    expect(source).toMatch(/tabBarInset \/ 2/)
+  })
+
+  // The fade over the drawer rows reads the sheet's index. Without the index
+  // the fade sits at full opacity over the expanded drawer's rows. It sits
+  // after the sheet, so it stays over the bar while the sheet moves.
+  it('drives the drawer fade from the sheet index, outside the sheet', () => {
+    const source = codeOf('features/account/AccountsScreen.tsx')
+    expect(source).toMatch(/<BottomSheet\b[^>]*\banimatedIndex=\{drawerIndex\}/)
+    expect(source).toMatch(/opacity: drawerFadeOpacity\(drawerIndex\.value\)/)
+    expect(source).toMatch(
+      /<Animated\.View\s+pointerEvents="none"[^>]*style=\{drawerFadeStyle\}/,
+    )
+    expect(source.indexOf('</BottomSheet>')).toBeGreaterThan(-1)
+    expect(source.indexOf('</BottomSheet>')).toBeLessThan(
+      source.indexOf('style={drawerFadeStyle}'),
+    )
+  })
 })

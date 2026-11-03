@@ -383,8 +383,8 @@ export const ProposalScreen = () => {
                     })
                   }
                 >
-                  <View className="mt-4 grow flex-row items-center justify-between rounded-2xl border border-border bg-card px-4 py-[15px]">
-                    <Text className="text-warning-500">
+                  <View className="mt-4 grow flex-row items-center justify-between gap-4 rounded-2xl border border-border bg-card px-4 py-[15px]">
+                    <Text className="flex-1 text-warning-500">
                       {`${t('gov.votingPower.noPower')}, ${t(
                         'gov.votingPower.increase',
                       )}`}
