@@ -46,11 +46,9 @@ import {
   VoteChoiceWithMeta,
 } from './governanceTypes'
 
-const SafeArea = withUniwind(TabSafeAreaView)
 const BrowseProxiesIcon = withUniwind(Users)
 const ChevronIcon = withUniwind(ChevronRight)
 
-const safeEdges: Edge[] = ['bottom']
 const backEdges: Edge[] = ['top']
 
 type Route = RouteProp<GovernanceStackParamList, 'ProposalScreen'>
@@ -260,8 +258,8 @@ export const ProposalScreen = () => {
         title="Proposal Overview"
         edges={backEdges}
       >
-        <SafeArea edges={safeEdges} className="mt-6 flex-1 bg-transparent">
-          <ScrollView contentInsetAdjustmentBehavior="automatic">
+        <View className="mt-6 flex-1">
+          <ScrollView>
             <View className="px-4">
               <View className="grow justify-center rounded-2xl border border-border bg-card px-4 py-[15px]">
                 <View className="flex-row">
@@ -469,8 +467,9 @@ export const ProposalScreen = () => {
                 </View>
               )}
             </View>
+            <TabSafeAreaView edges={['bottom']} />
           </ScrollView>
-        </SafeArea>
+        </View>
       </BackScreen>
     </Animated.View>
   )

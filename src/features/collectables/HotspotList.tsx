@@ -273,7 +273,7 @@ const HotspotList = () => {
               hasMore={hotspots.length < (totalHotspots || 0)}
             />
           </View>
-          <View className="mb-6 mt-4 grow flex-row items-center gap-2">
+          <View className="mt-4 grow flex-row items-center gap-2">
             <Button
               variant="cta"
               size="dashboard"
