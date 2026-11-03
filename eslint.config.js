@@ -101,6 +101,12 @@ module.exports = [
           message:
             'Do not rename Portal: the lint check for a Portal with no hostName matches its name.',
         },
+        {
+          selector:
+            "ImportDeclaration[source.value='@gorhom/portal'] > ImportNamespaceSpecifier",
+          message:
+            'Import Portal by name: the lint check for a Portal with no hostName cannot see <G.Portal>.',
+        },
       ],
       'no-restricted-properties': [
         'error',
