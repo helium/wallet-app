@@ -109,6 +109,11 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
+import {
+  ActivityRow,
+  ParsedEventsItem,
+  toActivityRows,
+} from '../features/activity/logic/parsedEvents'
 import { attachSigners, signersOf } from '../features/activity/logic/signers'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -1507,7 +1512,9 @@ export const getAllTransactions = async (
   const baseUrl =
     cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
   const url = new URL(baseUrl)
-  url.pathname = '/v0/transactions'
+  // Devnet has no Parsed Events, so it stays on Enhanced Transactions.
+  url.pathname =
+    cluster === 'devnet' ? '/v0/transactions' : '/v1/parsed-events/transactions'
   const parseTransactionsUrl = url.toString()
   if (!baseUrl) {
     throw new Error(`Missing RPC URL configuration for cluster: ${cluster}`)
@@ -1550,8 +1557,14 @@ export const getAllTransactions = async (
       transactions: sigList,
     })
 
-    const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
-      attachSigners(data as EnrichedTransaction[], txList).map(async (tx) => {
+    const rows: ActivityRow[] =
+      cluster === 'devnet'
+        ? attachSigners(data as EnrichedTransaction[], txList)
+        : toActivityRows(data as ParsedEventsItem[], txList)
+
+    const allTxnsWithMetadata: ActivityRow[] = await Promise.all(
+      rows.map(async (tx) => {
+        if (!('tokenTransfers' in tx)) return tx
         try {
           const firstTokenTransfer = tx.tokenTransfers[0]
           if (firstTokenTransfer && firstTokenTransfer.mint) {

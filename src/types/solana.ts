@@ -148,7 +148,7 @@ export type EnrichedTransaction = {
   signers: string[]
   description: string
   type: string
-  source: string
+  source?: string
   fee: number
   signature: string
   slot: number
@@ -156,13 +156,13 @@ export type EnrichedTransaction = {
   transactionError: any
   nativeTransfers: NativeTransfer[]
   tokenTransfers: TokenTransfer[]
-  accountData: {
+  accountData?: {
     account: string
     nativeBalanceChange: number
     tokenBalanceChanges: TokenBalanceChange[]
   }
   events: {
-    compressed: {
+    compressed?: {
       assetId: string
       innerInstructionIndex: number
       instructionIndex: number
@@ -171,7 +171,7 @@ export type EnrichedTransaction = {
       type: string
       metadata: any
     }[]
-    nft: {
+    nft?: {
       description: string
       type: string
       source: string
@@ -188,7 +188,7 @@ export type EnrichedTransaction = {
         tokenStandard: string
       }[]
     }
-    swap: {
+    swap?: {
       nativeInput: NativeTokenPayload
       nativeOutput: NativeTokenPayload
       tokenInputs: TokenPayload[]

@@ -445,6 +445,9 @@ export default {
       INITIALIZE_ACCOUNT: 'Initialize Account',
       TOKEN_MINT: 'Token Minted!',
       COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
+      COMPRESSED_NFT_TRANSFER: 'Compressed NFT Transfer',
+      COMPRESSED_NFT_UPDATE_METADATA: 'Compressed NFT Updated',
+      HOTSPOT_ONBOARDED: 'Hotspot Onboarded',
     },
   },
   changeRewardsRecipientScreen: {
