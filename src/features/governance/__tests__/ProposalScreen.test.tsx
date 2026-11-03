@@ -154,6 +154,33 @@ describe('ProposalScreen', () => {
   })
 })
 
+describe('ProposalScreen no-power row', () => {
+  it('wraps the warning beside the chevron with a gap', () => {
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(<ProposalScreen />)
+    })
+    if (!renderer) throw new Error('render failed')
+    const [pressable] = renderer.root.findAllByType('PressableScale' as never)
+    const [row] = pressable.findAllByType('View' as never)
+    const classesOf = (node: TestRenderer.ReactTestInstance) =>
+      String(node.props.className).split(' ')
+
+    expect(classesOf(row)).toEqual(
+      expect.arrayContaining(['flex-row', 'items-center', 'gap-4']),
+    )
+    const [warning] = row.findAllByType('Text' as never)
+    // Without flex-1 the text takes the full row width and pushes the
+    // chevron off the right edge.
+    expect(classesOf(warning)).toContain('flex-1')
+
+    const chevron = row.findByType('ChevronRight' as never)
+    expect(chevron.props.size).toBe(20)
+    expect(chevron.props.colorClassName).toBe('accent-foreground')
+    expect(row.children[row.children.length - 1]).toBe(chevron)
+  })
+})
+
 describe('ProposalScreen cards', () => {
   it('draws every card with the card radius and panel padding', () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
