@@ -1,4 +1,7 @@
-const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid) {
+// The app injects this script into the top frame only, so only it gets the
+// token that marks the top page's requests. A cross-origin iframe cannot read
+// it; a same-origin iframe can, but it can already script the top page.
+const stringF = `async function injectWalletStandard(solanaAddress, pubKey, isAndroid, token) {
 if (window.heliumWalletInjected) return;
 
 var isConnecting = false
@@ -6,7 +9,8 @@ var isConnecting = false
 // Ids are random: an iframe can make the app decline any id it sends, so a
 // guessable id would let it end the page's pending request.
 const randomRequestId = () => {
-    const words = crypto.getRandomValues(new Uint32Array(2))
+    // window.crypto: a top-level let crypto in a page script hides the global name
+    const words = window.crypto.getRandomValues(new Uint32Array(2))
     // 53 bits, the most JSON carries exactly; never 0, which the app's not-ready reply skips
     return (words[0] >>> 11) * 2 ** 32 + words[1] || 1
 }
@@ -273,7 +277,7 @@ class HeliumWallet {
     #connect = async ({ silent } = {}) => {
         isConnecting = true
         const id = randomRequestId()
-        window.ReactNativeWebView.postMessage(JSON.stringify({ id, type: 'connect' }))
+        window.ReactNativeWebView.postMessage(JSON.stringify({ id, token, type: 'connect' }))
 
         return new Promise((resolve, reject) => {
             const listener = (message) => {
@@ -307,7 +311,7 @@ class HeliumWallet {
         const id = randomRequestId()
 
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ id, type: 'signAndSendTransaction', inputs }),
+            JSON.stringify({ id, token, type: 'signAndSendTransaction', inputs }),
         )
 
         return new Promise((resolve, reject) => {
@@ -343,7 +347,7 @@ class HeliumWallet {
         const id = randomRequestId()
 
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ id, type: 'signTransaction', inputs }),
+            JSON.stringify({ id, token, type: 'signTransaction', inputs }),
         )
 
         return new Promise((resolve, reject) => {
@@ -378,7 +382,7 @@ class HeliumWallet {
         if (!this.#account) throw new Error('not connected')
         const id = randomRequestId()
         window.ReactNativeWebView.postMessage(
-            JSON.stringify({ id, type: 'signMessage', inputs }),
+            JSON.stringify({ id, token, type: 'signMessage', inputs }),
         )
 
         return new Promise((resolve, reject) => {

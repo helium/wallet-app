@@ -14,6 +14,8 @@ import { estimateTxnFeeLamports, TXN_FEE_IN_LAMPORTS } from '@utils/solanaUtils'
 import { WalletSignOpts } from './walletSignBottomSheetTypes'
 
 type IWalletSignBottomSheetCompactProps = WalletSignOpts & {
+  // The sheet's open animation has ended
+  opened: boolean
   onSimulate: () => void
   onCancel: () => void
   onAccept: () => void
@@ -25,6 +27,7 @@ export const WalletSignBottomSheetCompact = ({
   warning,
   serializedTxs,
   renderer,
+  opened,
   onSimulate,
   onCancel,
   onAccept,
@@ -113,6 +116,7 @@ export const WalletSignBottomSheetCompact = ({
           size="dashboard"
           className="flex-1"
           onPress={onAccept}
+          disabled={!opened}
           testID="WalletSign.Approve"
         >
           {t('browserScreen.approve')}

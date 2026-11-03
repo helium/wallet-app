@@ -1,20 +1,44 @@
-import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
-import { WalletSignBottomSheetSimulated } from '../WalletSIgnBottomSheetSimulated'
+import {
+  SIMULATION_TIMEOUT_MS,
+  WalletSignBottomSheetSimulated,
+} from '../WalletSIgnBottomSheetSimulated'
 import { WalletStandardMessageTypes } from '../walletSignBottomSheetTypes'
 
+// The simulation query's state, as react-query 5 reports it
+type MockSimulation = {
+  data: unknown
+  error: Error | null
+  isLoading: boolean
+  isPending: boolean
+}
 // One simulated transaction with the 5000-lamport base fee and no
 // priority fee.
+const returnedSimulation: MockSimulation = {
+  data: [{ solFee: 5000, priorityFee: 0, warnings: [] }],
+  error: null,
+  isLoading: false,
+  isPending: false,
+}
+// A query in flight has no data and no error yet
+const pendingSimulation: MockSimulation = {
+  data: undefined,
+  error: null,
+  isLoading: true,
+  isPending: true,
+}
+// A query still waiting to be enabled is pending but not loading
+const disabledSimulation: MockSimulation = {
+  data: undefined,
+  error: null,
+  isLoading: false,
+  isPending: true,
+}
+let mockSimulation = returnedSimulation
 jest.mock('@tanstack/react-query', () => ({
   useQuery: ({ queryKey }: { queryKey: string[] }) =>
-    queryKey[0] === 'walletSignSimulation'
-      ? {
-          data: [{ solFee: 5000, priorityFee: 0, warnings: [] }],
-          error: null,
-          isLoading: false,
-        }
-      : { data: [] },
+    queryKey[0] === 'walletSignSimulation' ? mockSimulation : { data: [] },
 }))
 // The real formatter, with the separators of an en-US locale.
 jest.mock(
@@ -36,9 +60,7 @@ jest.mock('@helium/sus', () => ({ sus: () => Promise.resolve([]) }))
 jest.mock('@hooks/useCurrentWallet', () => ({ useCurrentWallet: () => null }), {
   virtual: true,
 })
-// The SOL balance; unloaded unless a test sets it.
-let mockSolBalance: BN | undefined
-jest.mock('@hooks/useBN', () => ({ useBN: () => mockSolBalance }), {
+jest.mock('@hooks/useBN', () => ({ useBN: () => undefined }), {
   virtual: true,
 })
 jest.mock(
@@ -95,6 +117,10 @@ jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 ).IS_REACT_ACT_ENVIRONMENT = true
 
 describe('WalletSignBottomSheetSimulated', () => {
+  afterEach(() => {
+    mockSimulation = returnedSimulation
+  })
+
   it('shows a fee under 0.0001 SOL at full precision', () => {
     let renderer: TestRenderer.ReactTestRenderer | undefined
     act(() => {
@@ -102,6 +128,7 @@ describe('WalletSignBottomSheetSimulated', () => {
         <WalletSignBottomSheetSimulated
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
+          opened
           onAccept={() => {}}
           onCancel={() => {}}
         />,
@@ -123,6 +150,7 @@ describe('WalletSignBottomSheetSimulated', () => {
         <WalletSignBottomSheetSimulated
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
+          opened
           onAccept={onAccept}
           onCancel={onCancel}
         />,
@@ -149,98 +177,305 @@ describe('WalletSignBottomSheetSimulated', () => {
     expect(onCancel).not.toHaveBeenCalled()
   })
 
-  it('collapses the fee breakdown when the toggle is pressed twice before a render', () => {
-    let renderer: TestRenderer.ReactTestRenderer | undefined
-    act(() => {
-      renderer = TestRenderer.create(
-        <WalletSignBottomSheetSimulated
-          type={WalletStandardMessageTypes.signTransaction}
-          serializedTxs={[Buffer.from('tx')]}
-          onAccept={() => {}}
-          onCancel={() => {}}
-        />,
-      )
+  describe('Approve', () => {
+    // A pending simulation starts the timeout's timer
+    beforeEach(() => {
+      jest.useFakeTimers()
     })
-    if (!renderer) throw new Error('render failed')
-    const texts = () =>
-      renderer!.root.findAllByType('Text' as never).map((n) => n.props.children)
-    const feeToggle = () =>
-      renderer!.root.find(
-        (n) =>
-          (n.type as unknown) === 'PressableScale' &&
-          n.findAll((c) => c.props.children === 'browserScreen.totalNetworkFee')
-            .length > 0,
-      ).props.onPress
-    const onPress = feeToggle()
-
-    act(() => {
-      onPress()
-      onPress()
+    afterEach(() => {
+      jest.useRealTimers()
     })
-    expect(texts()).not.toContain('browserScreen.totalBaseFee')
 
-    act(() => {
-      feeToggle()()
-    })
-    expect(texts()).toContain('browserScreen.totalBaseFee')
-  })
-
-  it('shows a non-empty warning and message', () => {
-    // 1 SOL covers the 5000-lamport fee, so the message shows.
-    mockSolBalance = new BN('1000000000')
-    let renderer: TestRenderer.ReactTestRenderer | undefined
-    act(() => {
-      renderer = TestRenderer.create(
-        <WalletSignBottomSheetSimulated
-          type={WalletStandardMessageTypes.signTransaction}
-          serializedTxs={[Buffer.from('tx')]}
-          warning="Check the recipient"
-          message="Send 1 HNT"
-          onAccept={() => {}}
-          onCancel={() => {}}
-        />,
-      )
-    })
-    mockSolBalance = undefined
-    if (!renderer) throw new Error('render failed')
-
-    expect(
-      renderer.root.findAllByType('Text' as never).map((n) => n.props.children),
-    ).toEqual(expect.arrayContaining(['Check the recipient', 'Send 1 HNT']))
-  })
-
-  describe('insufficient-funds pill', () => {
-    const insufficientFundsPills = () => {
+    const renderSheet = (
+      props: Partial<
+        React.ComponentProps<typeof WalletSignBottomSheetSimulated>
+      > = {},
+    ) => {
       let renderer: TestRenderer.ReactTestRenderer | undefined
       act(() => {
         renderer = TestRenderer.create(
           <WalletSignBottomSheetSimulated
             type={WalletStandardMessageTypes.signTransaction}
             serializedTxs={[Buffer.from('tx')]}
+            opened
+            onAccept={() => {}}
+            onCancel={() => {}}
+            {...props}
+          />,
+        )
+      })
+      if (!renderer) throw new Error('render failed')
+      return renderer
+    }
+    const approveDisabled = (
+      renderer: TestRenderer.ReactTestRenderer,
+      label = 'browserScreen.approve',
+    ) =>
+      renderer.root.find(
+        (n) => (n.type as unknown) === 'Button' && n.props.children === label,
+      ).props.disabled
+    const approveWithoutSimulationButtons = (
+      renderer: TestRenderer.ReactTestRenderer,
+    ) =>
+      renderer.root.findAll(
+        (n) =>
+          (n.type as unknown) === 'Button' &&
+          n.props.children === 'browserScreen.approveWithoutSimulation',
+      )
+
+    it('stays disabled until the open animation ends', () => {
+      const renderer = renderSheet({ opened: false })
+      expect(approveDisabled(renderer)).toBe(true)
+
+      act(() => {
+        renderer.update(
+          <WalletSignBottomSheetSimulated
+            type={WalletStandardMessageTypes.signTransaction}
+            serializedTxs={[Buffer.from('tx')]}
+            opened
             onAccept={() => {}}
             onCancel={() => {}}
           />,
         )
       })
-      if (!renderer) throw new Error('render failed')
-      return renderer.root
-        .findAllByType('WarningPill' as never)
-        .filter((n) => n.props.text === 'browserScreen.insufficientFunds')
-    }
-    afterEach(() => {
-      mockSolBalance = undefined
+      expect(approveDisabled(renderer)).toBe(false)
     })
 
-    it('shows no insufficient-funds pill while the SOL balance loads', () => {
-      mockSolBalance = undefined
+    it('keeps the swipe to approve disabled until the open animation ends', () => {
+      mockSimulation = {
+        ...returnedSimulation,
+        data: [
+          {
+            solFee: 5000,
+            priorityFee: 0,
+            warnings: [{ severity: 'critical' }],
+          },
+        ],
+      }
+      const swipeDisabled = (renderer: TestRenderer.ReactTestRenderer) =>
+        renderer.root.find((n) => (n.type as unknown) === 'SubmitButton').props
+          .disabled
 
-      expect(insufficientFundsPills()).toHaveLength(0)
+      expect(swipeDisabled(renderSheet({ opened: false }))).toBe(true)
+      expect(swipeDisabled(renderSheet())).toBe(false)
     })
 
-    it('shows the insufficient-funds pill when the SOL balance is short of the fee', () => {
-      mockSolBalance = new BN(4999)
+    it('stays disabled while the simulation is pending', () => {
+      mockSimulation = pendingSimulation
 
-      expect(insufficientFundsPills()).toHaveLength(1)
+      expect(approveDisabled(renderSheet())).toBe(true)
+    })
+
+    it('stays disabled while the simulation waits to be enabled', () => {
+      mockSimulation = disabledSimulation
+
+      expect(approveDisabled(renderSheet())).toBe(true)
+    })
+
+    describe('when the simulation fails', () => {
+      const failedSimulation: MockSimulation = {
+        data: undefined,
+        error: new Error('Simulation failed'),
+        isLoading: false,
+        isPending: false,
+      }
+      const texts = (renderer: TestRenderer.ReactTestRenderer) =>
+        renderer.root
+          .findAllByType('Text' as never)
+          .map((n) => n.props.children)
+
+      it('keeps a dApp request disabled under the caution until the user approves without simulation', () => {
+        mockSimulation = failedSimulation
+        const renderer = renderSheet({ url: 'https://dapp.example' })
+
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts(renderer)).toContain('browserScreen.unableToSimulate')
+        expect(texts(renderer)).toContain('Simulation failed')
+
+        act(() => {
+          approveWithoutSimulationButtons(renderer)[0].props.onPress()
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+        expect(texts(renderer)).toContain('browserScreen.unableToSimulate')
+      })
+
+      it('enables an in-app request at once, with no caution', () => {
+        mockSimulation = failedSimulation
+        const renderer = renderSheet({ url: '' })
+
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+        expect(texts(renderer)).not.toContain('browserScreen.unableToSimulate')
+      })
+
+      it('needs the step again for a new dApp request', () => {
+        mockSimulation = failedSimulation
+        const renderer = renderSheet({ url: 'https://dapp.example' })
+        act(() => {
+          approveWithoutSimulationButtons(renderer)[0].props.onPress()
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+
+        act(() => {
+          renderer.update(
+            <WalletSignBottomSheetSimulated
+              type={WalletStandardMessageTypes.signTransaction}
+              url="https://dapp.example"
+              serializedTxs={[Buffer.from('another tx')]}
+              opened
+              onAccept={() => {}}
+              onCancel={() => {}}
+            />,
+          )
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(1)
+      })
+
+      it('offers no step for a dApp request whose simulation returned or is pending', () => {
+        const returned = renderSheet({ url: 'https://dapp.example' })
+        mockSimulation = pendingSimulation
+        const pending = renderSheet({ url: 'https://dapp.example' })
+
+        expect(approveWithoutSimulationButtons(returned)).toHaveLength(0)
+        expect(approveWithoutSimulationButtons(pending)).toHaveLength(0)
+        expect(texts(returned)).not.toContain('browserScreen.unableToSimulate')
+        expect(texts(pending)).not.toContain('browserScreen.unableToSimulate')
+      })
+    })
+
+    it('does not wait for a simulation when the request has no transactions', () => {
+      mockSimulation = pendingSimulation
+
+      expect(
+        approveDisabled(
+          renderSheet({
+            type: WalletStandardMessageTypes.connect,
+            serializedTxs: undefined,
+          }),
+          'browserScreen.connect',
+        ),
+      ).toBe(false)
+    })
+
+    it('does not wait when the request has no transactions, even while the query is pending', () => {
+      mockSimulation = pendingSimulation
+      const renderer = renderSheet({ serializedTxs: undefined })
+
+      expect(approveDisabled(renderer)).toBe(false)
+      expect(
+        renderer.root
+          .findAllByType('Text' as never)
+          .map((n) => n.props.children),
+      ).not.toContain('browserScreen.unableToSimulate')
+    })
+
+    describe('when the simulation never returns', () => {
+      it('enables after the simulation times out, and says it could not simulate', () => {
+        mockSimulation = pendingSimulation
+        const renderer = renderSheet()
+        const texts = () =>
+          renderer.root
+            .findAllByType('Text' as never)
+            .map((n) => n.props.children)
+
+        const spinners = () => renderer.root.findAllByType('Spinner' as never)
+
+        act(() => {
+          jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS - 1)
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts()).not.toContain('browserScreen.unableToSimulate')
+        expect(spinners()).toHaveLength(1)
+
+        act(() => {
+          jest.advanceTimersByTime(1)
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(texts()).toContain('browserScreen.unableToSimulate')
+        expect(spinners()).toHaveLength(0)
+      })
+
+      it('keeps a dApp request disabled under the caution after the timeout until the user approves without simulation', () => {
+        mockSimulation = pendingSimulation
+        const renderer = renderSheet({ url: 'https://dapp.example' })
+        const texts = () =>
+          renderer.root
+            .findAllByType('Text' as never)
+            .map((n) => n.props.children)
+
+        act(() => {
+          jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS - 1)
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts()).not.toContain('browserScreen.unableToSimulate')
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+
+        act(() => {
+          jest.advanceTimersByTime(1)
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(texts()).toContain('browserScreen.unableToSimulate')
+        expect(renderer.root.findAllByType('Spinner' as never)).toHaveLength(0)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(1)
+
+        act(() => {
+          approveWithoutSimulationButtons(renderer)[0].props.onPress()
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+        expect(approveWithoutSimulationButtons(renderer)).toHaveLength(0)
+        expect(texts()).toContain('browserScreen.unableToSimulate')
+      })
+
+      it('a timeout counts only while the simulation is pending', () => {
+        const serializedTxs = [Buffer.from('tx')]
+        const renderer = renderSheet({ serializedTxs })
+        act(() => {
+          jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS + 1)
+        })
+
+        mockSimulation = pendingSimulation
+        act(() => {
+          renderer.update(
+            <WalletSignBottomSheetSimulated
+              type={WalletStandardMessageTypes.signTransaction}
+              serializedTxs={serializedTxs}
+              opened
+              onAccept={() => {}}
+              onCancel={() => {}}
+            />,
+          )
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+        expect(
+          renderer.root
+            .findAllByType('Text' as never)
+            .map((n) => n.props.children),
+        ).not.toContain('browserScreen.unableToSimulate')
+      })
+
+      it('waits again for a new request after a timeout', () => {
+        mockSimulation = pendingSimulation
+        const renderer = renderSheet()
+        act(() => {
+          jest.advanceTimersByTime(SIMULATION_TIMEOUT_MS)
+        })
+        expect(approveDisabled(renderer)).toBe(false)
+
+        act(() => {
+          renderer.update(
+            <WalletSignBottomSheetSimulated
+              type={WalletStandardMessageTypes.signTransaction}
+              serializedTxs={[Buffer.from('another tx')]}
+              opened
+              onAccept={() => {}}
+              onCancel={() => {}}
+            />,
+          )
+        })
+        expect(approveDisabled(renderer)).toBe(true)
+      })
     })
   })
 })

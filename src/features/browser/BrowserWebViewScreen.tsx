@@ -8,6 +8,7 @@ import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import bs58 from 'bs58'
+import { getRandomValues } from 'expo-crypto'
 import {
   Bookmark,
   ChevronLeft,
@@ -44,7 +45,7 @@ import {
   sendInSequence,
   UNSUPPORTED_VERSION_ERROR,
 } from './dappTransactions'
-import { runOneRequest } from './dappRequestGate'
+import { RequestSender, RequestSlots, runOneRequest } from './dappRequestGate'
 import { DappOrigin, senderOrigin } from './dappMessageOrigin'
 import injectWalletStandard from './walletStandard'
 
@@ -149,8 +150,18 @@ const BrowserWebViewScreen = () => {
   const { anchorProvider, signMsg } = useSolana()
   const webview = useRef<WebView | null>(null)
   const walletSignBottomSheetRef = useRef<WalletSignBottomSheetRef | null>(null)
-  // True while a dApp request is open; another one is declined meanwhile
-  const pendingRequestRef = useRef<boolean>(false)
+  // Which senders have a dApp request open; see runOneRequest
+  const requestSlotsRef = useRef<RequestSlots>({
+    topFrame: false,
+    otherFrame: false,
+  })
+  // Only the top frame's injected script gets this token. A cross-origin
+  // iframe cannot read it; a same-origin iframe can, but it can already
+  // script the top page.
+  const [topFrameToken] = useState(() =>
+    Buffer.from(getRandomValues(new Uint8Array(16))).toString('hex'),
+  )
+  const topOriginRef = useRef<DappOrigin | undefined>(senderOrigin(uri))
 
   const [currentUrl, setCurrentUrl] = useState(uri)
   const accountAddress = currentAccount?.solanaAddress
@@ -166,8 +177,21 @@ const BrowserWebViewScreen = () => {
     webview.current?.postMessage(JSON.stringify(message))
   }
 
-  const handleConnect = async (id: number, origin: DappOrigin) => {
+  // An iframe request that reaches its sheet after a top-page request began
+  // would decline the top page's sheet, so it gives way instead
+  const isBehindTopFrame = (sender: RequestSender) =>
+    sender === 'otherFrame' && requestSlotsRef.current.topFrame
+
+  const handleConnect = async (
+    id: number,
+    origin: DappOrigin,
+    sender: RequestSender,
+  ) => {
     Logger.breadcrumb('connect')
+    if (isBehindTopFrame(sender)) {
+      postMessage({ id, type: 'connectDeclined' })
+      return
+    }
     const decision = await walletSignBottomSheetRef.current?.show({
       type: WalletStandardMessageTypes.connect,
       url: origin,
@@ -185,11 +209,14 @@ const BrowserWebViewScreen = () => {
   const handleSignAndSendTransaction = async (
     id: number,
     origin: DappOrigin,
+    sender: RequestSender,
     inputs: SolanaSignAndSendTransactionInput[],
   ) => {
     Logger.breadcrumb('signAndSendTransaction')
 
-    try {
+    // A promise catch, not try/catch: the React Compiler skips a component
+    // with a throw or a conditional inside a try block
+    await (async () => {
       const { transactions } = await deserializeTransactionInputs(inputs)
 
       if (hasUnsupportedTransaction(transactions)) {
@@ -222,6 +249,11 @@ const BrowserWebViewScreen = () => {
           Object.keys(transaction).map((k) => (transaction as any)[k]),
         ),
       )
+
+      if (isBehindTopFrame(sender)) {
+        postMessage({ id, type: 'signatureDeclined' })
+        return
+      }
 
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signAndSendTransaction,
@@ -258,23 +290,24 @@ const BrowserWebViewScreen = () => {
           signature: bs58.decode(signature),
         })),
       })
-    } catch (e) {
+    })().catch((e) => {
       postMessage({
         id,
         type: 'signatureDeclined',
         error: (e as Error).message,
       })
-    }
+    })
   }
 
   const handleSignTransaction = async (
     id: number,
     origin: DappOrigin,
+    sender: RequestSender,
     inputs: SolanaSignAndSendTransactionInput[],
   ) => {
     Logger.breadcrumb('signTransaction')
 
-    try {
+    await (async () => {
       const { transactions } = await deserializeTransactionInputs(inputs)
 
       if (hasUnsupportedTransaction(transactions)) {
@@ -308,6 +341,11 @@ const BrowserWebViewScreen = () => {
         ),
       )
 
+      if (isBehindTopFrame(sender)) {
+        postMessage({ id, type: 'signatureDeclined' })
+        return
+      }
+
       const decision = await walletSignBottomSheetRef.current?.show({
         type: WalletStandardMessageTypes.signTransaction,
         url: origin,
@@ -334,18 +372,19 @@ const BrowserWebViewScreen = () => {
       }))
 
       postMessage({ id, type: 'transactionSigned', data: outputs })
-    } catch (e) {
+    })().catch((e) => {
       postMessage({
         id,
         type: 'signatureDeclined',
         error: (e as Error).message,
       })
-    }
+    })
   }
 
   const handleSignMessage = async (
     id: number,
     origin: DappOrigin,
+    sender: RequestSender,
     inputs: SolanaSignMessageInput[],
   ) => {
     Logger.breadcrumb('signMessage')
@@ -358,6 +397,11 @@ const BrowserWebViewScreen = () => {
         type: 'signatureDeclined',
         error: 'Refusing to sign a transaction as a message',
       })
+      return
+    }
+
+    if (isBehindTopFrame(sender)) {
+      postMessage({ id, type: 'signatureDeclined' })
       return
     }
 
@@ -395,7 +439,12 @@ const BrowserWebViewScreen = () => {
       return
     }
 
-    const { id, type, inputs } = JSON.parse(msg.nativeEvent.data)
+    const { id, type, inputs, token } = JSON.parse(msg.nativeEvent.data)
+    // A token a former top page kept does not make its iframe the top frame
+    const sender: RequestSender =
+      token === topFrameToken && origin === topOriginRef.current
+        ? 'topFrame'
+        : 'otherFrame'
 
     if (
       !currentAccount?.address ||
@@ -423,23 +472,23 @@ const BrowserWebViewScreen = () => {
         })
       switch (type) {
         case WalletStandardMessageTypes.connect:
-          await runOneRequest(pendingRequestRef, decline, () =>
-            handleConnect(id, origin),
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
+            handleConnect(id, origin, sender),
           )
           break
         case WalletStandardMessageTypes.signAndSendTransaction:
-          await runOneRequest(pendingRequestRef, decline, () =>
-            handleSignAndSendTransaction(id, origin, inputs),
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
+            handleSignAndSendTransaction(id, origin, sender, inputs),
           )
           break
         case WalletStandardMessageTypes.signTransaction:
-          await runOneRequest(pendingRequestRef, decline, () =>
-            handleSignTransaction(id, origin, inputs),
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
+            handleSignTransaction(id, origin, sender, inputs),
           )
           break
         case WalletStandardMessageTypes.signMessage:
-          await runOneRequest(pendingRequestRef, decline, () =>
-            handleSignMessage(id, origin, inputs),
+          await runOneRequest(requestSlotsRef.current, sender, decline, () =>
+            handleSignMessage(id, origin, sender, inputs),
           )
           break
         default:
@@ -466,7 +515,7 @@ const BrowserWebViewScreen = () => {
     // noinspection JSIgnoredPromiseFromCall
     injectWalletStandard("${accountAddress}", [${
       accountAddress && bs58.decode(accountAddress)
-    }], ${isAndroid});
+    }], ${isAndroid}, "${topFrameToken}");
     true;
     `
   }
@@ -508,6 +557,7 @@ const BrowserWebViewScreen = () => {
   }
 
   const onNavigationChange = (event: WebViewNavigation) => {
+    topOriginRef.current = senderOrigin(event.url)
     const baseUrl = event.url.replace('https://', '').split('/')
     setCurrentUrl(baseUrl[0])
   }

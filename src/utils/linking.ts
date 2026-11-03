@@ -9,10 +9,12 @@ import { BurnRouteParam, PaymentRouteParam } from '../features/home/homeTypes'
 import { RootStackParamList } from '../navigation/rootTypes'
 import { useAccountStorage } from '../storage/AccountStorageProvider'
 import { solAddressIsValid } from './accountUtils'
+import { HELIUM_WALLET_LINK_SCHEME } from './walletLinkScheme'
+
+export { HELIUM_WALLET_LINK_SCHEME }
 
 export const APP_LINK_SCHEME = Linking.createURL('')
 export const PAYMENT_PATH = 'payment'
-export const HELIUM_WALLET_LINK_SCHEME = 'https://wallet.helium.com/'
 
 export type SendDetails = {
   payee: string

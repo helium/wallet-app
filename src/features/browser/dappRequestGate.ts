@@ -1,20 +1,30 @@
-// Runs one dApp request at a time. A request that arrives while another is
-// pending is declined at once, so the pending one keeps its sheet and reply.
+// The top page's requests carry the token of its injected script; requests
+// from any other frame do not
+export type RequestSender = 'topFrame' | 'otherFrame'
+
+export type RequestSlots = Record<RequestSender, boolean>
+
+// Runs one dApp request at a time per slot. A request that arrives while its
+// slot is held is declined at once, so the pending one keeps its sheet and
+// reply. Another frame's request is also declined while the top page's is
+// pending, and a top-page request runs over another frame's: its sheet
+// declines that one.
 export const runOneRequest = async (
-  pending: { current: boolean },
+  slots: RequestSlots,
+  sender: RequestSender,
   decline: () => void,
   run: () => Promise<void>,
 ) => {
-  if (pending.current) {
+  if (slots[sender] || (sender === 'otherFrame' && slots.topFrame)) {
     decline()
     return
   }
   // eslint-disable-next-line no-param-reassign
-  pending.current = true
+  slots[sender] = true
   try {
     await run()
   } finally {
     // eslint-disable-next-line no-param-reassign
-    pending.current = false
+    slots[sender] = false
   }
 }

@@ -42,6 +42,7 @@ const COMPILED_FILES = [
   'src/features/txnDelegation/useSolTxns.ts',
   'src/utils/i18n.tsx',
   'src/solana/WalletSignBottomSheetTransaction.tsx',
+  'src/features/browser/BrowserWebViewScreen.tsx',
 ]
 
 // Event kinds the compiler logs when it leaves a function as written.
