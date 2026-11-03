@@ -397,8 +397,9 @@ const HotspotMapScreen = () => {
             </PressableScale>
           </View>
           <View className="absolute bottom-0 w-full">
-            <View className="mb-[10px] w-full flex-row items-center justify-between">
-              <View className="mx-3">
+            {/* px-[21px] lines the controls up with the floating tab bar edges */}
+            <View className="mb-[10px] w-full flex-row items-center justify-between px-[21px]">
+              <View>
                 <PressableScale
                   className={`flex-row items-center justify-center rounded-full py-1.5 pl-2 pr-3 opacity-80 ${
                     networkType === 'IOT'
@@ -423,7 +424,7 @@ const HotspotMapScreen = () => {
                   </Text>
                 </PressableScale>
               </View>
-              <View className="mx-3 flex-row items-center">
+              <View className="flex-row items-center">
                 <Button
                   variant="ghost"
                   size="icon"
