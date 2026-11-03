@@ -85,7 +85,6 @@ import {
 } from '@solana/spl-token'
 import {
   AccountMeta,
-  AddressLookupTableAccount,
   Cluster,
   ComputeBudgetProgram,
   ConfirmedSignatureInfo,
@@ -110,7 +109,7 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
-import { attachSigners } from '../features/activity/logic/signers'
+import { attachSigners, signersOf } from '../features/activity/logic/signers'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -1533,71 +1532,15 @@ export const getAllTransactions = async (
       }
       return acc
     }, {} as { [key: string]: VersionedTransactionResponse })
-    const cachedLuts: { [key: string]: AddressLookupTableAccount } = {}
-    // eslint-disable-next-line no-restricted-syntax
-    for (const rawTx of Object.values(txs)) {
-      const message = rawTx?.transaction.message
-      if (message) {
-        const { addressTableLookups } = message
-        // eslint-disable-next-line no-restricted-syntax
-        for (const addressTableLookup of addressTableLookups) {
-          if (!cachedLuts[addressTableLookup.accountKey.toBase58()]) {
-            const result = await conn?.getAddressLookupTable(
-              addressTableLookup.accountKey,
-            )
-            if (result.value) {
-              cachedLuts[addressTableLookup.accountKey.toBase58()] =
-                result.value
-            }
-          }
-        }
-      }
-    }
 
     // Annotate the transactions with their signers
-    const txList = await Promise.all(
-      sigs.map(async (tx) => {
-        // Yes, this is extremely gross. It's also the only way to get the signers
-        // on a versioned tx.
-        const rawTx = txs[tx.signature]
-        const message = rawTx?.transaction.message
-        if (message) {
-          const { addressTableLookups } = message
-          const addressLookupTableAccounts: Array<AddressLookupTableAccount> =
-            []
-          // eslint-disable-next-line no-restricted-syntax
-          for (const addressTableLookup of addressTableLookups) {
-            addressLookupTableAccounts.push(
-              cachedLuts[addressTableLookup.accountKey.toBase58()],
-            )
-          }
-          const accountKeys = message.getAccountKeys({
-            addressLookupTableAccounts,
-          })
-          return {
-            ...tx,
-            signers: [
-              ...new Set(
-                message.compiledInstructions
-                  .map((ix) =>
-                    ix.accountKeyIndexes.filter((idx) =>
-                      message.isAccountSigner(idx),
-                    ),
-                  )
-                  .flat(),
-              ),
-            ]
-              .map((idx) => accountKeys.get(idx)?.toBase58())
-              .filter(truthy),
-          }
-        }
-
-        return {
-          ...tx,
-          signers: [],
-        }
-      }),
-    )
+    const txList = sigs.map((tx) => {
+      const message = txs[tx.signature]?.transaction.message
+      return {
+        ...tx,
+        signers: message ? signersOf(message) : [],
+      }
+    })
 
     if (cluster !== 'mainnet-beta' && cluster !== 'devnet') {
       return txList

@@ -1,5 +1,12 @@
+import {
+  AddressLookupTableAccount,
+  Keypair,
+  PublicKey,
+  TransactionInstruction,
+  TransactionMessage,
+} from '@solana/web3.js'
 import { EnrichedTransaction } from '../../../../types/solana'
-import { attachSigners } from '../signers'
+import { attachSigners, signersOf } from '../signers'
 import enhanced from './fixtures/v0.json'
 import parsedEvents from './fixtures/v1.json'
 
@@ -30,5 +37,42 @@ describe('attachSigners', () => {
     const [signed] = attachSigners(response.slice(0, 1), [])
 
     expect(signed.signers).toEqual([])
+  })
+})
+
+describe('signersOf', () => {
+  it('reads the signers of a v0 message that loads accounts from a lookup table', () => {
+    const feePayer = Keypair.generate().publicKey
+    const authority = Keypair.generate().publicKey
+    const lookedUp = Keypair.generate().publicKey
+    const lookupTable = new AddressLookupTableAccount({
+      key: Keypair.generate().publicKey,
+      state: {
+        deactivationSlot: BigInt('18446744073709551615'),
+        lastExtendedSlot: 0,
+        lastExtendedSlotStartIndex: 0,
+        addresses: [lookedUp],
+      },
+    })
+    const message = new TransactionMessage({
+      payerKey: feePayer,
+      recentBlockhash: PublicKey.default.toBase58(),
+      instructions: [
+        new TransactionInstruction({
+          programId: Keypair.generate().publicKey,
+          keys: [
+            { pubkey: authority, isSigner: true, isWritable: false },
+            { pubkey: lookedUp, isSigner: false, isWritable: true },
+          ],
+        }),
+      ],
+    }).compileToV0Message([lookupTable])
+    expect(message.addressTableLookups).toHaveLength(1)
+
+    // The fee payer signs although no instruction references it.
+    expect(signersOf(message)).toEqual([
+      feePayer.toBase58(),
+      authority.toBase58(),
+    ])
   })
 })
