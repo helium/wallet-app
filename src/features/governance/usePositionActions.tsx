@@ -120,13 +120,13 @@ export const usePositionActions = ({
   const claimBotKeyStr = delegationClaimBotK?.toBase58()
   const [seenClaimBot, setSeenClaimBot] = useState({
     key: claimBotKeyStr,
-    bot: delegationClaimBot,
+    hasBot: !!delegationClaimBot,
   })
   if (seenClaimBot.key !== claimBotKeyStr) {
-    setSeenClaimBot({ key: claimBotKeyStr, bot: undefined })
+    setSeenClaimBot({ key: claimBotKeyStr, hasBot: false })
     setAutomationEnabled(false)
-  } else if (!loadingClaimBot && seenClaimBot.bot !== delegationClaimBot) {
-    setSeenClaimBot({ key: claimBotKeyStr, bot: delegationClaimBot })
+  } else if (!loadingClaimBot && seenClaimBot.hasBot !== !!delegationClaimBot) {
+    setSeenClaimBot({ key: claimBotKeyStr, hasBot: !!delegationClaimBot })
     setAutomationEnabled(!!delegationClaimBot)
   }
   const [subDao, setSubDao] = useState<SubDaoWithMeta | null>(null)
@@ -145,7 +145,7 @@ export const usePositionActions = ({
       if (isPending) return
       mutations.forEach((m) => m.reset())
       setActiveKey(nextKey)
-      setSeenClaimBot({ key: undefined, bot: undefined })
+      setSeenClaimBot({ key: undefined, hasBot: false })
       setSubDao(null)
     }
     setActionsOpen(true)
@@ -294,7 +294,10 @@ export const usePositionActions = ({
     splitMutation
       .prepare({
         sourcePositionMint: position.mint.toBase58(),
-        amount: toBN(values.amount, mintAcc.decimals).toString(),
+        amount: BN.min(
+          toBN(values.amount, mintAcc.decimals),
+          position.amountDepositedNative,
+        ).toString(),
         lockupKind: values.lockupKind.value,
         lockupPeriodsInDays: values.lockupPeriodInDays,
       })

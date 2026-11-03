@@ -1,4 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import BN from 'bn.js'
 import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
@@ -33,7 +34,6 @@ const mockContextPositions = [
   { amountDepositedNative: new BN(100) },
   { amountDepositedNative: new BN(5), isProxiedToMe: true },
 ]
-const mockUseQuery = jest.fn()
 const mockGetPositionKeys = jest.fn()
 const mockPositions = jest.fn()
 
@@ -86,9 +86,6 @@ jest.mock('@helium/voter-stake-registry-sdk', () => ({
   getRegistrarKey: (mint: PublicKey) => mint,
   getPositionKeysForOwner: (args: unknown) => mockGetPositionKeys(args),
 }))
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: (options: unknown) => mockUseQuery(options),
-}))
 jest.mock('../../../solana/SolanaProvider', () => {
   const solana = { connection: { rpcEndpoint: 'rpc' } }
   return { useSolana: () => solana }
@@ -99,21 +96,36 @@ jest.mock('../../../solana/SolanaProvider', () => {
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
 ).IS_REACT_ACT_ENVIRONMENT = true
 
-const renderHook = <T,>(hook: () => T) => {
+const renderHook = <T,>(hook: () => T, client = new QueryClient()) => {
   const result: { current?: T } = {}
   const Probe = () => {
     result.current = hook()
     return null
   }
   act(() => {
-    TestRenderer.create(<Probe />)
+    TestRenderer.create(
+      <QueryClientProvider client={client}>
+        <Probe />
+      </QueryClientProvider>,
+    )
   })
   return result
 }
 
+// Lets the queries settle until the condition holds.
+const waitUntil = async (condition: () => boolean) => {
+  for (let i = 0; i < 50 && !condition(); i += 1) {
+    await act(async () => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5)
+      })
+    })
+  }
+  expect(condition()).toBe(true)
+}
+
 beforeEach(() => {
   mockUseAccounts.mockClear()
-  mockUseQuery.mockReset()
   mockGetPositionKeys.mockReset()
   mockPositions.mockReset()
 })
@@ -144,34 +156,31 @@ describe('useTokenRows', () => {
 })
 
 describe('useLockedAmounts', () => {
-  it('sums the context positions and fetches the other mints in one query', async () => {
+  // Each position holds 12 of its mint.
+  const positionsOfKeys = (keys: PublicKey[] | undefined) => ({
+    loading: false,
+    accounts: keys?.map((publicKey) => ({
+      publicKey,
+      info: { amountDepositedNative: new BN(12) },
+    })),
+  })
+
+  it('sums the context positions and reads each other mint in its own query', async () => {
     const mobilePosition = new PublicKey(
       'SysvarRent111111111111111111111111111111111',
     )
-    const keysByMint = { [mockMOBILE.toBase58()]: [mobilePosition] }
-    mockUseQuery.mockReturnValue({ data: keysByMint, isLoading: false })
-    mockPositions.mockReturnValue({
-      loading: false,
-      accounts: [
-        {
-          publicKey: mobilePosition,
-          info: { amountDepositedNative: new BN(30) },
-        },
-      ],
-    })
+    mockPositions.mockImplementation(positionsOfKeys)
     mockGetPositionKeys.mockResolvedValue({ positions: [mobilePosition] })
 
     const result = renderHook(() => useLockedAmounts([mockHNT, mockMOBILE]))
-    const rows = result.current as Record<string, LockedRowData>
+    const rows = () => result.current as Record<string, LockedRowData>
+    await waitUntil(() => !!rows()[mockMOBILE.toBase58()].amountLocked)
 
     // A position proxied to the wallet is not the wallet's own lock.
-    expect(rows[mockHNT.toBase58()].amountLocked?.toString()).toBe('100')
-    expect(rows[mockMOBILE.toBase58()].amountLocked?.toString()).toBe('30')
-    expect(rows[mockHNT.toBase58()].loadingAmount).toBe(false)
+    expect(rows()[mockHNT.toBase58()].amountLocked?.toString()).toBe('100')
+    expect(rows()[mockMOBILE.toBase58()].amountLocked?.toString()).toBe('12')
+    expect(rows()[mockHNT.toBase58()].loadingAmount).toBe(false)
     expect(mockPositions).toHaveBeenLastCalledWith([mobilePosition])
-
-    const [options] = mockUseQuery.mock.calls[0]
-    await expect(options.queryFn()).resolves.toEqual(keysByMint)
     expect(mockGetPositionKeys).toHaveBeenCalledTimes(1)
     expect(mockGetPositionKeys).toHaveBeenCalledWith({
       registrar: mockMOBILE,
@@ -185,14 +194,7 @@ describe('useLockedAmounts', () => {
     const iotPosition = new PublicKey(
       'SysvarC1ock11111111111111111111111111111111',
     )
-    mockUseQuery.mockReturnValue({ data: undefined, isLoading: true })
-    mockPositions.mockImplementation((keys: PublicKey[] | undefined) => ({
-      loading: false,
-      accounts: keys?.map((publicKey) => ({
-        publicKey,
-        info: { amountDepositedNative: new BN(12) },
-      })),
-    }))
+    mockPositions.mockImplementation(positionsOfKeys)
     mockGetPositionKeys.mockImplementation(
       ({ registrar }: { registrar: PublicKey }) =>
         registrar.equals(mockMOBILE)
@@ -200,17 +202,85 @@ describe('useLockedAmounts', () => {
           : Promise.resolve({ positions: [iotPosition] }),
     )
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    const mints = [mockHNT, mockMOBILE, mockIOT]
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
 
-    renderHook(() => useLockedAmounts(mints))
-    const [options] = mockUseQuery.mock.calls[0]
-    const keysByMint = await options.queryFn()
-    mockUseQuery.mockReturnValue({ data: keysByMint, isLoading: false })
-    const result = renderHook(() => useLockedAmounts(mints))
-    const rows = result.current as Record<string, LockedRowData>
+    const result = renderHook(
+      () => useLockedAmounts([mockHNT, mockMOBILE, mockIOT]),
+      client,
+    )
+    const rows = () => result.current as Record<string, LockedRowData>
+    await waitUntil(
+      () =>
+        !!rows()[mockIOT.toBase58()].amountLocked &&
+        !rows()[mockMOBILE.toBase58()].loadingAmount,
+    )
 
-    expect(rows[mockIOT.toBase58()].amountLocked?.toString()).toBe('12')
-    expect(rows[mockMOBILE.toBase58()].amountLocked).toBeUndefined()
+    expect(rows()[mockIOT.toBase58()].amountLocked?.toString()).toBe('12')
+    expect(rows()[mockMOBILE.toBase58()].amountLocked).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
+  })
+
+  it('keeps the position key list when a refetch returns the same keys', async () => {
+    const mobilePosition = new PublicKey(
+      'SysvarRent111111111111111111111111111111111',
+    )
+    mockPositions.mockImplementation(positionsOfKeys)
+    // Each read decodes new key objects, as an RPC read does
+    mockGetPositionKeys.mockImplementation(() =>
+      Promise.resolve({
+        positions: [new PublicKey(mobilePosition.toBase58())],
+      }),
+    )
+    const client = new QueryClient()
+
+    const result = renderHook(
+      () => useLockedAmounts([mockHNT, mockMOBILE]),
+      client,
+    )
+    const rows = () => result.current as Record<string, LockedRowData>
+    await waitUntil(() => !!rows()[mockMOBILE.toBase58()].amountLocked)
+    const [keysBefore] = mockPositions.mock.lastCall
+    expect(keysBefore).toEqual([mobilePosition])
+    const rendersBefore = mockPositions.mock.calls.length
+
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ['positionKeysForOwner'] })
+    })
+    await waitUntil(
+      () =>
+        mockGetPositionKeys.mock.calls.length === 2 &&
+        mockPositions.mock.calls.length > rendersBefore,
+    )
+
+    const [keysAfter] = mockPositions.mock.lastCall
+    expect(keysAfter).toBe(keysBefore)
+  })
+
+  it('shows the locked amount of a mint after its failed read retries', async () => {
+    const mobilePosition = new PublicKey(
+      'SysvarRent111111111111111111111111111111111',
+    )
+    mockPositions.mockImplementation(positionsOfKeys)
+    mockGetPositionKeys
+      .mockRejectedValueOnce(new Error('rpc down'))
+      .mockResolvedValue({ positions: [mobilePosition] })
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: 1, retryDelay: 1 } },
+    })
+
+    const result = renderHook(
+      () => useLockedAmounts([mockHNT, mockMOBILE]),
+      client,
+    )
+    const rows = () => result.current as Record<string, LockedRowData>
+    await waitUntil(() => !!rows()[mockMOBILE.toBase58()].amountLocked)
+
+    expect(rows()[mockMOBILE.toBase58()].amountLocked?.toString()).toBe('12')
+    expect(mockGetPositionKeys).toHaveBeenCalledTimes(2)
     expect(warn).toHaveBeenCalledTimes(1)
     warn.mockRestore()
   })

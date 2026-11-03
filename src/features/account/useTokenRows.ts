@@ -17,9 +17,9 @@ import {
   unpackAccount,
 } from '@solana/spl-token'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
-import { useQuery } from '@tanstack/react-query'
+import { UseQueryResult, useQueries } from '@tanstack/react-query'
 import BN from 'bn.js'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useSolana } from '../../solana/SolanaProvider'
 
 const tokenAccountParser = (pubkey: PublicKey, account: AccountInfo<Buffer>) =>
@@ -95,7 +95,7 @@ export const useTokenRows = (
 
 // The tokens the wallet holds in voting positions, for each governance mint
 // of a token list. The governance context already holds the positions of its
-// own mint; the positions of the other mints are read in one query.
+// own mint; the position keys of each other mint are read in its own query.
 export const useLockedAmounts = (
   mintsIn: PublicKey[],
 ): Record<string, LockedRowData> => {
@@ -115,49 +115,69 @@ export const useLockedAmounts = (
   )
   const walletStr = wallet?.toBase58()
 
-  const { data: keysByMint, isLoading: loadingPositionKeys } = useQuery({
-    queryKey: [
-      'positionKeysForOwner',
-      connection?.rpcEndpoint,
-      otherMints.map((mint) => getRegistrarKey(mint).toBase58()),
-      walletStr,
-    ],
-    queryFn: async () => {
-      if (!walletStr || !connection) return null
-      const results = await Promise.allSettled(
-        otherMints.map((mint) =>
-          getPositionKeysForOwner({
-            registrar: getRegistrarKey(mint),
-            owner: new PublicKey(walletStr),
-            connection,
-          }),
-        ),
-      )
-      // A failed mint reads as no positions; the other mints keep theirs
-      return otherMints.reduce(
-        (acc, mint, index) => {
-          const result = results[index]
-          if (result.status === 'fulfilled') {
-            acc[mint.toBase58()] = result.value.positions
-          } else {
-            console.warn(
-              `Position keys for mint ${mint.toBase58()} failed`,
-              result.reason,
-            )
+  // One query per mint: a failed mint retries on its own, and the other
+  // mints keep their keys
+  const combinePositionKeys = useCallback(
+    (results: UseQueryResult<PublicKey[]>[]) => ({
+      keysByMint: results.some((result) => result.data)
+        ? otherMints.reduce(
+            (acc, mint, index) => {
+              const { data } = results[index]
+              if (data) acc[mint.toBase58()] = data
+              return acc
+            },
+            {} as Record<string, PublicKey[]>,
+          )
+        : undefined,
+      loadingPositionKeys: results.some((result) => result.isLoading),
+    }),
+    [otherMints],
+  )
+  const { keysByMint, loadingPositionKeys } = useQueries({
+    queries: otherMints.map((mint) => {
+      const registrar = getRegistrarKey(mint)
+      return {
+        queryKey: [
+          'positionKeysForOwner',
+          connection?.rpcEndpoint,
+          registrar.toBase58(),
+          walletStr,
+        ],
+        queryFn: async () => {
+          if (!walletStr || !connection) return []
+          try {
+            const { positions } = await getPositionKeysForOwner({
+              registrar,
+              owner: new PublicKey(walletStr),
+              connection,
+            })
+            return positions
+          } catch (e) {
+            console.warn(`Position keys for mint ${mint.toBase58()} failed`, e)
+            throw e
           }
-          return acc
         },
-        {} as Record<string, PublicKey[]>,
-      )
-    },
-    enabled: !!walletStr && !!connection && otherMints.length > 0,
-    staleTime: 0,
+        enabled: !!walletStr && !!connection,
+        staleTime: 0,
+      }
+    }),
+    combine: combinePositionKeys,
   })
 
-  const positionKeys = useMemo(
-    () => (keysByMint ? Object.values(keysByMint).flat() : undefined),
-    [keysByMint],
-  )
+  // The same key list while the keys stay the same: a refetch with the same
+  // keys does not restart the position read
+  const positionKeysStr = keysByMint
+    ? Object.values(keysByMint)
+        .flat()
+        .map((key) => key.toBase58())
+        .join(',')
+    : undefined
+  const positionKeys = useMemo(() => {
+    if (positionKeysStr === undefined) return undefined
+    return positionKeysStr
+      ? positionKeysStr.split(',').map((key) => new PublicKey(key))
+      : []
+  }, [positionKeysStr])
   const { accounts: fetchedPositions, loading: loadingFetchedPositions } =
     usePositions(positionKeys)
 

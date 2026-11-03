@@ -42,6 +42,7 @@ import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { CSAccount } from '../../storage/cloudStorage'
 import { useBalance } from '../../utils/Balance'
+import { errorMessage } from '../../utils/errorMessage'
 import {
   accountNetType,
   ellipsizeAddress,
@@ -60,8 +61,6 @@ const FEE = new BN(TXN_FEE_IN_SOL)
 const SafeArea = withUniwind(TabSafeAreaView)
 const QrIcon = withUniwind(QrCode)
 const CloseIcon = withUniwind(X)
-
-const errorMessage = (e: unknown) => (e as Error)?.message
 
 type Route = RouteProp<HomeStackParamList, 'BurnScreen'>
 const BurnScreen = () => {

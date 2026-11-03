@@ -128,8 +128,11 @@ jest.mock('@helium/voter-stake-registry-hooks', () => {
   }
 })
 // Every position gets the same claim bot key here. A test sets `info` to give
-// the positions a claim bot.
-const mockClaimBot: { info: object | undefined } = { info: undefined }
+// the positions a claim bot, and `loading` to hold the read in flight.
+const mockClaimBot: { info: object | undefined; loading: boolean } = {
+  info: undefined,
+  loading: false,
+}
 jest.mock('@helium/automation-hooks', () => ({
   TASK_QUEUE: 'queue',
   useDelegationClaimBot: () => mockClaimBot,
@@ -405,6 +408,99 @@ describe('PositionsList', () => {
       mockGovernance.positions = positions
       mockClaimBot.info = undefined
     }
+  })
+
+  describe('claim bot automation', () => {
+    // Positions still locked past the chain time, in HNT, so delegate is an
+    // action
+    const delegatable = {
+      ...mockPosition,
+      lockup: { kind: { cliff: {} }, startTs: new BN(0), endTs: new BN(1e6) },
+      votingMint: {
+        ...mockPosition.votingMint,
+        mint: new PublicKey('hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux'),
+      },
+    }
+    const first = {
+      ...delegatable,
+      pubkey: new PublicKey('SysvarS1otHashes111111111111111111111111111'),
+    }
+    const second = {
+      ...delegatable,
+      pubkey: new PublicKey('SysvarStakeHistory1111111111111111111111111'),
+    }
+    const { positions } = mockGovernance
+    let renderer!: TestRenderer.ReactTestRenderer
+
+    beforeEach(() => {
+      mockGovernance.positions = [first, second]
+      mockClaimBot.info = {}
+      act(() => {
+        renderer = TestRenderer.create(<PositionsList />)
+      })
+    })
+    afterEach(() => {
+      mockGovernance.positions = positions
+      mockClaimBot.info = undefined
+      mockClaimBot.loading = false
+    })
+
+    const rerender = () => {
+      act(() => {
+        renderer.update(<PositionsList />)
+      })
+    }
+    const modal = () => renderer.root.findByType('DelegateTokensModal' as never)
+    const openDelegateModal = (position: typeof first) => {
+      const card = renderer.root
+        .findAllByType('PositionCard' as never)
+        .find((c) => c.props.position === position)
+      if (!card) throw new Error('no position card')
+      act(() => {
+        card.props.onPress()
+      })
+      const delegate = renderer.root.find(
+        (n) =>
+          (n.type as unknown) === 'ListItem' &&
+          n.props.testID === 'PositionCard.Delegate',
+      )
+      act(() => {
+        delegate.props.onPress()
+      })
+    }
+
+    it('keeps automation off when the claim bot account updates', () => {
+      openDelegateModal(first)
+      expect(modal().props.automationEnabled).toBe(true)
+      act(() => {
+        modal().props.onSetAutomationEnabled(false)
+      })
+      expect(modal().props.automationEnabled).toBe(false)
+
+      // The same claim bot account, decoded again
+      mockClaimBot.info = {}
+      rerender()
+
+      expect(modal().props.automationEnabled).toBe(false)
+    })
+
+    it('waits for the claim bot read of the next position', () => {
+      openDelegateModal(first)
+      act(() => {
+        modal().props.onClose()
+      })
+
+      // The read of the next position is in flight, with the bot of the
+      // previous position still in hand
+      mockClaimBot.loading = true
+      openDelegateModal(second)
+      expect(modal().props.automationEnabled).toBe(false)
+
+      mockClaimBot.loading = false
+      rerender()
+
+      expect(modal().props.automationEnabled).toBe(true)
+    })
   })
 
   it('keeps the sections when the list re-renders', () => {

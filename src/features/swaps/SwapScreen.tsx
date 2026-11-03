@@ -674,7 +674,7 @@ const SwapScreen = () => {
         })
       } catch (error) {
         setSwapping(false)
-        setTransactionError((error as Error).message)
+        setTransactionError(errorMessage(error))
       }
     }
   }, [
