@@ -5,6 +5,13 @@ import AccountAssignScreen from '../AccountAssignScreen'
 
 // The device keychain
 const mockKeychain = new Map<string, string>()
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  {
+    virtual: true,
+  },
+)
 jest.mock('expo-secure-store', () => ({
   setItemAsync: async (key: string, value: string) => {
     mockKeychain.set(key, value)

@@ -10,8 +10,8 @@ module.exports = {
       { configFile: false, presets: ['module:@react-native/babel-preset'] },
     ],
   },
-  // @noble/ed25519 and react-native-mmkv ship ESM only
+  // @noble/ed25519, react-native-mmkv and @react-navigation ship ESM only
   transformIgnorePatterns: [
-    'node_modules/(?!(@noble/ed25519|react-native-mmkv)/)',
+    'node_modules/(?!(@noble/ed25519|react-native-mmkv|@react-navigation/(core|routers))/)',
   ],
 }

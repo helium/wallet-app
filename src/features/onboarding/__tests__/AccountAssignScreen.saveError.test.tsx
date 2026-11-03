@@ -3,6 +3,13 @@ import React from 'react'
 import TestRenderer, { act } from 'react-test-renderer'
 import AccountAssignScreen from '../AccountAssignScreen'
 
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  {
+    virtual: true,
+  },
+)
 jest.mock('react-native', () => ({
   KeyboardAvoidingView: 'KeyboardAvoidingView',
   Platform: { OS: 'ios' },

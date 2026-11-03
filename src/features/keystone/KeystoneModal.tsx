@@ -45,6 +45,7 @@ const KeystoneModal = ({
   const { currentAccount } = useAccountStorage()
   const backgroundStyle = useResolveClassNames('bg-secondary')
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
+  const { handleDismiss, setIsShowing } = useBackHandler(bottomSheetModalRef)
   const sheetMargins = useSheetMargins()
   const settleRef = useRef<((value: Buffer) => void) | undefined>(undefined)
   const [solSignRequest, setSolSignRequest] = useState<KeystoneSolSignRequest>()
@@ -56,9 +57,16 @@ const KeystoneModal = ({
     message?: Buffer
   }): Promise<Buffer | undefined> => {
     const requestId = uuid.v4()
+    let settled = false
     // why need setTimeout? modal mounted --> sleep 1s --> modal present
+    // The request owns the sheet from present to settle, so an onDismiss
+    // from the previous sheet that lands before this timer settles nothing.
+    // A close that runs past the timer still settles this request.
     setTimeout(() => {
+      if (settled) return
+      settleRef.current = settle
       bottomSheetModalRef.current?.present()
+      setIsShowing(true)
     }, 1000)
     if (transaction) {
       setSolSignRequest({
@@ -93,13 +101,13 @@ const KeystoneModal = ({
       settle(Buffer.from([]))
     }
     const settle = (value: Buffer) => {
+      settled = true
       eventEmitter.off(`keystoneSignature_${requestId}`, onSignature)
       eventEmitter.off('closeKeystoneSignatureModal', onClose)
       settleRef.current = undefined
       bottomSheetModalRef.current?.dismiss()
       promiseResolve(value)
     }
-    settleRef.current = settle
     eventEmitter.on(`keystoneSignature_${requestId}`, onSignature)
     eventEmitter.on('closeKeystoneSignatureModal', onClose)
     return keystonePromise
@@ -109,7 +117,6 @@ const KeystoneModal = ({
     <BottomSheetBackdrop disappearsOnIndex={-1} appearsOnIndex={0} {...props} />
   )
   const sheetHandleStyle = useResolveClassNames('p-4')
-  const { handleDismiss } = useBackHandler(bottomSheetModalRef)
   // Backdrop tap, swipe down and back button dismiss the sheet without an
   // event, so the pending sign request has to be settled here.
   const handleSheetDismiss = () => {

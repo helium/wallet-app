@@ -8,7 +8,11 @@ import SignTxModal from '../SignTx/SignTxModal'
 // model keeps the part that decides where sheet content renders, as gorhom
 // 5.2.14 does it: the provider wraps its children in
 // <PortalProvider rootHostName={hostName}>, and a presented modal mounts its
-// content with <Portal hostName={hostName}> of the nearest provider.
+// content with <Portal hostName={hostName}> of the nearest provider, and
+// dismiss() unmounts it and calls onDismiss when its close animation ends.
+// 250 ms is gorhom's Android ANIMATION_DURATION (constants.ts). iOS uses a
+// spring that settles near 500 ms. Both end before the 1 s present timer.
+const mockCloseAnimationMs = 250
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   const { Portal, PortalProvider } = jest.requireActual('@gorhom/portal')
@@ -27,12 +31,23 @@ jest.mock('@gorhom/bottom-sheet', () => {
     )
   }
   const BottomSheetModal = ReactActual.forwardRef(
-    ({ children }: { children: React.ReactNode }, ref: unknown) => {
+    (
+      {
+        children,
+        onDismiss,
+      }: { children: React.ReactNode; onDismiss?: () => void },
+      ref: unknown,
+    ) => {
       const hostName = ReactActual.useContext(HostName)
       const [mount, setMount] = ReactActual.useState(false)
       ReactActual.useImperativeHandle(ref, () => ({
         present: () => setMount(true),
-        dismiss: () => setMount(false),
+        dismiss: () => {
+          setTimeout(() => {
+            setMount(false)
+            onDismiss?.()
+          }, mockCloseAnimationMs)
+        },
       }))
       return mount
         ? ReactActual.createElement(Portal, { hostName }, children)
@@ -49,7 +64,7 @@ jest.mock('@gorhom/bottom-sheet', () => {
 
 jest.mock(
   '@hooks/useBackHandler',
-  () => () => ({ handleDismiss: () => {}, setIsShowing: () => {} }),
+  () => jest.requireActual('../../../hooks/useBackHandler'),
   { virtual: true },
 )
 jest.mock('@hooks/useAlert', () => () => ({ showOKCancelAlert: () => {} }), {
@@ -86,11 +101,22 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
 jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })
+const mockPlatform = { OS: 'ios' }
+const mockBackPressListeners = new Set<() => boolean>()
 jest.mock('react-native', () => ({
+  BackHandler: {
+    addEventListener: (_: string, listener: () => boolean) => {
+      mockBackPressListeners.add(listener)
+      return { remove: () => mockBackPressListeners.delete(listener) }
+    },
+  },
   View: 'View',
   Alert: { alert: () => {} },
   Linking: {},
-  Platform: { OS: 'ios' },
+  // A getter: the hoisted factory runs before mockPlatform is assigned.
+  get Platform() {
+    return mockPlatform
+  },
   StyleSheet: { absoluteFill: {} },
 }))
 jest.mock('react-native-reanimated', () => ({
@@ -116,6 +142,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.useRealTimers()
+  mockPlatform.OS = 'ios'
 })
 
 describe('KeystoneModal', () => {
@@ -154,6 +181,9 @@ describe('KeystoneModal', () => {
     act(() => {
       modal.findByType('CloseButton' as never).props.onPress()
     })
+    act(() => {
+      jest.advanceTimersByTime(mockCloseAnimationMs)
+    })
 
     await expect(signature).resolves.toEqual(Buffer.from([]))
     expect(modal.findAllByType(SignTxModal)).toHaveLength(0)
@@ -191,5 +221,153 @@ describe('KeystoneModal', () => {
     })
 
     await expect(signature).resolves.toEqual(Buffer.from([]))
+  })
+  it('dismisses the sign sheet and settles the request on Android back', async () => {
+    mockPlatform.OS = 'android'
+    const ref = React.createRef<KeystoneModalRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <KeystoneModal ref={ref}>{null}</KeystoneModal>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const { root } = renderer
+
+    let signature: Promise<Buffer | undefined> | undefined
+    act(() => {
+      signature = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('01', 'hex'),
+      })
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    const modal = root.findByType(KeystoneModal)
+    expect(modal.findAllByType(SignTxModal)).toHaveLength(1)
+
+    let handled: boolean[] = []
+    act(() => {
+      handled = [...mockBackPressListeners].map((listener) => listener())
+    })
+    act(() => {
+      jest.advanceTimersByTime(mockCloseAnimationMs)
+    })
+
+    expect(handled).toContain(true)
+    await expect(signature).resolves.toEqual(Buffer.from([]))
+    expect(modal.findAllByType(SignTxModal)).toHaveLength(0)
+  })
+
+  // SolanaProvider signAllTransactions shows the next sign request as soon
+  // as the previous one resolves, while the previous sheet still animates
+  // closed.
+  it('does not settle the next request when the previous sheet finishes closing', async () => {
+    const ref = React.createRef<KeystoneModalRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <KeystoneModal ref={ref}>{null}</KeystoneModal>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const modal = renderer.root.findByType(KeystoneModal)
+    const emitSignature = (signature: string) => {
+      const { eventEmitter, solSignRequest } =
+        modal.findByType(SignTxModal).props
+      eventEmitter.emit(
+        `keystoneSignature_${solSignRequest.requestId}`,
+        signature,
+      )
+    }
+
+    let first: Promise<Buffer | undefined> | undefined
+    act(() => {
+      first = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('01', 'hex'),
+      })
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    act(() => {
+      emitSignature('aa')
+    })
+    await expect(first).resolves.toEqual(Buffer.from('aa', 'hex'))
+
+    let second: Promise<Buffer | undefined> | undefined
+    act(() => {
+      second = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('02', 'hex'),
+      })
+    })
+    let secondSettled = false
+    void second?.then(() => {
+      secondSettled = true
+    })
+    await act(async () => {
+      jest.advanceTimersByTime(mockCloseAnimationMs)
+    })
+    expect(secondSettled).toBe(false)
+
+    act(() => {
+      jest.advanceTimersByTime(1000 - mockCloseAnimationMs)
+    })
+    act(() => {
+      emitSignature('bb')
+    })
+    await expect(second).resolves.toEqual(Buffer.from('bb', 'hex'))
+  })
+
+  // SignTxModal emits the close event without a request id, so a close tap
+  // on the previous sheet while it animates closed reaches the next request
+  // before its present timer fires.
+  it('does not present the sheet for a request that settles before its present timer', async () => {
+    const ref = React.createRef<KeystoneModalRef>()
+    let renderer: TestRenderer.ReactTestRenderer | undefined
+    act(() => {
+      renderer = TestRenderer.create(
+        <BottomSheetModalProvider>
+          <KeystoneModal ref={ref}>{null}</KeystoneModal>
+        </BottomSheetModalProvider>,
+      )
+    })
+    if (!renderer) throw new Error('render failed')
+    const modal = renderer.root.findByType(KeystoneModal)
+
+    let first: Promise<Buffer | undefined> | undefined
+    act(() => {
+      first = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('01', 'hex'),
+      })
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    const { eventEmitter, solSignRequest } = modal.findByType(SignTxModal).props
+    act(() => {
+      eventEmitter.emit(`keystoneSignature_${solSignRequest.requestId}`, 'aa')
+    })
+    await expect(first).resolves.toEqual(Buffer.from('aa', 'hex'))
+
+    let second: Promise<Buffer | undefined> | undefined
+    act(() => {
+      second = ref.current?.showKeystoneModal({
+        transaction: Buffer.from('02', 'hex'),
+      })
+    })
+    act(() => {
+      eventEmitter.emit('closeKeystoneSignatureModal')
+    })
+    await expect(second).resolves.toEqual(Buffer.from([]))
+
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    expect(modal.findAllByType(SignTxModal)).toHaveLength(0)
   })
 })

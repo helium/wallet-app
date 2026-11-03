@@ -80,7 +80,7 @@ const render = (
           root
             .findAllByType('Pressable' as never)
             .find((k) => k.props.testID === `Keypad.${id}`)
-            ?.props.onPressIn()
+            ?.props.onPress()
         })
       }),
     filled: () =>

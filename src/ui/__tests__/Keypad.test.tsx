@@ -77,14 +77,14 @@ describe('Keypad', () => {
     ])
   })
 
-  it('sends the key on press-in with a haptic', () => {
+  it('sends the key on a tap with a haptic', () => {
     const onPress = jest.fn()
     const root = render(<Keypad customButtonType="clear" onPress={onPress} />)
     const press = (id: string) =>
       act(() => {
         keys(root)
           .find((k) => k.props.testID === id)
-          ?.props.onPressIn()
+          ?.props.onPress()
       })
 
     press('Keypad.0')
@@ -101,6 +101,23 @@ describe('Keypad', () => {
         .accessibilityLabel,
     ).toBe('generic.backspace')
     expect(mockTriggerImpact).toHaveBeenCalledTimes(4)
+  })
+
+  // Pressability calls onPressIn on touch-down and onPressOut when the touch
+  // slides off or is cancelled, but calls onPress only on a release over the
+  // key.
+  it('sends nothing when a touch slides off or is cancelled', () => {
+    const onPress = jest.fn()
+    const root = render(<Keypad customButtonType="clear" onPress={onPress} />)
+    const key = keys(root).find((k) => k.props.testID === 'Keypad.7')
+
+    act(() => {
+      key?.props.onPressIn?.()
+      key?.props.onPressOut?.()
+    })
+
+    expect(onPress).not.toHaveBeenCalled()
+    expect(mockTriggerImpact).not.toHaveBeenCalled()
   })
 
   it('shows the locale decimal separator and disables an empty custom key', () => {

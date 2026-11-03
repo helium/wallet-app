@@ -64,7 +64,7 @@ const KeypadButton = ({
     <View className="basis-1/3 items-center justify-center">
       <Pressable
         testID={`Keypad.${value}`}
-        onPressIn={() => onPress(value)}
+        onPress={() => onPress(value)}
         disabled={!value && value !== 0}
         accessibilityRole="button"
         accessibilityLabel={
@@ -94,7 +94,8 @@ export type KeypadProps = {
 }
 
 // A PIN and amount keypad: 1–9, then the custom key, 0 and backspace. Keys
-// fire on press-in with a haptic.
+// fire on release with a haptic, so a touch that slides off or is cancelled
+// enters nothing.
 export const Keypad = ({
   onPress,
   customButtonType,
