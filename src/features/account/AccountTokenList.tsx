@@ -14,12 +14,7 @@ import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SlidersHorizontal } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  LayoutChangeEvent,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from 'react-native'
+import { RefreshControl, StyleSheet, View } from 'react-native'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -38,15 +33,12 @@ const Fade = withUniwind(TabSafeAreaView)
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
-  // Reports the heights of the first two token rows, which the collapsed
-  // drawer shows above the tab bar.
-  onFirstRowsLayout?: readonly [
-    (e: LayoutChangeEvent) => void,
-    (e: LayoutChangeEvent) => void,
-  ]
+  // Reports each cell's height by list index. The collapsed drawer shows the
+  // first two token rows above the tab bar.
+  onRowLayout?: (index: number, height: number) => void
 }
 
-const AccountTokenList = ({ onLayout, onFirstRowsLayout }: Props) => {
+const AccountTokenList = ({ onLayout, onRowLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { visibleTokens } = useVisibleTokens()
@@ -107,7 +99,11 @@ const AccountTokenList = ({ onLayout, onFirstRowsLayout }: Props) => {
 
   // A governance token and its locked row count as one token.
   const renderItem = ({ item, index }: { item: PublicKey; index: number }) => (
-    <View onLayout={onFirstRowsLayout?.[index]}>
+    <View
+      onLayout={
+        onRowLayout && ((e) => onRowLayout(index, e.nativeEvent.layout.height))
+      }
+    >
       <TokenListItem mint={item} />
       {GovMints.some((m) => new PublicKey(m).equals(item)) && (
         <TokenListGovItem mint={item} />
