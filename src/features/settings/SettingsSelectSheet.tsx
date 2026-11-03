@@ -2,13 +2,13 @@ import { BottomSheetScrollView, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { Button } from '@ui/Button'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import useDisappear from '@hooks/useDisappear'
 import React, { FC, useImperativeHandle, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useWindowDimensions } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export type SelectItem = {
   label: string
@@ -36,7 +36,6 @@ const SettingsSelectSheet = ({
   onValueSelected,
 }: Props) => {
   const { t } = useTranslation()
-  const { bottom } = useSafeAreaInsets()
   const { height } = useWindowDimensions()
   const sheetRef = useRef<BottomSheetModal>(null)
   useImperativeHandle(ref, () => sheetRef.current as BottomSheetModal)
@@ -46,10 +45,7 @@ const SettingsSelectSheet = ({
 
   return (
     <Sheet ref={sheetRef} maxDynamicContentSize={Math.round(height * 0.8)}>
-      <BottomSheetScrollView
-        contentContainerStyle={{ paddingBottom: bottom }}
-        contentContainerClassName="px-7"
-      >
+      <BottomSheetScrollView contentContainerClassName="px-7">
         <Text className="mb-4 mt-2 border-b border-border pb-3 text-muted-foreground">
           {title}
         </Text>
@@ -82,12 +78,13 @@ const SettingsSelectSheet = ({
         })}
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="my-4 w-full"
           onPress={close}
         >
           {t('generic.cancel')}
         </Button>
+        <TabSafeAreaView edges={['bottom']} />
       </BottomSheetScrollView>
     </Sheet>
   )

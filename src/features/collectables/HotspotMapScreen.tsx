@@ -31,7 +31,8 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { Alert, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useCSSVariable, withUniwind } from 'uniwind'
 import { useDebounce } from 'use-debounce'
 import { useSolana } from '../../solana/SolanaProvider'
@@ -46,7 +47,7 @@ import { HexInfoBuckets, hotspotMapInfosQuery } from './hotspotMapInfosQuery'
 import Map from './map/Map'
 import { INITIAL_MAP_VIEW_STATE, MAX_MAP_ZOOM } from './map/utils'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const AnimatedBlurView = withUniwind(Animated.createAnimatedComponent(BlurView))
 const Hex = withUniwind(HexArt)
 const BackIcon = withUniwind(ChevronLeft)
@@ -58,7 +59,7 @@ type OnPress = NonNullable<
   Pick<ComponentProps<typeof GeoJSONSource>, 'onPress'>['onPress']
 >
 
-const BACK_EDGES: Edge[] = ['top']
+const BACK_EDGES: Edge[] = ['top', 'bottom']
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
 const NO_HEX_INFO_BUCKETS: HexInfoBuckets = {}
 const HotspotMapScreen = () => {
@@ -335,11 +336,11 @@ const HotspotMapScreen = () => {
             className={`absolute h-full w-full flex-1 ${
               isLoading ? 'z-[100]' : 'z-0'
             } ${debouncedIsLoading ? '' : 'hidden'}`}
-            tint="dark"
+            tint="light"
             intensity={80}
           >
             <View className="h-full flex-1 justify-center">
-              <Spinner colorClassName="accent-white" />
+              <Spinner colorClassName="accent-foreground" />
             </View>
           </AnimatedBlurView>
           <Map
@@ -389,8 +390,8 @@ const HotspotMapScreen = () => {
               className="flex-row items-center justify-center"
               onPress={() => navigation.goBack()}
             >
-              <BackIcon size={24} colorClassName="accent-white" />
-              <Text size="base" className="ml-3 font-medium text-white">
+              <BackIcon size={24} colorClassName="accent-foreground" />
+              <Text size="base" className="ml-3 font-medium text-foreground">
                 {t('collectablesScreen.hotspots.map.back')}
               </Text>
             </PressableScale>
@@ -424,7 +425,7 @@ const HotspotMapScreen = () => {
                 variant="ghost"
                 size="icon"
                 // TODO: Make this visible when modled coverage is available
-                className="mr-3 hidden rounded-full bg-white/30"
+                className="mr-3 hidden rounded-full border border-border bg-card"
                 onPress={handleLegendPress}
               >
                 <LegendIcon size={18} colorClassName="accent-foreground" />
@@ -432,7 +433,7 @@ const HotspotMapScreen = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full bg-white/30"
+                className="rounded-full border border-border bg-card"
                 onPress={handleUserLocationPress}
               >
                 <UserLocationIcon

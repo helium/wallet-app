@@ -2,8 +2,8 @@ import { navigationTheme } from '../navigationTheme'
 
 // @react-navigation/native ships ESM that jest does not transform.
 jest.mock('@react-navigation/native', () => ({
-  DarkTheme: {
-    dark: true,
+  DefaultTheme: {
+    dark: false,
     colors: {
       primary: 'p',
       background: 'b',
@@ -17,8 +17,8 @@ jest.mock('@react-navigation/native', () => ({
 }))
 
 describe('navigationTheme', () => {
-  it('marks the theme as dark', () => {
-    expect(navigationTheme('#fff').dark).toBe(true)
+  it('marks the theme as light, to match the light palette', () => {
+    expect(navigationTheme('#fff').dark).toBe(false)
   })
 
   it('uses the given background colour', () => {

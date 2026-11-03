@@ -169,7 +169,12 @@ const WifiSettings = () => {
         refreshing={refreshing}
         onRefresh={() => handleRefresh()}
       />
-      <Button variant="cta" size="lg" className="mt-6 w-full" onPress={navNext}>
+      <Button
+        variant="cta"
+        size="dashboard"
+        className="mt-6 w-full"
+        onPress={navNext}
+      >
         {t('generic.done')}
       </Button>
     </OnboardingScreen>

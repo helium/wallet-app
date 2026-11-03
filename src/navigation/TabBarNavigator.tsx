@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable'
-import { SafeAreaView } from 'react-native-screens/experimental'
 import { useCSSVariable } from 'uniwind'
 import { Portal } from '@gorhom/portal'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
@@ -17,7 +16,7 @@ import ActivityNavigator from '../features/activity/ActivityNavigator'
 import BrowserNavigator from '../features/browser/BrowserNavigator'
 import { useAppStore } from '../store/appStore'
 import { useSolana } from '../solana/SolanaProvider'
-import { ContentColumn } from '../ui/ContentColumn'
+import { contentColumnLayout } from '../ui/ContentColumn'
 
 const Tab = createNativeBottomTabNavigator()
 
@@ -26,10 +25,9 @@ const Tab = createNativeBottomTabNavigator()
 const DOT_BADGE = Platform.select({ ios: ' ', default: '' })
 
 const TabBarNavigator = () => {
-  const [active, inactive, tabBar, badge] = useCSSVariable([
-    '--color-primary-foreground',
+  const [active, inactive, badge] = useCSSVariable([
+    '--color-foreground',
     '--color-muted-foreground',
-    '--color-primary',
     '--color-success-500',
   ]).map(String)
   const { triggerImpact } = useHaptic()
@@ -81,20 +79,23 @@ const TabBarNavigator = () => {
           </Portal>
         )}
       <Tab.Navigator
-        screenOptions={{
+        // Icon-only tabs: an empty label hides the text on iOS, the unlabeled
+        // mode on Android. The route name stays the spoken name.
+        screenOptions={({ route }) => ({
           headerShown: false,
           lazy: true,
+          tabBarLabel: '',
+          tabBarLabelVisibilityMode: 'unlabeled',
+          tabBarAccessibilityLabel: route.name,
           tabBarActiveTintColor: active,
           tabBarInactiveTintColor: inactive,
-          tabBarStyle: { backgroundColor: tabBar },
           tabBarBadgeStyle: { backgroundColor: badge },
-        }}
-        // Native tabs draw screens under the tab bar. Pad them clear of it.
-        screenLayout={({ children }) => (
-          <SafeAreaView edges={{ bottom: true }}>
-            <ContentColumn>{children}</ContentColumn>
-          </SafeAreaView>
-        )}
+          // The bar floats over the screens. Each list pads its own end and
+          // each footer sits in a TabSafeAreaView, on iOS and Android alike,
+          // so iOS must not also inset the first scroll view.
+          overrideScrollViewContentInsetAdjustmentBehavior: false,
+        })}
+        screenLayout={contentColumnLayout}
         screenListeners={({ navigation }) => ({
           tabPress: () => {
             triggerImpact('light')

@@ -156,7 +156,7 @@ const LinkWallet = () => {
 
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="mt-3 w-full"
           onPress={() => void handleLink().catch(console.error)}
         >
@@ -165,7 +165,7 @@ const LinkWallet = () => {
 
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="mt-3 w-full"
           onPress={() => void handleCancel().catch(console.error)}
         >

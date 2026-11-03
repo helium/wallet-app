@@ -1,28 +1,30 @@
 diff --git a/node_modules/@react-navigation/bottom-tabs/lib/module/unstable/NativeBottomTabView.native.js b/node_modules/@react-navigation/bottom-tabs/lib/module/unstable/NativeBottomTabView.native.js
-index 4024126..1fdc410 100644
+index 4024126..0be7b19 100644
 --- a/node_modules/@react-navigation/bottom-tabs/lib/module/unstable/NativeBottomTabView.native.js
 +++ b/node_modules/@react-navigation/bottom-tabs/lib/module/unstable/NativeBottomTabView.native.js
-@@ -321,6 +321,7 @@ const TabScene = /*#__PURE__*/React.memo(function TabScene({
+@@ -321,6 +321,8 @@ const TabScene = /*#__PURE__*/React.memo(function TabScene({
      tabBarSearchAutoFocus,
      tabBarBlurEffect = dark ? 'systemMaterialDark' : 'systemMaterial',
      tabBarStyle,
 +    tabBarButtonTestID,
++    tabBarAccessibilityLabel,
      overrideScrollViewContentInsetAdjustmentBehavior
    } = options;
    const systemItem = tabBarSystemItem ?? (
-@@ -403,6 +404,7 @@ const TabScene = /*#__PURE__*/React.memo(function TabScene({
+@@ -403,6 +405,8 @@ const TabScene = /*#__PURE__*/React.memo(function TabScene({
      screenKey: route.key,
      preventNativeSelection: tabBarSelectionEnabled === false,
      badgeValue: tabBarBadge?.toString(),
 +    tabBarItemTestID: tabBarButtonTestID,
++    tabBarItemAccessibilityLabel: tabBarAccessibilityLabel,
      title: tabTitle,
      style: {
        backgroundColor: colors.background
 diff --git a/node_modules/@react-navigation/bottom-tabs/lib/typescript/src/unstable/types.d.ts b/node_modules/@react-navigation/bottom-tabs/lib/typescript/src/unstable/types.d.ts
-index 9200bd0..4a08edd 100644
+index 9200bd0..eba839c 100644
 --- a/node_modules/@react-navigation/bottom-tabs/lib/typescript/src/unstable/types.d.ts
 +++ b/node_modules/@react-navigation/bottom-tabs/lib/typescript/src/unstable/types.d.ts
-@@ -234,6 +234,10 @@ export type NativeBottomTabNavigationOptions = NativeHeaderOptions & {
+@@ -234,6 +234,14 @@ export type NativeBottomTabNavigationOptions = NativeHeaderOptions & {
       * @platform android
       */
      tabBarIconSize?: number;
@@ -30,34 +32,40 @@ index 9200bd0..4a08edd 100644
 +     * ID to locate this tab button in tests.
 +     */
 +    tabBarButtonTestID?: string;
++    /**
++     * Accessibility label for the tab button.
++     */
++    tabBarAccessibilityLabel?: string;
      /**
       * Text to show in a badge on the tab icon.
       */
 diff --git a/node_modules/@react-navigation/bottom-tabs/src/unstable/NativeBottomTabView.native.tsx b/node_modules/@react-navigation/bottom-tabs/src/unstable/NativeBottomTabView.native.tsx
-index d037e8b..1a76e37 100644
+index d037e8b..ee3d20c 100644
 --- a/node_modules/@react-navigation/bottom-tabs/src/unstable/NativeBottomTabView.native.tsx
 +++ b/node_modules/@react-navigation/bottom-tabs/src/unstable/NativeBottomTabView.native.tsx
-@@ -487,6 +487,7 @@ const TabScene = React.memo(function TabScene({
+@@ -487,6 +487,8 @@ const TabScene = React.memo(function TabScene({
      tabBarSearchAutoFocus,
      tabBarBlurEffect = dark ? 'systemMaterialDark' : 'systemMaterial',
      tabBarStyle,
 +    tabBarButtonTestID,
++    tabBarAccessibilityLabel,
      overrideScrollViewContentInsetAdjustmentBehavior,
    } = options;
  
-@@ -583,6 +584,7 @@ const TabScene = React.memo(function TabScene({
+@@ -583,6 +585,8 @@ const TabScene = React.memo(function TabScene({
        screenKey={route.key}
        preventNativeSelection={tabBarSelectionEnabled === false}
        badgeValue={tabBarBadge?.toString()}
 +      tabBarItemTestID={tabBarButtonTestID}
++      tabBarItemAccessibilityLabel={tabBarAccessibilityLabel}
        title={tabTitle}
        style={{ backgroundColor: colors.background }}
        specialEffects={{
 diff --git a/node_modules/@react-navigation/bottom-tabs/src/unstable/types.tsx b/node_modules/@react-navigation/bottom-tabs/src/unstable/types.tsx
-index 7614251..b9860d9 100644
+index 7614251..6a230b7 100644
 --- a/node_modules/@react-navigation/bottom-tabs/src/unstable/types.tsx
 +++ b/node_modules/@react-navigation/bottom-tabs/src/unstable/types.tsx
-@@ -283,6 +283,11 @@ export type NativeBottomTabNavigationOptions = NativeHeaderOptions & {
+@@ -283,6 +283,16 @@ export type NativeBottomTabNavigationOptions = NativeHeaderOptions & {
     */
    tabBarIconSize?: number;
  
@@ -65,6 +73,11 @@ index 7614251..b9860d9 100644
 +   * ID to locate this tab button in tests.
 +   */
 +  tabBarButtonTestID?: string;
++
++  /**
++   * Accessibility label for the tab button.
++   */
++  tabBarAccessibilityLabel?: string;
 +
    /**
     * Text to show in a badge on the tab icon.

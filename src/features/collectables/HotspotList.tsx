@@ -8,6 +8,7 @@ import { Button } from '@ui/Button'
 import { Spinner } from '@ui/Spinner'
 import { Text } from '@ui/Text'
 import { TokenIcon } from '@ui/TokenIcon'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import BigNumber from 'bignumber.js'
 import BN from 'bn.js'
 import { times } from 'lodash'
@@ -64,6 +65,12 @@ function RewardItem({
 }
 
 const COLUMN_WRAPPER_STYLE = { flexDirection: 'column' } as const
+
+const CONTENT_CONTAINER_STYLE = { paddingHorizontal: 16 }
+
+const BOTTOM_EDGE = ['bottom'] as const
+
+const TabSafeArea = withUniwind(TabSafeAreaView)
 
 const HotspotList = () => {
   const navigation = useNavigation<CollectableNavigationProp>()
@@ -232,6 +239,7 @@ const HotspotList = () => {
         data={hotspotsWithMeta}
         numColumns={2}
         columnWrapperStyle={COLUMN_WRAPPER_STYLE}
+        contentContainerStyle={CONTENT_CONTAINER_STYLE}
         ListHeaderComponent={header}
         refreshControl={
           <RefreshControl
@@ -249,49 +257,56 @@ const HotspotList = () => {
         keyExtractor={keyExtractor}
         ListFooterComponent={footer}
       />
-      <View className="rounded-t-[12px] bg-secondary p-4">
-        <View className="flex-row justify-evenly">
-          <RewardItem
-            mint={HNT_MINT}
-            amount={pendingHntRewards}
-            hasMore={hotspots.length < (totalHotspots || 0)}
-          />
-          <RewardItem
-            mint={MOBILE_MINT}
-            amount={pendingMobileRewards}
-            hasMore={hotspots.length < (totalHotspots || 0)}
-          />
-          <RewardItem
-            mint={IOT_MINT}
-            amount={pendingIotRewards}
-            hasMore={hotspots.length < (totalHotspots || 0)}
-          />
-        </View>
-        <View className="mb-6 mt-4 grow flex-row items-center gap-2">
-          <Button
-            variant="cta"
-            size="lg"
-            className="flex-1 rounded-full"
-            onPress={handleNavigateToClaimRewards}
-            disabled={claimDisabled}
-          >
-            {t('collectablesScreen.hotspots.claimAllRewards')}
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-10 rounded-full"
-            onPress={handleNavigateToAutomation}
-          >
-            <AutomationIcon
-              size={20}
-              colorClassName={
-                automationSchedule ? 'accent-warning-500' : 'accent-foreground'
-              }
+      <TabSafeArea
+        edges={BOTTOM_EDGE}
+        className="rounded-t-[12px] bg-secondary"
+      >
+        <View className="p-4">
+          <View className="flex-row justify-evenly">
+            <RewardItem
+              mint={HNT_MINT}
+              amount={pendingHntRewards}
+              hasMore={hotspots.length < (totalHotspots || 0)}
             />
-          </Button>
+            <RewardItem
+              mint={MOBILE_MINT}
+              amount={pendingMobileRewards}
+              hasMore={hotspots.length < (totalHotspots || 0)}
+            />
+            <RewardItem
+              mint={IOT_MINT}
+              amount={pendingIotRewards}
+              hasMore={hotspots.length < (totalHotspots || 0)}
+            />
+          </View>
+          <View className="mb-6 mt-4 grow flex-row items-center gap-2">
+            <Button
+              variant="cta"
+              size="dashboard"
+              className="flex-1 rounded-full"
+              onPress={handleNavigateToClaimRewards}
+              disabled={claimDisabled}
+            >
+              {t('collectablesScreen.hotspots.claimAllRewards')}
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-10 rounded-full"
+              onPress={handleNavigateToAutomation}
+            >
+              <AutomationIcon
+                size={20}
+                colorClassName={
+                  automationSchedule
+                    ? 'accent-warning-500'
+                    : 'accent-foreground'
+                }
+              />
+            </Button>
+          </View>
         </View>
-      </View>
+      </TabSafeArea>
     </>
   )
 }

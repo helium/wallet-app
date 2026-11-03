@@ -5,6 +5,7 @@ import {
 } from '@gorhom/bottom-sheet'
 import { PublicKey } from '@solana/web3.js'
 import { Sheet } from '@ui/Sheet'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useContentColumnMargins } from '@utils/layout'
 import React, {
   FC,
@@ -16,14 +17,13 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { Activity } from '../../types/activity'
 import TransactionLineItem from './TransactionLineItem'
 import { useTxnDetails } from './useTxn'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const initialState = {
   show: () => undefined,

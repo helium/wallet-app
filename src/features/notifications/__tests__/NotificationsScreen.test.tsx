@@ -3,6 +3,7 @@ import TestRenderer, { act } from 'react-test-renderer'
 import NotificationsScreen from '../NotificationsScreen'
 
 const mockNavigate = jest.fn()
+const mockGoBack = jest.fn()
 const mockOpenURL = jest.fn((_url: string) => Promise.resolve())
 const mockUpdateAllNotifications = jest.fn()
 const mockSetSelectedNotification = jest.fn()
@@ -24,6 +25,9 @@ const notification = (
 // Each test sets the storage this screen reads. The object stays the same
 // across renders, as the provider's memoised value does.
 let mockStorage: Record<string, unknown> = {}
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('../../../storage/NotificationStorageProvider', () => ({
   useNotificationStorage: () => mockStorage,
 }))
@@ -49,6 +53,7 @@ jest.mock('@helium/spl-utils', () => ({
 jest.mock('@react-navigation/native', () => {
   const navigation = {
     navigate: (...args: unknown[]) => mockNavigate(...args),
+    goBack: (...args: unknown[]) => mockGoBack(...args),
   }
   return {
     useNavigation: () => navigation,
@@ -151,6 +156,9 @@ jest.mock('@ui/AccountIcon', () => ({ AccountIcon: 'AccountIcon' }), {
 })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock('@ui/CloseButton', () => ({ CloseButton: 'CloseButton' }), {
+  virtual: true,
+})
 jest.mock('@ui/PressableScale', () => ({ PressableScale: 'PressableScale' }), {
   virtual: true,
 })
@@ -196,6 +204,7 @@ const render = async () => {
         rendered.update(<NotificationsScreen />)
       }),
     accountIcons: () => root.findAllByType('AccountIcon' as never),
+    closeButton: () => root.findByType('CloseButton' as never),
   }
 }
 
@@ -228,6 +237,17 @@ describe('NotificationsScreen', () => {
     expect(view.accountIcons().map((i) => i.props.address)).toEqual([
       'account-a',
     ])
+  })
+
+  it('shows a labelled close control that goes back', async () => {
+    const view = await render()
+
+    const close = view.closeButton()
+    expect(close.props.accessibilityLabel).toBe('generic.close')
+    act(() => {
+      close.props.onPress()
+    })
+    expect(mockGoBack).toHaveBeenCalledTimes(1)
   })
 
   it('shows the empty title when there are no notifications', async () => {

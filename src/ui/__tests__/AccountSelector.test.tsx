@@ -13,6 +13,9 @@ const mockListProps: { data: unknown; renderItem: unknown }[] = []
 
 // The node test runner cannot load gorhom (Reanimated). The sheet renders
 // its content only while presented, and the list renders one row per item.
+jest.mock('../TabSafeAreaView', () => ({
+  TabSafeAreaView: 'TabSafeAreaView',
+}))
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   return {

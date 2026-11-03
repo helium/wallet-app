@@ -8,7 +8,7 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
 import { Mints } from '../../utils/constants'
@@ -19,7 +19,7 @@ import {
 } from './collectablesTypes'
 import RewardItem from './RewardItem'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 type Route = RouteProp<CollectableStackParamList, 'ClaimRewardsScreen'>
 
@@ -77,7 +77,7 @@ const ClaimRewardsScreen = () => {
 
   return (
     <Animated.View className="flex-1">
-      <SafeArea className="flex-1" edges={['top']}>
+      <SafeArea className="flex-1" edges={['top', 'bottom']}>
         <BackHeader title={title} />
         <View className="grow px-4">
           <View className="grow-[2] items-center">
@@ -127,7 +127,7 @@ const ClaimRewardsScreen = () => {
           <View className="grow" />
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mx-6 mb-6"
             onPress={() => void onClaimRewards().catch(console.error)}
             disabled={addAllToAccountDisabled || redeeming}

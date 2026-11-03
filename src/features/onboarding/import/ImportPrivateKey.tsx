@@ -259,7 +259,7 @@ const ImportPrivateKey = () => {
       <View className="flex-1" />
       <Button
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="w-full"
         onPress={onImportAccount}
         disabled={!!error || publicKey === undefined}

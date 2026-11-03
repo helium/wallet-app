@@ -4,12 +4,12 @@ import { RouteProp, useRoute } from '@react-navigation/native'
 import { Text } from '@ui/Text'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import BackHeader from './components/BackHeader'
 import { CollectableStackParamList } from './collectablesTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 type Route = RouteProp<CollectableStackParamList, 'NftMetadataScreen'>
 

@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native'
 import { useAccountStorage } from '@storage/AccountStorageProvider'
 import { Button } from '@ui/Button'
 import { PressableScale } from '@ui/PressableScale'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { ellipsizeAddress } from '@utils/accountUtils'
 import { Copy, Share as ShareIcon } from 'lucide-react-native'
@@ -10,13 +11,13 @@ import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Platform, View } from 'react-native'
 import QRCode from 'react-native-qrcode-svg'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Share, { ShareOptions } from 'react-native-share'
 import { withUniwind } from 'uniwind'
 import SettingsBackHeader from './SettingsBackHeader'
 
 const CopyIcon = withUniwind(Copy)
 const ShareLucide = withUniwind(ShareIcon)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const QR_CONTAINER_SIZE = 225
 const QR_PADDING = 24
@@ -24,7 +25,6 @@ const QR_PADDING = 24
 const ShareAddressScreen = () => {
   const { currentAccount } = useAccountStorage()
   const navigation = useNavigation()
-  const { bottom } = useSafeAreaInsets()
   const { t } = useTranslation()
   const qrRef = useRef<{
     toDataURL: (callback: (url: string) => void) => void
@@ -81,7 +81,7 @@ const ShareAddressScreen = () => {
     })
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingBottom: bottom }}>
+    <SafeArea edges={['bottom']} className="flex-1 bg-background">
       <SettingsBackHeader onBack={navigation.goBack} />
       <View className="mb-15 flex-1 items-center justify-center px-6">
         <Text size="3xl" className="mb-2 text-center font-semibold">
@@ -112,7 +112,7 @@ const ShareAddressScreen = () => {
       <View className="mx-6 mb-4 flex-row gap-3">
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1 flex-row gap-2"
           onPress={copyAddress}
         >
@@ -121,7 +121,7 @@ const ShareAddressScreen = () => {
         </Button>
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1 flex-row gap-2"
           onPress={handleShare}
         >
@@ -129,7 +129,7 @@ const ShareAddressScreen = () => {
           <Text className="font-medium text-white">{t('generic.share')}</Text>
         </Button>
       </View>
-    </View>
+    </SafeArea>
   )
 }
 

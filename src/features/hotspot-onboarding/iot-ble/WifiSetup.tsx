@@ -65,14 +65,14 @@ const WifiSetup = () => {
           value={password}
           autoFocus
         />
-        <Button variant="ghost" size="lg" onPress={toggleSecureEntry}>
+        <Button variant="ghost" size="dashboard" onPress={toggleSecureEntry}>
           {secureTextEntry ? 'Show' : 'Hide'}
         </Button>
       </View>
 
       <Button
         variant="outline"
-        size="lg"
+        size="dashboard"
         className="mt-6 w-full"
         onPress={() => void handleSetWifi().catch(console.error)}
         disabled={loading}

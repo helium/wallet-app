@@ -39,10 +39,20 @@ const DappConnect = ({ appName, onApprove, onDeny }: Props) => {
 
       <View className="flex-1" />
       <View className="mt-6 w-full flex-row gap-4">
-        <Button variant="outline" size="lg" className="flex-1" onPress={onDeny}>
+        <Button
+          variant="outline"
+          size="dashboard"
+          className="flex-1"
+          onPress={onDeny}
+        >
           {t('generic.cancel')}
         </Button>
-        <Button variant="cta" size="lg" className="flex-1" onPress={onApprove}>
+        <Button
+          variant="cta"
+          size="dashboard"
+          className="flex-1"
+          onPress={onApprove}
+        >
           {t('dappLogin.connect.continue')}
         </Button>
       </View>

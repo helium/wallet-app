@@ -18,6 +18,11 @@ jest.mock('react-i18next', () => {
 jest.mock('@assets/images/ledger.svg', () => 'Ledger', { virtual: true })
 jest.mock('@ui/Button', () => ({ Button: 'Button' }), { virtual: true })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',

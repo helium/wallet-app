@@ -2,15 +2,16 @@ import React from 'react'
 import Ledger from '@assets/images/ledger.svg'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { type Edge } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useNavigation } from '@react-navigation/native'
 import { Button } from '@ui/Button'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { AddNewAccountNavigationProp } from '../home/addNewAccount/addNewAccountTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const LedgerIcon = withUniwind(Ledger)
 
 const EDGES: Edge[] = ['bottom']
@@ -51,7 +52,7 @@ const PairStart = () => {
       )}
       <Button
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mb-6 w-full"
         disabled={reachedAccountLimit}
         onPress={handleStart}

@@ -11,16 +11,14 @@ import { Button } from '@ui/Button'
 import { Checkbox } from '@ui/Checkbox'
 import { Input } from '@ui/Input'
 import { Spinner } from '@ui/Spinner'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { createHash } from 'crypto'
 import { ArrowRight } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, View } from 'react-native'
-import {
-  SafeAreaView as RNSafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { accountNetType } from '@utils/accountUtils'
 import { ResolvedPath } from '@hooks/useDerivationAccounts'
@@ -32,7 +30,7 @@ import { CreateAccountNavigationProp } from './create/createAccountNavTypes'
 import { ImportAccountNavigationProp } from './import/importAccountNavTypes'
 import { useOnboarding } from './OnboardingProvider'
 
-const SafeAreaView = withUniwind(RNSafeAreaView)
+const SafeAreaView = withUniwind(TabSafeAreaView)
 const StyledKeyboardAvoidingView = withUniwind(KeyboardAvoidingView)
 const ContinueIcon = withUniwind(ArrowRight)
 

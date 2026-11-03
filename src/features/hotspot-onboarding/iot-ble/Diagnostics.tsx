@@ -56,14 +56,19 @@ const Diagnostics = () => {
 
       <Button
         variant="outline"
-        size="lg"
+        size="dashboard"
         className="mt-6 w-full"
         onPress={handleSetDiagnostics}
         disabled={loading}
       >
         {loading ? <Spinner /> : t('hotspotOnboarding.diagnostics.get')}
       </Button>
-      <Button variant="cta" size="lg" className="mt-6 w-full" onPress={navNext}>
+      <Button
+        variant="cta"
+        size="dashboard"
+        className="mt-6 w-full"
+        onPress={navNext}
+      >
         {t('generic.done')}
       </Button>
     </OnboardingScreen>

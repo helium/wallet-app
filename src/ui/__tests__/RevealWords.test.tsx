@@ -7,6 +7,9 @@ const mockUseSecureWindow = jest.fn()
 
 const mockUseCopyText = jest.fn()
 
+jest.mock('../TabSafeAreaView', () => ({
+  TabSafeAreaView: 'TabSafeAreaView',
+}))
 jest.mock(
   '@hooks/useCopyText',
   () => (options: unknown) => {

@@ -23,7 +23,7 @@ import {
 } from 'react-native'
 import { Image } from '@ui/Image'
 import Animated from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import 'text-encoding-polyfill'
 import { withUniwind } from 'uniwind'
 import useSubmitTxn from '../../hooks/useSubmitTxn'
@@ -49,7 +49,7 @@ LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
 ])
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const Blur = withUniwind(BlurView)
 const KeyboardAvoiding = withUniwind(KeyboardAvoidingView)
 const InfoIcon = withUniwind(Info)
@@ -289,7 +289,7 @@ const TransferCollectableScreen = () => {
                 <View className="mx-8 mt-4 flex-row">
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     disabled={!solAddressIsValid(recipient) || transferring}
                     onPress={() => void handleTransfer().catch(console.error)}

@@ -6,6 +6,9 @@ const mockGoBack = jest.fn()
 
 // The node test runner cannot load react-native, safe-area or uniwind. The
 // host components render as named elements so the test reads their props.
+jest.mock('../TabSafeAreaView', () => ({
+  TabSafeAreaView: 'TabSafeAreaView',
+}))
 jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
@@ -41,9 +44,20 @@ describe('BackScreen', () => {
       </BackScreen>,
     )
 
-    expect(byType(renderer, 'SafeAreaView')[0].props.edges).toEqual(['top'])
+    expect(byType(renderer, 'TabSafeAreaView')[0].props.edges).toEqual(['top'])
     expect(byType(renderer, 'Text')[0].props.children).toBe('Proxy')
     expect(renderer.root.findByProps({ testID: 'child' })).toBeTruthy()
+  })
+
+  // Native tabs draw the screen under the tab bar; only the screen's own
+  // safe area lifts the content above it.
+  it('lifts the content above the tab bar on the bottom edge', () => {
+    const [safeArea] = byType(
+      create(<BackScreen edges={['bottom']} />),
+      'TabSafeAreaView',
+    )
+
+    expect(safeArea.props.edges).toContain('bottom')
   })
 
   it('goes back when the back button is pressed', () => {

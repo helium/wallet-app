@@ -7,9 +7,9 @@ import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
 import { Copy } from 'lucide-react-native'
 import React, { useEffect, useState } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Trans, useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
 import { getSecureAccount } from '../../storage/secureStorage'
@@ -26,7 +26,6 @@ const RevealPrivateKeyScreen = () => {
   const { currentAccount } = useAccountStorage()
   const { t } = useTranslation()
   const navigation = useNavigation()
-  const { bottom } = useSafeAreaInsets()
   const [privateKey, setPrivateKey] = useState<string>()
   const [revealed, setRevealed] = useState(false)
   const { showOKCancelAlert } = useAlert()
@@ -58,7 +57,7 @@ const RevealPrivateKeyScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-background" style={{ paddingBottom: bottom }}>
+    <View className="flex-1 bg-background">
       <SettingsBackHeader onBack={navigation.goBack} />
       <View className="flex-1 px-6">
         <Text
@@ -83,7 +82,7 @@ const RevealPrivateKeyScreen = () => {
             </View>
             <Button
               variant="cta"
-              size="lg"
+              size="dashboard"
               className="w-full"
               onPress={() =>
                 copyText({
@@ -116,13 +115,14 @@ const RevealPrivateKeyScreen = () => {
         <View className="flex-1" />
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="mb-4 w-full"
           onPress={navigation.goBack}
         >
           {t('settings.revealPrivateKey.done')}
         </Button>
       </View>
+      <TabSafeAreaView edges={['bottom']} />
     </View>
   )
 }

@@ -46,14 +46,14 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import Share, { ShareOptions } from 'react-native-share'
 import Toast from 'react-native-simple-toast'
 import { useDebounce } from 'use-debounce'
 import { Share as ShareGlyph } from 'lucide-react-native'
 import { withUniwind } from 'uniwind'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const ShareIcon = withUniwind(ShareGlyph)
 
 const QR_CONTAINER_SIZE = 220
@@ -235,7 +235,7 @@ const RequestScreen = () => {
           <SafeArea
             className="flex-1 rounded-t-[20px] border border-border bg-secondary"
             onLayout={handleContainerLayout}
-            edges={['top']}
+            edges={['top', 'bottom']}
           >
             <Text size="lg" className="pt-6 text-center font-medium">
               {t('request.title')}
@@ -250,12 +250,12 @@ const RequestScreen = () => {
               contentInsetAdjustmentBehavior="automatic"
               bottomOffset={75}
             >
-              <View className="mx-6">
+              <View className="mx-4">
                 <View className="h-[220px] items-center justify-center">
                   {/* A QR code needs a light quiet zone in both themes. */}
                   <Animated.View
                     style={qrStyle}
-                    className="absolute aspect-square h-[220px] justify-center self-center rounded-[12px] bg-white p-6"
+                    className="absolute aspect-square h-[220px] justify-center self-center rounded-2xl border border-border bg-white p-6"
                   >
                     {!isEditing ? (
                       <QRCode
@@ -287,7 +287,7 @@ const RequestScreen = () => {
 
                 <AccountButton
                   accountIconSize={41}
-                  backgroundClassName="bg-secondary"
+                  backgroundClassName="bg-card shadow-stat-box"
                   showBubbleArrow
                   title={currentAccount?.alias}
                   address={currentAccount?.address}
@@ -298,15 +298,14 @@ const RequestScreen = () => {
                   title={t('request.requestType', {
                     ticker: symbol || '',
                   })}
-                  backgroundClassName="bg-secondary"
+                  backgroundClassName="bg-card shadow-stat-box"
                   address={currentAccount?.address}
                   onPress={handleTickerSelected}
                   showBubbleArrow
                   mint={mint}
                 />
                 <Card
-                  variant="panel"
-                  className={`mb-6 rounded-[20px] p-5 ${
+                  className={`mb-6 rounded-2xl border border-border px-4 py-[15px] ${
                     currentAccount?.netType === NetType.TESTNET
                       ? 'bg-warning-100'
                       : ''
@@ -337,7 +336,7 @@ const RequestScreen = () => {
                 <View className="mt-6 flex-row gap-4 pb-12">
                   <Button
                     variant="outline"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     onPress={navigation.goBack}
                   >
@@ -345,7 +344,7 @@ const RequestScreen = () => {
                   </Button>
                   <Button
                     variant="secondary"
-                    size="lg"
+                    size="dashboard"
                     className="flex-1"
                     onPress={() => void handleShare().catch(console.error)}
                   >

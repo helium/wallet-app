@@ -81,6 +81,11 @@ jest.mock('@ui/buttonVariants', () => ({ buttonTextVariants: () => '' }), {
 })
 jest.mock('@ui/Spinner', () => ({ Spinner: 'Spinner' }), { virtual: true })
 jest.mock('@ui/Text', () => ({ Text: 'Text' }), { virtual: true })
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('lucide-react-native', () => ({
   ChevronLeft: 'ChevronLeft',
   CircleCheck: 'CircleCheck',

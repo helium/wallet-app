@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { Alert, Linking, SectionList, View } from 'react-native'
 import { Image } from '@ui/Image'
 import deviceInfo from 'react-native-device-info'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SvgUri } from 'react-native-svg'
 import { withUniwind } from 'uniwind'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from '../../constants/urls'
@@ -37,7 +37,7 @@ import { SettingsNavigationProp } from './settingsTypes'
 import { withICloudSignOutWarning } from './signOutWarning'
 import useAuthIntervals from './useAuthIntervals'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 
 const Settings = () => {

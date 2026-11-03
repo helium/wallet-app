@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useTranslation } from 'react-i18next'
 import { FlatList, View } from 'react-native'
 import Fuse from 'fuse.js'
@@ -125,8 +126,8 @@ const ContactsList = ({
   if (insideBottomSheet) {
     return (
       <BottomSheetFlatList
-        contentInsetAdjustmentBehavior="automatic"
         ListHeaderComponent={header}
+        ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
         data={data}
         renderItem={renderFlatlistItem}
         keyExtractor={keyExtractor}
@@ -136,8 +137,8 @@ const ContactsList = ({
 
   return (
     <FlatList
-      contentInsetAdjustmentBehavior="automatic"
       ListHeaderComponent={header}
+      ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
       data={data}
       renderItem={renderFlatlistItem}
       keyExtractor={keyExtractor}

@@ -1,4 +1,4 @@
-import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
+import { BottomSheetFlatList, useBottomSheet } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -10,10 +10,16 @@ import { syncTokenAccounts } from '@utils/balances'
 import { times } from 'lodash'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SlidersHorizontal } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { RefreshControl, View } from 'react-native'
+import { RefreshControl, StyleSheet, View } from 'react-native'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { GovMints } from '../../utils/constants'
@@ -24,6 +30,7 @@ import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
 import { useLockedAmounts, useTokenRows } from './useTokenRows'
 
 const ManageIcon = withUniwind(SlidersHorizontal)
+const Fade = withUniwind(TabSafeAreaView)
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
@@ -36,6 +43,16 @@ const AccountTokenList = ({ onLayout }: Props) => {
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
   const queryClient = useQueryClient()
+  const { animatedIndex } = useBottomSheet()
+  // Full at the collapsed snap, gone once the drawer is open.
+  const fadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      animatedIndex.value,
+      [0, 1],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }))
 
   const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
     mutationFn: async () => {
@@ -120,16 +137,19 @@ const AccountTokenList = ({ onLayout }: Props) => {
 
   const renderFooterComponent = () => {
     return (
-      <PressableScale
-        feedback="opacity"
-        onPress={onManageTokenList}
-        className="mt-4 flex-row items-center justify-center"
-      >
-        <ManageIcon colorClassName="accent-muted-foreground" />
-        <Text className="ml-2 font-medium text-muted-foreground">
-          {t('accountTokenList.manage')}
-        </Text>
-      </PressableScale>
+      <>
+        <PressableScale
+          feedback="opacity"
+          onPress={onManageTokenList}
+          className="mt-4 flex-row items-center justify-center"
+        >
+          <ManageIcon colorClassName="accent-muted-foreground" />
+          <Text className="ml-2 font-medium text-muted-foreground">
+            {t('accountTokenList.manage')}
+          </Text>
+        </PressableScale>
+        <TabSafeAreaView edges={['bottom']} />
+      </>
     )
   }
 
@@ -143,32 +163,50 @@ const AccountTokenList = ({ onLayout }: Props) => {
   }
 
   return (
-    <BottomSheetFlatList
-      contentInsetAdjustmentBehavior="automatic"
-      onLayout={onLayout}
-      data={mints}
-      numColumns={2}
-      refreshControl={
-        <RefreshControl
-          enabled
-          refreshing={refetchingTokens}
-          onRefresh={() => refetchTokens()}
-          title=""
-          tintColorClassName="accent-foreground"
-        />
-      }
-      refreshing={refetchingTokens}
-      onRefresh={() => refetchTokens()}
-      columnWrapperStyle={{
-        flexDirection: 'column',
-      }}
-      contentContainerStyle={contentContainerStyle}
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmptyComponent}
-      ListFooterComponent={renderFooterComponent}
-      keyExtractor={keyExtractor}
-    />
+    <>
+      <BottomSheetFlatList
+        onLayout={onLayout}
+        data={mints}
+        numColumns={2}
+        refreshControl={
+          <RefreshControl
+            enabled
+            refreshing={refetchingTokens}
+            onRefresh={() => refetchTokens()}
+            title=""
+            tintColorClassName="accent-foreground"
+          />
+        }
+        refreshing={refetchingTokens}
+        onRefresh={() => refetchTokens()}
+        columnWrapperStyle={{
+          flexDirection: 'column',
+        }}
+        contentContainerStyle={contentContainerStyle}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={renderFooterComponent}
+        keyExtractor={keyExtractor}
+      />
+      {/* The rows after the first two fade out behind the floating tab bar,
+          which blurs them itself. The fade starts a little above the bar,
+          so the row at the fold washes out too. */}
+      {mints.length > 2 && (
+        <Animated.View pointerEvents="none" style={[styles.fade, fadeStyle]}>
+          <Fade
+            edges={['bottom']}
+            className="bg-linear-to-t from-secondary via-secondary/80 to-transparent"
+          >
+            <View className="h-12" />
+          </Fade>
+        </Animated.View>
+      )}
+    </>
   )
 }
+
+const styles = StyleSheet.create({
+  fade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+})
 
 export default AccountTokenList

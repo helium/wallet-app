@@ -56,6 +56,17 @@ describe('TokenPill', () => {
     expect(onPress).toHaveBeenCalledTimes(1)
   })
 
+  it('renders the token icon at the full 32pt height with no backdrop', () => {
+    const renderer = create(<TokenPill mint={mint} onPress={jest.fn()} />)
+    const icon = byType(renderer, 'TokenIcon')[0]
+
+    expect(icon.props.size).toBe(32)
+    const backdrops = byType(renderer, 'View').filter((view) =>
+      /\bbg-/.test(view.props.className ?? ''),
+    )
+    expect(backdrops).toEqual([])
+  })
+
   it('shows a chevron when hasCarot is set', () => {
     const renderer = create(
       <TokenPill mint={mint} hasCarot onPress={jest.fn()} />,

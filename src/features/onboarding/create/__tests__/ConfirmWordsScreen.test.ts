@@ -13,6 +13,11 @@ Object.assign(global, { __DEV__: false })
 const mockPlatform = { OS: 'android' }
 const mockSetSecure = jest.fn((_secure: boolean) => Promise.resolve())
 
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('react-native', () => ({
   Platform: {
     // undefined at import: useSecureWindow reads it before mockPlatform is set

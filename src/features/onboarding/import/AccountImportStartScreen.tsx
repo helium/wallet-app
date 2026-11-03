@@ -8,7 +8,7 @@ import React, { useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import { Image } from '@ui/Image'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { ImportAccountNavigationProp } from './importAccountNavTypes'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
@@ -17,7 +17,7 @@ import { MultiAccountStackParamList } from '../multiAccount/MultiAccountNavigato
 import { AddNewAccountNavigationProp } from '../../home/addNewAccount/addNewAccountTypes'
 import { RootNavigationProp } from '../../../navigation/rootTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 
 const SUBTITLE_COMPONENTS = {
@@ -119,7 +119,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
       <View className="mx-6 mb-6 flex-row gap-1">
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1 px-2"
           onPress={navNext}
           testID="AccountImportStart.SecretPhrase"
@@ -129,7 +129,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         </Button>
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1 px-2"
           onPress={importPrivateKey}
           disabled={reachedAccountLimit}
@@ -138,7 +138,7 @@ const AccountImportStartScreen = ({ inline }: { inline?: boolean }) => {
         </Button>
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1 px-2"
           onPress={cliExport}
           disabled={reachedAccountLimit}

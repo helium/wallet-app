@@ -2,6 +2,7 @@ import { BottomSheetFlatList, BottomSheetModal } from '@gorhom/bottom-sheet'
 import { Checkbox } from '@ui/Checkbox'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -75,6 +76,7 @@ const HotspotsEditSheet = ({ ref, hotspots, selected, onToggle }: Props) => {
         data={hotspots}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
       />
     </Sheet>
   )

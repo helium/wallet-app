@@ -91,6 +91,9 @@ jest.mock('react-native-gesture-handler', () => ({ FlatList: 'FlatList' }))
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 jest.mock('lucide-react-native', () => ({ X: 'X' }))
 

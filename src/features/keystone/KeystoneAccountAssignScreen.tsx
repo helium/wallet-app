@@ -9,7 +9,8 @@ import { useMutation } from '@tanstack/react-query'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { KeyboardAvoidingView, Platform, View } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import base58 from 'bs58'
 import { CSAccountVersion } from '@storage/cloudStorage'
@@ -23,7 +24,7 @@ import { ImportAccountNavigationProp } from '../onboarding/import/importAccountN
 import { CreateAccountNavigationProp } from '../onboarding/create/createAccountNavTypes'
 import { useKeystoneOnboarding } from './KeystoneOnboardingProvider'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 // Restyle spacing `l`, kept as the keyboard offset below the top inset
 const KEYBOARD_OFFSET = 24

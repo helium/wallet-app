@@ -83,6 +83,23 @@ describe('TokenButton', () => {
     expect(button.props.disabled).toBe(true)
   })
 
+  it('draws the pill with the card radius and panel padding', () => {
+    const renderer = create(
+      <TokenButton title="HNT" backgroundClassName="bg-card" showBubbleArrow />,
+    )
+    const [pill, arrow] = byType(renderer, 'View').filter((v) =>
+      String(v.props.className).includes('bg-card'),
+    )
+    const pillClasses = String(pill.props.className).split(' ')
+
+    expect(pillClasses).toEqual(
+      expect.arrayContaining(['rounded-2xl', 'px-4', 'py-[15px]']),
+    )
+    expect(pillClasses).not.toContain('rounded-[20px]')
+    // The bubble arrow stays a square under the pill.
+    expect(String(arrow.props.className)).not.toContain('rounded')
+  })
+
   it('applies className to the button and the background to the bubble', () => {
     const renderer = create(
       <TokenButton

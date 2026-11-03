@@ -7,6 +7,9 @@ let mockReducedMotion = false
 let mockBatchStatus: { status?: string; isLoading: boolean; error?: Error }
 
 // The real reveal, so the test proves the confirmed view mounts inside it.
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock(
   '@ui/SuccessReveal',
   () => jest.requireActual('../../../ui/SuccessReveal'),

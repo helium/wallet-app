@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useEffect, useEffectEvent } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { SectionList, View } from 'react-native'
 import { Image } from '@ui/Image'
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native'
@@ -288,15 +289,16 @@ const DeviceShow = () => {
           initialNumToRender={100}
         />
       </View>
-      <View className="absolute inset-x-0 bottom-0 h-[11%] border-t border-border bg-background">
+      <View className="absolute inset-x-0 bottom-0 min-h-[11%] border-t border-border bg-background">
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="mx-6 mb-1 mt-4"
           onPress={canAddAccounts ? handleNext : handleClose}
         >
           {canAddAccounts ? t('ledger.show.next') : t('ledger.show.close')}
         </Button>
+        <TabSafeAreaView edges={['bottom']} />
       </View>
     </View>
   )

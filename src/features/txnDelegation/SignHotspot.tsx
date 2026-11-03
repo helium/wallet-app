@@ -230,7 +230,7 @@ const SignHotspot = () => {
           <View className="flex-1 justify-end">
             <Button
               variant="ghost"
-              size="lg"
+              size="dashboard"
               className="w-full"
               onPress={() => void handleError().catch(console.error)}
             >
@@ -393,7 +393,7 @@ const SignHotspot = () => {
       <View className="mt-6 flex-row gap-4">
         <Button
           variant="secondary"
-          size="lg"
+          size="dashboard"
           className="flex-1"
           onPress={() => void handleCancel().catch(console.error)}
           disabled={submitLoading}
@@ -402,7 +402,7 @@ const SignHotspot = () => {
         </Button>
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="flex-1"
           onPress={() => void handleLink().catch(console.error)}
           disabled={!validated || submitLoading || !solana.hasTransactions}

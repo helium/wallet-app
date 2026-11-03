@@ -29,12 +29,13 @@ import { getDerivedProposalState } from '@utils/governanceUtils'
 import axios from 'axios'
 import BN from 'bn.js'
 import { useQuery } from '@tanstack/react-query'
-import { Users } from 'lucide-react-native'
+import { ChevronRight, Users } from 'lucide-react-native'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { Markdown } from './Markdown'
 import { VoteOption, votingResultColor } from './VoteOption'
@@ -45,8 +46,9 @@ import {
   VoteChoiceWithMeta,
 } from './governanceTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BrowseProxiesIcon = withUniwind(Users)
+const ChevronIcon = withUniwind(ChevronRight)
 
 const safeEdges: Edge[] = ['bottom']
 const backEdges: Edge[] = ['top']
@@ -251,9 +253,9 @@ export const ProposalScreen = () => {
       completed)
 
   return (
-    <Animated.View className="flex-1">
+    <Animated.View className="flex-1 bg-secondary">
       <BackScreen
-        headerClassName="mt-6"
+        headerClassName="mt-6 px-4"
         className="p-0"
         title="Proposal Overview"
         edges={backEdges}
@@ -261,7 +263,7 @@ export const ProposalScreen = () => {
         <SafeArea edges={safeEdges} className="mt-6 flex-1 bg-transparent">
           <ScrollView contentInsetAdjustmentBehavior="automatic">
             <View className="px-4">
-              <View className="grow justify-center rounded-[12px] bg-secondary p-4">
+              <View className="grow justify-center rounded-2xl border border-border bg-card px-4 py-[15px]">
                 <View className="flex-row">
                   {proposal?.tags
                     .filter((tag) => tag !== 'tags')
@@ -271,14 +273,14 @@ export const ProposalScreen = () => {
                         <View
                           key={tag}
                           className={`${idx > 0 ? 'ml-2' : ''} rounded-md p-2 ${
-                            tempCheck ? 'bg-warning-100' : 'bg-background'
+                            tempCheck ? 'bg-warning-500' : 'bg-border'
                           }`}
                         >
                           <Text
                             size="xs"
                             className={
                               tempCheck
-                                ? 'text-warning-500'
+                                ? 'text-foreground'
                                 : 'text-muted-foreground'
                             }
                           >
@@ -344,7 +346,7 @@ export const ProposalScreen = () => {
                   </View>
                   {showVoteResults &&
                     votingResults?.totalVotes.gt(new BN(0)) && (
-                      <View className="rounded-[12px] bg-secondary pt-4">
+                      <View className="pt-4">
                         {votingResults.results
                           ?.sort((a, b) => b.percent - a.percent)
                           .map((r, idx) => (
@@ -353,7 +355,7 @@ export const ProposalScreen = () => {
                               className={`flex-1 ${idx > 0 ? 'mt-2' : ''}`}
                             >
                               <Text className="mb-1">{r.name}</Text>
-                              <View className="mb-1 flex-1 flex-row overflow-hidden rounded-md bg-muted">
+                              <View className="mb-1 flex-1 flex-row overflow-hidden rounded-md bg-border">
                                 <View
                                   className="h-1.5 flex-row"
                                   style={{
@@ -383,21 +385,19 @@ export const ProposalScreen = () => {
                     })
                   }
                 >
-                  <View className="mt-4 grow flex-row items-center justify-between rounded-[12px] bg-secondary p-4">
+                  <View className="mt-4 grow flex-row items-center justify-between rounded-2xl border border-border bg-card px-4 py-[15px]">
                     <Text className="text-warning-500">
                       {`${t('gov.votingPower.noPower')}, ${t(
                         'gov.votingPower.increase',
                       )}`}
                     </Text>
-                    <Text size="xl" className="font-medium">
-                      &gt;
-                    </Text>
+                    <ChevronIcon size={20} colorClassName="accent-foreground" />
                   </View>
                 </PressableScale>
               )}
               {derivedState === 'active' && !noVotingPower && (
                 <>
-                  <View className="mt-4 grow justify-center rounded-[12px] bg-secondary p-4">
+                  <View className="mt-4 grow justify-center rounded-2xl border border-border bg-card px-4 py-[15px]">
                     <Text>
                       {t('gov.proposals.toVote', {
                         maxChoicesPerVoter: proposal?.maxChoicesPerVoter,
@@ -411,7 +411,7 @@ export const ProposalScreen = () => {
                     </View>
                     <Text>{t('gov.proposals.assignProxy')}</Text>
                     <Button
-                      size="lg"
+                      size="dashboard"
                       className="mt-4 w-full rounded-full"
                       onPress={handleBrowseProxies}
                     >
@@ -426,7 +426,7 @@ export const ProposalScreen = () => {
                   </View>
                   <View className="mt-4 grow justify-center gap-3">
                     {!!showError && (
-                      <View className="flex-row rounded-[12px] bg-secondary p-4">
+                      <View className="flex-row rounded-2xl border border-border bg-card px-4 py-[15px]">
                         <Text
                           size="xs"
                           className="font-medium text-destructive"
@@ -439,9 +439,10 @@ export const ProposalScreen = () => {
                       {votingResults.results?.map((r) => (
                         <View
                           key={r.name}
-                          className="rounded-[12px] bg-secondary p-1"
+                          className="rounded-2xl border border-border bg-card p-1"
                         >
                           <VoteOption
+                            className="bg-card"
                             voters={voters?.[r.index] || []}
                             voting={
                               currVote === r.index &&
@@ -463,7 +464,7 @@ export const ProposalScreen = () => {
                 </>
               )}
               {!!markdown && (
-                <View className="mt-4 grow justify-center rounded-[12px] bg-secondary p-4">
+                <View className="mt-4 grow justify-center rounded-2xl border border-border bg-card px-4 py-[15px]">
                   <Markdown markdown={markdown} />
                 </View>
               )}

@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import useEnrichedTransactions from '@hooks/useEnrichedTransactions'
 import { Spinner } from '@ui/Spinner'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { ActivityNavigationProp } from './activityTypes'
@@ -110,7 +111,6 @@ const ActivityScreen = () => {
     <View className="flex-1">
       <SafeArea edges={['top']}>
         <SectionList
-          contentInsetAdjustmentBehavior="automatic"
           contentContainerClassName="pb-15"
           sections={sections}
           keyExtractor={keyExtractor}
@@ -135,11 +135,14 @@ const ActivityScreen = () => {
           onEndReachedThreshold={0.05}
           onEndReached={() => void fetchMore().catch(console.error)}
           ListFooterComponent={
-            fetchingMore ? (
-              <View className="mt-4">
-                <Spinner size="large" />
-              </View>
-            ) : null
+            <>
+              {fetchingMore && (
+                <View className="mt-4">
+                  <Spinner size="large" />
+                </View>
+              )}
+              <TabSafeAreaView edges={['bottom']} />
+            </>
           }
         />
       </SafeArea>

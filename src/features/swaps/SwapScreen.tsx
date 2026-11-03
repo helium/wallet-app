@@ -60,7 +60,8 @@ import {
   View,
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { Edge } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
@@ -72,7 +73,7 @@ import { FADE_IN } from '@theme/motion'
 
 const SOL_TXN_FEE = new BN(TXN_FEE_IN_LAMPORTS)
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const MenuIcon = withUniwind(Menu)
 const PlusIcon = withUniwind(Plus)
 const RefreshIcon = withUniwind(RefreshCw)
@@ -289,7 +290,7 @@ const SwapScreen = () => {
   const Slippage = useMemo(() => {
     if (isDevnet)
       return (
-        <View className="mx-4 mb-12 mt-8 flex-row rounded-[12px] bg-secondary" />
+        <View className="mx-4 mb-12 mt-8 flex-row rounded-2xl bg-secondary" />
       )
 
     const bpsOptions: number[] = [30, 50, 100]
@@ -298,7 +299,7 @@ const SwapScreen = () => {
     return (
       <View
         className={twMerge(
-          'mx-4 mb-12 mt-8 flex-row overflow-hidden rounded-[12px] bg-secondary',
+          'mx-4 mb-12 mt-8 flex-row overflow-hidden rounded-2xl bg-secondary',
           disabled ? 'opacity-30' : undefined,
         )}
       >
@@ -741,7 +742,7 @@ const SwapScreen = () => {
                   keyboardVerticalOffset={60}
                 >
                   {Header}
-                  <View className="mt-15 grow justify-center">
+                  <View className="mt-12 grow justify-center">
                     <SwapItem
                       testID="Swap.PayItem"
                       onPress={onTokenItemPressed(true)}
@@ -851,7 +852,7 @@ const SwapScreen = () => {
                 <View className="mx-4 mb-8">
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="w-full"
                     disabled={
                       hasInsufficientBalance ||

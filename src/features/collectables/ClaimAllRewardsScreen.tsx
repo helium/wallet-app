@@ -20,14 +20,14 @@ import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { PublicKey } from '@solana/web3.js'
 import BackHeader from './components/BackHeader'
 import { CollectableNavigationProp } from './collectablesTypes'
 import RewardItem from './RewardItem'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 const ClaimAllRewardsScreen = () => {
   const { t } = useTranslation()
@@ -159,7 +159,7 @@ const ClaimAllRewardsScreen = () => {
           <View className="grow" />
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="mx-6 mb-6"
             onPress={() => void onClaimRewards().catch(console.error)}
             disabled={redeeming}

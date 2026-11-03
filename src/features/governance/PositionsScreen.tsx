@@ -24,6 +24,7 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import { Button } from '@ui/Button'
 import { buttonTextVariants } from '@ui/buttonVariants'
 import { Text } from '@ui/Text'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { IOT_SUB_DAO_KEY, MOBILE_SUB_DAO_KEY, Mints } from '@utils/constants'
 import { daysToSecs, getFormattedStringFromDays } from '@utils/dateTools'
 import BN from 'bn.js'
@@ -36,6 +37,7 @@ import React, {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
+import { withUniwind } from 'uniwind'
 import { ClaimingRewardsModal } from './ClaimingRewardsModal'
 import { DelegateTokensModal } from './DelegateTokensModal'
 import GovernanceWrapper from './GovernanceWrapper'
@@ -43,6 +45,10 @@ import LockTokensModal, { LockTokensModalFormValues } from './LockTokensModal'
 import { PositionsList } from './PositionsList'
 import { VotingPowerCard } from './VotingPowerCard'
 import { GovernanceNavigationProp } from './governanceTypes'
+
+const TabSafeArea = withUniwind(TabSafeAreaView)
+
+const BOTTOM_EDGE = ['bottom'] as const
 
 const getDefaultDelegateAllSubDao = (
   subDaos: SubDaoWithMeta[] | undefined,
@@ -390,7 +396,7 @@ export const PositionsScreen = () => {
 
   return (
     <GovernanceWrapper selectedTab="positions">
-      <View className="flex-1">
+      <TabSafeArea edges={BOTTOM_EDGE} className="flex-1">
         <View className="flex-1">
           <PositionsList header={<VotingPowerCard className="mb-6" />} />
         </View>
@@ -405,7 +411,7 @@ export const PositionsScreen = () => {
               {positions?.length === 0 ? (
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="dashboard"
                   className="w-full"
                   onPress={() => setIsLockModalOpen(true)}
                 >
@@ -415,7 +421,7 @@ export const PositionsScreen = () => {
                 <>
                   <Button
                     variant="outline"
-                    size="lg"
+                    size="dashboard"
                     className="w-full gap-2"
                     onPress={() => setIsManageSheetOpen(true)}
                     testID="Positions.Manage"
@@ -495,7 +501,7 @@ export const PositionsScreen = () => {
             </Text>
           </View>
         )}
-      </View>
+      </TabSafeArea>
     </GovernanceWrapper>
   )
 }

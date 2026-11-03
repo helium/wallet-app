@@ -12,6 +12,9 @@ import {
 // row per item.
 const mockRenderItems: unknown[] = []
 
+jest.mock('../TabSafeAreaView', () => ({
+  TabSafeAreaView: 'TabSafeAreaView',
+}))
 jest.mock('react-native', () => ({ View: 'View' }))
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ bottom: 20 }),

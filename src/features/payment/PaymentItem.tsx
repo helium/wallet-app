@@ -196,14 +196,14 @@ const PaymentItem = ({
   return (
     <View
       className={twMerge(
-        'mx-6 overflow-hidden rounded-[20px] bg-secondary',
+        'mx-6 overflow-hidden rounded-[20px] border border-border bg-card',
         className,
       )}
     >
       {hasError && <View className="absolute inset-0 bg-destructive/20" />}
       <View className="flex-row">
         {isDeepLink && address ? (
-          <Text size="lg" className="flex-1 px-6 py-4 font-medium">
+          <Text size="lg" className="flex-1 px-4 py-[15px] font-medium">
             {ellipsizeAddress(address)}
           </Text>
         ) : (
@@ -244,7 +244,7 @@ const PaymentItem = ({
                 </View>
                 <PressableScale
                   feedback="opacity"
-                  className="me-6"
+                  className="me-4"
                   onPress={handleAddressBookSelected}
                 >
                   <AddressIcon address={address} />
@@ -264,7 +264,7 @@ const PaymentItem = ({
         )}
       </View>
 
-      <View className="h-px bg-background" />
+      <View className="h-px bg-border" />
 
       {showAmount && (
         <View className="flex-row" style={{ minHeight: ITEM_HEIGHT }}>
@@ -311,7 +311,7 @@ const PaymentItem = ({
 
       {!hideMemo && (
         <>
-          <View className="h-px bg-background" />
+          <View className="h-px bg-border" />
 
           <View className="justify-center" style={{ minHeight: ITEM_HEIGHT }}>
             <MemoInput value={memo} onChangeText={handleEditMemo} />

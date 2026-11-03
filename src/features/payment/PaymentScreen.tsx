@@ -21,6 +21,7 @@ import { NATIVE_MINT } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { useVisibleTokens } from '@storage/TokensProvider'
 import { PressableScale } from '@ui/PressableScale'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { Mints } from '@utils/constants'
 import { fetchDomainOwner } from '@utils/getDomainOwner'
@@ -41,7 +42,7 @@ import React, {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Keyboard, Platform, View } from 'react-native'
+import { Keyboard, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-simple-toast'
@@ -727,13 +728,8 @@ const PaymentScreen = () => {
     dispatch({ type: 'addPayee' })
   }, [dispatch])
 
-  const containerStyle = useMemo(() => {
-    // if navigation cannot go back then this is not being presented in a modal so we need top margin
-    return {
-      marginTop:
-        Platform.OS === 'android' || !navigation.canGoBack() ? top : undefined,
-    }
-  }, [navigation, top])
+  // Every stack shows Send as a full-screen card, so clear the status bar.
+  const containerStyle = useMemo(() => ({ marginTop: top }), [top])
 
   const handleShowAccounts = useCallback(() => {
     if (!accountSelectorRef?.current) return
@@ -789,7 +785,7 @@ const PaymentScreen = () => {
                 className="flex-1 rounded-t-[20px] bg-secondary"
                 style={containerStyle}
               >
-                <View className="flex-row items-center justify-between rounded-t-[20px]">
+                <View className="flex-row items-center justify-between rounded-t-[20px] px-2">
                   <PressableScale
                     feedback="opacity"
                     hitSlop={hitSlop}
@@ -822,7 +818,7 @@ const PaymentScreen = () => {
                   keyboardShouldPersistTaps="always"
                 >
                   <AccountButton
-                    backgroundClassName="bg-secondary"
+                    backgroundClassName="bg-card shadow-stat-box"
                     accountIconSize={41}
                     title={formatAccountAlias(currentAccount)}
                     subtitle={t('payment.senderAccount')}
@@ -832,18 +828,18 @@ const PaymentScreen = () => {
                     address={currentAccount?.address}
                     onPress={handleShowAccounts}
                     showBubbleArrow
-                    className="pt-6 mx-6 mb-1"
+                    className="pt-6 mx-4 mb-1"
                   />
 
                   <TokenButton
-                    backgroundClassName="bg-secondary"
+                    backgroundClassName="bg-card shadow-stat-box"
                     title={t('payment.title', { ticker: symbol })}
                     subtitle={tokenButtonBalance}
                     address={currentAccount?.address}
                     onPress={handleTokenTypeSelected}
                     showBubbleArrow
                     mint={mint}
-                    className="mx-6"
+                    className="mx-4"
                   />
 
                   {paymentState.payments.map((p, index) => (
@@ -851,7 +847,11 @@ const PaymentScreen = () => {
                       <PaymentItem
                         {...p}
                         hideMemo
-                        className={index === 0 ? 'mb-6 mt-1' : 'mb-6'}
+                        className={
+                          index === 0
+                            ? 'mx-4 mb-6 mt-1 rounded-2xl'
+                            : 'mx-4 mb-6 rounded-2xl'
+                        }
                         hasError={
                           p.address === currentAccount?.address || p.hasError
                         }
@@ -879,7 +879,7 @@ const PaymentScreen = () => {
                     <PressableScale
                       feedback="opacity"
                       onPress={handleAddPayee}
-                      className="mx-6 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-[20px] bg-secondary"
+                      className="mx-4 mb-6 min-h-[75px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-card"
                     >
                       <Text size="base" className="text-muted-foreground">
                         {t('payment.addRecipient')}
@@ -888,16 +888,18 @@ const PaymentScreen = () => {
                   )}
                 </KeyboardAwareScrollView>
 
-                <PaymentCard
-                  mint={mint}
-                  totalBalance={paymentState.totalAmount}
-                  feeTokenBalance={paymentState.networkFee}
-                  disabled={!isFormValid}
-                  onSubmit={() => void handleSubmit().catch(console.error)}
-                  payments={payments}
-                  errors={errors}
-                  handleCancel={navBack}
-                />
+                <TabSafeAreaView edges={['bottom']}>
+                  <PaymentCard
+                    mint={mint}
+                    totalBalance={paymentState.totalAmount}
+                    feeTokenBalance={paymentState.networkFee}
+                    disabled={!isFormValid}
+                    onSubmit={() => void handleSubmit().catch(console.error)}
+                    payments={payments}
+                    errors={errors}
+                    handleCancel={navBack}
+                  />
+                </TabSafeAreaView>
               </View>
             </TokenSelector>
           </AddressBookSelector>

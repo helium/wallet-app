@@ -8,6 +8,7 @@ import useHaptic from '@hooks/useHaptic'
 import useLayoutHeight from '@hooks/useLayoutHeight'
 import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { CSAccount } from '@storage/cloudStorage'
 import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { Platform, View } from 'react-native'
@@ -26,6 +27,7 @@ import { checkSecureAccount } from '../../storage/secureStorage'
 import { useAppStore } from '../../store/appStore'
 import { AccountBalance } from '../../types/balance'
 import { useBalance } from '../../utils/Balance'
+import { withUniwind } from 'uniwind'
 import StatusBanner from '../StatusPage/StatusBanner'
 import { HomeNavigationProp } from '../home/homeTypes'
 import { useOnboarding } from '../onboarding/OnboardingProvider'
@@ -35,9 +37,12 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
+import { collapsedDrawerSnap } from './logic/drawerSnap'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { withTransactionDetail } from './TransactionDetail'
 import WarningBanner, { BannerType } from './WarningBanner'
+
+const TabBarInset = withUniwind(TabSafeAreaView)
 
 // The token drawer's surface and grab bar, matching @ui/Sheet's.
 const DrawerBackground = ({ style }: BottomSheetBackgroundProps) => (
@@ -59,6 +64,7 @@ const AccountsScreen = () => {
   const [bannerHeight, setBannerHeight] = useLayoutHeight()
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
+  const [tabBarInset, setTabBarInset] = useLayoutHeight(0)
   const { openedNotification } = useNotificationStorage()
   const { balanceHistory } = useBalance()
   const { locked, currency } = useAppStorage()
@@ -81,7 +87,7 @@ const AccountsScreen = () => {
 
   const snapPoints = pageHeight
     ? [
-        ITEM_HEIGHT * 2,
+        collapsedDrawerSnap({ rowHeight: ITEM_HEIGHT, tabBarInset }),
         pageHeight -
           navLayoutHeight -
           actualTop -
@@ -272,6 +278,12 @@ const AccountsScreen = () => {
         )}
         <StatusBanner />
       </View>
+      <TabBarInset
+        edges={['bottom']}
+        pointerEvents="none"
+        className="absolute inset-x-0 bottom-0"
+        onLayout={setTabBarInset}
+      />
       <BottomSheet
         enableDynamicSizing={false}
         ref={bottomSheetRef}

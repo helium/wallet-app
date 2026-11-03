@@ -185,7 +185,7 @@ export const AssignProxyScreen = () => {
     refetch,
     t,
   ])
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
+  const safeEdges = useMemo(() => ['top', 'bottom'] as Edge[], [])
 
   const handleBlurSearch = useCallback(() => {
     proxySearchRef.current?.blur()
@@ -262,7 +262,7 @@ export const AssignProxyScreen = () => {
             />
           </View>
           <Button
-            size="lg"
+            size="dashboard"
             className="w-full rounded-full"
             onPress={() => void handleSubmit().catch(console.error)}
             disabled={

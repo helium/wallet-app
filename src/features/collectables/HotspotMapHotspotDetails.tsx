@@ -523,7 +523,7 @@ export const HotspotMapHotspotDetails = ({
             <AnimatedBlurView
               exiting={FADE_OUT_STATE}
               className="absolute z-[100] h-full w-full items-center justify-center"
-              tint="dark"
+              tint="light"
               intensity={80}
             >
               <Spinner colorClassName="accent-foreground" />

@@ -198,7 +198,7 @@ const ScanHotspots = () => {
       )}
       <Button
         variant={scanning ? 'outline' : 'cta'}
-        size="lg"
+        size="dashboard"
         className="mt-6 w-full"
         onPress={() => void handleScanPress().catch(console.error)}
         disabled={!canScan || connecting}

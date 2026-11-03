@@ -26,7 +26,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { useAccountStorage } from '../../storage/AccountStorageProvider'
@@ -51,7 +52,7 @@ const MIN_BOTTOM_BAR_HEIGHT = 80
 
 const STICKY_HEADER_INDICES = [0]
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 
 const SheetBackground = () => (
@@ -500,7 +501,12 @@ const AccountTokenScreen = () => {
               renderItem={renderItem}
               ListHeaderComponent={renderHeader}
               stickyHeaderIndices={STICKY_HEADER_INDICES}
-              ListFooterComponent={renderFooter}
+              ListFooterComponent={
+                <>
+                  {renderFooter()}
+                  <TabSafeAreaView edges={['bottom']} />
+                </>
+              }
               initialNumToRender={10}
               onEndReachedThreshold={0.01}
               onMomentumScrollBegin={handleOnMomentumScrollBegin}

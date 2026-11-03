@@ -246,7 +246,7 @@ export const DelegateTokensModal = ({
         <View className="flex-row pt-4">
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="flex-1"
             onPress={() => void handleSubmit().catch(console.error)}
             testID="DelegateTokens.Submit"

@@ -17,14 +17,14 @@ import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { FADE_IN, FADE_OUT } from '@theme/motion'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import 'text-encoding-polyfill'
 import { TabBarNavigationProp } from '../../navigation/rootTypes'
 import { useTransactionBatchStatus } from '../../hooks/useTransactionBatchStatus'
 import { SwapStackParamList } from './swapTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const ArrowIcon = withUniwind(ChevronRight)
 const BackIcon = withUniwind(ChevronLeft)
 
@@ -145,7 +145,7 @@ const SwappingScreen = () => {
         <View className="w-full justify-end pt-6">
           <Button
             variant="secondary"
-            size="lg"
+            size="dashboard"
             className="mx-4 mb-8"
             onPress={onReturn}
           >

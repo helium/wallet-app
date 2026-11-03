@@ -4,7 +4,7 @@ import { formatDistanceToNow, parseISO } from 'date-fns'
 import { ChevronLeft } from 'lucide-react-native'
 import { View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
@@ -16,7 +16,7 @@ import { useNotificationStorage } from '../../storage/NotificationStorageProvide
 import NotificationDetailBanner from './NotificationDetailBanner'
 import parseMarkup from '../../utils/parseMarkup'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 
 type Route = RouteProp<NotificationsListStackParamList, 'NotificationDetails'>

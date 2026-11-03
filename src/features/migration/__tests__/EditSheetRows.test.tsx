@@ -4,6 +4,11 @@ import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import HotspotsEditSheet from '../components/HotspotsEditSheet'
 import TokensEditSheet from '../components/TokensEditSheet'
 
+jest.mock(
+  '@ui/TabSafeAreaView',
+  () => ({ TabSafeAreaView: 'TabSafeAreaView' }),
+  { virtual: true },
+)
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   return {

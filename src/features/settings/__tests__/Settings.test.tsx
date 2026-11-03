@@ -8,6 +8,9 @@ import Settings from '../Settings'
 // 5.2.14 does it: the provider wraps its children in
 // <PortalProvider rootHostName={hostName}>, and a presented modal mounts its
 // content with <Portal hostName={hostName}> of the nearest provider.
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('@gorhom/bottom-sheet', () => {
   const ReactActual = jest.requireActual('react')
   const { Portal, PortalProvider } = jest.requireActual('@gorhom/portal')

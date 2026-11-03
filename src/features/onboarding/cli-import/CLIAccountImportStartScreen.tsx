@@ -7,11 +7,11 @@ import { SquareTerminal, X } from 'lucide-react-native'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { CLIAccountNavigationProp } from './CLIAccountNavigatorTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 const TerminalIcon = withUniwind(SquareTerminal)
 
@@ -65,7 +65,7 @@ const CLIAccountImportStartScreen = () => {
 
         <Button
           variant="cta"
-          size="lg"
+          size="dashboard"
           className="my-4 w-full"
           onPress={handleNext}
         >

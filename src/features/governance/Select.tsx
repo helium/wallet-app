@@ -1,15 +1,15 @@
 import { BottomSheetModal, BottomSheetView } from '@gorhom/bottom-sheet'
 import { PressableScale } from '@ui/PressableScale'
 import { Sheet } from '@ui/Sheet'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { twMerge } from '@ui/twMerge'
 import { ChevronDown, CircleCheck } from 'lucide-react-native'
 import React, { useRef } from 'react'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const ChevronDownIcon = withUniwind(ChevronDown)
 const SelectedIcon = withUniwind(CircleCheck)
 

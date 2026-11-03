@@ -1,10 +1,23 @@
+// MapLibre takes colours as values, not classes, and reads the style once,
+// so these are the world-theme.css tokens as hex.
+const COLORS = {
+  land: '#f5f5f5', // --secondary
+  natural: '#edfdf3', // --success-50
+  runway: '#e5e5e5', // --border
+  water: '#d1d1d6', // --placeholder-subtle
+  road: '#b5b5b5', // --off-white-foreground-faint
+  boundary: '#a0a0ab', // --quinary-400
+  label: '#575757', // --off-white-foreground
+  labelHalo: '#ffffff', // --background
+}
+
 export const mapLayers: { [key: string]: unknown }[] = [
   {
     id: 'land',
     type: 'background',
     layout: {},
     paint: {
-      'background-color': '#2A2A2A',
+      'background-color': COLORS.land,
     },
   },
   {
@@ -21,7 +34,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
       ['==', 'natural', 'sand'],
     ],
     paint: {
-      'fill-color': '#2A2A2A',
+      'fill-color': COLORS.natural,
     },
   },
   {
@@ -31,7 +44,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'transit',
     filter: ['has', 'aeroway'],
     paint: {
-      'line-color': '#2A2A2A',
+      'line-color': COLORS.runway,
       'line-width': 6,
     },
   },
@@ -47,7 +60,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
       ['==', 'area:aeroway', 'taxiway'],
     ],
     paint: {
-      'fill-color': '#2A2A2A',
+      'fill-color': COLORS.runway,
     },
   },
   {
@@ -56,7 +69,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     source: 'protomaps',
     'source-layer': 'water',
     paint: {
-      'fill-color': '#202020',
+      'fill-color': COLORS.water,
     },
   },
   {
@@ -66,7 +79,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'roads',
     filter: ['==', 'pmap:kind', 'other'],
     paint: {
-      'line-color': '#3D3D3D',
+      'line-color': COLORS.road,
       'line-dasharray': [2, 1],
       'line-width': [
         'interpolate',
@@ -88,7 +101,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'roads',
     filter: ['==', 'pmap:kind', 'minor_road'],
     paint: {
-      'line-color': '#3D3D3D',
+      'line-color': COLORS.road,
       'line-width': [
         'interpolate',
         ['exponential', 1.6],
@@ -109,7 +122,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'roads',
     filter: ['==', 'pmap:kind', 'medium_road'],
     paint: {
-      'line-color': '#3D3D3D',
+      'line-color': COLORS.road,
       'line-width': [
         'interpolate',
         ['exponential', 1.6],
@@ -130,7 +143,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'roads',
     filter: ['==', 'pmap:kind', 'major_road'],
     paint: {
-      'line-color': '#3D3D3D',
+      'line-color': COLORS.road,
       'line-width': [
         'interpolate',
         ['exponential', 1.6],
@@ -151,7 +164,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'roads',
     filter: ['==', 'pmap:kind', 'highway'],
     paint: {
-      'line-color': '#3D3D3D',
+      'line-color': COLORS.road,
       'line-width': [
         'interpolate',
         ['exponential', 1.6],
@@ -172,7 +185,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'boundaries',
     filter: ['<=', 'pmap:min_admin_level', 2],
     paint: {
-      'line-color': '#696969',
+      'line-color': COLORS.boundary,
       'line-width': 1.5,
     },
   },
@@ -183,7 +196,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
     'source-layer': 'boundaries',
     filter: ['>', 'pmap:min_admin_level', 2],
     paint: {
-      'line-color': '#696969',
+      'line-color': COLORS.boundary,
       'line-width': 1,
       'line-dasharray': [1, 2],
     },
@@ -201,7 +214,7 @@ export const mapLayers: { [key: string]: unknown }[] = [
       'text-size': 12,
     },
     paint: {
-      'text-color': '#6D6D6D',
+      'text-color': COLORS.label,
     },
   },
   {
@@ -218,8 +231,8 @@ export const mapLayers: { [key: string]: unknown }[] = [
       'text-radial-offset': 0.2,
     },
     paint: {
-      'text-color': '#6D6D6D',
-      'text-halo-color': '#151515',
+      'text-color': COLORS.label,
+      'text-halo-color': COLORS.labelHalo,
       'text-halo-width': 1,
     },
   },
@@ -239,8 +252,8 @@ export const mapLayers: { [key: string]: unknown }[] = [
       'text-letter-spacing': 0.1,
     },
     paint: {
-      'text-color': '#6D6D6D',
-      'text-halo-color': '#151515',
+      'text-color': COLORS.label,
+      'text-halo-color': COLORS.labelHalo,
       'text-halo-width': 1,
     },
   },
@@ -256,8 +269,8 @@ export const mapLayers: { [key: string]: unknown }[] = [
       'text-size': 10,
     },
     paint: {
-      'text-color': '#6D6D6D',
-      'text-halo-color': '#151515',
+      'text-color': COLORS.label,
+      'text-halo-color': COLORS.labelHalo,
       'text-halo-width': 1,
     },
   },

@@ -59,6 +59,9 @@ jest.mock('react-native-reanimated', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('text-encoding-polyfill', () => ({}))
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 jest.mock('@ui/Image', () => ({ Image: 'Image' }), { virtual: true })

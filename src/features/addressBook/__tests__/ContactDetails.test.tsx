@@ -8,6 +8,9 @@ const mockDeleteContact = jest.fn(() => Promise.resolve())
 const mockShowOKCancelAlert = jest.fn(() => Promise.resolve(true))
 
 // The providers hand out stable values, as the real ones do.
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('../../../storage/AccountStorageProvider', () => {
   const accountStorage = {
     addContact: jest.fn(),

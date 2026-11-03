@@ -2,17 +2,17 @@ import { FocusAwareStatusBar } from '@ui/FocusAwareStatusBar'
 import { useNavigation } from '@react-navigation/native'
 import { Button } from '@ui/Button'
 import { PressableScale } from '@ui/PressableScale'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { CirclePlus, X } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { SafeAreaView as RNSafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useAccountStorage } from '../../../storage/AccountStorageProvider'
 import { CreateAccountNavigationProp } from './createAccountNavTypes'
 
-const SafeAreaView = withUniwind(RNSafeAreaView)
+const SafeAreaView = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 const CreateIcon = withUniwind(CirclePlus)
 
@@ -23,7 +23,10 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
   const navigation = useNavigation<CreateAccountNavigationProp>()
 
   return (
-    <SafeAreaView className="flex-1 bg-navy px-6">
+    <SafeAreaView
+      edges={inline ? ['bottom'] : undefined}
+      className="flex-1 bg-navy px-6"
+    >
       <FocusAwareStatusBar barStyle="light-content" />
       {!inline && (
         <View className="w-full items-end">
@@ -65,7 +68,7 @@ const AccountCreateStart = ({ onCreate, inline }: Props) => {
       <Button
         testID="AccountCreateStart.Create"
         variant="cta"
-        size="lg"
+        size="dashboard"
         className="mb-6 w-full"
         disabled={reachedAccountLimit}
         onPress={onCreate}

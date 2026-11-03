@@ -1,14 +1,14 @@
 import { useNavigation } from '@react-navigation/native'
 import { PressableScale } from '@ui/PressableScale'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { Text } from '@ui/Text'
 import { ChevronLeft } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 
 // The back header and padded body shared by the hotspot onboarding screens.

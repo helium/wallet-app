@@ -73,7 +73,7 @@ const PaymentError = ({
         <View className="mt-12 flex-row gap-4">
           <Button
             variant="outline"
-            size="lg"
+            size="dashboard"
             className="flex-1"
             onPress={navigation.goBack}
           >
@@ -82,7 +82,7 @@ const PaymentError = ({
           {onRetry && (
             <Button
               variant="secondary"
-              size="lg"
+              size="dashboard"
               className="flex-1"
               onPress={onRetry}
             >

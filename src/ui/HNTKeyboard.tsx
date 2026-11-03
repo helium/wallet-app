@@ -448,7 +448,7 @@ export const HNTKeyboard = ({
             <View className="m-6 flex-row gap-2">
               <Button
                 variant="outline"
-                size="lg"
+                size="dashboard"
                 className="flex-1"
                 onPress={handleCancel}
               >
@@ -457,7 +457,7 @@ export const HNTKeyboard = ({
               <Button
                 testID="HNTKeyboard.Confirm"
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="flex-1"
                 onPress={handleConfirm}
                 disabled={!allowOverdraft ? !hasSufficientBalance : false}

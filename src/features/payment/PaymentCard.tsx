@@ -68,7 +68,7 @@ const PaymentCard = ({
 
   return (
     <View
-      className="min-h-[232px] overflow-hidden rounded-t-[20px] bg-secondary p-6"
+      className="min-h-[232px] overflow-hidden rounded-t-2xl border border-border bg-card px-4 py-[15px]"
       style={{ height: height || undefined }}
       onLayout={handleLayout}
     >
@@ -85,7 +85,7 @@ const PaymentCard = ({
           <View className="mb-4 mt-6 flex-row gap-4">
             <Button
               variant="outline"
-              size="lg"
+              size="dashboard"
               className="flex-1"
               onPress={handleCancel}
             >
@@ -94,7 +94,7 @@ const PaymentCard = ({
             <Button
               testID="PaymentCard.Pay"
               variant="cta"
-              size="lg"
+              size="dashboard"
               className="flex-1"
               onPress={() => void handlePayPressed().catch(console.error)}
               disabled={disabled}

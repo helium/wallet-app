@@ -12,12 +12,12 @@ import { twMerge } from '@ui/twMerge'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import BackHeader from './components/BackHeader'
 import { CollectableNavigationProp } from './collectablesTypes'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const nextRunDateFormat = new Intl.DateTimeFormat('en-US', {
   weekday: 'long',
   month: 'long',
@@ -262,7 +262,7 @@ const AutomationSetupScreen = () => {
   }
 
   return (
-    <SafeArea edges={['top']} className="flex-1 bg-background">
+    <SafeArea edges={['top', 'bottom']} className="flex-1 bg-background">
       <BackHeader onClose={() => navigation.goBack()} />
       <View className="flex-1 bg-secondary p-2">
         <ScrollView
@@ -437,7 +437,7 @@ const AutomationSetupScreen = () => {
                 {!!duration && (
                   <Button
                     variant="cta"
-                    size="lg"
+                    size="dashboard"
                     className="mb-4 w-full"
                     disabled={
                       !duration || fundAutomationLoading || !estimate.estimate
@@ -455,7 +455,7 @@ const AutomationSetupScreen = () => {
                 )}
                 <Button
                   variant="outline"
-                  size="lg"
+                  size="dashboard"
                   className="mb-4 w-full"
                   disabled={closeAutomationLoading}
                   onPress={() =>
@@ -474,7 +474,7 @@ const AutomationSetupScreen = () => {
             ) : (
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mb-4 w-full"
                 disabled={
                   insufficientSol ||

@@ -22,7 +22,7 @@ import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Linking, ScrollView, View } from 'react-native'
 import { Image, type ImageProps } from '@ui/Image'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useCreateExplorerUrl } from '../../constants/urls'
 import { EnrichedTransaction } from '../../types/solana'
@@ -32,7 +32,7 @@ import { ActivityStackParamList } from './activityTypes'
 
 type Route = RouteProp<ActivityStackParamList, 'ActivityDetailsScreen'>
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const BackIcon = withUniwind(ChevronLeft)
 const SendIcon = withUniwind(ArrowUpRight)
 const ReceiveIcon = withUniwind(ArrowDownLeft)
@@ -58,7 +58,7 @@ const ScamWarningImage = (props: ImageProps) => {
         </Text>
         <Button
           variant="outline"
-          size="lg"
+          size="dashboard"
           className="mt-6"
           onPress={() => setDismissed(true)}
         >
@@ -313,7 +313,7 @@ const ActivityDetailsScreen = () => {
               {accountAddressListItems}
               <Button
                 variant="cta"
-                size="lg"
+                size="dashboard"
                 className="mt-8 w-full"
                 onPress={() => void handleOpenExplorer().catch(console.error)}
               >

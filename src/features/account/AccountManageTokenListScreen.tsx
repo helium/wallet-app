@@ -18,7 +18,7 @@ import { X } from 'lucide-react-native'
 import React, { useRef } from 'react'
 import { RefreshControl, View } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { withUniwind } from 'uniwind'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -26,7 +26,7 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import { getSortValue } from './logic/visibleTokens'
 import { TokenRowData, useTokenRows } from './useTokenRows'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 const CloseIcon = withUniwind(X)
 
 const HIT_SLOP = { top: 24, bottom: 24, left: 24, right: 24 }
@@ -166,7 +166,7 @@ const AccountManageTokenListScreen: React.FC = () => {
   }
 
   return (
-    <SafeArea className="flex-1 bg-background" edges={['top']}>
+    <SafeArea className="flex-1 bg-background" edges={['top', 'bottom']}>
       <View className="mb-4 flex-row items-center justify-between">
         <PressableScale
           feedback="opacity"

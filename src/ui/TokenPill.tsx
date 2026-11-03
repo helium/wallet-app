@@ -41,12 +41,12 @@ export const TokenPill = ({
         onPress={onPress}
         disabled={isDisabled}
         className={twMerge(
-          'h-[45px] flex-row items-center rounded-full border border-border bg-background p-2 pr-4',
+          'h-[45px] flex-row items-center rounded-full border border-border bg-card p-2 pr-4',
           isActive && 'border-primary',
         )}
       >
-        <View className="me-1 size-8 items-center justify-center rounded-full bg-primary">
-          <TokenIcon img={json?.image} size={24} />
+        <View className="me-1">
+          <TokenIcon img={json?.image} size={32} />
         </View>
         <Text className="grow text-center font-medium">{symbol}</Text>
         {hasCarot && (

@@ -8,6 +8,7 @@ import { useGovernance } from '@storage/GovernanceProvider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { PressableScale } from '@ui/PressableScale'
 import { Text } from '@ui/Text'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { humanReadable, shortenAddress } from '@utils/formatting'
 import BN from 'bn.js'
 import { times } from 'lodash'
@@ -148,7 +149,6 @@ export default function ProxiesScreen() {
         value={proxySearch}
       />
       <FlatList
-        contentInsetAdjustmentBehavior="automatic"
         keyExtractor={keyExtractor}
         data={proxies}
         renderItem={renderItem}
@@ -162,6 +162,7 @@ export default function ProxiesScreen() {
           />
         }
         onEndReached={handleOnEndReached}
+        ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
       />
     </GovernanceWrapper>
   )

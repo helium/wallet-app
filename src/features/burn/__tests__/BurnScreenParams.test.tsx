@@ -131,6 +131,9 @@ jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
   useSafeAreaInsets: () => ({ top: 0 }),
 }))
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('uniwind', () => ({ withUniwind: (c: unknown) => c }))
 
 // Tell React that this runner wraps renders and presses in act().

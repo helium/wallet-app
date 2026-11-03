@@ -11,10 +11,11 @@ import React, {
   useState,
 } from 'react'
 import { Linking } from 'react-native'
-import { Edge, SafeAreaView } from 'react-native-safe-area-context'
+import { type Edge } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
 import { useTranslation } from 'react-i18next'
 import { useEmbeddedSolanaWallet, usePrivy } from '@privy-io/expo'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import * as Logger from '@utils/logger'
 import AssetSelectionStep, {
   AssetSelection,
@@ -39,7 +40,7 @@ import { shouldShowSupport } from './logic/retry'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
 
-const SafeArea = withUniwind(SafeAreaView)
+const SafeArea = withUniwind(TabSafeAreaView)
 
 // Bottom-only so the asset sheets (and their dimming backdrop) fill the full
 // screen height — the steps' own headers carry the top safe-area inset.

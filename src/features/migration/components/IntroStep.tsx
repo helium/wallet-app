@@ -31,7 +31,7 @@ const IntroStep: FC<{
         <View className="mt-8">
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="w-full"
             onPress={onContinue}
             testID="MigrateIntro.Email"
@@ -49,7 +49,7 @@ const IntroStep: FC<{
         <View className="mt-6">
           <Button
             variant="outline"
-            size="lg"
+            size="dashboard"
             className="w-full"
             onPress={onUseOwnWallet}
           >
@@ -64,7 +64,12 @@ const IntroStep: FC<{
         </View>
       </View>
 
-      <Button variant="ghost" size="lg" className="w-full" onPress={onDismiss}>
+      <Button
+        variant="ghost"
+        size="dashboard"
+        className="w-full"
+        onPress={onDismiss}
+      >
         {t('migrateToWorld.intro.later')}
       </Button>
     </View>

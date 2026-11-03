@@ -124,7 +124,7 @@ export const RevokeProxyScreen = () => {
     refetch,
     t,
   ])
-  const safeEdges = useMemo(() => ['top'] as Edge[], [])
+  const safeEdges = useMemo(() => ['top', 'bottom'] as Edge[], [])
 
   if (loading) return null
 
@@ -179,7 +179,7 @@ export const RevokeProxyScreen = () => {
           </View>
         )}
         <Button
-          size="lg"
+          size="dashboard"
           className="w-full rounded-full"
           onPress={() => void handleSubmit().catch(console.error)}
           disabled={

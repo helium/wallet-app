@@ -469,7 +469,7 @@ export const WalletSignBottomSheetSimulated = ({
         >
           <Button
             variant="outline"
-            size="lg"
+            size="dashboard"
             className="w-[48%] rounded-full"
             onPress={onCancel}
           >
@@ -478,7 +478,7 @@ export const WalletSignBottomSheetSimulated = ({
 
           <Button
             variant="cta"
-            size="lg"
+            size="dashboard"
             className="w-[48%] rounded-full"
             onPress={onAccept}
           >

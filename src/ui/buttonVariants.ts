@@ -16,6 +16,9 @@ const buttonVariants = cva(
         ghost: 'bg-transparent',
         link: 'bg-transparent',
         cta: 'bg-purple-700',
+        dashboardPrimary: 'bg-black',
+        dashboardSecondary: 'bg-off-white',
+        dashboardFaint: 'bg-off-white',
       },
       size: {
         default: 'h-9 px-4',
@@ -28,6 +31,15 @@ const buttonVariants = cva(
         true: 'opacity-50',
       },
     },
+    // World's disabled cta is a lighter purple; it keeps full opacity so the
+    // white label stays readable.
+    compoundVariants: [
+      {
+        variant: 'cta',
+        disabled: true,
+        className: 'bg-purple-400 opacity-100',
+      },
+    ],
     defaultVariants: {
       variant: 'default',
       size: 'default',
@@ -45,7 +57,10 @@ export const buttonTextVariants = cva('font-medium', {
       secondary: 'text-secondary-foreground',
       ghost: 'text-foreground',
       link: 'text-primary underline',
-      cta: 'text-white',
+      cta: 'leading-normal text-white',
+      dashboardPrimary: 'text-white',
+      dashboardSecondary: 'text-off-white-foreground',
+      dashboardFaint: 'text-off-white-foreground-faint',
     },
   },
   defaultVariants: {

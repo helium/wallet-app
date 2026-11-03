@@ -88,6 +88,9 @@ jest.mock('react-native-reanimated', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   SafeAreaView: 'SafeAreaView',
 }))
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('use-debounce', () => ({ useDebounce: (value: unknown) => [value] }))
 jest.mock('uniwind', () => ({
   withUniwind: (c: unknown) => c,

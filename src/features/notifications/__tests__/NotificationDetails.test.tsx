@@ -8,6 +8,9 @@ const mockSetSelectedNotification = jest.fn()
 let mockBeforeRemove: (() => void) | undefined
 
 let mockNotification: Record<string, unknown> = {}
+jest.mock('@ui/TabSafeAreaView', () => ({ TabSafeAreaView: 'SafeAreaView' }), {
+  virtual: true,
+})
 jest.mock('@react-navigation/native', () => {
   const navigation = {
     goBack: () => mockGoBack(),

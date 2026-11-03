@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react'
+import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useSheetMargins } from '@ui/ContentColumn'
 import { useTranslation } from 'react-i18next'
 import { FlatList, LayoutChangeEvent, View } from 'react-native'
@@ -169,12 +170,12 @@ const DeviceScan = () => {
         </View>
         <View className="mt-6 flex-1">
           <FlatList
-            contentInsetAdjustmentBehavior="automatic"
             data={devices}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             onRefresh={() => void startScan().catch(console.error)}
             refreshing={refreshing}
+            ListFooterComponent={<TabSafeAreaView edges={['bottom']} />}
           />
         </View>
       </View>
