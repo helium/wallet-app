@@ -254,7 +254,10 @@ const ActivityDetailsScreen = () => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
-    if (enrichedTx.events?.compressed?.length) {
+    if (
+      enrichedTx.type === 'COMPRESSED_NFT_MINT' &&
+      enrichedTx.events?.compressed?.length
+    ) {
       const symbol = enrichedTx.events.compressed[0].metadata?.symbol
       const count = enrichedTx.events.compressed.length
       if (symbol) {

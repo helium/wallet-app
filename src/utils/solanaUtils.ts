@@ -114,6 +114,7 @@ import {
   ParsedEventsItem,
   toActivityRows,
 } from '../features/activity/logic/parsedEvents'
+import { describeActivity } from '../features/activity/logic/describeActivity'
 import { attachSigners, signersOf } from '../features/activity/logic/signers'
 import { Activity, Payment } from '../types/activity'
 import {
@@ -131,7 +132,7 @@ import {
   MOBILE_LAZY_KEY,
   Mints,
 } from './constants'
-import { decimalSeparator, groupSeparator } from './i18n'
+import i18n, { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
 
@@ -1562,7 +1563,7 @@ export const getAllTransactions = async (
         ? attachSigners(data as EnrichedTransaction[], txList)
         : await toActivityRows(data as ParsedEventsItem[], txList)
 
-    const allTxnsWithMetadata: ActivityRow[] = await Promise.all(
+    const enrichedRows: ActivityRow[] = await Promise.all(
       rows.map(async (tx) => {
         if (!('tokenTransfers' in tx)) return tx
         try {
@@ -1637,6 +1638,17 @@ export const getAllTransactions = async (
         }
       }),
     )
+
+    // Enhanced writes its own description. Parsed Events does not, so build
+    // one from the type and the wallet, after the metadata is in.
+    const allTxnsWithMetadata: ActivityRow[] =
+      cluster === 'devnet'
+        ? enrichedRows
+        : enrichedRows.map((tx) =>
+            'tokenTransfers' in tx
+              ? { ...tx, description: describeActivity(tx, address, i18n.t) }
+              : tx,
+          )
 
     // Combine and sort all txns by date in descending order
     allTxnsWithMetadata.sort(

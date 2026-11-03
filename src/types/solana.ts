@@ -115,6 +115,8 @@ type TokenTransfer = {
   fromTokenAccount: string
   toTokenAccount: string
   tokenAmount: number
+  // Set from Parsed Events only. Enhanced does not give it.
+  decimals?: number
   mint: string
   tokenMetadata?: TokenMetadata
 }

@@ -232,6 +232,7 @@ const toEnrichedTransaction = async (
     fromTokenAccount: transfer.fromTokenAccount ?? '',
     toTokenAccount: transfer.toTokenAccount ?? '',
     tokenAmount: transfer.rawTokenAmount / 10 ** transfer.decimals,
+    decimals: transfer.decimals,
     mint: transfer.mint,
   })),
   events: { compressed: await compressedEventsOf(parsed) },

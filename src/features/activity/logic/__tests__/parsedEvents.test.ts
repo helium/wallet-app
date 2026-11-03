@@ -131,7 +131,7 @@ describe('toActivityRows', () => {
       expect(row.slot).toBe(before.slot)
       expect(row.fee).toBe(before.fee)
       expect(row.nativeTransfers).toEqual(before.nativeTransfers)
-      expect(row.tokenTransfers).toEqual(
+      expect(row.tokenTransfers).toMatchObject(
         before.tokenTransfers.map(
           ({
             fromUserAccount,
