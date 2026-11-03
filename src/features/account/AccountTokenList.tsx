@@ -1,4 +1,4 @@
-import { BottomSheetFlatList, useBottomSheet } from '@gorhom/bottom-sheet'
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet'
 import { BottomSheetFlatListProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetScrollable/types'
 import { useNavigation } from '@react-navigation/native'
 import { PublicKey } from '@solana/web3.js'
@@ -15,13 +15,9 @@ import { SlidersHorizontal } from 'lucide-react-native'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { RefreshControl, StyleSheet, View } from 'react-native'
-import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
-} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { withUniwind } from 'uniwind'
+import { HideBottomEdgeEffect } from '../../../modules/scroll-edge-effect'
 import { GovMints } from '../../utils/constants'
 import { useSolana } from '../../solana/SolanaProvider'
 import { HomeNavigationProp } from '../home/homeTypes'
@@ -29,38 +25,21 @@ import { deriveVisibleMints } from './logic/visibleTokens'
 import { TokenListItem, TokenListGovItem, TokenSkeleton } from './TokenListItem'
 
 const ManageIcon = withUniwind(SlidersHorizontal)
-const Fade = withUniwind(TabSafeAreaView)
 
 type Props = {
   onLayout?: BottomSheetFlatListProps<PublicKey>['onLayout']
   // Reports each cell's height by list index. The collapsed drawer shows the
   // first two token rows above the tab bar.
   onRowLayout?: (index: number, height: number) => void
-  // Counts the drawer's settled snaps.
-  drawerSnaps?: number
 }
 
-const AccountTokenList = ({
-  onLayout,
-  onRowLayout,
-  drawerSnaps = 0,
-}: Props) => {
+const AccountTokenList = ({ onLayout, onRowLayout }: Props) => {
   const navigation = useNavigation<HomeNavigationProp>()
   const { t } = useTranslation()
   const { visibleTokens } = useVisibleTokens()
   const { currentAccount } = useAccountStorage()
   const { anchorProvider, cluster } = useSolana()
   const queryClient = useQueryClient()
-  const { animatedIndex } = useBottomSheet()
-  // Full at the collapsed snap, gone once the drawer is open.
-  const fadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      animatedIndex.value,
-      [0, 1],
-      [1, 0],
-      Extrapolation.CLAMP,
-    ),
-  }))
 
   const { isPending: refetchingTokens, mutate: refetchTokens } = useMutation({
     mutationFn: async () => {
@@ -155,14 +134,12 @@ const AccountTokenList = ({
   }
 
   return (
-    <>
-      {/* iOS 26 places the tab bar's scroll edge effect on this list in the
-          list's own coordinates. The sheet moves by transform, which iOS does
-          not track, so after a snap the effect sits over the rows instead of
-          the bar. iOS places it again only when the list's position changes,
-          so each snap moves the list by a hairline. */}
+    // iOS 26 places the tab bar's scroll edge effect on this list in the
+    // list's own coordinates. The sheet moves by transform, which iOS does not
+    // track, so the effect would sit over the rows instead of the bar. The
+    // list hides it, and AccountsScreen draws a fade over the bar instead.
+    <HideBottomEdgeEffect style={styles.list}>
       <BottomSheetFlatList
-        style={drawerSnaps % 2 ? styles.nudged : undefined}
         onLayout={onLayout}
         data={mints}
         numColumns={2}
@@ -186,24 +163,12 @@ const AccountTokenList = ({
         ListFooterComponent={renderFooterComponent}
         keyExtractor={keyExtractor}
       />
-      {/* The rows after the first two fade out behind the floating tab bar,
-          which blurs them itself. The fade stops at the bar's top edge, so
-          the first two rows show in full. */}
-      {mints.length > 2 && (
-        <Animated.View pointerEvents="none" style={[styles.fade, fadeStyle]}>
-          <Fade
-            edges={['bottom']}
-            className="bg-linear-to-t from-secondary via-secondary/80 to-transparent"
-          />
-        </Animated.View>
-      )}
-    </>
+    </HideBottomEdgeEffect>
   )
 }
 
 const styles = StyleSheet.create({
-  fade: { position: 'absolute', left: 0, right: 0, bottom: 0 },
-  nudged: { top: StyleSheet.hairlineWidth },
+  list: { flex: 1 },
 })
 
 export default AccountTokenList

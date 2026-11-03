@@ -43,7 +43,11 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
-import { collapsedDrawerSnap, firstTwoTokenHeights } from './logic/drawerSnap'
+import {
+  collapsedDrawerSnap,
+  drawerFadeOpacity,
+  firstTwoTokenHeights,
+} from './logic/drawerSnap'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { withTransactionDetail } from './TransactionDetail'
 import WarningBanner, { BannerType } from './WarningBanner'
@@ -89,8 +93,11 @@ const AccountsScreen = () => {
   const { top } = useSafeAreaInsets()
   const bottomSheetRef = useRef<BottomSheet>(null)
   const listAnimatedPos = useSharedValue<number>(0)
+  const drawerIndex = useSharedValue<number>(0)
+  const drawerFadeStyle = useAnimatedStyle(() => ({
+    opacity: drawerFadeOpacity(drawerIndex.value),
+  }))
   const [topHeaderHeight, setTopHeaderHeight] = useState(0)
-  const [drawerSnaps, setDrawerSnaps] = useState(0)
   const topHeaderRef = useRef<View>(null)
   const { triggerImpact } = useHaptic()
   const showBanner = useAppStore((state) => state.showBanner)
@@ -307,12 +314,6 @@ const AccountsScreen = () => {
         )}
         <StatusBanner />
       </View>
-      <TabBarInset
-        edges={['bottom']}
-        pointerEvents="none"
-        className="absolute inset-x-0 bottom-0"
-        onLayout={setTabBarInset}
-      />
       <BottomSheet
         enableDynamicSizing={false}
         ref={bottomSheetRef}
@@ -321,13 +322,25 @@ const AccountsScreen = () => {
         handleComponent={DrawerHandle}
         detached
         animatedPosition={listAnimatedPos}
-        onChange={() => setDrawerSnaps((n) => n + 1)}
+        animatedIndex={drawerIndex}
       >
-        <AccountTokenList
-          onRowLayout={setCellHeight}
-          drawerSnaps={drawerSnaps}
-        />
+        <AccountTokenList onRowLayout={setCellHeight} />
       </BottomSheet>
+      {/* The rows behind the floating tab bar fade out, in place of the native
+          edge effect the drawer list hides. The fade sits outside the sheet,
+          so it stays over the bar while the sheet moves, and fades out as the
+          drawer opens. */}
+      <Animated.View
+        pointerEvents="none"
+        className="absolute inset-x-0 bottom-0"
+        style={drawerFadeStyle}
+      >
+        <TabBarInset
+          edges={['bottom']}
+          onLayout={setTabBarInset}
+          className="bg-linear-to-t from-secondary via-secondary/80 to-transparent"
+        />
+      </Animated.View>
     </View>
   )
 }

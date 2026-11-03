@@ -28,3 +28,12 @@ export const firstTwoTokenHeights = (
   })
   return [tokens[0] ?? fallback, tokens[1] ?? fallback]
 }
+
+// The fade over the tab bar inset, from the drawer's animated snap index:
+// full at the collapsed snap (0) and below, gone at the expanded snap (1).
+// It runs on the UI thread, so it follows the sheet during drags.
+export const drawerFadeOpacity = (index: number) => {
+  'worklet'
+
+  return Math.min(1, Math.max(0, 1 - index))
+}

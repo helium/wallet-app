@@ -1,4 +1,8 @@
-import { collapsedDrawerSnap, firstTwoTokenHeights } from '../drawerSnap'
+import {
+  collapsedDrawerSnap,
+  drawerFadeOpacity,
+  firstTwoTokenHeights,
+} from '../drawerSnap'
 
 describe('collapsedDrawerSnap', () => {
   it('shows the handle and the first two measured token rows above the floating tab bar', () => {
@@ -47,5 +51,21 @@ describe('firstTwoTokenHeights', () => {
     ],
   ])('takes %j to %j', (cellHeights, expected) => {
     expect(firstTwoTokenHeights(cellHeights, 72)).toEqual(expected)
+  })
+})
+
+describe('drawerFadeOpacity', () => {
+  it.each<[number, number]>([
+    // Closed (gorhom reports -1) and collapsed: the fade shows in full.
+    [-1, 1],
+    [0, 1],
+    // Mid-drag: the fade follows the sheet.
+    [0.25, 0.75],
+    [0.5, 0.5],
+    // Expanded and over-dragged: no fade over the token rows.
+    [1, 0],
+    [1.2, 0],
+  ])('at sheet index %d is %d', (index, expected) => {
+    expect(drawerFadeOpacity(index)).toBeCloseTo(expected)
   })
 })
