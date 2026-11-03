@@ -20,6 +20,7 @@ import { useOnboarding } from '../OnboardingProvider'
 import { OnboardingNavigationProp } from '../onboardingTypes'
 import PassphraseAutocomplete from './PassphraseAutocomplete'
 import { matchRestoredAccounts } from './accountRestore'
+import { selectWord } from './wordSelection'
 import {
   ImportAccountNavigationProp,
   ImportAccountStackParamList,
@@ -115,20 +116,6 @@ const AccountImportScreen = () => {
     })
   }, [wordCount, words])
 
-  const handleSelectWord = useCallback(
-    (selectedWord: string) => {
-      setWords((w) => [
-        ...w.slice(0, wordIndex),
-        selectedWord,
-        ...w.slice(wordIndex + 1),
-      ])
-
-      if (wordIndex === wordCount - 1) return
-      setWordIndex(wordIndex + 1)
-    },
-    [wordCount, wordIndex],
-  )
-
   const handleContentSizeChanged = useCallback(() => {
     flatlistRef.current?.scrollToIndex({
       index:
@@ -147,61 +134,86 @@ const AccountImportScreen = () => {
     }
   }, [hasAccounts, parentNav])
 
-  const handleNext = useCallback(async () => {
-    try {
-      const filteredWords: string[] = words.flatMap((w) => (w ? [w] : []))
+  // Stops a second tap from submitting while the first submit is in flight.
+  const submittingRef = useRef(false)
 
-      if (restoringAccount) {
-        const restored =
-          accounts && accountAddress
-            ? await matchRestoredAccounts({
-                accounts,
-                accountAddress,
-                derive: mnemonicDeriver(filteredWords),
-              })
-            : []
-
-        if (!restored.length) {
-          await showOKAlert({
-            title: t('restoreAccount.errorAlert.title'),
-            message: t('restoreAccount.errorAlert.message'),
-          })
-          return
-        }
-        await restoreSecureAccounts(
-          restored.map(({ account, keypair, derivationPath }) => ({
-            account,
-            secureAccount: toSecureAccount({
-              keypair,
-              words: filteredWords,
-              derivationPath,
-            }),
-          })),
+  const submitWords = useCallback(
+    async (phraseWords: (string | null)[]) => {
+      if (submittingRef.current) return
+      submittingRef.current = true
+      try {
+        const filteredWords: string[] = phraseWords.flatMap((w) =>
+          w ? [w] : [],
         )
-        reset()
-        navigation.popToTop()
-      } else {
-        setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
-        navigation.navigate('ImportSubAccounts')
+
+        if (restoringAccount) {
+          const restored =
+            accounts && accountAddress
+              ? await matchRestoredAccounts({
+                  accounts,
+                  accountAddress,
+                  derive: mnemonicDeriver(filteredWords),
+                })
+              : []
+
+          if (!restored.length) {
+            await showOKAlert({
+              title: t('restoreAccount.errorAlert.title'),
+              message: t('restoreAccount.errorAlert.message'),
+            })
+            return
+          }
+          await restoreSecureAccounts(
+            restored.map(({ account, keypair, derivationPath }) => ({
+              account,
+              secureAccount: toSecureAccount({
+                keypair,
+                words: filteredWords,
+                derivationPath,
+              }),
+            })),
+          )
+          reset()
+          navigation.popToTop()
+        } else {
+          setOnboardingData((prev) => ({ ...prev, words: filteredWords }))
+          navigation.navigate('ImportSubAccounts')
+        }
+      } catch (error) {
+        await showOKAlert({
+          title: t('accountImport.alert.title'),
+          message: t('accountImport.alert.body'),
+        })
+      } finally {
+        submittingRef.current = false
       }
-    } catch (error) {
-      await showOKAlert({
-        title: t('accountImport.alert.title'),
-        message: t('accountImport.alert.body'),
-      })
-    }
-  }, [
-    words,
-    restoringAccount,
-    accounts,
-    accountAddress,
-    restoreSecureAccounts,
-    reset,
-    navigation,
-    showOKAlert,
-    t,
-    setOnboardingData,
-  ])
+    },
+    [
+      restoringAccount,
+      accounts,
+      accountAddress,
+      restoreSecureAccounts,
+      reset,
+      navigation,
+      showOKAlert,
+      t,
+      setOnboardingData,
+    ],
+  )
+
+  const handleNext = useCallback(() => submitWords(words), [submitWords, words])
+
+  const handleSelectWord = useCallback(
+    (selectedWord: string) => {
+      const selection = selectWord({ words, wordIndex, word: selectedWord })
+      setWords(selection.words)
+      if (selection.submit) submitWords(selection.words)
+
+      if (wordIndex === wordCount - 1) return
+      setWordIndex(wordIndex + 1)
+    },
+    [submitWords, wordCount, wordIndex, words],
+  )
 
   const keyExtractor = useCallback((_item, index) => index, [])
 
