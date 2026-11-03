@@ -1,4 +1,4 @@
-import { collapsedDrawerSnap } from '../drawerSnap'
+import { collapsedDrawerSnap, firstTwoTokenHeights } from '../drawerSnap'
 
 describe('collapsedDrawerSnap', () => {
   it('shows the handle and the first two measured token rows above the floating tab bar', () => {
@@ -18,5 +18,34 @@ describe('collapsedDrawerSnap', () => {
     expect(collapsedDrawerSnap({ rowHeights: [72, 72], tabBarInset: 0 })).toBe(
       160,
     )
+  })
+})
+
+describe('firstTwoTokenHeights', () => {
+  it.each<[(number | undefined)[], [number, number]]>([
+    [[], [72, 72]],
+    [[144], [144, 72]],
+    [
+      [144, undefined],
+      [144, 72],
+    ],
+    [
+      [144, 0, 144],
+      [144, 144],
+    ],
+    [
+      [0, 0, 72],
+      [72, 72],
+    ],
+    [
+      [144, 72, 72],
+      [144, 72],
+    ],
+    [
+      [undefined, 0, 90],
+      [72, 90],
+    ],
+  ])('takes %j to %j', (cellHeights, expected) => {
+    expect(firstTwoTokenHeights(cellHeights, 72)).toEqual(expected)
   })
 })
