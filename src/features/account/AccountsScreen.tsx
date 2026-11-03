@@ -10,7 +10,13 @@ import useSolanaHealth from '@hooks/useSolanaHealth'
 import { useNavigation } from '@react-navigation/native'
 import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { CSAccount } from '@storage/cloudStorage'
-import React, { useEffect, useEffectEvent, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react'
 import { Platform, View } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -37,7 +43,7 @@ import AccountTokenCurrencyBalance from './AccountTokenCurrencyBalance'
 import AccountTokenList from './AccountTokenList'
 import AccountView from './AccountView'
 import AccountsTopNav from './AccountsTopNav'
-import { collapsedDrawerSnap } from './logic/drawerSnap'
+import { collapsedDrawerSnap, firstTwoTokenHeights } from './logic/drawerSnap'
 import { ITEM_HEIGHT } from './TokenListItem'
 import { withTransactionDetail } from './TransactionDetail'
 import WarningBanner, { BannerType } from './WarningBanner'
@@ -65,8 +71,15 @@ const AccountsScreen = () => {
   const [navLayoutHeight, setNavLayoutHeight] = useLayoutHeight()
   const [pageHeight, setPageHeight] = useLayoutHeight(0)
   const [tabBarInset, setTabBarInset] = useLayoutHeight(0)
-  const [firstRowHeight, setFirstRowHeight] = useLayoutHeight(0)
-  const [secondRowHeight, setSecondRowHeight] = useLayoutHeight(0)
+  const [cellHeights, setCellHeights] = useState<(number | undefined)[]>([])
+  const setCellHeight = useCallback((index: number, height: number) => {
+    setCellHeights((prev) => {
+      if (prev[index] === height) return prev
+      const next = [...prev]
+      next[index] = height
+      return next
+    })
+  }, [])
   const { openedNotification } = useNotificationStorage()
   const { balanceHistory } = useBalance()
   const { locked, currency } = useAppStorage()
@@ -93,10 +106,7 @@ const AccountsScreen = () => {
     ? [
         // Until the rows lay out, the skeleton rows' height stands in.
         collapsedDrawerSnap({
-          rowHeights: [
-            firstRowHeight || ITEM_HEIGHT,
-            secondRowHeight || ITEM_HEIGHT,
-          ],
+          rowHeights: firstTwoTokenHeights(cellHeights, ITEM_HEIGHT),
           tabBarInset,
         }),
         pageHeight -
@@ -314,7 +324,7 @@ const AccountsScreen = () => {
         onChange={() => setDrawerSnaps((n) => n + 1)}
       >
         <AccountTokenList
-          onFirstRowsLayout={[setFirstRowHeight, setSecondRowHeight]}
+          onRowLayout={setCellHeight}
           drawerSnaps={drawerSnaps}
         />
       </BottomSheet>

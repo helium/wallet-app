@@ -31,7 +31,6 @@ import React, {
 import { useTranslation } from 'react-i18next'
 import { Alert, View } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { Edge } from 'react-native-safe-area-context'
 import { TabSafeAreaView } from '@ui/TabSafeAreaView'
 import { useCSSVariable, withUniwind } from 'uniwind'
 import { useDebounce } from 'use-debounce'
@@ -59,7 +58,6 @@ type OnPress = NonNullable<
   Pick<ComponentProps<typeof GeoJSONSource>, 'onPress'>['onPress']
 >
 
-const BACK_EDGES: Edge[] = ['top', 'bottom']
 const DEFAULT_HEX = '631210968843200500' // used for when a hotspot has no iotInfo or mobileInfo
 const NO_HEX_INFO_BUCKETS: HexInfoBuckets = {}
 const HotspotMapScreen = () => {
@@ -76,6 +74,9 @@ const HotspotMapScreen = () => {
   const cameraRef = useRef<MapLibreRN.CameraRef>(null)
   const bottomSheetRef = useRef<BottomSheetModal>(null)
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0)
+  // The floating tab bar's height over the map, from the spacer under the
+  // map controls.
+  const [tabBarInset, setTabBarInset] = useState(0)
   const [bottomSheetSnapIndex, setBottomSheetSnapIndex] = useState(-1)
   const [zoomLevel, setZoomLevel] = useState(INITIAL_MAP_VIEW_STATE.zoomLevel)
   const [hotspot, setHotspot] = useState(route.params?.hotspot)
@@ -180,8 +181,9 @@ const HotspotMapScreen = () => {
         const zoomLevel = await mapRef.current.getZoom()
 
         // Define the shift needed to adjust the map's center. This is set to a quarter of the bottom sheet's height.
-        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area.
-        const centeringShift = bottomSheetHeight / 4
+        // This means the hexagon will be centered in the upper 3/4 of the map's viewable area. The map runs
+        // under the tab bar, so half the bar's height moves the center up to the middle of the area above it.
+        const centeringShift = bottomSheetHeight / 4 + tabBarInset / 2
 
         // Convert the latitude to radians for more accurate calculations
         const latitudeRadians = (cords[1] * Math.PI) / 180
@@ -209,7 +211,7 @@ const HotspotMapScreen = () => {
       }
     }
     centerOnHex().catch((e) => console.error(e))
-  }, [activeHex, mapRef, bottomSheetHeight, cameraRef])
+  }, [activeHex, mapRef, bottomSheetHeight, tabBarInset, cameraRef])
 
   const iconSize = 0.17 * (zoomLevel / MAX_MAP_ZOOM)
 
@@ -326,7 +328,7 @@ const HotspotMapScreen = () => {
 
   return (
     <View className="flex-1">
-      <SafeArea edges={BACK_EDGES} className="flex-1">
+      <SafeArea edges={['top']} className="flex-1">
         <View className="relative grow items-center justify-center overflow-hidden bg-secondary">
           <AnimatedBlurView
             exiting={FADE_OUT_STATE}
@@ -394,57 +396,66 @@ const HotspotMapScreen = () => {
               </Text>
             </PressableScale>
           </View>
-          <View className="absolute bottom-[10px] w-full flex-row items-center justify-between">
-            <View className="mx-3">
-              <PressableScale
-                className={`flex-row items-center justify-center rounded-full py-1.5 pl-2 pr-3 opacity-80 ${
-                  networkType === 'IOT' ? 'bg-success-700' : 'bg-blue-dark-700'
-                }`}
-                onPress={handleToggleNetwork}
-              >
-                <Hex
-                  width={24}
-                  height={24}
-                  colorClassName={
+          <View className="absolute bottom-0 w-full">
+            <View className="mb-[10px] w-full flex-row items-center justify-between">
+              <View className="mx-3">
+                <PressableScale
+                  className={`flex-row items-center justify-center rounded-full py-1.5 pl-2 pr-3 opacity-80 ${
                     networkType === 'IOT'
-                      ? 'accent-success-500'
-                      : 'accent-blue-dark-500'
-                  }
-                />
-                <Text className="ml-1.5 text-white">
-                  {t('collectablesScreen.hotspots.map.type', {
-                    type: networkType,
-                  })}
-                </Text>
-              </PressableScale>
+                      ? 'bg-success-700'
+                      : 'bg-blue-dark-700'
+                  }`}
+                  onPress={handleToggleNetwork}
+                >
+                  <Hex
+                    width={24}
+                    height={24}
+                    colorClassName={
+                      networkType === 'IOT'
+                        ? 'accent-success-500'
+                        : 'accent-blue-dark-500'
+                    }
+                  />
+                  <Text className="ml-1.5 text-white">
+                    {t('collectablesScreen.hotspots.map.type', {
+                      type: networkType,
+                    })}
+                  </Text>
+                </PressableScale>
+              </View>
+              <View className="mx-3 flex-row items-center">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  // TODO: Make this visible when modled coverage is available
+                  className="mr-3 hidden rounded-full border border-border bg-card"
+                  onPress={handleLegendPress}
+                >
+                  <LegendIcon size={18} colorClassName="accent-foreground" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full border border-border bg-card"
+                  onPress={handleUserLocationPress}
+                >
+                  <UserLocationIcon
+                    size={18}
+                    colorClassName="accent-foreground"
+                  />
+                </Button>
+              </View>
             </View>
-            <View className="mx-3 flex-row items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                // TODO: Make this visible when modled coverage is available
-                className="mr-3 hidden rounded-full border border-border bg-card"
-                onPress={handleLegendPress}
-              >
-                <LegendIcon size={18} colorClassName="accent-foreground" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full border border-border bg-card"
-                onPress={handleUserLocationPress}
-              >
-                <UserLocationIcon
-                  size={18}
-                  colorClassName="accent-foreground"
-                />
-              </Button>
-            </View>
+            <TabSafeAreaView
+              edges={['bottom']}
+              onLayout={(e) => setTabBarInset(e.nativeEvent.layout.height)}
+            />
           </View>
         </View>
         <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetRef}
+            bottomInset={tabBarInset}
             snapPoints={[160]}
             enablePanDownToClose
             enableDynamicSizing

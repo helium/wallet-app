@@ -12,3 +12,19 @@ export const collapsedDrawerSnap = ({
   rowHeights: readonly [number, number]
   tabBarInset: number
 }) => DRAWER_HANDLE_HEIGHT + first + second + tabBarInset
+
+// The heights of the first two tokens, from the list's cell heights in list
+// order. A cell not laid out yet counts as one token of the fallback height.
+export const firstTwoTokenHeights = (
+  cellHeights: ReadonlyArray<number | undefined>,
+  fallback: number,
+): readonly [number, number] => {
+  const tokens: number[] = []
+  cellHeights.some((height) => {
+    // A token with no balance stays in the list but renders nothing, so its
+    // 0-height cell is not a token row.
+    if (height !== 0) tokens.push(height ?? fallback)
+    return tokens.length === 2
+  })
+  return [tokens[0] ?? fallback, tokens[1] ?? fallback]
+}
