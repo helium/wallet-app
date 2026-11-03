@@ -100,6 +100,7 @@ describe('WalletSignBottomSheetSimulated', () => {
     act(() => {
       renderer = TestRenderer.create(
         <WalletSignBottomSheetSimulated
+          opened
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
           onAccept={() => {}}
@@ -121,6 +122,7 @@ describe('WalletSignBottomSheetSimulated', () => {
     act(() => {
       renderer = TestRenderer.create(
         <WalletSignBottomSheetSimulated
+          opened
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
           onAccept={onAccept}
@@ -154,6 +156,7 @@ describe('WalletSignBottomSheetSimulated', () => {
     act(() => {
       renderer = TestRenderer.create(
         <WalletSignBottomSheetSimulated
+          opened
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
           onAccept={() => {}}
@@ -192,6 +195,7 @@ describe('WalletSignBottomSheetSimulated', () => {
     act(() => {
       renderer = TestRenderer.create(
         <WalletSignBottomSheetSimulated
+          opened
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
           warning="Check the recipient"
@@ -215,6 +219,7 @@ describe('WalletSignBottomSheetSimulated', () => {
       act(() => {
         renderer = TestRenderer.create(
           <WalletSignBottomSheetSimulated
+            opened
             type={WalletStandardMessageTypes.signTransaction}
             serializedTxs={[Buffer.from('tx')]}
             onAccept={() => {}}

@@ -51,6 +51,7 @@ describe('WalletSignBottomSheetCompact', () => {
     act(() => {
       renderer = TestRenderer.create(
         <WalletSignBottomSheetCompact
+          opened
           type={WalletStandardMessageTypes.signTransaction}
           serializedTxs={[Buffer.from('tx')]}
           warning="Check the recipient"
