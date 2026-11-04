@@ -150,9 +150,9 @@ export const submitPages = async <P extends Page>(
   const waitFor = async (batchId: string) => {
     try {
       return await deps.pollBatch(batchId)
-    } catch (err) {
-      if (err instanceof PollTimeoutError) throw fail({ kind: 'timeout' })
-      throw err
+    } catch {
+      // The batch was sent, so any poll error leaves it in an unknown state.
+      throw fail({ kind: 'timeout' })
     }
   }
 
@@ -206,7 +206,12 @@ export const describePageFailure = (
 ): string => {
   const name = failure.kind === 'batch' ? failure.status : failure.kind
   const options: Record<string, unknown> =
-    failure.kind === 'submit' ? { reason: reasonOf(failure.cause) } : {}
+    failure.kind === 'submit'
+      ? {
+          reason: reasonOf(failure.cause),
+          interpolation: { escapeValue: false },
+        }
+      : {}
   const onFirstPage = page === 1
   const key = `transactions.pagedSubmit.${name}${onFirstPage ? '' : 'Page'}`
   if (!onFirstPage) options.page = page

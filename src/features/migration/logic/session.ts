@@ -29,6 +29,9 @@ export type MigrationSession = {
   // the server to recompute remaining transfers — otherwise a still-in-flight
   // token transfer gets rebuilt and double-sent. Cleared once a batch confirms.
   pendingBatchId?: string
+  // Set only with pendingBatchId: the input after the in-flight batch, null when
+  // that batch is the last page, absent when unknown (older sessions).
+  pendingNextInput?: MigrateInput | null
   // The 1-based page that nextInput requests. Absent on sessions saved before
   // pages were tracked, which read as page 1.
   page?: number
@@ -79,6 +82,8 @@ export type ResumeInfo = {
   // Forwarded to the executor so a resumed run re-polls the in-flight batch
   // before re-requesting (see MigrationSession.pendingBatchId).
   pendingBatchId?: string
+  // See MigrationSession.pendingNextInput.
+  pendingNextInput?: MigrateInput | null
 }
 
 export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
@@ -93,6 +98,7 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       page: s.page ?? 1,
       failure: s.failure,
       pendingBatchId: s.pendingBatchId,
+      pendingNextInput: s.pendingNextInput,
     }
   return {
     canResume: false,

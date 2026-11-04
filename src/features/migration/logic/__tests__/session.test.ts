@@ -73,6 +73,22 @@ describe('deriveResume', () => {
       deriveResume({ ...base, pendingBatchId: 'batch-9' }).pendingBatchId,
     ).toBe('batch-9')
   })
+  it('passes pendingNextInput through, including null', () => {
+    const next = { ...base.originalInput, hotspots: ['h4'] }
+    const withNext: MigrationSession = {
+      ...base,
+      pendingBatchId: 'batch-9',
+      nextInput: { ...base.originalInput, hotspots: ['h3'] },
+      pendingNextInput: next,
+    }
+    const r = deriveResume(withNext)
+    expect(r.pendingNextInput).toEqual(next)
+    expect(r.input).toEqual(withNext.nextInput)
+    const last = deserializeSession(
+      serializeSession({ ...withNext, pendingNextInput: null }),
+    )
+    expect(deriveResume(last).pendingNextInput).toBeNull()
+  })
   it('exposes the saved page and failure message for the retry screen', () => {
     const r = deriveResume({
       ...base,

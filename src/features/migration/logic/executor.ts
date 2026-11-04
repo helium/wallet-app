@@ -79,6 +79,9 @@ export type RunOptions = {
   // unconfirmed). The run re-polls this batch to terminal before re-requesting
   // so an in-flight token transfer can't be rebuilt and double-sent.
   pendingBatchId?: string
+  // The input after that batch (null: it was the last page). Once it confirms
+  // cleanly, the run moves on instead of re-requesting its page.
+  pendingNextInput?: MigrateInput | null
   // Set when resuming a saved session: the page its nextInput requests and the
   // signatures it already confirmed, so the resumed run's snapshots keep both.
   startPage?: number
@@ -100,6 +103,7 @@ export const runMigration = async <TSigned = unknown>(
   const sleep = deps.sleep ?? defaultSleep
   let input = originalInput
   let batch = opts.startPage ?? 1
+  let inFlightNext = opts.pendingNextInput
 
   // Fold a polled batch's signatures into the run totals. Shared by the resume
   // guard and the in-loop confirm so both accumulate identically.
@@ -132,6 +136,7 @@ export const runMigration = async <TSigned = unknown>(
     confirmedSignatures: [...confirmedSignatures],
     failedSignatures: [...failedSignatures],
     pendingBatchId,
+    pendingNextInput: pendingBatchId ? inFlightNext : undefined,
     page: batch,
     failure,
     updatedAt: now(),
@@ -150,6 +155,21 @@ export const runMigration = async <TSigned = unknown>(
     if (status.status === 'pending' || summary.pendingSignatures.length > 0) {
       await deps.persist(snapshot('running', resumeBatchId))
       return { status: 'pending', confirmedSignatures, failedSignatures }
+    }
+
+    // The batch confirmed cleanly and its next input is known: skip its page.
+    if (
+      opts.pendingNextInput !== undefined &&
+      status.status === 'confirmed' &&
+      summary.failedSignatures.length === 0
+    ) {
+      if (opts.pendingNextInput === null) {
+        await deps.persist(snapshot('complete'))
+        return { status: 'complete', confirmedSignatures, failedSignatures }
+      }
+      input = opts.pendingNextInput
+      batch += 1
+      await deps.persist(snapshot('running'))
     }
   }
 
@@ -182,6 +202,7 @@ export const runMigration = async <TSigned = unknown>(
         sleep,
       )
       inFlightBatchId = batchId
+      inFlightNext = out.hasMore && out.nextParams ? out.nextParams : null
 
       // Persist a resumable snapshot BEFORE confirmation carrying this batch's id:
       // if the app is killed while the batch is still confirming, the resume

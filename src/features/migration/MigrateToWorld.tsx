@@ -228,6 +228,7 @@ const MigrateToWorld = () => {
     if (retryInput)
       execute(retryInput, returnStep, {
         pendingBatchId: resume.pendingBatchId,
+        pendingNextInput: resume.pendingNextInput,
         startPage: resume.page,
         priorConfirmedSignatures: resume.confirmedSignatures,
       })
@@ -235,6 +236,7 @@ const MigrateToWorld = () => {
     step,
     resume.input,
     resume.pendingBatchId,
+    resume.pendingNextInput,
     resume.page,
     resume.confirmedSignatures,
     selection,

@@ -1317,8 +1317,10 @@ export default {
         'Transaction is still pending. Check Activity before you try again.',
       timeoutPage:
         'Batch {{page}} is still pending. Check Activity before you try again.',
-      submit: 'Transaction was not sent: {{reason}}',
-      submitPage: 'Batch {{page}} was not sent: {{reason}}',
+      submit:
+        'Could not confirm the transaction was sent: {{reason}}. Check Activity before you try again.',
+      submitPage:
+        'Could not confirm batch {{page}} was sent: {{reason}}. Check Activity before you try again.',
       confirmedBefore: '{{count}} earlier batch confirmed.',
       confirmedBefore_plural: '{{count}} earlier batches confirmed.',
       sentBefore:

@@ -1,4 +1,5 @@
 import type { TransactionData } from '@helium/blockchain-api'
+import i18next from 'i18next'
 import en from '../../locales/en'
 import {
   BatchClient,
@@ -163,6 +164,16 @@ describe('submitPages', () => {
     expect(err).toMatchObject({ failure: { kind: 'timeout' }, page: 1 })
   })
 
+  it('reports any poll error after a submit as a timeout', async () => {
+    const { first, deps } = setup({ pages: [page('a', true), page('b')] })
+    deps.pollBatch.mockRejectedValueOnce(new Error('network'))
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({ failure: { kind: 'timeout' }, page: 1 })
+  })
+
   it('puts the network on the error', async () => {
     const { first, deps } = setup({
       pages: [page('a')],
@@ -213,12 +224,51 @@ describe('submitPages', () => {
 })
 
 describe('pagedSubmit copy', () => {
-  it('defines the singular and _plural keys that compatibilityJSON v3 looks up', () => {
-    const copy = en.transactions.pagedSubmit
-    ;(['confirmedBefore', 'sentBefore'] as const).forEach((key) => {
-      expect(copy[key]).toContain('{{count}}')
-      expect(copy[`${key}_plural`]).toContain('{{count}}')
+  const i18n = i18next.createInstance()
+  beforeAll(async () => {
+    await i18n.init({
+      compatibilityJSON: 'v3',
+      lng: 'en',
+      resources: { en: { translation: en } },
     })
+  })
+
+  it.each(['confirmedBefore', 'sentBefore'] as const)(
+    'picks the singular and _plural %s copy by count',
+    (key) => {
+      const copy = en.transactions.pagedSubmit
+      expect(i18n.t(`transactions.pagedSubmit.${key}`, { count: 1 })).toBe(
+        copy[key].replace('{{count}}', '1'),
+      )
+      expect(i18n.t(`transactions.pagedSubmit.${key}`, { count: 2 })).toBe(
+        copy[`${key}_plural`].replace('{{count}}', '2'),
+      )
+    },
+  )
+
+  it('does not escape the submit reason', () => {
+    const reason = "Request to https://api/x failed: can't"
+    expect(
+      describePageFailure(i18n.t, {
+        failure: { kind: 'submit', cause: new Error(reason) },
+        page: 2,
+        confirmedCount: 0,
+      }),
+    ).toContain(reason)
+  })
+
+  it('tells the user a submit failure may have sent and to check Activity', () => {
+    const failure = { kind: 'submit', cause: new Error('503') } as const
+    const later = describePageFailure(i18n.t, {
+      failure,
+      page: 2,
+      confirmedCount: 0,
+    })
+    expect(later).toContain('Could not confirm batch 2 was sent')
+    expect(later).toContain('Check Activity before you try again')
+    expect(
+      describePageFailure(i18n.t, { failure, page: 1, confirmedCount: 0 }),
+    ).toContain('Could not confirm the transaction was sent')
   })
 })
 
@@ -265,7 +315,9 @@ describe('describePageFailure', () => {
         page: 1,
         confirmedCount: 0,
       }),
-    ).toBe('transactions.pagedSubmit.submit{"reason":"503"}')
+    ).toBe(
+      'transactions.pagedSubmit.submit{"reason":"503","interpolation":{"escapeValue":false}}',
+    )
   })
 })
 

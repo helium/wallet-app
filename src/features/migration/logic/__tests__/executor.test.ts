@@ -400,7 +400,7 @@ describe('runMigration', () => {
       expect(last.pendingBatchId).toBeUndefined()
     })
 
-    it('a resumed run requests the saved nextParams first and keeps page and moved counts', async () => {
+    it('a resumed run starts at the saved page and keeps prior confirmed signatures', async () => {
       const requests: MigrateInput[] = []
       const sessions: MigrationSession[] = []
       const { deps } = makeDeps({
@@ -507,7 +507,234 @@ describe('runMigration', () => {
       expect(last.status).toBe('failed')
       expect(last.pendingBatchId).toBe('b1')
       expect(last.nextInput).toEqual(input)
+      expect(last.pendingNextInput).toBeNull()
       expect(last.page).toBe(1)
+    })
+
+    // Page 1 confirms; page 2 submits and its poll throws.
+    const pollFailsOnPage2 = () => {
+      const sessions: MigrationSession[] = []
+      let polls = 0
+      const { deps } = makeDeps({
+        sleep: async () => {},
+        requestMigrate: async (i) =>
+          ({
+            transactionData: txData(1),
+            hasMore: true,
+            nextParams: page(Number(i.hotspots?.[0]?.slice(1) ?? 1) + 1),
+          } as MigrateOutput),
+        pollStatus: async () => {
+          polls += 1
+          if (polls > 1) throw new Error('poll down')
+          return {
+            status: 'confirmed',
+            transactions: [{ signature: 'sig1', status: 'confirmed' }],
+          }
+        },
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      return { deps, sessions }
+    }
+
+    it('a poll error after submit saves the input that follows the in-flight batch', async () => {
+      const { deps, sessions } = pollFailsOnPage2()
+      const outcome = await runMigration(page(1), deps)
+      expect(outcome.status).toBe('failed')
+      const last = sessions[sessions.length - 1]
+      expect(last.pendingBatchId).toBe('b1')
+      expect(last.nextInput).toEqual(page(2))
+      expect(last.pendingNextInput).toEqual(page(3))
+      expect(last.page).toBe(2)
+    })
+
+    it('a resume whose in-flight batch confirmed requests the saved next input', async () => {
+      const { deps: firstDeps, sessions: saved } = pollFailsOnPage2()
+      await runMigration(page(1), firstDeps)
+      const session = saved[saved.length - 1]
+
+      const requests: MigrateInput[] = []
+      const sessions: MigrationSession[] = []
+      const { deps } = makeDeps({
+        requestMigrate: async (i) => {
+          requests.push(i)
+          return { transactionData: txData(1) } as MigrateOutput
+        },
+        pollStatus: async (batchId) => ({
+          status: 'confirmed',
+          transactions: [
+            {
+              signature: batchId === 'b1' ? 'sig2' : 'sig3',
+              status: 'confirmed',
+            },
+          ],
+        }),
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(session.nextInput ?? input, deps, {
+        pendingBatchId: session.pendingBatchId,
+        pendingNextInput: session.pendingNextInput,
+        startPage: session.page,
+        priorConfirmedSignatures: session.confirmedSignatures,
+      })
+      expect(requests[0]).toEqual(page(3))
+      expect(sessions[0].page).toBe(3)
+      expect(sessions[0].nextInput).toEqual(page(3))
+      expect(outcome.status).toBe('complete')
+    })
+
+    it('a resume whose in-flight batch was the last page completes without a request', async () => {
+      const requestMigrate = jest.fn(
+        async () => ({ transactionData: txData(1) } as MigrateOutput),
+      )
+      const sessions: MigrationSession[] = []
+      const { deps } = makeDeps({
+        requestMigrate,
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(page(2), deps, {
+        pendingBatchId: 'stale',
+        pendingNextInput: null,
+        startPage: 2,
+      })
+      expect(outcome.status).toBe('complete')
+      expect(requestMigrate).not.toHaveBeenCalled()
+      expect(sessions[sessions.length - 1].status).toBe('complete')
+    })
+
+    it('a resume whose in-flight batch has failed signatures re-requests its page', async () => {
+      const requests: MigrateInput[] = []
+      let polls = 0
+      const { deps } = makeDeps({
+        requestMigrate: async (i) => {
+          requests.push(i)
+          return { transactionData: txData(1) } as MigrateOutput
+        },
+        pollStatus: async () => {
+          polls += 1
+          return polls === 1
+            ? {
+                status: 'partial',
+                transactions: [
+                  { signature: 'ok', status: 'confirmed' },
+                  { signature: 'bad', status: 'failed' },
+                ],
+              }
+            : {
+                status: 'confirmed',
+                transactions: [{ signature: 'sig3', status: 'confirmed' }],
+              }
+        },
+      })
+      await runMigration(page(2), deps, {
+        pendingBatchId: 'stale',
+        pendingNextInput: page(3),
+        startPage: 2,
+      })
+      expect(requests[0]).toEqual(page(2))
+    })
+
+    it('a resume whose in-flight batch failed without failed signatures re-requests its page', async () => {
+      const requests: MigrateInput[] = []
+      let polls = 0
+      const { deps } = makeDeps({
+        requestMigrate: async (i) => {
+          requests.push(i)
+          return { transactionData: txData(1) } as MigrateOutput
+        },
+        pollStatus: async () => {
+          polls += 1
+          return polls === 1
+            ? { status: 'failed', transactions: [] }
+            : {
+                status: 'confirmed',
+                transactions: [{ signature: 'sig3', status: 'confirmed' }],
+              }
+        },
+      })
+      await runMigration(page(2), deps, {
+        pendingBatchId: 'stale',
+        pendingNextInput: page(3),
+        startPage: 2,
+      })
+      expect(requests[0]).toEqual(page(2))
+    })
+
+    it('a resume whose confirmed in-flight batch has a failed signature re-requests its page', async () => {
+      const requests: MigrateInput[] = []
+      let polls = 0
+      const { deps } = makeDeps({
+        requestMigrate: async (i) => {
+          requests.push(i)
+          return { transactionData: txData(1) } as MigrateOutput
+        },
+        pollStatus: async () => {
+          polls += 1
+          return polls === 1
+            ? {
+                status: 'confirmed',
+                transactions: [
+                  { signature: 'ok', status: 'confirmed' },
+                  { signature: 'bad', status: 'failed' },
+                ],
+              }
+            : {
+                status: 'confirmed',
+                transactions: [{ signature: 'sig3', status: 'confirmed' }],
+              }
+        },
+      })
+      await runMigration(page(2), deps, {
+        pendingBatchId: 'stale',
+        pendingNextInput: page(3),
+        startPage: 2,
+      })
+      expect(requests[0]).toEqual(page(2))
+    })
+
+    it('a resume that skips a confirmed in-flight batch clears the pending fields', async () => {
+      const sessions: MigrationSession[] = []
+      const { deps } = makeDeps({
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      await runMigration(page(2), deps, {
+        pendingBatchId: 'stale',
+        pendingNextInput: page(3),
+        startPage: 2,
+      })
+      const advanced = sessions[0]
+      expect(advanced.status).toBe('running')
+      expect(advanced.nextInput).toEqual(page(3))
+      expect(advanced.pendingBatchId).toBeUndefined()
+      expect(advanced.pendingNextInput).toBeUndefined()
+    })
+
+    it('a legacy resume without pendingNextInput re-requests its page', async () => {
+      const requests: MigrateInput[] = []
+      const sessions: MigrationSession[] = []
+      const { deps } = makeDeps({
+        requestMigrate: async (i) => {
+          requests.push(i)
+          return { transactionData: txData(1) } as MigrateOutput
+        },
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(page(2), deps, {
+        pendingBatchId: 'stale',
+        startPage: 2,
+      })
+      expect(requests).toEqual([page(2)])
+      expect(sessions.every((s) => s.page === 2)).toBe(true)
+      expect(outcome.status).toBe('complete')
     })
 
     it('does not count a re-polled batch twice when seeded with prior signatures', async () => {
