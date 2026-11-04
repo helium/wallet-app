@@ -1,4 +1,5 @@
 import type { TransactionData } from '@helium/blockchain-api'
+import en from '../../locales/en'
 import {
   BatchClient,
   BatchStatus,
@@ -162,6 +163,21 @@ describe('submitPages', () => {
     expect(err).toMatchObject({ failure: { kind: 'timeout' }, page: 1 })
   })
 
+  it('puts the network on the error', async () => {
+    const { first, deps } = setup({
+      pages: [page('a')],
+      statuses: { 'batch-a': 'expired' },
+      waitForLastPage: true,
+    })
+
+    const err = await caught(submitPages(first, { ...deps, network: 'IOT' }))
+
+    expect(err).toMatchObject({ page: 1, network: 'IOT' })
+    expect(deps.describeFailure).toHaveBeenCalledWith(
+      expect.objectContaining({ network: 'IOT' }),
+    )
+  })
+
   it('wraps a submit error with the page it failed on', async () => {
     const { first, deps } = setup({ pages: [page('a', true), page('b')] })
     const cause = new Error('503')
@@ -196,6 +212,16 @@ describe('submitPages', () => {
   })
 })
 
+describe('pagedSubmit copy', () => {
+  it('defines the singular and _plural keys that compatibilityJSON v3 looks up', () => {
+    const copy = en.transactions.pagedSubmit
+    ;(['confirmedBefore', 'sentBefore'] as const).forEach((key) => {
+      expect(copy[key]).toContain('{{count}}')
+      expect(copy[`${key}_plural`]).toContain('{{count}}')
+    })
+  })
+})
+
 describe('describePageFailure', () => {
   const t = (key: string, options?: Record<string, unknown>) =>
     options ? `${key}${JSON.stringify(options)}` : key
@@ -210,18 +236,24 @@ describe('describePageFailure', () => {
     ).toBe('transactions.pagedSubmit.failed')
   })
 
-  it('names the network, the page and what confirmed before it', () => {
+  it('names the network, the page, what confirmed before it and what earlier networks sent', () => {
     expect(
       describePageFailure(
         t,
-        { failure: { kind: 'timeout' }, page: 2, confirmedCount: 1 },
-        'IOT',
+        {
+          failure: { kind: 'timeout' },
+          page: 2,
+          confirmedCount: 1,
+          network: 'IOT',
+        },
+        3,
       ),
     ).toBe(
       [
         'transactions.pagedSubmit.network{"network":"IOT"}',
         'transactions.pagedSubmit.timeoutPage{"page":2}',
         'transactions.pagedSubmit.confirmedBefore{"count":1}',
+        'transactions.pagedSubmit.sentBefore{"count":3}',
       ].join(' '),
     )
   })

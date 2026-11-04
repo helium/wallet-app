@@ -1319,8 +1319,12 @@ export default {
         'Batch {{page}} is still pending. Check Activity before you try again.',
       submit: 'Transaction was not sent: {{reason}}',
       submitPage: 'Batch {{page}} was not sent: {{reason}}',
-      confirmedBefore_one: '{{count}} earlier batch confirmed.',
-      confirmedBefore_other: '{{count}} earlier batches confirmed.',
+      confirmedBefore: '{{count}} earlier batch confirmed.',
+      confirmedBefore_plural: '{{count}} earlier batches confirmed.',
+      sentBefore:
+        '{{count}} batch from an earlier network was sent and may still be pending. Check Activity before you try again.',
+      sentBefore_plural:
+        '{{count}} batches from earlier networks were sent and may still be pending. Check Activity before you try again.',
     },
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',

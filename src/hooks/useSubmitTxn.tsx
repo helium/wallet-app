@@ -634,8 +634,10 @@ export default () => {
           nextPage: requestPage,
           // ClaimingRewardsScreen tracks each network's last batch.
           waitForLastPage: false,
+          network: network.toUpperCase(),
+          // Earlier networks' last batches are sent but not polled yet.
           describeFailure: (info) =>
-            describePageFailure(t, info, network.toUpperCase()),
+            describePageFailure(t, info, batchIds.length),
         })
         batchIds.push(...result.batchIds)
       }

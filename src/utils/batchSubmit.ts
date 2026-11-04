@@ -84,6 +84,8 @@ export type PageFailureInfo = {
   page: number
   /** Pages that confirmed before the failed one. */
   confirmedCount: number
+  /** Rewards network, for claims. */
+  network?: string
 }
 
 export class PagedSubmitError extends Error {
@@ -93,11 +95,14 @@ export class PagedSubmitError extends Error {
 
   readonly confirmedCount: number
 
+  readonly network?: string
+
   constructor(message: string, info: PageFailureInfo) {
     super(message)
     this.failure = info.failure
     this.page = info.page
     this.confirmedCount = info.confirmedCount
+    this.network = info.network
   }
 }
 
@@ -115,6 +120,8 @@ export type PagedSubmitDeps<P extends Page> = {
   nextPage?: () => Promise<P>
   /** Poll the last page too. When false, the caller tracks it (for example on a status screen). */
   waitForLastPage: boolean
+  /** Rewards network, for claims. Copied onto the error. */
+  network?: string
   describeFailure: (info: PageFailureInfo) => string
 }
 
@@ -136,7 +143,7 @@ export const submitPages = async <P extends Page>(
   const { nextPage } = deps
 
   const fail = (failure: PageFailure) => {
-    const info = { failure, page, confirmedCount }
+    const info = { failure, page, confirmedCount, network: deps.network }
     return new PagedSubmitError(deps.describeFailure(info), info)
   }
 
@@ -187,11 +194,15 @@ type Translate = (key: string, options?: Record<string, unknown>) => string
 const reasonOf = (cause: unknown) =>
   cause instanceof Error ? cause.message : String(cause)
 
-/** User-facing copy for a failed page. Page 1 gets the plain copy, without a page number. */
+/**
+ * User-facing copy for a failed page. Page 1 gets the plain copy, without a
+ * page number. `sentBefore` counts batches an earlier run (an earlier claim
+ * network) sent that may still be pending.
+ */
 export const describePageFailure = (
   t: Translate,
-  { failure, page, confirmedCount }: PageFailureInfo,
-  network?: string,
+  { failure, page, confirmedCount, network }: PageFailureInfo,
+  sentBefore = 0,
 ): string => {
   const name = failure.kind === 'batch' ? failure.status : failure.kind
   const options: Record<string, unknown> =
@@ -205,6 +216,8 @@ export const describePageFailure = (
     Object.keys(options).length ? t(key, options) : t(key),
     confirmedCount > 0 &&
       t('transactions.pagedSubmit.confirmedBefore', { count: confirmedCount }),
+    sentBefore > 0 &&
+      t('transactions.pagedSubmit.sentBefore', { count: sentBefore }),
   ]
     .filter(Boolean)
     .join(' ')
