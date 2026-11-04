@@ -75,13 +75,13 @@ const ClaimAllRewardsScreen = () => {
           lazyKeys.push(MOBILE_LAZY_KEY)
         }
 
-        const batchId = await submitClaimAllRewards(
+        const batchIds = await submitClaimAllRewards(
           lazyKeys,
           hotspotsWithMeta,
           totalHotspots,
         )
 
-        navigation.replace('ClaimingRewardsScreen', { batchIds: [batchId] })
+        navigation.replace('ClaimingRewardsScreen', { batchIds })
 
         setRedeeming(false)
       }

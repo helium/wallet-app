@@ -1,0 +1,285 @@
+import type { TransactionData } from '@helium/blockchain-api'
+import {
+  BatchClient,
+  BatchStatus,
+  PagedSubmitDeps,
+  PagedSubmitError,
+  PollTimeoutError,
+  TerminalStatus,
+  describePageFailure,
+  mergeBatchStatuses,
+  pollForCompletion,
+  submitPages,
+} from '../batchSubmit'
+
+type Page = { transactionData: TransactionData; hasMore?: boolean }
+
+const page = (name: string, hasMore = false): Page => ({
+  transactionData: {
+    transactions: [{ serializedTransaction: name }],
+    parallel: false,
+  } as unknown as TransactionData,
+  hasMore,
+})
+
+const emptyPage: Page = {
+  transactionData: {
+    transactions: [],
+    parallel: false,
+  } as unknown as TransactionData,
+}
+
+const nameOf = (data: TransactionData) =>
+  data.transactions[0].serializedTransaction
+
+/** Fake server: serves `pages` in order and polls each batch as `statuses[batchId]`. */
+const setup = ({
+  pages,
+  statuses = {},
+  waitForLastPage = false,
+}: {
+  pages: Page[]
+  statuses?: Record<string, TerminalStatus | 'timeout'>
+  waitForLastPage?: boolean
+}) => {
+  const [first, ...rest] = pages
+  const remaining = [...rest]
+  const deps = {
+    signPage: jest.fn(async (p: Page) => p.transactionData),
+    submitBatch: jest.fn(async (signed: TransactionData) => {
+      return `batch-${nameOf(signed)}`
+    }),
+    pollBatch: jest.fn(async (batchId: string) => {
+      const status = statuses[batchId] ?? 'confirmed'
+      if (status === 'timeout') throw new PollTimeoutError(batchId)
+      return { status, signatures: [`sig-${batchId}`] }
+    }),
+    nextPage: jest.fn(async () => {
+      const next = remaining.shift()
+      if (!next) throw new Error('no more pages')
+      return next
+    }),
+    waitForLastPage,
+    describeFailure: jest.fn(
+      ({ failure, page: n }) => `page ${n} ${failure.kind}`,
+    ),
+  } satisfies PagedSubmitDeps<Page>
+  return { first, deps }
+}
+
+const caught = async (promise: Promise<unknown>) => {
+  try {
+    await promise
+  } catch (err) {
+    return err
+  }
+  throw new Error('expected a rejection')
+}
+
+describe('submitPages', () => {
+  it('signs nothing when the first page is empty', async () => {
+    const { deps } = setup({ pages: [page('a')] })
+
+    await expect(submitPages(emptyPage, deps)).resolves.toEqual({
+      batchIds: [],
+      signatures: [],
+    })
+    expect(deps.signPage).not.toHaveBeenCalled()
+  })
+
+  it('waits for each page before it fetches the next one, and returns every batch id', async () => {
+    const { first, deps } = setup({
+      pages: [page('a', true), page('b', true), page('c')],
+    })
+
+    const result = await submitPages(first, deps)
+
+    expect(result.batchIds).toEqual(['batch-a', 'batch-b', 'batch-c'])
+    expect(deps.pollBatch.mock.calls.map(([id]) => id)).toEqual([
+      'batch-a',
+      'batch-b',
+    ])
+  })
+
+  it('leaves the last page to the caller unless waitForLastPage is set', async () => {
+    const { first, deps } = setup({
+      pages: [page('a', true), page('b')],
+      waitForLastPage: true,
+    })
+
+    const result = await submitPages(first, deps)
+
+    expect(deps.pollBatch).toHaveBeenCalledTimes(2)
+    expect(result.signatures).toEqual(['sig-batch-a', 'sig-batch-b'])
+  })
+
+  it('stops on a partial page and does not fetch the next one', async () => {
+    const { first, deps } = setup({
+      pages: [page('a', true), page('b')],
+      statuses: { 'batch-a': 'partial' },
+    })
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({
+      message: 'page 1 batch',
+      failure: { kind: 'batch', status: 'partial' },
+      page: 1,
+      confirmedCount: 0,
+    })
+    expect(deps.nextPage).not.toHaveBeenCalled()
+  })
+
+  it.each(['failed', 'expired'] as const)(
+    'reports the page and the confirmed count when page 2 is %s',
+    async (status) => {
+      const { first, deps } = setup({
+        pages: [page('a', true), page('b', true), page('c')],
+        statuses: { 'batch-b': status },
+      })
+
+      const err = await caught(submitPages(first, deps))
+
+      expect(err).toMatchObject({
+        failure: { kind: 'batch', status },
+        page: 2,
+        confirmedCount: 1,
+      })
+      expect(deps.nextPage).toHaveBeenCalledTimes(1)
+    },
+  )
+
+  it('reports a polling timeout as a timeout, not a failure', async () => {
+    const { first, deps } = setup({
+      pages: [page('a')],
+      statuses: { 'batch-a': 'timeout' },
+      waitForLastPage: true,
+    })
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toMatchObject({ failure: { kind: 'timeout' }, page: 1 })
+  })
+
+  it('wraps a submit error with the page it failed on', async () => {
+    const { first, deps } = setup({ pages: [page('a', true), page('b')] })
+    const cause = new Error('503')
+    deps.submitBatch.mockResolvedValueOnce('batch-a')
+    deps.submitBatch.mockRejectedValueOnce(cause)
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toMatchObject({
+      failure: { kind: 'submit', cause },
+      page: 2,
+      confirmedCount: 1,
+    })
+  })
+
+  it('passes a sign rejection through unchanged', async () => {
+    const { first, deps } = setup({ pages: [page('a')] })
+    const rejection = new Error('User rejected transaction')
+    deps.signPage.mockRejectedValueOnce(rejection)
+
+    await expect(submitPages(first, deps)).rejects.toBe(rejection)
+    expect(deps.submitBatch).not.toHaveBeenCalled()
+  })
+
+  it('stops after a page with hasMore when there is no nextPage', async () => {
+    const { first, deps } = setup({ pages: [page('a', true)] })
+
+    const result = await submitPages(first, { ...deps, nextPage: undefined })
+
+    expect(result.batchIds).toEqual(['batch-a'])
+    expect(deps.pollBatch).not.toHaveBeenCalled()
+  })
+})
+
+describe('describePageFailure', () => {
+  const t = (key: string, options?: Record<string, unknown>) =>
+    options ? `${key}${JSON.stringify(options)}` : key
+
+  it('uses the plain copy for a first page with nothing before it', () => {
+    expect(
+      describePageFailure(t, {
+        failure: { kind: 'batch', status: 'failed' },
+        page: 1,
+        confirmedCount: 0,
+      }),
+    ).toBe('transactions.pagedSubmit.failed')
+  })
+
+  it('names the network, the page and what confirmed before it', () => {
+    expect(
+      describePageFailure(
+        t,
+        { failure: { kind: 'timeout' }, page: 2, confirmedCount: 1 },
+        'IOT',
+      ),
+    ).toBe(
+      [
+        'transactions.pagedSubmit.network{"network":"IOT"}',
+        'transactions.pagedSubmit.timeoutPage{"page":2}',
+        'transactions.pagedSubmit.confirmedBefore{"count":1}',
+      ].join(' '),
+    )
+  })
+
+  it('includes the submit error reason', () => {
+    expect(
+      describePageFailure(t, {
+        failure: { kind: 'submit', cause: new Error('503') },
+        page: 1,
+        confirmedCount: 0,
+      }),
+    ).toBe('transactions.pagedSubmit.submit{"reason":"503"}')
+  })
+})
+
+describe('pollForCompletion', () => {
+  const clientWith = (...statuses: string[]) => {
+    const get = jest.fn()
+    statuses.forEach((status) =>
+      get.mockResolvedValueOnce({
+        status,
+        transactions: [{ signature: 'sig' }],
+      }),
+    )
+    return { client: { transactions: { get } } as unknown as BatchClient, get }
+  }
+
+  it('polls until the batch reaches a terminal status', async () => {
+    const { client, get } = clientWith('pending', 'partial')
+
+    await expect(pollForCompletion(client, 'b', 0)).resolves.toEqual({
+      status: 'partial',
+      signatures: ['sig'],
+    })
+    expect(get).toHaveBeenCalledTimes(2)
+  })
+
+  it('throws PollTimeoutError when the batch never lands', async () => {
+    const { client } = clientWith()
+
+    const err = await caught(pollForCompletion(client, 'b', 0, 0))
+
+    expect(err).toBeInstanceOf(PollTimeoutError)
+    expect(err).toMatchObject({
+      batchId: 'b',
+      message: 'Transaction polling timeout',
+    })
+  })
+})
+
+describe('mergeBatchStatuses', () => {
+  it.each<[BatchStatus[], BatchStatus | undefined]>([
+    [[], undefined],
+    [['confirmed', 'confirmed'], 'confirmed'],
+    [['confirmed', 'pending'], 'pending'],
+    [['confirmed', 'failed'], 'partial'],
+    [['expired', 'expired'], 'expired'],
+  ])('merges %j into %s', (statuses, expected) => {
+    expect(mergeBatchStatuses(statuses)).toBe(expected)
+  })
+})

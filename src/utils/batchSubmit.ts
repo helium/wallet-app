@@ -1,0 +1,211 @@
+/* eslint-disable max-classes-per-file */
+import type { TransactionData } from '@helium/blockchain-api'
+import type { useBlockchainApi } from '../storage/BlockchainApiProvider'
+
+export type BatchStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'failed'
+  | 'expired'
+  | 'partial'
+
+export type TerminalStatus = Exclude<BatchStatus, 'pending'>
+
+export const TERMINAL_STATUSES: BatchStatus[] = [
+  'confirmed',
+  'failed',
+  'expired',
+  'partial',
+]
+
+const isTerminal = (status: string): status is TerminalStatus =>
+  (TERMINAL_STATUSES as string[]).includes(status)
+
+/** One status for a set of batches: pending until all land, then the shared status, else partial. */
+export const mergeBatchStatuses = (
+  statuses: BatchStatus[],
+): BatchStatus | undefined => {
+  if (statuses.some((s) => !isTerminal(s))) return 'pending'
+  const [first] = statuses
+  return statuses.every((s) => s === first) ? first : 'partial'
+}
+
+export type BatchClient = Pick<
+  ReturnType<typeof useBlockchainApi>,
+  'transactions'
+>
+
+export class PollTimeoutError extends Error {
+  readonly batchId: string
+
+  constructor(batchId: string) {
+    super('Transaction polling timeout')
+    this.batchId = batchId
+  }
+}
+
+export const pollForCompletion = async (
+  client: BatchClient,
+  batchId: string,
+  pollIntervalMs = 2000,
+  maxPollTime = 60000,
+): Promise<{ status: TerminalStatus; signatures: string[] }> => {
+  const startTime = Date.now()
+
+  while (Date.now() - startTime < maxPollTime) {
+    // eslint-disable-next-line no-await-in-loop
+    const result = await client.transactions.get({
+      id: batchId,
+      commitment: 'confirmed',
+    })
+
+    if (isTerminal(result.status)) {
+      return {
+        status: result.status,
+        signatures: result.transactions?.map((t) => t.signature) ?? [],
+      }
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
+  }
+
+  throw new PollTimeoutError(batchId)
+}
+
+export type PageFailure =
+  | { kind: 'batch'; status: Exclude<TerminalStatus, 'confirmed'> }
+  | { kind: 'timeout' }
+  | { kind: 'submit'; cause: unknown }
+
+export type PageFailureInfo = {
+  failure: PageFailure
+  /** 1-based page that failed. */
+  page: number
+  /** Pages that confirmed before the failed one. */
+  confirmedCount: number
+}
+
+export class PagedSubmitError extends Error {
+  readonly failure: PageFailure
+
+  readonly page: number
+
+  readonly confirmedCount: number
+
+  constructor(message: string, info: PageFailureInfo) {
+    super(message)
+    this.failure = info.failure
+    this.page = info.page
+    this.confirmedCount = info.confirmedCount
+  }
+}
+
+type Page = { transactionData: TransactionData; hasMore?: boolean }
+
+export type PagedSubmitDeps<P extends Page> = {
+  /** Prompts the user and signs. A rejection is thrown as is. */
+  signPage: (page: P) => Promise<TransactionData>
+  /** Submits a signed page and returns its batch id. */
+  submitBatch: (signed: TransactionData) => Promise<string>
+  pollBatch: (
+    batchId: string,
+  ) => Promise<{ status: TerminalStatus; signatures: string[] }>
+  /** Fetches the next page. Without it, the first page is the only one. */
+  nextPage?: () => Promise<P>
+  /** Poll the last page too. When false, the caller tracks it (for example on a status screen). */
+  waitForLastPage: boolean
+  describeFailure: (info: PageFailureInfo) => string
+}
+
+/**
+ * Signs and submits pages until the server stops sending `hasMore`. Every
+ * page before the last must confirm before the next one is fetched. A
+ * failed, expired, partial or timed-out page stops the loop with a
+ * PagedSubmitError.
+ */
+export const submitPages = async <P extends Page>(
+  first: P,
+  deps: PagedSubmitDeps<P>,
+): Promise<{ batchIds: string[]; signatures: string[] }> => {
+  const batchIds: string[] = []
+  const signatures: string[] = []
+  let confirmedCount = 0
+  let page = 1
+  let current = first
+  const { nextPage } = deps
+
+  const fail = (failure: PageFailure) => {
+    const info = { failure, page, confirmedCount }
+    return new PagedSubmitError(deps.describeFailure(info), info)
+  }
+
+  const waitFor = async (batchId: string) => {
+    try {
+      return await deps.pollBatch(batchId)
+    } catch (err) {
+      if (err instanceof PollTimeoutError) throw fail({ kind: 'timeout' })
+      throw err
+    }
+  }
+
+  while (current.transactionData.transactions.length > 0) {
+    // eslint-disable-next-line no-await-in-loop
+    const signed = await deps.signPage(current)
+
+    let batchId: string
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      batchId = await deps.submitBatch(signed)
+    } catch (cause) {
+      throw fail({ kind: 'submit', cause })
+    }
+    batchIds.push(batchId)
+
+    const isLastPage = !current.hasMore || !nextPage
+    if (!isLastPage || deps.waitForLastPage) {
+      // eslint-disable-next-line no-await-in-loop
+      const outcome = await waitFor(batchId)
+      if (outcome.status !== 'confirmed') {
+        throw fail({ kind: 'batch', status: outcome.status })
+      }
+      confirmedCount += 1
+      signatures.push(...outcome.signatures)
+    }
+
+    if (isLastPage) break
+    // eslint-disable-next-line no-await-in-loop
+    current = await nextPage()
+    page += 1
+  }
+
+  return { batchIds, signatures }
+}
+
+type Translate = (key: string, options?: Record<string, unknown>) => string
+
+const reasonOf = (cause: unknown) =>
+  cause instanceof Error ? cause.message : String(cause)
+
+/** User-facing copy for a failed page. Page 1 gets the plain copy, without a page number. */
+export const describePageFailure = (
+  t: Translate,
+  { failure, page, confirmedCount }: PageFailureInfo,
+  network?: string,
+): string => {
+  const name = failure.kind === 'batch' ? failure.status : failure.kind
+  const options: Record<string, unknown> =
+    failure.kind === 'submit' ? { reason: reasonOf(failure.cause) } : {}
+  const onFirstPage = page === 1
+  const key = `transactions.pagedSubmit.${name}${onFirstPage ? '' : 'Page'}`
+  if (!onFirstPage) options.page = page
+
+  return [
+    network && t('transactions.pagedSubmit.network', { network }),
+    Object.keys(options).length ? t(key, options) : t(key),
+    confirmedCount > 0 &&
+      t('transactions.pagedSubmit.confirmedBefore', { count: confirmedCount }),
+  ]
+    .filter(Boolean)
+    .join(' ')
+}

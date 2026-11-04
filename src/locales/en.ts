@@ -1305,6 +1305,23 @@ export default {
     signSwapTxn: 'Sign this transaction to swap your tokens.',
     signGenericTxn: 'Sign this transaction to send your txn.',
     signClaimRewardsTxn: 'Sign this transaction to claim your rewards.',
+    pagedSubmit: {
+      network: '{{network}} rewards:',
+      failed: 'Transaction failed.',
+      failedPage: 'Batch {{page}} failed.',
+      expired: 'Transaction expired before it confirmed. Try again.',
+      expiredPage: 'Batch {{page}} expired before it confirmed. Try again.',
+      partial: 'Some transactions in this batch failed.',
+      partialPage: 'Some transactions in batch {{page}} failed.',
+      timeout:
+        'Transaction is still pending. Check Activity before you try again.',
+      timeoutPage:
+        'Batch {{page}} is still pending. Check Activity before you try again.',
+      submit: 'Transaction was not sent: {{reason}}',
+      submitPage: 'Batch {{page}} was not sent: {{reason}}',
+      confirmedBefore_one: '{{count}} earlier batch confirmed.',
+      confirmedBefore_other: '{{count}} earlier batches confirmed.',
+    },
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signMintDataCreditsTxnPreview:
