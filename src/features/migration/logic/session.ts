@@ -29,6 +29,12 @@ export type MigrationSession = {
   // the server to recompute remaining transfers — otherwise a still-in-flight
   // token transfer gets rebuilt and double-sent. Cleared once a batch confirms.
   pendingBatchId?: string
+  // The 1-based page that nextInput requests. Absent on sessions saved before
+  // pages were tracked, which read as page 1.
+  page?: number
+  // The error message when a request, sign, submit or poll threw on `page`.
+  // Cleared by the next snapshot that does not fail.
+  failure?: string
   updatedAt: number
 } & SignatureTally
 
@@ -65,7 +71,11 @@ export type ResumeInfo = {
   input: MigrateInput | null
   movedCount: number
   failedCount: number
+  // Seeds a resumed run so its snapshots keep what already moved.
+  confirmedSignatures: string[]
   status: MigrationStatus
+  page: number
+  failure?: string
   // Forwarded to the executor so a resumed run re-polls the in-flight batch
   // before re-requesting (see MigrationSession.pendingBatchId).
   pendingBatchId?: string
@@ -78,7 +88,10 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       input: s.nextInput ?? s.originalInput,
       movedCount: s.confirmedSignatures.length,
       failedCount: s.failedSignatures.length,
+      confirmedSignatures: s.confirmedSignatures,
       status: s.status,
+      page: s.page ?? 1,
+      failure: s.failure,
       pendingBatchId: s.pendingBatchId,
     }
   return {
@@ -86,7 +99,9 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
     input: null,
     movedCount: 0,
     failedCount: 0,
+    confirmedSignatures: [],
     status: 'idle',
+    page: 1,
     pendingBatchId: undefined,
   }
 }

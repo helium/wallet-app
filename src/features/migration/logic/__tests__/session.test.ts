@@ -39,7 +39,9 @@ describe('deriveResume', () => {
       input: base.originalInput,
       movedCount: 1,
       failedCount: 0,
+      confirmedSignatures: ['sigA'],
       status: 'running',
+      page: 1,
     })
   })
   it('offers resume for a partial session', () => {
@@ -48,7 +50,9 @@ describe('deriveResume', () => {
       input: base.originalInput,
       movedCount: 1,
       failedCount: 0,
+      confirmedSignatures: ['sigA'],
       status: 'partial',
+      page: 1,
     })
   })
   it('offers resume for a failed session', () => {
@@ -69,6 +73,21 @@ describe('deriveResume', () => {
       deriveResume({ ...base, pendingBatchId: 'batch-9' }).pendingBatchId,
     ).toBe('batch-9')
   })
+  it('exposes the saved page and failure message for the retry screen', () => {
+    const r = deriveResume({
+      ...base,
+      status: 'failed',
+      page: 3,
+      failure: 'Unable to fit Jito tip instruction into the transaction bundle',
+    })
+    expect(r.page).toBe(3)
+    expect(r.failure).toBe(
+      'Unable to fit Jito tip instruction into the transaction bundle',
+    )
+  })
+  it('defaults the page to 1 for a session saved before pages were tracked', () => {
+    expect(deriveResume(base).page).toBe(1)
+  })
   it('does not offer resume for complete/idle/null', () => {
     expect(deriveResume({ ...base, status: 'complete' }).canResume).toBe(false)
     expect(deriveResume({ ...base, status: 'idle' }).canResume).toBe(false)
@@ -77,7 +96,9 @@ describe('deriveResume', () => {
       input: null,
       movedCount: 0,
       failedCount: 0,
+      confirmedSignatures: [],
       status: 'idle',
+      page: 1,
     })
   })
 })

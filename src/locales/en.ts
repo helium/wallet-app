@@ -1700,6 +1700,9 @@ export default {
       title: 'Almost there',
       body: '{{moved}} transfers confirmed. {{failed}} need a retry.',
       retry: 'Retry failed items',
+      pageFailedBody:
+        'Batch {{page}} stopped with an error. {{moved}} transfers confirmed before it stopped.',
+      retryPage: 'Retry from batch {{page}}',
     },
     success: {
       title: 'Migration complete',

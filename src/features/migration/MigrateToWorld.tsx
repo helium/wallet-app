@@ -32,6 +32,7 @@ import { useMigrationAssets } from './hooks/useMigrationAssets'
 import { useMigrationExecutor } from './hooks/useMigrationExecutor'
 import { FlowStep, useMigrationSession } from './hooks/useMigrationSession'
 import { uiToRaw } from './logic/amounts'
+import { RunOptions } from './logic/executor'
 import { nothingToMigrate, shortenMint } from './logic/assets'
 import { getEmbeddedWallet } from './logic/embeddedWallet'
 import { shouldShowSupport } from './logic/retry'
@@ -177,11 +178,7 @@ const MigrateToWorld = () => {
   )
 
   const execute = useCallback(
-    async (
-      input: MigrateInput,
-      returnStep: FlowStep,
-      opts?: { pendingBatchId?: string },
-    ) => {
+    async (input: MigrateInput, returnStep: FlowStep, opts?: RunOptions) => {
       // Single destination-wallet guard. A resumed session can outlive its Privy
       // embedded wallet (expired session); without a destination, run() would
       // throw 'Destination wallet unavailable' and dead-end on an empty Review.
@@ -226,15 +223,20 @@ const MigrateToWorld = () => {
     const retryInput =
       resume.input ?? (selection ? buildInput(selection) : undefined)
     // Forward the in-flight batch id so the executor re-polls it to terminal
-    // before re-requesting — prevents re-sending a still-pending transfer.
+    // before re-requesting — prevents re-sending a still-pending transfer. The
+    // saved page and signatures keep the counts the retry screen shows.
     if (retryInput)
       execute(retryInput, returnStep, {
         pendingBatchId: resume.pendingBatchId,
+        startPage: resume.page,
+        priorConfirmedSignatures: resume.confirmedSignatures,
       })
   }, [
     step,
     resume.input,
     resume.pendingBatchId,
+    resume.page,
+    resume.confirmedSignatures,
     selection,
     buildInput,
     execute,
@@ -358,26 +360,36 @@ const MigrateToWorld = () => {
           />
         )
       case 'pending':
-      case 'partial':
+      case 'partial': {
         // Parallel outcome screens keyed on the step: pending's body ignores the
-        // failed count, and each has its own primary action label.
+        // failed count, and each has its own primary action label. A batch that
+        // threw (resume.failure) names the batch and resumes from it.
+        const pageFailed = step === 'partial' && !!resume.failure
+        const copyArgs = {
+          moved: resume.movedCount,
+          failed: resume.failedCount,
+          page: resume.page,
+        }
+        let primaryKey = 'migrateToWorld.partial.retry'
+        if (step === 'pending')
+          primaryKey = 'migrateToWorld.pending.checkStatus'
+        else if (pageFailed) primaryKey = 'migrateToWorld.partial.retryPage'
         return (
           <OutcomeStep
             title={t(`migrateToWorld.${step}.title`)}
-            body={t(`migrateToWorld.${step}.body`, {
-              moved: resume.movedCount,
-              failed: resume.failedCount,
-            })}
-            primaryTitle={t(
-              step === 'pending'
-                ? 'migrateToWorld.pending.checkStatus'
-                : 'migrateToWorld.partial.retry',
+            body={t(
+              pageFailed
+                ? 'migrateToWorld.partial.pageFailedBody'
+                : `migrateToWorld.${step}.body`,
+              copyArgs,
             )}
+            primaryTitle={t(primaryKey, copyArgs)}
             onPrimary={onRetry}
             onDismiss={dismiss}
-            error={error}
+            error={error ?? resume.failure}
           />
         )
+      }
       case 'success':
         return (
           <SuccessStep
