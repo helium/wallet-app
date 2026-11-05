@@ -372,6 +372,11 @@ const MigrateToWorld = () => {
           failed: resume.failedCount,
           page: resume.page,
         }
+        let bodyKey = `migrateToWorld.${step}.body`
+        if (pageFailed)
+          bodyKey = resume.unconfirmedSubmit
+            ? 'migrateToWorld.partial.unconfirmedBody'
+            : 'migrateToWorld.partial.pageFailedBody'
         let primaryKey = 'migrateToWorld.partial.retry'
         if (step === 'pending')
           primaryKey = 'migrateToWorld.pending.checkStatus'
@@ -379,12 +384,7 @@ const MigrateToWorld = () => {
         return (
           <OutcomeStep
             title={t(`migrateToWorld.${step}.title`)}
-            body={t(
-              pageFailed
-                ? 'migrateToWorld.partial.pageFailedBody'
-                : `migrateToWorld.${step}.body`,
-              copyArgs,
-            )}
+            body={t(bodyKey, copyArgs)}
             primaryTitle={t(primaryKey, copyArgs)}
             onPrimary={onRetry}
             onDismiss={dismiss}

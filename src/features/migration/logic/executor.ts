@@ -1,3 +1,4 @@
+import { isRejection } from '../../../utils/batchSubmit'
 import defaultSleep from '../../../utils/sleep'
 import { summarizeBatch, BatchStatus } from './batches'
 import {
@@ -127,6 +128,7 @@ export const runMigration = async <TSigned = unknown>(
     status: MigrationSession['status'],
     pendingBatchId?: string,
     failure?: string,
+    unconfirmedSubmit?: boolean,
   ): MigrationSession => ({
     originalInput,
     // Persist the batch we're currently on so a resume picks up from the last
@@ -139,6 +141,7 @@ export const runMigration = async <TSigned = unknown>(
     pendingNextInput: pendingBatchId ? inFlightNext : undefined,
     page: batch,
     failure,
+    unconfirmedSubmit,
     updatedAt: now(),
   })
 
@@ -178,6 +181,9 @@ export const runMigration = async <TSigned = unknown>(
     // Set once this page is submitted, so an error after submit keeps the
     // resume guard's batch id.
     let inFlightBatchId: string | undefined
+    // Set just before this page's submit call, so an error after it may mean
+    // the batch was sent.
+    let submitStarted = false
     try {
       deps.onProgress({ phase: 'requesting', batch })
       // Bind to a loop-local const so the retry closure captures this batch's
@@ -196,6 +202,7 @@ export const runMigration = async <TSigned = unknown>(
       const signed = await deps.signBatch(data)
 
       deps.onProgress({ phase: 'submitting', batch })
+      submitStarted = true
       // eslint-disable-next-line no-await-in-loop
       const { batchId } = await withRetry(
         () => deps.submitBatch(signed, data),
@@ -254,6 +261,10 @@ export const runMigration = async <TSigned = unknown>(
         // next batch's input. Persisting first would record the just-confirmed
         // batch, making a crash-resume re-request already-confirmed work.
         input = out.nextParams
+        // This page's batch is settled: a failed persist below must not save it
+        // as in flight, or a resume re-polls it and numbers the next page one
+        // too high.
+        inFlightBatchId = undefined
         batch += 1
         // eslint-disable-next-line no-await-in-loop
         await deps.persist(snapshot('running'))
@@ -265,9 +276,20 @@ export const runMigration = async <TSigned = unknown>(
       await deps.persist(snapshot('complete'))
       return { status: 'complete', confirmedSignatures, failedSignatures }
     } catch (err) {
-      // Nothing submitted and no earlier page: the caller retries the original
-      // selection, so there is no progress to save.
-      if (batch === 1 && !inFlightBatchId) throw err
+      // Page 1 with no batch id: if nothing was sent (request or sign failed)
+      // or the submit was a definite rejection, rethrow so the caller retries
+      // the original selection. Otherwise the submit may have landed (lost
+      // response, 5xx after send): save a failed snapshot flagged
+      // unconfirmedSubmit so the user checks Activity before a retry.
+      const firstPageUnsent = batch === 1 && !inFlightBatchId
+      if (firstPageUnsent && (!submitStarted || isRejection(err))) throw err
+      if (firstPageUnsent) {
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(
+          snapshot('failed', undefined, errorMessage(err), true),
+        )
+        return { status: 'failed', confirmedSignatures, failedSignatures }
+      }
       // Save this page's input (the last nextParams) so the retry resumes here
       // and never re-sends the original selection. A 4xx reaches this point on
       // its first attempt; the retry is the user's single request.

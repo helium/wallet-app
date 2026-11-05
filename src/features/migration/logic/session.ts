@@ -38,6 +38,9 @@ export type MigrationSession = {
   // The error message when a request, sign, submit or poll threw on `page`.
   // Cleared by the next snapshot that does not fail.
   failure?: string
+  // Set with failure when a page-1 submit threw without a definite rejection:
+  // the batch may have been sent, so the user checks Activity before a retry.
+  unconfirmedSubmit?: boolean
   updatedAt: number
 } & SignatureTally
 
@@ -79,6 +82,8 @@ export type ResumeInfo = {
   status: MigrationStatus
   page: number
   failure?: string
+  // See MigrationSession.unconfirmedSubmit.
+  unconfirmedSubmit?: boolean
   // Forwarded to the executor so a resumed run re-polls the in-flight batch
   // before re-requesting (see MigrationSession.pendingBatchId).
   pendingBatchId?: string
@@ -97,6 +102,7 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       status: s.status,
       page: s.page ?? 1,
       failure: s.failure,
+      unconfirmedSubmit: s.unconfirmedSubmit,
       pendingBatchId: s.pendingBatchId,
       pendingNextInput: s.pendingNextInput,
     }

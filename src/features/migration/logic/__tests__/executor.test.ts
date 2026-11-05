@@ -462,6 +462,79 @@ describe('runMigration', () => {
       expect(sessions).toEqual([])
     })
 
+    it.each([
+      [
+        'a 5xx',
+        () => Object.assign(new Error('server error'), { status: 503 }),
+      ],
+      ['a status-less', () => new Error('network down')],
+    ])(
+      'a page-1 submit error from %s error saves a failed snapshot flagged unconfirmed',
+      async (_label, error) => {
+        const sessions: MigrationSession[] = []
+        let submits = 0
+        const { deps } = makeDeps({
+          sleep: async () => {},
+          submitBatch: async () => {
+            submits += 1
+            throw error()
+          },
+          persist: async (s) => {
+            sessions.push(s)
+          },
+        })
+        const outcome = await runMigration(input, deps)
+        expect(submits).toBe(3)
+        expect(outcome.status).toBe('failed')
+        const last = sessions[sessions.length - 1]
+        expect(last.status).toBe('failed')
+        expect(last.unconfirmedSubmit).toBe(true)
+        expect(last.page).toBe(1)
+        expect(last.failure).toBe(error().message)
+      },
+    )
+
+    it.each([
+      [
+        'a definite 4xx submit',
+        {
+          submitBatch: async () => {
+            throw jitoError()
+          },
+        },
+      ],
+      [
+        'a requestMigrate',
+        {
+          requestMigrate: async () => {
+            throw jitoError()
+          },
+        },
+      ],
+      [
+        'a sign',
+        {
+          signBatch: async () => {
+            throw new Error('User rejected')
+          },
+        },
+      ],
+    ])(
+      'a page-1 %s error throws and persists nothing',
+      async (_label, overrides: Partial<ExecutorDeps>) => {
+        const sessions: MigrationSession[] = []
+        const { deps } = makeDeps({
+          sleep: async () => {},
+          ...overrides,
+          persist: async (s) => {
+            sessions.push(s)
+          },
+        })
+        await expect(runMigration(input, deps)).rejects.toThrow()
+        expect(sessions).toEqual([])
+      },
+    )
+
     it('a sign error on page 3 saves nextParams for the retry', async () => {
       const sessions: MigrationSession[] = []
       let call = 0
@@ -509,6 +582,56 @@ describe('runMigration', () => {
       expect(last.nextInput).toEqual(input)
       expect(last.pendingNextInput).toBeNull()
       expect(last.page).toBe(1)
+    })
+
+    it('a poll error on a last page saves a null pendingNextInput even with nextParams', async () => {
+      const sessions: MigrationSession[] = []
+      const { deps } = makeDeps({
+        sleep: async () => {},
+        requestMigrate: async () =>
+          ({
+            transactionData: txData(1),
+            hasMore: false,
+            nextParams: { ...input, hotspots: ['h2'] },
+          } as MigrateOutput),
+        pollStatus: async () => {
+          throw new Error('poll down')
+        },
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('failed')
+      expect(sessions[sessions.length - 1].pendingNextInput).toBeNull()
+    })
+
+    it('a persist error after a page confirms saves the next page without the settled batch id', async () => {
+      const sessions: MigrationSession[] = []
+      let call = 0
+      const { deps } = makeDeps({
+        requestMigrate: async () => {
+          call += 1
+          return {
+            transactionData: txData(1),
+            hasMore: true,
+            nextParams: page(call + 1),
+          } as MigrateOutput
+        },
+        persist: async (s) => {
+          sessions.push(s)
+          if (s.status === 'running' && !s.pendingBatchId && s.page === 2) {
+            throw new Error('disk full')
+          }
+        },
+      })
+      const outcome = await runMigration(page(1), deps)
+      expect(outcome.status).toBe('failed')
+      const last = sessions[sessions.length - 1]
+      expect(last.status).toBe('failed')
+      expect(last.page).toBe(2)
+      expect(last.pendingBatchId).toBeUndefined()
+      expect(last.nextInput).toEqual(page(2))
     })
 
     // Page 1 confirms; page 2 submits and its poll throws.

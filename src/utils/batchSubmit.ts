@@ -77,6 +77,7 @@ export type PageFailure =
   | { kind: 'batch'; status: Exclude<TerminalStatus, 'confirmed'> }
   | { kind: 'timeout' }
   | { kind: 'submit'; cause: unknown }
+  | { kind: 'rejected'; cause: unknown }
 
 export type PageFailureInfo = {
   failure: PageFailure
@@ -125,11 +126,32 @@ export type PagedSubmitDeps<P extends Page> = {
   describeFailure: (info: PageFailureInfo) => string
 }
 
+// A 4xx other than 408 (timeout), 409 (duplicate: already sent) or 429
+// (rate limit) is a definite rejection: the batch was not sent. A 400 whose
+// error data names a failedTransactionIndex above 0 is not: the transactions
+// before that index may have been sent.
+export const isRejection = (err: unknown): boolean => {
+  const status = (err as { status?: number } | null)?.status
+  const failedIndex = (
+    err as { data?: { failedTransactionIndex?: unknown } } | null
+  )?.data?.failedTransactionIndex
+  return (
+    typeof status === 'number' &&
+    status >= 400 &&
+    status < 500 &&
+    status !== 408 &&
+    status !== 409 &&
+    status !== 429 &&
+    !(typeof failedIndex === 'number' && failedIndex > 0)
+  )
+}
+
 /**
  * Signs and submits pages until the server stops sending `hasMore`. Every
  * page before the last must confirm before the next one is fetched. A
  * failed, expired, partial or timed-out page stops the loop with a
- * PagedSubmitError.
+ * PagedSubmitError. A submit error becomes kind 'submit', except a definite
+ * 4xx rejection, which becomes kind 'rejected'.
  */
 export const submitPages = async <P extends Page>(
   first: P,
@@ -165,7 +187,11 @@ export const submitPages = async <P extends Page>(
       // eslint-disable-next-line no-await-in-loop
       batchId = await deps.submitBatch(signed)
     } catch (cause) {
-      throw fail({ kind: 'submit', cause })
+      throw fail(
+        isRejection(cause)
+          ? { kind: 'rejected', cause }
+          : { kind: 'submit', cause },
+      )
     }
     batchIds.push(batchId)
 
@@ -191,8 +217,27 @@ export const submitPages = async <P extends Page>(
 
 type Translate = (key: string, options?: Record<string, unknown>) => string
 
+// The copy ends the reason with its own period, so drop one from the message.
 const reasonOf = (cause: unknown) =>
-  cause instanceof Error ? cause.message : String(cause)
+  (cause instanceof Error ? cause.message : String(cause)).replace(/\.$/, '')
+
+const optionsFor = (failure: PageFailure): Record<string, unknown> => {
+  switch (failure.kind) {
+    case 'submit':
+    case 'rejected':
+      return {
+        reason: reasonOf(failure.cause),
+        interpolation: { escapeValue: false },
+      }
+    case 'batch':
+    case 'timeout':
+      return {}
+    default: {
+      const unhandled: never = failure
+      return unhandled
+    }
+  }
+}
 
 /**
  * User-facing copy for a failed page. Page 1 gets the plain copy, without a
@@ -205,13 +250,7 @@ export const describePageFailure = (
   sentBefore = 0,
 ): string => {
   const name = failure.kind === 'batch' ? failure.status : failure.kind
-  const options: Record<string, unknown> =
-    failure.kind === 'submit'
-      ? {
-          reason: reasonOf(failure.cause),
-          interpolation: { escapeValue: false },
-        }
-      : {}
+  const options = optionsFor(failure)
   const onFirstPage = page === 1
   const key = `transactions.pagedSubmit.${name}${onFirstPage ? '' : 'Page'}`
   if (!onFirstPage) options.page = page

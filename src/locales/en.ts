@@ -1321,6 +1321,8 @@ export default {
         'Could not confirm the transaction was sent: {{reason}}. Check Activity before you try again.',
       submitPage:
         'Could not confirm batch {{page}} was sent: {{reason}}. Check Activity before you try again.',
+      rejected: 'Transaction was rejected: {{reason}}.',
+      rejectedPage: 'Batch {{page}} was rejected: {{reason}}.',
       confirmedBefore: '{{count}} earlier batch confirmed.',
       confirmedBefore_plural: '{{count}} earlier batches confirmed.',
       sentBefore:
@@ -1725,6 +1727,8 @@ export default {
       retry: 'Retry failed items',
       pageFailedBody:
         'Batch {{page}} stopped with an error. {{moved}} transfers confirmed before it stopped.',
+      unconfirmedBody:
+        'Could not confirm your migration was sent. Check Activity before you try again.',
       retryPage: 'Retry from batch {{page}}',
     },
     success: {

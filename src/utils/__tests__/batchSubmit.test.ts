@@ -204,6 +204,54 @@ describe('submitPages', () => {
     })
   })
 
+  it('wraps a definite 4xx submit error as kind rejected', async () => {
+    const { first, deps } = setup({ pages: [page('a')] })
+    const cause = Object.assign(new Error('Transaction simulation failed.'), {
+      status: 400,
+    })
+    deps.submitBatch.mockRejectedValueOnce(cause)
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({ failure: { kind: 'rejected', cause } })
+  })
+
+  it.each([
+    [1, 'submit'],
+    [0, 'rejected'],
+  ])(
+    'wraps a 400 with failedTransactionIndex %i as kind %s',
+    async (failedTransactionIndex, kind) => {
+      const { first, deps } = setup({ pages: [page('a')] })
+      const cause = Object.assign(new Error('Transaction simulation failed.'), {
+        status: 400,
+        data: { failedTransactionIndex },
+      })
+      deps.submitBatch.mockRejectedValueOnce(cause)
+
+      const err = await caught(submitPages(first, deps))
+
+      expect(err).toMatchObject({ failure: { kind, cause } })
+    },
+  )
+
+  it.each([
+    ['a 408', Object.assign(new Error('timed out'), { status: 408 })],
+    ['a 409', Object.assign(new Error('already exists'), { status: 409 })],
+    ['a 429', Object.assign(new Error('rate limited'), { status: 429 })],
+    ['a 500', Object.assign(new Error('server error'), { status: 500 })],
+    ['a status-less', new Error('network')],
+  ])('wraps %s submit error as kind submit', async (_label, cause) => {
+    const { first, deps } = setup({ pages: [page('a')] })
+    deps.submitBatch.mockRejectedValueOnce(cause)
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({ failure: { kind: 'submit', cause } })
+  })
+
   it('passes a sign rejection through unchanged', async () => {
     const { first, deps } = setup({ pages: [page('a')] })
     const rejection = new Error('User rejected transaction')
@@ -269,6 +317,51 @@ describe('pagedSubmit copy', () => {
     expect(
       describePageFailure(i18n.t, { failure, page: 1, confirmedCount: 0 }),
     ).toContain('Could not confirm the transaction was sent')
+  })
+
+  it('tells the user a rejected page was rejected, with the network and what earlier networks sent', () => {
+    const copy = en.transactions.pagedSubmit
+    expect(
+      describePageFailure(
+        i18n.t,
+        {
+          failure: {
+            kind: 'rejected',
+            cause: new Error('SIMULATION_FAILED'),
+          },
+          page: 2,
+          confirmedCount: 0,
+          network: 'IOT',
+        },
+        1,
+      ),
+    ).toBe(
+      [
+        copy.network.replace('{{network}}', 'IOT'),
+        copy.rejectedPage
+          .replace('{{page}}', '2')
+          .replace('{{reason}}', 'SIMULATION_FAILED'),
+        copy.sentBefore.replace('{{count}}', '1'),
+      ].join(' '),
+    )
+  })
+
+  it('tells the user a first page was rejected, ending in one period', () => {
+    const message = describePageFailure(i18n.t, {
+      failure: {
+        kind: 'rejected',
+        cause: new Error('Transaction simulation failed.'),
+      },
+      page: 1,
+      confirmedCount: 0,
+    })
+    expect(message).toBe(
+      en.transactions.pagedSubmit.rejected.replace(
+        '{{reason}}',
+        'Transaction simulation failed',
+      ),
+    )
+    expect(message).toMatch(/[^.]\.$/)
   })
 })
 
