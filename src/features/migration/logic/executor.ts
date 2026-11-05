@@ -1,3 +1,4 @@
+import { isRejection } from '../../../utils/batchSubmit'
 import defaultSleep from '../../../utils/sleep'
 import { summarizeBatch, BatchStatus } from './batches'
 import {
@@ -79,24 +80,43 @@ export type RunOptions = {
   // unconfirmed). The run re-polls this batch to terminal before re-requesting
   // so an in-flight token transfer can't be rebuilt and double-sent.
   pendingBatchId?: string
+  // The input after that batch (null: it was the last page). Once it confirms
+  // cleanly, the run moves on instead of re-requesting its page.
+  pendingNextInput?: MigrateInput | null
+  // Set when resuming a saved session: the page its nextInput requests and the
+  // signatures it already confirmed, so the resumed run's snapshots keep both.
+  startPage?: number
+  priorConfirmedSignatures?: string[]
 }
+
+const errorMessage = (err: unknown): string =>
+  err instanceof Error ? err.message : String(err)
 
 export const runMigration = async <TSigned = unknown>(
   originalInput: MigrateInput,
   deps: ExecutorDeps<TSigned>,
   opts: RunOptions = {},
 ): Promise<RunOutcome> => {
-  const confirmedSignatures: string[] = []
+  const confirmedSignatures: string[] = [
+    ...(opts.priorConfirmedSignatures ?? []),
+  ]
   const failedSignatures: string[] = []
   const sleep = deps.sleep ?? defaultSleep
   let input = originalInput
-  let batch = 1
+  let batch = opts.startPage ?? 1
+  let inFlightNext = opts.pendingNextInput
 
   // Fold a polled batch's signatures into the run totals. Shared by the resume
   // guard and the in-loop confirm so both accumulate identically.
   const collect = (status: BatchStatus) => {
     const summary = summarizeBatch(status)
-    confirmedSignatures.push(...summary.confirmedSignatures)
+    // Skip signatures already counted: a resume re-polls a batch whose
+    // signatures a 'pending' snapshot may already carry.
+    confirmedSignatures.push(
+      ...summary.confirmedSignatures.filter(
+        (sig) => !confirmedSignatures.includes(sig),
+      ),
+    )
     failedSignatures.push(...summary.failedSignatures)
     return summary
   }
@@ -107,6 +127,8 @@ export const runMigration = async <TSigned = unknown>(
   const snapshot = (
     status: MigrationSession['status'],
     pendingBatchId?: string,
+    failure?: string,
+    unconfirmedSubmit?: boolean,
   ): MigrationSession => ({
     originalInput,
     // Persist the batch we're currently on so a resume picks up from the last
@@ -116,6 +138,10 @@ export const runMigration = async <TSigned = unknown>(
     confirmedSignatures: [...confirmedSignatures],
     failedSignatures: [...failedSignatures],
     pendingBatchId,
+    pendingNextInput: pendingBatchId ? inFlightNext : undefined,
+    page: batch,
+    failure,
+    unconfirmedSubmit,
     updatedAt: now(),
   })
 
@@ -133,92 +159,143 @@ export const runMigration = async <TSigned = unknown>(
       await deps.persist(snapshot('running', resumeBatchId))
       return { status: 'pending', confirmedSignatures, failedSignatures }
     }
+
+    // The batch confirmed cleanly and its next input is known: skip its page.
+    if (
+      opts.pendingNextInput !== undefined &&
+      status.status === 'confirmed' &&
+      summary.failedSignatures.length === 0
+    ) {
+      if (opts.pendingNextInput === null) {
+        await deps.persist(snapshot('complete'))
+        return { status: 'complete', confirmedSignatures, failedSignatures }
+      }
+      input = opts.pendingNextInput
+      batch += 1
+      await deps.persist(snapshot('running'))
+    }
   }
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    deps.onProgress({ phase: 'requesting', batch })
-    // Bind to a loop-local const so the retry closure captures this batch's
-    // input, not the reassigned outer `input`.
-    const batchInput = input
-    // eslint-disable-next-line no-await-in-loop
-    const out = await withRetry(() => deps.requestMigrate(batchInput), sleep)
-    const data = out.transactionData
-
-    deps.onProgress({
-      phase: 'signing',
-      batch,
-      count: data.transactions.length,
-    })
-    // eslint-disable-next-line no-await-in-loop
-    const signed = await deps.signBatch(data)
-
-    deps.onProgress({ phase: 'submitting', batch })
-    // eslint-disable-next-line no-await-in-loop
-    const { batchId } = await withRetry(
-      () => deps.submitBatch(signed, data),
-      sleep,
-    )
-
-    // Persist a resumable snapshot BEFORE confirmation carrying this batch's id:
-    // if the app is killed while the batch is still confirming, the resume
-    // re-polls it instead of re-requesting an orphaned in-flight submission.
-    // eslint-disable-next-line no-await-in-loop
-    await deps.persist(snapshot('running', batchId))
-
-    deps.onProgress({ phase: 'confirming', batch })
-    // eslint-disable-next-line no-await-in-loop
-    const status = await withRetry(() => deps.pollStatus(batchId), sleep)
-    const summary = collect(status)
-
-    if (status.status === 'failed' || status.status === 'expired') {
+    // Set once this page is submitted, so an error after submit keeps the
+    // resume guard's batch id.
+    let inFlightBatchId: string | undefined
+    // Set just before this page's submit call, so an error after it may mean
+    // the batch was sent.
+    let submitStarted = false
+    try {
+      deps.onProgress({ phase: 'requesting', batch })
+      // Bind to a loop-local const so the retry closure captures this batch's
+      // input, not the reassigned outer `input`.
+      const batchInput = input
       // eslint-disable-next-line no-await-in-loop
-      await deps.persist(snapshot('failed'))
-      return { status: 'failed', confirmedSignatures, failedSignatures }
-    }
+      const out = await withRetry(() => deps.requestMigrate(batchInput), sleep)
+      const data = out.transactionData
 
-    if (summary.failedSignatures.length > 0) {
-      // A retry replays this batch's full input (explicit token amounts
-      // included); the client can't tell which assets a confirmed signature
-      // covered — transactions.get returns signature + status only. Not
-      // re-sending already-confirmed transfers therefore depends on the server
-      // recomputing remaining work from on-chain state. This is a documented
-      // contract dependency, not something the client can guard here.
+      deps.onProgress({
+        phase: 'signing',
+        batch,
+        count: data.transactions.length,
+      })
       // eslint-disable-next-line no-await-in-loop
-      await deps.persist(snapshot('partial'))
-      return { status: 'partial', confirmedSignatures, failedSignatures }
-    }
+      const signed = await deps.signBatch(data)
 
-    // Nothing terminally failed, but the batch isn't fully confirmed yet —
-    // txs are still pending (a poll timed out mid-confirmation). Report this
-    // as still-processing, not a partial failure. The 'running' session stays
-    // resumable so the user can check back and continue idempotently.
-    if (
-      status.status === 'pending' ||
-      status.status === 'partial' ||
-      summary.pendingSignatures.length > 0
-    ) {
-      // Carry the in-flight batch id so a "check status" re-polls it before any
-      // re-request — the funds-safety guard against a double-send.
+      deps.onProgress({ phase: 'submitting', batch })
+      submitStarted = true
+      // eslint-disable-next-line no-await-in-loop
+      const { batchId } = await withRetry(
+        () => deps.submitBatch(signed, data),
+        sleep,
+      )
+      inFlightBatchId = batchId
+      inFlightNext = out.hasMore && out.nextParams ? out.nextParams : null
+
+      // Persist a resumable snapshot BEFORE confirmation carrying this batch's id:
+      // if the app is killed while the batch is still confirming, the resume
+      // re-polls it instead of re-requesting an orphaned in-flight submission.
       // eslint-disable-next-line no-await-in-loop
       await deps.persist(snapshot('running', batchId))
-      return { status: 'pending', confirmedSignatures, failedSignatures }
-    }
 
-    if (out.hasMore && out.nextParams) {
-      // Advance to the next batch BEFORE persisting so the snapshot carries the
-      // next batch's input. Persisting first would record the just-confirmed
-      // batch, making a crash-resume re-request already-confirmed work.
-      input = out.nextParams
-      batch += 1
+      deps.onProgress({ phase: 'confirming', batch })
       // eslint-disable-next-line no-await-in-loop
-      await deps.persist(snapshot('running'))
-      // eslint-disable-next-line no-continue
-      continue
-    }
+      const status = await withRetry(() => deps.pollStatus(batchId), sleep)
+      const summary = collect(status)
 
-    // eslint-disable-next-line no-await-in-loop
-    await deps.persist(snapshot('complete'))
-    return { status: 'complete', confirmedSignatures, failedSignatures }
+      if (status.status === 'failed' || status.status === 'expired') {
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(snapshot('failed'))
+        return { status: 'failed', confirmedSignatures, failedSignatures }
+      }
+
+      if (summary.failedSignatures.length > 0) {
+        // A retry replays this batch's full input (explicit token amounts
+        // included); the client can't tell which assets a confirmed signature
+        // covered — transactions.get returns signature + status only. Not
+        // re-sending already-confirmed transfers therefore depends on the server
+        // recomputing remaining work from on-chain state. This is a documented
+        // contract dependency, not something the client can guard here.
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(snapshot('partial'))
+        return { status: 'partial', confirmedSignatures, failedSignatures }
+      }
+
+      // Nothing terminally failed, but the batch isn't fully confirmed yet —
+      // txs are still pending (a poll timed out mid-confirmation). Report this
+      // as still-processing, not a partial failure. The 'running' session stays
+      // resumable so the user can check back and continue idempotently.
+      if (
+        status.status === 'pending' ||
+        status.status === 'partial' ||
+        summary.pendingSignatures.length > 0
+      ) {
+        // Carry the in-flight batch id so a "check status" re-polls it before any
+        // re-request — the funds-safety guard against a double-send.
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(snapshot('running', batchId))
+        return { status: 'pending', confirmedSignatures, failedSignatures }
+      }
+
+      if (out.hasMore && out.nextParams) {
+        // Advance to the next batch BEFORE persisting so the snapshot carries the
+        // next batch's input. Persisting first would record the just-confirmed
+        // batch, making a crash-resume re-request already-confirmed work.
+        input = out.nextParams
+        // This page's batch is settled: a failed persist below must not save it
+        // as in flight, or a resume re-polls it and numbers the next page one
+        // too high.
+        inFlightBatchId = undefined
+        batch += 1
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(snapshot('running'))
+        // eslint-disable-next-line no-continue
+        continue
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      await deps.persist(snapshot('complete'))
+      return { status: 'complete', confirmedSignatures, failedSignatures }
+    } catch (err) {
+      // Page 1 with no batch id: if nothing was sent (request or sign failed)
+      // or the submit was a definite rejection, rethrow so the caller retries
+      // the original selection. Otherwise the submit may have landed (lost
+      // response, 5xx after send): save a failed snapshot flagged
+      // unconfirmedSubmit so the user checks Activity before a retry.
+      const firstPageUnsent = batch === 1 && !inFlightBatchId
+      if (firstPageUnsent && (!submitStarted || isRejection(err))) throw err
+      if (firstPageUnsent) {
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(
+          snapshot('failed', undefined, errorMessage(err), true),
+        )
+        return { status: 'failed', confirmedSignatures, failedSignatures }
+      }
+      // Save this page's input (the last nextParams) so the retry resumes here
+      // and never re-sends the original selection. A 4xx reaches this point on
+      // its first attempt; the retry is the user's single request.
+      // eslint-disable-next-line no-await-in-loop
+      await deps.persist(snapshot('failed', inFlightBatchId, errorMessage(err)))
+      return { status: 'failed', confirmedSignatures, failedSignatures }
+    }
   }
 }

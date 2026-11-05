@@ -3,7 +3,7 @@ import type { TransactionData } from '@helium/blockchain-api'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 import { useSolana } from '../solana/SolanaProvider'
 import { signTransactionData } from '../utils/transactionUtils'
-import type { BatchStatus } from './useTransactionBatchStatus'
+import { pollForCompletion } from '../utils/batchSubmit'
 
 interface SubmitAndAwaitParams {
   transactionData: TransactionData
@@ -16,41 +16,6 @@ interface SubmitAndAwaitParams {
    * Max number of retry attempts on blockhash expiration (default: 3)
    */
   maxRetries?: number
-}
-
-export async function pollForCompletion(
-  client: ReturnType<typeof useBlockchainApi>,
-  batchId: string,
-  pollIntervalMs = 2000,
-  maxPollTime = 60000,
-): Promise<{ status: BatchStatus; signatures: string[] }> {
-  const startTime = Date.now()
-
-  while (Date.now() - startTime < maxPollTime) {
-    const result = await client.transactions.get({
-      id: batchId,
-      commitment: 'confirmed',
-    })
-
-    const status = result.status as BatchStatus
-
-    if (
-      status === 'confirmed' ||
-      status === 'failed' ||
-      status === 'expired' ||
-      status === 'partial'
-    ) {
-      return {
-        status,
-        signatures: result.transactions?.map((t) => t.signature) ?? [],
-      }
-    }
-
-    // Wait before polling again
-    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs))
-  }
-
-  throw new Error('Transaction polling timeout')
 }
 
 /**
