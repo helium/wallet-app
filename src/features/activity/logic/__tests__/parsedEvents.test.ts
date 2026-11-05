@@ -3,6 +3,7 @@ import bs58 from 'bs58'
 import i18next from 'i18next'
 import en from '../../../../locales/en'
 import { EnrichedTransaction } from '../../../../types/solana'
+import { describeActivity } from '../describeActivity'
 import {
   ParsedEventsItem,
   ParsedInstruction,
@@ -166,9 +167,9 @@ describe('toActivityRows', () => {
       parserError: 'could not parse',
     }
 
-    const [row] = await toActivityRows([failed], signatureRows)
+    const rows = await toActivityRows([failed], signatureRows)
 
-    expect(row).toEqual(
+    expect(rows.find((r) => r.signature === REWARD_CLAIM)).toEqual(
       signatureRows.find((sig) => sig.signature === REWARD_CLAIM),
     )
   })
@@ -307,6 +308,150 @@ describe('toActivityRows', () => {
       expect(rows).toHaveLength(items.length)
       expect(row.type).toBe('COMPRESSED_NFT_TRANSFER')
       expect(row.events.compressed).toBeUndefined()
+    })
+
+    const bareRowOf = (signature: string) =>
+      signatureRows.find((sig) => sig.signature === signature)
+
+    // The reward claim with its parsed transaction changed by `patch`.
+    const withParsed = (
+      patch: (parsed: Record<string, unknown>) => Record<string, unknown>,
+    ) => {
+      const item = itemFor(REWARD_CLAIM)
+      if (item.parserStatus !== 'OK') throw new Error('expected an OK item')
+      return { ...item, parsed: patch(item.parsed) }
+    }
+
+    it('keeps the bare signature row of a signature the response omits', async () => {
+      const rows = await toActivityRows(
+        items.filter((item) => item.signature !== CNFT_TRANSFER),
+        signatureRows,
+      )
+
+      expect(rows).toHaveLength(items.length)
+      expect(rows.find((r) => r.signature === CNFT_TRANSFER)).toEqual(
+        bareRowOf(CNFT_TRANSFER),
+      )
+    })
+
+    it('shows a non-array response as the bare signature rows', async () => {
+      expect(
+        await toActivityRows({ error: 'bad gateway' }, signatureRows),
+      ).toEqual(signatureRows)
+    })
+
+    it.each([
+      [
+        'a null token transfer',
+        replacing({
+          ...itemFor(CNFT_TRANSFER),
+          parsed: {
+            ...(itemFor(CNFT_TRANSFER) as { parsed: object }).parsed,
+            tokenTransfers: [null],
+          },
+        }),
+      ],
+      [
+        'an undecoded Bubblegum instruction with invalid base58',
+        replacing(
+          withBubblegumInstruction({ instructionName: null, rawData: '0OIl' }),
+        ),
+      ],
+      [
+        'a parser status other than OK',
+        replacing({ ...itemFor(CNFT_TRANSFER), parserStatus: 'PENDING' }),
+      ],
+    ])('shows an item with %s as its bare signature row', async (_, from) => {
+      const rows = await toActivityRows(from, signatureRows)
+
+      expect(rows).toHaveLength(items.length)
+      expect(rows.find((r) => r.signature === CNFT_TRANSFER)).toEqual(
+        bareRowOf(CNFT_TRANSFER),
+      )
+      expect(
+        (rows.find((r) => r.signature === REWARD_CLAIM) as EnrichedTransaction)
+          .type,
+      ).toBe('CLAIM_REWARDS')
+    })
+
+    it('gives a token transfer without a raw amount no amount', async () => {
+      const item = withParsed((parsed) => ({
+        ...parsed,
+        tokenTransfers: (
+          parsed.tokenTransfers as Record<string, unknown>[]
+        ).map(({ rawTokenAmount: _, ...transfer }) => transfer),
+      }))
+      const row = await rowFor(REWARD_CLAIM, [item as ParsedEventsItem])
+      const withSymbol = {
+        ...row,
+        type: 'TRANSFER',
+        tokenTransfers: row.tokenTransfers.map((transfer) => ({
+          ...transfer,
+          tokenMetadata: { symbol: 'HNT' },
+        })),
+      } as EnrichedTransaction
+
+      expect(row.tokenTransfers[0].tokenAmount).not.toBeNaN()
+      expect(
+        describeActivity(
+          withSymbol,
+          'BmfPk1dpkv4dFzsAezoZhqWDW5DozG5sbzSNexABsVhN',
+          i18n.t,
+        ),
+      ).toBe('')
+    })
+
+    it.each([undefined, null, -1, 2.5])(
+      'gives a token transfer with decimals %p no amount',
+      async (decimals) => {
+        const item = withParsed((parsed) => ({
+          ...parsed,
+          tokenTransfers: (
+            parsed.tokenTransfers as Record<string, unknown>[]
+          ).map((transfer) => ({ ...transfer, decimals })),
+        }))
+        const row = await rowFor(REWARD_CLAIM, [item as ParsedEventsItem])
+        const withSymbol = {
+          ...row,
+          type: 'TRANSFER',
+          tokenTransfers: row.tokenTransfers.map((transfer) => ({
+            ...transfer,
+            tokenMetadata: { symbol: 'HNT' },
+          })),
+        } as EnrichedTransaction
+
+        expect(row.tokenTransfers[0].decimals).toBeUndefined()
+        expect(
+          describeActivity(
+            withSymbol,
+            'BmfPk1dpkv4dFzsAezoZhqWDW5DozG5sbzSNexABsVhN',
+            i18n.t,
+          ),
+        ).toBe('')
+      },
+    )
+
+    it('takes the time of the signature row when the item has none', async () => {
+      const item = withParsed(({ blockTime: _, ...parsed }) => parsed)
+
+      expect(
+        (await rowFor(REWARD_CLAIM, [item as ParsedEventsItem])).timestamp,
+      ).toBe(bareRowOf(REWARD_CLAIM)?.blockTime)
+    })
+
+    it('takes the error of the signature row when the item has none', async () => {
+      const err = { InstructionError: [2, { Custom: 3012 }] }
+      const item = withParsed(({ error: _, ...parsed }) => parsed)
+      const failedRows = signatureRows.map((row) =>
+        row.signature === REWARD_CLAIM ? { ...row, err } : row,
+      )
+
+      const rows = await toActivityRows([item], failedRows)
+
+      expect(
+        (rows.find((r) => r.signature === REWARD_CLAIM) as EnrichedTransaction)
+          .transactionError,
+      ).toEqual(err)
     })
 
     it('shows a malformed item as its bare signature row', async () => {

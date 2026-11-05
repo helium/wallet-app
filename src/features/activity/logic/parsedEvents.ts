@@ -26,9 +26,9 @@ export type ParsedInstruction = {
   } | null
 }
 
-export type ParsedTransaction = {
+type ParsedTransaction = {
   slot: number
-  blockTime: number
+  blockTime?: number | null
   fee: number
   error: unknown
   nativeTransfers: {
@@ -53,7 +53,7 @@ export type ParsedEventsItem =
   | { signature: string; parserStatus: 'OK'; parsed: ParsedTransaction }
   | { signature: string; parserStatus: 'ERROR'; parserError: string }
 
-export type SignatureRow = ConfirmedSignatureInfo & { signers: string[] }
+type SignatureRow = ConfirmedSignatureInfo & { signers: string[] }
 
 export type ActivityRow = EnrichedTransaction | SignatureRow
 
@@ -208,19 +208,24 @@ const compressedEventsOf = async (
   ]
 }
 
+// A raw amount and decimals the wallet cannot read give no amount.
+const tokenAmountOf = (rawTokenAmount: number, decimals: number) =>
+  Number.isFinite(rawTokenAmount) && Number.isInteger(decimals) && decimals >= 0
+    ? { tokenAmount: rawTokenAmount / 10 ** decimals, decimals }
+    : { tokenAmount: 0, decimals: undefined }
+
 const toEnrichedTransaction = async (
-  signature: string,
   parsed: ParsedTransaction,
-  signers: string[],
+  signatureRow: SignatureRow,
 ): Promise<EnrichedTransaction> => ({
-  signature,
-  signers,
+  signature: signatureRow.signature,
+  signers: signatureRow.signers,
   description: '',
   type: classify(parsed),
   fee: parsed.fee,
   slot: parsed.slot,
-  timestamp: parsed.blockTime,
-  transactionError: parsed.error,
+  timestamp: parsed.blockTime ?? signatureRow.blockTime ?? 0,
+  transactionError: parsed.error ?? signatureRow.err ?? null,
   nativeTransfers: parsed.nativeTransfers.map((transfer) => ({
     fromUserAccount: transfer.fromUserAccount ?? '',
     toUserAccount: transfer.toUserAccount ?? '',
@@ -231,8 +236,7 @@ const toEnrichedTransaction = async (
     toUserAccount: transfer.toUserAccount ?? '',
     fromTokenAccount: transfer.fromTokenAccount ?? '',
     toTokenAccount: transfer.toTokenAccount ?? '',
-    tokenAmount: transfer.rawTokenAmount / 10 ** transfer.decimals,
-    decimals: transfer.decimals,
+    ...tokenAmountOf(transfer.rawTokenAmount, transfer.decimals),
     mint: transfer.mint,
   })),
   events: { compressed: await compressedEventsOf(parsed) },
@@ -252,35 +256,30 @@ const isReadableItem = (value: unknown): value is ParsedEventsItem => {
   )
 }
 
-// A row per Parsed Events item. A transaction the parser failed on, or one
-// the wallet cannot read, keeps its bare signature row, so history never
-// loses it. No single item can throw out of here.
+// A row per signature row, in the same order. A transaction the response
+// omits, the parser failed on, or the wallet cannot read keeps its bare
+// signature row, so history never loses it. No single item can throw out of
+// here.
 export const toActivityRows = async (
-  items: unknown[],
+  items: unknown,
   signatureRows: SignatureRow[],
 ): Promise<ActivityRow[]> => {
-  const rowsBySignature = new Map(
-    signatureRows.map((row) => [row.signature, row]),
+  const itemsBySignature = new Map(
+    (Array.isArray(items) ? items : [])
+      .filter(isRecord)
+      .map((item) => [item.signature, item]),
   )
-  const rows = await Promise.all(
-    items.map(async (item): Promise<ActivityRow | undefined> => {
-      const signatureRow =
-        isRecord(item) && typeof item.signature === 'string'
-          ? rowsBySignature.get(item.signature)
-          : undefined
+  return Promise.all(
+    signatureRows.map(async (signatureRow): Promise<ActivityRow> => {
+      const item: unknown = itemsBySignature.get(signatureRow.signature)
       if (!isReadableItem(item) || item.parserStatus === 'ERROR') {
         return signatureRow
       }
       try {
-        return await toEnrichedTransaction(
-          item.signature,
-          item.parsed,
-          signatureRow?.signers ?? [],
-        )
+        return await toEnrichedTransaction(item.parsed, signatureRow)
       } catch {
         return signatureRow
       }
     }),
   )
-  return rows.filter((row): row is ActivityRow => row !== undefined)
 }

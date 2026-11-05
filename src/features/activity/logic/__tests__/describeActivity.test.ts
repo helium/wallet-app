@@ -28,8 +28,18 @@ const items = [
   ...parsedEventsFailed,
 ] as unknown as ParsedEventsItem[]
 
+// Signature rows the wallet signed none of.
+const signatureRows = items.map(({ signature }) => ({
+  signature,
+  slot: 1,
+  err: null,
+  memo: null,
+  blockTime: 1,
+  signers: [],
+}))
+
 const rowFor = async (signature: string) =>
-  (await toActivityRows(items, [])).find(
+  (await toActivityRows(items, signatureRows)).find(
     (row) => row.signature === signature,
   ) as EnrichedTransaction
 
@@ -68,10 +78,131 @@ describe('describeActivity', () => {
     expect(describeFor(tx, REWARD_RECIPIENT)).toBe('Received 0.57264314 HNT')
   })
 
+  it('gives a token transfer between other wallets no description', async () => {
+    const tx = {
+      ...withHntMetadata(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+    }
+
+    expect(describeFor(tx, CNFT_OLD_OWNER)).toBe('')
+  })
+
+  it('describes the SOL transfer of the wallet over a token transfer between other wallets', async () => {
+    const tx = {
+      ...withHntMetadata(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+      nativeTransfers: [
+        {
+          fromUserAccount: CNFT_NEW_OWNER,
+          toUserAccount: CNFT_OLD_OWNER,
+          amount: 1,
+        },
+      ],
+    }
+
+    expect(describeFor(tx, CNFT_OLD_OWNER)).toBe('Received 0.000000001 SOL')
+  })
+
+  it('gives a cNFT transfer between other wallets no description', async () => {
+    expect(describeFor(await rowFor(CNFT_TRANSFER), REWARD_SENDER)).toBe('')
+  })
+
+  it('gives a cNFT transfer with no known source no description when the wallet did not sign', async () => {
+    const tx = { ...(await rowFor(CNFT_TRANSFER)), events: {} }
+
+    expect(describeFor(tx, CNFT_NEW_OWNER)).toBe('')
+  })
+
+  it('describes a SOL transfer from the transfer of the wallet', async () => {
+    const tx = {
+      ...(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+      tokenTransfers: [],
+      nativeTransfers: [
+        {
+          fromUserAccount: CNFT_OLD_OWNER,
+          toUserAccount: CNFT_NEW_OWNER,
+          amount: 5000,
+        },
+        {
+          fromUserAccount: REWARD_SENDER,
+          toUserAccount: REWARD_RECIPIENT,
+          amount: 1,
+        },
+      ],
+    }
+
+    expect(describeFor(tx, REWARD_SENDER)).toBe('Sent 0.000000001 SOL')
+  })
+
   it('gives a transfer without a token symbol no description', async () => {
     const tx = { ...(await rowFor(REWARD_CLAIM)), type: 'TRANSFER' }
 
     expect(describeFor(tx, REWARD_SENDER)).toBe('')
+  })
+
+  it('gives a transfer whose wallet token transfer has no decimals no description', async () => {
+    const tx = {
+      ...withHntMetadata(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+    }
+    const unreadable = {
+      ...tx,
+      tokenTransfers: tx.tokenTransfers.map((transfer) => ({
+        ...transfer,
+        decimals: undefined,
+      })),
+      nativeTransfers: [
+        {
+          fromUserAccount: REWARD_SENDER,
+          toUserAccount: CNFT_OLD_OWNER,
+          amount: 2039280,
+        },
+      ],
+    }
+
+    expect(describeFor(unreadable, REWARD_SENDER)).toBe('')
+  })
+
+  it('gives a transfer whose second token transfer is the wallet one without metadata no description', async () => {
+    const tx = await rowFor(REWARD_CLAIM)
+    const [walletTransfer] = tx.tokenTransfers
+    const [otherTransfer] = withHntMetadata({
+      ...tx,
+      tokenTransfers: [
+        {
+          ...walletTransfer,
+          fromUserAccount: CNFT_OLD_OWNER,
+          toUserAccount: CNFT_NEW_OWNER,
+        },
+      ],
+    }).tokenTransfers
+    const secondIsWallet = {
+      ...tx,
+      type: 'TRANSFER',
+      tokenTransfers: [otherTransfer, walletTransfer],
+      nativeTransfers: [
+        {
+          fromUserAccount: REWARD_SENDER,
+          toUserAccount: CNFT_OLD_OWNER,
+          amount: 2039280,
+        },
+      ],
+    }
+
+    expect(describeFor(secondIsWallet, REWARD_SENDER)).toBe('')
+  })
+
+  it.each([
+    ['cNFT transfer', CNFT_TRANSFER, CNFT_OLD_OWNER],
+    ['hotspot onboarding', ONBOARDING, REWARD_SENDER],
+  ])('gives a failed %s no description', async (_, signature, wallet) => {
+    const tx = {
+      ...(await rowFor(signature)),
+      transactionError: { InstructionError: [0, { Custom: 1 }] },
+    }
+
+    expect(describeFor(tx, wallet)).toBe('')
   })
 
   it('describes a hotspot onboarding', async () => {

@@ -4,10 +4,21 @@ import { EnrichedTransaction } from '../../../types/solana'
 
 const SOL_DECIMALS = 9
 
-// Sent when the wallet is the source. Without a known source, a transaction
-// the wallet signed counts as sent.
-const isSent = (tx: EnrichedTransaction, wallet: string, from?: string) =>
-  from ? from === wallet : tx.signers.includes(wallet)
+type Direction = 'sent' | 'received' | 'unknown'
+
+// Sent when the wallet is the source, received when it is the destination.
+// Without a known source, a transaction the wallet signed counts as sent.
+// Otherwise the wallet is not a known party.
+const directionOf = (
+  tx: EnrichedTransaction,
+  wallet: string,
+  { from, to }: { from?: string; to?: string },
+): Direction => {
+  if (from === wallet) return 'sent'
+  if (to === wallet) return 'received'
+  if (!from && tx.signers.includes(wallet)) return 'sent'
+  return 'unknown'
+}
 
 // Never exponent form: 1 lamport reads 0.000000001, not 1e-9.
 const formatAmount = (amount: number, decimals: number) =>
@@ -15,26 +26,32 @@ const formatAmount = (amount: number, decimals: number) =>
     maximumFractionDigits: Math.min(decimals, 20),
   })
 
+const walletTokenTransferOf = (tx: EnrichedTransaction, wallet: string) =>
+  tx.tokenTransfers.find(
+    (transfer) =>
+      transfer.fromUserAccount === wallet || transfer.toUserAccount === wallet,
+  )
+
 const tokenTransferOf = (tx: EnrichedTransaction, wallet: string) => {
-  const tokenTransfer =
-    tx.tokenTransfers.find(
-      (transfer) =>
-        transfer.fromUserAccount === wallet ||
-        transfer.toUserAccount === wallet,
-    ) ?? tx.tokenTransfers[0]
+  const tokenTransfer = walletTokenTransferOf(tx, wallet)
   if (tokenTransfer?.decimals === undefined) return undefined
   return {
     from: tokenTransfer.fromUserAccount,
+    to: tokenTransfer.toUserAccount,
     amount: formatAmount(tokenTransfer.tokenAmount, tokenTransfer.decimals),
     symbol: tokenTransfer.tokenMetadata?.symbol,
   }
 }
 
-const solTransferOf = (tx: EnrichedTransaction) => {
-  const nativeTransfer = tx.nativeTransfers[0]
+const solTransferOf = (tx: EnrichedTransaction, wallet: string) => {
+  const nativeTransfer = tx.nativeTransfers.find(
+    (transfer) =>
+      transfer.fromUserAccount === wallet || transfer.toUserAccount === wallet,
+  )
   if (!nativeTransfer) return undefined
   return {
     from: nativeTransfer.fromUserAccount,
+    to: nativeTransfer.toUserAccount,
     amount: formatAmount(
       nativeTransfer.amount / LAMPORTS_PER_SOL,
       SOL_DECIMALS,
@@ -50,12 +67,19 @@ export const describeActivity = (
   wallet: string,
   t: TFunction,
 ): string => {
+  if (tx.transactionError) return ''
   switch (tx.type) {
     case 'TRANSFER': {
-      const transfer = tokenTransferOf(tx, wallet) ?? solTransferOf(tx)
+      // The SOL transfer only describes a row with no token transfer of the
+      // wallet, so a token send never reads as its rent.
+      const transfer = walletTokenTransferOf(tx, wallet)
+        ? tokenTransferOf(tx, wallet)
+        : solTransferOf(tx, wallet)
       if (!transfer?.symbol) return ''
       const { amount, symbol } = transfer
-      return isSent(tx, wallet, transfer.from)
+      const direction = directionOf(tx, wallet, transfer)
+      if (direction === 'unknown') return ''
+      return direction === 'sent'
         ? t('activityScreen.descriptions.sent', { amount, symbol })
         : t('activityScreen.descriptions.received', { amount, symbol })
     }
@@ -72,7 +96,12 @@ export const describeActivity = (
       const name =
         compressed?.metadata?.name ||
         t('activityScreen.descriptions.compressedNFT')
-      return isSent(tx, wallet, compressed?.oldLeafOwner)
+      const direction = directionOf(tx, wallet, {
+        from: compressed?.oldLeafOwner,
+        to: compressed?.newLeafOwner,
+      })
+      if (direction === 'unknown') return ''
+      return direction === 'sent'
         ? t('activityScreen.descriptions.sentNFT', { name })
         : t('activityScreen.descriptions.receivedNFT', { name })
     }

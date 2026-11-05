@@ -289,7 +289,7 @@ const ActivityDetailsScreen = () => {
         .toUpperCase()}${customDescription.slice(1)}`
     }
 
-    if (confirmedSig.err) {
+    if (enrichedTx.transactionError || confirmedSig.err) {
       return t('generic.error')
     }
 

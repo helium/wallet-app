@@ -1587,6 +1587,7 @@ export const getAllTransactions = async (
                     json: tokenMetadata?.json,
                   },
                 },
+                ...tx.tokenTransfers.slice(1),
               ],
             }
           }
