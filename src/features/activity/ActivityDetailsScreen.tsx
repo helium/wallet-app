@@ -6,7 +6,6 @@ import BackScreen from '@components/BackScreen'
 import BlurActionSheet from '@components/BlurActionSheet'
 import Box from '@components/Box'
 import ButtonPressable from '@components/ButtonPressable'
-import CircleLoader from '@components/CircleLoader'
 import { DelayedFadeIn } from '@components/FadeInOut'
 import ImageBox from '@components/ImageBox'
 import ListItem from '@components/ListItem'
@@ -135,28 +134,13 @@ const ActivityDetailsScreen = () => {
 
     const { tokenTransfers, events } = enrichedTx
 
-    if (events?.compressed?.length) {
-      const nft = events.compressed[0]
-
-      if (!nft?.metadata.image) {
-        return (
-          <Box
-            backgroundColor="surface"
-            borderRadius="xl"
-            width={250}
-            height={250}
-            justifyContent="center"
-            alignItems="center"
-          >
-            <CircleLoader loaderSize={80} />
-          </Box>
-        )
-      }
-
+    // Without an image, fall back to the Send/Receive icon.
+    const nftImage = events?.compressed?.[0]?.metadata?.image
+    if (nftImage) {
       return (
         <ScamWarningImageBox
           source={{
-            uri: nft?.metadata?.image || '',
+            uri: nftImage,
             cache: 'force-cache',
           }}
           width={250}
@@ -213,11 +197,16 @@ const ActivityDetailsScreen = () => {
       ? enrichedTx.nativeTransfers[0]
       : null
 
+    const compressed = enrichedTx.events?.compressed?.[0]
+
     const fromAccount =
+      compressed?.oldLeafOwner ||
       firstTokenTransfer?.fromUserAccount ||
       firstNativeTransfer?.fromUserAccount
     const toAccount =
-      firstTokenTransfer?.toUserAccount || firstNativeTransfer?.toUserAccount
+      compressed?.newLeafOwner ||
+      firstTokenTransfer?.toUserAccount ||
+      firstNativeTransfer?.toUserAccount
 
     if (!fromAccount && !toAccount) {
       return null
@@ -265,8 +254,11 @@ const ActivityDetailsScreen = () => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
-    if (enrichedTx.events?.compressed?.length) {
-      const { symbol } = enrichedTx.events.compressed[0].metadata
+    if (
+      enrichedTx.type === 'COMPRESSED_NFT_MINT' &&
+      enrichedTx.events?.compressed?.length
+    ) {
+      const symbol = enrichedTx.events.compressed[0].metadata?.symbol
       const count = enrichedTx.events.compressed.length
       if (symbol) {
         return t('activityScreen.compressedNFTDescription', {
@@ -297,7 +289,7 @@ const ActivityDetailsScreen = () => {
         .toUpperCase()}${customDescription.slice(1)}`
     }
 
-    if (confirmedSig.err) {
+    if (enrichedTx.transactionError || confirmedSig.err) {
       return t('generic.error')
     }
 
