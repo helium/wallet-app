@@ -4,7 +4,9 @@ import { useBlockchainApi } from '@storage/BlockchainApiProvider'
 import { useDebounce } from 'use-debounce'
 import React, { useMemo } from 'react'
 import { sleep } from '@helium/spl-utils'
-import { VersionedTransaction } from '@solana/web3.js'
+import { cronJobKey, init as initCron } from '@helium/cron-sdk'
+import { entityCronAuthorityKey } from '@helium/hpl-crons-sdk'
+import { PublicKey, VersionedTransaction } from '@solana/web3.js'
 import { useTranslation } from 'react-i18next'
 import { useSolana } from '../solana/SolanaProvider'
 import { useWalletSign } from '../solana/WalletSignProvider'
@@ -27,6 +29,56 @@ export function useAutomation() {
 
   const walletAddress = currentAccount?.solanaAddress
 
+  // Number of claims on the wallet's entity-claim cron job, or null when the
+  // cron job does not exist. getAutomationStatus does not return it.
+  const fetchClaimCount = async (): Promise<number | null> => {
+    if (!walletAddress || !anchorProvider) return null
+    const cronJob = cronJobKey(
+      entityCronAuthorityKey(new PublicKey(walletAddress))[0],
+      0,
+    )[0]
+    const cronJobInfo = await anchorProvider.connection.getAccountInfo(
+      cronJob,
+      'confirmed',
+    )
+    if (!cronJobInfo) return null
+    const cronProgram = await initCron(anchorProvider)
+    const { nextTransactionId } = cronProgram.coder.accounts.decode<{
+      nextTransactionId: number
+    }>('cronJobV0', cronJobInfo.data)
+    return nextTransactionId
+  }
+
+  const addWalletClaim = async () => {
+    if (!walletAddress) throw new Error('Wallet address required')
+    if (!walletSignBottomSheetRef) throw new Error('Wallet sign not available')
+
+    const { transactionData } = await client.hotspots.addWalletToAutomation({
+      walletAddress,
+    })
+
+    const decision = await walletSignBottomSheetRef.show({
+      type: WalletStandardMessageTypes.signTransaction,
+      url: '',
+      header: t('automationScreen.addWalletClaim'),
+      renderer: () =>
+        React.createElement(MessagePreview, {
+          message: t('automationScreen.addWalletClaimMessage'),
+        }),
+      suppressWarnings: false,
+      serializedTxs: transactionData.transactions.map(
+        ({ serializedTransaction }) =>
+          Buffer.from(serializedTransaction, 'base64'),
+      ),
+    })
+
+    if (!decision) {
+      throw new Error('User rejected transaction')
+    }
+
+    await submitAndAwait({ transactionData })
+  }
+
   // Get automation status
   const {
     data: status,
@@ -41,6 +93,29 @@ export function useAutomation() {
     },
     enabled: !!walletAddress,
     refetchInterval: 30000, // Poll every 30 seconds
+  })
+
+  // A cron job with no claims runs on schedule but claims nothing
+  const { data: claimCount } = useQuery({
+    queryKey: ['automationClaimCount', walletAddress],
+    queryFn: fetchClaimCount,
+    enabled: !!walletAddress && !!anchorProvider && !!status?.currentSchedule,
+  })
+
+  // Repair for cron jobs created without a claim
+  const addWalletClaimMutation = useMutation({
+    mutationFn: async () => {
+      // Check again so a claim added elsewhere is not duplicated
+      if ((await fetchClaimCount()) !== 0) return
+      await addWalletClaim()
+    },
+    onSuccess: async () => {
+      await sleep(INVALIDATE_QUERY_CACHE_DELAY)
+      await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+      await queryClient.invalidateQueries({
+        queryKey: ['automationClaimCount'],
+      })
+    },
   })
 
   // Create automation mutation
@@ -108,10 +183,21 @@ export function useAutomation() {
 
       // Sign, submit, and wait for confirmation
       await submitAndAwait({ transactionData })
+
+      // createAutomation only creates and funds the cron job. The claim is a
+      // separate call. A requeued cron job keeps its claims, so add the wallet
+      // claim only to a cron job that has none.
+      const createdClaimCount = await fetchClaimCount()
+      if (createdClaimCount === null)
+        throw new Error('Automation cron job not found')
+      if (createdClaimCount === 0) await addWalletClaim()
     },
     onSuccess: async () => {
       await sleep(INVALIDATE_QUERY_CACHE_DELAY)
       await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+      await queryClient.invalidateQueries({
+        queryKey: ['automationClaimCount'],
+      })
     },
   })
 
@@ -241,6 +327,12 @@ export function useAutomation() {
     fundingPeriodInfo: status?.fundingPeriodInfo,
     cronJobBalance: status?.cronJobBalance,
     pdaWalletBalance: status?.pdaWalletBalance,
+    needsWalletClaim:
+      (status?.hasExistingAutomation ?? false) && claimCount === 0,
+
+    addWalletClaim: addWalletClaimMutation.mutateAsync,
+    addWalletClaimLoading: addWalletClaimMutation.isPending,
+    addWalletClaimError: addWalletClaimMutation.error,
 
     // Mutations
     createAutomation: createAutomationMutation.mutateAsync,

@@ -323,6 +323,12 @@ export default {
     reclaimableSol: 'Reclaimable SOL',
     transactionFees: 'Transaction Fees',
     removeAutomationMessage: 'Remove automation to stop claiming your rewards',
+    addWalletClaim: 'Add Rewards Claim',
+    addWalletClaimMessage:
+      'Add your wallet to the automation so it claims your hotspot rewards on each run.',
+    notClaiming:
+      'Your automation is not claiming rewards. Tap Fix Automation to add your wallet to it.',
+    fixAutomation: 'Fix Automation',
     recipientSol: 'Hotspot Recipient Rent',
     outOfSol:
       'Automation paused - Out of SOL. Save again to extend the automation.',
