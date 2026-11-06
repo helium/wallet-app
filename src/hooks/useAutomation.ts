@@ -13,6 +13,10 @@ import { useWalletSign } from '../solana/WalletSignProvider'
 import { useSubmitAndAwait } from './useSubmitAndAwait'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import { MessagePreview } from '../solana/MessagePreview'
+import {
+  claimCountFromCronJob,
+  readClaimCountAfter,
+} from './automationClaimCount'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
 
@@ -31,7 +35,9 @@ export function useAutomation() {
 
   // Number of claims on the wallet's entity-claim cron job, or null when the
   // cron job does not exist. getAutomationStatus does not return it.
-  const fetchClaimCount = async (): Promise<number | null> => {
+  const fetchClaimCount = async (
+    minContextSlot?: number,
+  ): Promise<number | null> => {
     if (!walletAddress || !anchorProvider) return null
     const cronJob = cronJobKey(
       entityCronAuthorityKey(new PublicKey(walletAddress))[0],
@@ -39,14 +45,39 @@ export function useAutomation() {
     )[0]
     const cronJobInfo = await anchorProvider.connection.getAccountInfo(
       cronJob,
-      'confirmed',
+      { commitment: 'confirmed', minContextSlot },
     )
     if (!cronJobInfo) return null
     const cronProgram = await initCron(anchorProvider)
-    const { nextTransactionId } = cronProgram.coder.accounts.decode<{
-      nextTransactionId: number
-    }>('cronJobV0', cronJobInfo.data)
-    return nextTransactionId
+    return claimCountFromCronJob(
+      cronProgram.coder.accounts.decode<{ numTransactions: number }>(
+        'cronJobV0',
+        cronJobInfo.data,
+      ),
+    )
+  }
+
+  const fetchClaimCountAfter = async (
+    signatures: string[],
+  ): Promise<number | null> => {
+    if (!anchorProvider) return null
+    return readClaimCountAfter({
+      signatures,
+      getSignatureStatuses: (sigs) =>
+        anchorProvider.connection
+          .getSignatureStatuses(sigs)
+          .then((result) => result.value),
+      readClaimCount: fetchClaimCount,
+      sleep,
+    })
+  }
+
+  const refreshAutomationQueries = async () => {
+    await sleep(INVALIDATE_QUERY_CACHE_DELAY)
+    await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+    await queryClient.invalidateQueries({
+      queryKey: ['automationClaimCount'],
+    })
   }
 
   const addWalletClaim = async () => {
@@ -98,7 +129,7 @@ export function useAutomation() {
   // A cron job with no claims runs on schedule but claims nothing
   const { data: claimCount } = useQuery({
     queryKey: ['automationClaimCount', walletAddress],
-    queryFn: fetchClaimCount,
+    queryFn: () => fetchClaimCount(),
     enabled: !!walletAddress && !!anchorProvider && !!status?.currentSchedule,
   })
 
@@ -109,12 +140,10 @@ export function useAutomation() {
       if ((await fetchClaimCount()) !== 0) return
       await addWalletClaim()
     },
-    onSuccess: async () => {
-      await sleep(INVALIDATE_QUERY_CACHE_DELAY)
-      await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
-      await queryClient.invalidateQueries({
-        queryKey: ['automationClaimCount'],
-      })
+    onSuccess: refreshAutomationQueries,
+    // Not awaited: TanStack awaits onError before it rejects
+    onError: () => {
+      refreshAutomationQueries().catch(() => {})
     },
   })
 
@@ -182,22 +211,20 @@ export function useAutomation() {
       }
 
       // Sign, submit, and wait for confirmation
-      await submitAndAwait({ transactionData })
+      const { signatures } = await submitAndAwait({ transactionData })
 
       // createAutomation only creates and funds the cron job. The claim is a
       // separate call. A requeued cron job keeps its claims, so add the wallet
       // claim only to a cron job that has none.
-      const createdClaimCount = await fetchClaimCount()
+      const createdClaimCount = await fetchClaimCountAfter(signatures)
       if (createdClaimCount === null)
         throw new Error('Automation cron job not found')
       if (createdClaimCount === 0) await addWalletClaim()
     },
-    onSuccess: async () => {
-      await sleep(INVALIDATE_QUERY_CACHE_DELAY)
-      await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
-      await queryClient.invalidateQueries({
-        queryKey: ['automationClaimCount'],
-      })
+    onSuccess: refreshAutomationQueries,
+    // Not awaited: TanStack awaits onError before it rejects
+    onError: () => {
+      refreshAutomationQueries().catch(() => {})
     },
   })
 
