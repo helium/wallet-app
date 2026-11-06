@@ -116,7 +116,10 @@ const AutomationSetupScreen = () => {
   } = useAutomation()
 
   // Get funding estimate (used for both create and fund flows)
-  const estimate = useFundingEstimate(duration)
+  const estimate = useFundingEstimate(
+    duration,
+    hasExistingAutomation ? undefined : selectedSchedule,
+  )
 
   const hotspotsNeedingRecipient = useMemo(() => {
     return hotspotsWithMeta.filter(

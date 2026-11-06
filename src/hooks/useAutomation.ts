@@ -13,10 +13,7 @@ import { useWalletSign } from '../solana/WalletSignProvider'
 import { useSubmitAndAwait } from './useSubmitAndAwait'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import { MessagePreview } from '../solana/MessagePreview'
-import {
-  claimCountFromCronJob,
-  readClaimCountAfter,
-} from './automationClaimCount'
+import { claimCountFromCronJob } from './automationClaimCount'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
 
@@ -35,9 +32,7 @@ export function useAutomation() {
 
   // Number of claims on the wallet's entity-claim cron job, or null when the
   // cron job does not exist. getAutomationStatus does not return it.
-  const fetchClaimCount = async (
-    minContextSlot?: number,
-  ): Promise<number | null> => {
+  const fetchClaimCount = async (): Promise<number | null> => {
     if (!walletAddress || !anchorProvider) return null
     const cronJob = cronJobKey(
       entityCronAuthorityKey(new PublicKey(walletAddress))[0],
@@ -45,7 +40,7 @@ export function useAutomation() {
     )[0]
     const cronJobInfo = await anchorProvider.connection.getAccountInfo(
       cronJob,
-      { commitment: 'confirmed', minContextSlot },
+      'confirmed',
     )
     if (!cronJobInfo) return null
     const cronProgram = await initCron(anchorProvider)
@@ -55,21 +50,6 @@ export function useAutomation() {
         cronJobInfo.data,
       ),
     )
-  }
-
-  const fetchClaimCountAfter = async (
-    signatures: string[],
-  ): Promise<number | null> => {
-    if (!anchorProvider) return null
-    return readClaimCountAfter({
-      signatures,
-      getSignatureStatuses: (sigs) =>
-        anchorProvider.connection
-          .getSignatureStatuses(sigs)
-          .then((result) => result.value),
-      readClaimCount: fetchClaimCount,
-      sleep,
-    })
   }
 
   const refreshAutomationQueries = async () => {
@@ -167,11 +147,15 @@ export function useAutomation() {
       if (!walletSignBottomSheetRef)
         throw new Error('Wallet sign not available')
 
-      const { transactionData } = await client.hotspots.createAutomation({
-        walletAddress,
-        schedule,
-        duration,
-      })
+      // Creates the cron job and adds the wallet claim in one signing round.
+      // The server adds the claim only to a new or empty cron job, so a
+      // requeued cron job keeps its claims.
+      const { transactionData } =
+        await client.hotspots.createWalletClaimAutomation({
+          walletAddress,
+          schedule,
+          duration,
+        })
 
       // Deserialize transactions for preview
       const transactions = transactionData.transactions.map(
@@ -211,15 +195,7 @@ export function useAutomation() {
       }
 
       // Sign, submit, and wait for confirmation
-      const { signatures } = await submitAndAwait({ transactionData })
-
-      // createAutomation only creates and funds the cron job. The claim is a
-      // separate call. A requeued cron job keeps its claims, so add the wallet
-      // claim only to a cron job that has none.
-      const createdClaimCount = await fetchClaimCountAfter(signatures)
-      if (createdClaimCount === null)
-        throw new Error('Automation cron job not found')
-      if (createdClaimCount === 0) await addWalletClaim()
+      await submitAndAwait({ transactionData })
     },
     onSuccess: refreshAutomationQueries,
     // Not awaited: TanStack awaits onError before it rejects
@@ -376,7 +352,14 @@ export function useAutomation() {
   }
 }
 
-export function useFundingEstimate(duration: number | string | undefined) {
+// Pass setupSchedule only for a new setup: the estimate then prices the cron
+// job on that schedule plus the wallet claim createWalletClaimAutomation adds.
+// Leave it out to fund an existing cron job, so a different schedule does not
+// price a re-created one.
+export function useFundingEstimate(
+  duration: number | string | undefined,
+  setupSchedule?: Schedule,
+) {
   const { currentAccount } = useAccountStorage()
   const client = useBlockchainApi()
 
@@ -397,7 +380,12 @@ export function useFundingEstimate(duration: number | string | undefined) {
     isLoading: estimateLoading,
     error: estimateError,
   } = useQuery({
-    queryKey: ['fundingEstimate', walletAddress, debouncedDuration],
+    queryKey: [
+      'fundingEstimate',
+      walletAddress,
+      debouncedDuration,
+      setupSchedule,
+    ],
     queryFn: async () => {
       if (!walletAddress || debouncedDuration <= 0) {
         return null
@@ -405,6 +393,10 @@ export function useFundingEstimate(duration: number | string | undefined) {
       return client.hotspots.getFundingEstimate({
         walletAddress,
         duration: debouncedDuration,
+        ...(setupSchedule && {
+          schedule: setupSchedule,
+          claims: { kind: 'wallet' as const },
+        }),
       })
     },
     enabled: !!walletAddress && debouncedDuration > 0,
