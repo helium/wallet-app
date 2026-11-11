@@ -92,6 +92,7 @@ const AutomationSetupScreen = () => {
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
 
   const {
+    statusLoading,
     statusError,
     hasExistingAutomation,
     isOutOfSol,
@@ -100,6 +101,10 @@ const AutomationSetupScreen = () => {
     fundingPeriodInfo,
     cronJobBalance,
     pdaWalletBalance,
+    needsWalletClaim,
+    addWalletClaim,
+    addWalletClaimLoading,
+    addWalletClaimError,
     createAutomation,
     createAutomationLoading,
     createAutomationError,
@@ -112,7 +117,10 @@ const AutomationSetupScreen = () => {
   } = useAutomation()
 
   // Get funding estimate (used for both create and fund flows)
-  const estimate = useFundingEstimate(duration)
+  const estimate = useFundingEstimate(
+    duration,
+    hasExistingAutomation ? undefined : selectedSchedule,
+  )
 
   const hotspotsNeedingRecipient = useMemo(() => {
     return hotspotsWithMeta.filter(
@@ -124,6 +132,7 @@ const AutomationSetupScreen = () => {
     createAutomationError ||
     fundAutomationError ||
     closeAutomationError ||
+    addWalletClaimError ||
     estimate.estimateError
 
   // Calculate insufficient SOL for create flow
@@ -196,6 +205,14 @@ const AutomationSetupScreen = () => {
       console.error(e)
     }
   }, [closeAutomation, navigation])
+
+  const handleAddWalletClaim = useCallback(async () => {
+    try {
+      await addWalletClaim()
+    } catch (e) {
+      console.error(e)
+    }
+  }, [addWalletClaim])
 
   const handleFundAutomation = useCallback(async () => {
     if (!duration || !estimate.estimate) return
@@ -274,6 +291,40 @@ const AutomationSetupScreen = () => {
               <Text variant="subtitle3" marginBottom="m">
                 {t('automationScreen.currentAutomation')}
               </Text>
+              {needsWalletClaim && (
+                <Box
+                  backgroundColor="surfaceSecondary"
+                  borderRadius="l"
+                  padding="m"
+                  marginBottom="m"
+                >
+                  <Text variant="body3Medium" color="red500" marginBottom="m">
+                    {t('automationScreen.notClaiming')}
+                  </Text>
+                  <ButtonPressable
+                    title={
+                      addWalletClaimLoading
+                        ? undefined
+                        : t('automationScreen.fixAutomation')
+                    }
+                    backgroundColor="white"
+                    backgroundColorDisabled="grey400"
+                    backgroundColorDisabledOpacity={0.5}
+                    backgroundColorOpacityPressed={0.7}
+                    titleColorDisabled="secondaryText"
+                    titleColor="black"
+                    disabled={addWalletClaimLoading}
+                    TrailingComponent={
+                      addWalletClaimLoading ? (
+                        <CircleLoader loaderSize={20} color="black" />
+                      ) : undefined
+                    }
+                    onPress={handleAddWalletClaim}
+                    borderRadius="round"
+                    padding="m"
+                  />
+                </Box>
+              )}
               <Box
                 backgroundColor="black"
                 borderRadius="xl"
@@ -529,7 +580,9 @@ const AutomationSetupScreen = () => {
                 !selectedSchedule ||
                 !duration ||
                 createAutomationLoading ||
-                !estimate.estimate
+                !estimate.estimate ||
+                statusLoading ||
+                !!statusError
               }
               TrailingComponent={
                 createAutomationLoading ? (
