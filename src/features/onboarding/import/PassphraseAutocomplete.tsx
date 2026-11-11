@@ -10,9 +10,10 @@ import usePrevious from '@hooks/usePrevious'
 import { Color } from '@theme/theme'
 import Clipboard from '@react-native-clipboard/clipboard'
 import MatchingWord from './MatchingWord'
+import { returnKeyPick } from './wordSelection'
 
 type Props = {
-  onSelectWord: (fullWord: string, idx: number) => void
+  onSelectWord: (fullWord: string, idx: number, canSubmit?: boolean) => void
   wordIdx: number
   totalWords: number
   onSubmit: () => void
@@ -93,8 +94,9 @@ const PassphraseAutocomplete = ({
       return
     }
 
-    handleWordSelect(matchingWords[0])
-  }, [complete, handleWordSelect, matchingWords, onSubmit, word])
+    const pick = returnKeyPick(word, matchingWords)
+    onSelectWord(pick.word, wordIdx, pick.canSubmit)
+  }, [complete, matchingWords, onSelectWord, onSubmit, word, wordIdx])
 
   const inputStyle = useMemo(() => {
     return { color: accentValue, borderBottomColor: accentValue }
