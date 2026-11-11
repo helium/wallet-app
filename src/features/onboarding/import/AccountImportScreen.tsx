@@ -204,10 +204,10 @@ const AccountImportScreen = () => {
   const handleNext = useCallback(() => submitWords(words), [submitWords, words])
 
   const handleSelectWord = useCallback(
-    (selectedWord: string) => {
+    (selectedWord: string, _idx?: number, canSubmit = true) => {
       const selection = selectWord({ words, wordIndex, word: selectedWord })
       setWords(selection.words)
-      if (selection.submit) submitWords(selection.words)
+      if (canSubmit && selection.submit) submitWords(selection.words)
 
       if (wordIndex === wordCount - 1) return
       setWordIndex(wordIndex + 1)
