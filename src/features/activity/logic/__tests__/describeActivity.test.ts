@@ -61,11 +61,19 @@ const withHntMetadata = (tx: EnrichedTransaction): EnrichedTransaction => ({
 const describeFor = (tx: EnrichedTransaction, wallet: string) =>
   describeActivity(tx, wallet, i18n.t)
 
+// An amount as the current locale writes it, so the tests pass in any locale.
+const amountOf = (amount: number, maximumFractionDigits: number) =>
+  amount.toLocaleString(undefined, { maximumFractionDigits })
+
+const LAMPORTS = 1e9
+
 describe('describeActivity', () => {
   it('describes a reward claim with the claimed amount', async () => {
     const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
 
-    expect(describeFor(tx, REWARD_RECIPIENT)).toBe('Claimed 0.57264314 HNT')
+    expect(describeFor(tx, REWARD_RECIPIENT)).toBe(
+      `Claimed ${amountOf(0.57264314, 8)} HNT`,
+    )
   })
 
   it('describes a fungible transfer as sent or received for the wallet', async () => {
@@ -74,8 +82,197 @@ describe('describeActivity', () => {
       type: 'TRANSFER',
     }
 
-    expect(describeFor(tx, REWARD_SENDER)).toBe('Sent 0.57264314 HNT')
-    expect(describeFor(tx, REWARD_RECIPIENT)).toBe('Received 0.57264314 HNT')
+    expect(describeFor(tx, REWARD_SENDER)).toBe(
+      `Sent ${amountOf(0.57264314, 8)} HNT`,
+    )
+    expect(describeFor(tx, REWARD_RECIPIENT)).toBe(
+      `Received ${amountOf(0.57264314, 8)} HNT`,
+    )
+  })
+
+  it('sums every reward transfer of a claim', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const [reward] = tx.tokenTransfers
+    const twoRewards = { ...tx, tokenTransfers: [reward, reward] }
+
+    expect(describeFor(twoRewards, REWARD_RECIPIENT)).toBe(
+      `Claimed ${amountOf(reward.tokenAmount + reward.tokenAmount, 8)} HNT`,
+    )
+  })
+
+  it('takes the symbol from any token transfer of the wallet', async () => {
+    const tx = await rowFor(REWARD_CLAIM)
+    const [bare] = tx.tokenTransfers
+    const [withSymbol] = withHntMetadata(tx).tokenTransfers
+    const symbolOnSecond = { ...tx, tokenTransfers: [bare, withSymbol] }
+
+    expect(describeFor(symbolOnSecond, REWARD_RECIPIENT)).toBe(
+      `Claimed ${amountOf(bare.tokenAmount + withSymbol.tokenAmount, 8)} HNT`,
+    )
+  })
+
+  it('sums a SOL send to several payees', async () => {
+    const tx = {
+      ...(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+      tokenTransfers: [],
+      nativeTransfers: [1, 2, 3].map((sol, i) => ({
+        fromUserAccount: REWARD_SENDER,
+        toUserAccount: [REWARD_RECIPIENT, CNFT_OLD_OWNER, CNFT_NEW_OWNER][i],
+        amount: sol * LAMPORTS,
+      })),
+    }
+
+    expect(describeFor(tx, REWARD_SENDER)).toBe(`Sent ${amountOf(6, 9)} SOL`)
+  })
+
+  it('gives SOL transfers in both directions for the wallet no description', async () => {
+    const tx = {
+      ...(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+      tokenTransfers: [],
+      nativeTransfers: [
+        {
+          fromUserAccount: REWARD_SENDER,
+          toUserAccount: REWARD_RECIPIENT,
+          amount: LAMPORTS,
+        },
+        {
+          fromUserAccount: REWARD_RECIPIENT,
+          toUserAccount: REWARD_SENDER,
+          amount: LAMPORTS,
+        },
+      ],
+    }
+
+    expect(describeFor(tx, REWARD_SENDER)).toBe('')
+  })
+
+  it('gives a SOL transfer whose amount is not a number no description', async () => {
+    const tx = {
+      ...(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+      tokenTransfers: [],
+      nativeTransfers: [
+        {
+          fromUserAccount: REWARD_SENDER,
+          toUserAccount: REWARD_RECIPIENT,
+          amount: NaN,
+        },
+      ],
+    }
+
+    expect(describeFor(tx, REWARD_SENDER)).toBe('')
+  })
+
+  it('gives token transfers in both directions for the wallet no description', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const [reward] = tx.tokenTransfers
+    const bothWays = {
+      ...tx,
+      type: 'TRANSFER',
+      tokenTransfers: [
+        reward,
+        {
+          ...reward,
+          fromUserAccount: REWARD_RECIPIENT,
+          toUserAccount: REWARD_SENDER,
+        },
+      ],
+    }
+
+    expect(describeFor(bothWays, REWARD_RECIPIENT)).toBe('')
+  })
+
+  it('gives token transfers of different mints for the wallet no description', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const [reward] = tx.tokenTransfers
+    const twoMints = {
+      ...tx,
+      type: 'TRANSFER',
+      tokenTransfers: [
+        reward,
+        { ...reward, mint: 'mb1eu7TzEc71KxDpsmsKoucSSuuoGLv1drys1oP2jh6' },
+      ],
+    }
+
+    expect(describeFor(twoMints, REWARD_RECIPIENT)).toBe('')
+  })
+
+  it('gives token transfers of different decimals for the wallet no description', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const [reward] = tx.tokenTransfers
+    const twoDecimals = {
+      ...tx,
+      type: 'TRANSFER',
+      tokenTransfers: [reward, { ...reward, decimals: undefined }],
+    }
+
+    expect(describeFor(twoDecimals, REWARD_RECIPIENT)).toBe('')
+  })
+
+  it('gives a mint outside the default tokens no symbol, whatever its metadata says', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const spoof = {
+      ...tx,
+      type: 'TRANSFER',
+      tokenTransfers: tx.tokenTransfers.map((transfer) => ({
+        ...transfer,
+        mint: CNFT_OLD_OWNER,
+      })),
+    }
+
+    expect(describeFor(spoof, REWARD_RECIPIENT)).toBe('')
+  })
+
+  it('gives a transfer with no transfer of the wallet no description', async () => {
+    const tx = {
+      ...(await rowFor(REWARD_CLAIM)),
+      type: 'TRANSFER',
+      tokenTransfers: [],
+      nativeTransfers: [
+        {
+          fromUserAccount: CNFT_OLD_OWNER,
+          toUserAccount: CNFT_NEW_OWNER,
+          amount: LAMPORTS,
+        },
+      ],
+    }
+
+    expect(describeFor(tx, REWARD_SENDER)).toBe('')
+  })
+
+  it('gives a reward claim without a token symbol no description', async () => {
+    expect(describeFor(await rowFor(REWARD_CLAIM), REWARD_RECIPIENT)).toBe('')
+  })
+
+  it('describes a cNFT transfer with no known source as sent only by its signer', async () => {
+    const tx = await rowFor(CNFT_TRANSFER)
+    const [compressed] = tx.events.compressed ?? []
+    const signed = { ...tx, signers: [CNFT_NEW_OWNER] }
+    const noSource = {
+      ...signed,
+      events: {
+        compressed: [
+          { ...compressed, oldLeafOwner: '', newLeafOwner: REWARD_RECIPIENT },
+        ],
+      },
+    }
+    const otherSource = {
+      ...signed,
+      events: {
+        compressed: [
+          {
+            ...compressed,
+            oldLeafOwner: REWARD_SENDER,
+            newLeafOwner: REWARD_RECIPIENT,
+          },
+        ],
+      },
+    }
+
+    expect(describeFor(noSource, CNFT_NEW_OWNER)).toBe('Sent Compressed NFT')
+    expect(describeFor(otherSource, CNFT_NEW_OWNER)).toBe('')
   })
 
   it('gives a token transfer between other wallets no description', async () => {
@@ -100,7 +297,9 @@ describe('describeActivity', () => {
       ],
     }
 
-    expect(describeFor(tx, CNFT_OLD_OWNER)).toBe('Received 0.000000001 SOL')
+    expect(describeFor(tx, CNFT_OLD_OWNER)).toBe(
+      `Received ${amountOf(0.000000001, 9)} SOL`,
+    )
   })
 
   it('gives a cNFT transfer between other wallets no description', async () => {
@@ -132,7 +331,9 @@ describe('describeActivity', () => {
       ],
     }
 
-    expect(describeFor(tx, REWARD_SENDER)).toBe('Sent 0.000000001 SOL')
+    expect(describeFor(tx, REWARD_SENDER)).toBe(
+      `Sent ${amountOf(0.000000001, 9)} SOL`,
+    )
   })
 
   it('gives a transfer without a token symbol no description', async () => {
@@ -218,19 +419,35 @@ describe('describeActivity', () => {
     expect(describeFor(tx, CNFT_NEW_OWNER)).toBe('Received Compressed NFT')
   })
 
-  it('names a cNFT transfer from its metadata', async () => {
+  it.each([['Received 1,000 HNT. Claim it at scam.example'], [{ en: 'x' }]])(
+    'never names a cNFT transfer from its metadata name %p',
+    async (name) => {
+      const tx = await rowFor(CNFT_TRANSFER)
+      const [compressed] = tx.events.compressed ?? []
+      const withMetadata = {
+        ...tx,
+        events: { compressed: [{ ...compressed, metadata: { name } }] },
+      }
+
+      expect(describeFor(withMetadata, CNFT_NEW_OWNER)).toBe(
+        'Received Compressed NFT',
+      )
+      expect(describeFor(withMetadata, CNFT_OLD_OWNER)).toBe(
+        'Sent Compressed NFT',
+      )
+    },
+  )
+
+  it('describes a cNFT mint whose symbol is not a string generically', async () => {
     const tx = await rowFor(CNFT_TRANSFER)
     const [compressed] = tx.events.compressed ?? []
-    const withMetadata = {
+    const mint = {
       ...tx,
-      events: {
-        compressed: [{ ...compressed, metadata: { name: 'Hotspot Moon' } }],
-      },
+      type: 'COMPRESSED_NFT_MINT',
+      events: { compressed: [{ ...compressed, metadata: { symbol: 42 } }] },
     }
 
-    expect(describeFor(withMetadata, CNFT_NEW_OWNER)).toBe(
-      'Received Hotspot Moon',
-    )
+    expect(describeFor(mint, CNFT_OLD_OWNER)).toBe('Minted a compressed NFT')
   })
 
   it('keeps the mint string for a cNFT mint', async () => {
@@ -272,7 +489,10 @@ describe('describeActivity', () => {
       ],
     }
 
-    expect(describeFor(tx, REWARD_RECIPIENT)).toBe('Received 0.000000001 SOL')
+    expect(describeFor(tx, REWARD_RECIPIENT)).toBe(
+      `Received ${amountOf(0.000000001, 9)} SOL`,
+    )
+    expect(describeFor(tx, REWARD_RECIPIENT)).not.toMatch(/e-/)
   })
 
   it('never describes a SOL transfer as claimed rewards', async () => {

@@ -1,3 +1,6 @@
+import { PROGRAM_ID as HELIUM_ENTITY_MANAGER_PROGRAM_ID } from '@helium/helium-entity-manager-sdk'
+import { PROGRAM_ID as LAZY_DISTRIBUTOR_PROGRAM_ID } from '@helium/lazy-distributor-sdk'
+import { PROGRAM_ID as BUBBLEGUM_PROGRAM_ID } from '@metaplex-foundation/mpl-bubblegum'
 import { sha256 } from '@noble/hashes/sha256'
 import bs58 from 'bs58'
 import i18next from 'i18next'
@@ -7,6 +10,7 @@ import { describeActivity } from '../describeActivity'
 import {
   ParsedEventsItem,
   ParsedInstruction,
+  isReadableItem,
   toActivityRows,
 } from '../parsedEvents'
 import enhanced from './fixtures/v0.json'
@@ -91,6 +95,32 @@ const undecoded = (name: string) => ({
   rawData: bs58.encode(sha256(`global:${name}`).slice(0, 8)),
 })
 
+// The reward claim with only `instructions` and the given summary.
+const withInstructions = (
+  instructions: Partial<ParsedInstruction>[],
+  summary: { type: string } | null = null,
+) => {
+  const item = itemFor(REWARD_CLAIM)
+  if (item.parserStatus !== 'OK') throw new Error('expected an OK item')
+  return {
+    ...item,
+    parsed: {
+      ...item.parsed,
+      summary,
+      instructions: instructions.map((ix) => ({
+        programName: null,
+        instructionName: null,
+        rawData: '',
+        decoded: null,
+        programId: '',
+        ...ix,
+      })),
+    },
+  }
+}
+
+const TRANSFER_PROXY_PROGRAM_ID = 'Gz9o1yxV5kVfyC53fFu7StTVeetPZWa2sohzvxJiLxMP'
+
 describe('instruction classifier', () => {
   it.each([
     [{ instructionName: 'mint_v1' }, 'COMPRESSED_NFT_MINT'],
@@ -101,6 +131,89 @@ describe('instruction classifier', () => {
     const item = withBubblegumInstruction(patch)
 
     expect((await rowFor(CNFT_TRANSFER, [item])).type).toBe(expected)
+  })
+
+  it.each([
+    [
+      HELIUM_ENTITY_MANAGER_PROGRAM_ID.toBase58(),
+      'onboard_iot_hotspot_v0',
+      'HOTSPOT_ONBOARDED',
+    ],
+    [
+      LAZY_DISTRIBUTOR_PROGRAM_ID.toBase58(),
+      'distribute_custom_destination_v0',
+      'CLAIM_REWARDS',
+    ],
+    [
+      LAZY_DISTRIBUTOR_PROGRAM_ID.toBase58(),
+      'distribute_rewards_v0',
+      'CLAIM_REWARDS',
+    ],
+    [TRANSFER_PROXY_PROGRAM_ID, 'transfer_cnft', 'COMPRESSED_NFT_TRANSFER'],
+    [BUBBLEGUM_PROGRAM_ID.toBase58(), 'transfer', 'COMPRESSED_NFT_TRANSFER'],
+  ])(
+    'reads %s %s with no summary as %s',
+    async (programId, instructionName, expected) => {
+      const item = withInstructions([{ programId, instructionName }])
+
+      expect((await rowFor(REWARD_CLAIM, [item])).type).toBe(expected)
+    },
+  )
+
+  it.each([
+    ['swap', 'SWAP'],
+    ['create_account', 'INITIALIZE_ACCOUNT'],
+    ['create_token_account', 'INITIALIZE_ACCOUNT'],
+    ['add_liquidity', 'ADD_TO_POOL'],
+    ['remove_liquidity', 'REMOVE_FROM_POOL'],
+  ])('reads summary %s as %s', async (type, expected) => {
+    const item = withInstructions([], { type })
+
+    expect((await rowFor(REWARD_CLAIM, [item])).type).toBe(expected)
+  })
+
+  it.each([
+    ['an inherited summary type', [], { type: 'constructor' }],
+    [
+      'an inherited instruction name',
+      [
+        {
+          programId: LAZY_DISTRIBUTOR_PROGRAM_ID.toBase58(),
+          instructionName: 'constructor',
+        },
+      ],
+      null,
+    ],
+    [
+      'an inherited program id',
+      [{ programId: 'constructor', instructionName: 'name' }],
+      null,
+    ],
+  ])('reads %s as UNKNOWN', async (_, instructions, summary) => {
+    const item = withInstructions(instructions, summary)
+
+    expect((await rowFor(REWARD_CLAIM, [item])).type).toBe('UNKNOWN')
+  })
+
+  it('reads an unnamed instruction of another program without its raw data', async () => {
+    const item = withInstructions(
+      [{ programId: TRANSFER_PROXY_PROGRAM_ID, rawData: '0OIl' }],
+      { type: 'transfer' },
+    )
+
+    expect((await rowFor(REWARD_CLAIM, [item])).type).toBe('TRANSFER')
+  })
+})
+
+describe('isReadableItem', () => {
+  it('reads an item the parser failed on', () => {
+    expect(
+      isReadableItem({
+        signature: REWARD_CLAIM,
+        parserStatus: 'ERROR',
+        parserError: 'could not parse',
+      }),
+    ).toBe(true)
   })
 })
 
@@ -452,6 +565,110 @@ describe('toActivityRows', () => {
         (rows.find((r) => r.signature === REWARD_CLAIM) as EnrichedTransaction)
           .transactionError,
       ).toEqual(err)
+    })
+
+    it.each([[''], [false], [0]])(
+      'takes the error of the signature row when the item error is %p',
+      async (error) => {
+        const err = { InstructionError: [2, { Custom: 3012 }] }
+        const item = withParsed((parsed) => ({ ...parsed, error }))
+        const failedRows = signatureRows.map((row) =>
+          row.signature === REWARD_CLAIM ? { ...row, err } : row,
+        )
+
+        const rows = await toActivityRows([item], failedRows)
+
+        expect(
+          (
+            rows.find(
+              (r) => r.signature === REWARD_CLAIM,
+            ) as EnrichedTransaction
+          ).transactionError,
+        ).toEqual(err)
+      },
+    )
+
+    it.each(['instructions', 'nativeTransfers', 'tokenTransfers'])(
+      // toActivityRows also catches the throw, so check the guard itself.
+      'does not read an item without a %s array',
+      (field) => {
+        const item = withParsed((parsed) => ({ ...parsed, [field]: {} }))
+
+        expect(isReadableItem(item)).toBe(false)
+      },
+    )
+
+    it.each([
+      [
+        'a negative leaf index',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          args: { ...decoded.args, leaf_index: -1 },
+        })),
+      ],
+      [
+        'a fractional leaf index',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          args: { ...decoded.args, leaf_index: 2.5 },
+        })),
+      ],
+      [
+        'an empty leaf index',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          args: { ...decoded.args, leaf_index: '' },
+        })),
+      ],
+      [
+        'a boolean leaf index',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          args: { ...decoded.args, leaf_index: true },
+        })),
+      ],
+      [
+        'a tree that is not a string',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          accounts: decoded.accounts.map((acc) =>
+            acc.name === 'merkle_tree'
+              ? { ...acc, pubkey: 7 as unknown as string }
+              : acc,
+          ),
+        })),
+      ],
+      [
+        'a tree that is not base58',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          accounts: decoded.accounts.map((acc) =>
+            acc.name === 'merkle_tree' ? { ...acc, pubkey: '0OIl' } : acc,
+          ),
+        })),
+      ],
+      [
+        'no args',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          args: null as unknown as Record<string, unknown>,
+        })),
+      ],
+      [
+        'no accounts',
+        withTransferCnft((decoded) => ({
+          ...decoded,
+          accounts: null as unknown as typeof decoded.accounts,
+        })),
+      ],
+    ])('keeps a transfer_cnft with %s, without its asset', async (_, item) => {
+      const rows = await toActivityRows(replacing(item), signatureRows)
+      const row = rows.find(
+        (r) => r.signature === CNFT_TRANSFER,
+      ) as EnrichedTransaction
+
+      expect(row.type).toBe('COMPRESSED_NFT_TRANSFER')
+      expect(row.events.compressed).toBeUndefined()
     })
 
     it('shows a malformed item as its bare signature row', async () => {

@@ -186,7 +186,7 @@ const ActivityDetailsScreen = () => {
     const enrichedTx = transaction as EnrichedTransaction
     const confirmedSig = transaction as ConfirmedSignatureInfo
 
-    if (confirmedSig.err || !enrichedTx.type) {
+    if (enrichedTx.transactionError || confirmedSig.err || !enrichedTx.type) {
       return null
     }
 
@@ -199,14 +199,15 @@ const ActivityDetailsScreen = () => {
 
     const compressed = enrichedTx.events?.compressed?.[0]
 
-    const fromAccount =
-      compressed?.oldLeafOwner ||
-      firstTokenTransfer?.fromUserAccount ||
-      firstNativeTransfer?.fromUserAccount
-    const toAccount =
-      compressed?.newLeafOwner ||
-      firstTokenTransfer?.toUserAccount ||
-      firstNativeTransfer?.toUserAccount
+    // A cNFT row takes its parties from the compressed event only, never from
+    // the fee or rent transfers beside it.
+    const fromAccount = compressed
+      ? compressed.oldLeafOwner || undefined
+      : firstTokenTransfer?.fromUserAccount ||
+        firstNativeTransfer?.fromUserAccount
+    const toAccount = compressed
+      ? compressed.newLeafOwner || undefined
+      : firstTokenTransfer?.toUserAccount || firstNativeTransfer?.toUserAccount
 
     if (!fromAccount && !toAccount) {
       return null
@@ -260,7 +261,7 @@ const ActivityDetailsScreen = () => {
     ) {
       const symbol = enrichedTx.events.compressed[0].metadata?.symbol
       const count = enrichedTx.events.compressed.length
-      if (symbol) {
+      if (typeof symbol === 'string' && symbol) {
         return t('activityScreen.compressedNFTDescription', {
           symbol: symbol.toLowerCase(),
           count,

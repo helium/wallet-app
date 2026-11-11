@@ -1560,35 +1560,46 @@ export const getAllTransactions = async (
 
     const rows: ActivityRow[] =
       cluster === 'devnet'
-        ? attachSigners(data as EnrichedTransaction[], txList)
+        ? attachSigners(
+            Array.isArray(data) ? (data as EnrichedTransaction[]) : [],
+            txList,
+          )
         : await toActivityRows(data as ParsedEventsItem[], txList)
 
     const enrichedRows: ActivityRow[] = await Promise.all(
       rows.map(async (tx) => {
         if (!('tokenTransfers' in tx)) return tx
         try {
-          const firstTokenTransfer = tx.tokenTransfers[0]
-          if (firstTokenTransfer && firstTokenTransfer.mint) {
+          // Enrich the wallet's own transfer, so its row gets a symbol.
+          const walletTransferIndex = tx.tokenTransfers.findIndex(
+            (transfer) =>
+              transfer.fromUserAccount === address ||
+              transfer.toUserAccount === address,
+          )
+          const enrichIndex = Math.max(walletTransferIndex, 0)
+          const transferToEnrich = tx.tokenTransfers[enrichIndex]
+          if (transferToEnrich && transferToEnrich.mint) {
             const tokenMetadata = await getCollectableByMint(
-              new PublicKey(firstTokenTransfer.mint),
+              new PublicKey(transferToEnrich.mint),
               conn,
             )
 
             return {
               ...tx,
-              tokenTransfers: [
-                {
-                  ...firstTokenTransfer,
-                  tokenMetadata: {
-                    model: tokenMetadata?.model,
-                    name: tokenMetadata?.name,
-                    symbol: tokenMetadata?.symbol,
-                    uri: tokenMetadata?.uri,
-                    json: tokenMetadata?.json,
-                  },
-                },
-                ...tx.tokenTransfers.slice(1),
-              ],
+              tokenTransfers: tx.tokenTransfers.map((transfer, index) =>
+                index === enrichIndex
+                  ? {
+                      ...transfer,
+                      tokenMetadata: {
+                        model: tokenMetadata?.model,
+                        name: tokenMetadata?.name,
+                        symbol: tokenMetadata?.symbol,
+                        uri: tokenMetadata?.uri,
+                        json: tokenMetadata?.json,
+                      },
+                    }
+                  : transfer,
+              ),
             }
           }
 
@@ -1645,11 +1656,19 @@ export const getAllTransactions = async (
     const allTxnsWithMetadata: ActivityRow[] =
       cluster === 'devnet'
         ? enrichedRows
-        : enrichedRows.map((tx) =>
-            'tokenTransfers' in tx
-              ? { ...tx, description: describeActivity(tx, address, i18n.t) }
-              : tx,
-          )
+        : enrichedRows.map((tx) => {
+            if (!('tokenTransfers' in tx)) return tx
+            // One row that throws loses only its description, not the page.
+            try {
+              return {
+                ...tx,
+                description: describeActivity(tx, address, i18n.t),
+              }
+            } catch (e) {
+              Logger.error(e)
+              return { ...tx, description: '' }
+            }
+          })
 
     // Combine and sort all txns by date in descending order
     allTxnsWithMetadata.sort(

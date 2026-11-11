@@ -67,6 +67,8 @@ const INSTRUCTION_TYPES: Record<string, Record<string, string>> = {
   },
   [LAZY_DISTRIBUTOR_PROGRAM_ID.toBase58()]: {
     distribute_compression_rewards_v0: 'CLAIM_REWARDS',
+    distribute_custom_destination_v0: 'CLAIM_REWARDS',
+    distribute_rewards_v0: 'CLAIM_REWARDS',
   },
   [TRANSFER_PROXY_PROGRAM_ID]: {
     transfer_cnft: 'COMPRESSED_NFT_TRANSFER',
@@ -110,16 +112,28 @@ const instructionNameOf = (ix: ParsedInstruction): string | undefined => {
   return BUBBLEGUM_V2_BY_DISCRIMINATOR[discriminator.toString('hex')]
 }
 
+// A table value for an own key only, so a name such as `constructor` reads
+// nothing from the prototype.
+const ownValueOf = <T>(
+  table: Record<string, T> | undefined,
+  key: string,
+): T | undefined =>
+  table && Object.prototype.hasOwnProperty.call(table, key)
+    ? table[key]
+    : undefined
+
 const classify = (parsed: ParsedTransaction): string => {
   const instructionType = parsed.instructions
     .map((ix) => {
       const name = instructionNameOf(ix)
-      return name ? INSTRUCTION_TYPES[ix.programId]?.[name] : undefined
+      return name
+        ? ownValueOf(ownValueOf(INSTRUCTION_TYPES, ix.programId), name)
+        : undefined
     })
     .find(Boolean)
   return (
     instructionType ||
-    (parsed.summary && SUMMARY_TYPES[parsed.summary.type]) ||
+    (parsed.summary && ownValueOf(SUMMARY_TYPES, parsed.summary.type)) ||
     'UNKNOWN'
   )
 }
@@ -176,10 +190,13 @@ const compressedEventsOf = async (
     .map((ix, instructionIndex) => ({
       ix,
       instructionIndex,
-      fields: CNFT_TRANSFER_FIELDS[`${ix.programId}:${ix.instructionName}`],
+      fields: ownValueOf(
+        CNFT_TRANSFER_FIELDS,
+        `${ix.programId}:${ix.instructionName}`,
+      ),
     }))
     .find(({ ix, fields }) => fields && ix.decoded)
-  if (!found?.ix.decoded) return undefined
+  if (!found?.ix.decoded || !found.fields) return undefined
   const { instructionIndex, fields } = found
   const { args, accounts } = found.ix.decoded
   if (!isRecord(args) || !Array.isArray(accounts)) return undefined
@@ -225,7 +242,7 @@ const toEnrichedTransaction = async (
   fee: parsed.fee,
   slot: parsed.slot,
   timestamp: parsed.blockTime ?? signatureRow.blockTime ?? 0,
-  transactionError: parsed.error ?? signatureRow.err ?? null,
+  transactionError: parsed.error || signatureRow.err || null,
   nativeTransfers: parsed.nativeTransfers.map((transfer) => ({
     fromUserAccount: transfer.fromUserAccount ?? '',
     toUserAccount: transfer.toUserAccount ?? '',
@@ -243,7 +260,7 @@ const toEnrichedTransaction = async (
 })
 
 // The response is untrusted. Check the fields the adapter depends on.
-const isReadableItem = (value: unknown): value is ParsedEventsItem => {
+export const isReadableItem = (value: unknown): value is ParsedEventsItem => {
   if (!isRecord(value) || typeof value.signature !== 'string') return false
   if (value.parserStatus === 'ERROR') return true
   const { parsed } = value
@@ -260,7 +277,7 @@ const isReadableItem = (value: unknown): value is ParsedEventsItem => {
 // omits, the parser failed on, or the wallet cannot read keeps its bare
 // signature row, so history never loses it. No single item can throw out of
 // here.
-export const toActivityRows = async (
+export const toActivityRows = (
   items: unknown,
   signatureRows: SignatureRow[],
 ): Promise<ActivityRow[]> => {
