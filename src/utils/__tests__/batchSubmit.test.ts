@@ -8,6 +8,7 @@ import {
   PagedSubmitError,
   PollTimeoutError,
   TerminalStatus,
+  createBatchView,
   describePageFailure,
   mergeBatchStatuses,
   pollForCompletion,
@@ -676,6 +677,21 @@ describe('pollForCompletion', () => {
       batchId: 'b',
       message: 'Transaction polling timeout',
     })
+  })
+})
+
+describe('createBatchView', () => {
+  it('keeps a confirmed batch confirmed while a row reads pending', () => {
+    const view = createBatchView()
+    expect(
+      view({
+        status: 'confirmed',
+        transactions: [
+          { signature: 'a', status: 'confirmed' },
+          { signature: 'b', status: 'pending' },
+        ],
+      }).status,
+    ).toBe('confirmed')
   })
 })
 

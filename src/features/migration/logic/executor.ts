@@ -130,8 +130,9 @@ export const runMigration = async <TSigned = unknown>(
   let input = originalInput
   let batch = opts.startPage ?? 1
   let inFlightNext = opts.pendingNextInput
-  // The signed page whose submit has no batch id yet (see settleSentPage).
-  let inFlightPage = opts.pendingBatchId ? undefined : opts.pendingTransactions
+  // The signed page that may be in flight. It stays saved, with or without a
+  // batch id, until a batch read lists its transactions (see settleSentPage).
+  let inFlightPage = opts.pendingTransactions
 
   // Fold a polled batch's signatures into the run totals. Shared by the resume
   // guard and the in-loop confirm so both accumulate identically.
@@ -151,7 +152,8 @@ export const runMigration = async <TSigned = unknown>(
   // Only the in-flight snapshots (submitted, awaiting confirmation) carry a
   // pendingBatchId; snapshots written once a batch reaches a terminal state
   // pass nothing, clearing it so a later resume won't re-poll a settled batch.
-  // Every snapshot carries the signed page while it has no batch id.
+  // Every snapshot carries the signed page until a batch read lists its
+  // transactions.
   const snapshot = (
     status: MigrationSession['status'],
     pendingBatchId?: string,
@@ -279,19 +281,27 @@ export const runMigration = async <TSigned = unknown>(
       return { status: 'pending', confirmedSignatures, failedSignatures }
     }
 
-    // The batch confirmed cleanly and its next input is known: skip its page.
-    if (
-      opts.pendingNextInput !== undefined &&
-      status.status === 'confirmed' &&
-      summary.failedSignatures.length === 0
-    ) {
-      if (opts.pendingNextInput === null) {
-        await deps.persist(snapshot('complete'))
-        return { status: 'complete', confirmedSignatures, failedSignatures }
+    if (inFlightPage && status.transactions.length === 0) {
+      // The batch records none of the saved page's transactions. The page may
+      // have been sent, and only the cluster can tell.
+      const settled = await settleSentPage(inFlightPage)
+      if (settled !== 'advance' && settled !== 'unsent') return settled
+    } else {
+      inFlightPage = undefined
+      // The batch confirmed cleanly and its next input is known: skip its page.
+      if (
+        opts.pendingNextInput !== undefined &&
+        status.status === 'confirmed' &&
+        summary.failedSignatures.length === 0
+      ) {
+        if (opts.pendingNextInput === null) {
+          await deps.persist(snapshot('complete'))
+          return { status: 'complete', confirmedSignatures, failedSignatures }
+        }
+        input = opts.pendingNextInput
+        batch += 1
+        await deps.persist(snapshot('running'))
       }
-      input = opts.pendingNextInput
-      batch += 1
-      await deps.persist(snapshot('running'))
     }
   } else if (inFlightPage) {
     // A prior run saved a signed page but no batch id. Settle it first: a
@@ -324,8 +334,12 @@ export const runMigration = async <TSigned = unknown>(
       // with a BAD_REQUEST, which reads as an unknown outcome.
       if (data.transactions.length === 0) {
         // More remain but none came: a server fault. A request for nextParams
-        // (often equal to this input) would loop.
-        if (out.hasMore) throw new Error(deps.emptyPageMessage)
+        // (often equal to this input) would loop. An empty last page completes
+        // the run only when an earlier page confirmed something; with nothing
+        // moved, report the empty page.
+        if (out.hasMore || confirmedSignatures.length === 0) {
+          throw new Error(deps.emptyPageMessage)
+        }
         // Nothing remains: the server builds each page from on-chain state.
         // eslint-disable-next-line no-await-in-loop
         await deps.persist(snapshot('complete'))
@@ -378,7 +392,6 @@ export const runMigration = async <TSigned = unknown>(
       }
       const { batchId } = submitted
       inFlightBatchId = batchId
-      inFlightPage = undefined
 
       // Persist a resumable snapshot BEFORE confirmation carrying this batch's id:
       // if the app is killed while the batch is still confirming, the resume
@@ -390,6 +403,16 @@ export const runMigration = async <TSigned = unknown>(
       // eslint-disable-next-line no-await-in-loop
       const status = await withRetry(() => deps.pollStatus(batchId), sleep)
       const summary = collect(status)
+      if (status.transactions.length > 0) {
+        inFlightPage = undefined
+      } else if (inFlightPage) {
+        // The server returned a batch id that records none of this page's
+        // transactions. The page may have been sent, and only the cluster can
+        // tell.
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(snapshot('running', batchId))
+        return { status: 'pending', confirmedSignatures, failedSignatures }
+      }
       // The server reports `failed` or `partial` once one transaction failed,
       // even with others still pending. Neither is final until none is.
       const unsettled =

@@ -309,7 +309,7 @@ describe('runMigration', () => {
       expect(last.nextInput?.hotspots).toEqual(['h2'])
     })
 
-    it('with nothing remaining completes without a sign or a submit', async () => {
+    it('on a fresh run with nothing remaining throws without a sign, a submit or a save', async () => {
       const sessions: MigrationSession[] = []
       const { deps, log } = makeDeps({
         requestMigrate: async () =>
@@ -318,9 +318,34 @@ describe('runMigration', () => {
           sessions.push(s)
         },
       })
+      await expect(runMigration(input, deps)).rejects.toThrow(
+        'No transactions to send',
+      )
+      expect(log).toEqual([])
+      expect(sessions).toEqual([])
+    })
+
+    it('after a confirmed page with nothing remaining completes without a second sign', async () => {
+      const sessions: MigrationSession[] = []
+      let call = 0
+      const { deps, log } = makeDeps({
+        requestMigrate: async () => {
+          call += 1
+          return call === 1
+            ? ({
+                transactionData: txData(1),
+                hasMore: true,
+                nextParams: { ...input, hotspots: ['h2'] },
+              } as MigrateOutput)
+            : ({ transactionData: txData(0) } as MigrateOutput)
+        },
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
       const outcome = await runMigration(input, deps)
       expect(outcome.status).toBe('complete')
-      expect(log).toEqual([])
+      expect(log).toEqual(['sign:1', 'submit'])
       expect(sessions[sessions.length - 1].status).toBe('complete')
     })
   })
@@ -541,9 +566,12 @@ describe('runMigration', () => {
         pendingNextInput: { ...input, hotspots: ['h2'] },
       })
       expect(atSubmit[0].pendingBatchId).toBeUndefined()
-      // Once the server returns a batch id, the batch guard takes over.
+      // The page stays saved with the batch id until a batch read lists its
+      // transactions.
       const withBatch = sessions.find((s) => s.pendingBatchId === 'b1')
-      expect(withBatch?.pendingTransactions).toBeUndefined()
+      expect(withBatch?.pendingTransactions).toEqual(
+        atSubmit[0].pendingTransactions,
+      )
     })
 
     it('reports pending and requests nothing while the blockhash is in range', async () => {
@@ -710,6 +738,55 @@ describe('runMigration', () => {
       expect(last.unconfirmedSubmit).toBeUndefined()
     })
 
+    it('keeps the signed page with a batch id that records none of its transactions', async () => {
+      const sessions: MigrationSession[] = []
+      let submits = 0
+      const { deps } = makeDeps({
+        sleep: async () => {},
+        submitBatch: async () => {
+          submits += 1
+          if (submits === 1) {
+            throw Object.assign(new Error('server error'), { status: 500 })
+          }
+          return { batchId: 'X' }
+        },
+        pollStatus: async () => ({ status: 'pending', transactions: [] }),
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('pending')
+      const last = sessions[sessions.length - 1]
+      expect(last.pendingBatchId).toBe('X')
+      expect(last.pendingTransactions).toEqual([
+        { signature: 'tx1', blockhash: 'bh' },
+      ])
+    })
+
+    it('reports pending when the batch reads expired with none of the page transactions', async () => {
+      const sessions: MigrationSession[] = []
+      const requestMigrate = jest.fn(
+        async () => ({ transactionData: txData(1) } as MigrateOutput),
+      )
+      const { deps } = makeDeps({
+        requestMigrate,
+        pollStatus: async () => ({ status: 'expired', transactions: [] }),
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('pending')
+      expect(requestMigrate).toHaveBeenCalledTimes(1)
+      const last = sessions[sessions.length - 1]
+      expect(last.status).toBe('running')
+      expect(last.pendingBatchId).toBe('b1')
+      expect(last.pendingTransactions).toEqual([
+        { signature: 'tx1', blockhash: 'bh' },
+      ])
+    })
+
     it('reads the cluster when a rejection follows an attempt that may have landed', async () => {
       // The first attempt landed but its response was lost; the resend then
       // fails simulation because the transaction is already processed.
@@ -820,6 +897,56 @@ describe('runMigration', () => {
       expect(sessions.every((s) => s.page === 2)).toBe(true)
       expect(outcome.status).toBe('complete')
       expect(outcome.failedSignatures).toEqual([])
+    })
+
+    it('requests the saved input when the saved page landed but has no saved next input', async () => {
+      const { deps } = cluster({ statuses: { tx1: landed } })
+      const requestMigrate = jest.fn(
+        async () => ({ transactionData: txData(1) } as MigrateOutput),
+      )
+      const outcome = await runMigration(
+        page(2),
+        makeDeps({ ...deps, requestMigrate }).deps,
+        {
+          pendingTransactions: saved,
+          startPage: 2,
+          priorConfirmedSignatures: ['sig1'],
+        },
+      )
+      expect(requestMigrate).toHaveBeenCalledWith(page(2))
+      expect(outcome.status).toBe('complete')
+    })
+
+    // A batch id whose batch lists none of the saved page's transactions.
+    const resumeEmptyBatch = async (overrides: Partial<ExecutorDeps>) => {
+      const requestMigrate = jest.fn(
+        async () => ({ transactionData: txData(1) } as MigrateOutput),
+      )
+      const { deps } = makeDeps({
+        requestMigrate,
+        pollStatus: async () => ({ status: 'expired', transactions: [] }),
+        ...overrides,
+      })
+      const outcome = await runMigration(input, deps, {
+        pendingBatchId: 'X',
+        pendingTransactions: saved,
+        pendingNextInput: null,
+      })
+      return { outcome, requestMigrate }
+    }
+
+    it('completes without a request when a batch with no rows lists a saved page that landed', async () => {
+      const { deps } = cluster({ statuses: { tx1: landed } })
+      const { outcome, requestMigrate } = await resumeEmptyBatch(deps)
+      expect(outcome.status).toBe('complete')
+      expect(requestMigrate).not.toHaveBeenCalled()
+    })
+
+    it('requests the saved input once when a batch with no rows holds a saved page that never landed', async () => {
+      const { deps } = cluster({ valid: false })
+      const { requestMigrate } = await resumeEmptyBatch(deps)
+      expect(requestMigrate).toHaveBeenCalledTimes(1)
+      expect(requestMigrate).toHaveBeenCalledWith(input)
     })
   })
 
@@ -1147,6 +1274,35 @@ describe('runMigration', () => {
       await expect(runMigration(input, deps)).resolves.toMatchObject({
         status: 'failed',
       })
+      warn.mockRestore()
+    })
+
+    it('a failed save of the signed page 2 before its submit drops the page', async () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      let thrown = false
+      const { deps, sessions } = failSubmitOnPage2(
+        () => new Error('unused'),
+        async (s) => {
+          if (
+            !thrown &&
+            s.status === 'running' &&
+            s.page === 2 &&
+            s.pendingTransactions
+          ) {
+            thrown = true
+            throw new Error('disk full')
+          }
+        },
+      )
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('failed')
+      expect(thrown).toBe(true)
+      const last = sessions[sessions.length - 1]
+      expect(last.status).toBe('failed')
+      expect(last.page).toBe(2)
+      expect(last.nextInput).toEqual(page(2))
+      expect(last.pendingTransactions).toBeUndefined()
+      expect(last.unconfirmedSubmit).toBeUndefined()
       warn.mockRestore()
     })
 
