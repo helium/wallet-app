@@ -371,6 +371,7 @@ export default {
     descriptions: {
       sent: 'Sent {{amount}} {{symbol}}',
       received: 'Received {{amount}} {{symbol}}',
+      burned: 'Burned {{amount}} {{symbol}}',
       claimed: 'Claimed {{amount}} {{symbol}}',
       hotspotOnboarded: 'Hotspot onboarded',
       sentNFT: 'Sent {{name}}',

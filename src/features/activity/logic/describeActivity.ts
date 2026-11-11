@@ -37,18 +37,21 @@ const walletTokenTransfersOf = (tx: EnrichedTransaction, wallet: string) =>
 
 type TokenTransfer = EnrichedTransaction['tokenTransfers'][number]
 
-// The wallet's token transfers as one sum. Transfers of different mints, or in
-// different directions for the wallet, give no sum.
+// The wallet's token transfers as one sum. Transfers of different mints, in
+// different directions for the wallet, or that mix burns with sends, give no
+// sum. A burn is a transfer with no destination.
 const tokenTransferOf = (transfers: TokenTransfer[], wallet: string) => {
   const [first] = transfers
   if (first?.decimals === undefined) return undefined
   const sent = first.fromUserAccount === wallet
+  const burned = !first.toUserAccount
   if (
     transfers.some(
       (transfer) =>
         transfer.mint !== first.mint ||
         transfer.decimals !== first.decimals ||
-        (transfer.fromUserAccount === wallet) !== sent,
+        (transfer.fromUserAccount === wallet) !== sent ||
+        !transfer.toUserAccount !== burned,
     )
   ) {
     return undefined
@@ -65,6 +68,7 @@ const tokenTransferOf = (transfers: TokenTransfer[], wallet: string) => {
     to: first.toUserAccount,
     amount: formatAmount(total, first.decimals),
     symbol,
+    burned,
   }
 }
 
@@ -88,6 +92,7 @@ const solTransferOf = (tx: EnrichedTransaction, wallet: string) => {
     to: first.toUserAccount,
     amount: formatAmount(total, SOL_DECIMALS),
     symbol: 'SOL',
+    burned: false,
   }
 }
 
@@ -111,9 +116,11 @@ export const describeActivity = (
       const { amount, symbol } = transfer
       const direction = directionOf(tx, wallet, transfer)
       if (direction === 'unknown') return ''
-      return direction === 'sent'
-        ? t('activityScreen.descriptions.sent', { amount, symbol })
-        : t('activityScreen.descriptions.received', { amount, symbol })
+      if (direction === 'received')
+        return t('activityScreen.descriptions.received', { amount, symbol })
+      return transfer.burned
+        ? t('activityScreen.descriptions.burned', { amount, symbol })
+        : t('activityScreen.descriptions.sent', { amount, symbol })
     }
     case 'CLAIM_REWARDS': {
       const transfer = tokenTransferOf(

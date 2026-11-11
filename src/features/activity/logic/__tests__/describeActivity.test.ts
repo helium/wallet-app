@@ -90,6 +90,36 @@ describe('describeActivity', () => {
     )
   })
 
+  it('describes a token transfer with no destination as burned', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const [reward] = tx.tokenTransfers
+    const burn = { ...reward, toUserAccount: '' }
+    const burnTx = { ...tx, type: 'TRANSFER', tokenTransfers: [burn, burn] }
+
+    expect(describeFor(burnTx, REWARD_SENDER)).toBe(
+      `Burned ${amountOf(reward.tokenAmount + reward.tokenAmount, 8)} HNT`,
+    )
+  })
+
+  it('gives a burn mixed with a send of the wallet no description', async () => {
+    const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
+    const [reward] = tx.tokenTransfers
+    const burn = { ...reward, toUserAccount: '' }
+
+    expect(
+      describeFor(
+        { ...tx, type: 'TRANSFER', tokenTransfers: [reward, burn] },
+        REWARD_SENDER,
+      ),
+    ).toBe('')
+    expect(
+      describeFor(
+        { ...tx, type: 'TRANSFER', tokenTransfers: [burn, reward] },
+        REWARD_SENDER,
+      ),
+    ).toBe('')
+  })
+
   it('sums every reward transfer of a claim', async () => {
     const tx = withHntMetadata(await rowFor(REWARD_CLAIM))
     const [reward] = tx.tokenTransfers
