@@ -1761,6 +1761,8 @@ export default {
     errors: {
       destinationChanged:
         'This migration was started for a different World wallet. Sign in with that account to continue.',
+      emptyPage:
+        'The server returned no transactions to send. Nothing was sent for this batch.',
     },
     success: {
       title: 'Migration complete',
