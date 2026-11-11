@@ -115,6 +115,8 @@ type TokenTransfer = {
   fromTokenAccount: string
   toTokenAccount: string
   tokenAmount: number
+  // Set from Parsed Events only. Enhanced does not give it.
+  decimals?: number
   mint: string
   tokenMetadata?: TokenMetadata
 }
@@ -148,7 +150,7 @@ export type EnrichedTransaction = {
   signers: string[]
   description: string
   type: string
-  source: string
+  source?: string
   fee: number
   signature: string
   slot: number
@@ -156,32 +158,24 @@ export type EnrichedTransaction = {
   transactionError: any
   nativeTransfers: NativeTransfer[]
   tokenTransfers: TokenTransfer[]
-  accountData: {
+  accountData?: {
     account: string
     nativeBalanceChange: number
     tokenBalanceChanges: TokenBalanceChange[]
   }
   events: {
-    compressed: [
-      {
-        assetId: string
-        innerInstructionIndex: number
-        instructionIndex: number
-        leafIndex: number
-        treeId: string
-        type: string
-        metadata: any
-      },
-      {
-        assetId: string
-        innerInstructionIndex: number
-        instructionIndex: number
-        leafIndex: number
-        treeId: string
-        type: string
-      },
-    ]
-    nft: {
+    compressed?: {
+      assetId: string
+      innerInstructionIndex: number
+      instructionIndex: number
+      leafIndex: number
+      treeId: string
+      type: string
+      oldLeafOwner?: string
+      newLeafOwner?: string
+      metadata: any
+    }[]
+    nft?: {
       description: string
       type: string
       source: string
@@ -198,7 +192,7 @@ export type EnrichedTransaction = {
         tokenStandard: string
       }[]
     }
-    swap: {
+    swap?: {
       nativeInput: NativeTokenPayload
       nativeOutput: NativeTokenPayload
       tokenInputs: TokenPayload[]

@@ -1,0 +1,414 @@
+[
+  {
+    "signature": "53bmbS7T2B15WSZRmgUPmHkavw31aDzwEFz1xAiJ5rneEiiJbp4j5cH5HLXrsi9gyk5NnLnvx5R18Xg786E6oWMF",
+    "parserStatus": "OK",
+    "parsed": {
+      "slot": 365781623,
+      "blockTime": 1757461816,
+      "fee": 5001,
+      "feePayer": "cronjz7v2xsWdXr8BVz38ihi5DTWPihGZKuRr6vSPEU",
+      "transactionStatus": "ERROR",
+      "error": { "InstructionError": [2, { "Custom": 3012 }] },
+      "decodedError": null,
+      "nativeTransfers": [],
+      "tokenTransfers": [],
+      "summary": null,
+      "instructions": [
+        {
+          "instructionIndex": 0,
+          "innerInstructionIndex": null,
+          "stackHeight": 1,
+          "programId": "ComputeBudget111111111111111111111111111111",
+          "rawAccounts": [],
+          "rawData": "KjfbG3",
+          "summary": null,
+          "programName": "compute_budget",
+          "instructionName": "set_compute_unit_limit",
+          "decoded": { "args": { "units": "981468" }, "accounts": [] }
+        },
+        {
+          "instructionIndex": 1,
+          "innerInstructionIndex": null,
+          "stackHeight": 1,
+          "programId": "ComputeBudget111111111111111111111111111111",
+          "rawAccounts": [],
+          "rawData": "3DdGGhkhJbjm",
+          "summary": null,
+          "programName": "compute_budget",
+          "instructionName": "set_compute_unit_price",
+          "decoded": { "args": { "micro_lamports": "1" }, "accounts": [] }
+        },
+        {
+          "instructionIndex": 2,
+          "innerInstructionIndex": null,
+          "stackHeight": 1,
+          "programId": "tuktukUrfhXT6ZT77QTU8RQtvgL967uRuVagWF57zVA",
+          "rawAccounts": [
+            "cronjz7v2xsWdXr8BVz38ihi5DTWPihGZKuRr6vSPEU",
+            "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+            "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+            "7mPAa7JrZuc2CmmP4fCXHb23pCH64mRDEfHuo5RKLgZ5",
+            "11111111111111111111111111111111",
+            "Sysvar1nstructions1111111111111111111111111",
+            "HUkLp9NGFuVPtWkjdkuTPGnCtg87JTw2BcZxmUJy5w6L",
+            "8m6iyXwcu8obaXdqKwzBqHE5HM2tRZZfSXV5qNALiPk4",
+            "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+            "BmfPk1dpkv4dFzsAezoZhqWDW5DozG5sbzSNexABsVhN",
+            "HGGDeL2MqHc2UbPaiV1hAYFHGfdGEWSyZtYKYmqeBCDF",
+            "5KcroD4Ge2TSmXkdGAd5etcjPvjuTQS4zJcFN7QDXhcN",
+            "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+            "4oxuHnWo53k3wE58UAtMJ2fJoKtxmTzeUNEETMfen136",
+            "57fTRWKQ2x3NoNerWQi5mkij8f4vvcsfV1B6hfYKG1M5",
+            "hcrLPFgFUY6sCUKzqLWxXx5bntDiDCrAZVcrXfx9AHu",
+            "BQ3MCuTT5zVBhNfQ4SjMh3NPVhFy73MPV8rjfq5d1zie",
+            "11111111111111111111111111111111",
+            "Ef9QbnV1J26t2npunSwG145wZ28iyAk9fFskKnrhtjLv",
+            "5Tzdy3Nj6zPxuLUQqLojhn9StEHfPNuHWXmUoG1116DR",
+            "An7HWpgxQPvz9rgBzfgJJQELcN7DW6vZv23kh4E2YnBb",
+            "Gm9xDCJawDEKDrrQW6haw94gABaYzQwCq4ZQU8h8bd22",
+            "7uEkGcB2Fgjm49JAoEmVrA3UYWHXV2fusZyX7eHKwEz6",
+            "4BjyKhiECq2ou2QH856KJtwNUknNkdngynumFHh8tAJX"
+          ],
+          "rawData": "7WagA6vKE45ZX2fkqcf8Va",
+          "summary": null,
+          "programName": "tuktuk",
+          "instructionName": "run_task_v0",
+          "decoded": {
+            "args": { "args": { "free_task_ids": [21842, 21844] } },
+            "accounts": [
+              {
+                "name": "crank_turner",
+                "pubkey": "cronjz7v2xsWdXr8BVz38ihi5DTWPihGZKuRr6vSPEU",
+                "isSigner": true,
+                "isWritable": true
+              },
+              {
+                "name": "rent_refund",
+                "pubkey": "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+                "isSigner": false,
+                "isWritable": true
+              },
+              {
+                "name": "task_queue",
+                "pubkey": "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+                "isSigner": false,
+                "isWritable": true
+              },
+              {
+                "name": "task",
+                "pubkey": "7mPAa7JrZuc2CmmP4fCXHb23pCH64mRDEfHuo5RKLgZ5",
+                "isSigner": false,
+                "isWritable": true
+              },
+              {
+                "name": "system_program",
+                "pubkey": "11111111111111111111111111111111",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "sysvar_instructions",
+                "pubkey": "Sysvar1nstructions1111111111111111111111111",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount1",
+                "pubkey": "HUkLp9NGFuVPtWkjdkuTPGnCtg87JTw2BcZxmUJy5w6L",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount2",
+                "pubkey": "8m6iyXwcu8obaXdqKwzBqHE5HM2tRZZfSXV5qNALiPk4",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount3",
+                "pubkey": "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount4",
+                "pubkey": "BmfPk1dpkv4dFzsAezoZhqWDW5DozG5sbzSNexABsVhN",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount5",
+                "pubkey": "HGGDeL2MqHc2UbPaiV1hAYFHGfdGEWSyZtYKYmqeBCDF",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount6",
+                "pubkey": "5KcroD4Ge2TSmXkdGAd5etcjPvjuTQS4zJcFN7QDXhcN",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount7",
+                "pubkey": "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount8",
+                "pubkey": "4oxuHnWo53k3wE58UAtMJ2fJoKtxmTzeUNEETMfen136",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount9",
+                "pubkey": "57fTRWKQ2x3NoNerWQi5mkij8f4vvcsfV1B6hfYKG1M5",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount10",
+                "pubkey": "hcrLPFgFUY6sCUKzqLWxXx5bntDiDCrAZVcrXfx9AHu",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount11",
+                "pubkey": "BQ3MCuTT5zVBhNfQ4SjMh3NPVhFy73MPV8rjfq5d1zie",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount12",
+                "pubkey": "11111111111111111111111111111111",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount13",
+                "pubkey": "Ef9QbnV1J26t2npunSwG145wZ28iyAk9fFskKnrhtjLv",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount14",
+                "pubkey": "5Tzdy3Nj6zPxuLUQqLojhn9StEHfPNuHWXmUoG1116DR",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount15",
+                "pubkey": "An7HWpgxQPvz9rgBzfgJJQELcN7DW6vZv23kh4E2YnBb",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount16",
+                "pubkey": "Gm9xDCJawDEKDrrQW6haw94gABaYzQwCq4ZQU8h8bd22",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount17",
+                "pubkey": "7uEkGcB2Fgjm49JAoEmVrA3UYWHXV2fusZyX7eHKwEz6",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount18",
+                "pubkey": "4BjyKhiECq2ou2QH856KJtwNUknNkdngynumFHh8tAJX",
+                "isSigner": false,
+                "isWritable": false
+              }
+            ]
+          }
+        },
+        {
+          "instructionIndex": 3,
+          "innerInstructionIndex": null,
+          "stackHeight": 1,
+          "programId": "tuktukUrfhXT6ZT77QTU8RQtvgL967uRuVagWF57zVA",
+          "rawAccounts": [
+            "cronjz7v2xsWdXr8BVz38ihi5DTWPihGZKuRr6vSPEU",
+            "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+            "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+            "H37tWvXTjJBchuUdiE7VwXp1LRyyPxeodq4z5ZKK6sGz",
+            "11111111111111111111111111111111",
+            "Sysvar1nstructions1111111111111111111111111",
+            "HUkLp9NGFuVPtWkjdkuTPGnCtg87JTw2BcZxmUJy5w6L",
+            "8m6iyXwcu8obaXdqKwzBqHE5HM2tRZZfSXV5qNALiPk4",
+            "Au72Dy7myNSNKjcSFvNSv6VeNnQ3NWxnxsVfMG7sVmPd",
+            "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+            "EneCLfkxEJzCaU3Ns6cxJTGbb2v5kJ79H59gacPRjhuB",
+            "HGGDeL2MqHc2UbPaiV1hAYFHGfdGEWSyZtYKYmqeBCDF",
+            "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+            "8ELHxcAA7Z3xpDy1xGjzkUZcdYWt7suHS1RrkQV53a9M",
+            "4f8icxMa7hCVGBBURwJxvheUmz4shrjXE8VvNm1FTTe2",
+            "hcrLPFgFUY6sCUKzqLWxXx5bntDiDCrAZVcrXfx9AHu",
+            "BQ3MCuTT5zVBhNfQ4SjMh3NPVhFy73MPV8rjfq5d1zie",
+            "BmgjnptHZ9JYA2ZkyzmfMv85WMoY4DuCBEDSqA6TNh97",
+            "11111111111111111111111111111111",
+            "7TmjnWTzma9m28tirJpESYj5Q3cUJAF5PNpNcj1hrhu9",
+            "Gm9xDCJawDEKDrrQW6haw94gABaYzQwCq4ZQU8h8bd22",
+            "HBVQqwixDQRSmBXdDJzT3EFUg6PkQgBG1vvu2teGLUR8",
+            "4qLL6XXCkn4MerkzeNKA2e44DnLqH4KDt1kTyfz3Zx4e",
+            "39RLvXpWHgb4s6aKTahE8eTPAwvqcDD2ciqz9NYZwgPQ"
+          ],
+          "rawData": "7WagA6vKE45ZX2fktzFxmq",
+          "summary": null,
+          "programName": "tuktuk",
+          "instructionName": "run_task_v0",
+          "decoded": {
+            "args": { "args": { "free_task_ids": [17622, 17627] } },
+            "accounts": [
+              {
+                "name": "crank_turner",
+                "pubkey": "cronjz7v2xsWdXr8BVz38ihi5DTWPihGZKuRr6vSPEU",
+                "isSigner": true,
+                "isWritable": true
+              },
+              {
+                "name": "rent_refund",
+                "pubkey": "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+                "isSigner": false,
+                "isWritable": true
+              },
+              {
+                "name": "task_queue",
+                "pubkey": "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+                "isSigner": false,
+                "isWritable": true
+              },
+              {
+                "name": "task",
+                "pubkey": "H37tWvXTjJBchuUdiE7VwXp1LRyyPxeodq4z5ZKK6sGz",
+                "isSigner": false,
+                "isWritable": true
+              },
+              {
+                "name": "system_program",
+                "pubkey": "11111111111111111111111111111111",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "sysvar_instructions",
+                "pubkey": "Sysvar1nstructions1111111111111111111111111",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount1",
+                "pubkey": "HUkLp9NGFuVPtWkjdkuTPGnCtg87JTw2BcZxmUJy5w6L",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount2",
+                "pubkey": "8m6iyXwcu8obaXdqKwzBqHE5HM2tRZZfSXV5qNALiPk4",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount3",
+                "pubkey": "Au72Dy7myNSNKjcSFvNSv6VeNnQ3NWxnxsVfMG7sVmPd",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount4",
+                "pubkey": "H39gEszvsi6AT4rYBiJTuZHJSF5hMHy6CKGTd7wzhsg7",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount5",
+                "pubkey": "EneCLfkxEJzCaU3Ns6cxJTGbb2v5kJ79H59gacPRjhuB",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount6",
+                "pubkey": "HGGDeL2MqHc2UbPaiV1hAYFHGfdGEWSyZtYKYmqeBCDF",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount7",
+                "pubkey": "hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount8",
+                "pubkey": "8ELHxcAA7Z3xpDy1xGjzkUZcdYWt7suHS1RrkQV53a9M",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount9",
+                "pubkey": "4f8icxMa7hCVGBBURwJxvheUmz4shrjXE8VvNm1FTTe2",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount10",
+                "pubkey": "hcrLPFgFUY6sCUKzqLWxXx5bntDiDCrAZVcrXfx9AHu",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount11",
+                "pubkey": "BQ3MCuTT5zVBhNfQ4SjMh3NPVhFy73MPV8rjfq5d1zie",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount12",
+                "pubkey": "BmgjnptHZ9JYA2ZkyzmfMv85WMoY4DuCBEDSqA6TNh97",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount13",
+                "pubkey": "11111111111111111111111111111111",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount14",
+                "pubkey": "7TmjnWTzma9m28tirJpESYj5Q3cUJAF5PNpNcj1hrhu9",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount15",
+                "pubkey": "Gm9xDCJawDEKDrrQW6haw94gABaYzQwCq4ZQU8h8bd22",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount16",
+                "pubkey": "HBVQqwixDQRSmBXdDJzT3EFUg6PkQgBG1vvu2teGLUR8",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount17",
+                "pubkey": "4qLL6XXCkn4MerkzeNKA2e44DnLqH4KDt1kTyfz3Zx4e",
+                "isSigner": false,
+                "isWritable": false
+              },
+              {
+                "name": "remainingAccount18",
+                "pubkey": "39RLvXpWHgb4s6aKTahE8eTPAwvqcDD2ciqz9NYZwgPQ",
+                "isSigner": false,
+                "isWritable": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+]

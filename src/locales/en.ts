@@ -368,6 +368,17 @@ export default {
       'NFTs sent to you may contain links to scams. Do not share your secret words with anyone, or sign transactions on unknown websites.',
     showAnyway: 'Show me anyway',
     compressedNFTDescription: 'Minted {{ count }} {{ symbol }}(s).',
+    descriptions: {
+      sent: 'Sent {{amount}} {{symbol}}',
+      received: 'Received {{amount}} {{symbol}}',
+      burned: 'Burned {{amount}} {{symbol}}',
+      claimed: 'Claimed {{amount}} {{symbol}}',
+      hotspotOnboarded: 'Hotspot onboarded',
+      sentNFT: 'Sent {{name}}',
+      receivedNFT: 'Received {{name}}',
+      compressedNFT: 'Compressed NFT',
+      mintedNFT: 'Minted a compressed NFT',
+    },
     enrichedTransactionTypes: {
       UNKNOWN: 'App Interaction',
       NFT_BID: 'NFT Bid',
@@ -445,6 +456,9 @@ export default {
       INITIALIZE_ACCOUNT: 'Initialize Account',
       TOKEN_MINT: 'Token Minted!',
       COMPRESSED_NFT_MINT: 'Compressed NFT Minted!',
+      COMPRESSED_NFT_TRANSFER: 'Compressed NFT Transfer',
+      COMPRESSED_NFT_UPDATE_METADATA: 'Compressed NFT Updated',
+      HOTSPOT_ONBOARDED: 'Hotspot Onboarded',
     },
   },
   changeRewardsRecipientScreen: {

@@ -85,7 +85,6 @@ import {
 } from '@solana/spl-token'
 import {
   AccountMeta,
-  AddressLookupTableAccount,
   Cluster,
   ComputeBudgetProgram,
   ConfirmedSignatureInfo,
@@ -110,6 +109,13 @@ import { withPriorityFees } from '@utils/priorityFees'
 import axios from 'axios'
 import bs58 from 'bs58'
 import Config from 'react-native-config'
+import {
+  ActivityRow,
+  ParsedEventsItem,
+  toActivityRows,
+} from '../features/activity/logic/parsedEvents'
+import { describeActivity } from '../features/activity/logic/describeActivity'
+import { attachSigners, signersOf } from '../features/activity/logic/signers'
 import { Activity, Payment } from '../types/activity'
 import {
   Collectable,
@@ -126,7 +132,7 @@ import {
   MOBILE_LAZY_KEY,
   Mints,
 } from './constants'
-import { decimalSeparator, groupSeparator } from './i18n'
+import i18n, { decimalSeparator, groupSeparator } from './i18n'
 import * as Logger from './logger'
 import sleep from './sleep'
 
@@ -1507,7 +1513,9 @@ export const getAllTransactions = async (
   const baseUrl =
     cluster === 'devnet' ? Config.DEVNET_RPC_URL : Config.MAINNET_RPC_URL
   const url = new URL(baseUrl)
-  url.pathname = '/v0/transactions'
+  // Devnet has no Parsed Events, so it stays on Enhanced Transactions.
+  url.pathname =
+    cluster === 'devnet' ? '/v0/transactions' : '/v1/parsed-events/transactions'
   const parseTransactionsUrl = url.toString()
   if (!baseUrl) {
     throw new Error(`Missing RPC URL configuration for cluster: ${cluster}`)
@@ -1532,71 +1540,15 @@ export const getAllTransactions = async (
       }
       return acc
     }, {} as { [key: string]: VersionedTransactionResponse })
-    const cachedLuts: { [key: string]: AddressLookupTableAccount } = {}
-    // eslint-disable-next-line no-restricted-syntax
-    for (const rawTx of Object.values(txs)) {
-      const message = rawTx?.transaction.message
-      if (message) {
-        const { addressTableLookups } = message
-        // eslint-disable-next-line no-restricted-syntax
-        for (const addressTableLookup of addressTableLookups) {
-          if (!cachedLuts[addressTableLookup.accountKey.toBase58()]) {
-            const result = await conn?.getAddressLookupTable(
-              addressTableLookup.accountKey,
-            )
-            if (result.value) {
-              cachedLuts[addressTableLookup.accountKey.toBase58()] =
-                result.value
-            }
-          }
-        }
-      }
-    }
 
     // Annotate the transactions with their signers
-    const txList = await Promise.all(
-      sigs.map(async (tx) => {
-        // Yes, this is extremely gross. It's also the only way to get the signers
-        // on a versioned tx.
-        const rawTx = txs[tx.signature]
-        const message = rawTx?.transaction.message
-        if (message) {
-          const { addressTableLookups } = message
-          const addressLookupTableAccounts: Array<AddressLookupTableAccount> =
-            []
-          // eslint-disable-next-line no-restricted-syntax
-          for (const addressTableLookup of addressTableLookups) {
-            addressLookupTableAccounts.push(
-              cachedLuts[addressTableLookup.accountKey.toBase58()],
-            )
-          }
-          const accountKeys = message.getAccountKeys({
-            addressLookupTableAccounts,
-          })
-          return {
-            ...tx,
-            signers: [
-              ...new Set(
-                message.compiledInstructions
-                  .map((ix) =>
-                    ix.accountKeyIndexes.filter((idx) =>
-                      message.isAccountSigner(idx),
-                    ),
-                  )
-                  .flat(),
-              ),
-            ]
-              .map((idx) => accountKeys.get(idx)?.toBase58())
-              .filter(truthy),
-          }
-        }
-
-        return {
-          ...tx,
-          signers: [],
-        }
-      }),
-    )
+    const txList = sigs.map((tx) => {
+      const message = txs[tx.signature]?.transaction.message
+      return {
+        ...tx,
+        signers: message ? signersOf(message) : [],
+      }
+    })
 
     if (cluster !== 'mainnet-beta' && cluster !== 'devnet') {
       return txList
@@ -1606,32 +1558,48 @@ export const getAllTransactions = async (
       transactions: sigList,
     })
 
-    const allTxnsWithMetadata: EnrichedTransaction[] = await Promise.all(
-      data.map(async (tx: EnrichedTransaction, index: number) => {
-        // eslint-disable-next-line no-param-reassign
-        tx.signers = txList[index].signers
+    const rows: ActivityRow[] =
+      cluster === 'devnet'
+        ? attachSigners(
+            Array.isArray(data) ? (data as EnrichedTransaction[]) : [],
+            txList,
+          )
+        : await toActivityRows(data as ParsedEventsItem[], txList)
+
+    const enrichedRows: ActivityRow[] = await Promise.all(
+      rows.map(async (tx) => {
+        if (!('tokenTransfers' in tx)) return tx
         try {
-          const firstTokenTransfer = tx.tokenTransfers[0]
-          if (firstTokenTransfer && firstTokenTransfer.mint) {
+          // Enrich the wallet's own transfer, so its row gets a symbol.
+          const walletTransferIndex = tx.tokenTransfers.findIndex(
+            (transfer) =>
+              transfer.fromUserAccount === address ||
+              transfer.toUserAccount === address,
+          )
+          const enrichIndex = Math.max(walletTransferIndex, 0)
+          const transferToEnrich = tx.tokenTransfers[enrichIndex]
+          if (transferToEnrich && transferToEnrich.mint) {
             const tokenMetadata = await getCollectableByMint(
-              new PublicKey(firstTokenTransfer.mint),
+              new PublicKey(transferToEnrich.mint),
               conn,
             )
 
             return {
               ...tx,
-              tokenTransfers: [
-                {
-                  ...firstTokenTransfer,
-                  tokenMetadata: {
-                    model: tokenMetadata?.model,
-                    name: tokenMetadata?.name,
-                    symbol: tokenMetadata?.symbol,
-                    uri: tokenMetadata?.uri,
-                    json: tokenMetadata?.json,
-                  },
-                },
-              ],
+              tokenTransfers: tx.tokenTransfers.map((transfer, index) =>
+                index === enrichIndex
+                  ? {
+                      ...transfer,
+                      tokenMetadata: {
+                        model: tokenMetadata?.model,
+                        name: tokenMetadata?.name,
+                        symbol: tokenMetadata?.symbol,
+                        uri: tokenMetadata?.uri,
+                        json: tokenMetadata?.json,
+                      },
+                    }
+                  : transfer,
+              ),
             }
           }
 
@@ -1682,6 +1650,25 @@ export const getAllTransactions = async (
         }
       }),
     )
+
+    // Enhanced writes its own description. Parsed Events does not, so build
+    // one from the type and the wallet, after the metadata is in.
+    const allTxnsWithMetadata: ActivityRow[] =
+      cluster === 'devnet'
+        ? enrichedRows
+        : enrichedRows.map((tx) => {
+            if (!('tokenTransfers' in tx)) return tx
+            // One row that throws loses only its description, not the page.
+            try {
+              return {
+                ...tx,
+                description: describeActivity(tx, address, i18n.t),
+              }
+            } catch (e) {
+              Logger.error(e)
+              return { ...tx, description: '' }
+            }
+          })
 
     // Combine and sort all txns by date in descending order
     allTxnsWithMetadata.sort(
