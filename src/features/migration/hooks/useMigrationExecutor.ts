@@ -1,7 +1,7 @@
-import { TERMINAL_STATUSES } from '@hooks/useTransactionBatchStatus'
 import { useEmbeddedSolanaWallet } from '@privy-io/expo'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useBlockchainApi } from '@storage/BlockchainApiProvider'
+import { createBatchView } from '@utils/batchSubmit'
 import sleep from '@utils/sleep'
 import { useCallback, useState } from 'react'
 import { useSolana } from '../../../solana/SolanaProvider'
@@ -54,14 +54,17 @@ export const useMigrationExecutor = (
 
       const pollStatus = async (batchId: string): Promise<BatchStatus> => {
         const start = Date.now()
+        const view = createBatchView()
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          // eslint-disable-next-line no-await-in-loop
-          const status = await client.transactions.get({
-            id: batchId,
-            commitment: 'confirmed',
-          })
-          if (TERMINAL_STATUSES.includes(status.status)) return status
+          const status = view(
+            // eslint-disable-next-line no-await-in-loop
+            await client.transactions.get({
+              id: batchId,
+              commitment: 'confirmed',
+            }),
+          )
+          if (status.status !== 'pending') return status
           if (Date.now() - start > POLL_TIMEOUT_MS) return status
           // eslint-disable-next-line no-await-in-loop
           await sleep(POLL_INTERVAL_MS)

@@ -16,6 +16,9 @@ const txData = (n: number) => ({
   parallel: false,
 })
 
+const serverError = (code: string, status: number) =>
+  Object.assign(new Error(code), { defined: true, code, status })
+
 const makeDeps = (
   overrides: Partial<ExecutorDeps> = {},
 ): { deps: ExecutorDeps; log: string[] } => {
@@ -513,10 +516,10 @@ describe('runMigration', () => {
 
     it.each([
       [
-        'a definite 4xx submit',
+        'a definite submit rejection',
         {
           submitBatch: async () => {
-            throw jitoError()
+            throw serverError('SIMULATION_FAILED', 400)
           },
         },
       ],
@@ -614,12 +617,9 @@ describe('runMigration', () => {
       expect(last.pendingBatchId).toBeUndefined()
     })
 
-    it('a page-2 submit with a definite 400 on its first attempt is not flagged unconfirmed', async () => {
+    it('a page-2 submit with a definite rejection on its first attempt is not flagged unconfirmed', async () => {
       const { deps, sessions } = failSubmitOnPage2(() =>
-        Object.assign(new Error('bad request'), {
-          status: 400,
-          data: { failedTransactionIndex: 0 },
-        }),
+        serverError('SIMULATION_FAILED', 400),
       )
       const outcome = await runMigration(input, deps)
       expect(outcome.status).toBe('failed')

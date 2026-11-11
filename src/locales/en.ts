@@ -1337,6 +1337,9 @@ export default {
         'Transaction is still pending. Check Activity before you try again.',
       timeoutPage:
         'Batch {{page}} is still pending. Check Activity before you try again.',
+      empty: 'The server returned no transactions to send. Nothing was sent.',
+      emptyPage:
+        'The server returned no transactions to send for batch {{page}}. Nothing was sent for that batch.',
       submit:
         'Could not confirm the transaction was sent: {{reason}}. Check Activity before you try again.',
       submitPage:
