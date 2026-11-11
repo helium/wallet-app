@@ -184,6 +184,9 @@ export const runMigration = async <TSigned = unknown>(
     // Set just before this page's submit call, so an error after it may mean
     // the batch was sent.
     let submitStarted = false
+    // Set when any submit attempt threw without a definite rejection: that
+    // attempt may have landed even if a later attempt was rejected.
+    let ambiguousAttempt = false
     try {
       deps.onProgress({ phase: 'requesting', batch })
       // Bind to a loop-local const so the retry closure captures this batch's
@@ -204,10 +207,14 @@ export const runMigration = async <TSigned = unknown>(
       deps.onProgress({ phase: 'submitting', batch })
       submitStarted = true
       // eslint-disable-next-line no-await-in-loop
-      const { batchId } = await withRetry(
-        () => deps.submitBatch(signed, data),
-        sleep,
-      )
+      const { batchId } = await withRetry(async () => {
+        try {
+          return await deps.submitBatch(signed, data)
+        } catch (e) {
+          if (!isRejection(e)) ambiguousAttempt = true
+          throw e
+        }
+      }, sleep)
       inFlightBatchId = batchId
       inFlightNext = out.hasMore && out.nextParams ? out.nextParams : null
 
@@ -276,25 +283,45 @@ export const runMigration = async <TSigned = unknown>(
       await deps.persist(snapshot('complete'))
       return { status: 'complete', confirmedSignatures, failedSignatures }
     } catch (err) {
-      // Page 1 with no batch id: if nothing was sent (request or sign failed)
-      // or the submit was a definite rejection, rethrow so the caller retries
-      // the original selection. Otherwise the submit may have landed (lost
-      // response, 5xx after send): save a failed snapshot flagged
-      // unconfirmedSubmit so the user checks Activity before a retry.
-      const firstPageUnsent = batch === 1 && !inFlightBatchId
-      if (firstPageUnsent && (!submitStarted || isRejection(err))) throw err
-      if (firstPageUnsent) {
-        // eslint-disable-next-line no-await-in-loop
-        await deps.persist(
-          snapshot('failed', undefined, errorMessage(err), true),
-        )
+      // With no batch id, the page is definitely unsent when nothing was
+      // submitted (request or sign failed) or every submit attempt was a
+      // definite rejection. Otherwise a submit started and some attempt may
+      // have landed (lost response, 5xx after send): flag the snapshot
+      // unconfirmedSubmit so the user checks Activity before a retry. On page 1
+      // a definitely unsent page rethrows so the caller retries the original
+      // selection.
+      const noBatchId = !inFlightBatchId
+      const definitelyUnsent =
+        noBatchId && (!submitStarted || (isRejection(err) && !ambiguousAttempt))
+      const unconfirmed = noBatchId && !definitelyUnsent
+      if (batch === 1 && definitelyUnsent) throw err
+      if (batch === 1 && unconfirmed) {
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          await deps.persist(
+            snapshot('failed', undefined, errorMessage(err), true),
+          )
+        } catch (persistErr) {
+          console.warn('Failed to persist migration session', persistErr)
+        }
         return { status: 'failed', confirmedSignatures, failedSignatures }
       }
       // Save this page's input (the last nextParams) so the retry resumes here
       // and never re-sends the original selection. A 4xx reaches this point on
       // its first attempt; the retry is the user's single request.
-      // eslint-disable-next-line no-await-in-loop
-      await deps.persist(snapshot('failed', inFlightBatchId, errorMessage(err)))
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await deps.persist(
+          snapshot(
+            'failed',
+            inFlightBatchId,
+            errorMessage(err),
+            unconfirmed || undefined,
+          ),
+        )
+      } catch (persistErr) {
+        console.warn('Failed to persist migration session', persistErr)
+      }
       return { status: 'failed', confirmedSignatures, failedSignatures }
     }
   }

@@ -38,8 +38,9 @@ export type MigrationSession = {
   // The error message when a request, sign, submit or poll threw on `page`.
   // Cleared by the next snapshot that does not fail.
   failure?: string
-  // Set with failure when a page-1 submit threw without a definite rejection:
-  // the batch may have been sent, so the user checks Activity before a retry.
+  // Set with failure when a submit on any page threw with no batch id and some
+  // attempt was not a definite rejection: the batch may have been sent, so the
+  // user checks Activity before a retry.
   unconfirmedSubmit?: boolean
   updatedAt: number
 } & SignatureTally

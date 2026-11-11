@@ -78,6 +78,8 @@ export type PageFailure =
   | { kind: 'timeout' }
   | { kind: 'submit'; cause: unknown }
   | { kind: 'rejected'; cause: unknown }
+  | { kind: 'sign'; cause: unknown }
+  | { kind: 'request'; cause: unknown }
 
 export type PageFailureInfo = {
   failure: PageFailure
@@ -179,8 +181,16 @@ export const submitPages = async <P extends Page>(
   }
 
   while (current.transactionData.transactions.length > 0) {
-    // eslint-disable-next-line no-await-in-loop
-    const signed = await deps.signPage(current)
+    let signed: TransactionData
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      signed = await deps.signPage(current)
+    } catch (cause) {
+      // Before any batch is sent, a sign error (a user rejection) is thrown as
+      // is. After one, it goes through fail so the copy reports the sent pages.
+      if (batchIds.length > 0) throw fail({ kind: 'sign', cause })
+      throw cause
+    }
 
     let batchId: string
     try {
@@ -207,9 +217,13 @@ export const submitPages = async <P extends Page>(
     }
 
     if (isLastPage) break
-    // eslint-disable-next-line no-await-in-loop
-    current = await nextPage()
     page += 1
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      current = await nextPage()
+    } catch (cause) {
+      throw fail({ kind: 'request', cause })
+    }
   }
 
   return { batchIds, signatures }
@@ -225,6 +239,8 @@ const optionsFor = (failure: PageFailure): Record<string, unknown> => {
   switch (failure.kind) {
     case 'submit':
     case 'rejected':
+    case 'sign':
+    case 'request':
       return {
         reason: reasonOf(failure.cause),
         interpolation: { escapeValue: false },

@@ -1323,6 +1323,10 @@ export default {
         'Could not confirm batch {{page}} was sent: {{reason}}. Check Activity before you try again.',
       rejected: 'Transaction was rejected: {{reason}}.',
       rejectedPage: 'Batch {{page}} was rejected: {{reason}}.',
+      sign: 'Transaction was not signed: {{reason}}.',
+      signPage: 'Batch {{page}} was not signed: {{reason}}.',
+      request: 'Could not load the transaction: {{reason}}.',
+      requestPage: 'Could not load batch {{page}}: {{reason}}.',
       confirmedBefore: '{{count}} earlier batch confirmed.',
       confirmedBefore_plural: '{{count}} earlier batches confirmed.',
       sentBefore:
@@ -1730,6 +1734,10 @@ export default {
       unconfirmedBody:
         'Could not confirm your migration was sent. Check Activity before you try again.',
       retryPage: 'Retry from batch {{page}}',
+    },
+    errors: {
+      destinationChanged:
+        'This migration was started for a different World wallet. Sign in with that account to continue.',
     },
     success: {
       title: 'Migration complete',

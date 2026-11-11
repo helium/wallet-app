@@ -52,6 +52,7 @@ import {
 } from '../utils/transactionUtils'
 import {
   describePageFailure,
+  PagedSubmitError,
   pollForCompletion,
   submitPages,
 } from '../utils/batchSubmit'
@@ -589,57 +590,99 @@ export default () => {
       }
 
       const batchIds: string[] = []
+      // Earlier networks whose last batch was sent but not polled yet.
+      let unpolled = 0
 
       // Process each network sequentially, handling hasMore pagination
       const processNetwork = async (network: 'hnt' | 'iot' | 'mobile') => {
         const requestPage = () =>
           client.hotspots.claimRewards({ walletAddress, network })
 
-        const result = await submitPages(await requestPage(), {
-          signPage: async ({ transactionData }) => {
-            const decision = await walletSignBottomSheetRef.show({
-              type: WalletStandardMessageTypes.signTransaction,
-              url: '',
-              header: t('collectablesScreen.hotspots.claimAllRewards'),
-              message: t('transactions.signClaimRewardsTxn'),
-              serializedTxs: transactionData.transactions.map(
-                ({ serializedTransaction }) =>
-                  Buffer.from(serializedTransaction, 'base64'),
+        let first: Awaited<ReturnType<typeof requestPage>>
+        try {
+          first = await requestPage()
+        } catch (cause) {
+          if (unpolled > 0)
+            throw new Error(
+              describePageFailure(
+                t,
+                {
+                  failure: { kind: 'request', cause },
+                  page: 1,
+                  confirmedCount: 0,
+                  network: network.toUpperCase(),
+                },
+                unpolled,
               ),
-              renderer: () => (
-                <MessagePreview
-                  warning={t('collectablesScreen.hotspots.claimAllRewards')}
-                />
+            )
+          throw cause
+        }
+
+        let result: Awaited<ReturnType<typeof submitPages>>
+        try {
+          result = await submitPages(first, {
+            signPage: async ({ transactionData }) => {
+              const decision = await walletSignBottomSheetRef.show({
+                type: WalletStandardMessageTypes.signTransaction,
+                url: '',
+                header: t('collectablesScreen.hotspots.claimAllRewards'),
+                message: t('transactions.signClaimRewardsTxn'),
+                serializedTxs: transactionData.transactions.map(
+                  ({ serializedTransaction }) =>
+                    Buffer.from(serializedTransaction, 'base64'),
+                ),
+                renderer: () => (
+                  <MessagePreview
+                    warning={t('collectablesScreen.hotspots.claimAllRewards')}
+                  />
+                ),
+              })
+
+              if (!decision) {
+                throw new Error('User rejected transaction')
+              }
+
+              return signTransactionData(anchorProvider.wallet, transactionData)
+            },
+            submitBatch: async (signed) => {
+              const { batchId } = await client.transactions.submit({
+                ...signed,
+                tag: signed.tag || `claim-rewards-${network}`,
+              })
+              queryClient.invalidateQueries({
+                queryKey: ['pendingTransactions'],
+              })
+              return batchId
+            },
+            pollBatch: (batchId) => pollForCompletion(client, batchId),
+            // The server recomputes the remaining claims, so the next page is the same request.
+            nextPage: requestPage,
+            // ClaimingRewardsScreen tracks each network's last batch.
+            waitForLastPage: false,
+            network: network.toUpperCase(),
+            // Counts earlier networks whose last batch was sent but not polled yet.
+            describeFailure: (info) => describePageFailure(t, info, unpolled),
+          })
+        } catch (cause) {
+          // A page-1 sign rejection on a later network is thrown as is; report
+          // what earlier networks sent.
+          if (!(cause instanceof PagedSubmitError) && unpolled > 0)
+            throw new Error(
+              describePageFailure(
+                t,
+                {
+                  failure: { kind: 'sign', cause },
+                  page: 1,
+                  confirmedCount: 0,
+                  network: network.toUpperCase(),
+                },
+                unpolled,
               ),
-            })
-
-            if (!decision) {
-              throw new Error('User rejected transaction')
-            }
-
-            return signTransactionData(anchorProvider.wallet, transactionData)
-          },
-          submitBatch: async (signed) => {
-            const { batchId } = await client.transactions.submit({
-              ...signed,
-              tag: signed.tag || `claim-rewards-${network}`,
-            })
-            queryClient.invalidateQueries({
-              queryKey: ['pendingTransactions'],
-            })
-            return batchId
-          },
-          pollBatch: (batchId) => pollForCompletion(client, batchId),
-          // The server recomputes the remaining claims, so the next page is the same request.
-          nextPage: requestPage,
-          // ClaimingRewardsScreen tracks each network's last batch.
-          waitForLastPage: false,
-          network: network.toUpperCase(),
-          // Earlier networks' last batches are sent but not polled yet.
-          describeFailure: (info) =>
-            describePageFailure(t, info, batchIds.length),
-        })
+            )
+          throw cause
+        }
         batchIds.push(...result.batchIds)
+        if (result.batchIds.length) unpolled += 1
       }
 
       // Process networks sequentially (can't parallelize due to wallet signing)

@@ -261,6 +261,44 @@ describe('submitPages', () => {
     expect(deps.submitBatch).not.toHaveBeenCalled()
   })
 
+  it('wraps a next-page error after a confirmed page as kind request', async () => {
+    const { first, deps } = setup({ pages: [page('a', true), page('b')] })
+    const cause = new Error('network')
+    deps.nextPage.mockRejectedValueOnce(cause)
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({
+      failure: { kind: 'request', cause },
+      page: 2,
+      confirmedCount: 1,
+    })
+  })
+
+  it('wraps a sign error on page 2 as kind sign', async () => {
+    const { first, deps } = setup({ pages: [page('a', true), page('b')] })
+    const cause = new Error('User rejected transaction')
+    deps.signPage.mockImplementationOnce(async (p: Page) => p.transactionData)
+    deps.signPage.mockRejectedValueOnce(cause)
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({ failure: { kind: 'sign', cause }, page: 2 })
+  })
+
+  it('throws a page-1 sign error as is, not as a PagedSubmitError', async () => {
+    const { first, deps } = setup({ pages: [page('a', true), page('b')] })
+    const cause = new Error('User rejected transaction')
+    deps.signPage.mockRejectedValueOnce(cause)
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBe(cause)
+    expect(err).not.toBeInstanceOf(PagedSubmitError)
+  })
+
   it('stops after a page with hasMore when there is no nextPage', async () => {
     const { first, deps } = setup({ pages: [page('a', true)] })
 
@@ -304,6 +342,19 @@ describe('pagedSubmit copy', () => {
       }),
     ).toContain(reason)
   })
+
+  it.each(['sign', 'request'] as const)(
+    'names the reason for a %s failure on any page',
+    (kind) => {
+      const failure = { kind, cause: new Error('User rejected') }
+      expect(
+        describePageFailure(i18n.t, { failure, page: 2, confirmedCount: 0 }),
+      ).toContain('User rejected')
+      expect(
+        describePageFailure(i18n.t, { failure, page: 1, confirmedCount: 0 }),
+      ).toContain('User rejected')
+    },
+  )
 
   it('tells the user a submit failure may have sent and to check Activity', () => {
     const failure = { kind: 'submit', cause: new Error('503') } as const

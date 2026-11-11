@@ -55,13 +55,14 @@ export const usePersistedMigrationResume = (
   const persist = useCallback(
     async (session: MigrationSession) => {
       if (!sourceWallet) return
+      // Keep the in-memory view live with the snapshot so screens read from
+      // `resume` alone — no shadow copy of the run's progress. Set it before
+      // the write so it holds the snapshot even when the write fails.
+      setResume(deriveResume(session))
       await AsyncStorage.setItem(
         keyFor(sourceWallet),
         serializeSession(session),
       )
-      // Keep the in-memory view live with what was just persisted so screens
-      // read from `resume` alone — no shadow copy of the run's progress.
-      setResume(deriveResume(session))
     },
     [sourceWallet],
   )

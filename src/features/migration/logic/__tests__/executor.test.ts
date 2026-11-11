@@ -494,6 +494,23 @@ describe('runMigration', () => {
       },
     )
 
+    it('a page-1 submit 5xx resolves failed even when persisting the failed snapshot rejects', async () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      const { deps } = makeDeps({
+        sleep: async () => {},
+        submitBatch: async () => {
+          throw Object.assign(new Error('server error'), { status: 503 })
+        },
+        persist: async (s) => {
+          if (s.status === 'failed') throw new Error('disk full')
+        },
+      })
+      await expect(runMigration(input, deps)).resolves.toMatchObject({
+        status: 'failed',
+      })
+      warn.mockRestore()
+    })
+
     it.each([
       [
         'a definite 4xx submit',
@@ -534,6 +551,96 @@ describe('runMigration', () => {
         expect(sessions).toEqual([])
       },
     )
+
+    it('a page-1 submit whose later attempt is a definite 400 stays unconfirmed when an earlier attempt was ambiguous', async () => {
+      const sessions: MigrationSession[] = []
+      let submits = 0
+      const { deps } = makeDeps({
+        sleep: async () => {},
+        submitBatch: async () => {
+          submits += 1
+          if (submits === 1) throw new Error('network down')
+          throw Object.assign(new Error('bad request'), {
+            status: 400,
+            data: { failedTransactionIndex: 0 },
+          })
+        },
+        persist: async (s) => {
+          sessions.push(s)
+        },
+      })
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('failed')
+      expect(sessions[sessions.length - 1].unconfirmedSubmit).toBe(true)
+    })
+
+    // Page 1 confirms; page 2's submit throws the given error.
+    const failSubmitOnPage2 = (
+      error: () => Error,
+      persist?: (s: MigrationSession, submits: number) => Promise<void>,
+    ) => {
+      const sessions: MigrationSession[] = []
+      let submits = 0
+      const { deps } = makeDeps({
+        sleep: async () => {},
+        requestMigrate: async () =>
+          ({
+            transactionData: txData(1),
+            hasMore: true,
+            nextParams: page(2),
+          } as MigrateOutput),
+        submitBatch: async () => {
+          submits += 1
+          if (submits === 1) return { batchId: 'b1' }
+          throw error()
+        },
+        persist: async (s) => {
+          sessions.push(s)
+          if (persist) await persist(s, submits)
+        },
+      })
+      return { deps, sessions }
+    }
+
+    it('a page-2 submit that fails with a 503 on every attempt saves a session flagged unconfirmed', async () => {
+      const { deps, sessions } = failSubmitOnPage2(() =>
+        Object.assign(new Error('server error'), { status: 503 }),
+      )
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('failed')
+      const last = sessions[sessions.length - 1]
+      expect(last.page).toBe(2)
+      expect(last.unconfirmedSubmit).toBe(true)
+      expect(last.pendingBatchId).toBeUndefined()
+    })
+
+    it('a page-2 submit with a definite 400 on its first attempt is not flagged unconfirmed', async () => {
+      const { deps, sessions } = failSubmitOnPage2(() =>
+        Object.assign(new Error('bad request'), {
+          status: 400,
+          data: { failedTransactionIndex: 0 },
+        }),
+      )
+      const outcome = await runMigration(input, deps)
+      expect(outcome.status).toBe('failed')
+      const last = sessions[sessions.length - 1]
+      expect(last.page).toBe(2)
+      expect(last.unconfirmedSubmit).toBeUndefined()
+    })
+
+    it('a page-2 submit failure resolves failed even when every persist after page 1 rejects', async () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      const { deps } = failSubmitOnPage2(
+        () => Object.assign(new Error('server error'), { status: 503 }),
+        async (_s, submits) => {
+          if (submits > 1) throw new Error('disk full')
+        },
+      )
+      await expect(runMigration(input, deps)).resolves.toMatchObject({
+        status: 'failed',
+      })
+      warn.mockRestore()
+    })
 
     it('a sign error on page 3 saves nextParams for the retry', async () => {
       const sessions: MigrationSession[] = []

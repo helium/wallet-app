@@ -101,6 +101,12 @@ describe('deriveResume', () => {
       'Unable to fit Jito tip instruction into the transaction bundle',
     )
   })
+  it('carries the unconfirmed-submit flag through for the retry screen', () => {
+    expect(
+      deriveResume({ ...base, status: 'failed', unconfirmedSubmit: true })
+        .unconfirmedSubmit,
+    ).toBe(true)
+  })
   it('defaults the page to 1 for a session saved before pages were tracked', () => {
     expect(deriveResume(base).page).toBe(1)
   })

@@ -36,6 +36,7 @@ import { RunOptions } from './logic/executor'
 import { nothingToMigrate, shortenMint } from './logic/assets'
 import { getEmbeddedWallet } from './logic/embeddedWallet'
 import { shouldShowSupport } from './logic/retry'
+import { retryScreenKeys } from './logic/retryScreen'
 import { MigrateInput, stepForOutcome } from './logic/session'
 import { SelectableToken } from './logic/types'
 
@@ -111,14 +112,26 @@ const MigrateToWorld = () => {
       if (solanaWallet.recover) {
         try {
           await solanaWallet.recover()
-          setStep((s) => (s === 'walletError' ? 'select' : s))
+          setStep((s) =>
+            s === 'walletError'
+              ? resume.canResume
+                ? stepForOutcome(resume.status)
+                : 'select'
+              : s,
+          )
           return
         } catch {
           // No existing wallet to recover — fall through to create().
         }
       }
       await solanaWallet.create()
-      setStep((s) => (s === 'walletError' ? 'select' : s))
+      setStep((s) =>
+        s === 'walletError'
+          ? resume.canResume
+            ? stepForOutcome(resume.status)
+            : 'select'
+          : s,
+      )
     } catch (err) {
       Logger.error(err)
       setCreateAttempts((n) => n + 1)
@@ -126,7 +139,7 @@ const MigrateToWorld = () => {
     } finally {
       creating.current = false
     }
-  }, [solanaWallet, setStep])
+  }, [solanaWallet, setStep, resume.canResume, resume.status])
 
   useEffect(() => {
     if (!user || creating.current || step === 'walletError') return
@@ -225,6 +238,14 @@ const MigrateToWorld = () => {
     // Forward the in-flight batch id so the executor re-polls it to terminal
     // before re-requesting — prevents re-sending a still-pending transfer. The
     // saved page and signatures keep the counts the retry screen shows.
+    if (
+      retryInput &&
+      destinationWallet &&
+      retryInput.destinationWallet !== destinationWallet
+    ) {
+      setError(t('migrateToWorld.errors.destinationChanged'))
+      return
+    }
     if (retryInput)
       execute(retryInput, returnStep, {
         pendingBatchId: resume.pendingBatchId,
@@ -242,6 +263,8 @@ const MigrateToWorld = () => {
     selection,
     buildInput,
     execute,
+    destinationWallet,
+    t,
   ])
 
   const goToWorld = useCallback(() => Linking.openURL(WORLD_URL), [])
@@ -363,24 +386,12 @@ const MigrateToWorld = () => {
         )
       case 'pending':
       case 'partial': {
-        // Parallel outcome screens keyed on the step: pending's body ignores the
-        // failed count, and each has its own primary action label. A batch that
-        // threw (resume.failure) names the batch and resumes from it.
-        const pageFailed = step === 'partial' && !!resume.failure
         const copyArgs = {
           moved: resume.movedCount,
           failed: resume.failedCount,
           page: resume.page,
         }
-        let bodyKey = `migrateToWorld.${step}.body`
-        if (pageFailed)
-          bodyKey = resume.unconfirmedSubmit
-            ? 'migrateToWorld.partial.unconfirmedBody'
-            : 'migrateToWorld.partial.pageFailedBody'
-        let primaryKey = 'migrateToWorld.partial.retry'
-        if (step === 'pending')
-          primaryKey = 'migrateToWorld.pending.checkStatus'
-        else if (pageFailed) primaryKey = 'migrateToWorld.partial.retryPage'
+        const { bodyKey, primaryKey } = retryScreenKeys(step, resume)
         return (
           <OutcomeStep
             title={t(`migrateToWorld.${step}.title`)}
