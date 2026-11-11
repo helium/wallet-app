@@ -29,6 +29,19 @@ export type MigrationSession = {
   // the server to recompute remaining transfers — otherwise a still-in-flight
   // token transfer gets rebuilt and double-sent. Cleared once a batch confirms.
   pendingBatchId?: string
+  // Set only with pendingBatchId: the input after the in-flight batch, null when
+  // that batch is the last page, absent when unknown (older sessions).
+  pendingNextInput?: MigrateInput | null
+  // The 1-based page that nextInput requests. Absent on sessions saved before
+  // pages were tracked, which read as page 1.
+  page?: number
+  // The error message when a request, sign, submit or poll threw on `page`.
+  // Cleared by the next snapshot that does not fail.
+  failure?: string
+  // Set with failure when a submit on any page threw with no batch id and some
+  // attempt was not a definite rejection: the batch may have been sent, so the
+  // user checks Activity before a retry.
+  unconfirmedSubmit?: boolean
   updatedAt: number
 } & SignatureTally
 
@@ -65,10 +78,18 @@ export type ResumeInfo = {
   input: MigrateInput | null
   movedCount: number
   failedCount: number
+  // Seeds a resumed run so its snapshots keep what already moved.
+  confirmedSignatures: string[]
   status: MigrationStatus
+  page: number
+  failure?: string
+  // See MigrationSession.unconfirmedSubmit.
+  unconfirmedSubmit?: boolean
   // Forwarded to the executor so a resumed run re-polls the in-flight batch
   // before re-requesting (see MigrationSession.pendingBatchId).
   pendingBatchId?: string
+  // See MigrationSession.pendingNextInput.
+  pendingNextInput?: MigrateInput | null
 }
 
 export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
@@ -78,15 +99,22 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       input: s.nextInput ?? s.originalInput,
       movedCount: s.confirmedSignatures.length,
       failedCount: s.failedSignatures.length,
+      confirmedSignatures: s.confirmedSignatures,
       status: s.status,
+      page: s.page ?? 1,
+      failure: s.failure,
+      unconfirmedSubmit: s.unconfirmedSubmit,
       pendingBatchId: s.pendingBatchId,
+      pendingNextInput: s.pendingNextInput,
     }
   return {
     canResume: false,
     input: null,
     movedCount: 0,
     failedCount: 0,
+    confirmedSignatures: [],
     status: 'idle',
+    page: 1,
     pendingBatchId: undefined,
   }
 }

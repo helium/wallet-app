@@ -64,26 +64,34 @@ const ClaimAllRewardsScreen = () => {
       setClaimError(undefined)
       setRedeeming(true)
       const claim = async () => {
-        const lazyKeys: PublicKey[] = []
-        if (pendingHntRewards && pendingHntRewards.gt(new BN(0))) {
-          lazyKeys.push(HNT_LAZY_KEY)
-        }
-        if (pendingIotRewards && pendingIotRewards.gt(new BN(0))) {
-          lazyKeys.push(IOT_LAZY_KEY)
-        }
-        if (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) {
-          lazyKeys.push(MOBILE_LAZY_KEY)
-        }
+        try {
+          const lazyKeys: PublicKey[] = []
+          if (pendingHntRewards && pendingHntRewards.gt(new BN(0))) {
+            lazyKeys.push(HNT_LAZY_KEY)
+          }
+          if (pendingIotRewards && pendingIotRewards.gt(new BN(0))) {
+            lazyKeys.push(IOT_LAZY_KEY)
+          }
+          if (pendingMobileRewards && pendingMobileRewards.gt(new BN(0))) {
+            lazyKeys.push(MOBILE_LAZY_KEY)
+          }
 
-        const batchId = await submitClaimAllRewards(
-          lazyKeys,
-          hotspotsWithMeta,
-          totalHotspots,
-        )
+          const batchIds = await submitClaimAllRewards(
+            lazyKeys,
+            hotspotsWithMeta,
+            totalHotspots,
+          )
 
-        navigation.replace('ClaimingRewardsScreen', { batchIds: [batchId] })
+          navigation.replace('ClaimingRewardsScreen', { batchIds })
 
-        setRedeeming(false)
+          setRedeeming(false)
+        } catch (e) {
+          setClaimError(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (e as any)?.response?.data?.error || (e as Error)?.message,
+          )
+          setRedeeming(false)
+        }
       }
 
       if (!hasEnoughSol) {
@@ -174,7 +182,6 @@ const ClaimAllRewardsScreen = () => {
                 variant="body2"
                 color="red500"
                 marginTop="xl"
-                numberOfLines={2}
                 textAlign="center"
               >
                 {claimError}

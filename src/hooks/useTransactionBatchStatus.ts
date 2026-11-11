@@ -1,19 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
+import {
+  TERMINAL_STATUSES,
+  mergeBatchStatuses,
+  type BatchStatus,
+} from '../utils/batchSubmit'
 
-export type BatchStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'failed'
-  | 'expired'
-  | 'partial'
-
-export const TERMINAL_STATUSES: BatchStatus[] = [
-  'confirmed',
-  'failed',
-  'expired',
-  'partial',
-]
+export { TERMINAL_STATUSES, type BatchStatus }
 
 export function useTransactionBatchesStatus(batchIds: string[] | null) {
   const client = useBlockchainApi()
@@ -42,18 +35,9 @@ export function useTransactionBatchesStatus(batchIds: string[] | null) {
     },
   })
 
-  const statuses = (data ?? []).map((batch) => batch.status as BatchStatus)
-  const [firstStatus] = statuses
-  let status: BatchStatus | undefined
-  if (data) {
-    if (statuses.some((s) => !TERMINAL_STATUSES.includes(s))) {
-      status = 'pending'
-    } else if (statuses.every((s) => s === firstStatus)) {
-      status = firstStatus
-    } else {
-      status = 'partial'
-    }
-  }
+  const status = data
+    ? mergeBatchStatuses(data.map((batch) => batch.status as BatchStatus))
+    : undefined
 
   return {
     status,

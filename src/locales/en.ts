@@ -1319,6 +1319,35 @@ export default {
     signSwapTxn: 'Sign this transaction to swap your tokens.',
     signGenericTxn: 'Sign this transaction to send your txn.',
     signClaimRewardsTxn: 'Sign this transaction to claim your rewards.',
+    pagedSubmit: {
+      network: '{{network}} rewards:',
+      failed: 'Transaction failed.',
+      failedPage: 'Batch {{page}} failed.',
+      expired: 'Transaction expired before it confirmed. Try again.',
+      expiredPage: 'Batch {{page}} expired before it confirmed. Try again.',
+      partial: 'Some transactions in this batch failed.',
+      partialPage: 'Some transactions in batch {{page}} failed.',
+      timeout:
+        'Transaction is still pending. Check Activity before you try again.',
+      timeoutPage:
+        'Batch {{page}} is still pending. Check Activity before you try again.',
+      submit:
+        'Could not confirm the transaction was sent: {{reason}}. Check Activity before you try again.',
+      submitPage:
+        'Could not confirm batch {{page}} was sent: {{reason}}. Check Activity before you try again.',
+      rejected: 'Transaction was rejected: {{reason}}.',
+      rejectedPage: 'Batch {{page}} was rejected: {{reason}}.',
+      sign: 'Transaction was not signed: {{reason}}.',
+      signPage: 'Batch {{page}} was not signed: {{reason}}.',
+      request: 'Could not load the transaction: {{reason}}.',
+      requestPage: 'Could not load batch {{page}}: {{reason}}.',
+      confirmedBefore: '{{count}} earlier batch confirmed.',
+      confirmedBefore_plural: '{{count}} earlier batches confirmed.',
+      sentBefore:
+        '{{count}} batch from an earlier network was sent and may still be pending. Check Activity before you try again.',
+      sentBefore_plural:
+        '{{count}} batches from earlier networks were sent and may still be pending. Check Activity before you try again.',
+    },
     signClaimAllRewardsTxn: 'Sign this transaction to claim all your rewards.',
     signMintDataCreditsTxn: 'Sign this transaction to mint your data credits.',
     signMintDataCreditsTxnPreview:
@@ -1714,6 +1743,15 @@ export default {
       title: 'Almost there',
       body: '{{moved}} transfers confirmed. {{failed}} need a retry.',
       retry: 'Retry failed items',
+      pageFailedBody:
+        'Batch {{page}} stopped with an error. {{moved}} transfers confirmed before it stopped.',
+      unconfirmedBody:
+        'Could not confirm your migration was sent. Check Activity before you try again.',
+      retryPage: 'Retry from batch {{page}}',
+    },
+    errors: {
+      destinationChanged:
+        'This migration was started for a different World wallet. Sign in with that account to continue.',
     },
     success: {
       title: 'Migration complete',
