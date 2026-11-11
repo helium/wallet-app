@@ -1,8 +1,27 @@
-import { claimCountFromCronJob } from '../automationClaimCount'
+import { needsWalletClaim, shouldAddWalletClaim } from '../automationClaimCount'
 
-describe('claimCountFromCronJob', () => {
-  it('counts current claims, not the ever-rising next transaction id', () => {
-    const cronJob = { numTransactions: 0, nextTransactionId: 5 }
-    expect(claimCountFromCronJob(cronJob)).toBe(0)
+describe('needsWalletClaim', () => {
+  it.each([
+    [true, 0, true],
+    [true, 1, false],
+    [true, null, false],
+    [true, undefined, false],
+    [false, 0, false],
+  ])(
+    'hasExistingAutomation %s, claimCount %s -> %s',
+    (hasExistingAutomation, claimCount, expected) => {
+      expect(needsWalletClaim(hasExistingAutomation, claimCount)).toBe(expected)
+    },
+  )
+})
+
+describe('shouldAddWalletClaim', () => {
+  it.each([
+    [0, true],
+    [1, false],
+    [null, false],
+    [undefined, false],
+  ])('claimCount %s -> %s', (claimCount, expected) => {
+    expect(shouldAddWalletClaim(claimCount)).toBe(expected)
   })
 })

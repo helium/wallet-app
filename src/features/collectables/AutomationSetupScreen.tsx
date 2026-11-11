@@ -92,6 +92,7 @@ const AutomationSetupScreen = () => {
   const { totalHotspots, hotspotsWithMeta } = useHotspots()
 
   const {
+    statusLoading,
     statusError,
     hasExistingAutomation,
     isOutOfSol,
@@ -579,7 +580,9 @@ const AutomationSetupScreen = () => {
                 !selectedSchedule ||
                 !duration ||
                 createAutomationLoading ||
-                !estimate.estimate
+                !estimate.estimate ||
+                statusLoading ||
+                !!statusError
               }
               TrailingComponent={
                 createAutomationLoading ? (

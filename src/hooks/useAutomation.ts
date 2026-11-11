@@ -13,7 +13,10 @@ import { useWalletSign } from '../solana/WalletSignProvider'
 import { useSubmitAndAwait } from './useSubmitAndAwait'
 import { WalletStandardMessageTypes } from '../solana/walletSignBottomSheetTypes'
 import { MessagePreview } from '../solana/MessagePreview'
-import { claimCountFromCronJob } from './automationClaimCount'
+import {
+  needsWalletClaim as isWalletClaimNeeded,
+  shouldAddWalletClaim,
+} from './automationClaimCount'
 
 type Schedule = 'daily' | 'weekly' | 'monthly'
 
@@ -44,12 +47,11 @@ export function useAutomation() {
     )
     if (!cronJobInfo) return null
     const cronProgram = await initCron(anchorProvider)
-    return claimCountFromCronJob(
-      cronProgram.coder.accounts.decode<{ numTransactions: number }>(
-        'cronJobV0',
-        cronJobInfo.data,
-      ),
-    )
+    // numTransactions drops when a claim is removed; nextTransactionId only rises
+    return cronProgram.coder.accounts.decode<{ numTransactions: number }>(
+      'cronJobV0',
+      cronJobInfo.data,
+    ).numTransactions
   }
 
   const refreshAutomationQueries = async () => {
@@ -116,8 +118,9 @@ export function useAutomation() {
   // Repair for cron jobs created without a claim
   const addWalletClaimMutation = useMutation({
     mutationFn: async () => {
+      if (!anchorProvider) throw new Error('Wallet not connected')
       // Check again so a claim added elsewhere is not duplicated
-      if ((await fetchClaimCount()) !== 0) return
+      if (!shouldAddWalletClaim(await fetchClaimCount())) return
       await addWalletClaim()
     },
     onSuccess: refreshAutomationQueries,
@@ -311,6 +314,7 @@ export function useAutomation() {
     onSuccess: async () => {
       await sleep(INVALIDATE_QUERY_CACHE_DELAY)
       await queryClient.invalidateQueries({ queryKey: ['automationStatus'] })
+      queryClient.removeQueries({ queryKey: ['automationClaimCount'] })
     },
   })
 
@@ -330,8 +334,10 @@ export function useAutomation() {
     fundingPeriodInfo: status?.fundingPeriodInfo,
     cronJobBalance: status?.cronJobBalance,
     pdaWalletBalance: status?.pdaWalletBalance,
-    needsWalletClaim:
-      (status?.hasExistingAutomation ?? false) && claimCount === 0,
+    needsWalletClaim: isWalletClaimNeeded(
+      status?.hasExistingAutomation ?? false,
+      claimCount,
+    ),
 
     addWalletClaim: addWalletClaimMutation.mutateAsync,
     addWalletClaimLoading: addWalletClaimMutation.isPending,
