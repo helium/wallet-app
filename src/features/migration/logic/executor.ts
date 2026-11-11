@@ -208,6 +208,19 @@ export const runMigration = async <TSigned = unknown>(
     })
   }
 
+  // True when the cluster has seen any transaction of the page, or when it
+  // cannot be read.
+  const seen = async (page: PendingTransaction[]): Promise<boolean> => {
+    try {
+      const statuses = await deps.getSignatureStatuses(
+        page.map((tx) => tx.signature),
+      )
+      return statuses.some(Boolean)
+    } catch {
+      return true
+    }
+  }
+
   // Settles a signed page whose submit returned no batch id, so the submit may
   // or may not have sent it. Asks the cluster for each signature:
   // - any transaction that can still land: persist the page and report pending;
@@ -377,8 +390,16 @@ export const runMigration = async <TSigned = unknown>(
           }
         }, sleep)
       } catch (submitErr) {
-        // Every attempt was a definite rejection: the page was not sent.
-        if (isRejection(submitErr) && !ambiguousAttempt) {
+        // Every attempt was a definite rejection. The server can still have
+        // sent the page in an earlier attempt of its own retry loop, so one
+        // cluster read must see none of its transactions before the page is
+        // dropped.
+        // eslint-disable-next-line no-await-in-loop
+        if (
+          isRejection(submitErr) &&
+          !ambiguousAttempt &&
+          !(await seen(page))
+        ) {
           inFlightPage = undefined
           throw submitErr
         }

@@ -721,8 +721,8 @@ describe('runMigration', () => {
       expect(last.pendingNextInput).toBeNull()
     })
 
-    it('does not read the cluster after a definite rejection and drops the signed page', async () => {
-      const getSignatureStatuses = jest.fn(async () => [])
+    it('drops the signed page after a definite rejection when the cluster has seen none of it', async () => {
+      const getSignatureStatuses = jest.fn(async () => [null])
       const { outcome, last } = await run({
         getSignatureStatuses,
         submitBatch: async () => {
@@ -730,7 +730,7 @@ describe('runMigration', () => {
         },
       })
       expect(outcome.status).toBe('failed')
-      expect(getSignatureStatuses).not.toHaveBeenCalled()
+      expect(getSignatureStatuses).toHaveBeenCalledTimes(1)
       expect(last.status).toBe('failed')
       expect(last.page).toBe(1)
       expect(last.failure).toBe('SIMULATION_FAILED')
@@ -785,6 +785,25 @@ describe('runMigration', () => {
       expect(last.pendingTransactions).toEqual([
         { signature: 'tx1', blockhash: 'bh' },
       ])
+    })
+
+    it('settles the page when a definite rejection follows a server-side send that landed', async () => {
+      // The server's own retry sent the page, then a later attempt failed
+      // simulation because the bundle had already landed.
+      const { deps } = cluster({ statuses: { tx1: landed } })
+      const requestMigrate = jest.fn(
+        async () => ({ transactionData: txData(1) } as MigrateOutput),
+      )
+      const { outcome } = await run({
+        ...deps,
+        requestMigrate,
+        submitBatch: async () => {
+          throw serverError('SIMULATION_FAILED', 400)
+        },
+      })
+      expect(outcome.status).toBe('complete')
+      expect(outcome.confirmedSignatures).toEqual(['tx1'])
+      expect(requestMigrate).toHaveBeenCalledTimes(1)
     })
 
     it('reads the cluster when a rejection follows an attempt that may have landed', async () => {
