@@ -39,7 +39,7 @@ const useEnrichedTransactions = (): {
   useEffect(() => {
     if (transactions.length > 0) {
       AsyncStorage.setItem(
-        `txs-v2-${cluster}-${currentAccount?.solanaAddress}`,
+        `txs-v3-${cluster}-${currentAccount?.solanaAddress}`,
         // Limit of 50 stored tx to not blow storage limit
         JSON.stringify(transactions.slice(0, 50)),
       )
@@ -74,7 +74,7 @@ const useEnrichedTransactions = (): {
   }, [currentAccount, cluster, anchorProvider])
   const loadTransactionsFromStorage = useCallback(async () => {
     try {
-      const storageKey = `txs-v2-${cluster}-${currentAccount?.solanaAddress}`
+      const storageKey = `txs-v3-${cluster}-${currentAccount?.solanaAddress}`
       const storedTransactions = await AsyncStorage.getItem(storageKey)
       if (storedTransactions && storedTransactions.length > 0) {
         const parsedTransactions = JSON.parse(storedTransactions)

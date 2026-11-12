@@ -5,6 +5,7 @@ import { describeActivity } from '../describeActivity'
 import { ParsedEventsItem, toActivityRows } from '../parsedEvents'
 import parsedEvents from './fixtures/v1.json'
 import parsedEventsFailed from './fixtures/v1-failed.json'
+import parsedEventsSwaps from './fixtures/v1-swaps.json'
 
 const i18n = i18next.createInstance()
 i18n.init({ lng: 'en', resources: { en: { translation: en } } })
@@ -23,9 +24,47 @@ const REWARD_RECIPIENT = 'BmfPk1dpkv4dFzsAezoZhqWDW5DozG5sbzSNexABsVhN'
 const CNFT_OLD_OWNER = 'ESJ4bn4FDKETrA9ZEkfmtgSqEnBQSc1VoEPRsXg2VCnA'
 const CNFT_NEW_OWNER = 'HHYSHiAhevYkSUgwhoAQwVk9nybKzpT1VMMdo5yo6PQC'
 
+// Real swaps, with the wallet that made each one.
+const HNT_TO_USDC = {
+  signature:
+    '4P4kAhBNwQcHpvbKjuccHmi3dK65u3cbKzmdWGt2nhwC4tuYVVSPGYdnJe1BwZcdC42CbLK3C438hut5yzv7ovf6',
+  wallet: 'A5bi3PZyZmYU1etx7pUrqpYcuyETXri7YZfDDufCRRXL',
+}
+const IOT_TO_HNT = {
+  signature:
+    '4stoou7gMw5E5PV7PsKKm1h5uD8Hb1QTdgDKyAL6ssf2v9nyJqikXec8VdGzQM8Rtovzxndb1V1A2Y2sBuDnskuE',
+  wallet: '7ohvcCZdvBVPuxwq5sq72mXLsGwezT9gZ9qysrk9KPF5',
+}
+// The SOL comes back as wSOL, and closing the wSOL account also shows as a
+// native transfer.
+const USDC_TO_WSOL = {
+  signature:
+    '5a1QyxmBhYhzVKkASPZpTRHmEPwMxkL6xFsozFBwicVKiwwkb1KUccFjU6TpXqaJTq7CxBnHNqCFXoGenXeskkTR',
+  wallet: '7zFm9DkzDmavep2Q4NhtBmHJqvFNWLcKFZBZeVroHDSj',
+}
+// A sponsor pays the fee and the wallet gets native SOL.
+const SPONSORED_HNT_TO_SOL = {
+  signature:
+    '2FpnHSEuiFrXwtrXj3t88RNGKZzuWqkXGTomaxeXokm8wUpFjBAtG6ViKKCD6Tf8fyR6anKpw6QDCEhWcyYqEMdg',
+  wallet: '9rpEZ1V65CDveR2Z4JCucHd9ecqo1R3CTWWcUNiXjcM5',
+  sponsor: 'ALVMJ9bny8tFT7AapoVbbzrgCYzrjy8iHw6EHFaehgZZ',
+}
+// A bot route that starts and ends in SOL.
+const ARBITRAGE = {
+  signature:
+    '2iBqNKUkimi5bUWLnk7YzjVFqT7Zu31mpkYyhkBUaoingxNxaKH1iB5hiWdapyZYSASxQn7vYiT93QpYYx5c4zMD',
+  wallet: '3yZVBT1EJdoFJUShFmb1B6cJS1K7x5NpZjjEKGwa6NjL',
+}
+const UNKNOWN_MINT_TO_SOL = {
+  signature:
+    '65FFh7t5oTbLdoANezkHubbMGj5rs6MagmBGkHoTvWzrnrwxcmZpV3WW1aRV1t1m7JN6eUoweF42Ft7rsUbuw739',
+  wallet: 'CAU4LpPbcWfuW7FRaFKF5n2UDYkw2wGoXMSWQsBtanjK',
+}
+
 const items = [
   ...parsedEvents,
   ...parsedEventsFailed,
+  ...parsedEventsSwaps,
 ] as unknown as ParsedEventsItem[]
 
 // Signature rows the wallet signed none of.
@@ -83,10 +122,10 @@ describe('describeActivity', () => {
     }
 
     expect(describeFor(tx, REWARD_SENDER)).toBe(
-      `Sent ${amountOf(0.57264314, 8)} HNT`,
+      `Sent ${amountOf(0.57264314, 8)} HNT to ${REWARD_RECIPIENT}`,
     )
     expect(describeFor(tx, REWARD_RECIPIENT)).toBe(
-      `Received ${amountOf(0.57264314, 8)} HNT`,
+      `Received ${amountOf(0.57264314, 8)} HNT from ${REWARD_SENDER}`,
     )
   })
 
@@ -130,18 +169,13 @@ describe('describeActivity', () => {
     )
   })
 
-  it('takes the symbol from any token transfer of the wallet', async () => {
-    const tx = await rowFor(REWARD_CLAIM)
-    const [bare] = tx.tokenTransfers
-    const [withSymbol] = withHntMetadata(tx).tokenTransfers
-    const symbolOnSecond = { ...tx, tokenTransfers: [bare, withSymbol] }
-
-    expect(describeFor(symbolOnSecond, REWARD_RECIPIENT)).toBe(
-      `Claimed ${amountOf(bare.tokenAmount + withSymbol.tokenAmount, 8)} HNT`,
+  it('takes the symbol from the mint, without token metadata', async () => {
+    expect(describeFor(await rowFor(REWARD_CLAIM), REWARD_RECIPIENT)).toBe(
+      `Claimed ${amountOf(0.57264314, 8)} HNT`,
     )
   })
 
-  it('sums a SOL send to several payees', async () => {
+  it('sums a SOL send to several payees and names no payee', async () => {
     const tx = {
       ...(await rowFor(REWARD_CLAIM)),
       type: 'TRANSFER',
@@ -272,10 +306,6 @@ describe('describeActivity', () => {
     expect(describeFor(tx, REWARD_SENDER)).toBe('')
   })
 
-  it('gives a reward claim without a token symbol no description', async () => {
-    expect(describeFor(await rowFor(REWARD_CLAIM), REWARD_RECIPIENT)).toBe('')
-  })
-
   it('describes a cNFT transfer with no known source as sent only by its signer', async () => {
     const tx = await rowFor(CNFT_TRANSFER)
     const [compressed] = tx.events.compressed ?? []
@@ -328,7 +358,7 @@ describe('describeActivity', () => {
     }
 
     expect(describeFor(tx, CNFT_OLD_OWNER)).toBe(
-      `Received ${amountOf(0.000000001, 9)} SOL`,
+      `Received ${amountOf(0.000000001, 9)} SOL from ${CNFT_NEW_OWNER}`,
     )
   })
 
@@ -362,14 +392,8 @@ describe('describeActivity', () => {
     }
 
     expect(describeFor(tx, REWARD_SENDER)).toBe(
-      `Sent ${amountOf(0.000000001, 9)} SOL`,
+      `Sent ${amountOf(0.000000001, 9)} SOL to ${REWARD_RECIPIENT}`,
     )
-  })
-
-  it('gives a transfer without a token symbol no description', async () => {
-    const tx = { ...(await rowFor(REWARD_CLAIM)), type: 'TRANSFER' }
-
-    expect(describeFor(tx, REWARD_SENDER)).toBe('')
   })
 
   it('gives a transfer whose wallet token transfer has no decimals no description', async () => {
@@ -393,35 +417,6 @@ describe('describeActivity', () => {
     }
 
     expect(describeFor(unreadable, REWARD_SENDER)).toBe('')
-  })
-
-  it('gives a transfer whose second token transfer is the wallet one without metadata no description', async () => {
-    const tx = await rowFor(REWARD_CLAIM)
-    const [walletTransfer] = tx.tokenTransfers
-    const [otherTransfer] = withHntMetadata({
-      ...tx,
-      tokenTransfers: [
-        {
-          ...walletTransfer,
-          fromUserAccount: CNFT_OLD_OWNER,
-          toUserAccount: CNFT_NEW_OWNER,
-        },
-      ],
-    }).tokenTransfers
-    const secondIsWallet = {
-      ...tx,
-      type: 'TRANSFER',
-      tokenTransfers: [otherTransfer, walletTransfer],
-      nativeTransfers: [
-        {
-          fromUserAccount: REWARD_SENDER,
-          toUserAccount: CNFT_OLD_OWNER,
-          amount: 2039280,
-        },
-      ],
-    }
-
-    expect(describeFor(secondIsWallet, REWARD_SENDER)).toBe('')
   })
 
   it.each([
@@ -501,6 +496,73 @@ describe('describeActivity', () => {
     expect(describeFor(mint, CNFT_OLD_OWNER)).toBe('Minted a compressed NFT')
   })
 
+  describe('swaps', () => {
+    const describeSwap = async ({
+      signature,
+      wallet,
+    }: {
+      signature: string
+      wallet: string
+    }) => describeFor(await rowFor(signature), wallet)
+
+    it.each([
+      [
+        HNT_TO_USDC,
+        `Swapped ${amountOf(5, 8)} HNT for ${amountOf(1.253699, 6)} USDC`,
+      ],
+      [
+        IOT_TO_HNT,
+        `Swapped ${amountOf(18454.591776, 6)} IOT for ${amountOf(
+          2.79267603,
+          8,
+        )} HNT`,
+      ],
+    ])('describes what the wallet spent and got', async (swap, expected) => {
+      expect(await describeSwap(swap)).toBe(expected)
+    })
+
+    it('counts SOL that comes back as wSOL once', async () => {
+      expect(await describeSwap(USDC_TO_WSOL)).toBe(
+        `Swapped ${amountOf(0.465288, 6)} USDC for ${amountOf(
+          0.005572562,
+          9,
+        )} SOL`,
+      )
+    })
+
+    it('reads native SOL out of a sponsored swap for the wallet, not the sponsor', async () => {
+      expect(await describeSwap(SPONSORED_HNT_TO_SOL)).toBe(
+        `Swapped ${amountOf(25.25798087, 8)} HNT for ${amountOf(
+          0.075247653,
+          9,
+        )} SOL`,
+      )
+      expect(
+        await describeSwap({
+          ...SPONSORED_HNT_TO_SOL,
+          wallet: SPONSORED_HNT_TO_SOL.sponsor,
+        }),
+      ).toBe('')
+    })
+
+    it('gives a route that spends nothing net no description', async () => {
+      expect(await describeSwap(ARBITRAGE)).toBe('')
+    })
+
+    it('gives a swap of a mint outside the default tokens no description', async () => {
+      expect(await describeSwap(UNKNOWN_MINT_TO_SOL)).toBe('')
+    })
+
+    it('gives a failed swap no description', async () => {
+      const tx = {
+        ...(await rowFor(HNT_TO_USDC.signature)),
+        transactionError: { InstructionError: [0, { Custom: 1 }] },
+      }
+
+      expect(describeFor(tx, HNT_TO_USDC.wallet)).toBe('')
+    })
+  })
+
   it('gives other types no description', async () => {
     expect(describeFor(await rowFor(FAILED_RUN_TASK), REWARD_SENDER)).toBe('')
   })
@@ -520,7 +582,7 @@ describe('describeActivity', () => {
     }
 
     expect(describeFor(tx, REWARD_RECIPIENT)).toBe(
-      `Received ${amountOf(0.000000001, 9)} SOL`,
+      `Received ${amountOf(0.000000001, 9)} SOL from ${REWARD_SENDER}`,
     )
     expect(describeFor(tx, REWARD_RECIPIENT)).not.toMatch(/e-/)
   })

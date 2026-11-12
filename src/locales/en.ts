@@ -377,6 +377,10 @@ export default {
     descriptions: {
       sent: 'Sent {{amount}} {{symbol}}',
       received: 'Received {{amount}} {{symbol}}',
+      sentTo: 'Sent {{amount}} {{symbol}} to {{address}}',
+      receivedFrom: 'Received {{amount}} {{symbol}} from {{address}}',
+      swapped:
+        'Swapped {{spentAmount}} {{spentSymbol}} for {{gotAmount}} {{gotSymbol}}',
       burned: 'Burned {{amount}} {{symbol}}',
       claimed: 'Claimed {{amount}} {{symbol}}',
       hotspotOnboarded: 'Hotspot onboarded',

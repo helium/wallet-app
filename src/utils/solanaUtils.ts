@@ -1570,7 +1570,7 @@ export const getAllTransactions = async (
       rows.map(async (tx) => {
         if (!('tokenTransfers' in tx)) return tx
         try {
-          // Enrich the wallet's own transfer, so its row gets a symbol.
+          // Enrich the wallet's own transfer, so its details show the token image.
           const walletTransferIndex = tx.tokenTransfers.findIndex(
             (transfer) =>
               transfer.fromUserAccount === address ||
