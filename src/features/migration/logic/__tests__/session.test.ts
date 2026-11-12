@@ -73,6 +73,13 @@ describe('deriveResume', () => {
       deriveResume({ ...base, pendingBatchId: 'batch-9' }).pendingBatchId,
     ).toBe('batch-9')
   })
+  it('exposes the saved signed page so a resume checks it before requesting', () => {
+    const pendingTransactions = [{ signature: 'tx1', blockhash: 'bh' }]
+    const saved = deserializeSession(
+      serializeSession({ ...base, pendingTransactions }),
+    )
+    expect(deriveResume(saved).pendingTransactions).toEqual(pendingTransactions)
+  })
   it('passes pendingNextInput through, including null', () => {
     const next = { ...base.originalInput, hotspots: ['h4'] }
     const withNext: MigrationSession = {

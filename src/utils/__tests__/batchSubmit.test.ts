@@ -8,6 +8,7 @@ import {
   PagedSubmitError,
   PollTimeoutError,
   TerminalStatus,
+  createBatchView,
   describePageFailure,
   mergeBatchStatuses,
   pollForCompletion,
@@ -87,6 +88,40 @@ describe('submitPages', () => {
       signatures: [],
     })
     expect(deps.signPage).not.toHaveBeenCalled()
+  })
+
+  // The server can return a page with no transactions and hasMore: true. The
+  // loop must not report that as success: nothing was sent and more remains.
+  it('fails with kind empty when the first page is empty but the server says more remain', async () => {
+    const { deps } = setup({ pages: [page('a')] })
+
+    const err = await caught(submitPages({ ...emptyPage, hasMore: true }, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({
+      failure: { kind: 'empty' },
+      page: 1,
+      confirmedCount: 0,
+    })
+    expect(deps.signPage).not.toHaveBeenCalled()
+    expect(deps.nextPage).not.toHaveBeenCalled()
+  })
+
+  it('fails with kind empty when a later page is empty but the server says more remain', async () => {
+    const { first, deps } = setup({
+      pages: [page('a', true), { ...emptyPage, hasMore: true }, page('c')],
+    })
+
+    const err = await caught(submitPages(first, deps))
+
+    expect(err).toBeInstanceOf(PagedSubmitError)
+    expect(err).toMatchObject({
+      failure: { kind: 'empty' },
+      page: 2,
+      confirmedCount: 1,
+    })
+    expect(deps.submitBatch).toHaveBeenCalledTimes(1)
+    expect(deps.nextPage).toHaveBeenCalledTimes(1)
   })
 
   it('waits for each page before it fetches the next one, and returns every batch id', async () => {
@@ -204,11 +239,35 @@ describe('submitPages', () => {
     })
   })
 
-  it('wraps a definite 4xx submit error as kind rejected', async () => {
+  // The fields of an oRPC defined error from POST /transactions (the submit
+  // error map in @helium/blockchain-api errors.d.ts).
+  const serverError = (
+    code: string,
+    status: number,
+    data: Record<string, unknown> = {},
+  ) => Object.assign(new Error(code), { defined: true, code, status, data })
+
+  // The server throws these only before it sends anything (submit.ts): the
+  // blockhash probe, the pre-send simulation, and the Jito bundle simulation,
+  // which runs before the atomic bundle is sent.
+  it.each([
+    [
+      'a BLOCKHASH_EXPIRED from the blockhash probe',
+      serverError('BLOCKHASH_EXPIRED', 400, { failedTransactionIndex: 1 }),
+    ],
+    [
+      'a SIMULATION_FAILED from the pre-send simulation',
+      serverError('SIMULATION_FAILED', 400, { logs: ['log'] }),
+    ],
+    [
+      'a SIMULATION_FAILED from the bundle simulation',
+      serverError('SIMULATION_FAILED', 400, {
+        logs: ['log'],
+        failedTransactionIndex: 2,
+      }),
+    ],
+  ])('wraps %s as kind rejected', async (_label, cause) => {
     const { first, deps } = setup({ pages: [page('a')] })
-    const cause = Object.assign(new Error('Transaction simulation failed.'), {
-      status: 400,
-    })
     deps.submitBatch.mockRejectedValueOnce(cause)
 
     const err = await caught(submitPages(first, deps))
@@ -217,28 +276,27 @@ describe('submitPages', () => {
     expect(err).toMatchObject({ failure: { kind: 'rejected', cause } })
   })
 
+  // The server uses BAD_REQUEST both before any send and for every error after
+  // sending started (submit.ts), so a transaction can have landed.
   it.each([
-    [1, 'submit'],
-    [0, 'rejected'],
-  ])(
-    'wraps a 400 with failedTransactionIndex %i as kind %s',
-    async (failedTransactionIndex, kind) => {
-      const { first, deps } = setup({ pages: [page('a')] })
-      const cause = Object.assign(new Error('Transaction simulation failed.'), {
+    ['a BAD_REQUEST', serverError('BAD_REQUEST', 400)],
+    [
+      'a 400 that is not a defined error',
+      Object.assign(new Error('Transaction simulation failed.'), {
+        defined: false,
+        code: 'SIMULATION_FAILED',
         status: 400,
-        data: { failedTransactionIndex },
-      })
-      deps.submitBatch.mockRejectedValueOnce(cause)
-
-      const err = await caught(submitPages(first, deps))
-
-      expect(err).toMatchObject({ failure: { kind, cause } })
-    },
-  )
-
-  it.each([
+      }),
+    ],
+    [
+      'a plain 400',
+      Object.assign(new Error('bad request'), {
+        status: 400,
+        data: { failedTransactionIndex: 0 },
+      }),
+    ],
     ['a 408', Object.assign(new Error('timed out'), { status: 408 })],
-    ['a 409', Object.assign(new Error('already exists'), { status: 409 })],
+    ['a CONFLICT', serverError('CONFLICT', 409)],
     ['a 429', Object.assign(new Error('rate limited'), { status: 429 })],
     ['a 500', Object.assign(new Error('server error'), { status: 500 })],
     ['a status-less', new Error('network')],
@@ -370,6 +428,18 @@ describe('pagedSubmit copy', () => {
     ).toContain('Could not confirm the transaction was sent')
   })
 
+  it('tells the user the server returned no transactions to send', () => {
+    const failure = { kind: 'empty' } as const
+    expect(
+      describePageFailure(i18n.t, { failure, page: 1, confirmedCount: 0 }),
+    ).toBe('The server returned no transactions to send. Nothing was sent.')
+    expect(
+      describePageFailure(i18n.t, { failure, page: 3, confirmedCount: 0 }),
+    ).toBe(
+      'The server returned no transactions to send for batch 3. Nothing was sent for that batch.',
+    )
+  })
+
   it('tells the user a rejected page was rejected, with the network and what earlier networks sent', () => {
     const copy = en.transactions.pagedSubmit
     expect(
@@ -466,29 +536,139 @@ describe('describePageFailure', () => {
 })
 
 describe('pollForCompletion', () => {
-  const clientWith = (...statuses: string[]) => {
-    const get = jest.fn()
-    statuses.forEach((status) =>
-      get.mockResolvedValueOnce({
-        status,
-        transactions: [{ signature: 'sig' }],
-      }),
-    )
+  type Row = { signature: string; status: string }
+  type Read = { status: string; transactions: Row[] }
+
+  const row = (status: string, signature = 'sig'): Row => ({
+    signature,
+    status,
+  })
+
+  /**
+   * Fake GET /transactions/{id}: serves `reads` in order, then repeats the
+   * last one. Each read moves the clock 2 s on, like the real poll interval.
+   */
+  const clientWith = (...reads: Read[]) => {
+    let clock = 0
+    jest.spyOn(Date, 'now').mockImplementation(() => clock)
+    let calls = 0
+    const get = jest.fn(async () => {
+      const read = reads[Math.min(calls, reads.length - 1)]
+      calls += 1
+      clock += 2000
+      return read
+    })
     return { client: { transactions: { get } } as unknown as BatchClient, get }
   }
 
-  it('polls until the batch reaches a terminal status', async () => {
-    const { client, get } = clientWith('pending', 'partial')
+  afterEach(() => jest.restoreAllMocks())
+
+  it('polls until the batch settles', async () => {
+    const { client, get } = clientWith(
+      { status: 'pending', transactions: [row('pending')] },
+      { status: 'confirmed', transactions: [row('confirmed')] },
+    )
 
     await expect(pollForCompletion(client, 'b', 0)).resolves.toEqual({
-      status: 'partial',
+      status: 'confirmed',
       signatures: ['sig'],
     })
     expect(get).toHaveBeenCalledTimes(2)
   })
 
+  // The server rolls a batch up to partial or failed as soon as one row failed,
+  // even with other rows still pending (rollupBatchStatus).
+  it.each([
+    [
+      'partial',
+      [row('confirmed', 'a'), row('failed', 'b'), row('pending', 'c')],
+    ],
+    ['failed', [row('failed', 'a'), row('pending', 'b')]],
+  ])(
+    'keeps polling a %s batch while a row is still pending',
+    async (status, transactions) => {
+      const settled = transactions.map((tx) =>
+        tx.status === 'pending' ? { ...tx, status: 'confirmed' } : tx,
+      )
+      const { client, get } = clientWith(
+        { status, transactions },
+        { status: 'partial', transactions: settled },
+      )
+
+      await expect(pollForCompletion(client, 'b', 0)).resolves.toMatchObject({
+        status: 'partial',
+      })
+      expect(get).toHaveBeenCalledTimes(2)
+    },
+  )
+
+  // The server does not treat an expired row as settled: a later read can find
+  // the transaction on the cluster and flip the row to confirmed.
+  it('does not settle on an expired row that a later read confirms', async () => {
+    const { client, get } = clientWith(
+      { status: 'failed', transactions: [row('expired')] },
+      { status: 'failed', transactions: [row('expired')] },
+      { status: 'confirmed', transactions: [row('confirmed')] },
+    )
+
+    await expect(pollForCompletion(client, 'b', 0)).resolves.toEqual({
+      status: 'confirmed',
+      signatures: ['sig'],
+    })
+    expect(get).toHaveBeenCalledTimes(3)
+  })
+
+  it('settles on an expired row once it has read expired for 10 seconds', async () => {
+    const { client, get } = clientWith({
+      status: 'failed',
+      transactions: [row('expired')],
+    })
+
+    await expect(pollForCompletion(client, 'b', 0)).resolves.toEqual({
+      status: 'failed',
+      signatures: ['sig'],
+    })
+    // First seen expired on read 1, so read 6, 10 s later, settles it.
+    expect(get).toHaveBeenCalledTimes(6)
+  })
+
+  it('restarts the wait when an expired row stops reading expired', async () => {
+    const expired = { status: 'failed', transactions: [row('expired')] }
+    const { client, get } = clientWith(
+      expired,
+      expired,
+      expired,
+      { status: 'pending', transactions: [row('pending')] },
+      expired,
+    )
+
+    await expect(pollForCompletion(client, 'b', 0)).resolves.toMatchObject({
+      status: 'failed',
+    })
+    // Seen expired again on read 5, so read 10, 10 s later, settles it.
+    expect(get).toHaveBeenCalledTimes(10)
+  })
+
+  it('throws PollTimeoutError when the batch is still unsettled at the time limit', async () => {
+    const { client } = clientWith({
+      status: 'partial',
+      transactions: [row('confirmed', 'a'), row('expired', 'b')],
+    })
+
+    const err = await caught(pollForCompletion(client, 'b', 0, 6000))
+
+    expect(err).toBeInstanceOf(PollTimeoutError)
+    expect(err).toMatchObject({
+      batchId: 'b',
+      message: 'Transaction polling timeout',
+    })
+  })
+
   it('throws PollTimeoutError when the batch never lands', async () => {
-    const { client } = clientWith()
+    const { client } = clientWith({
+      status: 'pending',
+      transactions: [row('pending')],
+    })
 
     const err = await caught(pollForCompletion(client, 'b', 0, 0))
 
@@ -497,6 +677,21 @@ describe('pollForCompletion', () => {
       batchId: 'b',
       message: 'Transaction polling timeout',
     })
+  })
+})
+
+describe('createBatchView', () => {
+  it('keeps a confirmed batch confirmed while a row reads pending', () => {
+    const view = createBatchView()
+    expect(
+      view({
+        status: 'confirmed',
+        transactions: [
+          { signature: 'a', status: 'confirmed' },
+          { signature: 'b', status: 'pending' },
+        ],
+      }).status,
+    ).toBe('confirmed')
   })
 })
 

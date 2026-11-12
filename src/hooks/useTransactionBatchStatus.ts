@@ -1,34 +1,36 @@
 import { useQuery } from '@tanstack/react-query'
+import { useRef } from 'react'
 import { useBlockchainApi } from '../storage/BlockchainApiProvider'
 import {
-  TERMINAL_STATUSES,
+  createBatchView,
   mergeBatchStatuses,
   type BatchStatus,
 } from '../utils/batchSubmit'
 
-export { TERMINAL_STATUSES, type BatchStatus }
+export { type BatchStatus }
 
 export function useTransactionBatchesStatus(batchIds: string[] | null) {
   const client = useBlockchainApi()
   const ids = batchIds ?? []
+  // One settle rule per batch, kept across polls.
+  const views = useRef(new Map<string, ReturnType<typeof createBatchView>>())
 
   const { data, error, isLoading, refetch } = useQuery({
     queryKey: ['transactionBatches', ids],
     queryFn: () =>
       Promise.all(
-        ids.map((id) =>
-          client.transactions.get({ id, commitment: 'confirmed' }),
-        ),
+        ids.map(async (id) => {
+          const view = views.current.get(id) ?? createBatchView()
+          views.current.set(id, view)
+          return view(
+            await client.transactions.get({ id, commitment: 'confirmed' }),
+          )
+        }),
       ),
     enabled: ids.length > 0,
     refetchInterval: ({ state }) => {
       const batches = state.data
-      if (
-        batches &&
-        batches.every((batch) =>
-          TERMINAL_STATUSES.includes(batch.status as BatchStatus),
-        )
-      ) {
+      if (batches && batches.every((batch) => batch.status !== 'pending')) {
         return false
       }
       return 2000

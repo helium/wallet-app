@@ -18,6 +18,10 @@ export type SignatureTally = {
   failedSignatures: string[]
 }
 
+// A signed transaction of a submitted page: its signature (the transaction
+// id) and the blockhash that bounds how long it can still land.
+export type PendingTransaction = { signature: string; blockhash: string }
+
 export type MigrationSession = {
   originalInput: MigrateInput
   // The input for the last unconfirmed batch (originalInput's nextParams as the
@@ -29,8 +33,13 @@ export type MigrationSession = {
   // the server to recompute remaining transfers — otherwise a still-in-flight
   // token transfer gets rebuilt and double-sent. Cleared once a batch confirms.
   pendingBatchId?: string
-  // Set only with pendingBatchId: the input after the in-flight batch, null when
-  // that batch is the last page, absent when unknown (older sessions).
+  // The signed page, saved before its submit and until the server returns a
+  // batch id. A submit can send the page and still throw, so a resume must
+  // check THESE signatures on the cluster before it requests the page again.
+  pendingTransactions?: PendingTransaction[]
+  // Set only with pendingBatchId or pendingTransactions: the input after the
+  // in-flight page, null when that page is the last one, absent when unknown
+  // (older sessions).
   pendingNextInput?: MigrateInput | null
   // The 1-based page that nextInput requests. Absent on sessions saved before
   // pages were tracked, which read as page 1.
@@ -38,9 +47,9 @@ export type MigrationSession = {
   // The error message when a request, sign, submit or poll threw on `page`.
   // Cleared by the next snapshot that does not fail.
   failure?: string
-  // Set with failure when a submit on any page threw with no batch id and some
-  // attempt was not a definite rejection: the batch may have been sent, so the
-  // user checks Activity before a retry.
+  // Set with failure when a submit may have sent the page and the cluster
+  // could not be read: pendingTransactions keeps the page, and the user checks
+  // Activity before a retry.
   unconfirmedSubmit?: boolean
   updatedAt: number
 } & SignatureTally
@@ -88,6 +97,8 @@ export type ResumeInfo = {
   // Forwarded to the executor so a resumed run re-polls the in-flight batch
   // before re-requesting (see MigrationSession.pendingBatchId).
   pendingBatchId?: string
+  // See MigrationSession.pendingTransactions.
+  pendingTransactions?: PendingTransaction[]
   // See MigrationSession.pendingNextInput.
   pendingNextInput?: MigrateInput | null
 }
@@ -105,6 +116,7 @@ export const deriveResume = (s: MigrationSession | null): ResumeInfo => {
       failure: s.failure,
       unconfirmedSubmit: s.unconfirmedSubmit,
       pendingBatchId: s.pendingBatchId,
+      pendingTransactions: s.pendingTransactions,
       pendingNextInput: s.pendingNextInput,
     }
   return {

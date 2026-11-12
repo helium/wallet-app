@@ -11,21 +11,11 @@ export type BatchStatus =
 
 export type TerminalStatus = Exclude<BatchStatus, 'pending'>
 
-export const TERMINAL_STATUSES: BatchStatus[] = [
-  'confirmed',
-  'failed',
-  'expired',
-  'partial',
-]
-
-const isTerminal = (status: string): status is TerminalStatus =>
-  (TERMINAL_STATUSES as string[]).includes(status)
-
 /** One status for a set of batches: pending until all land, then the shared status, else partial. */
 export const mergeBatchStatuses = (
   statuses: BatchStatus[],
 ): BatchStatus | undefined => {
-  if (statuses.some((s) => !isTerminal(s))) return 'pending'
+  if (statuses.some((s) => s === 'pending')) return 'pending'
   const [first] = statuses
   return statuses.every((s) => s === first) ? first : 'partial'
 }
@@ -44,6 +34,59 @@ export class PollTimeoutError extends Error {
   }
 }
 
+/** One GET /transactions/{id} read: the batch status and each transaction's. */
+type BatchRead = {
+  status: BatchStatus
+  transactions: { signature: string; status: string }[]
+}
+
+/**
+ * How long a transaction must keep reading `expired` before that is final.
+ *
+ * The server does not treat `expired` as settled (batch-status.ts keeps it
+ * out of SETTLED_STATUSES): it infers it from a blockhash that left range,
+ * "a batch can land in its last valid block", and every GET reads the cluster
+ * again. One read takes the signature statuses and the blockhash validity in
+ * parallel, so a transaction that landed in its last valid block can read
+ * `expired` once and `confirmed` on a later read. A blockhash that is out of
+ * range lets no later block include the transaction, so only read skew
+ * between RPC nodes, a few slots, can cause that flip. 10 seconds is about 25
+ * slots, and five re-reads at the 2 second poll interval.
+ */
+export const EXPIRED_CONFIRM_MS = 10000
+
+/**
+ * Makes the settle rule for one batch's reads. Pass every read of that batch
+ * through the returned function, in order. A status other than `pending` in
+ * its result is final:
+ * - a transaction reads `pending` until it has read `expired` for
+ *   EXPIRED_CONFIRM_MS;
+ * - a batch that is not `confirmed` reads `pending` while any transaction
+ *   does. The server reports `partial` or `failed` once one transaction
+ *   failed, even with others still pending.
+ */
+export const createBatchView = () => {
+  const expiredSince = new Map<string, number>()
+
+  return <T extends BatchRead>(read: T): T => {
+    const transactions = read.transactions.map((tx) => {
+      if (tx.status !== 'expired') {
+        expiredSince.delete(tx.signature)
+        return tx
+      }
+      const since = expiredSince.get(tx.signature) ?? Date.now()
+      expiredSince.set(tx.signature, since)
+      return Date.now() - since >= EXPIRED_CONFIRM_MS
+        ? tx
+        : { ...tx, status: 'pending' }
+    })
+    const settled =
+      read.status === 'confirmed' ||
+      transactions.every((tx) => tx.status !== 'pending')
+    return { ...read, status: settled ? read.status : 'pending', transactions }
+  }
+}
+
 export const pollForCompletion = async (
   client: BatchClient,
   batchId: string,
@@ -51,15 +94,18 @@ export const pollForCompletion = async (
   maxPollTime = 60000,
 ): Promise<{ status: TerminalStatus; signatures: string[] }> => {
   const startTime = Date.now()
+  const view = createBatchView()
 
   while (Date.now() - startTime < maxPollTime) {
-    // eslint-disable-next-line no-await-in-loop
-    const result = await client.transactions.get({
-      id: batchId,
-      commitment: 'confirmed',
-    })
+    const result = view(
+      // eslint-disable-next-line no-await-in-loop
+      await client.transactions.get({
+        id: batchId,
+        commitment: 'confirmed',
+      }),
+    )
 
-    if (isTerminal(result.status)) {
+    if (result.status !== 'pending') {
       return {
         status: result.status,
         signatures: result.transactions?.map((t) => t.signature) ?? [],
@@ -76,6 +122,8 @@ export const pollForCompletion = async (
 export type PageFailure =
   | { kind: 'batch'; status: Exclude<TerminalStatus, 'confirmed'> }
   | { kind: 'timeout' }
+  /** The server returned no transactions but said more remain. */
+  | { kind: 'empty' }
   | { kind: 'submit'; cause: unknown }
   | { kind: 'rejected'; cause: unknown }
   | { kind: 'sign'; cause: unknown }
@@ -128,23 +176,19 @@ export type PagedSubmitDeps<P extends Page> = {
   describeFailure: (info: PageFailureInfo) => string
 }
 
-// A 4xx other than 408 (timeout), 409 (duplicate: already sent) or 429
-// (rate limit) is a definite rejection: the batch was not sent. A 400 whose
-// error data names a failedTransactionIndex above 0 is not: the transactions
-// before that index may have been sent.
+// The submit error codes the server throws only before it sends anything: the
+// blockhash probe, the pre-send simulation, and the Jito bundle simulation
+// (the bundle is atomic and is sent only after it simulates).
+const UNSENT_CODES = ['BLOCKHASH_EXPIRED', 'SIMULATION_FAILED']
+
+// A definite rejection: the batch was not sent. Only a defined error with one
+// of the codes above proves that. The server throws BAD_REQUEST both before
+// any send and for every error after sending started, so a BAD_REQUEST, like
+// a 5xx, a network error or an unknown code, leaves the outcome unknown.
 export const isRejection = (err: unknown): boolean => {
-  const status = (err as { status?: number } | null)?.status
-  const failedIndex = (
-    err as { data?: { failedTransactionIndex?: unknown } } | null
-  )?.data?.failedTransactionIndex
+  const { defined, code } = (err ?? {}) as { defined?: unknown; code?: unknown }
   return (
-    typeof status === 'number' &&
-    status >= 400 &&
-    status < 500 &&
-    status !== 408 &&
-    status !== 409 &&
-    status !== 429 &&
-    !(typeof failedIndex === 'number' && failedIndex > 0)
+    defined === true && typeof code === 'string' && UNSENT_CODES.includes(code)
   )
 }
 
@@ -152,8 +196,9 @@ export const isRejection = (err: unknown): boolean => {
  * Signs and submits pages until the server stops sending `hasMore`. Every
  * page before the last must confirm before the next one is fetched. A
  * failed, expired, partial or timed-out page stops the loop with a
- * PagedSubmitError. A submit error becomes kind 'submit', except a definite
- * 4xx rejection, which becomes kind 'rejected'.
+ * PagedSubmitError, and so does an empty page that says more remain. A
+ * submit error becomes kind 'submit', except a definite rejection (see
+ * isRejection), which becomes kind 'rejected'.
  */
 export const submitPages = async <P extends Page>(
   first: P,
@@ -226,6 +271,12 @@ export const submitPages = async <P extends Page>(
     }
   }
 
+  // An empty page that still says more remain is a server fault. Returning
+  // here would report work the server never delivered as done.
+  if (current.transactionData.transactions.length === 0 && current.hasMore) {
+    throw fail({ kind: 'empty' })
+  }
+
   return { batchIds, signatures }
 }
 
@@ -247,6 +298,7 @@ const optionsFor = (failure: PageFailure): Record<string, unknown> => {
       }
     case 'batch':
     case 'timeout':
+    case 'empty':
       return {}
     default: {
       const unhandled: never = failure
