@@ -72,6 +72,7 @@ import { Edge } from 'react-native-safe-area-context'
 import { useSolana } from '../../solana/SolanaProvider'
 import { solAddressIsValid } from '../../utils/accountUtils'
 import SwapItem from './SwapItem'
+import { isQuoteExpiredError } from './logic/quoteExpired'
 import { swapRoute } from './logic/swapRoute'
 import { SwapNavigationProp } from './swapTypes'
 
@@ -638,6 +639,7 @@ const SwapScreen = () => {
     if (connection && currentAccount?.solanaAddress && inputMint) {
       try {
         setSwapping(true)
+        setTransactionError(undefined)
 
         if (!currentAccount?.solanaAddress) throw new Error('No account found')
 
@@ -695,6 +697,14 @@ const SwapScreen = () => {
         })
       } catch (error) {
         setSwapping(false)
+        if (isQuoteExpiredError(error) && inputMintAcc) {
+          setTransactionError(t('errors.swap.quoteExpired'))
+          // A failed re-quote shows through jupiterError.
+          await getOutputAmount({
+            balance: toBN(inputAmount, inputMintAcc.decimals),
+          }).catch(() => undefined)
+          return
+        }
         setTransactionError((error as Error).message)
       }
     }
@@ -716,6 +726,8 @@ const SwapScreen = () => {
     hntToDcPriceMissing,
     t,
     getSwapTx,
+    getOutputAmount,
+    inputMintAcc,
     dcToNetworkTokens,
     hntPriceUnavailable,
   ])
