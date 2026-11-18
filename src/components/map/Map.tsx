@@ -1,6 +1,7 @@
 import * as MapLibreRN from '@maplibre/maplibre-react-native'
 import { Position } from '@turf/helpers'
-import React, { PropsWithChildren, useMemo } from 'react'
+import React, { PropsWithChildren, useCallback, useMemo, useRef } from 'react'
+import { Platform } from 'react-native'
 import Config from 'react-native-config'
 import { mapLayers } from './mapLayers'
 import {
@@ -10,13 +11,15 @@ import {
   MIN_MAP_ZOOM,
 } from './utils'
 
+type MapViewProps = React.ComponentProps<typeof MapLibreRN.MapView>
+
 const Map: React.FC<
   PropsWithChildren<{
     map?: React.RefObject<MapLibreRN.MapViewRef | null>
     camera?: React.RefObject<MapLibreRN.CameraRef | null>
     onUserLocationUpdate?: (userLocation: MapLibreRN.Location) => void
     centerCoordinate?: Position
-    mapProps?: Omit<React.ComponentProps<typeof MapLibreRN.MapView>, 'children'>
+    mapProps?: Omit<MapViewProps, 'children'>
     cameraProps?: React.ComponentProps<typeof MapLibreRN.Camera>
   }>
 > = ({
@@ -28,6 +31,10 @@ const Map: React.FC<
   mapProps = {},
   cameraProps = {},
 }) => {
+  const ownCamera = useRef<MapLibreRN.CameraRef>(null)
+  const cameraRef = camera || ownCamera
+  const { onRegionDidChange } = mapProps
+
   const mapStyle: string = useMemo(
     () =>
       JSON.stringify({
@@ -44,6 +51,26 @@ const Map: React.FC<
     [],
   )
 
+  // On Android, maplibre-react-native 10 keeps the last camera stop and
+  // replays it after the user pans, so the map snaps back
+  // (maplibre/maplibre-react-native#1402). Move that stop to where the user
+  // left the map, so a replay does not move it.
+  const handleRegionDidChange = useCallback<
+    NonNullable<MapViewProps['onRegionDidChange']>
+  >(
+    (feature) => {
+      if (Platform.OS === 'android' && feature.properties.isUserInteraction) {
+        cameraRef.current?.setCamera({
+          centerCoordinate: feature.geometry.coordinates,
+          zoomLevel: feature.properties.zoomLevel,
+          animationDuration: 0,
+        })
+      }
+      onRegionDidChange?.(feature)
+    },
+    [cameraRef, onRegionDidChange],
+  )
+
   return (
     <MapLibreRN.MapView
       ref={map}
@@ -56,9 +83,10 @@ const Map: React.FC<
       rotateEnabled={false}
       mapStyle={mapStyle}
       {...mapProps}
+      onRegionDidChange={handleRegionDidChange}
     >
       <MapLibreRN.Camera
-        ref={camera}
+        ref={cameraRef}
         defaultSettings={{
           ...INITIAL_MAP_VIEW_STATE,
           centerCoordinate:
