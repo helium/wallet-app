@@ -23,6 +23,7 @@ export default {
       tx: 'Swap tx not generated',
       hntPrice: 'HNT price unavailable, try again',
       hntPriceError: 'HNT price unavailable: {{message}}. Try again.',
+      quoteExpired: 'Price changed. Review the new quote and swap again.',
     },
   },
   hotspotOnboarding: {
