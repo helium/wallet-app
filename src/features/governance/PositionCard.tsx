@@ -17,7 +17,6 @@ import {
 } from '@helium/helium-react-hooks'
 import { EPOCH_LENGTH, delegatedPositionKey } from '@helium/helium-sub-daos-sdk'
 import { delegationClaimBotKey } from '@helium/hpl-crons-sdk'
-import { organizationKey } from '@helium/organization-sdk'
 import { HNT_MINT, humanReadable, toBN, toNumber } from '@helium/spl-utils'
 import {
   PositionWithMeta,
@@ -123,7 +122,12 @@ export const PositionCard = ({
       )
     }
   }, [subDaos, subDao, position?.delegatedSubDao])
-  const { positions, mint, network, refetch: refetchState } = useGovernance()
+  const {
+    positions,
+    mint,
+    organization,
+    refetch: refetchState,
+  } = useGovernance()
   useEffect(() => {
     if (isDelegateModalOpen && subDao) {
       const subDaoMint = subDao.pubkey.equals(IOT_SUB_DAO_KEY)
@@ -182,7 +186,6 @@ export const PositionCard = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSplitModalOpen])
   const { backgroundStyle } = useCreateOpacity()
-  const organization = useMemo(() => organizationKey(network)[0], [network])
   const transferablePositions: PositionWithMeta[] = useMemo(() => {
     if (!unixNow || !positions || !positions.length) {
       return []
